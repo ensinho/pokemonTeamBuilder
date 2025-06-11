@@ -268,14 +268,14 @@ export default function App() {
             <div className="max-w-7xl mx-auto">
                 <header className="text-center mb-8">
                     <h1 className="text-4xl sm:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
-                    {userId && <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>ID do Usuário: {userId}</p>}
+                    {userId && <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>User ID: {userId}</p>}
                 </header>
 
                 <main className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-1 space-y-8">
                         <section className="p-6 rounded-xl shadow-lg sticky top-8" style={{backgroundColor: COLORS.card}}>
-                            <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Seu Time Atual</h2>
-                            <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Nome do Time" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
+                            <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Current team:</h2>
+                            <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team's name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                             <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
                                 {currentTeam.map(pokemon => (
                                     <div key={pokemon.id} className="text-center relative group">
@@ -287,33 +287,33 @@ export default function App() {
                                 {Array.from({ length: 6 - currentTeam.length }).map((_, i) => <div key={i} className="border-2 border-dashed rounded-lg flex items-center justify-center" style={{borderColor: COLORS.cardLight, backgroundColor: 'transparent'}}><span className="text-3xl font-bold" style={{color: COLORS.textMuted}}>?</span></div>)}
                             </div>
                             <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                                <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Atualizar' : 'Salvar'} Time </button>
-                                <button onClick={handleClearTeam} className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Limpar</button>
+                                <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} Team </button>
+                                <button onClick={handleClearTeam} className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
                             </div>
                         </section>
 
                         {currentTeam.length > 0 && (
                         <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}>
-                                <h3 className="text-xl font-bold mb-4">Análise do Time</h3>
+                                <h3 className="text-xl font-bold mb-4">Team analysis</h3>
                                 <div>
-                                    <h4 className="font-semibold mb-2 text-green-400">Cobertura Ofensiva:</h4>
+                                    <h4 className="font-semibold mb-2 text-green-400">Offensive coverage:</h4>
                                     <div className="flex flex-wrap">
                                         {Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />)}
                                     </div>
                                 </div>
                                 <div className="mt-4">
-                                    <h4 className="font-semibold mb-2 text-red-400">Fraquezas Defensivas:</h4>
+                                    <h4 className="font-semibold mb-2 text-red-400">Defensive weaknesses:</h4>
                                     <div className="flex flex-wrap">
                                         {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type]) => (
                                             <TypeBadge key={type} type={type} />
-                                        )) : <p className="text-sm" style={{color: COLORS.textMuted}}>Nenhuma fraqueza crítica em comum!</p>}
+                                        )) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team is rock solid!</p>}
                                     </div>
                                 </div>
                             </section>
                         )}
 
                         <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                            <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Times Salvos</h2>
+                            <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Saved teams</h2>
                             <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
                                {sortedTeams.length > 0 ? sortedTeams.map(team => (
                                     <div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}>
@@ -325,22 +325,22 @@ export default function App() {
                                         </div>
                                         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                             <button onClick={() => handleToggleFavorite(team)} title="Favoritar"><StarIcon isFavorite={team.isFavorite} /></button>
-                                            <button onClick={() => handleLoadTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Carregar</button>
+                                            <button onClick={() => handleLoadTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Load team</button>
                                             <button onClick={() => handleDeleteTeam(team.id)} className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full"><TrashIcon /></button>
                                         </div>
                                     </div>
-                                )) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>Nenhum time salvo ainda.</p>}
+                                )) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No saved teams yet...</p>}
                             </div>
                         </section>
                     </div>
 
                     <div className="lg:col-span-2">
                         <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                            <h2 className="text-2xl font-bold mb-4">Escolha os Pokémon</h2>
+                            <h2 className="text-2xl font-bold mb-4">Choose your pokémon!</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                                 <input type="text" placeholder="Buscar Pokémon..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                                 <select value={selectedGame} onChange={e => setSelectedGame(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}>
-                                    <option value="all">Todos os Jogos</option>
+                                    <option value="all">All games</option>
                                     {gameVersions.map(version => <option key={version.name} value={version.name} className="capitalize">{version.name.replace(/-/g, ' ')}</option>)}
                                 </select>
                             </div>
@@ -348,7 +348,7 @@ export default function App() {
                             {isLoading && !pokemons.length ? (
                                <div className="text-center p-10">
                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{borderColor: COLORS.primary}}></div>
-                                   <p className="mt-4">Carregando Pokémon...</p>
+                                   <p className="mt-4">Loading Pokémon...</p>
                                </div>
                             ) : (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -360,7 +360,7 @@ export default function App() {
                                                 <div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div>
                                             </div>
                                         </div>
-                                    )) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>Nenhum Pokémon encontrado.</p>}
+                                    )) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>Not a single pokémon like that :/ </p>}
                                 </div>
                             )}
                         </section>
