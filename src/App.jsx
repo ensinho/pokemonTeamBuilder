@@ -27,26 +27,25 @@ const typeIcons = {
     fairy: "https://archives.bulbagarden.net/media/upload/b/b1/Fairy_icon_LA.png?20220213053936"
 };
 const typeChart = {
-    normal: { "damageTaken": { "Fighting": 2, "Ghost": 0 } },
-    fire: { "damageTaken": { "Water": 2, "Ground": 2, "Rock": 2, "Fire": 0.5, "Grass": 0.5, "Ice": 0.5, "Bug": 0.5, "Steel": 0.5, "Fairy": 0.5 } },
-    water: { "damageTaken": { "Grass": 2, "Electric": 2, "Fire": 0.5, "Water": 0.5, "Ice": 0.5, "Steel": 0.5 } },
-    grass: { "damageTaken": { "Fire": 2, "Ice": 2, "Poison": 2, "Flying": 2, "Bug": 2, "Water": 0.5, "Grass": 0.5, "Electric": 0.5, "Ground": 0.5 } },
-    electric: { "damageTaken": { "Ground": 2, "Electric": 0.5, "Flying": 0.5, "Steel": 0.5 } },
-    ice: { "damageTaken": { "Fire": 2, "Fighting": 2, "Rock": 2, "Steel": 2, "Ice": 0.5 } },
-    fighting: { "damageTaken": { "Flying": 2, "Psychic": 2, "Fairy": 2, "Bug": 0.5, "Rock": 0.5, "Dark": 0.5 } },
-    poison: { "damageTaken": { "Ground": 2, "Psychic": 2, "Grass": 0.5, "Fighting": 0.5, "Poison": 0.5, "Bug": 0.5, "Fairy": 0.5 } },
-    ground: { "damageTaken": { "Water": 2, "Grass": 2, "Ice": 2, "Poison": 0.5, "Rock": 0.5, "Electric": 0 } },
-    flying: { "damageTaken": { "Electric": 2, "Ice": 2, "Rock": 2, "Grass": 0.5, "Fighting": 0.5, "Bug": 0.5, "Ground": 0 } },
-    psychic: { "damageTaken": { "Bug": 2, "Ghost": 2, "Dark": 2, "Fighting": 0.5, "Psychic": 0.5 } },
-    bug: { "damageTaken": { "Fire": 2, "Flying": 2, "Rock": 2, "Grass": 0.5, "Fighting": 0.5, "Ground": 0.5 } },
-    rock: { "damageTaken": { "Water": 2, "Grass": 2, "Fighting": 2, "Ground": 2, "Steel": 2, "Normal": 0.5, "Fire": 0.5, "Poison": 0.5, "Flying": 0.5 } },
-    ghost: { "damageTaken": { "Ghost": 2, "Dark": 2, "Poison": 0.5, "Bug": 0.5, "Normal": 0, "Fighting": 0 } },
-    dragon: { "damageTaken": { "Ice": 2, "Dragon": 2, "Fairy": 2, "Fire": 0.5, "Water": 0.5, "Grass": 0.5, "Electric": 0.5 } },
-    dark: { "damageTaken": { "Fighting": 2, "Bug": 2, "Fairy": 2, "Ghost": 0.5, "Dark": 0.5, "Psychic": 0 } },
-    steel: { "damageTaken": { "Fire": 2, "Fighting": 2, "Ground": 2, "Normal": 0.5, "Grass": 0.5, "Ice": 0.5, "Flying": 0.5, "Psychic": 0.5, "Bug": 0.5, "Rock": 0.5, "Dragon": 0.5, "Steel": 0.5, "Fairy": 0.5, "Poison": 0 } },
-    fairy: { "damageTaken": { "Poison": 2, "Steel": 2, "Fighting": 0.5, "Bug": 0.5, "Dark": 0.5, "Dragon": 0 } }
+    normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
+    fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
+    water: { damageTaken: { Grass: 2, Electric: 2, Fire: 0.5, Water: 0.5, Ice: 0.5, Steel: 0.5 }, damageDealt: { Water: 0.5, Grass: 0.5, Dragon: 0.5, Fire: 2, Ground: 2, Rock: 2 } },
+    grass: { damageTaken: { Fire: 2, Ice: 2, Poison: 2, Flying: 2, Bug: 2, Water: 0.5, Grass: 0.5, Electric: 0.5, Ground: 0.5 }, damageDealt: { Fire: 0.5, Grass: 0.5, Poison: 0.5, Flying: 0.5, Bug: 0.5, Steel: 0.5, Dragon: 0.5, Water: 2, Ground: 2, Rock: 2 } },
+    electric: { damageTaken: { Ground: 2, Electric: 0.5, Flying: 0.5, Steel: 0.5 }, damageDealt: { Grass: 0.5, Electric: 0.5, Dragon: 0.5, Ground: 0, Water: 2, Flying: 2 } },
+    ice: { damageTaken: { Fire: 2, Fighting: 2, Rock: 2, Steel: 2, Ice: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Ice: 0.5, Steel: 0.5, Grass: 2, Ground: 2, Flying: 2, Dragon: 2 } },
+    fighting: { damageTaken: { Flying: 2, Psychic: 2, Fairy: 2, Bug: 0.5, Rock: 0.5, Dark: 0.5 }, damageDealt: { Flying: 0.5, Psychic: 0.5, Bug: 0.5, Fairy: 0.5, Poison: 0.5, Ghost: 0, Normal: 2, Ice: 2, Rock: 2, Dark: 2, Steel: 2 } },
+    poison: { damageTaken: { Ground: 2, Psychic: 2, Grass: 0.5, Fighting: 0.5, Poison: 0.5, Bug: 0.5, Fairy: 0.5 }, damageDealt: { Ground: 0.5, Rock: 0.5, Poison: 0.5, Ghost: 0.5, Steel: 0, Grass: 2, Fairy: 2 } },
+    ground: { damageTaken: { Water: 2, Grass: 2, Ice: 2, Poison: 0.5, Rock: 0.5, Electric: 0 }, damageDealt: { Grass: 0.5, Bug: 0.5, Flying: 0, Fire: 2, Electric: 2, Poison: 2, Rock: 2, Steel: 2 } },
+    flying: { damageTaken: { Electric: 2, Ice: 2, Rock: 2, Grass: 0.5, Fighting: 0.5, Bug: 0.5, Ground: 0 }, damageDealt: { Electric: 0.5, Rock: 0.5, Steel: 0.5, Grass: 2, Fighting: 2, Bug: 2 } },
+    psychic: { damageTaken: { Bug: 2, Ghost: 2, Dark: 2, Fighting: 0.5, Psychic: 0.5 }, damageDealt: { Steel: 0.5, Psychic: 0.5, Dark: 0, Fighting: 2, Poison: 2 } },
+    bug: { damageTaken: { Fire: 2, Flying: 2, Rock: 2, Grass: 0.5, Fighting: 0.5, Ground: 0.5 }, damageDealt: { Fire: 0.5, Fighting: 0.5, Poison: 0.5, Flying: 0.5, Ghost: 0.5, Steel: 0.5, Fairy: 0.5, Grass: 2, Psychic: 2, Dark: 2 } },
+    rock: { damageTaken: { Water: 2, Grass: 2, Fighting: 2, Ground: 2, Steel: 2, Normal: 0.5, Fire: 0.5, Poison: 0.5, Flying: 0.5 }, damageDealt: { Fighting: 0.5, Ground: 0.5, Steel: 0.5, Fire: 2, Ice: 2, Flying: 2, Bug: 2 } },
+    ghost: { damageTaken: { Ghost: 2, Dark: 2, Poison: 0.5, Bug: 0.5, Normal: 0, Fighting: 0 }, damageDealt: { Steel: 0.5, Dark: 0.5, Normal: 0, Ghost: 2, Psychic: 2 } },
+    dragon: { damageTaken: { Ice: 2, Dragon: 2, Fairy: 2, Fire: 0.5, Water: 0.5, Grass: 0.5, Electric: 0.5 }, damageDealt: { Steel: 0.5, Fairy: 0, Dragon: 2 } },
+    dark: { damageTaken: { Fighting: 2, Bug: 2, Fairy: 2, Ghost: 0.5, Dark: 0.5, Psychic: 0 }, damageDealt: { Fighting: 0.5, Dark: 0.5, Fairy: 0.5, Ghost: 2, Psychic: 2 } },
+    steel: { damageTaken: { Fire: 2, Fighting: 2, Ground: 2, Normal: 0.5, Grass: 0.5, Ice: 0.5, Flying: 0.5, Psychic: 0.5, Bug: 0.5, Rock: 0.5, Dragon: 0.5, Steel: 0.5, Fairy: 0.5, Poison: 0 }, damageDealt: { Fire: 0.5, Water: 0.5, Electric: 0.5, Steel: 0.5, Ice: 2, Rock: 2, Fairy: 2 } },
+    fairy: { damageTaken: { Poison: 2, Steel: 2, Fighting: 0.5, Bug: 0.5, Dark: 0.5, Dragon: 0 }, damageDealt: { Fire: 0.5, Poison: 0.5, Steel: 0.5, Fighting: 2, Dragon: 2, Dark: 2 } }
 };
-
 
 // --- SVG Icons ---
 const GithubIcon = () => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clipRule="evenodd" /></svg>);
@@ -198,6 +197,17 @@ export default function App() {
         
         const allTypesInChart = Object.keys(typeChart);
         const teamWeaknessCounts = {};
+        const offensiveCoverage = new Set();
+
+        // Calculate Offensive Coverage
+        teamDetails.flatMap(details => details.types).forEach(attackerType => {
+            const dealt = typeChart[attackerType]?.damageDealt || {};
+            Object.keys(dealt).forEach(defenderType => {
+                if (dealt[defenderType] > 1) {
+                    offensiveCoverage.add(defenderType);
+                }
+            });
+        });
 
         // Calculate Defensive Weaknesses
         for (const attackingType of allTypesInChart) {
@@ -216,7 +226,7 @@ export default function App() {
             }
         }
         
-        setTeamAnalysis(prev => ({ ...prev, weaknesses: teamWeaknessCounts }));
+        setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
 
     }, [currentTeam, pokemonDetailsCache]);
 
@@ -289,13 +299,13 @@ export default function App() {
         <div className="max-w-screen-xl mx-auto p-4 sm:p-6 lg:p-8">
           <header className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
-            {userId && <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>User ID: {userId}</p>}
+            { <p className="text-2x1 mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
           </header>
 
           <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Column */}
-            <div className="lg:col-span-4 space-y-8">
-              <section className="p-6 rounded-xl shadow-lg top-8" style={{backgroundColor: COLORS.card}}>
+            <div className="lg:col-span-3 space-y-8">
+              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
                 <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Current Team</h2>
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
@@ -314,26 +324,21 @@ export default function App() {
                 </div>
               </section>
               
-              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                 <h3 className="text-xl font-bold mb-3 text-center">Filter by Type</h3>
-                  <div className="grid grid-cols-6 gap-2">
-                      {Object.keys(typeColors).map(type => (
-                          <button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-lg transition-transform transform hover:scale-110 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} style={{backgroundColor: typeColors[type]}} title={type}>
-                              <img src={typeIcons[type]} alt={type} className="w-6 h-6 mx-auto" />
-                          </button>
-                      ))}
-                  </div>
-              </section>
-
               {currentTeam.length > 0 && (
               <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}>
                   <h3 className="text-xl font-bold mb-4">Team Analysis</h3>
+                   <div>
+                    <h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}
+                    </div>
+                  </div>
                   <div className="mt-4">
                     <h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4>
                     <div className="flex flex-wrap gap-1">
                       {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (
                         <div key={type} className="flex items-center"><TypeBadge type={type} /><span className="text-xs text-red-300">({score}x)</span></div>
-                      )) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team is solid as a rock!</p>}
+                      )) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}
                     </div>
                   </div>
                 </section>
@@ -358,8 +363,8 @@ export default function App() {
               </section>
             </div>
 
-            {/* Right Column */}
-            <div className="lg:col-span-8">
+            {/* Center Column */}
+            <div className="lg:col-span-6">
               <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
                 <div className="mb-4">
                   <h2 className="text-2xl font-bold mb-4">Choose your Pokémon!</h2>
@@ -375,7 +380,7 @@ export default function App() {
                 {isLoading && !filteredPokemons.length ? (
                    <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{borderColor: COLORS.primary}}></div><p className="mt-4">Loading Pokémon...</p></div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 h-[80vh] overflow-y-auto p-2 custom-scrollbar">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 h-[80vh] overflow-y-auto p-2 custom-scrollbar">
                     {filteredPokemons.length > 0 ? filteredPokemons.map(pokemon => (
                       <div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}>
                         <img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" />
@@ -388,6 +393,20 @@ export default function App() {
                 )}
               </section>
             </div>
+
+            {/* Right Column */}
+            <div className="lg:col-span-3">
+              <section className="p-6 rounded-xl shadow-lg sticky top-8" style={{backgroundColor: COLORS.card}}>
+                 <h3 className="text-xl font-bold mb-3 text-center">Filter by Type</h3>
+                  <div className="grid grid-cols-3 gap-2">
+                      {Object.keys(typeColors).map(type => (
+                          <button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-lg transition-transform transform hover:scale-110 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} style={{backgroundColor: typeColors[type]}} title={type}>
+                              <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
+                          </button>
+                      ))}
+                  </div>
+              </section>
+            </div>
           </main>
 
           <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
@@ -397,7 +416,7 @@ export default function App() {
             </p>
             <div className="flex justify-center gap-4 mt-4">
               <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a>
-              <a href="https://www.linkedin.com/in/enzo-esmeraldo-458327244/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
+              <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
             </div>
           </footer>
         </div>
