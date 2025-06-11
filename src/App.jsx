@@ -296,7 +296,7 @@ export default function App() {
             ))}
         </div>
         
-        <div className="max-w-[100rem] mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="max-w-[110rem] mx-auto p-4 sm:p-6 lg:p-8">
           <header className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
             { <p className="text-2x1 mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
@@ -380,7 +380,7 @@ export default function App() {
                 {isLoading && !filteredPokemons.length ? (
                    <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{borderColor: COLORS.primary}}></div><p className="mt-4">Loading Pokémon...</p></div>
                 ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 h-[80vh] overflow-y-auto p-2 custom-scrollbar">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 h-[80vh] overflow-y-auto p-2 custom-scrollbar">
                     {filteredPokemons.length > 0 ? filteredPokemons.map(pokemon => (
                       <div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}>
                         <img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" />
@@ -396,7 +396,7 @@ export default function App() {
 
             {/* Right Column */}
             <div className="lg:col-span-3">
-              <section className="p-6 rounded-xl shadow-lg sticky top-8" style={{backgroundColor: COLORS.card}}>
+              <section className="p-6 rounded-xl shadow-lg top-8" style={{backgroundColor: COLORS.card}}>
                  <h3 className="text-xl font-bold mb-3 text-center">Filter by Type</h3>
                   <div className="grid grid-cols-3 gap-2">
                       {Object.keys(typeColors).map(type => (
