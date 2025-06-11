@@ -296,7 +296,7 @@ export default function App() {
             ))}
         </div>
         
-        <div className="max-w-[90rem] mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="max-w-[100rem] mx-auto p-4 sm:p-6 lg:p-8">
           <header className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
             { <p className="text-2x1 mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
