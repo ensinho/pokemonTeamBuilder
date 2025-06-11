@@ -296,7 +296,7 @@ export default function App() {
             ))}
         </div>
         
-        <div className="max-w-[110rem] mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="max-w-[115rem] mx-auto p-4 sm:p-6 lg:p-8">
           <header className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
             { <p className="text-2x1 mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
@@ -398,9 +398,9 @@ export default function App() {
             <div className="lg:col-span-3">
               <section className="p-6 rounded-xl shadow-lg top-8" style={{backgroundColor: COLORS.card}}>
                  <h3 className="text-xl font-bold mb-3 text-center">Filter by Type</h3>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-4">
                       {Object.keys(typeColors).map(type => (
-                          <button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-lg transition-transform transform hover:scale-110 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} style={{backgroundColor: typeColors[type]}} title={type}>
+                          <button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-xl transition-transform transform hover:scale-110 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} style={{backgroundColor: typeColors[type]}} title={type}>
                               <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
                           </button>
                       ))}
