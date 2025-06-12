@@ -54,6 +54,10 @@ const StarIcon = ({ className = "w-6 h-6", isFavorite }) => ( <svg className={cl
 const TrashIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" /> </svg> );
 const SaveIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /> </svg> );
 const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /> </svg> );
+const MenuIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>);
+const CloseIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
+const BuilderIcon = () => ( <svg className="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>);
+const AllTeamsIcon = () => (<svg className="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>);
 const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full text-white shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
 // --- Firebase Config ---
@@ -88,6 +92,10 @@ export default function App() {
     // UI States
     const [isLoading, setIsLoading] = useState(true);
     const [toasts, setToasts] = useState([]);
+    const [currentPage, setCurrentPage] = useState('builder');
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [teamSearchTerm, setTeamSearchTerm] = useState('');
+
 
     // Toast Notification Handler
     const showToast = useCallback((message, type = 'info') => {
@@ -148,12 +156,11 @@ export default function App() {
         fetchInitialData();
     }, []);
 
-    // Main Filtering Logic Effect - Simplified for full data load
+    // Main Filtering Logic Effect
     useEffect(() => {
         const applyFilters = async () => {
-            if (allPokemons.length === 0) return;
+            if (allPokemons.length === 0 && !isLoading) return;
 
-            setIsLoading(true);
             let pokemonListResult = [...allPokemons];
 
             try {
@@ -183,11 +190,10 @@ export default function App() {
             }
             
             setFilteredPokemons(pokemonListResult);
-            setIsLoading(false);
         };
 
         applyFilters();
-    }, [selectedGeneration, selectedTypes, searchTerm, allPokemons]);
+    }, [selectedGeneration, selectedTypes, searchTerm, allPokemons, isLoading]);
 
     // Firestore Listener for Saved Teams
     useEffect(() => {
@@ -233,6 +239,18 @@ export default function App() {
         return filteredPokemons.filter(p => !teamIds.has(p.id));
     }, [filteredPokemons, currentTeam]);
 
+    const favoriteTeams = useMemo(() => {
+        return savedTeams.filter(team => team.isFavorite).sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0,5);
+    }, [savedTeams]);
+    
+    const allFilteredTeams = useMemo(() => {
+        let teams = [...savedTeams].sort((a,b) => (b.isFavorite - a.isFavorite) || new Date(b.createdAt) - new Date(a.createdAt));
+        if (teamSearchTerm) {
+            teams = teams.filter(team => team.name.toLowerCase().includes(teamSearchTerm.toLowerCase()));
+        }
+        return teams;
+    }, [savedTeams, teamSearchTerm]);
+
     // Handler Functions
     const handleAddPokemonToTeam = (pokemon) => {
         if (currentTeam.length >= 6) return showToast("Your team is full (6 Pokémon)!", 'warning');
@@ -253,11 +271,13 @@ export default function App() {
             handleClearTeam();
         } catch (e) { showToast("Error saving team.", 'error'); }
     };
-    const handleLoadTeam = (team) => {
+    const handleEditTeam = (team) => {
         const teamPokemonObjects = team.pokemons.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
         setCurrentTeam(teamPokemonObjects);
         setTeamName(team.name);
         setEditingTeamId(team.id);
+        setCurrentPage('builder');
+        setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
     const handleDeleteTeam = async (teamId) => {
@@ -281,26 +301,24 @@ export default function App() {
             return newTypes;
         });
     };
-    const sortedTeams = useMemo(() => [...savedTeams].sort((a, b) => (b.isFavorite ? 1 : -1) - (a.isFavorite ? 1 : -1) || new Date(b.createdAt) - new Date(a.createdAt)), [savedTeams]);
     
     // Main Render
-    return (
-      <div className="min-h-screen text-white font-sans" style={{ backgroundColor: COLORS.background }}>
-        <div className="fixed top-5 right-5 z-50 space-y-2">
-            {toasts.map(toast => ( <div key={toast.id} className={`px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.message}</div> ))}
-        </div>
-        
-        <div className="max-w-[115rem] mx-auto p-4 sm:p-6 lg:p-8">
-          <header className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
-             { <p className="text-2x1 mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
-          </header>
-
-          <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+    const renderPage = () => {
+        switch (currentPage) {
+            case 'allTeams':
+                return <AllTeamsView teams={allFilteredTeams} onEdit={handleEditTeam} onDelete={handleDeleteTeam} onToggleFavorite={handleToggleFavorite} searchTerm={teamSearchTerm} setSearchTerm={setTeamSearchTerm} />;
+            case 'builder':
+            default:
+                return <TeamBuilderView />;
+        }
+    }
+    
+    const TeamBuilderView = () => (
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left Column */}
-            <div className="lg:col-span-3 space-y-8">
+            <div className="lg:col-span-3 space-y-8"> 
               <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Current Team</h2>
+                <h2 className="text-xl md:text-2xl font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
                   {currentTeam.map(pokemon => (<div key={pokemon.id} className="text-center relative group"><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{pokemon.name}</p><button onClick={() => handleRemoveFromTeam(pokemon.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
@@ -312,15 +330,20 @@ export default function App() {
                 </div>
               </section>
               
-              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge key={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}</div></div></section>)}
-              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Saved Teams</h2><div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">{sortedTeams.length > 0 ? sortedTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleLoadTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Load</button><button onClick={() => handleDeleteTeam(team.id)} className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full"><TrashIcon /></button></div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No teams saved yet.</p>}</div></section>
+              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-lg md:text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge key={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}</div></div></section>)}
+              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
+                <div className="flex justify-between items-center mb-4"><h2 className="text-xl md:text-2xl font-bold" style={{fontFamily: "'Press Start 2P'",}}>Favorite Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div>
+                <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+                    {favoriteTeams.length > 0 ? favoriteTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleEditTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Edit</button></div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No favorite teams yet.</p>}
+                </div>
+              </section>
             </div>
 
             {/* Center Column */}
             <div className="lg:col-span-6">
               <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: COLORS.card}}>
                 <div className="mb-4">
-                  <h2 className="text-2xl font-bold mb-4">Choose your Pokémon!</h2>
+                  <h2 className="text-xl md:text-2xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'",}}>Choose your Pokémon!</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input type="text" placeholder="Search Pokémon..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                     <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}>
@@ -332,8 +355,8 @@ export default function App() {
                 
                 <div className="flex-grow h-[60vh] overflow-y-auto custom-scrollbar">
                     {(isLoading) ? (<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
-                    (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
-                        {availablePokemons.length > 0 ? availablePokemons.map((pokemon, index) => (<div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" /><p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p><div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div></div>)) : 
+                    (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
+                        {availablePokemons.length > 0 ? availablePokemons.map((pokemon) => (<div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" /><p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p><div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div></div>)) : 
                         (<p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>)}
                     </div>)}
                 </div>
@@ -343,25 +366,81 @@ export default function App() {
             {/* Right Column */}
             <div className="lg:col-span-3">
               <section className="p-6 rounded-xl shadow-lg sticky top-8" style={{backgroundColor: COLORS.card}}>
-                 <h3 className="text-xl font-bold mb-3 text-center">Filter by Type</h3>
+                 <h3 className="text-lg md:text-xl font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'",}}>Filter by Type</h3>
                   <div className="grid grid-cols-4 gap-2">
-                      {Object.keys(typeColors).map(type => (<button key={type} onClick={() => handleTypeSelection(type)} className={`p-1 rounded-full aspect-square transition-transform transform hover:scale-110 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} style={{backgroundColor: typeColors[type]}} title={type}><img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" /></button>))}
+                      {Object.keys(typeColors).map(type => (<button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-lg bg-transparent transition-colors hover:bg-gray-700/50 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} title={type}><img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" /></button>))}
                   </div>
               </section>
             </div>
           </main>
-
-         
-          <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
-            <p className="text-sm" style={{color: COLORS.textMuted}}>Developed by Enzo Esmeraldo</p>
-            <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>
-              Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.
-            </p>
-            <div className="flex justify-center gap-4 mt-4">
-              <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a>
-              <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
+    );
+    
+    const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm}) => (
+        <div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
+            <h2 className="text-2xl md:text-3xl font-bold mb-6">All Saved Teams</h2>
+            <input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {teams.length > 0 ? teams.map(team => (
+                    <div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: COLORS.cardLight}}>
+                        <div className="flex justify-between items-start">
+                           <p className="font-bold text-xl truncate mb-2">{team.name}</p>
+                           <button onClick={() => onToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button>
+                        </div>
+                        <div className="flex my-2">
+                            {team.pokemons.map(p => <img key={p.id} src={p.sprite} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}
+                        </div>
+                        <div className="flex items-center gap-2 mt-auto pt-2">
+                            <button onClick={() => onEdit(team)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Edit</button>
+                            <button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
+                        </div>
+                    </div>
+                )) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No teams found.</p>}
             </div>
-          </footer>
+        </div>
+    );
+
+    return (
+      <div className="min-h-screen text-white font-sans" style={{ backgroundColor: COLORS.background }}>
+        <div className="fixed top-5 right-5 z-50 space-y-2">
+            {toasts.map(toast => ( <div key={toast.id} className={`px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.message}</div> ))}
+        </div>
+        
+        <div className="flex">
+            {/* Sidebar */}
+            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 w-56 transition-transform transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
+                <nav className="p-5">
+                    <h2 className="text-xl md:text-2xl font-bold mb-6" style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
+                    <ul>
+                        <li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''}`}><BuilderIcon /> Team Builder</button></li>
+                        <li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''}`}><AllTeamsIcon /> All Teams</button></li>
+                    </ul>
+                </nav>
+            </aside>
+            
+            <div className="flex-1">
+                <header className="text-center py-4 px-4">
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden absolute top-5 left-5 p-2 rounded-md" style={{backgroundColor: COLORS.cardLight}}>
+                       {isSidebarOpen ? <CloseIcon/> : <MenuIcon />}
+                    </button>
+                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
+                    { <p className="text-sm sm:text-base md:text-lg mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
+                </header>
+
+                <div className="p-4 sm:p-6 lg:p-8">
+                    {renderPage()}
+                </div>
+
+                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
+                    <p className="text-sm" style={{color: COLORS.textMuted}}>Developed by Enzo Esmeraldo</p>
+                    <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>
+                    Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.
+                    </p>
+                    <div className="flex justify-center gap-4 mt-4">
+                        <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a>
+                        <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
+                    </div>
+                </footer>
+            </div>
         </div>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
