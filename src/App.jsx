@@ -409,21 +409,27 @@ export default function App() {
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div className="lg:col-span-3 space-y-8"> 
               <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                <h2 className="text-xl md:text-2xl font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
+                <h2 className="text-base md:text-lg font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
                   {currentTeam.map(pokemon => (<div key={pokemon.id} className="text-center relative group"><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{pokemon.name}</p><button onClick={() => handleRemoveFromTeam(pokemon.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
                   {Array.from({ length: 6 - currentTeam.length }).map((_, i) => <div key={i} className="border-2 border-dashed rounded-lg flex items-center justify-center" style={{borderColor: COLORS.cardLight, backgroundColor: 'transparent'}}><span className="text-3xl font-bold" style={{color: COLORS.textMuted}}>?</span></div>)}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                  <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} Team </button>
+                  <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
                   <button onClick={handleClearTeam} className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
                 </div>
               </section>
               
-              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-lg md:text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge type={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}</div></div></section>)}
+              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}>
+                <h3 className="text-lg md:text-xl font-bold mb-4">Team Analysis</h3>
+                <div>
+                  <h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4>
+                  <div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4">
+                    <h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4>
+                    <div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge type={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team is rock solid!</p>}</div></div></section>)}
               <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                <div className="flex justify-between items-center mb-4"><h2 className="text-xl md:text-2xl font-bold" style={{fontFamily: "'Press Start 2P'",}}>Favorite Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div>
+                <div className="flex justify-between items-center mb-4"><h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'",}}>Favorite Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div>
                 <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
                     {favoriteTeams.length > 0 ? favoriteTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleEditTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Edit</button></div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No favorite teams yet.</p>}
                 </div>
@@ -433,7 +439,7 @@ export default function App() {
             <div className="lg:col-span-6">
               <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: COLORS.card}}>
                 <div className="mb-4">
-                  <h2 className="text-xl md:text-2xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'",}}>Choose your Pokémon!</h2>
+                  <h2 className="text-lg md:text-x1 font-bold mb-4" style={{fontFamily: "'Press Start 2P'",}}>Choose your Pokémon!</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <input type="text" placeholder="Search Pokémon..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                     <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}>
@@ -458,7 +464,7 @@ export default function App() {
 
             <div className="lg:col-span-3">
               <section className="p-6 rounded-xl shadow-lg top-8" style={{backgroundColor: COLORS.card}}>
-                 <h3 className="text-lg md:text-xl font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'",}}>Filter by Type</h3>
+                 <h3 className="text-base md:text-lg font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'",}}>Filter by Type</h3>
                   <div className="grid grid-cols-4 gap-2">
                       {Object.keys(typeColors).map(type => (<button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-lg bg-transparent transition-colors hover:bg-gray-700/50 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} title={type}><img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" /></button>))}
                   </div>
@@ -498,7 +504,7 @@ export default function App() {
         </div>
         
         <div className="flex min-h-screen">
-          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-56'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
+          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-16' : 'w-52'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
                 <div className="flex flex-col h-full">
                     <div className={`flex items-center p-5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
                         <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
@@ -520,8 +526,8 @@ export default function App() {
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden absolute top-5 left-5 p-2 rounded-md" style={{backgroundColor: COLORS.cardLight}}>
                        {isSidebarOpen ? <CloseIcon/> : <MenuIcon />}
                     </button>
-                    <h1 className="text-xl sm:text-3xl lg:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
-                     <p className="text-sm sm:text-base md:text-lg mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>
+                    <h1 className="text-base sm:text-x1 lg:text-3xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}>Pokémon Team Builder</h1>
+                     <p className="text-sm sm:text-base md:text-lg mt-2"  style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}>By: Enzo Esmeraldo</p>
                 </header>
 
                 <div className="p-4 sm:p-6 lg:p-8">
@@ -529,7 +535,7 @@ export default function App() {
                 </div>
 
                 <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
-                    <p className="text-sm" style={{color: COLORS.textMuted}}>Developed by Enzo Esmeraldo</p>
+                    <p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by Enzo Esmeraldo</p>
                     <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>
                     Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.
                     </p>
