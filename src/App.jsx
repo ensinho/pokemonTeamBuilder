@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, query } from 'firebase/firestore';
 
 // --- Assets & Data ---
@@ -46,14 +46,44 @@ const CollapseRightIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.o
 const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full text-white shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
 // --- Firebase Config ---
-const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
-const appId = 'pokemonTeamBuilder';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pokemon-app';
+
+// --- Helper Components ---
+const PokemonCard = React.memo(({ pokemon, onAdd, details, lastRef }) => {
+    if (!details) {
+        return (
+            <div ref={lastRef} className="rounded-lg p-3 text-center h-[172px]" style={{backgroundColor: COLORS.cardLight}}>
+                <div className="mx-auto h-24 w-24 bg-gray-700 rounded-md animate-pulse"></div>
+                <div className="mt-2 h-5 w-24 mx-auto bg-gray-700 rounded animate-pulse"></div>
+                <div className="flex justify-center items-center mt-2 gap-2">
+                    <div className="h-5 w-5 bg-gray-700 rounded-full animate-pulse"></div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div ref={lastRef} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => onAdd(details)}>
+            <img src={details.sprite} alt={details.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" />
+            <p className="mt-2 text-sm font-semibold capitalize">{details.name}</p>
+            <div className="flex justify-center items-center mt-1 gap-1">
+                {details.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}
+            </div>
+            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div>
+            </div>
+        </div>
+    );
+});
+
 
 // --- Main App Component ---
 export default function App() {
-    // States
+    // Firebase States
     const [userId, setUserId] = useState(null);
     const [db, setDb] = useState(null);
+    const [auth, setAuth] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
     
     // Pokémon and Filter States
@@ -81,7 +111,7 @@ export default function App() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
-
+    const [visibleCount, setVisibleCount] = useState(40);
 
     // Toast Notification Handler
     const showToast = useCallback((message, type = 'info') => {
@@ -89,142 +119,8 @@ export default function App() {
         setToasts(prevToasts => [...prevToasts, { id, message, type }]);
         setTimeout(() => setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id)), 3000);
     }, []);
-
-    // Firebase Initialization Effect
-    useEffect(() => {
-        try {
-            const app = initializeApp(firebaseConfig);
-            setDb(getFirestore(app));
-            onAuthStateChanged(getAuth(app), async (user) => {
-                if (user) setUserId(user.uid);
-                else await signInAnonymously(getAuth(app));
-                setIsAuthReady(true);
-            });
-        } catch (e) { showToast("Failed to connect to services.", "error"); }
-    }, []);
-
-    // Initial Data Fetching
-    useEffect(() => {
-        const fetchInitialData = async () => {
-            setIsLoading(true);
-            try {
-                // Fetch Generations
-                const genRes = await fetch('https://pokeapi.co/api/v2/generation');
-                const genData = await genRes.json();
-                setGenerations(genData.results);
-
-                // Fetch Master List of Pokemon
-                const pokeListRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
-                const pokeListData = await pokeListRes.json();
-
-                // Fetch All Details Concurrently
-                const detailPromises = pokeListData.results.map(p => fetch(p.url).then(res => res.json()));
-                const detailedPokemons = await Promise.all(detailPromises);
-                
-                const pokemonData = detailedPokemons.map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    sprite: p.sprites?.front_default || 'https://via.placeholder.com/96',
-                    types: p.types.map(t => t.type.name),
-                }));
-                
-                setAllPokemons(pokemonData);
-                setFilteredPokemons(pokemonData);
-                setPokemonDetailsCache(pokemonData.reduce((acc, p) => ({...acc, [p.id]: p}), {}));
-
-            } catch (e) {
-                showToast("Failed to load Pokémon data.", "error");
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchInitialData();
-    }, []);
-
-    // Main Filtering Logic Effect
-    useEffect(() => {
-        const applyFilters = async () => {
-            if (allPokemons.length === 0 && !isLoading) return;
-
-            let pokemonListResult = [...allPokemons];
-
-            try {
-                // Filter by Generation
-                if (selectedGeneration !== 'all') {
-                    const generationRanges = {
-                        'generation-i': [1, 151], 'generation-ii': [152, 251], 'generation-iii': [252, 386],
-                        'generation-iv': [387, 493], 'generation-v': [494, 649], 'generation-vi': [650, 721],
-                        'generation-vii': [722, 809], 'generation-viii': [810, 905], 'generation-ix': [906, 1025],
-                    };
-                    const range = generationRanges[selectedGeneration];
-                    if(range){
-                        pokemonListResult = allPokemons.filter(p => p.id >= range[0] && p.id <= range[1]);
-                    }
-                }
-                
-                // Filter by Type
-                if (selectedTypes.size > 0) {
-                    pokemonListResult = pokemonListResult.filter(p => 
-                        p.types.some(type => selectedTypes.has(type))
-                    );
-                }
-
-                // Filter by Search Term
-                if (searchTerm) {
-                    pokemonListResult = pokemonListResult.filter(p => 
-                        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-                    );
-                }
-            } catch (e) {
-                showToast("Failed to apply filters.", "error");
-            }
-            
-            setFilteredPokemons(pokemonListResult);
-        };
-
-        applyFilters();
-    }, [selectedGeneration, selectedTypes, searchTerm, allPokemons, isLoading]);
-
-    // Firestore Listener for Saved Teams
-    useEffect(() => {
-        if (!isAuthReady || !db || !userId) return;
-        const q = query(collection(db, `artifacts/${appId}/users/${userId}/teams`));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const teamsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setSavedTeams(teamsData);
-        }, () => showToast("Could not load saved teams.", "error"));
-        return () => unsubscribe();
-    }, [isAuthReady, db, userId]);
-
-    // Team Analysis Effect
-    useEffect(() => {
-        const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
-        if (teamDetails.length === 0) {
-            setTeamAnalysis({ strengths: new Set(), weaknesses: {} });
-            return;
-        }
-        
-        const allTypesInChart = Object.keys(typeChart);
-        const teamWeaknessCounts = {};
-        const offensiveCoverage = new Set();
-        
-        teamDetails.flatMap(d => d.types).forEach(type => {
-            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => { if (mult > 1) offensiveCoverage.add(vs); });
-        });
-
-        allTypesInChart.forEach(attackingType => {
-            const weakCount = teamDetails.filter(pokemon => {
-                const multi = pokemon.types.reduce((acc, T) => acc * (typeChart[T]?.damageTaken[attackingType] ?? 1), 1);
-                return multi > 1;
-            }).length;
-            if (weakCount > 0) teamWeaknessCounts[attackingType] = weakCount;
-        });
-        
-        setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
-    }, [currentTeam, pokemonDetailsCache]);
     
-    // Derived state for the list of available pokemon (not in current team)
+    // Derived states
     const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
         return filteredPokemons.filter(p => !teamIds.has(p.id));
@@ -242,7 +138,198 @@ export default function App() {
         return teams;
     }, [savedTeams, teamSearchTerm]);
 
-    // Handler Functions
+    // Firebase Initialization Effect
+    useEffect(() => {
+        try {
+            const app = initializeApp(firebaseConfig);
+            const authInstance = getAuth(app);
+            setDb(getFirestore(app));
+            setAuth(authInstance);
+
+            onAuthStateChanged(authInstance, async (user) => {
+                if (user) {
+                    setUserId(user.uid);
+                    setIsAuthReady(true);
+                } else {
+                    try {
+                      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                          await signInWithCustomToken(authInstance, __initial_auth_token);
+                      } else {
+                          await signInAnonymously(authInstance);
+                      }
+                      setIsAuthReady(true);
+                    } catch (authError) {
+                      showToast("Authentication failed.", "error");
+                    }
+                }
+            });
+        } catch (e) { 
+            showToast("Failed to connect to services.", "error"); 
+        }
+    }, []);
+
+    // Initial Data Fetching (basic list only)
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            setIsLoading(true);
+            try {
+                const [genRes, pokeListRes] = await Promise.all([
+                    fetch('https://pokeapi.co/api/v2/generation'),
+                    fetch('https://pokeapi.co/api/v2/pokemon?limit=1025')
+                ]);
+                
+                const genData = await genRes.json();
+                setGenerations(genData.results);
+
+                const pokeListData = await pokeListRes.json();
+                const pokemonData = pokeListData.results.map(p => {
+                    const urlParts = p.url.split('/');
+                    const id = parseInt(urlParts[urlParts.length - 2]);
+                    return { id, name: p.name, url: p.url };
+                });
+                
+                setAllPokemons(pokemonData);
+                setFilteredPokemons(pokemonData);
+            } catch (e) {
+                showToast("Failed to load Pokémon data.", "error");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchInitialData();
+    }, []);
+
+    // Main Filtering Logic Effect
+    useEffect(() => {
+        if (allPokemons.length === 0) return;
+
+        const applyFilters = async () => {
+            setIsLoading(true);
+            let pokemonListResult = [...allPokemons];
+
+            const generationRanges = {
+                'generation-i': [1, 151], 'generation-ii': [152, 251], 'generation-iii': [252, 386],
+                'generation-iv': [387, 493], 'generation-v': [494, 649], 'generation-vi': [650, 721],
+                'generation-vii': [722, 809], 'generation-viii': [810, 905], 'generation-ix': [906, 1025],
+            };
+            if (selectedGeneration !== 'all') {
+                const range = generationRanges[selectedGeneration];
+                if(range){
+                    pokemonListResult = pokemonListResult.filter(p => p.id >= range[0] && p.id <= range[1]);
+                }
+            }
+            
+            if (selectedTypes.size > 0) {
+                try {
+                    const typePromises = Array.from(selectedTypes).map(type =>
+                        fetch(`https://pokeapi.co/api/v2/type/${type.toLowerCase()}`).then(res => res.json())
+                        .then(data => new Set(data.pokemon.map(p => p.pokemon.name)))
+                    );
+                    const pokemonSets = await Promise.all(typePromises);
+                    if (pokemonSets.length > 0) {
+                         const intersection = pokemonSets.reduce((acc, currentSet) => {
+                            if (acc === null) return currentSet;
+                            return new Set([...acc].filter(name => currentSet.has(name)));
+                        }, new Set(allPokemons.map(p => p.name)));
+                        pokemonListResult = pokemonListResult.filter(p => intersection.has(p.name));
+                    }
+                } catch(e) { showToast("Failed to apply type filter.", "error"); }
+            }
+
+            if (searchTerm) {
+                pokemonListResult = pokemonListResult.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            }
+            
+            setFilteredPokemons(pokemonListResult);
+            setVisibleCount(40);
+            setIsLoading(false);
+        };
+        applyFilters();
+    }, [selectedGeneration, selectedTypes, searchTerm, allPokemons]);
+
+
+    // Fetch details for visible Pokémon
+    useEffect(() => {
+        const fetchVisiblePokemonDetails = async () => {
+            const pokemonToFetch = availablePokemons.slice(0, visibleCount);
+            const missingDetails = pokemonToFetch.filter(p => !pokemonDetailsCache[p.id]);
+
+            if (missingDetails.length === 0) return;
+
+            try {
+                const detailPromises = missingDetails.map(p => fetch(p.url).then(res => res.json()));
+                const newDetailedPokemons = await Promise.all(detailPromises);
+                const newCacheEntries = newDetailedPokemons.reduce((acc, p) => {
+                    acc[p.id] = {
+                        id: p.id, name: p.name, sprite: p.sprites?.front_default || 'https://via.placeholder.com/96',
+                        types: p.types.map(t => t.type.name),
+                    };
+                    return acc;
+                }, {});
+                setPokemonDetailsCache(prevCache => ({ ...prevCache, ...newCacheEntries }));
+            } catch (e) { /* silent fail */ }
+        };
+        
+        if (availablePokemons.length > 0) {
+            fetchVisiblePokemonDetails();
+        }
+    }, [availablePokemons, visibleCount]);
+
+    // Infinite scroll observer
+    const observer = useRef();
+    const lastPokemonElementRef = useCallback(node => {
+        if (isLoading) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && availablePokemons.length > visibleCount) {
+                setVisibleCount(prevCount => prevCount + 40);
+            }
+        });
+        if (node) observer.current.observe(node);
+    }, [isLoading, availablePokemons, visibleCount]);
+
+    // Firestore Listener for Saved Teams
+    useEffect(() => {
+        if (!isAuthReady || !db || !userId) return;
+        const q = query(collection(db, `artifacts/${appId}/users/${userId}/teams`));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const teamsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setSavedTeams(teamsData);
+        }, () => showToast("Could not load saved teams.", "error"));
+        return () => unsubscribe();
+    }, [isAuthReady, db, userId]);
+
+    // Team Analysis Effect
+    useEffect(() => {
+        const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
+        if (teamDetails.length === 0 || teamDetails.length < currentTeam.length) {
+            setTeamAnalysis({ strengths: new Set(), weaknesses: {} });
+            return;
+        }
+        
+        const allTypesInChart = Object.keys(typeChart);
+        const teamWeaknessCounts = {};
+        const offensiveCoverage = new Set();
+        
+        teamDetails.flatMap(d => d.types).forEach(type => {
+            if (typeChart[type] && typeChart[type].damageDealt) {
+                Object.entries(typeChart[type].damageDealt).forEach(([vs, mult]) => { if (mult > 1) offensiveCoverage.add(vs); });
+            }
+        });
+
+        allTypesInChart.forEach(attackingType => {
+            const weakCount = teamDetails.filter(pokemon => {
+                const multi = pokemon.types.reduce((acc, T) => acc * (typeChart[T]?.damageTaken[attackingType] ?? 1), 1);
+                return multi > 1;
+            }).length;
+            if (weakCount > 0) teamWeaknessCounts[attackingType] = weakCount;
+        });
+        
+        setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
+    }, [currentTeam, pokemonDetailsCache]);
+    
+
+    // Handlers
     const handleAddPokemonToTeam = (pokemon) => {
         if (currentTeam.length >= 6) return showToast("Your team is full (6 Pokémon)!", 'warning');
         if (currentTeam.find(p => p.id === pokemon.id)) return showToast("This Pokémon is already on your team.", 'warning');
@@ -254,23 +341,38 @@ export default function App() {
         if (!db || !userId) return showToast("Database connection not ready.", 'error');
         if (currentTeam.length === 0) return showToast("Your team is empty!", 'warning');
         if (!teamName.trim()) return showToast("Please name your team.", 'warning');
+        
+        const teamPokemons = currentTeam.map(p => ({id: p.id, name: p.name, sprite: p.sprite}));
         const teamId = editingTeamId || doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
-        const teamData = { name: teamName, pokemons: currentTeam.map(p => ({id: p.id, name: p.name, sprite: p.sprite})), isFavorite: savedTeams.find(t => t.id === editingTeamId)?.isFavorite || false, createdAt: new Date().toISOString() };
+        const teamData = { name: teamName, pokemons: teamPokemons, isFavorite: savedTeams.find(t => t.id === editingTeamId)?.isFavorite || false, createdAt: new Date().toISOString() };
+        
         try {
             await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
             showToast(`Team "${teamName}" saved!`, 'success');
             handleClearTeam();
         } catch (e) { showToast("Error saving team.", 'error'); }
     };
-    const handleEditTeam = (team) => {
-        const teamPokemonObjects = team.pokemons.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
-        setCurrentTeam(teamPokemonObjects);
+
+    const handleEditTeam = async (team) => {
+        const teamPokemonDetails = await Promise.all(team.pokemons.map(async (p) => {
+            if (pokemonDetailsCache[p.id]) return pokemonDetailsCache[p.id];
+            try {
+                const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.id}`);
+                const details = await res.json();
+                const formattedDetails = { id: details.id, name: details.name, sprite: details.sprites?.front_default || 'https://via.placeholder.com/96', types: details.types.map(t => t.type.name) };
+                setPokemonDetailsCache(prev => ({...prev, [p.id]: formattedDetails}));
+                return formattedDetails;
+            } catch (e) { return null; }
+        }));
+        
+        setCurrentTeam(teamPokemonDetails.filter(Boolean));
         setTeamName(team.name);
         setEditingTeamId(team.id);
         setCurrentPage('builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
+
     const handleDeleteTeam = async (teamId) => {
         if (!db || !userId) return;
         try {
@@ -293,7 +395,7 @@ export default function App() {
         });
     };
     
-    // Main Render
+    // Page Render
     const renderPage = () => {
         switch (currentPage) {
             case 'allTeams':
@@ -306,7 +408,6 @@ export default function App() {
     
     const TeamBuilderView = () => (
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Left Column */}
             <div className="lg:col-span-3 space-y-8"> 
               <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
                 <h2 className="text-xl md:text-2xl font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
@@ -321,7 +422,7 @@ export default function App() {
                 </div>
               </section>
               
-              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-lg md:text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge key={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}</div></div></section>)}
+              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-lg md:text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge type={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}</div></div></section>)}
               <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
                 <div className="flex justify-between items-center mb-4"><h2 className="text-xl md:text-2xl font-bold" style={{fontFamily: "'Press Start 2P'",}}>Favorite Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div>
                 <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
@@ -330,7 +431,6 @@ export default function App() {
               </section>
             </div>
 
-            {/* Center Column */}
             <div className="lg:col-span-6">
               <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: COLORS.card}}>
                 <div className="mb-4">
@@ -347,14 +447,16 @@ export default function App() {
                 <div className="flex-grow h-[52vh] overflow-y-auto custom-scrollbar">
                     {(isLoading) ? (<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
                     (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
-                        {availablePokemons.length > 0 ? availablePokemons.map((pokemon) => (<div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" /><p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p><div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div></div>)) : 
-                        (<p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>)}
+                        {availablePokemons.slice(0, visibleCount).map((pokemon, index) => {
+                            const isLastElement = index === visibleCount - 1 || index === availablePokemons.length - 1;
+                            return <PokemonCard key={pokemon.id} pokemon={pokemon} details={pokemonDetailsCache[pokemon.id]} onAdd={handleAddPokemonToTeam} lastRef={isLastElement ? lastPokemonElementRef : null} />
+                        })}
+                        {availablePokemons.length === 0 && <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>}
                     </div>)}
                 </div>
               </section>
             </div>
 
-            {/* Right Column */}
             <div className="lg:col-span-3">
               <section className="p-6 rounded-xl shadow-lg top-8" style={{backgroundColor: COLORS.card}}>
                  <h3 className="text-lg md:text-xl font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'",}}>Filter by Type</h3>
@@ -397,19 +499,18 @@ export default function App() {
         </div>
         
         <div className="flex min-h-screen">
-            {/* Sidebar */}
-            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
+            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-58'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
                 <div className="flex flex-col h-full">
                     <div className={`flex items-center p-5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-                        <h2 className={`text-xl md:text-2xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
+                        <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
                         <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>
                             {isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}
                         </button>
                     </div>
                     <nav className="px-5 flex-grow">
                         <ul>
-                            <li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><BuilderIcon /> <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`}>Team Builder</span></button></li>
-                            <li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`}>All Teams</span></button></li>
+                            <li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><BuilderIcon /> <span className={`ml-3 whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 lg:max-w-xs'}`}>Team Builder</span></button></li>
+                            <li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`ml-3 whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 lg:max-w-xs'}`}>All Teams</span></button></li>
                         </ul>
                     </nav>
                 </div>
@@ -421,7 +522,7 @@ export default function App() {
                        {isSidebarOpen ? <CloseIcon/> : <MenuIcon />}
                     </button>
                     <h1 className="text-xl sm:text-3xl lg:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
-                    { <p className="text-sm sm:text-base md:text-lg mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
+                     <p className="text-sm sm:text-base md:text-lg mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>
                 </header>
 
                 <div className="p-4 sm:p-6 lg:p-8">
@@ -442,7 +543,7 @@ export default function App() {
         </div>
         <style>{`
           @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-          .custom-scrollbar::-webkit-scrollbar { width: 10px; }
+          .custom-scrollbar::-webkit-scrollbar { width: 12px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; }
           .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; }
           @keyframes fade-in-out { 0% { opacity: 0; transform: translateY(-10px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
