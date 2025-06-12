@@ -59,7 +59,6 @@ const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb
 // --- Firebase Config ---
 const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
 const appId = 'pokemonTeamBuilder';
-const POKEMON_PER_PAGE = 40;
 
 // --- Main App Component ---
 export default function App() {
@@ -69,8 +68,8 @@ export default function App() {
     const [isAuthReady, setIsAuthReady] = useState(false);
     
     // Pokémon and Filter States
-    const [masterPokemonList, setMasterPokemonList] = useState([]); 
-    const [displayedPokemons, setDisplayedPokemons] = useState([]); 
+    const [allPokemons, setAllPokemons] = useState([]);
+    const [filteredPokemons, setFilteredPokemons] = useState([]);
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
     
     // Filter Controls
@@ -88,14 +87,7 @@ export default function App() {
     
     // UI States
     const [isLoading, setIsLoading] = useState(true);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [toasts, setToasts] = useState([]);
-    
-    // Pagination and Infinite Scroll
-    const [offset, setOffset] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
-    const observer = useRef();
-    const scrollContainerRef = useRef(null);
 
     // Toast Notification Handler
     const showToast = useCallback((message, type = 'info') => {
@@ -117,106 +109,85 @@ export default function App() {
         } catch (e) { showToast("Failed to connect to services.", "error"); }
     }, []);
 
-    // Initial Data Fetching (Generations)
+    // Initial Data Fetching
     useEffect(() => {
-        fetch('https://pokeapi.co/api/v2/generation').then(res => res.json())
-            .then(data => setGenerations(data.results))
-            .catch(() => showToast("Could not load game generations.", "error"));
-    }, []);
-    
-    // Main Filtering Logic Effect
-    useEffect(() => {
-        const fetchAndFilter = async () => {
+        const fetchInitialData = async () => {
             setIsLoading(true);
-            let pokemonListResult = [];
+            try {
+                // Fetch Generations
+                const genRes = await fetch('https://pokeapi.co/api/v2/generation');
+                const genData = await genRes.json();
+                setGenerations(genData.results);
+
+                // Fetch Master List of Pokemon
+                const pokeListRes = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
+                const pokeListData = await pokeListRes.json();
+
+                // Fetch All Details Concurrently
+                const detailPromises = pokeListData.results.map(p => fetch(p.url).then(res => res.json()));
+                const detailedPokemons = await Promise.all(detailPromises);
+                
+                const pokemonData = detailedPokemons.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    sprite: p.sprites?.front_default || 'https://via.placeholder.com/96',
+                    types: p.types.map(t => t.type.name),
+                }));
+                
+                setAllPokemons(pokemonData);
+                setFilteredPokemons(pokemonData);
+                setPokemonDetailsCache(pokemonData.reduce((acc, p) => ({...acc, [p.id]: p}), {}));
+
+            } catch (e) {
+                showToast("Failed to load Pokémon data.", "error");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchInitialData();
+    }, []);
+
+    // Main Filtering Logic Effect - Simplified for full data load
+    useEffect(() => {
+        const applyFilters = async () => {
+            if (allPokemons.length === 0) return;
+
+            setIsLoading(true);
+            let pokemonListResult = [...allPokemons];
 
             try {
+                // Filter by Generation
                 if (selectedGeneration !== 'all') {
                     const res = await fetch(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
                     const data = await res.json();
-                    pokemonListResult = data.pokemon_species.map(p => ({ name: p.name, url: `https://pokeapi.co/api/v2/pokemon/${p.url.split('/')[6]}/`}));
-                } else {
-                    const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
-                    const data = await res.json();
-                    pokemonListResult = data.results;
+                    const genPokemonNames = new Set(data.pokemon_species.map(p => p.name));
+                    pokemonListResult = pokemonListResult.filter(p => genPokemonNames.has(p.name));
                 }
 
+                // Filter by Type
                 if (selectedTypes.size > 0) {
-                    const typePromises = Array.from(selectedTypes).map(type => fetch(`https://pokeapi.co/api/v2/type/${type}`).then(res => res.json()));
-                    const typeResults = await Promise.all(typePromises);
-                    const pokemonSets = typeResults.map(result => new Set(result.pokemon.map(p => p.pokemon.name)));
-                    const intersection = pokemonSets.reduce((acc, set) => new Set([...acc].filter(name => set.has(name))));
-                    pokemonListResult = pokemonListResult.filter(p => intersection.has(p.name));
+                    pokemonListResult = pokemonListResult.filter(p => 
+                        p.types.some(type => selectedTypes.has(type))
+                    );
                 }
 
+                // Filter by Search Term
                 if (searchTerm) {
-                    pokemonListResult = pokemonListResult.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+                    pokemonListResult = pokemonListResult.filter(p => 
+                        p.name.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
                 }
             } catch (e) {
-                showToast("Failed to fetch Pokémon data.", "error");
+                showToast("Failed to apply filters.", "error");
             }
-
-            setMasterPokemonList(pokemonListResult);
-            setOffset(0);
-            setDisplayedPokemons([]);
-            setHasMore(pokemonListResult.length > 0);
+            
+            setFilteredPokemons(pokemonListResult);
             setIsLoading(false);
         };
 
-        fetchAndFilter();
-    }, [selectedGeneration, selectedTypes, searchTerm]);
-
-    // Infinite Scroll Loader
-    const loadMorePokemon = useCallback(async () => {
-        if (isLoadingMore || !hasMore) return;
-        setIsLoadingMore(true);
-
-        const newPokemonsToFetch = masterPokemonList.slice(offset, offset + POKEMON_PER_PAGE);
-
-        if (newPokemonsToFetch.length > 0) {
-            const detailPromises = newPokemonsToFetch.map(p => {
-                const id = p.url.split('/')[6];
-                return pokemonDetailsCache[id] ? Promise.resolve(pokemonDetailsCache[id]) : fetch(p.url).then(res => res.json());
-            });
-
-            const newDetailedPokemons = await Promise.all(detailPromises);
-            
-            const newCacheData = {};
-            const processedPokemons = newDetailedPokemons.map(p => {
-                const pokemonData = { id: p.id, name: p.name, sprite: p.sprites?.front_default || 'https://via.placeholder.com/96', types: p.types.map(t => t.type.name) };
-                if (!pokemonDetailsCache[p.id]) newCacheData[p.id] = pokemonData;
-                return pokemonData;
-            });
-
-            setPokemonDetailsCache(prev => ({...prev, ...newCacheData}));
-            setDisplayedPokemons(prev => [...prev, ...processedPokemons]);
-            setOffset(prev => prev + POKEMON_PER_PAGE);
-            setHasMore(masterPokemonList.length > offset + POKEMON_PER_PAGE);
-        } else {
-            setHasMore(false);
-        }
-
-        setIsLoadingMore(false);
-    }, [masterPokemonList, offset, hasMore, isLoadingMore, pokemonDetailsCache]);
-
-    // Effect to trigger first load when master list changes
-    useEffect(() => {
-        if (masterPokemonList.length > 0) {
-            loadMorePokemon();
-        }
-    }, [masterPokemonList]);
-
-    // Intersection Observer for Infinite Scroll
-    const lastPokemonElementRef = useCallback(node => {
-        if (isLoadingMore) return;
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasMore) {
-                loadMorePokemon();
-            }
-        }, { root: scrollContainerRef.current }); // Set the scroll container as the root
-        if (node) observer.current.observe(node);
-    }, [isLoadingMore, hasMore, loadMorePokemon]);
+        applyFilters();
+    }, [selectedGeneration, selectedTypes, searchTerm, allPokemons]);
 
     // Firestore Listener for Saved Teams
     useEffect(() => {
@@ -259,8 +230,8 @@ export default function App() {
     // Derived state for the list of available pokemon (not in current team)
     const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
-        return displayedPokemons.filter(p => !teamIds.has(p.id));
-    }, [displayedPokemons, currentTeam]);
+        return filteredPokemons.filter(p => !teamIds.has(p.id));
+    }, [filteredPokemons, currentTeam]);
 
     // Handler Functions
     const handleAddPokemonToTeam = (pokemon) => {
@@ -359,12 +330,11 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div ref={scrollContainerRef} className="flex-grow h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="flex-grow h-[60vh] overflow-y-auto custom-scrollbar">
                     {(isLoading) ? (<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
                     (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
-                        {availablePokemons.length > 0 ? availablePokemons.map((pokemon, index) => (<div ref={availablePokemons.length === index + 1 ? lastPokemonElementRef : null} key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" /><p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p><div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div></div>)) : 
+                        {availablePokemons.length > 0 ? availablePokemons.map((pokemon, index) => (<div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" /><p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p><div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div></div>)) : 
                         (<p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>)}
-                        {isLoadingMore && <div className="col-span-full text-center p-4">Loading more...</div>}
                     </div>)}
                 </div>
               </section>
