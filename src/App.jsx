@@ -40,15 +40,15 @@ const SaveIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 
 const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /> </svg> );
 const MenuIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>);
 const CloseIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
-const BuilderIcon = () => ( <svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>);
+const PokeballIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24"  height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-pokeball shrink-0"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M3 12h6" /><path d="M15 12h6" /></svg>);
 const AllTeamsIcon = () => (<svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>);
 const CollapseLeftIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>);
 const CollapseRightIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>);
 const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full text-white shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
 // --- Firebase Config ---
-const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
-const appId = 'pokemonTeamBuilder';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pokemon-app';
 
 // --- Custom Hooks ---
 const useDebounce = (value, delay) => {
@@ -108,7 +108,7 @@ const TeamBuilderView = ({
             <h2 className="text-base md:text-lg font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
             <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
             <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
-                {currentTeam.map(p => (<div key={p.id} className="text-center relative group"><img src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{p.name}</p><button onClick={() => handleRemoveFromTeam(p.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
+                {currentTeam.map(p => (<div key={p.id} className="text-center relative group"><img src={p.animatedSprite || p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = p.sprite || POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{p.name}</p><button onClick={() => handleRemoveFromTeam(p.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
                 {Array.from({ length: 6 - currentTeam.length }).map((_, i) => (<div key={i} className="flex items-center justify-center"><img src={POKEBALL_PLACEHOLDER_URL} alt="Empty team slot" className="w-12 h-12 opacity-40"/></div>))}
               </div>
             <div className="flex flex-col sm:flex-row gap-2 mt-4">
@@ -314,7 +314,13 @@ export default function App() {
                 const newDetailedPokemons = await Promise.all(missingDetails.map(p => fetch(p.url).then(res => res.json())));
                 if (!isActive) return;
                 const newCacheEntries = newDetailedPokemons.reduce((acc, p) => {
-                    acc[p.id] = { id: p.id, name: p.name, sprite: p.sprites?.front_default, types: p.types.map(t => t.type.name) };
+                    acc[p.id] = { 
+                        id: p.id, 
+                        name: p.name, 
+                        sprite: p.sprites?.front_default, 
+                        animatedSprite: p.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default,
+                        types: p.types.map(t => t.type.name) 
+                    };
                     return acc;
                 }, {});
                 setPokemonDetailsCache(prevCache => ({ ...prevCache, ...newCacheEntries }));
@@ -373,14 +379,23 @@ export default function App() {
         if (node) observer.current.observe(node);
     }, [isFetchingMore, isFiltering, availablePokemons, visibleCount]);
 
-    const handleAddPokemonToTeam = (pokemon) => {
+    const handleAddPokemonToTeam = useCallback((pokemon) => {
         if (currentTeam.length >= 6) return showToast("Your team is full (6 Pokémon)!", 'warning');
         if (currentTeam.find(p => p.id === pokemon.id)) return showToast("This Pokémon is already on your team.", 'warning');
-        setCurrentTeam([...currentTeam, pokemon]);
-    };
-    const handleRemoveFromTeam = (pokemonId) => setCurrentTeam(currentTeam.filter(p => p.id !== pokemonId));
-    const handleClearTeam = () => { setCurrentTeam([]); setTeamName(''); setEditingTeamId(null); };
-    const handleSaveTeam = async () => {
+        setCurrentTeam(prev => [...prev, pokemon]);
+    }, [currentTeam, showToast]);
+
+    const handleRemoveFromTeam = useCallback((pokemonId) => {
+        setCurrentTeam(prev => prev.filter(p => p.id !== pokemonId));
+    }, []);
+
+    const handleClearTeam = useCallback(() => {
+        setCurrentTeam([]);
+        setTeamName('');
+        setEditingTeamId(null);
+    }, []);
+    
+    const handleSaveTeam = useCallback(async () => {
         if (!db || !userId) return showToast("Database connection not ready.", 'error');
         if (currentTeam.length === 0) return showToast("Your team is empty!", 'warning');
         if (!teamName.trim()) return showToast("Please name your team.", 'warning');
@@ -393,13 +408,14 @@ export default function App() {
             showToast(`Team "${teamName}" saved!`, 'success');
             handleClearTeam();
         } catch (e) { showToast("Error saving team.", 'error'); }
-    };
-    const handleEditTeam = async (team) => {
+    }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
+
+    const handleEditTeam = useCallback(async (team) => {
         const detailsPromises = team.pokemons.map(async (p) => {
             if (pokemonDetailsCache[p.id]) return pokemonDetailsCache[p.id];
             const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${p.id}`);
             const d = await res.json();
-            return { id: d.id, name: d.name, sprite: d.sprites?.front_default, types: d.types.map(t => t.type.name) };
+            return { id: d.id, name: d.name, sprite: d.sprites?.front_default, types: d.types.map(t => t.type.name), animatedSprite: d.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default };
         });
         const teamPokemonDetails = await Promise.all(detailsPromises);
         setPokemonDetailsCache(prev => ({...prev, ...teamPokemonDetails.reduce((acc, p) => ({...acc, [p.id]: p}), {})}));
@@ -409,27 +425,30 @@ export default function App() {
         setCurrentPage('builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-    const handleDeleteTeam = async (teamId) => {
+    }, [pokemonDetailsCache]);
+
+    const handleDeleteTeam = useCallback(async (teamId) => {
         if (!db || !userId) return;
         try {
             await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId));
             if (editingTeamId === teamId) handleClearTeam();
             showToast("Team deleted.", 'info');
         } catch (e) { showToast("Error deleting team.", 'error'); }
-    };
-    const handleToggleFavorite = async (team) => {
+    }, [db, userId, editingTeamId, handleClearTeam, showToast]);
+
+    const handleToggleFavorite = useCallback(async (team) => {
         if (!db || !userId) return;
         try { await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, team.id), { ...team, isFavorite: !team.isFavorite }); }
         catch (e) { showToast("Could not update favorite status.", 'error'); }
-    };
-     const handleTypeSelection = (type) => {
+    }, [db, userId, showToast]);
+
+    const handleTypeSelection = useCallback((type) => {
         setSelectedTypes(prev => {
             const newTypes = new Set(prev);
             newTypes.has(type) ? newTypes.delete(type) : newTypes.add(type);
             return newTypes;
         });
-    };
+    }, []);
     
     const renderPage = () => {
         switch (currentPage) {
@@ -472,7 +491,7 @@ export default function App() {
       <div className="min-h-screen text-white font-sans" style={{ backgroundColor: COLORS.background }}>
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.map(toast => ( <div key={toast.id} className={`px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
-          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center p-5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><BuilderIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
+          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
             <div className="flex-1 min-w-0">
                 <header className="text-center pt-4 px-4"><button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden absolute top-5 left-5 p-2 rounded-md" style={{backgroundColor: COLORS.cardLight}}>{isSidebarOpen ? <CloseIcon/> : <MenuIcon />}</button><h1 className="text-base sm:text-xl lg:text-3xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}>Pokémon Team Builder</h1><p className="text-sm sm:text-base md:text-lg mt-2"  style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}>By: Enzo Esmeraldo</p></header>
                 <div className="p-4 sm:p-6 lg:p-8">{renderPage()}</div>
