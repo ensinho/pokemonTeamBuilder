@@ -46,9 +46,8 @@ const CollapseRightIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.o
 const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full text-white shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
 // --- Firebase Config ---
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pokemon-app';
-
+const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
+const appId = 'pokemonTeamBuilder';
 // --- Helper Components ---
 const PokemonCard = React.memo(({ pokemon, onAdd, details, lastRef }) => {
     if (!details) {
@@ -499,7 +498,7 @@ export default function App() {
         </div>
         
         <div className="flex min-h-screen">
-            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-400 ease-in-out ${isSidebarCollapsed ? 'lg:w-18' : 'w-50'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
+          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-18' : 'w-58'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
                 <div className="flex flex-col h-full">
                     <div className={`flex items-center p-5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
                         <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
@@ -509,8 +508,8 @@ export default function App() {
                     </div>
                     <nav className="px-5 flex-grow">
                         <ul>
-                            <li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><BuilderIcon /> <span className={`ml-3 whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 lg:max-w-xs'}`}>Team Builder</span></button></li>
-                            <li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`ml-3 whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:opacity-0 lg:max-w-0' : 'opacity-100 lg:max-w-xs'}`}>All Teams</span></button></li>
+                          <li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><BuilderIcon /> <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`}>Team Builder</span></button></li>
+                          <li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`}>All Teams</span></button></li>
                         </ul>
                     </nav>
                 </div>
