@@ -47,8 +47,8 @@ const CollapseRightIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.o
 const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full text-white shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
 // --- Firebase Config ---
-const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-pokemon-app';
+const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
+const appId = 'pokemonTeamBuilder';
 
 // --- Custom Hooks ---
 const useDebounce = (value, delay) => {
