@@ -4,6 +4,7 @@ import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken }
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, query } from 'firebase/firestore';
 
 // --- Assets & Data ---
+const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 const COLORS = { primary: '#7d65e1', background: '#111827', card: '#1F2937', cardLight: '#374151', text: '#FFFFFF', textMuted: '#9CA3AF' };
 const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
 const typeIcons = {
@@ -412,9 +413,24 @@ export default function App() {
                 <h2 className="text-base md:text-lg font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
-                  {currentTeam.map(pokemon => (<div key={pokemon.id} className="text-center relative group"><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{pokemon.name}</p><button onClick={() => handleRemoveFromTeam(pokemon.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
-                  {Array.from({ length: 6 - currentTeam.length }).map((_, i) => <div key={i} className="border-2 border-dashed rounded-lg flex items-center justify-center" style={{borderColor: COLORS.cardLight, backgroundColor: 'transparent'}}><span className="text-3xl font-bold" style={{color: COLORS.textMuted}}>?</span></div>)}
-                </div>
+                    {currentTeam.map(pokemon => (
+                      <div key={pokemon.id} className="text-center relative group">
+                          <img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-20 w-20" />
+                          <p className="text-xs capitalize truncate">{pokemon.name}</p>
+                          <button onClick={() => handleRemoveFromTeam(pokemon.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button>
+                      </div>
+                    ))}
+
+                    {Array.from({ length: 6 - currentTeam.length }).map((_, i) => (
+                      <div key={i} className="flex items-center justify-center">
+                          <img 
+                              src={POKEBALL_PLACEHOLDER_URL} 
+                              alt="Empty team slot" 
+                              className="w-12 h-12 opacity-40" 
+                          />
+                      </div>
+                    ))}
+                  </div>
                 <div className="flex flex-col sm:flex-row gap-2 mt-4">
                   <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
                   <button onClick={handleClearTeam} className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
@@ -522,7 +538,7 @@ export default function App() {
             </aside>
             
             <div className="flex-1 min-w-0">
-                <header className="text-center py-4 px-4">
+                <header className="text-center pt-4 px-4">
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden absolute top-5 left-5 p-2 rounded-md" style={{backgroundColor: COLORS.cardLight}}>
                        {isSidebarOpen ? <CloseIcon/> : <MenuIcon />}
                     </button>
