@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, query } from 'firebase/firestore';
@@ -59,6 +59,7 @@ const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb
 // --- Firebase Config ---
 const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
 const appId = 'pokemonTeamBuilder';
+const POKEMON_PER_PAGE = 40;
 
 // --- Main App Component ---
 export default function App() {
@@ -66,114 +67,156 @@ export default function App() {
     const [userId, setUserId] = useState(null);
     const [db, setDb] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
-    const [allPokemons, setAllPokemons] = useState([]);
-    const [filteredPokemons, setFilteredPokemons] = useState([]);
+    
+    // Pokémon and Filter States
+    const [masterPokemonList, setMasterPokemonList] = useState([]); 
+    const [displayedPokemons, setDisplayedPokemons] = useState([]); 
+    const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
+    
+    // Filter Controls
     const [generations, setGenerations] = useState([]);
     const [selectedGeneration, setSelectedGeneration] = useState('all');
     const [selectedTypes, setSelectedTypes] = useState(new Set());
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // Team States
     const [currentTeam, setCurrentTeam] = useState([]);
     const [savedTeams, setSavedTeams] = useState([]);
     const [teamName, setTeamName] = useState('');
     const [editingTeamId, setEditingTeamId] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [toasts, setToasts] = useState([]);
-    const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
     const [teamAnalysis, setTeamAnalysis] = useState({ strengths: new Set(), weaknesses: {} });
+    
+    // UI States
+    const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [toasts, setToasts] = useState([]);
+    
+    // Pagination and Infinite Scroll
+    const [offset, setOffset] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const observer = useRef();
+    const scrollContainerRef = useRef(null);
 
     // Toast Notification Handler
     const showToast = useCallback((message, type = 'info') => {
         const id = Date.now();
         setToasts(prevToasts => [...prevToasts, { id, message, type }]);
-        setTimeout(() => {
-            setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id));
-        }, 3000);
+        setTimeout(() => setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id)), 3000);
     }, []);
 
     // Firebase Initialization Effect
     useEffect(() => {
         try {
             const app = initializeApp(firebaseConfig);
-            const authInstance = getAuth(app);
-            const dbInstance = getFirestore(app);
-            setDb(dbInstance);
-            onAuthStateChanged(authInstance, async (user) => {
+            setDb(getFirestore(app));
+            onAuthStateChanged(getAuth(app), async (user) => {
                 if (user) setUserId(user.uid);
-                else await signInAnonymously(authInstance);
+                else await signInAnonymously(getAuth(app));
                 setIsAuthReady(true);
             });
-        } catch (e) { setError("Failed to connect to services."); setIsLoading(false); }
+        } catch (e) { showToast("Failed to connect to services.", "error"); }
     }, []);
 
-    // API Data Fetching Effect
+    // Initial Data Fetching (Generations)
     useEffect(() => {
-        const fetchInitialData = async () => {
-            setIsLoading(true);
-            try {
-                // Fetch all Pokémon details in one go for filtering
-                const pokemonListResponse = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
-                const pokemonListData = await pokemonListResponse.json();
-                const detailedPokemonPromises = pokemonListData.results.map(p => fetch(p.url).then(res => res.json()));
-                const detailedPokemons = await Promise.all(detailedPokemonPromises);
-
-                const pokemonData = detailedPokemons.map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    sprite: p.sprites.front_default || 'https://via.placeholder.com/96',
-                    types: p.types.map(t => t.type.name),
-                }));
-                
-                setPokemonDetailsCache(pokemonData.reduce((acc, p) => ({...acc, [p.id]: p}), {}));
-                setAllPokemons(pokemonData);
-                setFilteredPokemons(pokemonData);
-
-                // Fetch generations
-                const generationsResponse = await fetch('https://pokeapi.co/api/v2/generation');
-                const generationsData = await generationsResponse.json();
-                setGenerations(generationsData.results);
-
-            } catch (e) { setError(e.message);
-            } finally { setIsLoading(false); }
-        };
-        fetchInitialData();
+        fetch('https://pokeapi.co/api/v2/generation').then(res => res.json())
+            .then(data => setGenerations(data.results))
+            .catch(() => showToast("Could not load game generations.", "error"));
     }, []);
     
-    // Pokemon Filtering Effect
+    // Main Filtering Logic Effect
     useEffect(() => {
-        const applyFilters = async () => {
-            let pokemonList = [...allPokemons];
+        const fetchAndFilter = async () => {
+            setIsLoading(true);
+            let pokemonListResult = [];
 
-            // Generation Filter
-            if (selectedGeneration !== 'all') {
-                setIsLoading(true);
-                try {
-                    const response = await fetch(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
-                    const genData = await response.json();
-                    const genPokemonNames = new Set(genData.pokemon_species.map(specie => specie.name));
-                    pokemonList = pokemonList.filter(p => genPokemonNames.has(p.name));
-                } catch(e) {
-                    setError("Could not filter by generation.");
-                    pokemonList = [];
+            try {
+                if (selectedGeneration !== 'all') {
+                    const res = await fetch(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
+                    const data = await res.json();
+                    pokemonListResult = data.pokemon_species.map(p => ({ name: p.name, url: `https://pokeapi.co/api/v2/pokemon/${p.url.split('/')[6]}/`}));
+                } else {
+                    const res = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
+                    const data = await res.json();
+                    pokemonListResult = data.results;
                 }
-                setIsLoading(false);
+
+                if (selectedTypes.size > 0) {
+                    const typePromises = Array.from(selectedTypes).map(type => fetch(`https://pokeapi.co/api/v2/type/${type}`).then(res => res.json()));
+                    const typeResults = await Promise.all(typePromises);
+                    const pokemonSets = typeResults.map(result => new Set(result.pokemon.map(p => p.pokemon.name)));
+                    const intersection = pokemonSets.reduce((acc, set) => new Set([...acc].filter(name => set.has(name))));
+                    pokemonListResult = pokemonListResult.filter(p => intersection.has(p.name));
+                }
+
+                if (searchTerm) {
+                    pokemonListResult = pokemonListResult.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+                }
+            } catch (e) {
+                showToast("Failed to fetch Pokémon data.", "error");
             }
 
-            // Type Filter
-            if (selectedTypes.size > 0) {
-                pokemonList = pokemonList.filter(p => p.types.some(type => selectedTypes.has(type)));
-            }
-            
-            // Search Term Filter
-            if (searchTerm) {
-                pokemonList = pokemonList.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            }
-
-            setFilteredPokemons(pokemonList);
+            setMasterPokemonList(pokemonListResult);
+            setOffset(0);
+            setDisplayedPokemons([]);
+            setHasMore(pokemonListResult.length > 0);
+            setIsLoading(false);
         };
-        
-        applyFilters();
-    }, [searchTerm, selectedTypes, selectedGeneration, allPokemons]);
+
+        fetchAndFilter();
+    }, [selectedGeneration, selectedTypes, searchTerm]);
+
+    // Infinite Scroll Loader
+    const loadMorePokemon = useCallback(async () => {
+        if (isLoadingMore || !hasMore) return;
+        setIsLoadingMore(true);
+
+        const newPokemonsToFetch = masterPokemonList.slice(offset, offset + POKEMON_PER_PAGE);
+
+        if (newPokemonsToFetch.length > 0) {
+            const detailPromises = newPokemonsToFetch.map(p => {
+                const id = p.url.split('/')[6];
+                return pokemonDetailsCache[id] ? Promise.resolve(pokemonDetailsCache[id]) : fetch(p.url).then(res => res.json());
+            });
+
+            const newDetailedPokemons = await Promise.all(detailPromises);
+            
+            const newCacheData = {};
+            const processedPokemons = newDetailedPokemons.map(p => {
+                const pokemonData = { id: p.id, name: p.name, sprite: p.sprites?.front_default || 'https://via.placeholder.com/96', types: p.types.map(t => t.type.name) };
+                if (!pokemonDetailsCache[p.id]) newCacheData[p.id] = pokemonData;
+                return pokemonData;
+            });
+
+            setPokemonDetailsCache(prev => ({...prev, ...newCacheData}));
+            setDisplayedPokemons(prev => [...prev, ...processedPokemons]);
+            setOffset(prev => prev + POKEMON_PER_PAGE);
+            setHasMore(masterPokemonList.length > offset + POKEMON_PER_PAGE);
+        } else {
+            setHasMore(false);
+        }
+
+        setIsLoadingMore(false);
+    }, [masterPokemonList, offset, hasMore, isLoadingMore, pokemonDetailsCache]);
+
+    // Effect to trigger first load when master list changes
+    useEffect(() => {
+        if (masterPokemonList.length > 0) {
+            loadMorePokemon();
+        }
+    }, [masterPokemonList]);
+
+    // Intersection Observer for Infinite Scroll
+    const lastPokemonElementRef = useCallback(node => {
+        if (isLoadingMore) return;
+        if (observer.current) observer.current.disconnect();
+        observer.current = new IntersectionObserver(entries => {
+            if (entries[0].isIntersecting && hasMore) {
+                loadMorePokemon();
+            }
+        }, { root: scrollContainerRef.current }); // Set the scroll container as the root
+        if (node) observer.current.observe(node);
+    }, [isLoadingMore, hasMore, loadMorePokemon]);
 
     // Firestore Listener for Saved Teams
     useEffect(() => {
@@ -182,15 +225,14 @@ export default function App() {
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const teamsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setSavedTeams(teamsData);
-        }, () => setError("Could not load saved teams."));
+        }, () => showToast("Could not load saved teams.", "error"));
         return () => unsubscribe();
     }, [isAuthReady, db, userId]);
 
-    // Team Analysis Effect - REWRITTEN LOGIC
+    // Team Analysis Effect
     useEffect(() => {
         const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
-        
-        if (teamDetails.length !== currentTeam.length || currentTeam.length === 0) {
+        if (teamDetails.length === 0) {
             setTeamAnalysis({ strengths: new Set(), weaknesses: {} });
             return;
         }
@@ -198,37 +240,27 @@ export default function App() {
         const allTypesInChart = Object.keys(typeChart);
         const teamWeaknessCounts = {};
         const offensiveCoverage = new Set();
-
-        // Calculate Offensive Coverage
-        teamDetails.flatMap(details => details.types).forEach(attackerType => {
-            const dealt = typeChart[attackerType]?.damageDealt || {};
-            Object.keys(dealt).forEach(defenderType => {
-                if (dealt[defenderType] > 1) {
-                    offensiveCoverage.add(defenderType);
-                }
-            });
+        
+        teamDetails.flatMap(d => d.types).forEach(type => {
+            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => { if (mult > 1) offensiveCoverage.add(vs); });
         });
 
-        // Calculate Defensive Weaknesses
-        for (const attackingType of allTypesInChart) {
-            let weakPokemonCount = 0;
-            for (const pokemon of teamDetails) {
-                let combinedMultiplier = 1;
-                for (const defendingType of pokemon.types) {
-                    combinedMultiplier *= typeChart[defendingType]?.damageTaken[attackingType] ?? 1;
-                }
-                if (combinedMultiplier > 1) {
-                    weakPokemonCount++;
-                }
-            }
-            if (weakPokemonCount > 0) {
-                teamWeaknessCounts[attackingType] = weakPokemonCount;
-            }
-        }
+        allTypesInChart.forEach(attackingType => {
+            const weakCount = teamDetails.filter(pokemon => {
+                const multi = pokemon.types.reduce((acc, T) => acc * (typeChart[T]?.damageTaken[attackingType] ?? 1), 1);
+                return multi > 1;
+            }).length;
+            if (weakCount > 0) teamWeaknessCounts[attackingType] = weakCount;
+        });
         
         setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
-
     }, [currentTeam, pokemonDetailsCache]);
+    
+    // Derived state for the list of available pokemon (not in current team)
+    const availablePokemons = useMemo(() => {
+        const teamIds = new Set(currentTeam.map(p => p.id));
+        return displayedPokemons.filter(p => !teamIds.has(p.id));
+    }, [displayedPokemons, currentTeam]);
 
     // Handler Functions
     const handleAddPokemonToTeam = (pokemon) => {
@@ -242,10 +274,8 @@ export default function App() {
         if (!db || !userId) return showToast("Database connection not ready.", 'error');
         if (currentTeam.length === 0) return showToast("Your team is empty!", 'warning');
         if (!teamName.trim()) return showToast("Please name your team.", 'warning');
-
         const teamId = editingTeamId || doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
         const teamData = { name: teamName, pokemons: currentTeam.map(p => ({id: p.id, name: p.name, sprite: p.sprite})), isFavorite: savedTeams.find(t => t.id === editingTeamId)?.isFavorite || false, createdAt: new Date().toISOString() };
-        
         try {
             await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
             showToast(`Team "${teamName}" saved!`, 'success');
@@ -283,23 +313,16 @@ export default function App() {
     const sortedTeams = useMemo(() => [...savedTeams].sort((a, b) => (b.isFavorite ? 1 : -1) - (a.isFavorite ? 1 : -1) || new Date(b.createdAt) - new Date(a.createdAt)), [savedTeams]);
     
     // Main Render
-    if (error) return <div className="h-screen w-full flex items-center justify-center bg-red-900 text-red-200 p-4">{error}</div>;
-
     return (
       <div className="min-h-screen text-white font-sans" style={{ backgroundColor: COLORS.background }}>
-        {/* Toasts Container */}
         <div className="fixed top-5 right-5 z-50 space-y-2">
-            {toasts.map(toast => (
-                <div key={toast.id} className={`px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : toast.type === 'error' ? 'bg-red-600' : 'bg-blue-600'}`}>
-                    {toast.message}
-                </div>
-            ))}
+            {toasts.map(toast => ( <div key={toast.id} className={`px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.message}</div> ))}
         </div>
         
         <div className="max-w-[115rem] mx-auto p-4 sm:p-6 lg:p-8">
           <header className="text-center mb-8">
             <h1 className="text-4xl sm:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
-            { <p className="text-2x1 mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
+             { <p className="text-2x1 mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
           </header>
 
           <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -309,13 +332,7 @@ export default function App() {
                 <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Current Team</h2>
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
-                  {currentTeam.map(pokemon => (
-                    <div key={pokemon.id} className="text-center relative group">
-                      <img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-20 w-20" />
-                      <p className="text-xs capitalize truncate">{pokemon.name}</p>
-                      <button onClick={() => handleRemoveFromTeam(pokemon.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button>
-                    </div>
-                  ))}
+                  {currentTeam.map(pokemon => (<div key={pokemon.id} className="text-center relative group"><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{pokemon.name}</p><button onClick={() => handleRemoveFromTeam(pokemon.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
                   {Array.from({ length: 6 - currentTeam.length }).map((_, i) => <div key={i} className="border-2 border-dashed rounded-lg flex items-center justify-center" style={{borderColor: COLORS.cardLight, backgroundColor: 'transparent'}}><span className="text-3xl font-bold" style={{color: COLORS.textMuted}}>?</span></div>)}
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 mt-4">
@@ -324,48 +341,13 @@ export default function App() {
                 </div>
               </section>
               
-              {currentTeam.length > 0 && (
-              <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}>
-                  <h3 className="text-xl font-bold mb-4">Team Analysis</h3>
-                   <div>
-                    <h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (
-                        <div key={type} className="flex items-center"><TypeBadge type={type} /><span className="text-xs text-red-300">({score}x)</span></div>
-                      )) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}
-                    </div>
-                  </div>
-                </section>
-              )}
-
-              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                <h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Saved Teams</h2>
-                <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-                   {sortedTeams.length > 0 ? sortedTeams.map(team => (
-                    <div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}>
-                      <div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p>
-                        <div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                        <button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button>
-                        <button onClick={() => handleLoadTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Load</button>
-                        <button onClick={() => handleDeleteTeam(team.id)} className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full"><TrashIcon /></button>
-                      </div>
-                    </div>
-                  )) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No teams saved yet.</p>}
-                </div>
-              </section>
+              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge key={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team has no common weaknesses!</p>}</div></div></section>)}
+              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h2 className="text-2xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: COLORS.primary}}>Saved Teams</h2><div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">{sortedTeams.length > 0 ? sortedTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleLoadTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Load</button><button onClick={() => handleDeleteTeam(team.id)} className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full"><TrashIcon /></button></div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No teams saved yet.</p>}</div></section>
             </div>
 
             {/* Center Column */}
             <div className="lg:col-span-6">
-              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
+              <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: COLORS.card}}>
                 <div className="mb-4">
                   <h2 className="text-2xl font-bold mb-4">Choose your Pokémon!</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -377,38 +359,29 @@ export default function App() {
                   </div>
                 </div>
                 
-                {isLoading && !filteredPokemons.length ? (
-                   <div className="text-center p-10"><div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style={{borderColor: COLORS.primary}}></div><p className="mt-4">Loading Pokémon...</p></div>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 h-[80vh] overflow-y-auto p-2 custom-scrollbar">
-                    {filteredPokemons.length > 0 ? filteredPokemons.map(pokemon => (
-                      <div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}>
-                        <img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" />
-                        <p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p>
-                         <div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div>
-                         <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div>
-                      </div>
-                    )) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>}
-                  </div>
-                )}
+                <div ref={scrollContainerRef} className="flex-grow h-[60vh] overflow-y-auto custom-scrollbar">
+                    {(isLoading) ? (<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
+                    (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 p-2">
+                        {availablePokemons.length > 0 ? availablePokemons.map((pokemon, index) => (<div ref={availablePokemons.length === index + 1 ? lastPokemonElementRef : null} key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" /><p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p><div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div></div>)) : 
+                        (<p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>)}
+                        {isLoadingMore && <div className="col-span-full text-center p-4">Loading more...</div>}
+                    </div>)}
+                </div>
               </section>
             </div>
 
             {/* Right Column */}
             <div className="lg:col-span-3">
-              <section className="p-6 rounded-xl shadow-lg top-8" style={{backgroundColor: COLORS.card}}>
+              <section className="p-6 rounded-xl shadow-lg sticky top-8" style={{backgroundColor: COLORS.card}}>
                  <h3 className="text-xl font-bold mb-3 text-center">Filter by Type</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                      {Object.keys(typeColors).map(type => (
-                          <button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-xl transition-transform transform hover:scale-110 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} style={{backgroundColor: typeColors[type]}} title={type}>
-                              <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
-                          </button>
-                      ))}
+                  <div className="grid grid-cols-4 gap-2">
+                      {Object.keys(typeColors).map(type => (<button key={type} onClick={() => handleTypeSelection(type)} className={`p-1 rounded-full aspect-square transition-transform transform hover:scale-110 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} style={{backgroundColor: typeColors[type]}} title={type}><img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" /></button>))}
                   </div>
               </section>
             </div>
           </main>
 
+         
           <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
             <p className="text-sm" style={{color: COLORS.textMuted}}>Developed by Enzo Esmeraldo</p>
             <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>
@@ -425,15 +398,8 @@ export default function App() {
           .custom-scrollbar::-webkit-scrollbar { width: 8px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; }
           .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; }
-          @keyframes fade-in-out {
-            0% { opacity: 0; transform: translateY(-10px); }
-            10% { opacity: 1; transform: translateY(0); }
-            90% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-10px); }
-          }
-          .animate-fade-in-out {
-            animation: fade-in-out 3s forwards;
-          }
+          @keyframes fade-in-out { 0% { opacity: 0; transform: translateY(-10px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
+          .animate-fade-in-out { animation: fade-in-out 3s forwards; }
         `}</style>
       </div>
     );
