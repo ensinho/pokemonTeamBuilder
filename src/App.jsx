@@ -93,6 +93,60 @@ const PokemonCard = React.memo(({ pokemon, onAdd, details, lastRef }) => {
     );
 });
 
+const TeamBuilderView = ({
+    currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleSaveTeam, editingTeamId, handleClearTeam,
+    favoriteTeams, setCurrentPage, handleToggleFavorite, handleEditTeam,
+    teamAnalysis,
+    searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
+    isInitialLoading, isFiltering,
+    availablePokemons, pokemonDetailsCache, handleAddPokemonToTeam, lastPokemonElementRef, isFetchingMore, visibleCount,
+    selectedTypes, handleTypeSelection
+}) => (
+    <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="lg:col-span-3 space-y-8"> 
+          <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
+            <h2 className="text-base md:text-lg font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
+            <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
+            <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
+                {currentTeam.map(p => (<div key={p.id} className="text-center relative group"><img src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{p.name}</p><button onClick={() => handleRemoveFromTeam(p.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
+                {Array.from({ length: 6 - currentTeam.length }).map((_, i) => (<div key={i} className="flex items-center justify-center"><img src={POKEBALL_PLACEHOLDER_URL} alt="Empty team slot" className="w-12 h-12 opacity-40"/></div>))}
+              </div>
+            <div className="flex flex-col sm:flex-row gap-2 mt-4">
+              <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
+              <button onClick={handleClearTeam} className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
+            </div>
+          </section>
+          
+          <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><div className="flex justify-between items-center mb-4"><h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'",}}>Favorite Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div><div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">{favoriteTeams.length > 0 ? favoriteTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleEditTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Edit</button></div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No favorite teams yet.</p>}</div></section>
+        </div>
+
+        <div className="lg:col-span-6">
+          <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: COLORS.card}}>
+            <div className="mb-4"><h2 className="text-lg md:text-xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'",}}>Choose your Pokémon!</h2><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/><select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}><option value="all">All Generations</option>{generations.map(gen => <option key={gen.name} value={gen.name} className="capitalize">{gen.name.replace('-', ' ')}</option>)}</select></div></div>
+            <div className="relative flex-grow h-[60vh]">
+              {isInitialLoading ? (<div className="absolute inset-0 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
+              (<>
+                {isFiltering && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-lg"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
+                <div className="h-full overflow-y-auto custom-scrollbar">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
+                      {availablePokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} pokemon={pokemon} details={pokemonDetailsCache[pokemon.id]} onAdd={handleAddPokemonToTeam} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} />)}
+                  </div>
+                  {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
+                  {availablePokemons.length === 0 && !isFiltering && <p className="text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>}
+                </div>
+              </>)}
+            </div>
+          </section>
+        </div>
+
+        <div className="lg:col-span-3 space-y-8">
+          <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h3 className="text-base md:text-lg font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'",}}>Filter by Type</h3><div className="grid grid-cols-4 lg:grid-cols-5 gap-1.5">{Object.keys(typeColors).map(type => (<button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:bg-gray-700/50 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} title={type}><img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" /></button>))}</div></section>
+          {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-lg md:text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge type={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team is rock solid!</p>}</div></div></section>)}
+        </div>
+      </main>
+);
+
+const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm}) => (<div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h2 className="text-2xl md:text-3xl font-bold mb-6">All Saved Teams</h2><input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">{teams.length > 0 ? teams.map(team => (<div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: COLORS.cardLight}}><div className="flex justify-between items-start"><p className="font-bold text-xl truncate mb-2">{team.name}</p><button onClick={() => onToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button></div><div className="flex my-2">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div><div className="flex items-center gap-2 mt-auto pt-2"><button onClick={() => onEdit(team)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Edit</button><button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button></div></div>)) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No teams found.</p>}</div></div>);
 
 // --- Main App Component ---
 export default function App() {
@@ -382,57 +436,38 @@ export default function App() {
             case 'allTeams':
                 return <AllTeamsView teams={allFilteredTeams} onEdit={handleEditTeam} onDelete={handleDeleteTeam} onToggleFavorite={handleToggleFavorite} searchTerm={teamSearchTerm} setSearchTerm={setTeamSearchTerm} />;
             default:
-                return <TeamBuilderView />;
+                return <TeamBuilderView 
+                    currentTeam={currentTeam}
+                    teamName={teamName}
+                    setTeamName={setTeamName}
+                    handleRemoveFromTeam={handleRemoveFromTeam}
+                    handleSaveTeam={handleSaveTeam}
+                    editingTeamId={editingTeamId}
+                    handleClearTeam={handleClearTeam}
+                    favoriteTeams={favoriteTeams}
+                    setCurrentPage={setCurrentPage}
+                    handleToggleFavorite={handleToggleFavorite}
+                    handleEditTeam={handleEditTeam}
+                    teamAnalysis={teamAnalysis}
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    selectedGeneration={selectedGeneration}
+                    setSelectedGeneration={setSelectedGeneration}
+                    generations={generations}
+                    isInitialLoading={isInitialLoading}
+                    isFiltering={isFiltering}
+                    availablePokemons={availablePokemons}
+                    pokemonDetailsCache={pokemonDetailsCache}
+                    handleAddPokemonToTeam={handleAddPokemonToTeam}
+                    lastPokemonElementRef={lastPokemonElementRef}
+                    isFetchingMore={isFetchingMore}
+                    visibleCount={visibleCount}
+                    selectedTypes={selectedTypes}
+                    handleTypeSelection={handleTypeSelection}
+                />;
         }
     }
     
-    const TeamBuilderView = () => (
-        <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-3 space-y-8"> 
-              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                <h2 className="text-base md:text-lg font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
-                <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
-                <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
-                    {currentTeam.map(p => (<div key={p.id} className="text-center relative group"><img src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="mx-auto h-20 w-20" /><p className="text-xs capitalize truncate">{p.name}</p><button onClick={() => handleRemoveFromTeam(p.id)} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
-                    {Array.from({ length: 6 - currentTeam.length }).map((_, i) => (<div key={i} className="flex items-center justify-center"><img src={POKEBALL_PLACEHOLDER_URL} alt="Empty team slot" className="w-12 h-12 opacity-40"/></div>))}
-                  </div>
-                <div className="flex flex-col sm:flex-row gap-2 mt-4">
-                  <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
-                  <button onClick={handleClearTeam} className="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg">Clear</button>
-                </div>
-              </section>
-              
-              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><div className="flex justify-between items-center mb-4"><h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'",}}>Favorite Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div><div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">{favoriteTeams.length > 0 ? favoriteTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleEditTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Edit</button></div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No favorite teams yet.</p>}</div></section>
-            </div>
-
-            <div className="lg:col-span-6">
-              <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: COLORS.card}}>
-                <div className="mb-4"><h2 className="text-lg md:text-xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'",}}>Choose your Pokémon!</h2><div className="grid grid-cols-1 sm:grid-cols-2 gap-4"><input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/><select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}><option value="all">All Generations</option>{generations.map(gen => <option key={gen.name} value={gen.name} className="capitalize">{gen.name.replace('-', ' ')}</option>)}</select></div></div>
-                <div className="relative flex-grow h-[55vh]">
-                  {isInitialLoading ? (<div className="absolute inset-0 flex items-center justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
-                  (<>
-                    {isFiltering && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-lg"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
-                    <div className="h-full overflow-y-auto custom-scrollbar">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
-                          {availablePokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} pokemon={pokemon} details={pokemonDetailsCache[pokemon.id]} onAdd={handleAddPokemonToTeam} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} />)}
-                      </div>
-                      {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
-                      {availablePokemons.length === 0 && !isFiltering && <p className="text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>}
-                    </div>
-                  </>)}
-                </div>
-              </section>
-            </div>
-
-            <div className="lg:col-span-3 space-y-8">
-              <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h3 className="text-base md:text-lg font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'",}}>Filter by Type</h3><div className="grid grid-cols-4 lg:grid-cols-5 gap-1.5">{Object.keys(typeColors).map(type => (<button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:bg-gray-700/50 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} title={type}><img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" /></button>))}</div></section>
-              {currentTeam.length > 0 && (<section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: COLORS.card }}><h3 className="text-lg md:text-xl font-bold mb-4">Team Analysis</h3><div><h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4><div className="flex flex-wrap gap-1">{teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} />) : <p className="text-sm" style={{color: COLORS.textMuted}}>No type advantages found.</p>}</div></div><div className="mt-4"><h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4><div className="flex flex-wrap gap-1">{Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (<div key={type} className="flex items-center"><TypeBadge type={type} /><span className="text-xs text-red-300">({score}x)</span></div>)) : <p className="text-sm" style={{color: COLORS.textMuted}}>Your team is rock solid!</p>}</div></div></section>)}
-            </div>
-          </main>
-    );
-    
-    const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm}) => (<div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h2 className="text-2xl md:text-3xl font-bold mb-6">All Saved Teams</h2><input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">{teams.length > 0 ? teams.map(team => (<div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: COLORS.cardLight}}><div className="flex justify-between items-start"><p className="font-bold text-xl truncate mb-2">{team.name}</p><button onClick={() => onToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button></div><div className="flex my-2">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div><div className="flex items-center gap-2 mt-auto pt-2"><button onClick={() => onEdit(team)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Edit</button><button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button></div></div>)) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No teams found.</p>}</div></div>);
-
     return (
       <div className="min-h-screen text-white font-sans" style={{ backgroundColor: COLORS.background }}>
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.map(toast => ( <div key={toast.id} className={`px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.message}</div> ))}</div>
