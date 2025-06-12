@@ -444,7 +444,7 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div className="flex-grow h-[52vh] overflow-y-auto custom-scrollbar">
+                <div className="flex-grow h-[60vh] overflow-y-auto custom-scrollbar">
                     {(isLoading) ? (<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
                     (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
                         {availablePokemons.slice(0, visibleCount).map((pokemon, index) => {
@@ -499,7 +499,7 @@ export default function App() {
         </div>
         
         <div className="flex min-h-screen">
-            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-58'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
+            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-400 ease-in-out ${isSidebarCollapsed ? 'lg:w-18' : 'w-50'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
                 <div className="flex flex-col h-full">
                     <div className={`flex items-center p-5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
                         <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
