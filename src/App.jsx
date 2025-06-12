@@ -7,24 +7,7 @@ import { getFirestore, collection, doc, setDoc, onSnapshot, deleteDoc, query } f
 const COLORS = { primary: '#7d65e1', background: '#111827', card: '#1F2937', cardLight: '#374151', text: '#FFFFFF', textMuted: '#9CA3AF' };
 const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
 const typeIcons = {
-    normal: "https://archives.bulbagarden.net/media/upload/c/cb/Normal_icon_LA.png?20220213053429", 
-    fire: "https://archives.bulbagarden.net/media/upload/4/48/Fire_icon_LA.png?20220213053749", 
-    water: "https://archives.bulbagarden.net/media/upload/5/5e/Water_icon_LA.png?20220213053800", 
-    electric: "https://archives.bulbagarden.net/media/upload/7/75/Electric_icon_LA.png?20220213053826", 
-    grass: "https://archives.bulbagarden.net/media/upload/1/1b/Grass_icon_LA.png?20220213053815", 
-    ice: "https://archives.bulbagarden.net/media/upload/7/70/Ice_icon_LA.png?20220213053853", 
-    fighting: "https://archives.bulbagarden.net/media/upload/6/68/Fighting_icon_LA.png?20220213053440", 
-    poison: "https://archives.bulbagarden.net/media/upload/b/b4/Poison_icon_LA.png?20220213053545", 
-    ground: "https://archives.bulbagarden.net/media/upload/4/45/Ground_icon_LA.png?20220213053610", 
-    flying: "https://archives.bulbagarden.net/media/upload/d/de/Flying_icon_LA.png?20220213053533", 
-    psychic: "https://archives.bulbagarden.net/media/upload/4/45/Psychic_icon_LA.png?20220213053708", 
-    bug: "https://archives.bulbagarden.net/media/upload/2/26/Bug_icon_LA.png?20220213053628", 
-    rock: "https://archives.bulbagarden.net/media/upload/8/85/Rock_icon_LA.png?20220213053620", 
-    ghost: "https://archives.bulbagarden.net/media/upload/b/b5/Ghost_icon_LA.png?20220213053637", 
-    dragon: "https://archives.bulbagarden.net/media/upload/2/28/Dragon_icon_LA.png?20220213053915", 
-    dark: "https://archives.bulbagarden.net/media/upload/7/7f/Dark_icon_LA.png?20220213053921", 
-    steel: "https://archives.bulbagarden.net/media/upload/f/f9/Steel_icon_LA.png?20220213053740", 
-    fairy: "https://archives.bulbagarden.net/media/upload/b/b1/Fairy_icon_LA.png?20220213053936"
+    normal: "https://archives.bulbagarden.net/media/upload/c/cb/Normal_icon_LA.png?20220213053429", fire: "https://archives.bulbagarden.net/media/upload/4/48/Fire_icon_LA.png?20220213053749", water: "https://archives.bulbagarden.net/media/upload/5/5e/Water_icon_LA.png?20220213053800", electric: "https://archives.bulbagarden.net/media/upload/7/75/Electric_icon_LA.png?20220213053826", grass: "https://archives.bulbagarden.net/media/upload/1/1b/Grass_icon_LA.png?20220213053815", ice: "https://archives.bulbagarden.net/media/upload/7/70/Ice_icon_LA.png?20220213053853", fighting: "https://archives.bulbagarden.net/media/upload/6/68/Fighting_icon_LA.png?20220213053440", poison: "https://archives.bulbagarden.net/media/upload/b/b4/Poison_icon_LA.png?20220213053545", ground: "https://archives.bulbagarden.net/media/upload/4/45/Ground_icon_LA.png?20220213053610", flying: "https://archives.bulbagarden.net/media/upload/d/de/Flying_icon_LA.png?20220213053533", psychic: "https://archives.bulbagarden.net/media/upload/4/45/Psychic_icon_LA.png?20220213053708", bug: "https://archives.bulbagarden.net/media/upload/2/26/Bug_icon_LA.png?20220213053628", rock: "https://archives.bulbagarden.net/media/upload/8/85/Rock_icon_LA.png?20220213053620", ghost: "https://archives.bulbagarden.net/media/upload/b/b5/Ghost_icon_LA.png?20220213053637", dragon: "https://archives.bulbagarden.net/media/upload/2/28/Dragon_icon_LA.png?20220213053915", dark: "https://archives.bulbagarden.net/media/upload/7/7f/Dark_icon_LA.png?20220213053921", steel: "https://archives.bulbagarden.net/media/upload/f/f9/Steel_icon_LA.png?20220213053740", fairy: "https://archives.bulbagarden.net/media/upload/b/b1/Fairy_icon_LA.png?20220213053936"
 };
 const typeChart = {
     normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
@@ -361,7 +344,7 @@ export default function App() {
                   </div>
                 </div>
                 
-                <div className="flex-grow h-[60vh] overflow-y-auto custom-scrollbar">
+                <div className="flex-grow h-[52vh] overflow-y-auto custom-scrollbar">
                     {(isLoading) ? (<div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>) : 
                     (<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
                         {availablePokemons.length > 0 ? availablePokemons.map((pokemon) => (<div key={pokemon.id} className="rounded-lg p-3 text-center cursor-pointer hover:shadow-xl transform hover:-translate-y-1 transition-all group relative" style={{backgroundColor: COLORS.cardLight}} onClick={() => handleAddPokemonToTeam(pokemon)}><img src={pokemon.sprite} alt={pokemon.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" /><p className="mt-2 text-sm font-semibold capitalize">{pokemon.name}</p><div className="flex justify-center items-center mt-1 gap-1">{pokemon.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}</div><div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"><div className="bg-blue-500 text-white rounded-full p-1"><PlusIcon/></div></div></div>)) : 
@@ -373,7 +356,7 @@ export default function App() {
 
             {/* Right Column */}
             <div className="lg:col-span-3">
-              <section className="p-6 rounded-xl shadow-lg sticky top-8" style={{backgroundColor: COLORS.card}}>
+              <section className="p-6 rounded-xl shadow-lg top-8" style={{backgroundColor: COLORS.card}}>
                  <h3 className="text-lg md:text-xl font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'",}}>Filter by Type</h3>
                   <div className="grid grid-cols-4 gap-2">
                       {Object.keys(typeColors).map(type => (<button key={type} onClick={() => handleTypeSelection(type)} className={`p-2 rounded-lg bg-transparent transition-colors hover:bg-gray-700/50 ${selectedTypes.has(type) ? 'ring-2 ring-white' : ''}`} title={type}><img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" /></button>))}
@@ -458,11 +441,8 @@ export default function App() {
             </div>
         </div>
         <style>{`
-          html {
-            scroll-behavior: smooth;
-          }
           @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-          .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+          .custom-scrollbar::-webkit-scrollbar { width: 10px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; }
           .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; }
           @keyframes fade-in-out { 0% { opacity: 0; transform: translateY(-10px); } 10% { opacity: 1; transform: translateY(0); } 90% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-10px); } }
