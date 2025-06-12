@@ -56,8 +56,10 @@ const SaveIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 
 const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /> </svg> );
 const MenuIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>);
 const CloseIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
-const BuilderIcon = () => ( <svg className="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>);
-const AllTeamsIcon = () => (<svg className="w-6 h-6 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>);
+const BuilderIcon = () => ( <svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>);
+const AllTeamsIcon = () => (<svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>);
+const CollapseLeftIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>);
+const CollapseRightIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>);
 const TypeBadge = ({ type }) => ( <span className="text-xs font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full text-white shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
 // --- Firebase Config ---
@@ -94,6 +96,7 @@ export default function App() {
     const [toasts, setToasts] = useState([]);
     const [currentPage, setCurrentPage] = useState('builder');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
 
 
@@ -166,12 +169,17 @@ export default function App() {
             try {
                 // Filter by Generation
                 if (selectedGeneration !== 'all') {
-                    const res = await fetch(`https://pokeapi.co/api/v2/generation/${selectedGeneration}`);
-                    const data = await res.json();
-                    const genPokemonNames = new Set(data.pokemon_species.map(p => p.name));
-                    pokemonListResult = pokemonListResult.filter(p => genPokemonNames.has(p.name));
+                    const generationRanges = {
+                        'generation-i': [1, 151], 'generation-ii': [152, 251], 'generation-iii': [252, 386],
+                        'generation-iv': [387, 493], 'generation-v': [494, 649], 'generation-vi': [650, 721],
+                        'generation-vii': [722, 809], 'generation-viii': [810, 905], 'generation-ix': [906, 1025],
+                    };
+                    const range = generationRanges[selectedGeneration];
+                    if(range){
+                        pokemonListResult = allPokemons.filter(p => p.id >= range[0] && p.id <= range[1]);
+                    }
                 }
-
+                
                 // Filter by Type
                 if (selectedTypes.size > 0) {
                     pokemonListResult = pokemonListResult.filter(p => 
@@ -405,24 +413,31 @@ export default function App() {
             {toasts.map(toast => ( <div key={toast.id} className={`px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.message}</div> ))}
         </div>
         
-        <div className="flex">
+        <div className="flex min-h-screen">
             {/* Sidebar */}
-            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 w-56 transition-transform transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
-                <nav className="p-5">
-                    <h2 className="text-xl md:text-2xl font-bold mb-6" style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
-                    <ul>
-                        <li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''}`}><BuilderIcon /> Team Builder</button></li>
-                        <li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''}`}><AllTeamsIcon /> All Teams</button></li>
-                    </ul>
-                </nav>
+            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}>
+                <div className="flex flex-col h-full">
+                    <div className={`flex items-center p-5 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+                        <h2 className={`text-xl md:text-2xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2>
+                        <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>
+                            {isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}
+                        </button>
+                    </div>
+                    <nav className="px-5 flex-grow">
+                        <ul>
+                            <li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><BuilderIcon /> <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`}>Team Builder</span></button></li>
+                            <li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full text-left p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`ml-3 transition-opacity duration-200 ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`}>All Teams</span></button></li>
+                        </ul>
+                    </nav>
+                </div>
             </aside>
             
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
                 <header className="text-center py-4 px-4">
                     <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden absolute top-5 left-5 p-2 rounded-md" style={{backgroundColor: COLORS.cardLight}}>
                        {isSidebarOpen ? <CloseIcon/> : <MenuIcon />}
                     </button>
-                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
+                    <h1 className="text-xl sm:text-3xl lg:text-5xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>Pokémon Team Builder</h1>
                     { <p className="text-sm sm:text-base md:text-lg mt-2"  style={{ fontFamily: "'Press Start 2P', cursive", color: COLORS.primary }}>By: Enzo Esmeraldo</p>}
                 </header>
 
@@ -443,6 +458,9 @@ export default function App() {
             </div>
         </div>
         <style>{`
+          html {
+            scroll-behavior: smooth;
+          }
           @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
           .custom-scrollbar::-webkit-scrollbar { width: 8px; }
           .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; }
