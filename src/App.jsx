@@ -40,6 +40,7 @@ const SaveIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 
 const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /> </svg> );
 const MenuIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>);
 const CloseIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
+const InfoIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>);
 const PokeballIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24"  height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-pokeball shrink-0"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M3 12h6" /><path d="M15 12h6" /></svg>);
 const AllTeamsIcon = () => (<svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>);
 const CollapseLeftIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>);
@@ -70,12 +71,12 @@ const useDebounce = (value, delay) => {
 const PokemonCard = React.memo(({ pokemon, onAdd, onShowDetails, details, lastRef }) => {
     const handleCardClick = (e) => {
         e.stopPropagation();
-        onShowDetails(details);
+        onAdd(details);
     };
 
-    const handleAddClick = (e) => {
+    const handleInfoClick = (e) => {
         e.stopPropagation();
-        onAdd(details);
+        onShowDetails(details);
     };
 
     if (!details) {
@@ -91,18 +92,40 @@ const PokemonCard = React.memo(({ pokemon, onAdd, onShowDetails, details, lastRe
     }
 
     return (
-        <div className="rounded-lg p-3 text-center group relative" style={{backgroundColor: COLORS.cardLight}}>
-            <div ref={lastRef} onClick={handleCardClick} className="cursor-pointer">
-                <img src={details.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={details.name} className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform" />
-                <p className="mt-2 text-sm font-semibold capitalize">{details.name}</p>
-                <div className="flex justify-center items-center mt-1 gap-1">
-                    {details.types.map(type => <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5"/>)}
-                </div>
-            </div>
-            <button onClick={handleAddClick} className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-500 text-white rounded-full p-1 hover:bg-blue-600">
-                <PlusIcon/>
-            </button>
+       <div
+        ref={lastRef}
+        onClick={handleCardClick}
+        className="rounded-lg p-3 text-center group relative cursor-pointer"
+        style={{ backgroundColor: COLORS.cardLight }}
+        >
+        <img
+            src={details.sprite || POKEBALL_PLACEHOLDER_URL}
+            onError={(e) => {
+            e.currentTarget.src = POKEBALL_PLACEHOLDER_URL;
+            }}
+            alt={details.name}
+            className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform"
+        />
+        <p className="mt-2 text-sm font-semibold capitalize">{details.name}</p>
+        <div className="flex justify-center items-center mt-1 gap-1">
+            {details.types.map((type) => (
+            <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5" />
+            ))}
         </div>
+        <button
+            onClick={handleInfoClick}
+            className={`
+            absolute top-2 left-2 text-gray-400 hover:text-white transition-colors
+            opacity-100     
+            lg:opacity-0    
+            lg:group-hover:opacity-100 
+            lg:transition-opacity
+            `}
+        >
+            <InfoIcon />
+        </button>
+        </div>
+
     );
 });
 
@@ -169,8 +192,39 @@ const TeamBuilderView = ({
           <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
             <h2 className="text-base md:text-lg font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: COLORS.primary}}>Current Team</h2>
             <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
-            <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4" style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
-                {currentTeam.map(p => (<div key={p.id} className="text-center relative group" onClick={() => showDetails(p)}><img src={p.animatedSprite || p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = p.sprite || POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="mx-auto h-20 w-20 cursor-pointer" /><p className="text-xs capitalize truncate">{p.name}</p><button onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }} className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-sm">X</button></div>))}
+            <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4 " style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
+                {currentTeam.map(p => (
+                    <div key={p.id} className="text-center relative group cursor-pointer">
+                        <img
+                        src={p.animatedSprite || p.sprite || POKEBALL_PLACEHOLDER_URL}
+                        onError={(e) => { e.currentTarget.src = p.sprite || POKEBALL_PLACEHOLDER_URL }}
+                        alt={p.name}
+                        className="mx-auto h-20 w-20"
+                        />
+                        <p className="text-xs capitalize truncate">{p.name}</p>
+
+                        <button
+                        onClick={(e) => { e.stopPropagation(); showDetails(p); }}
+                        className="absolute top-1 left-1 bg-gray-700 bg-opacity-50 text-white rounded-full h-5 w-5 flex items-center justify-center transition-opacity text-sm"
+                        >
+                        <InfoIcon />
+                        </button>
+
+                        <button
+                        onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }}
+                        className="
+                            absolute top-1 right-1 bg-red-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-sm
+                            opacity-100 visible
+                            lg:opacity-0 lg:invisible
+                            lg:group-hover:opacity-100 lg:group-hover:visible
+                            transition-opacity duration-200
+                        "
+                        >
+                        X
+                        </button>
+                    </div>
+                    ))}
+
                 {Array.from({ length: 6 - currentTeam.length }).map((_, i) => (<div key={i} className="flex items-center justify-center"><img src={POKEBALL_PLACEHOLDER_URL} alt="Empty team slot" className="w-12 h-12 opacity-40"/></div>))}
               </div>
             <div className="flex items-center gap-2 mt-4">
@@ -288,7 +342,7 @@ export default function App() {
                 setPokemonDetailsCache(prev => ({...prev, ...teamPokemonDetails.reduce((acc, p) => ({...acc, [p.id]: p}), {})}));
                 setCurrentTeam(teamPokemonDetails.filter(Boolean));
                 setTeamName(teamData.name);
-                setEditingTeamId(null); // It's a shared team, not the user's saved one
+                setEditingTeamId(null); 
                 showToast(`Loaded team: ${teamData.name}`, "success");
             } else {
                 showToast("Shared team not found.", "error");
