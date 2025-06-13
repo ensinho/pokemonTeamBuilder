@@ -695,17 +695,35 @@ export default function App() {
         <div className="flex min-h-screen">
           <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
             <div className="flex-1 min-w-0">
-                <header className="relative flex items-center justify-center pt-4 px-4 h-24">
-                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="lg:hidden absolute top-1/2 -translate-y-1/2 left-5 p-2 rounded-md" style={{backgroundColor: COLORS.cardLight}}>
-                       {isSidebarOpen ? <CloseIcon/> : <MenuIcon />}
-                    </button>
-                    <div className="text-center">
-                        <h1 className="text-base sm:text-xl lg:text-3xl font-bold tracking-wider" style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}>Pokémon Team Builder</h1>
-                        <p className="text-sm sm:text-base md:text-lg mt-2" style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}>By: Enzo Esmeraldo</p>
-                    </div>
+            <header className="relative flex items-center justify-between pt-4 px-4 h-24">
+                <button
+                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    className="lg:hidden p-2 rounded-md"
+                    style={{ backgroundColor: COLORS.cardLight }}
+                >
+                    {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
+                </button>
+
+                <div className="flex-1 text-center px-2 overflow-hidden">
+                    <h1
+                    className="text-base sm:text-xl lg:text-3xl font-bold tracking-wider truncate"
+                    style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
+                    >
+                    Pokémon Team Builder
+                    </h1>
+                    <p
+                    className="text-xs sm:text-sm md:text-base mt-1 truncate"
+                    style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
+                    >
+                    By: Enzo Esmeraldo
+                    </p>
+                </div>
+
+                <div className="w-10 lg:hidden" />
                 </header>
+
                 <div className="p-4 sm:p-6 lg:p-8">{renderPage()}</div>
-                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}><p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by Enzo Esmeraldo</p><p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p><div className="flex justify-center gap-4 mt-4"><a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a><a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a></div></footer>
+                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}><p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p><p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p><div className="flex justify-center gap-4 mt-4"><a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a><a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a></div></footer>
             </div>
         </div>
         <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } `}</style>
