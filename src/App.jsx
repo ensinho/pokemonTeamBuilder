@@ -518,6 +518,7 @@ export default function App() {
         return unsubscribe;
     }, [userId, db]);
 
+    // --- CHANGE: Updated Team Analysis logic ---
     useEffect(() => {
         const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
         if (teamDetails.length < currentTeam.length || teamDetails.length === 0) {
@@ -529,24 +530,31 @@ export default function App() {
         const teamWeaknessCounts = {};
         const offensiveCoverage = new Set();
         
-        // --- CHANGE: Corrected case-sensitivity for offensive coverage calculation ---
         teamDetails.flatMap(d => d.types).forEach(type => {
-            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => { if (mult > 1) offensiveCoverage.add(vs.toLowerCase()); });
+            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => { 
+                if (mult > 1) offensiveCoverage.add(vs.toLowerCase()); 
+            });
         });
 
         Object.keys(typeChart).forEach(attackingType => {
             const capitalizedAttackingType = attackingType.charAt(0).toUpperCase() + attackingType.slice(1);
-            let pokemonWeakToType = 0;
+            let weakCount = 0;
+            let immunityCount = 0;
+
             teamDetails.forEach(pokemon => {
-                const typeMultiplier = pokemon.types.reduce((multiplier, pokemonType) => {
-                    return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedAttackingType] ?? 1);
+                const multiplier = pokemon.types.reduce((acc, pokemonType) => {
+                    return acc * (typeChart[pokemonType]?.damageTaken[capitalizedAttackingType] ?? 1);
                 }, 1);
-                if (typeMultiplier > 1) {
-                    pokemonWeakToType++;
+
+                if (multiplier > 1) {
+                    weakCount++;
+                } else if (multiplier === 0) {
+                    immunityCount++;
                 }
             });
-            if (pokemonWeakToType > 0) {
-                teamWeaknessCounts[attackingType] = pokemonWeakToType;
+            
+            if (weakCount > 0 && weakCount > immunityCount) {
+                teamWeaknessCounts[attackingType] = weakCount;
             }
         });
         setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
@@ -559,13 +567,16 @@ export default function App() {
                 if (details) {
                     const resistsWeakness = weaknessTypes.some(weakType => {
                         const capitalizedWeakType = weakType.charAt(0).toUpperCase() + weakType.slice(1);
-                        return details.types.some(pokemonType => (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1) < 1)
+                        const typeMultiplier = details.types.reduce((multiplier, pokemonType) => {
+                            return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1);
+                        }, 1);
+                        return typeMultiplier < 1;
                     });
                     if (resistsWeakness) {
                         suggestions.add(pokemon.id);
                     }
                 }
-                if(suggestions.size >= 10) break; 
+                if(suggestions.size >= 24) break; 
             }
             setSuggestedPokemonIds(suggestions);
         } else {
