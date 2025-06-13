@@ -2,50 +2,14 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query } from 'firebase/firestore';
-import NormalIcon from "./assets/typeIcons/Normal_icon_LA.png";
-import FireIcon from "./assets/typeIcons/Fire_icon_LA.png";
-import WaterIcon from "./assets/typeIcons/Water_icon_LA.png";
-import ElectricIcon from "./assets/typeIcons/Electric_icon_LA.png";
-import GrassIcon from "./assets/typeIcons/Grass_icon_LA.png";
-import IceIcon from "./assets/typeIcons/Ice_icon_LA.png";
-import FightingIcon from "./assets/typeIcons/Fighting_icon_LA.png";
-import PoisonIcon from "./assets/typeIcons/Poison_icon_LA.png";
-import GroundIcon from "./assets/typeIcons/Ground_icon_LA.png";
-import FlyingIcon from "./assets/typeIcons/Flying_icon_LA.png";
-import PsychicIcon from "./assets/typeIcons/Psychic_icon_LA.png";
-import BugIcon from "./assets/typeIcons/Bug_icon_LA.png";
-import RockIcon from "./assets/typeIcons/Rock_icon_LA.png";
-import GhostIcon from "./assets/typeIcons/Ghost_icon_LA.png";
-import DragonIcon from "./assets/typeIcons/Dragon_icon_LA.png";
-import DarkIcon from "./assets/typeIcons/Dark_icon_LA.png";
-import SteelIcon from "./assets/typeIcons/Steel_icon_LA.png";
-import FairyIcon from "./assets/typeIcons/Fairy_icon_LA.png";
 
 // --- Assets & Data ---
 const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 const COLORS = { primary: '#7d65e1', background: '#111827', card: '#1F2937', cardLight: '#374151', text: '#FFFFFF', textMuted: '#9CA3AF' };
 const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
 const typeIcons = {
-    normal: NormalIcon, 
-    fire: FireIcon, 
-    water: WaterIcon, 
-    electric: ElectricIcon, 
-    grass: GrassIcon, 
-    ice: IceIcon, 
-    fighting: FightingIcon, 
-    poison: PoisonIcon, 
-    ground: GroundIcon, 
-    flying: FlyingIcon, 
-    psychic: PsychicIcon, 
-    bug: BugIcon, 
-    rock: RockIcon, 
-    ghost: GhostIcon, 
-    dragon: DragonIcon, 
-    dark: DarkIcon, 
-    steel: SteelIcon, 
-    fairy: FairyIcon
+    normal: "https://archives.bulbagarden.net/media/upload/c/cb/Normal_icon_LA.png?20220213053429", fire: "https://archives.bulbagarden.net/media/upload/4/48/Fire_icon_LA.png?20220213053749", water: "https://archives.bulbagarden.net/media/upload/5/5e/Water_icon_LA.png?20220213053800", electric: "https://archives.bulbagarden.net/media/upload/7/75/Electric_icon_LA.png?20220213053826", grass: "https://archives.bulbagarden.net/media/upload/1/1b/Grass_icon_LA.png?20220213053815", ice: "https://archives.bulbagarden.net/media/upload/7/70/Ice_icon_LA.png?20220213053853", fighting: "https://archives.bulbagarden.net/media/upload/6/68/Fighting_icon_LA.png?20220213053440", poison: "https://archives.bulbagarden.net/media/upload/b/b4/Poison_icon_LA.png?20220213053545", ground: "https://archives.bulbagarden.net/media/upload/4/45/Ground_icon_LA.png?20220213053610", flying: "https://archives.bulbagarden.net/media/upload/d/de/Flying_icon_LA.png?20220213053533", psychic: "https://archives.bulbagarden.net/media/upload/4/45/Psychic_icon_LA.png?20220213053708", bug: "https://archives.bulbagarden.net/media/upload/2/26/Bug_icon_LA.png?20220213053628", rock: "https://archives.bulbagarden.net/media/upload/8/85/Rock_icon_LA.png?20220213053620", ghost: "https://archives.bulbagarden.net/media/upload/b/b5/Ghost_icon_LA.png?20220213053637", dragon: "https://archives.bulbagarden.net/media/upload/2/28/Dragon_icon_LA.png?20220213053915", dark: "https://archives.bulbagarden.net/media/upload/7/7f/Dark_icon_LA.png?20220213053921", steel: "https://archives.bulbagarden.net/media/upload/f/f9/Steel_icon_LA.png?20220213053740", fairy: "https://archives.bulbagarden.net/media/upload/b/b1/Fairy_icon_LA.png?20220213053936"
 };
-
 const typeChart = {
     normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
     fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
@@ -108,7 +72,7 @@ const useDebounce = (value, delay) => {
 
 
 // --- Helper Components ---
-const PokemonCard = React.memo(({ onAdd, onShowDetails, details, lastRef }) => {
+const PokemonCard = React.memo(({ onAdd, onShowDetails, details, lastRef, isSuggested }) => {
     const handleCardClick = (e) => {
         e.stopPropagation();
         onAdd(details);
@@ -135,9 +99,10 @@ const PokemonCard = React.memo(({ onAdd, onShowDetails, details, lastRef }) => {
        <div
         ref={lastRef}
         onClick={handleCardClick}
-        className="rounded-lg p-3 text-center group relative cursor-pointer"
+        className={`rounded-lg p-3 text-center group relative cursor-pointer transition-all duration-300 ${isSuggested ? 'ring-2 ring-green-400 shadow-lg' : ''}`}
         style={{ backgroundColor: COLORS.cardLight }}
         >
+        {isSuggested && <div className="absolute -top-2 -right-2 text-xs bg-green-500 text-white font-bold py-1 px-2 rounded-full z-10">Suggested</div>}
         <img
             src={details.sprite || POKEBALL_PLACEHOLDER_URL}
             onError={(e) => {
@@ -181,9 +146,9 @@ const StatBar = ({ stat, value }) => {
     );
 };
 
-const PokemonDetailModal = ({ pokemon, onClose, onAdd }) => {
+const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam }) => {
     if (!pokemon) return null;
-
+    
     const isAlreadyOnTeam = currentTeam.some(p => p.id === pokemon.id);
 
     return (
@@ -228,7 +193,8 @@ const TeamBuilderView = ({
     searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
     isInitialLoading, isFiltering,
     availablePokemons, pokemonDetailsCache, handleAddPokemonToTeam, lastPokemonElementRef, isFetchingMore, visibleCount,
-    selectedTypes, handleTypeSelection, showDetails
+    selectedTypes, handleTypeSelection, showDetails,
+    suggestedPokemonIds
 }) => (
     <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-3 space-y-8"> 
@@ -237,7 +203,7 @@ const TeamBuilderView = ({
             <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full text-white p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
             <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4 " style={{backgroundColor: 'rgba(0,0,0,0.2)'}}>
                 {currentTeam.map(p => (
-                    <div key={p.id} className="text-center relative group cursor-pointer">
+                    <div key={p.id} className="text-center relative group cursor-pointer" onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }}>
                         <img
                         src={p.animatedSprite || p.sprite || POKEBALL_PLACEHOLDER_URL}
                         onError={(e) => { e.currentTarget.src = p.sprite || POKEBALL_PLACEHOLDER_URL }}
@@ -289,7 +255,7 @@ const TeamBuilderView = ({
                 {isFiltering && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-lg"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
                 <div className="h-full overflow-y-auto custom-scrollbar">
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
-                      {availablePokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemonDetailsCache[pokemon.id]} onAdd={handleAddPokemonToTeam} onShowDetails={showDetails} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} />)}
+                      {availablePokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemonDetailsCache[pokemon.id]} onAdd={handleAddPokemonToTeam} onShowDetails={showDetails} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} isSuggested={suggestedPokemonIds.has(pokemon.id)} />)}
                   </div>
                   {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
                   {availablePokemons.length === 0 && !isFiltering && <p className="text-center py-8" style={{color: COLORS.textMuted}}>No Pokémon found with these filters. :(</p>}
@@ -345,6 +311,7 @@ export default function App() {
     const [visibleCount, setVisibleCount] = useState(50);
     const [modalPokemon, setModalPokemon] = useState(null);
     const [maxToasts, setMaxToasts] = useState(3);
+    const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
 
     useEffect(() => {
         const handleResize = () => {
@@ -375,7 +342,7 @@ export default function App() {
     [savedTeams]);
     
     const allFilteredTeams = useMemo(() => {
-        let teams = [...savedTeams].sort((a,b) => (b.isFavorite - a.isFavorite) || new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+        let teams = [...savedTeams].sort((a,b) => (b.isFavorite - a.isFavorite) || new Date(b.updatedAt || a.createdAt) - new Date(a.updatedAt || a.createdAt));
         if (teamSearchTerm) {
             teams = teams.filter(team => team.name.toLowerCase().includes(teamSearchTerm.toLowerCase()));
         }
@@ -555,21 +522,24 @@ export default function App() {
         const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
         if (teamDetails.length < currentTeam.length || teamDetails.length === 0) {
             setTeamAnalysis({ strengths: new Set(), weaknesses: {} });
+            setSuggestedPokemonIds(new Set()); 
             return;
         }
         
         const teamWeaknessCounts = {};
         const offensiveCoverage = new Set();
         
+        // --- CHANGE: Corrected case-sensitivity for offensive coverage calculation ---
         teamDetails.flatMap(d => d.types).forEach(type => {
-            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => { if (mult > 1) offensiveCoverage.add(vs); });
+            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => { if (mult > 1) offensiveCoverage.add(vs.toLowerCase()); });
         });
 
         Object.keys(typeChart).forEach(attackingType => {
+            const capitalizedAttackingType = attackingType.charAt(0).toUpperCase() + attackingType.slice(1);
             let pokemonWeakToType = 0;
             teamDetails.forEach(pokemon => {
                 const typeMultiplier = pokemon.types.reduce((multiplier, pokemonType) => {
-                    return multiplier * (typeChart[pokemonType]?.damageTaken[attackingType] ?? 1);
+                    return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedAttackingType] ?? 1);
                 }, 1);
                 if (typeMultiplier > 1) {
                     pokemonWeakToType++;
@@ -580,7 +550,29 @@ export default function App() {
             }
         });
         setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
-    }, [currentTeam, pokemonDetailsCache]);
+
+        const weaknessTypes = Object.keys(teamWeaknessCounts);
+        if (weaknessTypes.length > 0 && allPokemons.length > 0) {
+            const suggestions = new Set();
+            for (const pokemon of allPokemons) {
+                const details = pokemonDetailsCache[pokemon.id];
+                if (details) {
+                    const resistsWeakness = weaknessTypes.some(weakType => {
+                        const capitalizedWeakType = weakType.charAt(0).toUpperCase() + weakType.slice(1);
+                        return details.types.some(pokemonType => (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1) < 1)
+                    });
+                    if (resistsWeakness) {
+                        suggestions.add(pokemon.id);
+                    }
+                }
+                if(suggestions.size >= 10) break; 
+            }
+            setSuggestedPokemonIds(suggestions);
+        } else {
+            setSuggestedPokemonIds(new Set());
+        }
+
+    }, [currentTeam, pokemonDetailsCache, allPokemons]);
 
     const observer = useRef();
     const lastPokemonElementRef = useCallback(node => {
@@ -717,14 +709,14 @@ export default function App() {
                     isInitialLoading={isInitialLoading} isFiltering={isFiltering} availablePokemons={availablePokemons}
                     pokemonDetailsCache={pokemonDetailsCache} handleAddPokemonToTeam={handleAddPokemonToTeam} lastPokemonElementRef={lastPokemonElementRef}
                     isFetchingMore={isFetchingMore} visibleCount={visibleCount} selectedTypes={selectedTypes}
-                    handleTypeSelection={handleTypeSelection} showDetails={showDetails}
+                    handleTypeSelection={handleTypeSelection} showDetails={showDetails} suggestedPokemonIds={suggestedPokemonIds}
                 />;
         }
     }
     
     return (
       <div className="min-h-screen text-white font-sans" style={{ backgroundColor: COLORS.background }}>
-        <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={handleAddPokemonToTeam} />
+        <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={handleAddPokemonToTeam} currentTeam={currentTeam}/>
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
           <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
