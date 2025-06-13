@@ -2,50 +2,14 @@ import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query } from 'firebase/firestore';
-import NormalIcon from "./assets/typeIcons/Normal_icon_LA.png";
-import FireIcon from "./assets/typeIcons/Fire_icon_LA.png";
-import WaterIcon from "./assets/typeIcons/Water_icon_LA.png";
-import ElectricIcon from "./assets/typeIcons/Electric_icon_LA.png";
-import GrassIcon from "./assets/typeIcons/Grass_icon_LA.png";
-import IceIcon from "./assets/typeIcons/Ice_icon_LA.png";
-import FightingIcon from "./assets/typeIcons/Fighting_icon_LA.png";
-import PoisonIcon from "./assets/typeIcons/Poison_icon_LA.png";
-import GroundIcon from "./assets/typeIcons/Ground_icon_LA.png";
-import FlyingIcon from "./assets/typeIcons/Flying_icon_LA.png";
-import PsychicIcon from "./assets/typeIcons/Psychic_icon_LA.png";
-import BugIcon from "./assets/typeIcons/Bug_icon_LA.png";
-import RockIcon from "./assets/typeIcons/Rock_icon_LA.png";
-import GhostIcon from "./assets/typeIcons/Ghost_icon_LA.png";
-import DragonIcon from "./assets/typeIcons/Dragon_icon_LA.png";
-import DarkIcon from "./assets/typeIcons/Dark_icon_LA.png";
-import SteelIcon from "./assets/typeIcons/Steel_icon_LA.png";
-import FairyIcon from "./assets/typeIcons/Fairy_icon_LA.png";
 
 // --- Assets & Data ---
 const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 const COLORS = { primary: '#7d65e1', background: '#111827', card: '#1F2937', cardLight: '#374151', text: '#FFFFFF', textMuted: '#9CA3AF' };
 const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
 const typeIcons = {
-    normal: NormalIcon, 
-    fire: FireIcon, 
-    water: WaterIcon, 
-    electric: ElectricIcon, 
-    grass: GrassIcon, 
-    ice: IceIcon, 
-    fighting: FightingIcon, 
-    poison: PoisonIcon, 
-    ground: GroundIcon, 
-    flying: FlyingIcon, 
-    psychic: PsychicIcon, 
-    bug: BugIcon, 
-    rock: RockIcon, 
-    ghost: GhostIcon, 
-    dragon: DragonIcon, 
-    dark: DarkIcon, 
-    steel: SteelIcon, 
-    fairy: FairyIcon
+    normal: "https://archives.bulbagarden.net/media/upload/c/cb/Normal_icon_LA.png?20220213053429", fire: "https://archives.bulbagarden.net/media/upload/4/48/Fire_icon_LA.png?20220213053749", water: "https://archives.bulbagarden.net/media/upload/5/5e/Water_icon_LA.png?20220213053800", electric: "https://archives.bulbagarden.net/media/upload/7/75/Electric_icon_LA.png?20220213053826", grass: "https://archives.bulbagarden.net/media/upload/1/1b/Grass_icon_LA.png?20220213053815", ice: "https://archives.bulbagarden.net/media/upload/7/70/Ice_icon_LA.png?20220213053853", fighting: "https://archives.bulbagarden.net/media/upload/6/68/Fighting_icon_LA.png?20220213053440", poison: "https://archives.bulbagarden.net/media/upload/b/b4/Poison_icon_LA.png?20220213053545", ground: "https://archives.bulbagarden.net/media/upload/4/45/Ground_icon_LA.png?20220213053610", flying: "https://archives.bulbagarden.net/media/upload/d/de/Flying_icon_LA.png?20220213053533", psychic: "https://archives.bulbagarden.net/media/upload/4/45/Psychic_icon_LA.png?20220213053708", bug: "https://archives.bulbagarden.net/media/upload/2/26/Bug_icon_LA.png?20220213053628", rock: "https://archives.bulbagarden.net/media/upload/8/85/Rock_icon_LA.png?20220213053620", ghost: "https://archives.bulbagarden.net/media/upload/b/b5/Ghost_icon_LA.png?20220213053637", dragon: "https://archives.bulbagarden.net/media/upload/2/28/Dragon_icon_LA.png?20220213053915", dark: "https://archives.bulbagarden.net/media/upload/7/7f/Dark_icon_LA.png?20220213053921", steel: "https://archives.bulbagarden.net/media/upload/f/f9/Steel_icon_LA.png?20220213053740", fairy: "https://archives.bulbagarden.net/media/upload/b/b1/Fairy_icon_LA.png?20220213053936"
 };
-
 const typeChart = {
     normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
     fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
@@ -274,7 +238,7 @@ const TeamBuilderView = ({
               </div>
             <div className="flex items-center gap-2 mt-4">
               <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
-              <button onClick={handleShareTeam} className="p-2 rounded-lg bg-green-600 hover:bg-green-700 text-white" title="Share Team"><ShareIcon /></button>
+              {/* <button onClick={handleShareTeam} className="p-2 rounded-lg bg-green-600 hover:bg-green-700 text-white" title="Share Team"><ShareIcon /></button> */}
               <button onClick={handleClearTeam} className="p-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white" title="Clear Team"><ClearIcon /></button>
             </div>
           </section>
@@ -320,7 +284,6 @@ export default function App() {
     const [allPokemons, setAllPokemons] = useState([]);
     const [filteredPokemons, setFilteredPokemons] = useState([]);
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
-    // --- CHANGE: Added evolution chain cache ---
     const [evolutionChainCache, setEvolutionChainCache] = useState({});
     
     // Filter Controls
@@ -446,20 +409,37 @@ export default function App() {
         }
     }, []);
 
+    // --- CHANGE: Updated initial data fetch to include regional forms ---
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                const [genRes, pokeListRes] = await Promise.all([
-                    fetch('https://pokeapi.co/api/v2/generation'),
-                    fetch('https://pokeapi.co/api/v2/pokemon?limit=1025')
-                ]);
-                const [genData, pokeListData] = await Promise.all([genRes.json(), pokeListRes.json()]);
+                // Fetch all species first to find all varieties
+                const speciesListRes = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1025');
+                const speciesListData = await speciesListRes.json();
+
+                const allVarietyPromises = speciesListData.results.map(species => 
+                    fetch(species.url).then(res => res.json())
+                );
                 
-                setGenerations(genData.results);
-                const pokemonData = pokeListData.results.map(p => ({ id: parseInt(p.url.split('/')[6]), name: p.name, url: p.url }));
+                const allSpeciesData = await Promise.all(allVarietyPromises);
                 
+                const allPokemonUrls = allSpeciesData.flatMap(species => 
+                    species.varieties.map(variety => ({
+                        name: variety.pokemon.name,
+                        url: variety.pokemon.url
+                    }))
+                );
+
+                const uniqueUrls = Array.from(new Map(allPokemonUrls.map(item => [item.url, item])).values());
+                const pokemonData = uniqueUrls.map(p => ({ id: parseInt(p.url.split('/')[6]), name: p.name, url: p.url }));
+
                 setAllPokemons(pokemonData);
                 setFilteredPokemons(pokemonData);
+                
+                const genRes = await fetch('https://pokeapi.co/api/v2/generation');
+                const genData = await genRes.json();
+                setGenerations(genData.results);
+
             } catch (e) {
                 showToast("Failed to load Pokémon data.", "error");
             } finally {
@@ -515,7 +495,6 @@ export default function App() {
         applyFilters();
     }, [selectedGeneration, selectedTypes, debouncedSearchTerm, allPokemons, isInitialLoading]);
 
-    // --- CHANGE: Added fetching for species data to get evolution chain URL ---
     useEffect(() => {
         let isActive = true;
         const fetchVisiblePokemonDetails = async () => {
@@ -562,7 +541,6 @@ export default function App() {
         return unsubscribe;
     }, [userId, db]);
 
-    // --- CHANGE: Reworked team analysis and suggestion logic ---
     useEffect(() => {
         const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
         if (teamDetails.length < currentTeam.length || teamDetails.length === 0) {
@@ -821,7 +799,7 @@ export default function App() {
 
                 <div className="flex-1 text-center px-2 overflow-hidden">
                     <h1
-                    className="text-xs sm:text-base lg:text-3xl font-bold tracking-wider truncate sm:ml-8"
+                    className="text-xs sm:text-base lg:text-3xl font-bold tracking-wider truncate sm:ml-16"
                     style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
                     >
                     Pokémon Team Builder
