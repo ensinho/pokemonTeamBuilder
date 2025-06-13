@@ -45,6 +45,7 @@ const typeIcons = {
     steel: SteelIcon, 
     fairy: FairyIcon
 };
+
 const typeChart = {
     normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
     fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
@@ -319,6 +320,8 @@ export default function App() {
     const [allPokemons, setAllPokemons] = useState([]);
     const [filteredPokemons, setFilteredPokemons] = useState([]);
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
+    // --- CHANGE: Added evolution chain cache ---
+    const [evolutionChainCache, setEvolutionChainCache] = useState({});
     
     // Filter Controls
     const [generations, setGenerations] = useState([]);
@@ -512,24 +515,30 @@ export default function App() {
         applyFilters();
     }, [selectedGeneration, selectedTypes, debouncedSearchTerm, allPokemons, isInitialLoading]);
 
+    // --- CHANGE: Added fetching for species data to get evolution chain URL ---
     useEffect(() => {
         let isActive = true;
         const fetchVisiblePokemonDetails = async () => {
             const pokemonToFetch = availablePokemons.slice(0, visibleCount);
-            const missingDetails = pokemonToFetch.filter(p => !pokemonDetailsCache[p.id]);
+            const missingDetails = pokemonToFetch.filter(p => !pokemonDetailsCache[p.id] || !pokemonDetailsCache[p.id].evolution_chain_url);
 
             if (missingDetails.length === 0) return;
             setIsFetchingMore(true);
 
             try {
                 const newDetailedPokemons = await Promise.all(missingDetails.map(p => fetch(p.url).then(res => res.json())));
+                const speciesPromises = newDetailedPokemons.map(p => fetch(p.species.url).then(res => res.json()));
+                const speciesData = await Promise.all(speciesPromises);
+
                 if (!isActive) return;
-                const newCacheEntries = newDetailedPokemons.reduce((acc, p) => {
+
+                const newCacheEntries = newDetailedPokemons.reduce((acc, p, index) => {
                     acc[p.id] = { 
                         id: p.id, name: p.name, sprite: p.sprites?.front_default, 
                         animatedSprite: p.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default,
                         types: p.types.map(t => t.type.name),
-                        stats: p.stats, abilities: p.abilities
+                        stats: p.stats, abilities: p.abilities,
+                        evolution_chain_url: speciesData[index].evolution_chain.url
                     };
                     return acc;
                 }, {});
@@ -553,7 +562,7 @@ export default function App() {
         return unsubscribe;
     }, [userId, db]);
 
-    // --- CHANGE: Updated Team Analysis logic ---
+    // --- CHANGE: Reworked team analysis and suggestion logic ---
     useEffect(() => {
         const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
         if (teamDetails.length < currentTeam.length || teamDetails.length === 0) {
@@ -574,7 +583,7 @@ export default function App() {
         Object.keys(typeChart).forEach(attackingType => {
             const capitalizedAttackingType = attackingType.charAt(0).toUpperCase() + attackingType.slice(1);
             let weakCount = 0;
-            let immunityCount = 0;
+            let resistanceCount = 0;
 
             teamDetails.forEach(pokemon => {
                 const multiplier = pokemon.types.reduce((acc, pokemonType) => {
@@ -583,42 +592,76 @@ export default function App() {
 
                 if (multiplier > 1) {
                     weakCount++;
-                } else if (multiplier === 0) {
-                    immunityCount++;
+                } else if (multiplier < 1) {
+                    resistanceCount++;
                 }
             });
             
-            if (weakCount > 0 && weakCount > immunityCount) {
+            if (weakCount > 0 && weakCount > resistanceCount) {
                 teamWeaknessCounts[attackingType] = weakCount;
             }
         });
         setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
 
-        const weaknessTypes = Object.keys(teamWeaknessCounts);
-        if (weaknessTypes.length > 0 && allPokemons.length > 0) {
-            const suggestions = new Set();
-            for (const pokemon of allPokemons) {
-                const details = pokemonDetailsCache[pokemon.id];
-                if (details) {
-                    const resistsWeakness = weaknessTypes.some(weakType => {
-                        const capitalizedWeakType = weakType.charAt(0).toUpperCase() + weakType.slice(1);
-                        const typeMultiplier = details.types.reduce((multiplier, pokemonType) => {
-                            return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1);
-                        }, 1);
-                        return typeMultiplier < 1;
-                    });
-                    if (resistsWeakness) {
-                        suggestions.add(pokemon.id);
-                    }
-                }
-                if(suggestions.size >= 24) break; 
+        const generateSuggestions = async () => {
+            const weaknessTypes = Object.keys(teamWeaknessCounts);
+            if (weaknessTypes.length === 0 || allPokemons.length === 0) {
+                setSuggestedPokemonIds(new Set());
+                return;
             }
-            setSuggestedPokemonIds(suggestions);
-        } else {
-            setSuggestedPokemonIds(new Set());
-        }
 
-    }, [currentTeam, pokemonDetailsCache, allPokemons]);
+            const findFinalEvolution = async (chainUrl) => {
+                if (evolutionChainCache[chainUrl]) {
+                    return evolutionChainCache[chainUrl];
+                }
+                try {
+                    const res = await fetch(chainUrl);
+                    const data = await res.json();
+                    let evoData = data.chain;
+                    while (evoData && evoData.evolves_to.length > 0) {
+                        evoData = evoData.evolves_to[0];
+                    }
+                    const finalEvoName = evoData.species.name;
+                    setEvolutionChainCache(prev => ({ ...prev, [chainUrl]: finalEvoName }));
+                    return finalEvoName;
+                } catch {
+                    return null;
+                }
+            };
+            
+            const potentialSuggestions = allPokemons.filter(p => {
+                const details = pokemonDetailsCache[p.id];
+                if (!details) return false;
+
+                return weaknessTypes.some(weakType => {
+                    const capitalizedWeakType = weakType.charAt(0).toUpperCase() + weakType.slice(1);
+                    const typeMultiplier = details.types.reduce((multiplier, pokemonType) => {
+                        return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1);
+                    }, 1);
+                    return typeMultiplier < 1;
+                });
+            });
+
+            const finalEvoPromises = potentialSuggestions.map(async p => {
+                const details = pokemonDetailsCache[p.id];
+                return details?.evolution_chain_url ? await findFinalEvolution(details.evolution_chain_url) : null;
+            });
+
+            const finalEvoNames = await Promise.all(finalEvoPromises);
+            const uniqueFinalEvoNames = [...new Set(finalEvoNames.filter(Boolean))];
+
+            const finalEvoIds = new Set(
+                uniqueFinalEvoNames
+                    .map(name => allPokemons.find(p => p.name === name)?.id)
+                    .filter(Boolean)
+            );
+            
+            setSuggestedPokemonIds(finalEvoIds);
+        };
+
+        generateSuggestions();
+
+    }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
 
     const observer = useRef();
     const lastPokemonElementRef = useCallback(node => {
@@ -778,7 +821,7 @@ export default function App() {
 
                 <div className="flex-1 text-center px-2 overflow-hidden">
                     <h1
-                    className="text-xs sm:text-base lg:text-3xl font-bold tracking-wider truncate"
+                    className="text-xs sm:text-base lg:text-3xl font-bold tracking-wider truncate sm:ml-8"
                     style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
                     >
                     Pokémon Team Builder
