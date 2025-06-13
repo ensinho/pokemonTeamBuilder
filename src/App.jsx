@@ -736,7 +736,7 @@ export default function App() {
 
                 <div className="flex-1 text-center px-2 overflow-hidden">
                     <h1
-                    className="text-base sm:text-xl lg:text-3xl font-bold tracking-wider truncate"
+                    className="text-sm sm:text-base lg:text-3xl font-bold tracking-wider truncate"
                     style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
                     >
                     Pokémon Team Builder
