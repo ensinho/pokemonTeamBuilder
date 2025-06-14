@@ -225,7 +225,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam }) => {
 const TeamBuilderView = ({
     currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleSaveTeam, editingTeamId, handleClearTeam,
     recentTeams, setCurrentPage, handleToggleFavorite, handleEditTeam, handleShareTeam,
-    teamAnalysis,onDelete,
+    teamAnalysis,handleDeleteTeam,
     searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
     isInitialLoading, isFiltering,
     availablePokemons, pokemonDetailsCache, handleAddPokemonToTeam, lastPokemonElementRef, isFetchingMore, visibleCount,
@@ -859,7 +859,7 @@ export default function App() {
                     handleRemoveFromTeam={handleRemoveFromTeam} handleSaveTeam={handleSaveTeam} editingTeamId={editingTeamId}
                     handleClearTeam={handleClearTeam} recentTeams={recentTeams} setCurrentPage={setCurrentPage}
                     handleToggleFavorite={handleToggleFavorite} handleEditTeam={handleEditTeam} handleShareTeam={handleShareTeam}
-                    teamAnalysis={teamAnalysis} searchInput={searchInput} setSearchInput={setSearchInput}  handleDeleteTeam={handleDeleteTeam}
+                    teamAnalysis={teamAnalysis} searchInput={searchInput} setSearchInput={setSearchInput} 
                     selectedGeneration={selectedGeneration} setSelectedGeneration={setSelectedGeneration} generations={generations}
                     isInitialLoading={isInitialLoading} isFiltering={isFiltering} availablePokemons={availablePokemons}
                     pokemonDetailsCache={pokemonDetailsCache} handleAddPokemonToTeam={handleAddPokemonToTeam} lastPokemonElementRef={lastPokemonElementRef}
