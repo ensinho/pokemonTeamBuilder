@@ -287,7 +287,7 @@ const TeamBuilderView = ({
           
           <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><div className="flex justify-between items-center mb-4"><h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'",}}>Recent Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div><div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">{recentTeams.length > 0 ? recentTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleEditTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Edit</button>
           {/* --- CHANGE: Added Delete button to Recent Teams list --- */}
-          <button onClick={() => handleDeleteTeam(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
+          <button  onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
           </div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No recent teams yet.</p>}</div></section>
         </div>
 
@@ -317,7 +317,23 @@ const TeamBuilderView = ({
       </main>
 );
 
-const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm}) => (<div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h2 className="text-2xl md:text-3xl font-bold mb-6">All Saved Teams</h2><input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">{teams.length > 0 ? teams.map(team => (<div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: COLORS.cardLight}}><div className="flex justify-between items-start"><p className="font-bold text-xl truncate mb-2">{team.name}</p><button onClick={() => onToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button></div><div className="flex my-2">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div><div className="flex items-center gap-2 mt-auto pt-2"><button onClick={() => onEdit(team)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Edit</button><button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button></div></div>)) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No teams found.</p>}</div></div>);
+const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm}) => 
+    (<div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
+        <h2 className="text-2xl md:text-3xl font-bold mb-6">All Saved Teams</h2>
+        <input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">{teams.length > 0 ? teams.map(team => (<div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: COLORS.cardLight}}>
+            <div className="flex justify-between items-start">
+                <p className="font-bold text-xl truncate mb-2">{team.name}</p><button onClick={() => onToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button>
+                </div>
+                <div className="flex my-2">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}
+                </div>
+                <div className="flex items-center gap-2 mt-auto pt-2"><button onClick={() => onEdit(team)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Edit
+                    </button>
+                    <button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
+                        <TrashIcon />
+                        </button>
+                        </div>
+                    </div>)) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No teams found.</p>}</div></div>);
 
 // --- Main App Component ---
 export default function App() {
