@@ -858,7 +858,7 @@ export default function App() {
                     currentTeam={currentTeam} teamName={teamName} setTeamName={setTeamName}
                     handleRemoveFromTeam={handleRemoveFromTeam} handleSaveTeam={handleSaveTeam} editingTeamId={editingTeamId}
                     handleClearTeam={handleClearTeam} recentTeams={recentTeams} setCurrentPage={setCurrentPage}
-                    handleToggleFavorite={handleToggleFavorite} handleEditTeam={handleEditTeam} handleShareTeam={handleShareTeam}
+                    handleToggleFavorite={handleToggleFavorite} handleEditTeam={handleEditTeam} handleDeleteTeam={handleDeleteTeam} handleShareTeam={handleShareTeam}
                     teamAnalysis={teamAnalysis} searchInput={searchInput} setSearchInput={setSearchInput} 
                     selectedGeneration={selectedGeneration} setSelectedGeneration={setSelectedGeneration} generations={generations}
                     isInitialLoading={isInitialLoading} isFiltering={isFiltering} availablePokemons={availablePokemons}
