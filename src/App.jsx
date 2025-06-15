@@ -795,7 +795,7 @@ export default function App() {
         } catch (e) { showToast("Error saving team.", 'error'); }
     }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
 
-    const handleLike = useCallback(async () => {
+        const handleLike = useCallback(async () => {
         if (!db || hasLiked || !isAuthReady) return; 
         
         const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
