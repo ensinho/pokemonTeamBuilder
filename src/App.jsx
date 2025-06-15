@@ -46,7 +46,6 @@ const typeIcons = {
     fairy: FairyIcon
 };
 
-
 const typeChart = {
     normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
     fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
@@ -354,6 +353,8 @@ export default function App() {
     const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
     const [likeCount, setLikeCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
+    // --- CHANGE: Added state to prevent infinite shared team loading ---
+    const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -400,7 +401,8 @@ export default function App() {
     }, [savedTeams, teamSearchTerm]);
     
     const fetchAndSetSharedTeam = useCallback(async (teamId) => {
-        if(!db) return;
+        if(!db || sharedTeamLoaded) return;
+        setSharedTeamLoaded(true); // --- CHANGE: Prevent re-fetching
         showToast("Loading shared team...", "info");
         const teamDocRef = doc(db, `artifacts/${appId}/public/data/teams`, teamId);
         try {
@@ -426,7 +428,7 @@ export default function App() {
         } catch (error) {
             showToast("Failed to load shared team.", "error");
         }
-    }, [db, pokemonDetailsCache, showToast]);
+    }, [db, pokemonDetailsCache, showToast, sharedTeamLoaded]);
 
     useEffect(() => {
         try {
@@ -765,6 +767,11 @@ export default function App() {
         if (currentTeam.length === 0) return showToast("Your team is empty!", 'warning');
         if (!teamName.trim()) return showToast("Please name your team.", 'warning');
         
+        // --- CHANGE: Added check for duplicate team names ---
+        if (savedTeams.some(team => team.name === teamName && team.id !== editingTeamId)) {
+            return showToast("A team with this name already exists.", "warning");
+        }
+
         const teamId = editingTeamId || doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
         const teamData = { name: teamName, pokemons: currentTeam.map(p => ({id: p.id, name: p.name, sprite: p.sprite})), isFavorite: savedTeams.find(t => t.id === editingTeamId)?.isFavorite || false, createdAt: savedTeams.find(t => t.id === editingTeamId)?.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() };
         
@@ -776,7 +783,7 @@ export default function App() {
     }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
 
     const handleLike = useCallback(async () => {
-        if (!db || hasLiked || !userId) return; // --- CHANGE: Guard added to prevent action before auth is ready
+        if (!db || hasLiked || !userId) return; 
         
         const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
@@ -791,7 +798,7 @@ export default function App() {
     }, [db, hasLiked, showToast, userId]);
 
     const handleShareTeam = useCallback(async () => {
-        if (!db || !userId) return showToast("Database not ready.", "error"); // --- CHANGE: Guard added to prevent action before auth is ready
+        if (!db || !userId) return showToast("Database not ready.", "error"); 
         if (currentTeam.length === 0) return showToast("Cannot share an empty team!", "warning");
         
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
