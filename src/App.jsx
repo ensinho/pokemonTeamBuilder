@@ -909,7 +909,7 @@ export default function App() {
                     {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
                 </button>
 
-                <div className="flex-1 text-center px-2 overflow-hidden">
+                <div className="flex-1 text-center px-2 marginLeft">
                     <h1
                     className="text-sm sm:text-base lg:text-3xl font-bold tracking-wider truncate"
                     style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
@@ -930,7 +930,7 @@ export default function App() {
                 <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}><p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p><div className="flex justify-center gap-4 mt-4"><button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg><span>{likeCount}</span></button><a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a><a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a></div><p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p></footer>
             </div>
         </div>
-        <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } `}</style>
+        <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } .marginLeft { margin-left: 0.65rem !important } `}</style>
       </div>
     );
 }
