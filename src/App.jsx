@@ -288,8 +288,8 @@ const TeamBuilderView = ({
                     <div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div>
                     </div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} />
                 </button>
-                <button onClick={() => handleEditTeam(team)} className="bg-purple-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Edit</button>
-            <button onClick={() => handleDeleteTeam(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
+                <button onClick={() => handleEditTeam(team)} className="text-white text-xs font-bold py-1 px-3 rounded-full" style={{backgroundColor: COLORS.primary, color: COLORS.background}} >Edit</button>
+            <button onClick={() => handleDeleteTeam(team.id)} className="bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
             </div>
             </div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No recent teams yet.</p>}</div></section>
         </div>
@@ -726,7 +726,7 @@ export default function App() {
     }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
 
     useEffect(() => {
-        if (!db || !isAuthReady) return; // --- CHANGE: Guard added for auth readiness ---
+        if (!db || !isAuthReady) return; 
         
         const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
@@ -796,7 +796,7 @@ export default function App() {
     }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
 
     const handleLike = useCallback(async () => {
-        if (!db || hasLiked || !isAuthReady) return; // --- CHANGE: Guard added for auth readiness ---
+        if (!db || hasLiked || !isAuthReady) return; 
         
         const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
@@ -811,7 +811,7 @@ export default function App() {
     }, [db, hasLiked, showToast, isAuthReady]);
 
     const handleShareTeam = useCallback(async () => {
-        if (!db || !isAuthReady) return showToast("Database not ready.", "error"); // --- CHANGE: Guard added for auth readiness ---
+        if (!db || !isAuthReady) return showToast("Database not ready.", "error"); 
         if (currentTeam.length === 0) return showToast("Cannot share an empty team!", "warning");
         
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
