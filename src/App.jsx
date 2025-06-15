@@ -1,51 +1,15 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query } from 'firebase/firestore';
-import NormalIcon from "./assets/typeIcons/Normal_icon_LA.png";
-import FireIcon from "./assets/typeIcons/Fire_icon_LA.png";
-import WaterIcon from "./assets/typeIcons/Water_icon_LA.png";
-import ElectricIcon from "./assets/typeIcons/Electric_icon_LA.png";
-import GrassIcon from "./assets/typeIcons/Grass_icon_LA.png";
-import IceIcon from "./assets/typeIcons/Ice_icon_LA.png";
-import FightingIcon from "./assets/typeIcons/Fighting_icon_LA.png";
-import PoisonIcon from "./assets/typeIcons/Poison_icon_LA.png";
-import GroundIcon from "./assets/typeIcons/Ground_icon_LA.png";
-import FlyingIcon from "./assets/typeIcons/Flying_icon_LA.png";
-import PsychicIcon from "./assets/typeIcons/Psychic_icon_LA.png";
-import BugIcon from "./assets/typeIcons/Bug_icon_LA.png";
-import RockIcon from "./assets/typeIcons/Rock_icon_LA.png";
-import GhostIcon from "./assets/typeIcons/Ghost_icon_LA.png";
-import DragonIcon from "./assets/typeIcons/Dragon_icon_LA.png";
-import DarkIcon from "./assets/typeIcons/Dark_icon_LA.png";
-import SteelIcon from "./assets/typeIcons/Steel_icon_LA.png";
-import FairyIcon from "./assets/typeIcons/Fairy_icon_LA.png";
+import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, increment } from 'firebase/firestore';
 
 // --- Assets & Data ---
 const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 const COLORS = { primary: '#7d65e1', background: '#111827', card: '#1F2937', cardLight: '#374151', text: '#FFFFFF', textMuted: '#9CA3AF' };
 const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
 const typeIcons = {
-    normal: NormalIcon, 
-    fire: FireIcon, 
-    water: WaterIcon, 
-    electric: ElectricIcon, 
-    grass: GrassIcon, 
-    ice: IceIcon, 
-    fighting: FightingIcon, 
-    poison: PoisonIcon, 
-    ground: GroundIcon, 
-    flying: FlyingIcon, 
-    psychic: PsychicIcon, 
-    bug: BugIcon, 
-    rock: RockIcon, 
-    ghost: GhostIcon, 
-    dragon: DragonIcon, 
-    dark: DarkIcon, 
-    steel: SteelIcon, 
-    fairy: FairyIcon
+    normal: "https://archives.bulbagarden.net/media/upload/c/cb/Normal_icon_LA.png?20220213053429", fire: "https://archives.bulbagarden.net/media/upload/4/48/Fire_icon_LA.png?20220213053749", water: "https://archives.bulbagarden.net/media/upload/5/5e/Water_icon_LA.png?20220213053800", electric: "https://archives.bulbagarden.net/media/upload/7/75/Electric_icon_LA.png?20220213053826", grass: "https://archives.bulbagarden.net/media/upload/1/1b/Grass_icon_LA.png?20220213053815", ice: "https://archives.bulbagarden.net/media/upload/7/70/Ice_icon_LA.png?20220213053853", fighting: "https://archives.bulbagarden.net/media/upload/6/68/Fighting_icon_LA.png?20220213053440", poison: "https://archives.bulbagarden.net/media/upload/b/b4/Poison_icon_LA.png?20220213053545", ground: "https://archives.bulbagarden.net/media/upload/4/45/Ground_icon_LA.png?20220213053610", flying: "https://archives.bulbagarden.net/media/upload/d/de/Flying_icon_LA.png?20220213053533", psychic: "https://archives.bulbagarden.net/media/upload/4/45/Psychic_icon_LA.png?20220213053708", bug: "https://archives.bulbagarden.net/media/upload/2/26/Bug_icon_LA.png?20220213053628", rock: "https://archives.bulbagarden.net/media/upload/8/85/Rock_icon_LA.png?20220213053620", ghost: "https://archives.bulbagarden.net/media/upload/b/b5/Ghost_icon_LA.png?20220213053637", dragon: "https://archives.bulbagarden.net/media/upload/2/28/Dragon_icon_LA.png?20220213053915", dark: "https://archives.bulbagarden.net/media/upload/7/7f/Dark_icon_LA.png?20220213053921", steel: "https://archives.bulbagarden.net/media/upload/f/f9/Steel_icon_LA.png?20220213053740", fairy: "https://archives.bulbagarden.net/media/upload/b/b1/Fairy_icon_LA.png?20220213053936"
 };
-
 const typeChart = {
     normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
     fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
@@ -224,8 +188,8 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam }) => {
 
 const TeamBuilderView = ({
     currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleSaveTeam, editingTeamId, handleClearTeam,
-    recentTeams, setCurrentPage, handleToggleFavorite, handleEditTeam, handleShareTeam,
-    teamAnalysis,handleDeleteTeam,
+    recentTeams, setCurrentPage, handleToggleFavorite, handleEditTeam, handleShareTeam, handleDeleteTeam,
+    teamAnalysis,
     searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
     isInitialLoading, isFiltering,
     availablePokemons, pokemonDetailsCache, handleAddPokemonToTeam, lastPokemonElementRef, isFetchingMore, visibleCount,
@@ -250,16 +214,10 @@ const TeamBuilderView = ({
 
                         <button
                         onClick={(e) => { e.stopPropagation(); showDetails(p); }}
-                        className={`
-                        absolute top-2 left-2 text-gray-400 hover:text-white transition-colors
-                        opacity-100     
-                        lg:opacity-0    
-                        lg:group-hover:opacity-100 
-                        lg:transition-opacity
-                        `}
-                    >
+                        className="absolute top-1 left-1 bg-gray-700 bg-opacity-50 text-white rounded-full h-5 w-5 flex items-center justify-center transition-opacity text-sm"
+                        >
                         <InfoIcon />
-                    </button>
+                        </button>
 
                         <button
                         onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }}
@@ -280,43 +238,15 @@ const TeamBuilderView = ({
               </div>
             <div className="flex items-center gap-2 mt-4">
               <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
-              {/* <button onClick={handleShareTeam} className="p-2 rounded-lg bg-green-600 hover:bg-green-700 text-white" title="Share Team"><ShareIcon /></button> */}
+              <button onClick={handleShareTeam} className="p-2 rounded-lg bg-green-600 hover:bg-green-700 text-white" title="Share Team"><ShareIcon /></button>
               <button onClick={handleClearTeam} className="p-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white" title="Clear Team"><ClearIcon /></button>
             </div>
           </section>
           
-            <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'",}}>Recent Teams</h2>
-                    <button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button>
-                </div>
-                <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
-                    {recentTeams.length > 0 ? recentTeams.map(team => (
-                        <div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}>
-                            <div className="flex-1 min-w-0">
-                                <p className="font-bold text-lg truncate">{team.name}</p>
-                                <div className="flex mt-1">
-                                    {team.pokemons.map(p => 
-                                        <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />
-                                    )}
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <button onClick={() => handleToggleFavorite(team)} title="Favorite">
-                                    <StarIcon isFavorite={team.isFavorite} />
-                                </button>
-                                <button onClick={() => handleEditTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">
-                                    Edit
-                                </button>
-                                <button onClick={() => handleDeleteTeam(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
-                                    <TrashIcon />
-                                </button>
-                            </div>
-                        </div>
-                    )) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No recent teams yet.</p>}
-                </div>
-            </section>
-    </div>
+          <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><div className="flex justify-between items-center mb-4"><h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'",}}>Recent Teams</h2><button onClick={() => setCurrentPage('allTeams')} className="text-sm text-purple-400 hover:underline">View All</button></div><div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar">{recentTeams.length > 0 ? recentTeams.map(team => (<div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: COLORS.cardLight}}><div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div></div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button><button onClick={() => handleEditTeam(team)} className="bg-blue-500 hover:bg-blue-600 text-white text-xs font-bold py-1 px-3 rounded-full">Edit</button>
+          <button onClick={() => handleDeleteTeam(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
+          </div></div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No recent teams yet.</p>}</div></section>
+        </div>
 
         <div className="lg:col-span-6">
           <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: COLORS.card}}>
@@ -344,23 +274,7 @@ const TeamBuilderView = ({
       </main>
 );
 
-const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm}) => 
-    (<div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}>
-        <h2 className="text-2xl md:text-3xl font-bold mb-6">All Saved Teams</h2>
-        <input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">{teams.length > 0 ? teams.map(team => (<div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: COLORS.cardLight}}>
-            <div className="flex justify-between items-start">
-                <p className="font-bold text-xl truncate mb-2">{team.name}</p><button onClick={() => onToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button>
-                </div>
-                <div className="flex my-2">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}
-                </div>
-                <div className="flex items-center gap-2 mt-auto pt-2"><button onClick={() => onEdit(team)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Edit
-                    </button>
-                    <button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg">
-                        <TrashIcon />
-                    </button>
-                </div>
-            </div>)) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No teams found.</p>}</div></div>);
+const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm}) => (<div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: COLORS.card}}><h2 className="text-2xl md:text-3xl font-bold mb-6">All Saved Teams</h2><input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: COLORS.cardLight, borderColor: 'transparent'}}/><div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">{teams.length > 0 ? teams.map(team => (<div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: COLORS.cardLight}}><div className="flex justify-between items-start"><p className="font-bold text-xl truncate mb-2">{team.name}</p><button onClick={() => onToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} /></button></div><div className="flex my-2">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div><div className="flex items-center gap-2 mt-auto pt-2"><button onClick={() => onEdit(team)} className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Edit</button><button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button></div></div>)) : <p className="col-span-full text-center py-8" style={{color: COLORS.textMuted}}>No teams found.</p>}</div></div>);
 
 // --- Main App Component ---
 export default function App() {
@@ -425,8 +339,16 @@ export default function App() {
     
     const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
-        return filteredPokemons.filter(p => !teamIds.has(p.id));
-    }, [filteredPokemons, currentTeam]);
+        const available = filteredPokemons.filter(p => !teamIds.has(p.id));
+        
+        return available.sort((a, b) => {
+            const aIsSuggested = suggestedPokemonIds.has(a.id);
+            const bIsSuggested = suggestedPokemonIds.has(b.id);
+            if (aIsSuggested && !bIsSuggested) return -1;
+            if (!aIsSuggested && bIsSuggested) return 1;
+            return a.id - b.id; 
+        });
+    }, [filteredPokemons, currentTeam, suggestedPokemonIds]);
 
     const recentTeams = useMemo(() => 
         savedTeams.sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)).slice(0,3), 
@@ -499,11 +421,9 @@ export default function App() {
         }
     }, []);
 
-    // --- CHANGE: Updated initial data fetch to include regional forms ---
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // Fetch all species first to find all varieties
                 const speciesListRes = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1025');
                 const speciesListData = await speciesListRes.json();
 
@@ -723,6 +643,28 @@ export default function App() {
                     .map(name => allPokemons.find(p => p.name === name)?.id)
                     .filter(Boolean)
             );
+
+            // Fetch details for any suggested Pokémon that are not yet in the cache
+            const missingSuggestionDetails = Array.from(finalEvoIds).filter(id => !pokemonDetailsCache[id]);
+            if(missingSuggestionDetails.length > 0) {
+                const urlsToFetch = missingSuggestionDetails.map(id => `https://pokeapi.co/api/v2/pokemon/${id}/`);
+                try {
+                    const newDetailedPokemons = await Promise.all(urlsToFetch.map(url => fetch(url).then(res => res.json())));
+                     const newCacheEntries = newDetailedPokemons.reduce((acc, p) => {
+                        acc[p.id] = { 
+                            id: p.id, name: p.name, sprite: p.sprites?.front_default, 
+                            animatedSprite: p.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default,
+                            types: p.types.map(t => t.type.name),
+                            stats: p.stats, abilities: p.abilities,
+                            evolution_chain_url: p.species.url 
+                        };
+                        return acc;
+                    }, {});
+                    setPokemonDetailsCache(prevCache => ({ ...prevCache, ...newCacheEntries }));
+                } catch (e) {
+                    console.error("Failed to fetch suggestion details:", e);
+                }
+            }
             
             setSuggestedPokemonIds(finalEvoIds);
         };
@@ -731,10 +673,11 @@ export default function App() {
 
     }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
 
-      useEffect(() => {
+    useEffect(() => {
         if (!db) return;
 
-        const likesDocRef = doc(db, `artifacts/${appId}/public/data`, 'likes');
+        // --- CHANGE: Corrected Firestore path for likes document ---
+        const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
         const unsubscribe = onSnapshot(likesDocRef, (doc) => {
             if (doc.exists()) {
@@ -750,6 +693,7 @@ export default function App() {
 
         return () => unsubscribe();
     }, [db]);
+
 
     const observer = useRef();
     const lastPokemonElementRef = useCallback(node => {
@@ -794,10 +738,11 @@ export default function App() {
         } catch (e) { showToast("Error saving team.", 'error'); }
     }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
 
-     const handleLike = useCallback(async () => {
+    // --- CHANGE: Corrected Firestore path for likes document ---
+    const handleLike = useCallback(async () => {
         if (!db || hasLiked) return;
         
-        const likesDocRef = doc(db, `artifacts/${appId}/public/data`, 'likes');
+        const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
         try {
             await setDoc(likesDocRef, { count: increment(1) }, { merge: true });
@@ -807,25 +752,14 @@ export default function App() {
         } catch (error) {
             showToast("Could not register like.", "error");
         }
-    }, [db, hasLiked, showToast]); <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
-                    <p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p>
-                    <div className="flex justify-center gap-4 mt-4">
-                        <button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}>
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
-                            <span>{likeCount}</span>
-                        </button>
-                        <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a>
-                        <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
-                    </div>
-                    <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p>
-                </footer>
+    }, [db, hasLiked, showToast]);
 
     const handleShareTeam = useCallback(async () => {
         if (!db) return showToast("Database not ready.", "error");
         if (currentTeam.length === 0) return showToast("Cannot share an empty team!", "warning");
         
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
-        const teamData = { name: teamName || "Unnamed Team", pokemons: currentTeam.map(p => ({id: p.id, name: p.name, sprite: p.sprite})) };
+        const teamData = { name: teamName || "Unnamed Team", pokemons: currentTeam.map(p => ({id: p.id, name: p.name, sprite: p.sprite || ''})) }; // Added fallback for sprite
 
         try {
             await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
@@ -907,7 +841,7 @@ export default function App() {
                     handleRemoveFromTeam={handleRemoveFromTeam} handleSaveTeam={handleSaveTeam} editingTeamId={editingTeamId}
                     handleClearTeam={handleClearTeam} recentTeams={recentTeams} setCurrentPage={setCurrentPage}
                     handleToggleFavorite={handleToggleFavorite} handleEditTeam={handleEditTeam} handleDeleteTeam={handleDeleteTeam} handleShareTeam={handleShareTeam}
-                    teamAnalysis={teamAnalysis} searchInput={searchInput} setSearchInput={setSearchInput} 
+                    teamAnalysis={teamAnalysis} searchInput={searchInput} setSearchInput={setSearchInput}
                     selectedGeneration={selectedGeneration} setSelectedGeneration={setSelectedGeneration} generations={generations}
                     isInitialLoading={isInitialLoading} isFiltering={isFiltering} availablePokemons={availablePokemons}
                     pokemonDetailsCache={pokemonDetailsCache} handleAddPokemonToTeam={handleAddPokemonToTeam} lastPokemonElementRef={lastPokemonElementRef}
@@ -922,7 +856,7 @@ export default function App() {
         <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={handleAddPokemonToTeam} currentTeam={currentTeam}/>
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
-          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-52'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
+          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
             <div className="flex-1 min-w-0">
                 <header className="relative flex items-center justify-between pt-4 px-4 h-24">
                 <button
@@ -935,7 +869,7 @@ export default function App() {
 
                 <div className="flex-1 text-center px-2 overflow-hidden">
                     <h1
-                    className="text-xs sm:text-base lg:text-3xl font-bold tracking-wider truncate sm:ml-16"
+                    className="text-sm sm:text-base lg:text-3xl font-bold tracking-wider truncate"
                     style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
                     >
                     Pokémon Team Builder
@@ -951,18 +885,7 @@ export default function App() {
                 <div className="w-10 lg:hidden" />
                 </header>
                 <div className="p-4 sm:p-6 lg:p-8">{renderPage()}</div>
-                 <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
-                    <p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p>
-                    <div className="flex justify-center gap-4 mt-4">
-                        <button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}>
-                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
-                            <span>{likeCount}</span>
-                        </button>
-                        <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a>
-                        <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
-                    </div>
-                    <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p>
-                </footer>
+                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}><p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p><div className="flex justify-center gap-4 mt-4"><button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg><span>{likeCount}</span></button><a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a><a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a></div><p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p></footer>
             </div>
         </div>
         <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } `}</style>
