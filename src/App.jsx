@@ -46,6 +46,7 @@ const typeIcons = {
     fairy: FairyIcon
 };
 
+
 const typeChart = {
     normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
     fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
@@ -317,6 +318,7 @@ export default function App() {
     // Firebase States
     const [userId, setUserId] = useState(null);
     const [db, setDb] = useState(null);
+    const [isAuthReady, setIsAuthReady] = useState(false); // --- CHANGE: Added state to track auth readiness ---
     
     // Pokémon and Filter States
     const [allPokemons, setAllPokemons] = useState([]);
@@ -435,24 +437,28 @@ export default function App() {
             const auth = getAuth(app);
             setDb(getFirestore(app));
 
-            const unsubscribe = onAuthStateChanged(auth, (user) => {
-                if (user) setUserId(user.uid);
-            });
-
-            const performSignIn = async () => {
-                if (!auth.currentUser) {
+            // --- CHANGE: Updated auth flow to use isAuthReady state ---
+            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    setUserId(user.uid);
+                    setIsAuthReady(true); 
+                } else {
                     try {
                         const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                        if (token) await signInWithCustomToken(auth, token);
-                        else await signInAnonymously(auth);
+                        if (token) {
+                            await signInWithCustomToken(auth, token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                        setUserId(auth.currentUser.uid);
                     } catch (error) {
                         showToast("Authentication failed. Please refresh.", "error");
+                    } finally {
+                        setIsAuthReady(true);
                     }
                 }
-            };
+            });
 
-            performSignIn();
-            
             return () => unsubscribe();
         } catch (e) { 
             showToast("Failed to connect to services.", "error"); 
@@ -498,13 +504,13 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        if (!db || isInitialLoading) return;
+        if (!db || isInitialLoading || !isAuthReady) return; // --- CHANGE: Guard added for auth readiness ---
         const urlParams = new URLSearchParams(window.location.search);
         const teamId = urlParams.get('team');
         if (teamId) {
             fetchAndSetSharedTeam(teamId);
         }
-    }, [db, isInitialLoading, fetchAndSetSharedTeam]);
+    }, [db, isInitialLoading, isAuthReady, fetchAndSetSharedTeam]);
 
 
     useEffect(() => {
@@ -710,9 +716,8 @@ export default function App() {
 
     }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
 
-    // --- CHANGE: Added a separate useEffect hook for the like listener that depends on userId ---
     useEffect(() => {
-        if (!db || !userId) return; // Wait for db and userId to be available
+        if (!db || !isAuthReady) return; // --- CHANGE: Guard added for auth readiness ---
         
         const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
@@ -731,7 +736,7 @@ export default function App() {
         }
 
         return () => unsubscribe();
-    }, [db, userId]);
+    }, [db, isAuthReady]); // --- CHANGE: Dependency added ---
 
 
     const observer = useRef();
@@ -782,7 +787,7 @@ export default function App() {
     }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
 
     const handleLike = useCallback(async () => {
-        if (!db || hasLiked || !userId) return; 
+        if (!db || hasLiked || !isAuthReady) return; // --- CHANGE: Guard added for auth readiness ---
         
         const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
@@ -794,10 +799,10 @@ export default function App() {
         } catch (error) {
             showToast("Could not register like.", "error");
         }
-    }, [db, hasLiked, showToast, userId]);
+    }, [db, hasLiked, showToast, isAuthReady]);
 
     const handleShareTeam = useCallback(async () => {
-        if (!db || !userId) return showToast("Database not ready.", "error"); 
+        if (!db || !isAuthReady) return showToast("Database not ready.", "error"); // --- CHANGE: Guard added for auth readiness ---
         if (currentTeam.length === 0) return showToast("Cannot share an empty team!", "warning");
         
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
@@ -827,7 +832,7 @@ export default function App() {
         } catch (error) {
             showToast("Could not generate share link.", "error");
         }
-    }, [db, currentTeam, teamName, showToast, userId]);
+    }, [db, currentTeam, teamName, showToast, isAuthReady]);
 
     const handleEditTeam = useCallback(async (team) => {
         const detailsPromises = team.pokemons.map(async (p) => {
@@ -898,7 +903,7 @@ export default function App() {
         <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={handleAddPokemonToTeam} currentTeam={currentTeam}/>
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
-          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-52'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
+          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
             <div className="flex-1 min-w-0">
                 <header className="relative flex items-center justify-between pt-4 px-4 h-24">
                 <button
@@ -909,7 +914,7 @@ export default function App() {
                     {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
                 </button>
 
-                <div className="flex-1 text-center px-2 marginLeft">
+                <div className="flex-1 text-center px-2 overflow-hidden">
                     <h1
                     className="text-sm sm:text-base lg:text-3xl font-bold tracking-wider truncate"
                     style={{ fontFamily: "'Press Start 2P'", color: COLORS.primary }}
@@ -927,10 +932,10 @@ export default function App() {
                 <div className="w-10 lg:hidden" />
                 </header>
                 <div className="p-4 sm:p-6 lg:p-8">{renderPage()}</div>
-                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}><p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p><div className="flex justify-center gap-4 mt-4"><button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg><span>{likeCount}</span></button><a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a><a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a></div><p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p></footer>
+                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}><p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p><div className="flex justify-center gap-4 mt-4"><button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-2 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}><svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg><span>{likeCount}</span></button><a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a><a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a></div><p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p></footer>
             </div>
         </div>
-        <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } .marginLeft { margin-left: 0.65rem !important } `}</style>
+        <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } `}</style>
       </div>
     );
 }
