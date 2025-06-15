@@ -401,6 +401,8 @@ export default function App() {
     const [modalPokemon, setModalPokemon] = useState(null);
     const [maxToasts, setMaxToasts] = useState(3);
     const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
+    const [likeCount, setLikeCount] = useState(0);
+    const [hasLiked, setHasLiked] = useState(false);
 
     useEffect(() => {
         const handleResize = () => {
@@ -729,6 +731,26 @@ export default function App() {
 
     }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
 
+      useEffect(() => {
+        if (!db) return;
+
+        const likesDocRef = doc(db, `artifacts/${appId}/public/data`, 'likes');
+        
+        const unsubscribe = onSnapshot(likesDocRef, (doc) => {
+            if (doc.exists()) {
+                setLikeCount(doc.data().count);
+            } else {
+                setDoc(likesDocRef, { count: 0 });
+            }
+        });
+
+        if (sessionStorage.getItem('hasLikedPokemonBuilder')) {
+            setHasLiked(true);
+        }
+
+        return () => unsubscribe();
+    }, [db]);
+
     const observer = useRef();
     const lastPokemonElementRef = useCallback(node => {
         if (isFetchingMore || isFiltering) return;
@@ -771,6 +793,32 @@ export default function App() {
             handleClearTeam();
         } catch (e) { showToast("Error saving team.", 'error'); }
     }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
+
+     const handleLike = useCallback(async () => {
+        if (!db || hasLiked) return;
+        
+        const likesDocRef = doc(db, `artifacts/${appId}/public/data`, 'likes');
+        
+        try {
+            await setDoc(likesDocRef, { count: increment(1) }, { merge: true });
+            sessionStorage.setItem('hasLikedPokemonBuilder', 'true');
+            setHasLiked(true);
+            showToast("Thanks for the like!", "success");
+        } catch (error) {
+            showToast("Could not register like.", "error");
+        }
+    }, [db, hasLiked, showToast]); <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
+                    <p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p>
+                    <div className="flex justify-center gap-4 mt-4">
+                        <button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}>
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
+                            <span>{likeCount}</span>
+                        </button>
+                        <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a>
+                        <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
+                    </div>
+                    <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p>
+                </footer>
 
     const handleShareTeam = useCallback(async () => {
         if (!db) return showToast("Database not ready.", "error");
@@ -903,7 +951,18 @@ export default function App() {
                 <div className="w-10 lg:hidden" />
                 </header>
                 <div className="p-4 sm:p-6 lg:p-8">{renderPage()}</div>
-                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}><p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p><p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p><div className="flex justify-center gap-4 mt-4"><a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a><a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a></div></footer>
+                 <footer className="text-center mt-12 py-6 border-t" style={{borderColor: COLORS.cardLight}}>
+                    <p className="text-sm" style={{color: COLORS.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:text-white" >Enzo Esmeraldo</a> </p>
+                    <div className="flex justify-center gap-4 mt-4">
+                        <button onClick={handleLike} disabled={hasLiked} className={`flex items-center gap-2 px-3 py-1 rounded-full transition-colors ${hasLiked ? 'bg-pink-500/50 text-white cursor-not-allowed' : 'bg-gray-700 hover:bg-pink-500'}`}>
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" /></svg>
+                            <span>{likeCount}</span>
+                        </button>
+                        <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><GithubIcon /></a>
+                        <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:text-white" style={{color: COLORS.textMuted}}><LinkedinIcon /></a>
+                    </div>
+                    <p className="text-xs mt-2" style={{color: COLORS.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p>
+                </footer>
             </div>
         </div>
         <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: ${COLORS.card}; } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: ${COLORS.primary}; border-radius: 20px; border: 3px solid ${COLORS.card}; } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } `}</style>
