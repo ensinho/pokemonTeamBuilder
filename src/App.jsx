@@ -274,7 +274,7 @@ const TeamBuilderView = ({
               </div>
             <div className="flex items-center gap-2 mt-4">
               <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg" style={{backgroundColor: COLORS.primary, color: COLORS.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
-              <button onClick={handleShareTeam} className="p-2 rounded-lg bg-green-600 hover:bg-green-700 text-white" title="Share Team"><ShareIcon /></button>
+              <button onClick={handleShareTeam} className="p-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white" title="Share Team"><ShareIcon /></button>
               <button onClick={handleClearTeam} className="p-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white" title="Clear Team"><ClearIcon /></button>
             </div>
           </section>
@@ -353,7 +353,6 @@ export default function App() {
     const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
     const [likeCount, setLikeCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
-    // --- CHANGE: Added state to prevent infinite shared team loading ---
     const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
 
     useEffect(() => {
@@ -402,7 +401,7 @@ export default function App() {
     
     const fetchAndSetSharedTeam = useCallback(async (teamId) => {
         if(!db || sharedTeamLoaded) return;
-        setSharedTeamLoaded(true); // --- CHANGE: Prevent re-fetching
+        setSharedTeamLoaded(true); 
         showToast("Loading shared team...", "info");
         const teamDocRef = doc(db, `artifacts/${appId}/public/data/teams`, teamId);
         try {
@@ -711,8 +710,9 @@ export default function App() {
 
     }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
 
+    // --- CHANGE: Added a separate useEffect hook for the like listener that depends on userId ---
     useEffect(() => {
-        if (!db) return;
+        if (!db || !userId) return; // Wait for db and userId to be available
         
         const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
         
@@ -731,7 +731,7 @@ export default function App() {
         }
 
         return () => unsubscribe();
-    }, [db]);
+    }, [db, userId]);
 
 
     const observer = useRef();
@@ -767,7 +767,6 @@ export default function App() {
         if (currentTeam.length === 0) return showToast("Your team is empty!", 'warning');
         if (!teamName.trim()) return showToast("Please name your team.", 'warning');
         
-        // --- CHANGE: Added check for duplicate team names ---
         if (savedTeams.some(team => team.name === teamName && team.id !== editingTeamId)) {
             return showToast("A team with this name already exists.", "warning");
         }
@@ -899,7 +898,7 @@ export default function App() {
         <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={handleAddPokemonToTeam} currentTeam={currentTeam}/>
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
-          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
+          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-52'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: COLORS.card}}><div className="flex flex-col h-full"><div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}><h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: COLORS.primary}}>Menu</h2><button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:bg-purple-500/20" style={{color: COLORS.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button></div><nav className="px-4 flex-grow"><ul><li><button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'builder' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><PokeballIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span></button></li><li><button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/20 ${currentPage === 'allTeams' ? 'bg-purple-500/30' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`}><AllTeamsIcon /> <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>All Teams</span></button></li></ul></nav></div></aside>
             <div className="flex-1 min-w-0">
                 <header className="relative flex items-center justify-between pt-4 px-4 h-24">
                 <button
