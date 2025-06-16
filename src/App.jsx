@@ -23,7 +23,7 @@ import FairyIcon from "./assets/typeIcons/Fairy_icon_LA.png";
 
 // --- Assets & Data ---
 const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
-const COLORS = { primary: '#7d65e1', background: '#111827', card: '#1F2937', cardLight: '#374151', text: '#FFFFFF', textMuted: '#9CA3AF' };
+const COLORS = { primary: '#7d65e1', secundary: '#6f5ccb' , background: '#111827', card: '#1F2937', cardLight: '#374151', text: '#FFFFFF', textMuted: '#9CA3AF' };
 const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
 const typeIcons = {
     normal: NormalIcon, 
@@ -146,7 +146,7 @@ const PokemonCard = React.memo(({ onAdd, onShowDetails, details, lastRef, isSugg
             e.currentTarget.src = POKEBALL_PLACEHOLDER_URL;
             }}
             alt={details.name}
-            className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform"
+            className="mx-auto w-full h-auto max-w-[100px] group-hover:scale-110 transition-transform"
         />
         <p className="mt-2 text-sm font-semibold capitalize">{details.name}</p>
         <div className="flex justify-center items-center mt-1 gap-1">
@@ -288,7 +288,7 @@ const TeamBuilderView = ({
                     <div className="flex-1 min-w-0"><p className="font-bold text-lg truncate">{team.name}</p><div className="flex mt-1">{team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: COLORS.cardLight, backgroundColor: COLORS.card}} />)}</div>
                     </div><div className="flex items-center gap-2 flex-shrink-0 ml-2"><button onClick={() => handleToggleFavorite(team)} title="Favorite"><StarIcon isFavorite={team.isFavorite} />
                 </button>
-                <button onClick={() => handleEditTeam(team)} className="text-white text-xs font-bold py-1 px-3 rounded-full" style={{backgroundColor: COLORS.primary, color: COLORS.background}} >Edit</button>
+                <button onClick={() => handleEditTeam(team)} className="text-white text-xs hover:bg-purple-700 font-bold py-1 px-3 rounded-full" style={{backgroundColor: COLORS.primary, color: COLORS.background,  }} >Edit</button>
             <button onClick={() => handleDeleteTeam(team.id)} className="bg-red-600 p-1 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
             </div>
             </div>)) : <p className="text-center py-4" style={{color: COLORS.textMuted}}>No recent teams yet.</p>}</div></section>
@@ -302,7 +302,7 @@ const TeamBuilderView = ({
               (<>
                 {isFiltering && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-lg"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
                 <div className="h-full overflow-y-auto custom-scrollbar">
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
+                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
                       {availablePokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemonDetailsCache[pokemon.id]} onAdd={handleAddPokemonToTeam} onShowDetails={showDetails} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} isSuggested={suggestedPokemonIds.has(pokemon.id)} />)}
                   </div>
                   {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: COLORS.primary}}></div></div>}
@@ -327,7 +327,7 @@ export default function App() {
     // Firebase States
     const [userId, setUserId] = useState(null);
     const [db, setDb] = useState(null);
-    const [isAuthReady, setIsAuthReady] = useState(false); // --- CHANGE: Added state to track auth readiness ---
+    const [isAuthReady, setIsAuthReady] = useState(false); 
     
     // Pokémon and Filter States
     const [allPokemons, setAllPokemons] = useState([]);
@@ -513,7 +513,7 @@ export default function App() {
     }, []);
 
     useEffect(() => {
-        if (!db || isInitialLoading || !isAuthReady) return; // --- CHANGE: Guard added for auth readiness ---
+        if (!db || isInitialLoading || !isAuthReady) return; 
         const urlParams = new URLSearchParams(window.location.search);
         const teamId = urlParams.get('team');
         if (teamId) {
@@ -745,7 +745,7 @@ export default function App() {
         }
 
         return () => unsubscribe();
-    }, [db, isAuthReady]); // --- CHANGE: Dependency added ---
+    }, [db, isAuthReady]); 
 
 
     const observer = useRef();
