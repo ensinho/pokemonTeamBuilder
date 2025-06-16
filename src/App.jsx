@@ -183,6 +183,68 @@ const StatBar = ({ stat, value }) => {
     );
 };
 
+const AbilityChip = ({ ability }) => {
+    const [description, setDescription] = useState('');
+    const [isTooltipVisible, setTooltipVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const touchTimeout = useRef(null);
+
+    const fetchAbilityDescription = useCallback(async () => {
+        if (description || isLoading) return;
+        setIsLoading(true);
+        try {
+            const res = await fetch(ability.ability.url);
+            const data = await res.json();
+            const effectEntry = data.effect_entries.find(entry => entry.language.name === 'en');
+            setDescription(effectEntry?.short_effect || 'No description available.');
+        } catch (error) {
+            setDescription('Could not load description.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [ability.ability.url, description, isLoading]);
+
+    const handleMouseEnter = () => {
+        fetchAbilityDescription();
+        setTooltipVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+        setTooltipVisible(false);
+    };
+    
+    const handleTouchStart = () => {
+        fetchAbilityDescription();
+        touchTimeout.current = setTimeout(() => {
+             setTooltipVisible(true);
+        }, 300);
+    };
+
+    const handleTouchEnd = () => {
+        clearTimeout(touchTimeout.current);
+        setTimeout(() => {
+            setTooltipVisible(false);
+        }, 2000);
+    };
+
+    return (
+        <span 
+            className="relative capitalize inline-block bg-gray-700 px-3 py-1 rounded-full text-sm cursor-pointer"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
+            {ability.ability.name.replace('-', ' ')}
+            {isTooltipVisible && (
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-black text-white text-xs rounded-md shadow-lg z-20">
+                    {isLoading ? 'Loading...' : description}
+                </span>
+            )}
+        </span>
+    );
+}
+
 const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam }) => {
     if (!pokemon) return null;
     
@@ -205,10 +267,10 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam }) => {
                         {pokemon.stats?.map(stat => <StatBar key={stat.stat.name} stat={stat.stat.name} value={stat.base_stat} />)}
                     </div>
                 </div>
-                 <div className="mt-6">
+                <div className="mt-6">
                     <h3 className="text-xl font-bold mb-3 text-center">Abilities</h3>
-                    <div className="text-center space-x-2">
-                        {pokemon.abilities?.map(ability => <span key={ability.ability.name} className="capitalize inline-block bg-gray-700 px-3 py-1 rounded-full text-sm">{ability.ability.name.replace('-', ' ')}</span>)}
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {pokemon.abilities?.map((ability, index) => <AbilityChip key={index} ability={ability} />)}
                     </div>
                 </div>
                 <div className="mt-8 flex justify-center" >
