@@ -237,7 +237,7 @@ const AbilityChip = ({ ability }) => {
         >
             {ability.ability.name.replace('-', ' ')}
             {isTooltipVisible && (
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-black text-white text-xs rounded-md shadow-lg z-20">
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-600 text-white text-xs rounded-md shadow-lg z-20">
                     {isLoading ? 'Loading...' : description}
                 </span>
             )}
