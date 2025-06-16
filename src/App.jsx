@@ -321,14 +321,14 @@ const TeamBuilderView = ({
                         <button
                         onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }}
                         className="
-                            absolute top-1 right-1 bg-red-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-sm
+                            absolute top-1 right-1 p-1 bg-red-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-sm
                             opacity-100 visible
                             lg:opacity-0 lg:invisible
                             lg:group-hover:opacity-100 lg:group-hover:visible
                             transition-opacity duration-200
                         "
                         >
-                        X
+                        <TrashIcon />
                         </button>
                     </div>
                     ))}
