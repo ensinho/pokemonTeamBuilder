@@ -1,7 +1,7 @@
-# Let's build some pretty cool teams with it.
+# Let's build some pretty cool teams with it 👾✨
 
 Its a team builder created with React and Tailwind, with an integration with Firebase Console.
-You can create how many teams as you want, besides filtering along the Pokédex itself !
+You can create how many teams as you want, besides filtering along the Pokédex itself.
 
 ### You can check it on https://ensinho.github.io/pokemonTeamBuilder/
 <div style="display: flex; justify-content: space-between; gap: 10px;">
