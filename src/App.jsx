@@ -168,7 +168,7 @@ const PokemonCard = React.memo(({ onAdd, onShowDetails, details, lastRef, isSugg
             e.currentTarget.src = POKEBALL_PLACEHOLDER_URL;
             }}
             alt={details.name}
-            className="mx-auto h-24 w-24 group-hover:scale-110 transition-transform"
+            className="mx-auto w-full h-auto max-w-[100px] group-hover:scale-110 transition-transform"
         />
         <p className="mt-2 text-sm font-semibold capitalize" style={{color: colors.text}}>{details.name}</p>
         <div className="flex justify-center items-center mt-1 gap-1">
@@ -1058,7 +1058,7 @@ export default function App() {
                     {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
                 </button>
 
-                <div className="flex-1 text-center px-2 overflow-hidden">
+                <div className="flex-1 text-center px-2 marginLeft">
                     <h1
                     className="text-sm sm:text-base lg:text-3xl font-bold tracking-wider truncate"
                     style={{ fontFamily: "'Press Start 2P'", color: colors.primary }}
