@@ -109,7 +109,7 @@ const WarningToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="2
 const SunIcon = ({ color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sun" style={{ color: color }}><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" /></svg>);
 const MoonIcon = ({ color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-moon" style={{ color: color }}><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg>);
 
-const TypeBadge = ({ type, colors }) => ( <span className="text-xs font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: typeColors[type] || '#777', color: colors.text }}> {type.toUpperCase()} </span> );
+const TypeBadge = ({ type, colors }) => ( <span className="text-xs text-white font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
 // --- Firebase Config ---
 const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
@@ -168,7 +168,7 @@ const PokemonCard = React.memo(({ onAdd, onShowDetails, details, lastRef, isSugg
             e.currentTarget.src = POKEBALL_PLACEHOLDER_URL;
             }}
             alt={details.name}
-            className="mx-auto w-full h-auto max-w-[100px] group-hover:scale-110 transition-transform"
+            className="mx-auto w-full h-auto max-w-[120px] group-hover:scale-110 transition-transform"
         />
         <p className="mt-2 text-sm font-semibold capitalize" style={{color: colors.text}}>{details.name}</p>
         <div className="flex justify-center items-center mt-1 gap-1">
@@ -205,6 +205,68 @@ const StatBar = ({ stat, value, colors }) => {
     );
 };
 
+const AbilityChip = ({ ability }) => {
+    const [description, setDescription] = useState('');
+    const [isTooltipVisible, setTooltipVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const touchTimeout = useRef(null);
+
+    const fetchAbilityDescription = useCallback(async () => {
+        if (description || isLoading) return;
+        setIsLoading(true);
+        try {
+            const res = await fetch(ability.ability.url);
+            const data = await res.json();
+            const effectEntry = data.effect_entries.find(entry => entry.language.name === 'en');
+            setDescription(effectEntry?.short_effect || 'No description available.');
+        } catch (error) {
+            setDescription('Could not load description.');
+        } finally {
+            setIsLoading(false);
+        }
+    }, [ability.ability.url, description, isLoading]);
+
+    const handleMouseEnter = () => {
+        fetchAbilityDescription();
+        setTooltipVisible(true);
+    };
+
+    const handleMouseLeave = () => {
+        setTooltipVisible(false);
+    };
+    
+    const handleTouchStart = () => {
+        fetchAbilityDescription();
+        touchTimeout.current = setTimeout(() => {
+             setTooltipVisible(true);
+        }, 300);
+    };
+
+    const handleTouchEnd = () => {
+        clearTimeout(touchTimeout.current);
+        setTimeout(() => {
+            setTooltipVisible(false);
+        }, 2000);
+    };
+
+    return (
+        <span 
+            className="relative capitalize text-white inline-block bg-gray-700 px-3 py-1 rounded-full text-sm cursor-pointer"
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
+            {ability.ability.name.replace('-', ' ')}
+            {isTooltipVisible && (
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-700 text-white text-xs rounded-md shadow-lg z-20">
+                    {isLoading ? 'Loading...' : description}
+                </span>
+            )}
+        </span>
+    );
+}
+
 const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors }) => {
     if (!pokemon) return null;
     
@@ -215,7 +277,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors }) =>
             <div className="rounded-2xl shadow-xl w-full max-w-lg p-6 relative animate-fade-in" style={{backgroundColor: colors.card}} onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"><CloseIcon /></button>
                 <div className="text-center">
-                    <img src={pokemon.animatedSprite || pokemon.sprite} alt={pokemon.name} className="mx-auto h-32 w-32 image-pixelated"/>
+                    <img src={pokemon.animatedSprite || pokemon.sprite} alt={pokemon.name} className="mx-auto h-32 w-36 image-pixelated"/>
                     <h2 className="text-3xl font-bold capitalize mt-2" style={{color: colors.text}}>{pokemon.name} <span style={{color: colors.textMuted}}>#{pokemon.id}</span></h2>
                     <div className="flex justify-center gap-2 mt-2">
                         {pokemon.types.map(type => <TypeBadge key={type} type={type} colors={colors} />)}
@@ -227,15 +289,15 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors }) =>
                         {pokemon.stats?.map(stat => <StatBar key={stat.stat.name} stat={stat.stat.name} value={stat.base_stat} colors={colors} />)}
                     </div>
                 </div>
-                   <div className="mt-6">
-                    <h3 className="text-xl font-bold mb-3 text-center" style={{color: colors.text}}>Abilities</h3>
-                    <div className="text-center space-x-2">
-                        {pokemon.abilities?.map(ability => <span key={ability.ability.name} className="capitalize inline-block px-3 py-1 rounded-full text-sm" style={{backgroundColor: colors.cardLight, color: colors.text}}>{ability.ability.name.replace('-', ' ')}</span>)}
+                <div className="mt-6">
+                    <h3 className="text-xl font-bold mb-3 text-center">Abilities</h3>
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {pokemon.abilities?.map((ability, index) => <AbilityChip key={index} ability={ability} />)}
                     </div>
                 </div>
                 <div className="mt-8 flex justify-center" >
                     {!isAlreadyOnTeam && (
-                        <button onClick={() => { onAdd(pokemon); onClose(); }} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-colors">
+                        <button onClick={() => { onAdd(pokemon); onClose(); }} className="bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-colors">
                             <PlusIcon /> Add to Team
                         </button>
                     )}
@@ -262,7 +324,7 @@ const TeamBuilderView = ({
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4 " style={{backgroundColor: colors.background}}>
                     {currentTeam.map(p => (
-                        <div key={p.id} className="text-center relative group cursor-pointer" onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }}>
+                        <div key={p.id} className="text-center relative group cursor-pointer" onClick={(e) => { e.stopPropagation(); showDetails(p); }}>
                             <img
                             src={p.animatedSprite || p.sprite || POKEBALL_PLACEHOLDER_URL}
                             onError={(e) => { e.currentTarget.src = p.sprite || POKEBALL_PLACEHOLDER_URL }}
@@ -281,14 +343,14 @@ const TeamBuilderView = ({
                             <button
                             onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }}
                             className="
-                                absolute top-1 right-1 bg-red-600 text-white rounded-full h-5 w-5 flex items-center justify-center text-sm
+                                absolute top-1 right-1 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm
                                 opacity-100 visible
                                 lg:opacity-0 lg:invisible
                                 lg:group-hover:opacity-100 lg:group-hover:visible
-                                transition-opacity duration-200
+                                transition-opacity duration-200 
                             "
                             >
-                            X
+                            <TrashIcon/>
                             </button>
                         </div>
                         ))}
@@ -1060,7 +1122,7 @@ export default function App() {
 
                 <div className="flex-1 text-center px-2 marginLeft">
                     <h1
-                    className="text-sm sm:text-base lg:text-3xl font-bold tracking-wider truncate"
+                    className="text-xs sm:text-base lg:text-3xl font-bold tracking-wider truncate"
                     style={{ fontFamily: "'Press Start 2P'", color: colors.primary }}
                     >
                     Pokémon Team Builder
