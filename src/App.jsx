@@ -1135,7 +1135,7 @@ export default function App() {
                     </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 mr-4">
                     <button onClick={toggleTheme} className="p-2 rounded-md" style={{ backgroundColor: colors.cardLight, color: colors.text }}>
                         {theme === 'dark' ? <SunIcon color={colors.text} /> : <MoonIcon color={colors.text} />}
                     </button>
