@@ -1057,7 +1057,18 @@ export default function App() {
     }, []);
     
     const toggleTheme = useCallback(() => {
-        setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'));
+        setTheme(prevTheme => {
+            const newTheme = prevTheme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            return newTheme;
+        });
+    }, []);
+    
+    useEffect(() => {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setTheme(savedTheme); 
+        }
     }, []);
 
     const renderPage = () => {
