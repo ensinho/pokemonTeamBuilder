@@ -653,12 +653,14 @@ export default function App() {
                 
                 const allSpeciesData = await Promise.all(allVarietyPromises);
                 
-                const allPokemonUrls = allSpeciesData.flatMap(species =>
+                let allPokemonUrls = allSpeciesData.flatMap(species =>
                     species.varieties.map(variety => ({
                         name: variety.pokemon.name,
                         url: variety.pokemon.url
                     }))
                 );
+
+                allPokemonUrls = allPokemonUrls.filter(p => !p.name.includes('-totem'));
 
                 const uniqueUrls = Array.from(new Map(allPokemonUrls.map(item => [item.url, item])).values());
                 const pokemonData = uniqueUrls.map(p => ({ id: parseInt(p.url.split('/')[6]), name: p.name, url: p.url }));
