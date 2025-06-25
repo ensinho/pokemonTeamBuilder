@@ -109,9 +109,10 @@ const ErrorToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24"
 const WarningToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>);
 const SunIcon = ({ color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sun" style={{ color: color }}><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" /></svg>);
 const MoonIcon = ({ color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-moon" style={{ color: color }}><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg>);
-const SwordsIcon = () => (<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-swords"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 3v5l-11 9l-4 4l-3 -3l4 -4l9 -11z" /><path d="M5 13l6 6" /><path d="M14.32 17.32l3.68 3.68l3 -3l-3.365 -3.365" /><path d="M10 5.5l-2 -2.5h-5v5l3 2.5" /></svg>);
+const SwordsIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-swords"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 3v5l-11 9l-4 4l-3 -3l4 -4l9 -11z" /><path d="M5 13l6 6" /><path d="M14.32 17.32l3.68 3.68l3 -3l-3.365 -3.365" /><path d="M10 5.5l-2 -2.5h-5v5l3 2.5" /></svg>);
 const EditIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>);
-const SparklesIcon = () => (<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-sparkles"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" /></svg>);
+const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sparkles"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" /></svg>);
+const ShowdownIcon = () => (<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>);
 
 
 const TypeBadge = ({ type, colors }) => ( <span className="text-xs text-white font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
@@ -292,10 +293,10 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     if (!pokemon) return null;
     
     const isAlreadyOnTeam = currentTeam.some(p => p.id === pokemon.id);
-    const spriteToShow = showShiny ? pokemon.shinySprite : (pokemon.animatedSprite || pokemon.sprite);
+    const spriteToShow = showShiny ? pokemon.animatedShinySprite : (pokemon.animatedSprite || pokemon.sprite);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 h-[100vh] flex items-center justify-center z-50 p-4 " onClick={onClose}>
             <div className="rounded-2xl shadow-xl w-full max-w-lg p-6 relative animate-fade-in" style={{backgroundColor: colors.card}} onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"><CloseIcon /></button>
                 <div className="text-center">
@@ -304,7 +305,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                         <button 
                              onClick={() => setShowShiny(!showShiny)} 
                              className={`absolute bottom-0 right-0 p-1 rounded-full ${showShiny ? 'bg-yellow-500' : 'bg-gray-700'}`} 
-                             style={{color: colors.text}} 
+                             style={{color: 'white'}} 
                              title="Toggle Shiny">
                             <SparklesIcon />
                         </button>
@@ -323,7 +324,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                  {evolutionChain.length > 1 && (
                     <div className="mt-6">
                         <h3 className="text-xl font-bold mb-3 text-center" style={{ color: colors.text }}>Evolution Line</h3>
-                        <div className="flex justify-center items-center gap-2 flex-wrap">
+                        <div className="flex justify-center items-center gap-2">
                             {evolutionChain.map((name, index) => {
                                 const evoPokemon = Object.values(pokemonDetailsCache).find(p => p.name === name);
                                 return (
@@ -356,15 +357,12 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     );
 };
 
-const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors }) => {
-    // This will hold the state of the edits
+const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache, fetchMoveDetails }) => {
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
-
     const statNames = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
 
-    // Calculate remaining EVs on initial load and when customization changes
     useEffect(() => {
         const totalEVs = Object.values(customization.evs).reduce((sum, ev) => sum + ev, 0);
         setRemainingEVs(510 - totalEVs);
@@ -385,9 +383,9 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors }) => {
         }));
     };
 
-    const handleAbilityChange = (e) => {
-        setCustomization(prev => ({ ...prev, ability: e.target.value }));
-    };
+    const handleCustomizationChange = (field, value) => {
+        setCustomization(prev => ({...prev, [field]: value}));
+    }
 
     const handleMoveToggle = (moveName) => {
         setCustomization(prev => {
@@ -400,13 +398,12 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors }) => {
             return { ...prev, moves: newMoves };
         });
     };
-
+    
     const handleSaveChanges = () => {
-        onSave(pokemon.id, customization);
+        onSave(pokemon.instanceId, customization);
         onClose();
     };
-    
-    // Simple stat calculation for display (Level 100, 31 IVs, Neutral Nature)
+
     const calculateStat = (base, ev, statName) => {
         if (statName === 'hp') {
             return Math.floor(base * 2 + 31 + Math.floor(ev / 4)) + 110;
@@ -419,6 +416,15 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors }) => {
         return pokemon.moves.filter(m => m.move.name.toLowerCase().includes(moveSearch.toLowerCase()));
     }, [moveSearch, pokemon.moves]);
 
+    // Fetch move details for visible moves
+    useEffect(() => {
+        filteredMoves.slice(0, 20).forEach(m => { // Fetch for first 20 results to avoid spamming
+            if (!moveDetailsCache[m.move.name]) {
+                fetchMoveDetails(m.move.url, m.move.name);
+            }
+        });
+    }, [filteredMoves, moveDetailsCache, fetchMoveDetails]);
+
     if (!pokemon) return null;
 
     return (
@@ -429,33 +435,51 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Left Column */}
                     <div className="flex flex-col items-center">
-                        <img src={pokemon.animatedSprite || pokemon.sprite} alt={pokemon.name} className="mx-auto h-32 w-36 image-pixelated" />
+                        <img src={customization.isShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite)} alt={pokemon.name} className="mx-auto h-32 w-36 image-pixelated" />
                         <h2 className="text-3xl font-bold capitalize mt-2" style={{color: colors.text}}>{pokemon.name}</h2>
                         <div className="flex justify-center gap-2 mt-2">
                             {pokemon.types.map(type => <TypeBadge key={type} type={type} colors={colors} />)}
                         </div>
-                        <div className="w-full mt-6">
+                        
+                        <div className="w-full mt-4 grid grid-cols-2 gap-4">
+                           <div>
+                                <label className="block text-sm font-bold mb-1" style={{color: colors.text}}>Item</label>
+                                <select value={customization.item} onChange={(e) => handleCustomizationChange('item', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                                    <option value="">None</option>
+                                    {items.map(item => <option key={item.name} value={item.name} className="capitalize">{item.name.replace(/-/g, ' ')}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold mb-1" style={{color: colors.text}}>Nature</label>
+                                <select value={customization.nature} onChange={(e) => handleCustomizationChange('nature', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                                    {natures.map(n => <option key={n.name} value={n.name} className="capitalize">{n.name.replace(/-/g, ' ')}</option>)}
+                                </select>
+                            </div>
+                             <div>
+                                <label className="block text-sm font-bold mb-1" style={{color: colors.text}}>Tera Type</label>
+                                <select value={customization.teraType} onChange={(e) => handleCustomizationChange('teraType', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                                    {Object.keys(typeColors).map(type => <option key={type} value={type} className="capitalize">{type}</option>)}
+                                </select>
+                            </div>
+                            <div className="flex items-center justify-start pt-5">
+                                <label htmlFor="shiny-toggle" className="flex items-center cursor-pointer">
+                                    <div className="relative">
+                                        <input type="checkbox" id="shiny-toggle" className="sr-only" checked={customization.isShiny} onChange={(e) => handleCustomizationChange('isShiny', e.target.checked)} />
+                                        <div className="block w-10 h-6 bg-gray-600 rounded-full"></div>
+                                        <div className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition"></div>
+                                    </div>
+                                    <div className="ml-3 text-sm font-bold" style={{color: colors.text}}>Shiny</div>
+                                </label>
+                            </div>
+                        </div>
+
+                         <div className="w-full mt-4">
                             <label className="block text-lg font-bold mb-2" style={{color: colors.text}}>Ability</label>
-                            <select value={customization.ability} onChange={handleAbilityChange} className="w-full p-3 rounded-lg border-2 focus:outline-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                            <select value={customization.ability} onChange={(e) => handleCustomizationChange('ability', e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
                                 {pokemon.abilities.map(({ ability }) => (
                                     <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
                                 ))}
                             </select>
-                        </div>
-                         <div className="w-full mt-6">
-                            <h3 className="text-lg font-bold mb-2" style={{color: colors.text}}>Selected Moves</h3>
-                            <div className="grid grid-cols-2 gap-2 min-h-[80px]">
-                                {customization.moves.map(moveName => (
-                                    <div key={moveName} className="p-2 rounded-lg text-center capitalize" style={{backgroundColor: colors.cardLight, color: colors.text}}>
-                                        {moveName.replace(/-/g, ' ')}
-                                    </div>
-                                ))}
-                                {Array.from({ length: 4 - customization.moves.length }).map((_, i) => (
-                                    <div key={i} className="p-2 rounded-lg flex items-center justify-center" style={{backgroundColor: colors.background}}>
-                                        <div className="w-8 h-1 rounded-full" style={{backgroundColor: colors.cardLight}}></div>
-                                    </div>
-                                ))}
-                            </div>
                         </div>
                     </div>
 
@@ -485,18 +509,42 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors }) => {
 
                         <div className="mt-6">
                              <h3 className="text-lg font-bold mb-2" style={{color: colors.text}}>Move Selection</h3>
+                             <div className="grid grid-cols-2 gap-2 min-h-[80px] mb-4 p-2 rounded-lg" style={{backgroundColor: colors.background}}>
+                                {customization.moves.map(moveName => {
+                                    const moveType = moveDetailsCache[moveName]?.type;
+                                    return (
+                                        <div key={moveName} className="p-2 rounded-lg text-center text-sm capitalize text-white" style={{ backgroundColor: moveType ? typeColors[moveType] : colors.cardLight }}>
+                                            {moveName.replace(/-/g, ' ')}
+                                        </div>
+                                    )
+                                })}
+                                {Array.from({ length: 4 - customization.moves.length }).map((_, i) => (
+                                    <div key={i} className="p-2 rounded-lg flex items-center justify-center" style={{backgroundColor: colors.cardLight, opacity: 0.5}}>
+                                        <div className="w-8 h-1 rounded-full" style={{backgroundColor: colors.background}}></div>
+                                    </div>
+                                ))}
+                            </div>
                              <input type="text" placeholder="Search moves..." value={moveSearch} onChange={(e) => setMoveSearch(e.target.value)} className="w-full p-2 rounded-lg mb-2" style={{backgroundColor: colors.cardLight, color: colors.text}}/>
                              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar pr-2" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
-                                {filteredMoves.map(({ move }) => (
-                                    <button 
-                                        key={move.name} 
-                                        onClick={() => handleMoveToggle(move.name)}
-                                        className={`p-2 rounded-lg text-sm capitalize transition-colors ${customization.moves.includes(move.name) ? 'bg-primary text-white' : 'hover:bg-purple-500/30'}`}
-                                        style={!customization.moves.includes(move.name) ? {backgroundColor: colors.cardLight, color: colors.text} : {}}
-                                        >
-                                        {move.name.replace(/-/g, ' ')}
-                                    </button>
-                                ))}
+                                {filteredMoves.map(({ move }) => {
+                                    const moveType = moveDetailsCache[move.name]?.type;
+                                    const isSelected = customization.moves.includes(move.name);
+                                    
+                                    const style = isSelected 
+                                      ? { backgroundColor: moveType ? typeColors[moveType] : colors.primary, color: 'white' }
+                                      : { backgroundColor: colors.cardLight, color: colors.text };
+
+                                    return (
+                                        <button 
+                                            key={move.name} 
+                                            onClick={() => handleMoveToggle(move.name)}
+                                            className={`p-2 rounded-lg text-sm capitalize transition-colors ${!isSelected && 'hover:opacity-80'}`}
+                                            style={style}
+                                            >
+                                            {move.name.replace(/-/g, ' ')}
+                                        </button>
+                                    )
+                                })}
                              </div>
                         </div>
                     </div>
@@ -514,7 +562,7 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors }) => {
 
 const TeamBuilderView = ({
     currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleSaveTeam, editingTeamId, handleClearTeam,
-    recentTeams, setCurrentPage, handleToggleFavorite, handleEditTeam, handleShareTeam, handleDeleteTeam,
+    recentTeams, setCurrentPage, handleToggleFavorite, handleEditTeam, handleShareTeam, handleDeleteTeam, handleExportToShowdown,
     teamAnalysis,
     searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
     isInitialLoading, isFiltering,
@@ -529,7 +577,7 @@ const TeamBuilderView = ({
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4 " style={{backgroundColor: colors.background}}>
                     {currentTeam.map(p => (
-                        <div key={p.id} className="text-center relative group cursor-pointer" onClick={() => onEditTeamPokemon(p)}>
+                        <div key={p.instanceId} className="text-center relative group cursor-pointer" onClick={() => onEditTeamPokemon(p)}>
                             <img
                             src={p.animatedSprite || p.sprite || POKEBALL_PLACEHOLDER_URL}
                             onError={(e) => { e.currentTarget.src = p.sprite || POKEBALL_PLACEHOLDER_URL }}
@@ -546,7 +594,7 @@ const TeamBuilderView = ({
                             </button>
 
                             <button
-                            onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.id); }}
+                            onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.instanceId); }}
                             className="
                                 absolute top-1 right-1 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm
                                 opacity-100 visible
@@ -564,6 +612,7 @@ const TeamBuilderView = ({
                 </div>
                 <div className="flex items-center gap-2 mt-4">
                     <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg hover:opacity-90" style={{backgroundColor: colors.primary, color: colors.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
+                    <button onClick={handleExportToShowdown} className="p-2 rounded-lg hover:opacity-80" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Export to Showdown"><ShowdownIcon /></button>
                     <button onClick={handleShareTeam} className="p-2 rounded-lg hover:opacity-80" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Share Team"><ShareIcon /></button>
                     <button onClick={handleClearTeam} className="p-2 rounded-lg hover:opacity-80" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Clear Team"><ClearIcon /></button>
                 </div>
@@ -700,7 +749,7 @@ const PokedexView = ({
 }) => {
     return (
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-           
+            
              <div className="lg:col-span-9">
                  <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: colors.card}}>
                      <div className="mb-4">
@@ -722,7 +771,7 @@ const PokedexView = ({
                          <>
                              {isFiltering && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-lg"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: colors.primary}}></div></div>}
                              <div className="h-full overflow-y-auto custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
-                                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-2">
+                                 <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-2">
                                      {pokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemonDetailsCache[pokemon.id]} onCardClick={showDetails} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} colors={colors} />)}
                                  </div>
                                  {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
@@ -735,16 +784,16 @@ const PokedexView = ({
 
              <div className="lg:col-span-3 space-y-8">
                  <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
-                    <h3 className="text-base md:text-lg font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Filter by Type</h3>
-                    <div className="grid grid-cols-5 lg:grid-cols-5 gap-1.5">
-                        {Object.keys(typeColors).map(type => (
-                            <button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:opacity-75 ${selectedTypes.has(type) ? 'ring-2 ring-purple' : ''}`} style={{backgroundColor: colors.cardLight}} title={type}>
-                                <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
-                            </button>
-                        ))}
-                    </div>
-                </section>
-            </div>
+                     <h3 className="text-base md:text-lg font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Filter by Type</h3>
+                     <div className="grid grid-cols-5 lg:grid-cols-5 gap-1.5">
+                         {Object.keys(typeColors).map(type => (
+                             <button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:opacity-75 ${selectedTypes.has(type) ? 'ring-2 ring-purple' : ''}`} style={{backgroundColor: colors.cardLight}} title={type}>
+                                 <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
+                             </button>
+                         ))}
+                     </div>
+                 </section>
+             </div>
         </main>
     )
 };
@@ -766,6 +815,9 @@ export default function App() {
     const [filteredPokemons, setFilteredPokemons] = useState([]);
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
     const [evolutionChainCache, setEvolutionChainCache] = useState({});
+    const [moveDetailsCache, setMoveDetailsCache] = useState({});
+    const [items, setItems] = useState([]);
+    const [natures, setNatures] = useState([]);
     
     // Filter Controls
     const [generations, setGenerations] = useState([]);
@@ -904,6 +956,29 @@ export default function App() {
             return null;
         }
     }, [pokemonDetailsCache, showToast]);
+    
+    const fetchMoveDetails = useCallback(async (moveUrl, moveName) => {
+        if (moveDetailsCache[moveName]) {
+            return moveDetailsCache[moveName];
+        }
+        try {
+            const res = await fetch(moveUrl);
+            const data = await res.json();
+            const moveData = {
+                name: data.name,
+                type: data.type.name,
+                power: data.power,
+                accuracy: data.accuracy,
+                pp: data.pp,
+                damage_class: data.damage_class.name,
+            };
+            setMoveDetailsCache(prev => ({...prev, [moveName]: moveData}));
+            return moveData;
+        } catch (error) {
+            console.error(`Failed to fetch details for move: ${moveName}`, error);
+            return null;
+        }
+    }, [moveDetailsCache]);
 
     useEffect(() => {
         try {
@@ -941,6 +1016,7 @@ export default function App() {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
+                // Fetch Pokemon
                 const speciesListRes = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1025');
                 const speciesListData = await speciesListRes.json();
 
@@ -963,9 +1039,21 @@ export default function App() {
                 setAllPokemons(pokemonData);
                 setFilteredPokemons(pokemonData);
                 
+                // Fetch Generations
                 const genRes = await fetch('https://pokeapi.co/api/v2/generation');
                 const genData = await genRes.json();
                 setGenerations(genData.results);
+                
+                // Fetch Items
+                const itemRes = await fetch('https://pokeapi.co/api/v2/item?limit=1000');
+                const itemData = await itemRes.json();
+                setItems(itemData.results);
+                
+                // Fetch Natures
+                const natureRes = await fetch('https://pokeapi.co/api/v2/nature');
+                const natureData = await natureRes.json();
+                setNatures(natureData.results);
+
 
             } catch (e) {
                 showToast("Failed to load Pokémon data.", "error");
@@ -1175,29 +1263,6 @@ export default function App() {
 
     }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
 
-/*    useEffect(() => {
-         if (!db || !isAuthReady) return;
-        
-        const likesDocRef = doc(db, "artifacts", appId, "public", "data", "app-metadata", "likes");
-        
-        const unsubscribe = onSnapshot(likesDocRef, (doc) => {
-            if (doc.exists()) {
-                setLikeCount(doc.data().count);
-            } else {
-                setDoc(likesDocRef, { count: 0 });
-            }
-        }, (error) => {
-            console.error("Like listener error:", error);
-        });
-
-        if (sessionStorage.getItem('hasLikedPokemonBuilder')) {
-            setHasLiked(true);
-        }
-
-        return () => unsubscribe();
-    }, [db, isAuthReady]); */
-
-
     const observer = useRef();
     const lastPokemonElementRef = useCallback(node => {
         if (isFetchingMore || isFiltering) return;
@@ -1216,18 +1281,23 @@ export default function App() {
         
         const newMember = {
             ...pokemon,
-            instanceId: `${pokemon.id}-${Date.now()}`, // Unique ID for this instance in the team
+            instanceId: `${pokemon.id}-${Date.now()}`,
             customization: {
+                item: '',
+                nature: 'serious', // A neutral default nature
+                teraType: pokemon.types[0],
+                isShiny: false,
                 ability: pokemon.abilities[0].ability.name,
                 moves: pokemon.moves.slice(0, 4).map(m => m.move.name),
-                evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 }
+                evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
+                ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
             }
         };
         setCurrentTeam(prev => [...prev, newMember]);
     }, [currentTeam, showToast]);
 
-    const handleRemoveFromTeam = useCallback((pokemonId) => {
-        setCurrentTeam(prev => prev.filter(p => p.id !== pokemonId));
+    const handleRemoveFromTeam = useCallback((instanceId) => {
+        setCurrentTeam(prev => prev.filter(p => p.instanceId !== instanceId));
     }, []);
 
     const handleClearTeam = useCallback(() => {
@@ -1278,27 +1348,54 @@ export default function App() {
             await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
             const shareUrl = `${window.location.origin}${window.location.pathname}?team=${teamId}`;
             
-            const textArea = document.createElement("textarea");
-            textArea.value = shareUrl;
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showToast("Share link copied to clipboard!", "success");
-                } else {
-                    showToast("Failed to copy link.", "error");
-                }
-            } catch (err) {
-                showToast("Failed to copy link.", "error");
-            }
-            document.body.removeChild(textArea);
+            await navigator.clipboard.writeText(shareUrl);
+            showToast("Share link copied to clipboard!", "success");
 
         } catch (error) {
             showToast("Could not generate share link.", "error");
         }
     }, [db, currentTeam, teamName, showToast, isAuthReady]);
+    
+    const handleExportToShowdown = useCallback(async () => {
+        if (currentTeam.length === 0) return showToast("Your team is empty!", "warning");
+        
+        const formatCase = (str) => str.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        
+        const exportText = currentTeam.map(p => {
+            const { customization, name } = p;
+            const evsString = Object.entries(customization.evs)
+              .filter(([, val]) => val > 0)
+              .map(([key, val]) => {
+                  const statMap = {'hp': 'HP', 'attack': 'Atk', 'defense': 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', 'speed': 'Spe' };
+                  return `${val} ${statMap[key]}`;
+              })
+              .join(' / ');
+              
+            // A simple IV check, can be expanded
+            const ivsString = customization.ivs.attack === 0 ? 'IVs: 0 Atk' : '';
+
+            return [
+                `${formatCase(name)} @ ${formatCase(customization.item || 'Nothing')}`,
+                `Ability: ${formatCase(customization.ability)}`,
+                `Level: 50`,
+                customization.isShiny ? `Shiny: Yes` : null,
+                `Tera Type: ${formatCase(customization.teraType)}`,
+                evsString ? `EVs: ${evsString}` : null,
+                `${formatCase(customization.nature)} Nature`,
+                ivsString ? ivsString : null,
+                ...customization.moves.map(move => `- ${formatCase(move)}`)
+            ].filter(Boolean).join('\n');
+            
+        }).join('\n\n');
+        
+        try {
+            await navigator.clipboard.writeText(exportText);
+            showToast("Team copied for Pokémon Showdown!", "success");
+        } catch (err) {
+            showToast("Failed to copy team.", "error");
+        }
+
+    }, [currentTeam, showToast]);
 
     const handleEditTeam = useCallback(async (team) => {
         showToast(`Loading team: ${team.name}...`, 'info');
@@ -1306,11 +1403,21 @@ export default function App() {
             team.pokemons.map(p => fetchPokemonDetails(p.id))
         );
 
-        const customizedTeam = teamPokemonDetails.map((detail, i) => ({
-            ...detail,
-            instanceId: team.pokemons[i].instanceId,
-            customization: team.pokemons[i].customization
-        }));
+        const customizedTeam = teamPokemonDetails.map((detail, i) => {
+            // Merge saved customization with a full default object to ensure all keys exist
+            const defaultCustomization = {
+                item: '', nature: 'serious', teraType: detail.types[0], isShiny: false,
+                ability: detail.abilities[0].ability.name,
+                moves: detail.moves.slice(0, 4).map(m => m.move.name),
+                evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
+                ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
+            };
+            return {
+                ...detail,
+                instanceId: team.pokemons[i].instanceId,
+                customization: { ...defaultCustomization, ...team.pokemons[i].customization }
+            }
+        });
 
         setCurrentTeam(customizedTeam.filter(Boolean));
         setTeamName(team.name);
@@ -1352,9 +1459,9 @@ export default function App() {
         setEditingTeamMember(pokemon);
     }, []);
 
-    const handleUpdateTeamMember = useCallback((pokemonId, newCustomization) => {
+    const handleUpdateTeamMember = useCallback((instanceId, newCustomization) => {
         setCurrentTeam(prevTeam => prevTeam.map(member => 
-            member.id === pokemonId ? { ...member, customization: newCustomization } : member
+            member.instanceId === instanceId ? { ...member, customization: newCustomization } : member
         ));
     }, []);
     
@@ -1401,7 +1508,7 @@ export default function App() {
                     currentTeam={currentTeam} teamName={teamName} setTeamName={setTeamName}
                     handleRemoveFromTeam={handleRemoveFromTeam} handleSaveTeam={handleSaveTeam} editingTeamId={editingTeamId}
                     handleClearTeam={handleClearTeam} recentTeams={recentTeams} setCurrentPage={setCurrentPage}
-                    handleToggleFavorite={handleToggleFavorite} handleEditTeam={handleEditTeam} handleDeleteTeam={handleDeleteTeam} handleShareTeam={() => {}}
+                    handleToggleFavorite={handleToggleFavorite} handleEditTeam={handleEditTeam} handleDeleteTeam={handleDeleteTeam} handleShareTeam={handleShareTeam} handleExportToShowdown={handleExportToShowdown}
                     teamAnalysis={teamAnalysis} searchInput={searchInput} setSearchInput={setSearchInput}
                     selectedGeneration={selectedGeneration} setSelectedGeneration={setSelectedGeneration} generations={generations}
                     isInitialLoading={isInitialLoading} isFiltering={isFiltering} availablePokemons={availablePokemons}
@@ -1417,7 +1524,7 @@ export default function App() {
     return (
       <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
         {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} />}
-        {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} />}
+        {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache} fetchMoveDetails={fetchMoveDetails} />}
         
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
@@ -1497,7 +1604,7 @@ export default function App() {
                 </footer>
             </div>
         </div>
-        <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: var(--scrollbar-track-color); } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb-color); border-radius: 20px; border: 3px solid var(--scrollbar-thumb-border-color); } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } .bg-primary { background-color: #7d65e1; } `}</style>
+        <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: var(--scrollbar-track-color); } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb-color); border-radius: 20px; border: 3px solid var(--scrollbar-thumb-border-color); } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } .bg-primary { background-color: ${colors.primary}; } input[type="checkbox"]:checked + div + div { transform: translateX(100%); background-color: ${colors.primary}; }`}</style>
       </div>
     );
 }
