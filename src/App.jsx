@@ -1020,6 +1020,28 @@ useEffect(() => {
         return teams;
     }, [savedTeams, teamSearchTerm]);
     
+     const fetchPokemonDetails = useCallback(async (pokemonId) => {
+        if (pokemonDetailsCache[pokemonId]) {
+            return pokemonDetailsCache[pokemonId];
+        }
+        if (!db) return null;
+
+        try {
+            const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(pokemonId));
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const pokemonData = docSnap.data();
+                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: pokemonData }));
+                return pokemonData;
+            }
+            return null;
+        } catch (error) {
+            console.error("Failed to fetch Pokémon details:", error);
+            showToast(`Could not load details for Pokémon ID: ${pokemonId}`, "error");
+            return null;
+        }
+    }, [db, pokemonDetailsCache, showToast]);
+
     const fetchAndSetSharedTeam = useCallback(async (teamId) => {
     if (!db || isLoading) return;
 
@@ -1064,44 +1086,22 @@ useEffect(() => {
         // This will run after the try or catch block completes
         setIsLoading(false);
     }
-}, [
-    db, 
-    appId, // Added missing dependency
-    isLoading, 
-    showToast, 
-    fetchPokemonDetails, 
-]);
+    }, [
+        db, 
+        appId, // Added missing dependency
+        isLoading, 
+        showToast, 
+        fetchPokemonDetails, 
+    ]);
 
-// useEffect(() => {
-//         if (!db || isLoading || !isAuthReady) return;
-//         const urlParams = new URLSearchParams(window.location.search);
-//         const teamId = urlParams.get('team');
-//         if (teamId) {
-//             fetchAndSetSharedTeam(teamId);
-//         }
-//     }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
-
-     const fetchPokemonDetails = useCallback(async (pokemonId) => {
-        if (pokemonDetailsCache[pokemonId]) {
-            return pokemonDetailsCache[pokemonId];
+    useEffect(() => {
+        if (!db || isLoading || !isAuthReady) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamId = urlParams.get('team');
+        if (teamId) {
+            fetchAndSetSharedTeam(teamId);
         }
-        if (!db) return null;
-
-        try {
-            const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(pokemonId));
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const pokemonData = docSnap.data();
-                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: pokemonData }));
-                return pokemonData;
-            }
-            return null;
-        } catch (error) {
-            console.error("Failed to fetch Pokémon details:", error);
-            showToast(`Could not load details for Pokémon ID: ${pokemonId}`, "error");
-            return null;
-        }
-    }, [db, pokemonDetailsCache, showToast]);
+    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
 
     // Efeito para autenticação e inicialização do Firebase
     useEffect(() => {
