@@ -1072,14 +1072,14 @@ useEffect(() => {
     fetchPokemonDetails, 
 ]);
 
-useEffect(() => {
-        if (!db || isLoading || !isAuthReady) return;
-        const urlParams = new URLSearchParams(window.location.search);
-        const teamId = urlParams.get('team');
-        if (teamId) {
-            fetchAndSetSharedTeam(teamId);
-        }
-    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
+// useEffect(() => {
+//         if (!db || isLoading || !isAuthReady) return;
+//         const urlParams = new URLSearchParams(window.location.search);
+//         const teamId = urlParams.get('team');
+//         if (teamId) {
+//             fetchAndSetSharedTeam(teamId);
+//         }
+//     }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
 
      const fetchPokemonDetails = useCallback(async (pokemonId) => {
         if (pokemonDetailsCache[pokemonId]) {
