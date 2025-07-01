@@ -1001,13 +1001,13 @@ useEffect(() => {
 }, [currentTeam, pokemons]); 
 
     useEffect(() => {
-        if (!db || isInitialLoading || !isAuthReady) return;
+        if (!db || isLoading || !isAuthReady) return;
         const urlParams = new URLSearchParams(window.location.search);
         const teamId = urlParams.get('team');
         if (teamId) {
             fetchAndSetSharedTeam(teamId);
         }
-    }, [db, isInitialLoading, isAuthReady, fetchAndSetSharedTeam]);
+    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
 
 
      const availablePokemons = useMemo(() => {
