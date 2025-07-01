@@ -916,6 +916,71 @@ export default function App() {
         fetchStaticData();
     }, []);
 
+    // CORREÇÃO: Substitua o useEffect da análise de time por este:
+useEffect(() => {
+    // Agora, usamos o currentTeam diretamente, pois ele já tem os detalhes do Firestore.
+    const teamDetails = currentTeam; 
+
+    if (teamDetails.length === 0) {
+        setTeamAnalysis({ strengths: new Set(), weaknesses: {} });
+        setSuggestedPokemonIds(new Set());
+        return;
+    }
+    
+    const teamWeaknessCounts = {};
+    const offensiveCoverage = new Set();
+    
+    teamDetails.flatMap(d => d.types).forEach(type => {
+        Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => {
+            if (mult > 1) offensiveCoverage.add(vs.toLowerCase());
+        });
+    });
+
+    Object.keys(typeChart).forEach(attackingType => {
+        const capitalizedAttackingType = attackingType.charAt(0).toUpperCase() + attackingType.slice(1);
+        let weakCount = 0;
+        let resistanceCount = 0;
+
+        teamDetails.forEach(pokemon => {
+            const multiplier = pokemon.types.reduce((acc, pokemonType) => {
+                return acc * (typeChart[pokemonType]?.damageTaken[capitalizedAttackingType] ?? 1);
+            }, 1);
+
+            if (multiplier > 1) {
+                weakCount++;
+            } else if (multiplier < 1) {
+                resistanceCount++;
+            }
+        });
+        
+        if (weakCount > 0 && weakCount >= teamDetails.length / 2 && weakCount > resistanceCount) {
+            teamWeaknessCounts[attackingType] = weakCount;
+        }
+    });
+    setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
+
+    // Lógica de sugestão (ainda experimental e baseada nos pokémons já carregados)
+    const weaknessTypes = Object.keys(teamWeaknessCounts);
+    if (weaknessTypes.length > 0 && pokemons.length > 0) {
+        const potentialSuggestions = pokemons.filter(p => {
+            const details = p; // O objeto já é o detalhe completo
+            if (!details.types) return false;
+
+            return weaknessTypes.some(weakType => {
+                const capitalizedWeakType = weakType.charAt(0).toUpperCase() + weakType.slice(1);
+                const typeMultiplier = details.types.reduce((multiplier, pokemonType) => {
+                    return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1);
+                }, 1);
+                return typeMultiplier < 1; // É resistente ao tipo que é uma fraqueza do time
+            });
+        });
+        setSuggestedPokemonIds(new Set(potentialSuggestions.map(p => p.id).slice(0, 10)));
+    } else {
+        setSuggestedPokemonIds(new Set());
+    }
+
+}, [currentTeam, pokemons]); 
+
      const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
         const available = pokemons.filter(p => !teamIds.has(p.id));
