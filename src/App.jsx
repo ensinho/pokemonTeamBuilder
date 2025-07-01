@@ -1055,6 +1055,28 @@ useEffect(() => {
         }
     }, [db, showToast, sharedTeamLoaded]);
 
+     const fetchPokemonDetails = useCallback(async (pokemonId) => {
+        if (pokemonDetailsCache[pokemonId]) {
+            return pokemonDetailsCache[pokemonId];
+        }
+        if (!db) return null;
+
+        try {
+            const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(pokemonId));
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                const pokemonData = docSnap.data();
+                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: pokemonData }));
+                return pokemonData;
+            }
+            return null;
+        } catch (error) {
+            console.error("Failed to fetch Pokémon details:", error);
+            showToast(`Could not load details for Pokémon ID: ${pokemonId}`, "error");
+            return null;
+        }
+    }, [db, pokemonDetailsCache, showToast]);
+
     // Efeito para autenticação e inicialização do Firebase
     useEffect(() => {
         try {
