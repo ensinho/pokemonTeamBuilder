@@ -1043,53 +1043,34 @@ useEffect(() => {
     }, [db, pokemonDetailsCache, showToast]);
 
     const fetchAndSetSharedTeam = useCallback(async (teamId) => {
-    if (!db || isLoading) return;
-
-    setIsLoading(true);
-    showToast("Loading shared team...", "info");
-
-    try {
+        if(!db || sharedTeamLoaded) return;
+        setSharedTeamLoaded(true);
+        showToast("Loading shared team...", "info");
         const teamDocRef = doc(db, `artifacts/${appId}/public/data/teams`, teamId);
-        const teamDoc = await getDoc(teamDocRef);
-
-        if (teamDoc.exists()) {
-            const teamData = teamDoc.data();
-            
-            const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
-            const teamPokemonDetails = await Promise.all(detailsPromises);
-
-            const customizedTeam = teamPokemonDetails.map((detail, i) => {
-                if (!detail) return null; 
-
-                return {
+        try {
+            const teamDoc = await getDoc(teamDocRef);
+            if (teamDoc.exists()) {
+                const teamData = teamDoc.data();
+                const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
+                const teamPokemonDetails = await Promise.all(detailsPromises);
+                
+                const customizedTeam = teamPokemonDetails.map((detail, i) => ({
                     ...detail,
-                    instanceId: teamData.pokemons[i].instanceId,
+                    instanceId: teamData.pokemons[i].instanceId, // Make sure instanceId is loaded
                     customization: teamData.pokemons[i].customization
-                };
-            });
+                }));
 
-            setCurrentTeam(customizedTeam.filter(Boolean));
-            setTeamName(teamData.name);
-            setEditingTeamId(null); 
-            setIsLoading(false);
-            showToast(`Loaded team: ${teamData.name}`, "success");
-            return
-        } else {
-            showToast("Shared team not found.", "error");
+                setCurrentTeam(customizedTeam.filter(Boolean));
+                setTeamName(teamData.name);
+                setEditingTeamId(null);
+                showToast(`Loaded team: ${teamData.name}`, "success");
+            } else {
+                showToast("Shared team not found.", "error");
+            }
+        } catch (error) {
+            showToast("Failed to load shared team.", "error");
         }
-    } catch (error) {
-        console.error("Failed to load shared team:", error);
-        showToast("Failed to load shared team.", "error");
-    } finally {
-        setIsLoading(false);
-    }
-    }, [
-        db, 
-        appId, // Added missing dependency
-        isLoading, 
-        showToast, 
-        fetchPokemonDetails, 
-    ]);
+    }, [db, showToast, sharedTeamLoaded]);
 
     useEffect(() => {
         if (!db || isLoading || !isAuthReady) return;
