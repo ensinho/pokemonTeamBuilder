@@ -884,9 +884,7 @@ export default function App() {
     const [editingTeamMember, setEditingTeamMember] = useState(null);
     const [maxToasts, setMaxToasts] = useState(3);
     const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
-    const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
-
-       
+    const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);       
 
     const showToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -912,6 +910,15 @@ export default function App() {
         return () => unsubscribe();
 
     }, [db, userId, showToast]);
+
+    useEffect(() => {
+        if (!db || isLoading || !isAuthReady) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamId = urlParams.get('team');
+        if (teamId) {
+            fetchAndSetSharedTeam(teamId);
+        }
+    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
 
     // Busca dados estáticos (gens, items, natures) uma vez no início
     useEffect(() => {
@@ -1438,15 +1445,6 @@ useEffect(() => {
             setTheme(savedTheme); 
         }
     }, []);
-
-        useEffect(() => {
-        if (!db || isLoading || !isAuthReady) return;
-        const urlParams = new URLSearchParams(window.location.search);
-        const teamId = urlParams.get('team');
-        if (teamId) {
-            fetchAndSetSharedTeam(teamId);
-        }
-    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
 
     const renderPage = () => {
         const availablePokemons = useMemo(() => {
