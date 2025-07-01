@@ -1055,13 +1055,10 @@ useEffect(() => {
         if (teamDoc.exists()) {
             const teamData = teamDoc.data();
             
-            // Fetch details for all Pokémon in parallel
             const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
             const teamPokemonDetails = await Promise.all(detailsPromises);
 
-            // Combine fetched details with instance-specific customizations
             const customizedTeam = teamPokemonDetails.map((detail, i) => {
-                // In case a pokemon detail fetch fails and returns something falsy
                 if (!detail) return null; 
 
                 return {
@@ -1071,11 +1068,12 @@ useEffect(() => {
                 };
             });
 
-            // Set state with the new team data, filtering out any failed fetches
             setCurrentTeam(customizedTeam.filter(Boolean));
             setTeamName(teamData.name);
-            setEditingTeamId(null); // Reset editing state
+            setEditingTeamId(null); 
+            setIsLoading(false);
             showToast(`Loaded team: ${teamData.name}`, "success");
+            return
         } else {
             showToast("Shared team not found.", "error");
         }
@@ -1083,7 +1081,6 @@ useEffect(() => {
         console.error("Failed to load shared team:", error);
         showToast("Failed to load shared team.", "error");
     } finally {
-        // This will run after the try or catch block completes
         setIsLoading(false);
     }
     }, [
