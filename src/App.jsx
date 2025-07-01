@@ -1000,16 +1000,6 @@ useEffect(() => {
 
 }, [currentTeam, pokemons]); 
 
-    useEffect(() => {
-        if (!db || isLoading || !isAuthReady) return;
-        const urlParams = new URLSearchParams(window.location.search);
-        const teamId = urlParams.get('team');
-        if (teamId) {
-            fetchAndSetSharedTeam(teamId);
-        }
-    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
-
-
      const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
         const available = pokemons.filter(p => !teamIds.has(p.id));
@@ -1155,11 +1145,6 @@ useEffect(() => {
         if (genToUse !== 'all') {
             constraints.push(where('generation', '==', genToUse));
         }
-
-        // ==================================================================
-        // CORREÇÃO 2: Usar 'array-contains-any' para a filtragem de tipos.
-        // Isso permite buscar por múltiplos tipos em uma única consulta.
-        // ==================================================================
         if (typesToUse.length > 0) {
             constraints.push(where('types', 'array-contains-any', typesToUse));
         }
@@ -1211,7 +1196,6 @@ useEffect(() => {
         debouncedPokedexSearchTerm, pokedexSelectedGeneration, JSON.stringify(Array.from(pokedexSelectedTypes))
     ]);
 
-    // Função para carregar mais pokémons no scroll infinito
     const fetchMorePokemons = useCallback(async () => {
         if (isFetchingMore || !hasMore || !db || !lastVisibleDoc) return;
 
@@ -1454,6 +1438,15 @@ useEffect(() => {
             setTheme(savedTheme); 
         }
     }, []);
+
+        useEffect(() => {
+        if (!db || isLoading || !isAuthReady) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamId = urlParams.get('team');
+        if (teamId) {
+            fetchAndSetSharedTeam(teamId);
+        }
+    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
 
     const renderPage = () => {
         const availablePokemons = useMemo(() => {
