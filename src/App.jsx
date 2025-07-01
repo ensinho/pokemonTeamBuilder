@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query } from 'firebase/firestore';
+// Funções de query do Firestore que vamos usar
+import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit, startAfter, where, getDocs } from 'firebase/firestore';
+
+// Suas importações de ícones e assets
 import NormalIcon from "./assets/typeIcons/Normal_icon_LA.png";
 import FireIcon from "./assets/typeIcons/Fire_icon_LA.png";
 import WaterIcon from "./assets/typeIcons/Water_icon_LA.png";
@@ -112,8 +115,7 @@ const MoonIcon = ({ color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="
 const SwordsIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-swords"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 3v5l-11 9l-4 4l-3 -3l4 -4l9 -11z" /><path d="M5 13l6 6" /><path d="M14.32 17.32l3.68 3.68l3 -3l-3.365 -3.365" /><path d="M10 5.5l-2 -2.5h-5v5l3 2.5" /></svg>);
 const EditIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>);
 const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sparkles"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" /></svg>);
-const ShowdownIcon = () => (<svg  xmlns="http://www.w3.org/2000/svg"  width="24"  height="24"  viewBox="0 0 24 24"  fill="none"  stroke="currentColor"  strokeWidth="2"  strokeLinecap="round"  strokeLinejoin="round"  className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>);
-
+const ShowdownIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>);
 
 const TypeBadge = ({ type, colors }) => ( <span className="text-xs text-white font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
@@ -204,7 +206,7 @@ const AbilityChip = ({ ability }) => {
         if (description || isLoading) return;
         setIsLoading(true);
         try {
-            const res = await fetch(ability.ability.url);
+            const res = await fetch(ability.url);
             const data = await res.json();
             const effectEntry = data.effect_entries.find(entry => entry.language.name === 'en');
             setDescription(effectEntry?.short_effect || 'No description available.');
@@ -213,7 +215,7 @@ const AbilityChip = ({ ability }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [ability.ability.url, description, isLoading]);
+    }, [ability.url, description, isLoading]);
 
     const handleMouseEnter = () => {
         fetchAbilityDescription();
@@ -246,7 +248,7 @@ const AbilityChip = ({ ability }) => {
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
-            {ability.ability.name.replace('-', ' ')}
+            {ability.name.replace('-', ' ')}
             {isTooltipVisible && (
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-700 text-white text-xs rounded-md shadow-lg z-20">
                     {isLoading ? 'Loading...' : description}
@@ -256,12 +258,12 @@ const AbilityChip = ({ ability }) => {
     );
 }
 
-const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, showPokemonDetails, pokemonDetailsCache }) => {
+const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, showPokemonDetails, db }) => {
     const [showShiny, setShowShiny] = useState(false);
-    const [evolutionChain, setEvolutionChain] = useState([]);
+    const [evolutionDetails, setEvolutionDetails] = useState([]);
 
     useEffect(() => {
-        if (!pokemon || !pokemon.evolution_chain_url) return;
+        if (!pokemon || !pokemon.evolution_chain_url || !db) return;
         
         const fetchEvolutionChain = async () => {
             try {
@@ -270,30 +272,40 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                 const chain = [];
                 let evoData = data.chain;
                 do {
-                    chain.push(evoData.species.name);
+                    chain.push({
+                        name: evoData.species.name,
+                        url: evoData.species.url
+                    });
                     evoData = evoData.evolves_to[0];
                 } while (!!evoData && evoData.hasOwnProperty('evolves_to'));
-                setEvolutionChain(chain);
+
+                const detailsPromises = chain.map(async (evo) => {
+                    const id = evo.url.split('/').filter(Boolean).pop();
+                    const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id);
+                    const docSnap = await getDoc(docRef);
+                    return docSnap.exists() ? docSnap.data() : { name: evo.name, sprite: POKEBALL_PLACEHOLDER_URL };
+                });
+                
+                const resolvedDetails = await Promise.all(detailsPromises);
+                setEvolutionDetails(resolvedDetails);
+
             } catch (error) {
                 console.error("Failed to fetch evolution chain", error);
             }
         };
 
         fetchEvolutionChain();
-    }, [pokemon]);
+    }, [pokemon, db]);
 
-    const handleEvolutionClick = (name) => {
+    const handleEvolutionClick = (pokeData) => {
         onClose(); 
-        const evolutionPokemon = Object.values(pokemonDetailsCache).find(p => p.name === name);
-        if (evolutionPokemon) {
-            showPokemonDetails(evolutionPokemon);
-        }
+        showPokemonDetails(pokeData);
     };
     
     if (!pokemon) return null;
     
     const isAlreadyOnTeam = currentTeam.some(p => p.id === pokemon.id);
-    const spriteToShow = showShiny ? pokemon.animatedShinySprite : (pokemon.animatedSprite || pokemon.sprite);
+    const spriteToShow = showShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite);
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 h-[100vh] flex items-center justify-center z-50 p-4 " onClick={onClose}>
@@ -318,24 +330,22 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                 <div className="mt-6">
                     <h3 className="text-xl font-bold mb-3 text-center" style={{color: colors.text}}>Base Stats</h3>
                     <div className="space-y-2">
-                        {pokemon.stats?.map(stat => <StatBar key={stat.stat.name} stat={stat.stat.name} value={stat.base_stat} colors={colors} />)}
+                        {pokemon.stats?.map(stat => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
                     </div>
                 </div>
-                 {evolutionChain.length > 1 && (
+                 {evolutionDetails.length > 1 && (
                     <div className="mt-6">
                         <h3 className="text-xl font-bold mb-3 text-center" style={{ color: colors.text }}>Evolution Line</h3>
                         <div className="flex justify-center items-center gap-2">
-                            {evolutionChain.map((name, index) => {
-                                const evoPokemon = Object.values(pokemonDetailsCache).find(p => p.name === name);
-                                return (
-                                <React.Fragment key={name}>
-                                    <div onClick={() => handleEvolutionClick(name)} className="text-center cursor-pointer p-2 rounded-lg hover:bg-purple-500/30">
-                                        <img src={evoPokemon?.sprite || POKEBALL_PLACEHOLDER_URL} alt={name} className="h-20 w-20 mx-auto" />
-                                        <p className="text-sm capitalize" style={{color: colors.text}}>{name}</p>
+                            {evolutionDetails.map((evo, index) => (
+                                <React.Fragment key={evo.name}>
+                                    <div onClick={() => handleEvolutionClick(evo)} className="text-center cursor-pointer p-2 rounded-lg hover:bg-purple-500/30">
+                                        <img src={evo.sprite || POKEBALL_PLACEHOLDER_URL} alt={evo.name} className="h-20 w-20 mx-auto" />
+                                        <p className="text-sm capitalize" style={{color: colors.text}}>{evo.name}</p>
                                     </div>
-                                    {index < evolutionChain.length - 1 && <span className="text-2xl" style={{color: colors.textMuted}}>→</span>}
+                                    {index < evolutionDetails.length - 1 && <span className="text-2xl" style={{color: colors.textMuted}}>→</span>}
                                 </React.Fragment>
-                            )})}
+                            ))}
                         </div>
                     </div>
                 )}
@@ -357,11 +367,34 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     );
 };
 
-const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache, fetchMoveDetails }) => {
+const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache, setMoveDetailsCache }) => {
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
     const statNames = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+
+    const fetchMoveDetails = useCallback(async (moveUrl, moveName) => {
+        if (moveDetailsCache[moveName]) {
+            return moveDetailsCache[moveName];
+        }
+        try {
+            const res = await fetch(moveUrl);
+            const data = await res.json();
+            const moveData = {
+                name: data.name,
+                type: data.type.name,
+                power: data.power,
+                accuracy: data.accuracy,
+                pp: data.pp,
+                damage_class: data.damage_class.name,
+            };
+            setMoveDetailsCache(prev => ({...prev, [moveName]: moveData}));
+            return moveData;
+        } catch (error) {
+            console.error(`Failed to fetch details for move: ${moveName}`, error);
+            return null;
+        }
+    }, [moveDetailsCache, setMoveDetailsCache]);
 
     useEffect(() => {
         const totalEVs = Object.values(customization.evs).reduce((sum, ev) => sum + ev, 0);
@@ -413,14 +446,13 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
 
     const filteredMoves = useMemo(() => {
         if (!moveSearch) return pokemon.moves;
-        return pokemon.moves.filter(m => m.move.name.toLowerCase().includes(moveSearch.toLowerCase()));
+        return pokemon.moves.filter(m => m.name.toLowerCase().includes(moveSearch.toLowerCase()));
     }, [moveSearch, pokemon.moves]);
 
-    // Fetch move details for visible moves
     useEffect(() => {
-        filteredMoves.slice(0, 20).forEach(m => { // Fetch for first 20 results to avoid spamming
-            if (!moveDetailsCache[m.move.name]) {
-                fetchMoveDetails(m.move.url, m.move.name);
+        filteredMoves.slice(0, 20).forEach(m => {
+            if (!moveDetailsCache[m.name]) {
+                fetchMoveDetails(m.url, m.name);
             }
         });
     }, [filteredMoves, moveDetailsCache, fetchMoveDetails]);
@@ -476,7 +508,7 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
                          <div className="w-full mt-4">
                             <label className="block text-lg font-bold mb-2" style={{color: colors.text}}>Ability</label>
                             <select value={customization.ability} onChange={(e) => handleCustomizationChange('ability', e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
-                                {pokemon.abilities.map(({ ability }) => (
+                                {pokemon.abilities.map((ability) => (
                                     <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
                                 ))}
                             </select>
@@ -526,7 +558,7 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
                             </div>
                              <input type="text" placeholder="Search moves..." value={moveSearch} onChange={(e) => setMoveSearch(e.target.value)} className="w-full p-2 rounded-lg mb-2" style={{backgroundColor: colors.cardLight, color: colors.text}}/>
                              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar pr-2" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
-                                {filteredMoves.map(({ move }) => {
+                                {filteredMoves.map((move) => {
                                     const moveType = moveDetailsCache[move.name]?.type;
                                     const isSelected = customization.moves.includes(move.name);
                                     
@@ -560,13 +592,14 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
     )
 };
 
+
 const TeamBuilderView = ({
     currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleSaveTeam, editingTeamId, handleClearTeam,
     recentTeams, setCurrentPage, handleToggleFavorite, handleEditTeam, handleShareTeam, handleDeleteTeam, handleExportToShowdown,
     teamAnalysis,
     searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
-    isInitialLoading, isFiltering,
-    availablePokemons, pokemonDetailsCache, handleAddPokemonToTeam, lastPokemonElementRef, isFetchingMore, visibleCount,
+    isInitialLoading,
+    availablePokemons, handleAddPokemonToTeam, lastPokemonElementRef, isFetchingMore,
     selectedTypes, handleTypeSelection, showDetails,
     suggestedPokemonIds, colors, onEditTeamPokemon
 }) => (
@@ -653,7 +686,7 @@ const TeamBuilderView = ({
                         <input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                         <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
                             <option value="all" style={{color: colors.text}}>All Generations</option>
-                            {generations.map(gen => <option key={gen.name} value={gen.name} className="capitalize" style={{color: colors.text}}>{gen.name.replace('-', ' ')}</option>)}
+                            {generations.map(gen => <option key={gen} value={gen} className="capitalize" style={{color: colors.text}}>{gen.replace('-', ' ')}</option>)}
                         </select>
                     </div>
                 </div>
@@ -664,13 +697,12 @@ const TeamBuilderView = ({
                         </div>
                     ) : (
                     <>
-                        {isFiltering && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-lg"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: colors.primary}}></div></div>}
                         <div className="h-full overflow-y-auto custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
                             <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
-                                {availablePokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemonDetailsCache[pokemon.id]} onCardClick={handleAddPokemonToTeam} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} isSuggested={suggestedPokemonIds.has(pokemon.id)} colors={colors} />)}
+                                {availablePokemons.map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemon} onCardClick={handleAddPokemonToTeam} lastRef={index === availablePokemons.length - 1 ? lastPokemonElementRef : null} isSuggested={suggestedPokemonIds.has(pokemon.id)} colors={colors} />)}
                             </div>
                             {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
-                            {availablePokemons.length === 0 && !isFiltering && <p className="text-center py-8" style={{color: colors.textMuted}}>No Pokémon found with these filters. :(</p>}
+                            {availablePokemons.length === 0 && !isInitialLoading && <p className="text-center py-8" style={{color: colors.textMuted}}>No Pokémon found with these filters. :(</p>}
                         </div>
                     </>)}
                 </div>
@@ -741,15 +773,14 @@ const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, se
 );
 
 const PokedexView = ({
-    pokemons, pokemonDetailsCache, showDetails,
-    lastPokemonElementRef, isFetchingMore, visibleCount,
+    pokemons,
+    lastPokemonElementRef, isFetchingMore,
     searchInput, setSearchInput, selectedTypes, handleTypeSelection,
     selectedGeneration, setSelectedGeneration, generations,
-    isFiltering, isInitialLoading, colors
+    isInitialLoading, colors, showDetails
 }) => {
     return (
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            
              <div className="lg:col-span-9">
                  <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: colors.card}}>
                      <div className="mb-4">
@@ -758,7 +789,7 @@ const PokedexView = ({
                              <input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                              <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
                                  <option value="all" style={{color: colors.text}}>All Generations</option>
-                                 {generations.map(gen => <option key={gen.name} value={gen.name} className="capitalize" style={{color: colors.text}}>{gen.name.replace('-', ' ')}</option>)}
+                                 {generations.map(gen => <option key={gen} value={gen} className="capitalize" style={{color: colors.text}}>{gen.replace('-', ' ')}</option>)}
                              </select>
                          </div>
                      </div>
@@ -769,13 +800,12 @@ const PokedexView = ({
                              </div>
                          ) : (
                          <>
-                             {isFiltering && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10 rounded-lg"><div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: colors.primary}}></div></div>}
                              <div className="h-full overflow-y-auto custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
                                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-2">
-                                     {pokemons.slice(0, visibleCount).map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemonDetailsCache[pokemon.id]} onCardClick={showDetails} lastRef={index === visibleCount - 1 ? lastPokemonElementRef : null} colors={colors} />)}
+                                     {pokemons.map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemon} onCardClick={showDetails} lastRef={index === pokemons.length - 1 ? lastPokemonElementRef : null} colors={colors} />)}
                                  </div>
                                  {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
-                                 {pokemons.length === 0 && !isFiltering && <p className="text-center py-8" style={{color: colors.textMuted}}>No Pokémon found.</p>}
+                                 {pokemons.length === 0 && !isInitialLoading && <p className="text-center py-8" style={{color: colors.textMuted}}>No Pokémon found.</p>}
                              </div>
                          </>)}
                      </div>
@@ -798,8 +828,6 @@ const PokedexView = ({
     )
 };
 
-
-// --- Main App Component ---
 export default function App() {
     // Theme State
     const [theme, setTheme] = useState('light');
@@ -810,73 +838,87 @@ export default function App() {
     const [db, setDb] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
     
-    // Pokémon and Filter States
-    const [allPokemons, setAllPokemons] = useState([]);
-    const [filteredPokemons, setFilteredPokemons] = useState([]);
+    // --- ESTADOS REVISADOS PARA BUSCA NO FIRESTORE ---
+    const [pokemons, setPokemons] = useState([]); // Lista de pokémons visíveis
+    const [lastVisibleDoc, setLastVisibleDoc] = useState(null); // Cursor para paginação do Firestore
+    const [hasMore, setHasMore] = useState(true); // Indica se há mais pokémons para carregar
+    
+    // Caches para dados secundários que ainda podem vir da API ou para otimização
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
-    const [evolutionChainCache, setEvolutionChainCache] = useState({});
     const [moveDetailsCache, setMoveDetailsCache] = useState({});
+    
+    // Estados de dados que não mudam (Items, Natures)
     const [items, setItems] = useState([]);
     const [natures, setNatures] = useState([]);
-    
-    // Filter Controls
     const [generations, setGenerations] = useState([]);
+    
+    // --- ESTADOS DE FILTRO (Mantidos para cada view) ---
+    // Filtros do Team Builder
     const [selectedGeneration, setSelectedGeneration] = useState('all');
     const [selectedTypes, setSelectedTypes] = useState(new Set());
     const [searchInput, setSearchInput] = useState('');
     const debouncedSearchTerm = useDebounce(searchInput, 300);
     
-    // Pokedex Filter States
+    // Filtros do Pokédex
     const [pokedexSelectedGeneration, setPokedexSelectedGeneration] = useState('all');
     const [pokedexSelectedTypes, setPokedexSelectedTypes] = useState(new Set());
     const [pokedexSearchInput, setPokedexSearchInput] = useState('');
     const debouncedPokedexSearchTerm = useDebounce(pokedexSearchInput, 300);
 
-    // Team States
+    // Team States (permanecem os mesmos)
     const [currentTeam, setCurrentTeam] = useState([]);
     const [savedTeams, setSavedTeams] = useState([]);
     const [teamName, setTeamName] = useState('');
     const [editingTeamId, setEditingTeamId] = useState(null);
     const [teamAnalysis, setTeamAnalysis] = useState({ strengths: new Set(), weaknesses: {} });
     
-    // UI States
-    const [isInitialLoading, setIsInitialLoading] = useState(true);
-    const [isFiltering, setIsFiltering] = useState(false);
-    const [isFetchingMore, setIsFetchingMore] = useState(false);
+    // UI States (revisados para nova lógica de loading)
+    const [isLoading, setIsLoading] = useState(true); // Loading inicial ou de filtro
+    const [isFetchingMore, setIsFetchingMore] = useState(false); // Loading do scroll infinito
     const [toasts, setToasts] = useState([]);
     const [currentPage, setCurrentPage] = useState('builder');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
-    const [visibleCount, setVisibleCount] = useState(50);
     const [modalPokemon, setModalPokemon] = useState(null);
     const [editingTeamMember, setEditingTeamMember] = useState(null);
     const [maxToasts, setMaxToasts] = useState(3);
     const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
     const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
 
-    useEffect(() => {
-        const handleResize = () => {
-            if (window.innerWidth < 768) {
-                setMaxToasts(2);
-            } else {
-                setMaxToasts(3);
-            }
-        };
-        handleResize();
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+       
 
     const showToast = useCallback((message, type = 'info') => {
         const id = Date.now();
         setToasts(prevToasts => [...prevToasts, { id, message, type }]);
         setTimeout(() => setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id)), 3000);
     }, []);
-    
-    const availablePokemons = useMemo(() => {
+
+    // Busca dados estáticos (gens, items, natures) uma vez no início
+    useEffect(() => {
+        const fetchStaticData = async () => {
+             try {
+                const genRes = await fetch('https://pokeapi.co/api/v2/generation');
+                const genData = await genRes.json();
+                setGenerations(genData.results.map(g => g.name));
+
+                const itemRes = await fetch('https://pokeapi.co/api/v2/item?limit=2000');
+                const itemData = await itemRes.json();
+                setItems(itemData.results);
+                
+                const natureRes = await fetch('https://pokeapi.co/api/v2/nature');
+                const natureData = await natureRes.json();
+                setNatures(natureData.results);
+             } catch (e) {
+                showToast("Failed to load filter data.", "error");
+             }
+        }
+        fetchStaticData();
+    }, []);
+
+     const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
-        const available = filteredPokemons.filter(p => !teamIds.has(p.id));
+        const available = pokemons.filter(p => !teamIds.has(p.id));
         
         return available.sort((a, b) => {
             const aIsSuggested = suggestedPokemonIds.has(a.id);
@@ -885,7 +927,7 @@ export default function App() {
             if (!aIsSuggested && bIsSuggested) return 1;
             return a.id - b.id;
         });
-    }, [filteredPokemons, currentTeam, suggestedPokemonIds]);
+    }, [pokemons, currentTeam, suggestedPokemonIds]);
 
     const recentTeams = useMemo(() =>
         savedTeams.sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)).slice(0,3),
@@ -930,56 +972,7 @@ export default function App() {
         }
     }, [db, showToast, sharedTeamLoaded]);
 
-    const fetchPokemonDetails = useCallback(async (id) => {
-        if (pokemonDetailsCache[id]) {
-            return pokemonDetailsCache[id];
-        }
-        try {
-            const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
-            const p = await res.json();
-            const speciesRes = await fetch(p.species.url);
-            const speciesData = await speciesRes.json();
-            
-            const details = {
-                id: p.id, name: p.name, sprite: p.sprites?.front_default,
-                shinySprite: p.sprites?.front_shiny,
-                animatedSprite: p.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default,
-                animatedShinySprite: p.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_shiny,
-                types: p.types.map(t => t.type.name),
-                stats: p.stats, abilities: p.abilities, moves: p.moves,
-                evolution_chain_url: speciesData.evolution_chain.url
-            };
-            setPokemonDetailsCache(prev => ({ ...prev, [id]: details }));
-            return details;
-        } catch (e) {
-            showToast(`Could not load details for Pokémon ID: ${id}`, 'error');
-            return null;
-        }
-    }, [pokemonDetailsCache, showToast]);
-    
-    const fetchMoveDetails = useCallback(async (moveUrl, moveName) => {
-        if (moveDetailsCache[moveName]) {
-            return moveDetailsCache[moveName];
-        }
-        try {
-            const res = await fetch(moveUrl);
-            const data = await res.json();
-            const moveData = {
-                name: data.name,
-                type: data.type.name,
-                power: data.power,
-                accuracy: data.accuracy,
-                pp: data.pp,
-                damage_class: data.damage_class.name,
-            };
-            setMoveDetailsCache(prev => ({...prev, [moveName]: moveData}));
-            return moveData;
-        } catch (error) {
-            console.error(`Failed to fetch details for move: ${moveName}`, error);
-            return null;
-        }
-    }, [moveDetailsCache]);
-
+    // Efeito para autenticação e inicialização do Firebase
     useEffect(() => {
         try {
             const app = initializeApp(firebaseConfig);
@@ -992,7 +985,7 @@ export default function App() {
                     setIsAuthReady(true);
                 } else {
                     try {
-                        const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                        const token = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
                         if (token) {
                             await signInWithCustomToken(auth, token);
                         } else {
@@ -1006,277 +999,107 @@ export default function App() {
                     }
                 }
             });
-
             return () => unsubscribe();
         } catch (e) {
             showToast("Failed to connect to services.", "error");
         }
-    }, []);
+    }, [showToast]);
 
+    // Função para construir a query do Firestore dinamicamente
+    const buildPokemonQuery = (isLoadMore = false) => {
+        const genToUse = currentPage === 'pokedex' ? pokedexSelectedGeneration : selectedGeneration;
+        const searchToUse = (currentPage === 'pokedex' ? debouncedPokedexSearchTerm : debouncedSearchTerm).toLowerCase();
+        const typesToUse = Array.from(currentPage === 'pokedex' ? pokedexSelectedTypes : selectedTypes);
+
+        let q = collection(db, 'artifacts/pokemonTeamBuilder/pokemons');
+        const constraints = [];
+
+        if (genToUse !== 'all') constraints.push(where('generation', '==', genToUse));
+        if (typesToUse.length > 0) typesToUse.forEach(type => constraints.push(where('types', 'array-contains', type)));
+        if (searchToUse) {
+            constraints.push(orderBy('name'));
+            constraints.push(where('name', '>=', searchToUse));
+            constraints.push(where('name', '<=', searchToUse + '\uf8ff'));
+        } else {
+            constraints.push(orderBy('id'));
+        }
+
+        if (isLoadMore && lastVisibleDoc) {
+            constraints.push(startAfter(lastVisibleDoc));
+        }
+
+        constraints.push(limit(50));
+        
+        return query(q, ...constraints);
+    };
+
+    // Efeito para buscar pokémons quando os filtros mudam
     useEffect(() => {
-        const fetchInitialData = async () => {
+        if (!db || !isAuthReady) return;
+
+        const fetchInitial = async () => {
+            setIsLoading(true);
+            setHasMore(true);
+            const q = buildPokemonQuery(false);
             try {
-                // Fetch Pokemon
-                const speciesListRes = await fetch('https://pokeapi.co/api/v2/pokemon-species?limit=1025');
-                const speciesListData = await speciesListRes.json();
-
-                const allVarietyPromises = speciesListData.results.map(species =>
-                    fetch(species.url).then(res => res.json())
-                );
-                
-                const allSpeciesData = await Promise.all(allVarietyPromises);
-                
-                const allPokemonUrls = allSpeciesData.flatMap(species =>
-                    species.varieties.map(variety => ({
-                        name: variety.pokemon.name,
-                        url: variety.pokemon.url
-                    }))
-                );
-
-                const uniqueUrls = Array.from(new Map(allPokemonUrls.map(item => [item.url, item])).values());
-                const pokemonData = uniqueUrls.map(p => ({ id: parseInt(p.url.split('/')[6]), name: p.name, url: p.url }));
-
-                setAllPokemons(pokemonData);
-                setFilteredPokemons(pokemonData);
-                
-                // Fetch Generations
-                const genRes = await fetch('https://pokeapi.co/api/v2/generation');
-                const genData = await genRes.json();
-                setGenerations(genData.results);
-                
-                // Fetch Items
-                const itemRes = await fetch('https://pokeapi.co/api/v2/item?limit=1000');
-                const itemData = await itemRes.json();
-                setItems(itemData.results);
-                
-                // Fetch Natures
-                const natureRes = await fetch('https://pokeapi.co/api/v2/nature');
-                const natureData = await natureRes.json();
-                setNatures(natureData.results);
-
-
-            } catch (e) {
-                showToast("Failed to load Pokémon data.", "error");
+                const documentSnapshots = await getDocs(q);
+                const firstBatch = documentSnapshots.docs.map(doc => doc.data());
+                const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+                setPokemons(firstBatch);
+                setLastVisibleDoc(lastVisible);
+                if (documentSnapshots.docs.length < 50) setHasMore(false);
+            } catch (error) {
+                console.error("Error fetching pokemons:", error);
+                showToast("Error loading Pokémon list.", "error");
             } finally {
-                setIsInitialLoading(false);
+                setIsLoading(false);
             }
         };
-        fetchInitialData();
-    }, []);
 
-    useEffect(() => {
-        if (!db || isInitialLoading || !isAuthReady) return;
-        const urlParams = new URLSearchParams(window.location.search);
-        const teamId = urlParams.get('team');
-        if (teamId) {
-            fetchAndSetSharedTeam(teamId);
+        fetchInitial();
+    }, [
+        db, isAuthReady, currentPage, 
+        debouncedSearchTerm, selectedGeneration, JSON.stringify(Array.from(selectedTypes)), 
+        debouncedPokedexSearchTerm, pokedexSelectedGeneration, JSON.stringify(Array.from(pokedexSelectedTypes))
+    ]);
+
+    // Função para carregar mais pokémons no scroll infinito
+    const fetchMorePokemons = useCallback(async () => {
+        if (isFetchingMore || !hasMore || !db || !lastVisibleDoc) return;
+
+        setIsFetchingMore(true);
+        const q = buildPokemonQuery(true);
+        try {
+            const documentSnapshots = await getDocs(q);
+            const newBatch = documentSnapshots.docs.map(doc => doc.data());
+            const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+            
+            setPokemons(prev => [...prev, ...newBatch]);
+            setLastVisibleDoc(lastVisible);
+            
+            if (documentSnapshots.docs.length < 50) setHasMore(false);
+        } catch (error) {
+            console.error("Error fetching more pokemons:", error);
+            showToast("Failed to load more Pokémon.", "error");
+        } finally {
+            setIsFetchingMore(false);
         }
-    }, [db, isInitialLoading, isAuthReady, fetchAndSetSharedTeam]);
+    }, [isFetchingMore, hasMore, db, lastVisibleDoc, currentPage, selectedGeneration, debouncedSearchTerm, JSON.stringify(Array.from(selectedTypes)), pokedexSelectedGeneration, debouncedPokedexSearchTerm, JSON.stringify(Array.from(pokedexSelectedTypes))]);
 
-
-    useEffect(() => {
-        const applyFilters = async () => {
-            if (isInitialLoading) return;
-            setIsFiltering(true);
-            
-            let pokemonListResult = [...allPokemons];
-            const generationRanges = { 'generation-i': [1, 151], 'generation-ii': [152, 251], 'generation-iii': [252, 386], 'generation-iv': [387, 493], 'generation-v': [494, 649], 'generation-vi': [650, 721], 'generation-vii': [722, 809], 'generation-viii': [810, 905], 'generation-ix': [906, 1025] };
-            
-            const genToUse = currentPage === 'pokedex' ? pokedexSelectedGeneration : selectedGeneration;
-            const searchToUse = currentPage === 'pokedex' ? debouncedPokedexSearchTerm : debouncedSearchTerm;
-            const typesToUse = currentPage === 'pokedex' ? pokedexSelectedTypes : selectedTypes;
-
-            if (genToUse !== 'all' && generationRanges[genToUse]) {
-                const [start, end] = generationRanges[genToUse];
-                pokemonListResult = pokemonListResult.filter(p => p.id >= start && p.id <= end);
-            }
-            
-            if (searchToUse) {
-                pokemonListResult = pokemonListResult.filter(p => p.name.toLowerCase().includes(searchToUse.toLowerCase()));
-            }
-
-            if (typesToUse.size > 0) {
-                try {
-                    const typePromises = Array.from(typesToUse).map(type =>
-                        fetch(`https://pokeapi.co/api/v2/type/${type.toLowerCase()}`).then(res => res.json())
-                        .then(data => new Set(data.pokemon.map(p => p.pokemon.name)))
-                    );
-                    const pokemonSets = await Promise.all(typePromises);
-                    const intersection = pokemonSets.reduce((acc, currentSet) => new Set([...acc].filter(name => currentSet.has(name))));
-                    pokemonListResult = pokemonListResult.filter(p => intersection.has(p.name));
-                } catch(e) { showToast("Failed to apply type filter.", "error"); }
-            }
-            
-            setFilteredPokemons(pokemonListResult);
-            setVisibleCount(50);
-            setIsFiltering(false);
-        };
-        applyFilters();
-    }, [selectedGeneration, selectedTypes, debouncedSearchTerm, pokedexSelectedGeneration, pokedexSelectedTypes, debouncedPokedexSearchTerm, allPokemons, isInitialLoading, currentPage]);
-
-    useEffect(() => {
-        let isActive = true;
-        const fetchVisiblePokemon = async () => {
-            const listToUse = (currentPage === 'pokedex') ? filteredPokemons : availablePokemons;
-            const pokemonToFetch = listToUse.slice(0, visibleCount);
-            
-            const idsToFetch = pokemonToFetch.filter(p => !pokemonDetailsCache[p.id]).map(p => p.id);
-            if(idsToFetch.length === 0) return;
-
-            setIsFetchingMore(true);
-            await Promise.all(idsToFetch.map(id => fetchPokemonDetails(id)));
-            if(isActive) setIsFetchingMore(false);
-        };
-        
-        if (!isInitialLoading) fetchVisiblePokemon();
-        return () => { isActive = false };
-    }, [availablePokemons, filteredPokemons, visibleCount, currentPage, isInitialLoading, fetchPokemonDetails]);
-
-    useEffect(() => {
-        if (!userId || !db) return;
-        const q = query(collection(db, `artifacts/${appId}/users/${userId}/teams`));
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            setSavedTeams(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        }, () => showToast("Could not load saved teams.", "error"));
-        return unsubscribe;
-    }, [userId, db]);
-
-    useEffect(() => {
-        const teamDetails = currentTeam.map(p => pokemonDetailsCache[p.id]).filter(Boolean);
-        if (teamDetails.length < currentTeam.length || teamDetails.length === 0) {
-            setTeamAnalysis({ strengths: new Set(), weaknesses: {} });
-            setSuggestedPokemonIds(new Set());
-            return;
-        }
-        
-        const teamWeaknessCounts = {};
-        const offensiveCoverage = new Set();
-        
-        teamDetails.flatMap(d => d.types).forEach(type => {
-            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => {
-                if (mult > 1) offensiveCoverage.add(vs.toLowerCase());
-            });
-        });
-
-        Object.keys(typeChart).forEach(attackingType => {
-            const capitalizedAttackingType = attackingType.charAt(0).toUpperCase() + attackingType.slice(1);
-            let weakCount = 0;
-            let resistanceCount = 0;
-
-            teamDetails.forEach(pokemon => {
-                const multiplier = pokemon.types.reduce((acc, pokemonType) => {
-                    return acc * (typeChart[pokemonType]?.damageTaken[capitalizedAttackingType] ?? 1);
-                }, 1);
-
-                if (multiplier > 1) {
-                    weakCount++;
-                } else if (multiplier < 1) {
-                    resistanceCount++;
-                }
-            });
-            
-            if (weakCount > 0 && weakCount > resistanceCount) {
-                teamWeaknessCounts[attackingType] = weakCount;
-            }
-        });
-        setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
-
-        const generateSuggestions = async () => {
-            const weaknessTypes = Object.keys(teamWeaknessCounts);
-            if (weaknessTypes.length === 0 || allPokemons.length === 0) {
-                setSuggestedPokemonIds(new Set());
-                return;
-            }
-
-            const findFinalEvolution = async (chainUrl) => {
-                if (evolutionChainCache[chainUrl]) {
-                    return evolutionChainCache[chainUrl];
-                }
-                try {
-                    const res = await fetch(chainUrl);
-                    const data = await res.json();
-                    let evoData = data.chain;
-                    while (evoData && evoData.evolves_to.length > 0) {
-                        evoData = evoData.evolves_to[0];
-                    }
-                    const finalEvoName = evoData.species.name;
-                    setEvolutionChainCache(prev => ({ ...prev, [chainUrl]: finalEvoName }));
-                    return finalEvoName;
-                } catch {
-                    return null;
-                }
-            };
-            
-            const potentialSuggestions = allPokemons.filter(p => {
-                const details = pokemonDetailsCache[p.id];
-                if (!details) return false;
-
-                return weaknessTypes.some(weakType => {
-                    const capitalizedWeakType = weakType.charAt(0).toUpperCase() + weakType.slice(1);
-                    const typeMultiplier = details.types.reduce((multiplier, pokemonType) => {
-                        return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1);
-                    }, 1);
-                    return typeMultiplier < 1;
-                });
-            });
-
-            const finalEvoPromises = potentialSuggestions.map(async p => {
-                const details = pokemonDetailsCache[p.id];
-                return details?.evolution_chain_url ? await findFinalEvolution(details.evolution_chain_url) : null;
-            });
-
-            const finalEvoNames = await Promise.all(finalEvoPromises);
-            const uniqueFinalEvoNames = [...new Set(finalEvoNames.filter(Boolean))];
-
-            const finalEvoIds = new Set(
-                uniqueFinalEvoNames
-                    .map(name => allPokemons.find(p => p.name === name)?.id)
-                    .filter(Boolean)
-            );
-
-            const missingSuggestionDetails = Array.from(finalEvoIds).filter(id => !pokemonDetailsCache[id]);
-            if(missingSuggestionDetails.length > 0) {
-                const urlsToFetch = missingSuggestionDetails.map(id => `https://pokeapi.co/api/v2/pokemon/${id}/`);
-                try {
-                    const newDetailedPokemons = await Promise.all(urlsToFetch.map(url => fetch(url).then(res => res.json())));
-                        const newCacheEntries = newDetailedPokemons.reduce((acc, p) => {
-                            acc[p.id] = {
-                                id: p.id, name: p.name, sprite: p.sprites?.front_default,
-                                animatedSprite: p.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default,
-                                shinySprite: p.sprites?.front_shiny,
-                                types: p.types.map(t => t.type.name),
-                                stats: p.stats, abilities: p.abilities,
-                                evolution_chain_url: p.species.url
-                            };
-                            return acc;
-                        }, {});
-                        setPokemonDetailsCache(prevCache => ({ ...prevCache, ...newCacheEntries }));
-                } catch (e) {
-                    console.error("Failed to fetch suggestion details:", e);
-                }
-            }
-            
-            setSuggestedPokemonIds(finalEvoIds);
-        };
-
-        generateSuggestions();
-
-    }, [currentTeam, pokemonDetailsCache, allPokemons, evolutionChainCache]);
-
+    // Observer para o scroll infinito
     const observer = useRef();
     const lastPokemonElementRef = useCallback(node => {
-        if (isFetchingMore || isFiltering) return;
+        if (isFetchingMore || isLoading) return;
         if (observer.current) observer.current.disconnect();
         observer.current = new IntersectionObserver(entries => {
-            const listToUse = currentPage === 'pokedex' ? filteredPokemons : availablePokemons;
-            if (entries[0].isIntersecting && listToUse.length > visibleCount) {
-                setVisibleCount(prevCount => prevCount + 50);
+            if (entries[0].isIntersecting && hasMore) {
+                fetchMorePokemons();
             }
         });
         if (node) observer.current.observe(node);
-    }, [isFetchingMore, isFiltering, availablePokemons, filteredPokemons, visibleCount, currentPage]);
+    }, [isFetchingMore, isLoading, hasMore, fetchMorePokemons]);
 
-    const handleAddPokemonToTeam = useCallback((pokemon) => {
+     const handleAddPokemonToTeam = useCallback((pokemon) => {
         if (currentTeam.length >= 6) return showToast("Your team is full (6 Pokémon)!", 'warning');
         
         const newMember = {
@@ -1284,11 +1107,11 @@ export default function App() {
             instanceId: `${pokemon.id}-${Date.now()}`,
             customization: {
                 item: '',
-                nature: 'serious', // A neutral default nature
+                nature: 'serious', 
                 teraType: pokemon.types[0],
                 isShiny: false,
-                ability: pokemon.abilities[0].ability.name,
-                moves: pokemon.moves.slice(0, 4).map(m => m.move.name),
+                ability: pokemon.abilities[0].name,
+                moves: pokemon.moves.slice(0, 4).map(m => m.name),
                 evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
                 ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
             }
@@ -1400,7 +1223,7 @@ export default function App() {
     const handleEditTeam = useCallback(async (team) => {
         showToast(`Loading team: ${team.name}...`, 'info');
         const teamPokemonDetails = await Promise.all(
-            team.pokemons.map(p => fetchPokemonDetails(p.id))
+            team.pokemons.map(p => buildPokemonQuery(p.id))
         );
 
         const customizedTeam = teamPokemonDetails.map((detail, i) => {
@@ -1425,7 +1248,7 @@ export default function App() {
         setCurrentPage('builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [fetchPokemonDetails, showToast]);
+    }, [buildPokemonQuery, showToast]);
 
     const handleDeleteTeam = useCallback(async (teamId) => {
         if (!db || !userId) return;
@@ -1481,17 +1304,20 @@ export default function App() {
     }, []);
 
     const renderPage = () => {
+        const availablePokemons = useMemo(() => {
+            if (!pokemons) return [];
+            const teamIds = new Set(currentTeam.map(p => p.id));
+            return pokemons.filter(p => !teamIds.has(p.id));
+        }, [pokemons, currentTeam]);
+
         switch (currentPage) {
             case 'allTeams':
-                return <AllTeamsView teams={allFilteredTeams} onEdit={handleEditTeam} onDelete={handleDeleteTeam} onToggleFavorite={handleToggleFavorite} searchTerm={teamSearchTerm} setSearchTerm={setTeamSearchTerm} colors={colors} />;
+                return <AllTeamsView teams={savedTeams} onEdit={handleEditTeam} onDelete={handleDeleteTeam} onToggleFavorite={handleToggleFavorite} searchTerm={teamSearchTerm} setSearchTerm={setTeamSearchTerm} colors={colors} />;
             case 'pokedex':
-                 return <PokedexView 
-                    pokemons={filteredPokemons}
-                    pokemonDetailsCache={pokemonDetailsCache}
-                    showDetails={showDetails}
+                return <PokedexView 
+                    pokemons={pokemons}
                     lastPokemonElementRef={lastPokemonElementRef}
                     isFetchingMore={isFetchingMore}
-                    visibleCount={visibleCount}
                     searchInput={pokedexSearchInput}
                     setSearchInput={setPokedexSearchInput}
                     selectedTypes={pokedexSelectedTypes}
@@ -1499,65 +1325,84 @@ export default function App() {
                     selectedGeneration={pokedexSelectedGeneration}
                     setSelectedGeneration={setPokedexSelectedGeneration}
                     generations={generations}
-                    isFiltering={isFiltering}
-                    isInitialLoading={isInitialLoading}
+                    isInitialLoading={isLoading}
                     colors={colors}
-                 />;
-                default:
+                    showDetails={showDetails}
+                />;
+            default:
                 return <TeamBuilderView
-                    currentTeam={currentTeam} teamName={teamName} setTeamName={setTeamName}
-                    handleRemoveFromTeam={handleRemoveFromTeam} handleSaveTeam={handleSaveTeam} editingTeamId={editingTeamId}
-                    handleClearTeam={handleClearTeam} recentTeams={recentTeams} setCurrentPage={setCurrentPage}
-                    handleToggleFavorite={handleToggleFavorite} handleEditTeam={handleEditTeam} handleDeleteTeam={handleDeleteTeam} handleShareTeam={handleShareTeam} handleExportToShowdown={handleExportToShowdown}
-                    teamAnalysis={teamAnalysis} searchInput={searchInput} setSearchInput={setSearchInput}
-                    selectedGeneration={selectedGeneration} setSelectedGeneration={setSelectedGeneration} generations={generations}
-                    isInitialLoading={isInitialLoading} isFiltering={isFiltering} availablePokemons={availablePokemons}
-                    pokemonDetailsCache={pokemonDetailsCache} handleAddPokemonToTeam={handleAddPokemonToTeam} lastPokemonElementRef={lastPokemonElementRef}
-                    isFetchingMore={isFetchingMore} visibleCount={visibleCount} selectedTypes={selectedTypes}
-                    handleTypeSelection={handleTypeSelection} showDetails={showDetails} suggestedPokemonIds={suggestedPokemonIds}
-                    onEditTeamPokemon={handleEditTeamMember}
+                    currentTeam={currentTeam}
+                    teamName={teamName}
+                    setTeamName={setTeamName}
+                    handleRemoveFromTeam={handleRemoveFromTeam}
+                    handleSaveTeam={handleSaveTeam}
+                    editingTeamId={editingTeamId}
+                    handleClearTeam={handleClearTeam}
+                    recentTeams={recentTeams}
+                    setCurrentPage={setCurrentPage}
+                    handleToggleFavorite={handleToggleFavorite}
+                    handleEditTeam={handleEditTeam}
+                    handleDeleteTeam={handleDeleteTeam}
+                    handleShareTeam={handleShareTeam}
+                    handleExportToShowdown={handleExportToShowdown}
+                    teamAnalysis={teamAnalysis}
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    selectedGeneration={selectedGeneration}
+                    setSelectedGeneration={setSelectedGeneration}
+                    generations={generations}
+                    isInitialLoading={isLoading}
+                    availablePokemons={availablePokemons}
+                    handleAddPokemonToTeam={handleAddPokemonToTeam}
+                    lastPokemonElementRef={lastPokemonElementRef}
+                    isFetchingMore={isFetchingMore}
+                    selectedTypes={selectedTypes}
+                    handleTypeSelection={handleTypeSelection}
+                    showDetails={showDetails}
+                    suggestedPokemonIds={suggestedPokemonIds}
                     colors={colors}
+                    onEditTeamPokemon={handleEditTeamMember}
                 />;
         }
-    }
+    };
     
     return (
       <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
-        {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} />}
-        {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache} fetchMoveDetails={fetchMoveDetails} />}
+        {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} db={db} />}
+        {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache}/>}
         
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
-          <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: colors.card}}>
-            <div className="flex flex-col h-full">
-              <div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-                <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: colors.primary}}>Menu</h2>
-                <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:opacity-80" style={{color: colors.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button>
-              </div>
-              <nav className="px-4 flex-grow">
-                <ul>
-                  <li>
-                    <button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'builder' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
-                      <SwordsIcon className={`${currentPage === 'builder' ? 'text-white' : ''}`}/>
-                      <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'} ${currentPage === 'builder' ? 'text-white' : ''}`}>Team Builder</span>
-                    </button>
-                  </li>
-                   <li className="mt-2">
-                    <button onClick={() => { setCurrentPage('pokedex'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'pokedex' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
-                        <PokeballIcon className={`${currentPage === 'builder' ? 'text-white' : ''}`}/>
-                      <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'} ${currentPage === 'pokedex' ? 'text-white' : ''}`}>Pokédex</span>
-                    </button>
-                  </li>
-                  <li className="mt-2">
-                    <button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'allTeams' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
-                      <SavedTeamsIcon className={`${currentPage === 'allTeams' ? 'text-white' : ''}`}/>
-                      <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'} ${currentPage === 'allTeams' ? 'text-white' : ''}`}>Saved Teams</span>
-                    </button>
-                  </li>
-                </ul>
-              </nav>
-            </div>
-          </aside>
+            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: colors.card}}>
+                <div className="flex flex-col h-full">
+                  <div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+                    <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: colors.primary}}>Menu</h2>
+                    <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:opacity-80" style={{color: colors.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button>
+                  </div>
+                  <nav className="px-4 flex-grow">
+                    <ul>
+                      <li>
+                        <button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'builder' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
+                          <SwordsIcon />
+                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span>
+                        </button>
+                      </li>
+                       <li className="mt-2">
+                        <button onClick={() => { setCurrentPage('pokedex'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'pokedex' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
+                            <PokeballIcon />
+                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Pokédex</span>
+                        </button>
+                      </li>
+                      <li className="mt-2">
+                        <button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'allTeams' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
+                          <SavedTeamsIcon/>
+                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Saved Teams</span>
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+            </aside>
             <div className="flex-1 min-w-0">
                 <header className="relative flex items-center justify-between pt-4 px-4 h-24">
                 <button
