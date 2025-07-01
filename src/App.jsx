@@ -1000,6 +1000,16 @@ useEffect(() => {
 
 }, [currentTeam, pokemons]); 
 
+    useEffect(() => {
+        if (!db || isInitialLoading || !isAuthReady) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamId = urlParams.get('team');
+        if (teamId) {
+            fetchAndSetSharedTeam(teamId);
+        }
+    }, [db, isInitialLoading, isAuthReady, fetchAndSetSharedTeam]);
+
+
      const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
         const available = pokemons.filter(p => !teamIds.has(p.id));
@@ -1026,34 +1036,57 @@ useEffect(() => {
     }, [savedTeams, teamSearchTerm]);
     
     const fetchAndSetSharedTeam = useCallback(async (teamId) => {
-        if(!db || sharedTeamLoaded) return;
-        setSharedTeamLoaded(true);
-        showToast("Loading shared team...", "info");
-        const teamDocRef = doc(db, `artifacts/${appId}/public/data/teams`, teamId);
-        try {
-            const teamDoc = await getDoc(teamDocRef);
-            if (teamDoc.exists()) {
-                const teamData = teamDoc.data();
-                const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
-                const teamPokemonDetails = await Promise.all(detailsPromises);
-                
-                const customizedTeam = teamPokemonDetails.map((detail, i) => ({
-                    ...detail,
-                    instanceId: teamData.pokemons[i].instanceId, // Make sure instanceId is loaded
-                    customization: teamData.pokemons[i].customization
-                }));
+    if (!db || isLoading) return;
 
-                setCurrentTeam(customizedTeam.filter(Boolean));
-                setTeamName(teamData.name);
-                setEditingTeamId(null);
-                showToast(`Loaded team: ${teamData.name}`, "success");
-            } else {
-                showToast("Shared team not found.", "error");
-            }
-        } catch (error) {
-            showToast("Failed to load shared team.", "error");
+    setIsLoading(true);
+    showToast("Loading shared team...", "info");
+
+    try {
+        const teamDocRef = doc(db, `artifacts/${appId}/public/data/teams`, teamId);
+        const teamDoc = await getDoc(teamDocRef);
+
+        if (teamDoc.exists()) {
+            const teamData = teamDoc.data();
+            
+            // Fetch details for all Pokémon in parallel
+            const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
+            const teamPokemonDetails = await Promise.all(detailsPromises);
+
+            // Combine fetched details with instance-specific customizations
+            const customizedTeam = teamPokemonDetails.map((detail, i) => {
+                // In case a pokemon detail fetch fails and returns something falsy
+                if (!detail) return null; 
+
+                return {
+                    ...detail,
+                    instanceId: teamData.pokemons[i].instanceId,
+                    customization: teamData.pokemons[i].customization
+                };
+            });
+
+            // Set state with the new team data, filtering out any failed fetches
+            setCurrentTeam(customizedTeam.filter(Boolean));
+            setTeamName(teamData.name);
+            setEditingTeamId(null); // Reset editing state
+            showToast(`Loaded team: ${teamData.name}`, "success");
+        } else {
+            showToast("Shared team not found.", "error");
         }
-    }, [db, showToast, sharedTeamLoaded]);
+    } catch (error) {
+        console.error("Failed to load shared team:", error);
+        showToast("Failed to load shared team.", "error");
+    } finally {
+        // This will run after the try or catch block completes
+        setIsLoading(false);
+    }
+}, [
+    db, 
+    appId, // Added missing dependency
+    isLoading, 
+    showToast, 
+    fetchPokemonDetails, 
+    // State setters (setCurrentTeam, etc.) are not needed here as React guarantees they are stable
+]);
 
      const fetchPokemonDetails = useCallback(async (pokemonId) => {
         if (pokemonDetailsCache[pokemonId]) {
