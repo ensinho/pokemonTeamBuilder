@@ -894,6 +894,25 @@ export default function App() {
         setTimeout(() => setToasts(prevToasts => prevToasts.filter(toast => toast.id !== id)), 3000);
     }, []);
 
+    useEffect(() => {
+        if (!db || !userId) return;
+
+        const teamsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/teams`);
+        const q = query(teamsCollectionRef, orderBy('updatedAt', 'desc'));
+
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const teamsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setSavedTeams(teamsData);
+        }, (error) => {
+            console.error("Error listening to saved teams:", error);
+            showToast("Could not fetch saved teams.", "error");
+        });
+
+        // Cleanup a subscription quando o componente desmontar
+        return () => unsubscribe();
+
+    }, [db, userId, showToast]);
+
     // Busca dados estáticos (gens, items, natures) uma vez no início
     useEffect(() => {
         const fetchStaticData = async () => {
@@ -994,7 +1013,7 @@ useEffect(() => {
         });
     }, [pokemons, currentTeam, suggestedPokemonIds]);
 
-    const recentTeams = useMemo(() =>
+     const recentTeams = useMemo(() =>
         savedTeams.sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)).slice(0,3),
     [savedTeams]);
     
@@ -1005,7 +1024,6 @@ useEffect(() => {
         }
         return teams;
     }, [savedTeams, teamSearchTerm]);
-    
     
     const fetchAndSetSharedTeam = useCallback(async (teamId) => {
         if(!db || sharedTeamLoaded) return;
@@ -1071,7 +1089,7 @@ useEffect(() => {
     }, [showToast]);
 
     // Função para construir a query do Firestore dinamicamente
-    const buildPokemonQuery = (isLoadMore = false) => {
+   const buildPokemonQuery = (isLoadMore = false) => {
         const genToUse = currentPage === 'pokedex' ? pokedexSelectedGeneration : selectedGeneration;
         const searchToUse = (currentPage === 'pokedex' ? debouncedPokedexSearchTerm : debouncedSearchTerm).toLowerCase();
         const typesToUse = Array.from(currentPage === 'pokedex' ? pokedexSelectedTypes : selectedTypes);
@@ -1079,8 +1097,18 @@ useEffect(() => {
         let q = collection(db, 'artifacts/pokemonTeamBuilder/pokemons');
         const constraints = [];
 
-        if (genToUse !== 'all') constraints.push(where('generation', '==', genToUse));
-        if (typesToUse.length > 0) typesToUse.forEach(type => constraints.push(where('types', 'array-contains', type)));
+        if (genToUse !== 'all') {
+            constraints.push(where('generation', '==', genToUse));
+        }
+
+        // ==================================================================
+        // CORREÇÃO 2: Usar 'array-contains-any' para a filtragem de tipos.
+        // Isso permite buscar por múltiplos tipos em uma única consulta.
+        // ==================================================================
+        if (typesToUse.length > 0) {
+            constraints.push(where('types', 'array-contains-any', typesToUse));
+        }
+        
         if (searchToUse) {
             constraints.push(orderBy('name'));
             constraints.push(where('name', '>=', searchToUse));
@@ -1115,7 +1143,7 @@ useEffect(() => {
                 if (documentSnapshots.docs.length < 50) setHasMore(false);
             } catch (error) {
                 console.error("Error fetching pokemons:", error);
-                showToast("Error loading Pokémon list.", "error");
+                showToast("Error loading Pokémon list. You may need to create a composite index in Firestore.", "error");
             } finally {
                 setIsLoading(false);
             }
@@ -1194,7 +1222,7 @@ useEffect(() => {
         setEditingTeamId(null);
     }, []);
     
-    const handleSaveTeam = useCallback(async () => {
+        const handleSaveTeam = useCallback(async () => {
         if (!db || !userId) return showToast("Database connection not ready.", 'error');
         if (currentTeam.length === 0) return showToast("Your team is empty!", 'warning');
         if (!teamName.trim()) return showToast("Please name your team.", 'warning');
@@ -1204,6 +1232,7 @@ useEffect(() => {
         }
 
         const teamId = editingTeamId || doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
+        const existingTeam = savedTeams.find(t => t.id === editingTeamId);
         const teamData = { 
             name: teamName, 
             pokemons: currentTeam.map(p => ({
@@ -1213,8 +1242,8 @@ useEffect(() => {
                 instanceId: p.instanceId,
                 customization: p.customization
             })), 
-            isFavorite: savedTeams.find(t => t.id === editingTeamId)?.isFavorite || false, 
-            createdAt: savedTeams.find(t => t.id === editingTeamId)?.createdAt || new Date().toISOString(), 
+            isFavorite: existingTeam?.isFavorite || false, 
+            createdAt: existingTeam?.createdAt || new Date().toISOString(), 
             updatedAt: new Date().toISOString() 
         };
         
@@ -1285,35 +1314,38 @@ useEffect(() => {
 
     }, [currentTeam, showToast]);
 
-    const handleEditTeam = useCallback(async (team) => {
+        const handleEditTeam = useCallback(async (team) => {
         showToast(`Loading team: ${team.name}...`, 'info');
-        const teamPokemonDetails = await Promise.all(
-            team.pokemons.map(p => buildPokemonQuery(p.id))
-        );
+        
+        const teamPokemonDetailsPromises = team.pokemons.map(p => fetchPokemonDetails(p.id));
+        const teamPokemonDetails = await Promise.all(teamPokemonDetailsPromises);
 
         const customizedTeam = teamPokemonDetails.map((detail, i) => {
-            // Merge saved customization with a full default object to ensure all keys exist
+            if (!detail) return null; // Handle case where a Pokémon couldn't be fetched
+
+            const savedPokemonData = team.pokemons[i];
             const defaultCustomization = {
                 item: '', nature: 'serious', teraType: detail.types[0], isShiny: false,
-                ability: detail.abilities[0].ability.name,
-                moves: detail.moves.slice(0, 4).map(m => m.move.name),
+                ability: detail.abilities[0].name,
+                moves: detail.moves.slice(0, 4).map(m => m.name),
                 evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
                 ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
             };
+            
             return {
                 ...detail,
-                instanceId: team.pokemons[i].instanceId,
-                customization: { ...defaultCustomization, ...team.pokemons[i].customization }
-            }
-        });
+                instanceId: savedPokemonData.instanceId,
+                customization: { ...defaultCustomization, ...savedPokemonData.customization }
+            };
+        }).filter(Boolean); // Filtra qualquer resultado nulo
 
-        setCurrentTeam(customizedTeam.filter(Boolean));
+        setCurrentTeam(customizedTeam);
         setTeamName(team.name);
         setEditingTeamId(team.id);
         setCurrentPage('builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [buildPokemonQuery, showToast]);
+    }, [fetchPokemonDetails, showToast]);
 
     const handleDeleteTeam = useCallback(async (teamId) => {
         if (!db || !userId) return;
