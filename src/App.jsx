@@ -909,16 +909,7 @@ export default function App() {
         // Cleanup a subscription quando o componente desmontar
         return () => unsubscribe();
 
-    }, [db, userId, showToast]);
-
-    useEffect(() => {
-        if (!db || isLoading || !isAuthReady) return;
-        const urlParams = new URLSearchParams(window.location.search);
-        const teamId = urlParams.get('team');
-        if (teamId) {
-            fetchAndSetSharedTeam(teamId);
-        }
-    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
+    }, [db, userId, showToast]);    
 
     // Busca dados estáticos (gens, items, natures) uma vez no início
     useEffect(() => {
@@ -942,9 +933,7 @@ export default function App() {
         fetchStaticData();
     }, []);
 
-    // CORREÇÃO: Substitua o useEffect da análise de time por este:
 useEffect(() => {
-    // Agora, usamos o currentTeam diretamente, pois ele já tem os detalhes do Firestore.
     const teamDetails = currentTeam; 
 
     if (teamDetails.length === 0) {
@@ -985,11 +974,10 @@ useEffect(() => {
     });
     setTeamAnalysis({ strengths: offensiveCoverage, weaknesses: teamWeaknessCounts });
 
-    // Lógica de sugestão (ainda experimental e baseada nos pokémons já carregados)
     const weaknessTypes = Object.keys(teamWeaknessCounts);
     if (weaknessTypes.length > 0 && pokemons.length > 0) {
         const potentialSuggestions = pokemons.filter(p => {
-            const details = p; // O objeto já é o detalhe completo
+            const details = p; 
             if (!details.types) return false;
 
             return weaknessTypes.some(weakType => {
@@ -1082,8 +1070,16 @@ useEffect(() => {
     isLoading, 
     showToast, 
     fetchPokemonDetails, 
-    // State setters (setCurrentTeam, etc.) are not needed here as React guarantees they are stable
 ]);
+
+useEffect(() => {
+        if (!db || isLoading || !isAuthReady) return;
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamId = urlParams.get('team');
+        if (teamId) {
+            fetchAndSetSharedTeam(teamId);
+        }
+    }, [db, isLoading, isAuthReady, fetchAndSetSharedTeam]);
 
      const fetchPokemonDetails = useCallback(async (pokemonId) => {
         if (pokemonDetailsCache[pokemonId]) {
