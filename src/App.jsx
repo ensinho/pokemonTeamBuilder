@@ -116,12 +116,22 @@ const SwordsIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" hei
 const EditIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>);
 const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sparkles"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" /></svg>);
 const ShowdownIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>);
+const DiceIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-dice shrink-0"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="4" width="16" height="16" rx="2" /><circle cx="8.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="15.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="15.5" r=".5" fill="currentColor" /></svg>);
 
 const TypeBadge = ({ type, colors }) => ( <span className="text-xs text-white font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
-// --- Firebase Config ---
-const firebaseConfig = { apiKey: "AIzaSyARU0ZFaHQhC3Iz2v48MMugAx5LwhDAFaM", authDomain: "pokemonbuilder-8f80d.firebaseapp.com", projectId: "pokemonbuilder-8f80d", storageBucket: "pokemonbuilder-8f80d.appspot.com", messagingSenderId: "514902448758", appId: "1:514902448758:web:818f024a8ce15bffa65d57", measurementId: "G-MLY0EFTHDK" };
-const appId = 'pokemonTeamBuilder';
+// --- Firebase Config (from environment variables) ---
+const firebaseConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+};
+const appId = import.meta.env.VITE_APP_ID || 'pokemonTeamBuilder';
+const POKEAPI_BASE_URL = import.meta.env.VITE_POKEAPI_BASE_URL || 'https://pokeapi.co/api/v2';
 
 // --- Custom Hooks ---
 const useDebounce = (value, delay) => {
@@ -828,6 +838,647 @@ const PokedexView = ({
     )
 };
 
+// Pokemon Random Generator Data
+const GENERATION_RANGES = {
+    'all': { start: 1, end: 1025 },
+    'generation-i': { start: 1, end: 151 },
+    'generation-ii': { start: 152, end: 251 },
+    'generation-iii': { start: 252, end: 386 },
+    'generation-iv': { start: 387, end: 493 },
+    'generation-v': { start: 494, end: 649 },
+    'generation-vi': { start: 650, end: 721 },
+    'generation-vii': { start: 722, end: 809 },
+    'generation-viii': { start: 810, end: 905 },
+    'generation-ix': { start: 906, end: 1025 }
+};
+
+const LEGENDARY_IDS = new Set([
+    // Gen 1
+    144, 145, 146, 150, 151,
+    // Gen 2
+    243, 244, 245, 249, 250, 251,
+    // Gen 3
+    377, 378, 379, 380, 381, 382, 383, 384, 385, 386,
+    // Gen 4
+    480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493,
+    // Gen 5
+    494, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649,
+    // Gen 6
+    716, 717, 718, 719, 720, 721,
+    // Gen 7
+    785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809,
+    // Gen 8
+    888, 889, 890, 891, 892, 893, 894, 895, 896, 897, 898, 905,
+    // Gen 9
+    1001, 1002, 1003, 1004, 1007, 1008, 1009, 1010, 1014, 1015, 1016, 1017, 1024, 1025
+]);
+
+const NATURES_LIST = [
+    { name: 'Hardy', plus: null, minus: null },
+    { name: 'Lonely', plus: 'Attack', minus: 'Defense' },
+    { name: 'Brave', plus: 'Attack', minus: 'Speed' },
+    { name: 'Adamant', plus: 'Attack', minus: 'Sp. Atk' },
+    { name: 'Naughty', plus: 'Attack', minus: 'Sp. Def' },
+    { name: 'Bold', plus: 'Defense', minus: 'Attack' },
+    { name: 'Docile', plus: null, minus: null },
+    { name: 'Relaxed', plus: 'Defense', minus: 'Speed' },
+    { name: 'Impish', plus: 'Defense', minus: 'Sp. Atk' },
+    { name: 'Lax', plus: 'Defense', minus: 'Sp. Def' },
+    { name: 'Timid', plus: 'Speed', minus: 'Attack' },
+    { name: 'Hasty', plus: 'Speed', minus: 'Defense' },
+    { name: 'Serious', plus: null, minus: null },
+    { name: 'Jolly', plus: 'Speed', minus: 'Sp. Atk' },
+    { name: 'Naive', plus: 'Speed', minus: 'Sp. Def' },
+    { name: 'Modest', plus: 'Sp. Atk', minus: 'Attack' },
+    { name: 'Mild', plus: 'Sp. Atk', minus: 'Defense' },
+    { name: 'Quiet', plus: 'Sp. Atk', minus: 'Speed' },
+    { name: 'Bashful', plus: null, minus: null },
+    { name: 'Rash', plus: 'Sp. Atk', minus: 'Sp. Def' },
+    { name: 'Calm', plus: 'Sp. Def', minus: 'Attack' },
+    { name: 'Gentle', plus: 'Sp. Def', minus: 'Defense' },
+    { name: 'Sassy', plus: 'Sp. Def', minus: 'Speed' },
+    { name: 'Careful', plus: 'Sp. Def', minus: 'Sp. Atk' },
+    { name: 'Quirky', plus: null, minus: null }
+];
+
+const RandomGeneratorView = ({ colors, generations }) => {
+    const [generatedPokemon, setGeneratedPokemon] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [pokemonCount, setPokemonCount] = useState(3);
+    const [selectedRegion, setSelectedRegion] = useState('all');
+    const [selectedType, setSelectedType] = useState('all');
+    const [legendaryFilter, setLegendaryFilter] = useState('all');
+    const [fullyEvolvedFilter, setFullyEvolvedFilter] = useState('all');
+    const [formsFilter, setFormsFilter] = useState('all');
+    const [evolutionCache, setEvolutionCache] = useState({});
+
+    const getGenerationName = (id) => {
+        for (const [gen, range] of Object.entries(GENERATION_RANGES)) {
+            if (gen !== 'all' && id >= range.start && id <= range.end) {
+                return gen.replace('generation-', 'Gen ').toUpperCase();
+            }
+        }
+        return 'Unknown';
+    };
+
+    const fetchEvolutionChain = useCallback(async (evolutionChainUrl) => {
+        try {
+            if (evolutionCache[evolutionChainUrl]) {
+                return evolutionCache[evolutionChainUrl];
+            }
+
+            const evoRes = await fetch(evolutionChainUrl);
+            const evoData = await evoRes.json();
+            
+            const evolutions = [];
+            const processChain = (chain, stage = 1) => {
+                const speciesId = chain.species.url.split('/').filter(Boolean).pop();
+                let genIntroduced = 'Unknown';
+                
+                // Determine generation based on ID
+                const id = parseInt(speciesId);
+                for (const [gen, range] of Object.entries(GENERATION_RANGES)) {
+                    if (gen !== 'all' && id >= range.start && id <= range.end) {
+                        genIntroduced = gen.replace('generation-', 'Gen ').toUpperCase();
+                        break;
+                    }
+                }
+
+                evolutions.push({
+                    name: chain.species.name,
+                    id: speciesId,
+                    stage: stage,
+                    genIntroduced: genIntroduced,
+                    evolutionDetails: chain.evolution_details?.[0] || null
+                });
+                
+                if (chain.evolves_to && chain.evolves_to.length > 0) {
+                    chain.evolves_to.forEach(evo => processChain(evo, stage + 1));
+                }
+            };
+            
+            processChain(evoData.chain);
+            
+            setEvolutionCache(prev => ({
+                ...prev,
+                [evolutionChainUrl]: evolutions
+            }));
+            
+            return evolutions;
+        } catch (error) {
+            console.error('Error fetching evolution chain:', error);
+            return [];
+        }
+    }, [evolutionCache]);
+
+    const fetchPokemonForms = useCallback(async (pokemonId, speciesUrl) => {
+        try {
+            const speciesRes = await fetch(speciesUrl);
+            const speciesData = await speciesRes.json();
+            
+            const forms = await Promise.all(
+                speciesData.varieties
+                    .filter(v => !v.is_default)
+                    .slice(0, 5) // Limit to 5 forms for performance
+                    .map(async (variety) => {
+                        try {
+                            const formRes = await fetch(variety.pokemon.url);
+                            const formData = await formRes.json();
+                            return {
+                                name: variety.pokemon.name,
+                                sprite: formData.sprites.front_default || formData.sprites.other?.['official-artwork']?.front_default
+                            };
+                        } catch {
+                            return null;
+                        }
+                    })
+            );
+            
+            return forms.filter(Boolean);
+        } catch (error) {
+            console.error('Error fetching forms:', error);
+            return [];
+        }
+    }, []);
+
+    const fetchFullPokemonData = useCallback(async (pokemonId) => {
+        try {
+            const [pokemonRes, speciesRes] = await Promise.all([
+                fetch(`${POKEAPI_BASE_URL}/pokemon/${pokemonId}`),
+                fetch(`${POKEAPI_BASE_URL}/pokemon-species/${pokemonId}`)
+            ]);
+            
+            const pokemonData = await pokemonRes.json();
+            const speciesData = await speciesRes.json();
+            
+            const evolutions = await fetchEvolutionChain(speciesData.evolution_chain.url);
+            const forms = await fetchPokemonForms(pokemonId, `${POKEAPI_BASE_URL}/pokemon-species/${pokemonId}`);
+            
+            // Determine evolution stage
+            const currentEvo = evolutions.find(e => parseInt(e.id) === pokemonId);
+            const evolutionStage = currentEvo?.stage || 1;
+            const isFullyEvolved = !evolutions.some(e => e.stage > evolutionStage);
+            
+            // Random nature if needed
+            const randomNature = NATURES_LIST[Math.floor(Math.random() * NATURES_LIST.length)];
+            
+            // Random gender
+            const genderRate = speciesData.gender_rate;
+            let gender = 'Genderless';
+            if (genderRate === -1) {
+                gender = 'Genderless';
+            } else if (genderRate === 0) {
+                gender = 'Male';
+            } else if (genderRate === 8) {
+                gender = 'Female';
+            } else {
+                gender = Math.random() < (genderRate / 8) ? 'Female' : 'Male';
+            }
+
+            return {
+                id: pokemonData.id,
+                name: pokemonData.name,
+                types: pokemonData.types.map(t => t.type.name),
+                sprite: pokemonData.sprites.other?.['official-artwork']?.front_default || pokemonData.sprites.front_default,
+                shinySprite: pokemonData.sprites.other?.['official-artwork']?.front_shiny || pokemonData.sprites.front_shiny,
+                height: pokemonData.height / 10, // Convert to meters
+                weight: pokemonData.weight / 10, // Convert to kg
+                generation: getGenerationName(pokemonData.id),
+                stats: pokemonData.stats.map(s => ({ name: s.stat.name, base_stat: s.base_stat })),
+                abilities: pokemonData.abilities.map(a => a.ability.name),
+                evolutions: evolutions,
+                evolutionStage: evolutionStage,
+                isFullyEvolved: isFullyEvolved,
+                forms: forms,
+                isLegendary: speciesData.is_legendary || speciesData.is_mythical,
+                nature: randomNature,
+                gender: gender,
+                baseHappiness: speciesData.base_happiness,
+                captureRate: speciesData.capture_rate,
+                growthRate: speciesData.growth_rate?.name || 'Unknown'
+            };
+        } catch (error) {
+            console.error(`Error fetching Pokemon ${pokemonId}:`, error);
+            return null;
+        }
+    }, [fetchEvolutionChain, fetchPokemonForms]);
+
+    const generateRandomPokemon = useCallback(async () => {
+        setIsLoading(true);
+        setGeneratedPokemon([]);
+        
+        try {
+            // Build the pool of valid Pokemon IDs
+            let validIds = [];
+            const range = GENERATION_RANGES[selectedRegion] || GENERATION_RANGES['all'];
+            
+            for (let id = range.start; id <= range.end; id++) {
+                validIds.push(id);
+            }
+            
+            // Filter by legendary status
+            if (legendaryFilter === 'legendary') {
+                validIds = validIds.filter(id => LEGENDARY_IDS.has(id));
+            } else if (legendaryFilter === 'non-legendary') {
+                validIds = validIds.filter(id => !LEGENDARY_IDS.has(id));
+            }
+            
+            // Shuffle and pick random IDs
+            const shuffled = validIds.sort(() => Math.random() - 0.5);
+            const selectedIds = shuffled.slice(0, Math.min(pokemonCount, validIds.length));
+            
+            // Fetch full data for selected Pokemon
+            const pokemonPromises = selectedIds.map(id => fetchFullPokemonData(id));
+            let results = await Promise.all(pokemonPromises);
+            results = results.filter(Boolean);
+            
+            // Apply type filter
+            if (selectedType !== 'all') {
+                results = results.filter(p => p.types.includes(selectedType));
+                // If we filtered out too many, fetch more
+                if (results.length < pokemonCount) {
+                    const remaining = pokemonCount - results.length;
+                    const moreIds = shuffled.slice(pokemonCount, pokemonCount + remaining * 3);
+                    const moreResults = await Promise.all(moreIds.map(id => fetchFullPokemonData(id)));
+                    const filtered = moreResults.filter(p => p && p.types.includes(selectedType));
+                    results = [...results, ...filtered].slice(0, pokemonCount);
+                }
+            }
+            
+            // Apply fully evolved filter
+            if (fullyEvolvedFilter === 'fully-evolved') {
+                results = results.filter(p => p.isFullyEvolved);
+            } else if (fullyEvolvedFilter === 'not-fully-evolved') {
+                results = results.filter(p => !p.isFullyEvolved);
+            }
+            
+            setGeneratedPokemon(results);
+        } catch (error) {
+            console.error('Error generating Pokemon:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [pokemonCount, selectedRegion, selectedType, legendaryFilter, fullyEvolvedFilter, fetchFullPokemonData]);
+
+    // Generate on mount
+    useEffect(() => {
+        generateRandomPokemon();
+    }, []);
+
+    const PokemonDetailCard = ({ pokemon }) => {
+        const [evoSprites, setEvoSprites] = useState({});
+        const [loadingSprites, setLoadingSprites] = useState(true);
+        
+        // Fetch sprites for evolution chain
+        useEffect(() => {
+            const fetchEvoSprites = async () => {
+                if (!pokemon.evolutions || pokemon.evolutions.length === 0) {
+                    setLoadingSprites(false);
+                    return;
+                }
+                setLoadingSprites(true);
+                const sprites = {};
+                try {
+                    await Promise.all(
+                        pokemon.evolutions.map(async (evo) => {
+                            try {
+                                const res = await fetch(`${POKEAPI_BASE_URL}/pokemon/${evo.id}`);
+                                const data = await res.json();
+                                sprites[evo.id] = data.sprites.front_default;
+                            } catch (e) {
+                                sprites[evo.id] = null;
+                            }
+                        })
+                    );
+                } catch (e) {
+                    console.error('Error fetching evo sprites:', e);
+                }
+                setEvoSprites(sprites);
+                setLoadingSprites(false);
+            };
+            fetchEvoSprites();
+        }, [pokemon.evolutions]);
+
+        const primaryType = pokemon.types[0];
+        
+        // Split evolutions into pre and post
+        const currentIndex = pokemon.evolutions?.findIndex(evo => parseInt(evo.id) === pokemon.id) ?? -1;
+        const preEvolutions = currentIndex > 0 ? pokemon.evolutions.slice(0, currentIndex) : [];
+        const postEvolutions = currentIndex >= 0 && currentIndex < (pokemon.evolutions?.length - 1) 
+            ? pokemon.evolutions.slice(currentIndex + 1) 
+            : [];
+
+        const EvolutionSprite = ({ evo, isCurrent = false }) => (
+            <div className="flex flex-col items-center">
+                <div 
+                    className={`rounded-xl p-1 ${isCurrent ? '' : 'opacity-70'}`}
+                    style={{ 
+                        backgroundColor: isCurrent ? typeColors[primaryType] + '20' : 'transparent',
+                        border: isCurrent ? `3px solid ${typeColors[primaryType]}` : '2px solid transparent'
+                    }}
+                >
+                    {loadingSprites ? (
+                        <div className={`${isCurrent ? 'w-24 h-24' : 'w-16 h-16'} rounded-full animate-pulse`} style={{ backgroundColor: colors.cardLight }}></div>
+                    ) : (isCurrent ? pokemon.sprite : evoSprites[evo.id]) ? (
+                        <img 
+                            src={isCurrent ? pokemon.sprite : evoSprites[evo.id]} 
+                            alt={evo.name} 
+                            className={`${isCurrent ? 'w-24 h-24' : 'w-16 h-16'} object-contain`}
+                        />
+                    ) : (
+                        <div className={`${isCurrent ? 'w-24 h-24' : 'w-16 h-16'} rounded-full flex items-center justify-center text-lg`} style={{ backgroundColor: colors.cardLight }}>?</div>
+                    )}
+                </div>
+                <p className={`capitalize font-semibold mt-1 text-center truncate ${isCurrent ? 'text-sm max-w-[96px]' : 'text-[11px] max-w-[64px]'}`}
+                   style={{ color: isCurrent ? typeColors[primaryType] : colors.textMuted }}>
+                    {evo.name.replace(/-/g, ' ')}
+                </p>
+                {!isCurrent && (
+                    <span className="text-[8px] px-1.5 py-0.5 rounded-full font-medium mt-0.5"
+                        style={{ backgroundColor: colors.cardLight, color: colors.textMuted }}>
+                        {evo.genIntroduced}
+                    </span>
+                )}
+            </div>
+        );
+
+        return (
+            <div 
+                className="group rounded-2xl overflow-hidden"
+                style={{ 
+                    backgroundColor: colors.card,
+                    border: `3px solid ${typeColors[primaryType]}`
+                }}
+            >
+                {/* Header with Evolution Chain */}
+                <div className="relative p-4" style={{ backgroundColor: typeColors[primaryType] + '10' }}>
+                    {/* Name & Info Row */}
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold px-2 py-0.5 rounded" style={{ backgroundColor: colors.card, color: colors.textMuted }}>
+                                #{String(pokemon.id).padStart(3, '0')}
+                            </span>
+                            <span className="text-xs font-medium px-2 py-0.5 rounded" style={{ backgroundColor: typeColors[primaryType] + '30', color: typeColors[primaryType] }}>
+                                {pokemon.generation}
+                            </span>
+                        </div>
+                        <div className="flex gap-1.5">
+                            {pokemon.types.map(type => (
+                                <span 
+                                    key={type} 
+                                    className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase"
+                                    style={{ backgroundColor: typeColors[type] }}
+                                >
+                                    {type}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {/* Pokemon Name */}
+                    <h3 className="text-lg font-bold capitalize text-center mb-3" style={{ color: colors.text }}>
+                        {pokemon.name.replace(/-/g, ' ')}
+                    </h3>
+                    
+                    {/* Evolution Chain in Header */}
+                    <div className="flex items-center justify-center gap-2">
+                        {/* Pre-evolutions (left side) */}
+                        {preEvolutions.length > 0 && (
+                            <>
+                                <div className="flex items-center gap-1">
+                                    {preEvolutions.map((evo, idx) => (
+                                        <React.Fragment key={evo.id}>
+                                            <EvolutionSprite evo={evo} isCurrent={false} />
+                                            {idx < preEvolutions.length - 1 && (
+                                                <span className="text-sm" style={{ color: colors.textMuted }}>→</span>
+                                            )}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                                <span className="text-lg mx-1" style={{ color: colors.textMuted }}>→</span>
+                            </>
+                        )}
+                        
+                        {/* Current Pokemon (center, larger) */}
+                        {pokemon.evolutions && pokemon.evolutions.length > 0 ? (
+                            <EvolutionSprite 
+                                evo={pokemon.evolutions.find(e => parseInt(e.id) === pokemon.id) || { id: pokemon.id, name: pokemon.name }} 
+                                isCurrent={true} 
+                            />
+                        ) : (
+                            <div 
+                                className="rounded-xl p-1"
+                                style={{ 
+                                    backgroundColor: typeColors[primaryType] + '20',
+                                    border: `3px solid ${typeColors[primaryType]}`
+                                }}
+                            >
+                                <img 
+                                    src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL} 
+                                    alt={pokemon.name}
+                                    className="w-24 h-24 object-contain"
+                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                />
+                            </div>
+                        )}
+                        
+                        {/* Post-evolutions (right side) */}
+                        {postEvolutions.length > 0 && (
+                            <>
+                                <span className="text-lg mx-1" style={{ color: colors.textMuted }}>→</span>
+                                <div className="flex items-center gap-1">
+                                    {postEvolutions.map((evo, idx) => (
+                                        <React.Fragment key={evo.id}>
+                                            <EvolutionSprite evo={evo} isCurrent={false} />
+                                            {idx < postEvolutions.length - 1 && (
+                                                <span className="text-sm" style={{ color: colors.textMuted }}>→</span>
+                                            )}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </div>
+                </div>
+                
+                {/* Content - Compact */}
+                <div className="px-4 pb-4 pt-3 space-y-3">
+                    {/* Height & Weight - Compact Row */}
+                    <div className="flex gap-2">
+                        <div className="flex-1 p-2.5 rounded-xl text-center" style={{ backgroundColor: colors.cardLight }}>
+                            <p className="text-[9px] uppercase tracking-wider font-medium" style={{ color: colors.textMuted }}>Height</p>
+                            <p className="text-base font-bold" style={{ color: colors.text }}>
+                                {pokemon.height}<span className="text-xs font-normal opacity-60">m</span>
+                            </p>
+                        </div>
+                        <div className="flex-1 p-2.5 rounded-xl text-center" style={{ backgroundColor: colors.cardLight }}>
+                            <p className="text-[9px] uppercase tracking-wider font-medium" style={{ color: colors.textMuted }}>Weight</p>
+                            <p className="text-base font-bold" style={{ color: colors.text }}>
+                                {pokemon.weight}<span className="text-xs font-normal opacity-60">kg</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    {/* Forms - Compact */}
+                    {pokemon.forms && pokemon.forms.length > 0 && (formsFilter === 'all' || formsFilter === 'with-forms') && (
+                        <div className="p-3 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
+                            <p className="text-[9px] uppercase tracking-wider text-center mb-2 font-medium" style={{ color: colors.textMuted }}>
+                                Forms ({pokemon.forms.length})
+                            </p>
+                            <div className="flex flex-wrap justify-center gap-2">
+                                {pokemon.forms.slice(0, 4).map(form => (
+                                    <div key={form.name} className="text-center">
+                                        {form.sprite && (
+                                            <img src={form.sprite} alt={form.name} className="w-10 h-10 mx-auto"/>
+                                        )}
+                                        <p className="text-[9px] capitalize mt-0.5 max-w-[50px] truncate" style={{ color: colors.text }}>
+                                            {form.name.replace(pokemon.name + '-', '').replace(/-/g, ' ')}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {/* Abilities - Compact */}
+                    <div className="p-3 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
+                        <p className="text-[9px] uppercase tracking-wider text-center mb-2 font-medium" style={{ color: colors.textMuted }}>
+                            Abilities
+                        </p>
+                        <div className="flex flex-wrap justify-center gap-1.5">
+                            {pokemon.abilities.map((ability, idx) => (
+                                <span 
+                                    key={ability} 
+                                    className="text-[11px] px-2.5 py-1 rounded-full capitalize font-medium"
+                                    style={{ backgroundColor: idx === 0 ? typeColors[primaryType] : colors.card, color: idx === 0 ? 'white' : colors.text }}
+                                >
+                                    {ability.replace(/-/g, ' ')}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    return (
+        <main className="space-y-6">
+            {/* Filters Section */}
+            <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
+                <h2 className="text-lg md:text-xl font-bold mb-4" style={{ fontFamily: "'Press Start 2P'", color: colors.text }}>
+                    Random Pokémon Generator
+                </h2>
+                
+                {/* Filters */}
+                <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex items-center gap-2">
+                        <label className="text-sm whitespace-nowrap" style={{ color: colors.text }}>Generate</label>
+                        <select 
+                            value={pokemonCount} 
+                            onChange={(e) => setPokemonCount(parseInt(e.target.value))}
+                            className="w-16 p-2 rounded-lg"
+                            style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                        >
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map(n => (
+                                <option key={n} value={n}>{n}</option>
+                            ))}
+                        </select>
+                        <span className="text-sm" style={{ color: colors.text }}>Pokémon</span>
+                    </div>
+                    
+                    <select 
+                        value={selectedRegion} 
+                        onChange={(e) => setSelectedRegion(e.target.value)}
+                        className="p-2 rounded-lg capitalize"
+                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                    >
+                        <option value="all">All Regions</option>
+                        {Object.keys(GENERATION_RANGES).filter(g => g !== 'all').map(gen => (
+                            <option key={gen} value={gen} className="capitalize">
+                                {gen.replace('generation-', 'Gen ').replace('-', ' ')}
+                            </option>
+                        ))}
+                    </select>
+                    
+                    <select 
+                        value={selectedType} 
+                        onChange={(e) => setSelectedType(e.target.value)}
+                        className="p-2 rounded-lg capitalize"
+                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                    >
+                        <option value="all">All Types</option>
+                        {Object.keys(typeColors).map(type => (
+                            <option key={type} value={type} className="capitalize">{type}</option>
+                        ))}
+                    </select>
+                    
+                    <select 
+                        value={legendaryFilter} 
+                        onChange={(e) => setLegendaryFilter(e.target.value)}
+                        className="p-2 rounded-lg"
+                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                    >
+                        <option value="all">All Legendaries</option>
+                        <option value="legendary">Legendaries Only</option>
+                        <option value="non-legendary">No Legendaries</option>
+                    </select>
+                    
+                    <select 
+                        value={fullyEvolvedFilter} 
+                        onChange={(e) => setFullyEvolvedFilter(e.target.value)}
+                        className="p-2 rounded-lg"
+                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                    >
+                        <option value="all">Fully Evolved or Not</option>
+                        <option value="fully-evolved">Fully Evolved Only</option>
+                        <option value="not-fully-evolved">Not Fully Evolved</option>
+                    </select>
+                    
+                    <select 
+                        value={formsFilter} 
+                        onChange={(e) => setFormsFilter(e.target.value)}
+                        className="p-2 rounded-lg"
+                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                    >
+                        <option value="all">All Forms</option>
+                        <option value="with-forms">Show Forms</option>
+                        <option value="no-forms">Hide Forms</option>
+                    </select>
+                    
+                    <button 
+                        onClick={generateRandomPokemon}
+                        disabled={isLoading}
+                        className="px-6 py-2 rounded-lg font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
+                        style={{ backgroundColor: colors.primary }}
+                    >
+                        {isLoading ? 'Generating...' : 'Generate'}
+                    </button>
+                </div>
+            </section>
+            
+            {/* Results Section */}
+            <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: colors.primary }}></div>
+                    </div>
+                ) : generatedPokemon.length > 0 ? (
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {generatedPokemon.map(pokemon => (
+                            <PokemonDetailCard key={pokemon.id} pokemon={pokemon} />
+                        ))}
+                    </div>
+                ) : (
+                    <p className="text-center py-8" style={{ color: colors.textMuted }}>
+                        No Pokémon found with the selected filters. Try adjusting your criteria.
+                    </p>
+                )}
+            </section>
+        </main>
+    );
+};
+
 export default function App() {
     // Theme State
     const [theme, setTheme] = useState('light');
@@ -915,15 +1566,15 @@ export default function App() {
     useEffect(() => {
         const fetchStaticData = async () => {
              try {
-                const genRes = await fetch('https://pokeapi.co/api/v2/generation');
+                const genRes = await fetch(`${POKEAPI_BASE_URL}/generation`);
                 const genData = await genRes.json();
                 setGenerations(genData.results.map(g => g.name));
 
-                const itemRes = await fetch('https://pokeapi.co/api/v2/item?limit=2000');
+                const itemRes = await fetch(`${POKEAPI_BASE_URL}/item?limit=2000`);
                 const itemData = await itemRes.json();
                 setItems(itemData.results);
                 
-                const natureRes = await fetch('https://pokeapi.co/api/v2/nature');
+                const natureRes = await fetch(`${POKEAPI_BASE_URL}/nature`);
                 const natureData = await natureRes.json();
                 setNatures(natureData.results);
              } catch (e) {
@@ -1446,6 +2097,11 @@ useEffect(() => {
                     colors={colors}
                     showDetails={showDetails}
                 />;
+            case 'randomGenerator':
+                return <RandomGeneratorView 
+                    colors={colors}
+                    generations={generations}
+                />;
             default:
                 return <TeamBuilderView
                     currentTeam={currentTeam}
@@ -1508,6 +2164,12 @@ useEffect(() => {
                         <button onClick={() => { setCurrentPage('pokedex'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'pokedex' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
                             <PokeballIcon />
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Pokédex</span>
+                        </button>
+                      </li>
+                      <li className="mt-2">
+                        <button onClick={() => { setCurrentPage('randomGenerator'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'randomGenerator' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'randomGenerator' ? 'white' : colors.text}}>
+                            <DiceIcon />
+                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Random Generator</span>
                         </button>
                       </li>
                       <li className="mt-2">
