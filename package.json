@@ -16,7 +16,8 @@
     "firebase": "^11.9.1",
     "gh-pages": "^6.3.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.10.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.66",

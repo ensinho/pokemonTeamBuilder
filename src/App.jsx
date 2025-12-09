@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
-// Funções de query do Firestore que vamos usar
 import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit, startAfter, where, getDocs } from 'firebase/firestore';
 
-// Suas importações de ícones e assets
 import NormalIcon from "./assets/typeIcons/Normal_icon_LA.png";
 import FireIcon from "./assets/typeIcons/Fire_icon_LA.png";
 import WaterIcon from "./assets/typeIcons/Water_icon_LA.png";
@@ -24,8 +23,6 @@ import DarkIcon from "./assets/typeIcons/Dark_icon_LA.png";
 import SteelIcon from "./assets/typeIcons/Steel_icon_LA.png";
 import FairyIcon from "./assets/typeIcons/Fairy_icon_LA.png";
 
-
-// --- Assets & Data ---
 const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 
 const THEMES = {
@@ -91,7 +88,6 @@ const typeChart = {
     fairy: { damageTaken: { Poison: 2, Steel: 2, Fighting: 0.5, Bug: 0.5, Dark: 0.5, Dragon: 0 }, damageDealt: { Fire: 0.5, Poison: 0.5, Steel: 0.5, Fighting: 2, Dragon: 2, Dark: 2 } }
 };
 
-// --- SVG Icons ---
 const GithubIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clipRule="evenodd" /></svg>);
 const LinkedinIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>);
 const StarIcon = ({ className = "w-6 h-6", isFavorite, color }) => ( <svg className={className} fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: isFavorite ? '#FBBF24' : color }}> <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.95-.69l1.519-4.674z" /> </svg> );
@@ -117,10 +113,84 @@ const EditIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w
 const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sparkles"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" /></svg>);
 const ShowdownIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>);
 const DiceIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-dice shrink-0"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="4" width="16" height="16" rx="2" /><circle cx="8.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="15.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="15.5" r=".5" fill="currentColor" /></svg>);
+const FlowerIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-laurel-wreath"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16.956 2.057c.355 .124 .829 .375 1.303 .796a3.77 3.77 0 0 1 1.246 2.204c.173 .989 -.047 1.894 -.519 2.683l-.123 .194q -.097 .147 -.196 .272q .066 .234 .117 .471q .26 -.178 .545 -.307c.851 -.389 1.727 -.442 2.527 -.306q .226 .04 .346 .076a1 1 0 0 1 .689 .712l.029 .13q .015 .08 .03 .18a4.45 4.45 0 0 1 -.324 2.496a3.94 3.94 0 0 1 -1.71 1.85l-.242 .12a4.23 4.23 0 0 1 -2.234 .349a9 9 0 0 1 -.443 1.023c.37 .016 .748 .093 1.128 .24c.732 .28 1.299 .758 1.711 1.367a3.95 3.95 0 0 1 .654 1.613a1 1 0 0 1 -.356 .917a3.8 3.8 0 0 1 -.716 .443c-.933 .455 -1.978 .588 -3.043 .179l-.032 -.015l-.205 -.086a3.6 3.6 0 0 1 -1.33 -1.069l-.143 -.197a4 4 0 0 1 -.26 -.433a6 6 0 0 1 -.927 .511q .18 .262 .337 .56a7.4 7.4 0 0 1 .66 1.747a1 1 0 0 1 -1.95 .444l-.028 -.11a6 6 0 0 0 -.449 -1.143c-.342 -.645 -.71 -.968 -1.048 -.968s-.706 .323 -1.048 .969a5.6 5.6 0 0 0 -.367 .874l-.082 .269l-.028 .11a1 1 0 0 1 -1.95 -.444a7.3 7.3 0 0 1 .66 -1.747q .158 -.298 .337 -.561a6.4 6.4 0 0 1 -.93 -.508a4 4 0 0 1 -.256 .43c-.366 .541 -.855 .98 -1.473 1.267l-.238 .1c-.994 .382 -1.97 .292 -2.855 -.091l-.188 -.087a3.8 3.8 0 0 1 -.716 -.443a1 1 0 0 1 -.356 -.917a3.95 3.95 0 0 1 .654 -1.613a3.6 3.6 0 0 1 1.71 -1.368c.38 -.146 .758 -.223 1.13 -.24a9 9 0 0 1 -.445 -1.023a4.23 4.23 0 0 1 -2.233 -.348a4 4 0 0 1 -.916 -.587l-.207 -.191a4 4 0 0 1 -.724 -.977l-.105 -.216a4.45 4.45 0 0 1 -.265 -2.806a1 1 0 0 1 .69 -.712q .119 -.036 .345 -.076c.801 -.135 1.678 -.082 2.53 .308q .283 .129 .545 .304q .048 -.235 .112 -.47a5 5 0 0 1 -.194 -.272c-.556 -.832 -.83 -1.806 -.642 -2.877l.05 -.242a3.75 3.75 0 0 1 1.027 -1.803l.169 -.159a4 4 0 0 1 1.303 -.796a1 1 0 0 1 .975 .178c.2 .168 .462 .446 .719 .83c.556 .833 .83 1.807 .642 2.878a3.77 3.77 0 0 1 -1.246 2.204c-.303 .27 -.607 .47 -.879 .61a7.5 7.5 0 0 0 -.255 1.971c0 3.502 2.285 6.272 5 6.272s5 -2.77 5 -6.276a7.6 7.6 0 0 0 -.253 -1.967a4.3 4.3 0 0 1 -.881 -.61a3.77 3.77 0 0 1 -1.246 -2.204c-.188 -1.07 .086 -2.045 .642 -2.877c.257 -.385 .52 -.663 .72 -.831a1 1 0 0 1 .974 -.178" /></svg>);
+
+// Patch Notes Version - increment this to show patch notes again
+const PATCH_NOTES_VERSION = '1.2.0';
+
+// Patch Notes Modal Component
+const PatchNotesModal = ({ onClose, colors }) => {
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div 
+                className="rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in"
+                style={{ backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
+                onClick={e => e.stopPropagation()}
+            >
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10">
+                    <CloseIcon />
+                </button>
+                
+                {/* Header */}
+                <div className="text-center mb-6">
+                    <div className="flex items-center justify-center gap-4 mb-2">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
+                            <FlowerIcon />
+                        </div>
+                        <h2 className="text-2xl font-bold" style={{ color: colors.text, fontFamily: "'Press Start 2P'" }}>
+                            What's New!
+                        </h2>
+                    </div>
+                    <p className="text-sm mt-2" style={{ color: colors.textMuted }}>
+                        Version {PATCH_NOTES_VERSION} • December 2025
+                    </p>
+                </div>
+
+                {/* Patch Notes Content */}
+                <div className="space-y-5">
+                    {/* New Feature */}
+                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🎲</span>
+                            <h3 className="font-bold" style={{ color: colors.primary }}>Random Pokémon Generator</h3>
+                        </div>
+                        <p className="text-sm" style={{ color: colors.text }}>
+                            A brand new feature to generate random Pokémon! Filter by generation, type, legendary status, and more. Perfect for randomizer challenges or team inspiration.
+                        </p>
+                    </div>
+
+                    {/* UI Improvements */}
+                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">🎨</span>
+                            <h3 className="font-bold" style={{ color: colors.primary }}>UI Improvements</h3>
+                        </div>
+                        <p className="text-sm" style={{ color: colors.text }}>
+                            Smoother animations, better scrolling experience, and refined visual elements throughout the app.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-6 text-center">
+                    <button 
+                        onClick={onClose}
+                        className="px-8 py-3 rounded-lg font-bold text-white transition-colors hover:opacity-90"
+                        style={{ backgroundColor: colors.primary }}
+                    >
+                        Got it, let's go!
+                    </button>
+                    <p className="text-xs mt-3" style={{ color: colors.textMuted }}>
+                        Made with ❤️ by Enzo Esmeraldo
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const TypeBadge = ({ type, colors }) => ( <span className="text-xs text-white font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
 
-// --- Firebase Config (from environment variables) ---
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -148,6 +218,61 @@ const useDebounce = (value, delay) => {
 };
 
 // --- Helper Components ---
+
+// Skeleton Loading Component
+const SkeletonCard = ({ colors }) => (
+    <div className="rounded-lg p-3 text-center h-[172px] overflow-hidden relative" style={{backgroundColor: colors.cardLight}}>
+        {/* Shimmer effect overlay */}
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+        <div className="mx-auto h-24 w-24 rounded-md animate-pulse" style={{backgroundColor: colors.card}}></div>
+        <div className="mt-2 h-5 w-20 mx-auto rounded animate-pulse" style={{backgroundColor: colors.card}}></div>
+        <div className="flex justify-center items-center mt-2 gap-2">
+            <div className="h-5 w-5 rounded-full animate-pulse" style={{backgroundColor: colors.card}}></div>
+            <div className="h-5 w-5 rounded-full animate-pulse" style={{backgroundColor: colors.card}}></div>
+        </div>
+    </div>
+);
+
+// Confirmation Dialog Component
+const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Delete", colors }) => {
+    if (!isOpen) return null;
+    
+    return (
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={onClose}>
+            <div 
+                className="rounded-2xl shadow-2xl w-full max-w-md p-6 relative transform transition-all animate-scale-in"
+                style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}}
+                onClick={e => e.stopPropagation()}
+            >
+                <div className="text-center">
+                    <div className="mx-auto w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
+                        <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <h3 className="text-xl font-bold mb-2" style={{color: colors.text}}>{title}</h3>
+                    <p className="text-sm mb-6" style={{color: colors.textMuted}}>{message}</p>
+                </div>
+                <div className="flex gap-3">
+                    <button 
+                        onClick={onClose}
+                        className="flex-1 py-3 px-4 rounded-xl font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        style={{backgroundColor: colors.cardLight, color: colors.text}}
+                    >
+                        No! Keep them
+                    </button>
+                    <button 
+                        onClick={() => { onConfirm(); onClose(); }}
+                        className="flex-1 py-3 px-4 rounded-xl font-semibold bg-red-600 hover:bg-red-700 text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                        {confirmText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const PokemonCard = React.memo(({ onCardClick, details, lastRef, isSuggested, colors }) => {
 
     const handleCardClick = (e) => {
@@ -156,37 +281,29 @@ const PokemonCard = React.memo(({ onCardClick, details, lastRef, isSuggested, co
     };
     
     if (!details) {
-        return (
-            <div ref={lastRef} className="rounded-lg p-3 text-center h-[172px]" style={{backgroundColor: colors.cardLight}}>
-                <div className="mx-auto h-24 w-24 bg-gray-700 rounded-md animate-pulse"></div>
-                <div className="mt-2 h-5 w-24 mx-auto bg-gray-700 rounded animate-pulse"></div>
-                <div className="flex justify-center items-center mt-2 gap-2">
-                    <div className="h-5 w-5 bg-gray-700 rounded-full animate-pulse"></div>
-                </div>
-            </div>
-        );
+        return <SkeletonCard colors={colors} />;
     }
     
     return (
        <div
         ref={lastRef}
         onClick={handleCardClick}
-        className={`rounded-lg p-3 text-center group relative cursor-pointer transition-all duration-300 ${isSuggested ? 'ring-2 ring-green-400 shadow-lg' : ''}`}
+        className={`rounded-lg p-3 text-center group relative cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-xl active:scale-[0.98] ${isSuggested ? 'ring-2 ring-green-400 shadow-lg' : ''}`}
         style={{ backgroundColor: colors.cardLight }}
         >
-        {isSuggested && <div className="absolute -top-2 -right-2 text-xs bg-green-500 text-white font-bold py-1 px-2 rounded-full z-10">Suggested</div>}
+        {isSuggested && <div className="absolute -top-2 -right-2 text-xs bg-green-500 text-white font-bold py-1 px-2 rounded-full z-10 animate-bounce">Suggested</div>}
         <img
             src={details.sprite || POKEBALL_PLACEHOLDER_URL}
             onError={(e) => {
             e.currentTarget.src = POKEBALL_PLACEHOLDER_URL;
             }}
             alt={details.name}
-            className="mx-auto w-full h-auto max-w-[120px] group-hover:scale-110 transition-transform"
+            className="mx-auto w-full h-auto max-w-[120px] group-hover:scale-110 transition-transform duration-300"
         />
         <p className="mt-2 text-sm font-semibold capitalize" style={{color: colors.text}}>{details.name}</p>
         <div className="flex justify-center items-center mt-1 gap-1">
             {details.types.map((type) => (
-            <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5" />
+            <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5 transition-transform group-hover:scale-110" />
             ))}
         </div>
         </div>
@@ -318,15 +435,15 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     const spriteToShow = showShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite);
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 h-[100vh] flex items-center justify-center z-50 p-4 " onClick={onClose}>
-            <div className="rounded-2xl shadow-xl w-full max-w-lg p-6 relative animate-fade-in" style={{backgroundColor: colors.card}} onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"><CloseIcon /></button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-4 " onClick={onClose}>
+            <div className="rounded-2xl shadow-2xl w-full max-w-lg p-6 relative animate-scale-in" style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}} onClick={e => e.stopPropagation()}>
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white hover:rotate-90 transition-all duration-200"><CloseIcon /></button>
                 <div className="text-center">
                     <div className="relative inline-block">
-                        <img src={spriteToShow || POKEBALL_PLACEHOLDER_URL} alt={pokemon.name} className="mx-auto h-32 w-36 image-pixelated"/>
+                        <img src={spriteToShow || POKEBALL_PLACEHOLDER_URL} alt={pokemon.name} className="mx-auto h-32 w-36 image-pixelated hover:scale-110 transition-transform duration-300"/>
                         <button 
                              onClick={() => setShowShiny(!showShiny)} 
-                             className={`absolute bottom-0 right-0 p-1 rounded-full ${showShiny ? 'bg-yellow-500' : 'bg-gray-700'}`} 
+                             className={`absolute bottom-0 right-0 p-1 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 ${showShiny ? 'bg-yellow-500' : 'bg-gray-700'}`} 
                              style={{color: 'white'}} 
                              title="Toggle Shiny">
                             <SparklesIcon />
@@ -367,7 +484,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                 </div>
                 <div className="mt-8 flex justify-center" >
                     {!isAlreadyOnTeam && onAdd && (
-                        <button onClick={() => { onAdd(pokemon); onClose(); }} className="bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-colors">
+                        <button onClick={() => { onAdd(pokemon); onClose(); }} className="bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95">
                             <PlusIcon /> Add to Team
                         </button>
                     )}
@@ -523,6 +640,14 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
                                 ))}
                             </select>
                         </div>
+                        
+                        {/* Base Stats Section */}
+                        <div className="w-full mt-4">
+                            <h3 className="text-lg font-bold mb-2" style={{color: colors.text}}>Base Stats</h3>
+                            <div className="space-y-1.5">
+                                {pokemon.stats?.map(stat => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right Column */}
@@ -605,7 +730,7 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
 
 const TeamBuilderView = ({
     currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleSaveTeam, editingTeamId, handleClearTeam,
-    recentTeams, setCurrentPage, handleToggleFavorite, handleEditTeam, handleShareTeam, handleDeleteTeam, handleExportToShowdown,
+    recentTeams, onNavigateToTeams, handleToggleFavorite, handleEditTeam, handleShareTeam, requestDeleteTeam, handleExportToShowdown,
     teamAnalysis,
     searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
     isInitialLoading,
@@ -654,33 +779,33 @@ const TeamBuilderView = ({
                     {Array.from({ length: 6 - currentTeam.length }).map((_, i) => (<div key={i} className="flex items-center justify-center"><img src={POKEBALL_PLACEHOLDER_URL} alt="Empty team slot" className="w-12 h-12 opacity-40"/></div>))}
                 </div>
                 <div className="flex items-center gap-2 mt-4">
-                    <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg hover:opacity-90" style={{backgroundColor: colors.primary, color: colors.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
-                    <button onClick={handleExportToShowdown} className="p-2 rounded-lg hover:opacity-80" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Export to Showdown"><ShowdownIcon /></button>
-                    <button onClick={handleShareTeam} className="p-2 rounded-lg hover:opacity-80" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Share Team"><ShareIcon /></button>
-                    <button onClick={handleClearTeam} className="p-2 rounded-lg hover:opacity-80" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Clear Team"><ClearIcon /></button>
+                    <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]" style={{backgroundColor: colors.primary, color: colors.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
+                    <button onClick={handleExportToShowdown} className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Export to Showdown"><ShowdownIcon /></button>
+                    <button onClick={handleShareTeam} className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Share Team"><ShareIcon /></button>
+                    <button onClick={handleClearTeam} className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Clear Team"><ClearIcon /></button>
                 </div>
             </section>
             
-            <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
+            <section className="p-6 rounded-xl shadow-lg backdrop-blur-sm" style={{backgroundColor: colors.card, borderTop: `1px solid ${colors.cardLight}`}}>
                 <div className="flex justify-between items-center mb-4">
                     <h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Recent Teams</h2>
-                    <button onClick={() => setCurrentPage('allTeams')} className="text-sm hover:underline" style={{color: colors.primary}}>View All</button>
+                    <button onClick={onNavigateToTeams} className="text-sm hover:underline transition-all duration-200 hover:scale-105" style={{color: colors.primary}}>View All</button>
                 </div>
                 <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
                     {recentTeams.length > 0 ? recentTeams.map(team => (
-                        <div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-colors" style={{backgroundColor: colors.cardLight}}>
+                        <div key={team.id} className="p-4 rounded-lg flex items-center justify-between transition-all duration-200 hover:shadow-md" style={{backgroundColor: colors.cardLight}}>
                             <div className="flex-1 min-w-0">
                                 <p className="font-bold text-lg truncate" style={{color: colors.text}}>{team.name}</p>
                                 <div className="flex mt-1">
-                                    {team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full" style={{borderColor: colors.cardLight, backgroundColor: colors.card}} />)}
+                                    {team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-8 w-8 -ml-2 border-2 rounded-full transition-transform duration-200 hover:scale-110 hover:z-10" style={{borderColor: colors.cardLight, backgroundColor: colors.card}} />)}
                                 </div>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 <button onClick={() => handleToggleFavorite(team)} title="Favorite">
                                     <StarIcon isFavorite={team.isFavorite} color={colors.textMuted} />
                                 </button>
-                                <button onClick={() => handleEditTeam(team)} className="text-xs font-bold py-1 px-3 rounded-full" style={{backgroundColor: colors.primary, color: colors.background}} >Edit</button>
-                                <button onClick={() => handleDeleteTeam(team.id)} className="bg-red-600 p-1 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
+                                <button onClick={() => handleEditTeam(team)} className="text-xs font-bold py-1 px-3 rounded-full transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.primary, color: colors.background}} >Edit</button>
+                                <button onClick={() => requestDeleteTeam(team.id, team.name)} className="bg-red-600 p-1 hover:bg-red-700 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"><TrashIcon /></button>
                             </div>
                         </div>
                     )) : <p className="text-center py-4" style={{color: colors.textMuted}}>No recent teams yet.</p>}
@@ -708,7 +833,7 @@ const TeamBuilderView = ({
                     ) : (
                     <>
                         <div className="h-full overflow-y-auto custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
-                            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2">
+                            <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2 py-4">
                                 {availablePokemons.map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemon} onCardClick={handleAddPokemonToTeam} lastRef={index === availablePokemons.length - 1 ? lastPokemonElementRef : null} isSuggested={suggestedPokemonIds.has(pokemon.id)} colors={colors} />)}
                             </div>
                             {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
@@ -756,25 +881,25 @@ const TeamBuilderView = ({
     </main>
 );
 
-const AllTeamsView = ({teams, onEdit, onDelete, onToggleFavorite, searchTerm, setSearchTerm, colors}) => (
+const AllTeamsView = ({teams, onEdit, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, colors}) => (
     <div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
         <h2 className="text-2xl md:text-3xl font-bold mb-6" style={{color: colors.text}}>All Saved Teams</h2>
         <input type="text" placeholder="Search teams by name..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full p-3 mb-6 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {teams.length > 0 ? teams.map(team => (
-                <div key={team.id} className="p-4 rounded-lg flex flex-col justify-between" style={{backgroundColor: colors.cardLight}}>
+                <div key={team.id} className="p-4 rounded-lg flex flex-col justify-between transition-all duration-200 hover:shadow-xl hover:scale-[1.02]" style={{backgroundColor: colors.cardLight}}>
                     <div className="flex justify-between items-start">
                         <p className="font-bold text-xl truncate mb-2" style={{color: colors.text}}>{team.name}</p>
-                        <button onClick={() => onToggleFavorite(team)} title="Favorite">
+                        <button onClick={() => onToggleFavorite(team)} title="Favorite" className="transition-transform duration-200 hover:scale-110 active:scale-95">
                             <StarIcon isFavorite={team.isFavorite} color={colors.textMuted} />
                         </button>
                     </div>
                     <div className="flex my-2">
-                        {team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full" style={{borderColor: colors.cardLight, backgroundColor: colors.card}} />)}
+                        {team.pokemons.map(p => <img key={p.id} src={p.sprite || POKEBALL_PLACEHOLDER_URL} onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL }} alt={p.name} className="h-12 w-12 -ml-3 border-2 rounded-full transition-transform duration-200 hover:scale-110 hover:z-10" style={{borderColor: colors.cardLight, backgroundColor: colors.card}} />)}
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-2">
-                        <button onClick={() => onEdit(team)} className="w-full bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-4 rounded-lg">Edit</button>
-                        <button onClick={() => onDelete(team.id)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"><TrashIcon /></button>
+                        <button onClick={() => onEdit(team)} className="w-full bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]">Edit</button>
+                        <button onClick={() => requestDelete(team.id, team.name)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"><TrashIcon /></button>
                     </div>
                 </div>
             )) : <p className="col-span-full text-center py-8" style={{color: colors.textMuted}}>No teams found.</p>}
@@ -1050,7 +1175,9 @@ const RandomGeneratorView = ({ colors, generations }) => {
                 evolutionStage: evolutionStage,
                 isFullyEvolved: isFullyEvolved,
                 forms: forms,
-                isLegendary: speciesData.is_legendary || speciesData.is_mythical,
+                isLegendary: speciesData.is_legendary,
+                isMythical: speciesData.is_mythical,
+                habitat: speciesData.habitat?.name || 'Unknown',
                 nature: randomNature,
                 gender: gender,
                 baseHappiness: speciesData.base_happiness,
@@ -1319,6 +1446,24 @@ const RandomGeneratorView = ({ colors, generations }) => {
                         </div>
                     </div>
                     
+                    {/* Habitat & Legendary Status - New Row */}
+                    <div className="flex gap-2">
+                        <div className="flex-1 p-2.5 rounded-xl text-center" style={{ backgroundColor: colors.cardLight }}>
+                            <p className="text-[9px] uppercase tracking-wider font-medium" style={{ color: colors.textMuted }}>Habitat</p>
+                            <p className="text-sm font-bold capitalize" style={{ color: colors.text }}>
+                                {pokemon.habitat?.replace(/-/g, ' ') || 'Unknown'}
+                            </p>
+                        </div>
+                        <div className="flex-1 p-2.5 rounded-xl text-center" style={{ backgroundColor: colors.cardLight }}>
+                            <p className="text-[9px] uppercase tracking-wider font-medium" style={{ color: colors.textMuted }}>Status</p>
+                            <p className="text-sm font-bold" style={{ 
+                                color: pokemon.isLegendary ? '#FFD700' : pokemon.isMythical ? '#DA70D6' : colors.text 
+                            }}>
+                                {pokemon.isLegendary ? '⭐ Legendary' : pokemon.isMythical ? '✨ Mythical' : 'Regular'}
+                            </p>
+                        </div>
+                    </div>
+                    
                     {/* Forms - Compact */}
                     {pokemon.forms && pokemon.forms.length > 0 && (formsFilter === 'all' || formsFilter === 'with-forms') && (
                         <div className="p-3 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
@@ -1460,8 +1605,22 @@ const RandomGeneratorView = ({ colors, generations }) => {
             {/* Results Section */}
             <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: colors.primary }}></div>
+                    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                        {Array.from({ length: pokemonCount }).map((_, i) => (
+                            <div key={i} className="rounded-2xl overflow-hidden animate-pulse" style={{ backgroundColor: colors.cardLight }}>
+                                <div className="h-40 relative" style={{ backgroundColor: colors.card }}>
+                                    <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
+                                </div>
+                                <div className="p-4 space-y-3">
+                                    <div className="h-4 rounded w-2/3 mx-auto" style={{ backgroundColor: colors.card }}></div>
+                                    <div className="flex gap-2 justify-center">
+                                        <div className="h-6 w-16 rounded-full" style={{ backgroundColor: colors.card }}></div>
+                                        <div className="h-6 w-16 rounded-full" style={{ backgroundColor: colors.card }}></div>
+                                    </div>
+                                    <div className="h-20 rounded" style={{ backgroundColor: colors.card }}></div>
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 ) : generatedPokemon.length > 0 ? (
                     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -1480,6 +1639,10 @@ const RandomGeneratorView = ({ colors, generations }) => {
 };
 
 export default function App() {
+    // React Router hooks
+    const navigate = useNavigate();
+    const location = useLocation();
+    
     // Theme State
     const [theme, setTheme] = useState('light');
     const colors = THEMES[theme];
@@ -1527,7 +1690,6 @@ export default function App() {
     const [isLoading, setIsLoading] = useState(true); // Loading inicial ou de filtro
     const [isFetchingMore, setIsFetchingMore] = useState(false); // Loading do scroll infinito
     const [toasts, setToasts] = useState([]);
-    const [currentPage, setCurrentPage] = useState('builder');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
@@ -1535,7 +1697,42 @@ export default function App() {
     const [editingTeamMember, setEditingTeamMember] = useState(null);
     const [maxToasts, setMaxToasts] = useState(3);
     const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
-    const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);       
+    const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
+    const [showPatchNotes, setShowPatchNotes] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, teamId: null, teamName: '' });
+    
+    // Check if patch notes should be shown (only once per version)
+    useEffect(() => {
+        const seenVersion = localStorage.getItem('patchNotesVersion');
+        if (seenVersion !== PATCH_NOTES_VERSION) {
+            setShowPatchNotes(true);
+        }
+    }, []);
+
+    const handleClosePatchNotes = useCallback(() => {
+        localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
+        setShowPatchNotes(false);
+    }, []);
+    
+    // Derive currentPage from URL path for backward compatibility
+    const currentPage = useMemo(() => {
+        const path = location.pathname;
+        if (path.includes('/pokedex')) return 'pokedex';
+        if (path.includes('/teams')) return 'allTeams';
+        if (path.includes('/generator')) return 'randomGenerator';
+        return 'builder';
+    }, [location.pathname]);
+
+    // Get page title and subtitle based on current route
+    const pageInfo = useMemo(() => {
+        const pages = {
+            'builder': { title: 'Pokémon Team Builder', icon: '', subtitle: 'Build your perfect team' },
+            'pokedex': { title: 'Pokédex', icon: '', subtitle: 'Explore all Pokémon' },
+            'allTeams': { title: 'Saved Teams', icon: '', subtitle: 'Your team collection' },
+            'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Discover new Pokémon' }
+        };
+        return pages[currentPage] || pages['builder'];
+    }, [currentPage]);
 
     const showToast = useCallback((message, type = 'info') => {
         const id = Date.now();
@@ -2013,11 +2210,17 @@ useEffect(() => {
         setCurrentTeam(customizedTeam);
         setTeamName(team.name);
         setEditingTeamId(team.id);
-        setCurrentPage('builder');
+        navigate('/');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [fetchPokemonDetails, showToast]);
+    }, [fetchPokemonDetails, showToast, navigate]);
 
+    // Request delete confirmation
+    const requestDeleteTeam = useCallback((teamId, teamName) => {
+        setDeleteConfirmation({ isOpen: true, teamId, teamName });
+    }, []);
+
+    // Actually delete the team (called after confirmation)
     const handleDeleteTeam = useCallback(async (teamId) => {
         if (!db || !userId) return;
         try {
@@ -2071,80 +2274,101 @@ useEffect(() => {
         }
     }, []);
 
-    const renderPage = () => {
-        const availablePokemons = useMemo(() => {
-            if (!pokemons) return [];
-            const teamIds = new Set(currentTeam.map(p => p.id));
-            return pokemons.filter(p => !teamIds.has(p.id));
-        }, [pokemons, currentTeam]);
-
-        switch (currentPage) {
-            case 'allTeams':
-                return <AllTeamsView teams={savedTeams} onEdit={handleEditTeam} onDelete={handleDeleteTeam} onToggleFavorite={handleToggleFavorite} searchTerm={teamSearchTerm} setSearchTerm={setTeamSearchTerm} colors={colors} />;
-            case 'pokedex':
-                return <PokedexView 
-                    pokemons={pokemons}
-                    lastPokemonElementRef={lastPokemonElementRef}
-                    isFetchingMore={isFetchingMore}
-                    searchInput={pokedexSearchInput}
-                    setSearchInput={setPokedexSearchInput}
-                    selectedTypes={pokedexSelectedTypes}
-                    handleTypeSelection={handleTypeSelection}
-                    selectedGeneration={pokedexSelectedGeneration}
-                    setSelectedGeneration={setPokedexSelectedGeneration}
-                    generations={generations}
-                    isInitialLoading={isLoading}
-                    colors={colors}
-                    showDetails={showDetails}
-                />;
-            case 'randomGenerator':
-                return <RandomGeneratorView 
-                    colors={colors}
-                    generations={generations}
-                />;
-            default:
-                return <TeamBuilderView
-                    currentTeam={currentTeam}
-                    teamName={teamName}
-                    setTeamName={setTeamName}
-                    handleRemoveFromTeam={handleRemoveFromTeam}
-                    handleSaveTeam={handleSaveTeam}
-                    editingTeamId={editingTeamId}
-                    handleClearTeam={handleClearTeam}
-                    recentTeams={recentTeams}
-                    setCurrentPage={setCurrentPage}
-                    handleToggleFavorite={handleToggleFavorite}
-                    handleEditTeam={handleEditTeam}
-                    handleDeleteTeam={handleDeleteTeam}
-                    handleShareTeam={handleShareTeam}
-                    handleExportToShowdown={handleExportToShowdown}
-                    teamAnalysis={teamAnalysis}
-                    searchInput={searchInput}
-                    setSearchInput={setSearchInput}
-                    selectedGeneration={selectedGeneration}
-                    setSelectedGeneration={setSelectedGeneration}
-                    generations={generations}
-                    isInitialLoading={isLoading}
-                    availablePokemons={availablePokemons}
-                    handleAddPokemonToTeam={handleAddPokemonToTeam}
-                    lastPokemonElementRef={lastPokemonElementRef}
-                    isFetchingMore={isFetchingMore}
-                    selectedTypes={selectedTypes}
-                    handleTypeSelection={handleTypeSelection}
-                    showDetails={showDetails}
-                    suggestedPokemonIds={suggestedPokemonIds}
-                    colors={colors}
-                    onEditTeamPokemon={handleEditTeamMember}
-                />;
-        }
+    const renderRoutes = () => {
+        return (
+            <Routes>
+                <Route path="/teams" element={
+                    <AllTeamsView 
+                        teams={savedTeams} 
+                        onEdit={handleEditTeam} 
+                        requestDelete={requestDeleteTeam} 
+                        onToggleFavorite={handleToggleFavorite} 
+                        searchTerm={teamSearchTerm} 
+                        setSearchTerm={setTeamSearchTerm} 
+                        colors={colors} 
+                    />
+                } />
+                <Route path="/pokedex" element={
+                    <PokedexView 
+                        pokemons={pokemons}
+                        lastPokemonElementRef={lastPokemonElementRef}
+                        isFetchingMore={isFetchingMore}
+                        searchInput={pokedexSearchInput}
+                        setSearchInput={setPokedexSearchInput}
+                        selectedTypes={pokedexSelectedTypes}
+                        handleTypeSelection={handleTypeSelection}
+                        selectedGeneration={pokedexSelectedGeneration}
+                        setSelectedGeneration={setPokedexSelectedGeneration}
+                        generations={generations}
+                        isInitialLoading={isLoading}
+                        colors={colors}
+                        showDetails={showDetails}
+                    />
+                } />
+                <Route path="/generator" element={
+                    <RandomGeneratorView 
+                        colors={colors}
+                        generations={generations}
+                    />
+                } />
+                <Route path="/" element={
+                    <TeamBuilderView
+                        currentTeam={currentTeam}
+                        teamName={teamName}
+                        setTeamName={setTeamName}
+                        handleRemoveFromTeam={handleRemoveFromTeam}
+                        handleSaveTeam={handleSaveTeam}
+                        editingTeamId={editingTeamId}
+                        handleClearTeam={handleClearTeam}
+                        recentTeams={recentTeams}
+                        onNavigateToTeams={() => navigate('/teams')}
+                        handleToggleFavorite={handleToggleFavorite}
+                        handleEditTeam={handleEditTeam}
+                        requestDeleteTeam={requestDeleteTeam}
+                        handleShareTeam={handleShareTeam}
+                        handleExportToShowdown={handleExportToShowdown}
+                        teamAnalysis={teamAnalysis}
+                        searchInput={searchInput}
+                        setSearchInput={setSearchInput}
+                        selectedGeneration={selectedGeneration}
+                        setSelectedGeneration={setSelectedGeneration}
+                        generations={generations}
+                        isInitialLoading={isLoading}
+                        availablePokemons={availablePokemons}
+                        handleAddPokemonToTeam={handleAddPokemonToTeam}
+                        lastPokemonElementRef={lastPokemonElementRef}
+                        isFetchingMore={isFetchingMore}
+                        selectedTypes={selectedTypes}
+                        handleTypeSelection={handleTypeSelection}
+                        showDetails={showDetails}
+                        suggestedPokemonIds={suggestedPokemonIds}
+                        colors={colors}
+                        onEditTeamPokemon={handleEditTeamMember}
+                    />
+                } />
+                <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+        );
     };
     
     return (
       <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
         {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} db={db} />}
         {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache}/>}
+        {showPatchNotes && <PatchNotesModal onClose={handleClosePatchNotes} colors={colors} />}
         
-        <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog 
+            isOpen={deleteConfirmation.isOpen}
+            onClose={() => setDeleteConfirmation({ isOpen: false, teamId: null, teamName: '' })}
+            onConfirm={() => handleDeleteTeam(deleteConfirmation.teamId)}
+            title="Erase the Team? 😢"
+            message={`Are you sure you want to delete "${deleteConfirmation.teamName}"? They could be so great...`}
+            confirmText="Yeah don't care"
+            colors={colors}
+        />
+        
+        <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : toast.type === 'info' ? 'bg-blue-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
             <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: colors.card}}>
                 <div className="flex flex-col h-full">
@@ -2155,25 +2379,25 @@ useEffect(() => {
                   <nav className="px-4 flex-grow">
                     <ul>
                       <li>
-                        <button onClick={() => { setCurrentPage('builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'builder' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
+                        <button onClick={() => { navigate('/'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'builder' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
                           <SwordsIcon />
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span>
                         </button>
                       </li>
                        <li className="mt-2">
-                        <button onClick={() => { setCurrentPage('pokedex'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'pokedex' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
+                        <button onClick={() => { navigate('/pokedex'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'pokedex' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
                             <PokeballIcon />
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Pokédex</span>
                         </button>
                       </li>
                       <li className="mt-2">
-                        <button onClick={() => { setCurrentPage('randomGenerator'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'randomGenerator' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'randomGenerator' ? 'white' : colors.text}}>
+                        <button onClick={() => { navigate('/generator'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'randomGenerator' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'randomGenerator' ? 'white' : colors.text}}>
                             <DiceIcon />
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Random Generator</span>
                         </button>
                       </li>
                       <li className="mt-2">
-                        <button onClick={() => { setCurrentPage('allTeams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'allTeams' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
+                        <button onClick={() => { navigate('/teams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'allTeams' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
                           <SavedTeamsIcon/>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Saved Teams</span>
                         </button>
@@ -2193,17 +2417,20 @@ useEffect(() => {
                 </button>
 
                 <div className="flex-1 text-center px-2 marginLeft">
-                    <h1
-                    className="text-xs sm:text-base lg:text-3xl font-bold tracking-wider truncate"
-                    style={{ fontFamily: "'Press Start 2P'", color: colors.primary }}
-                    >
-                    Pokémon Team Builder
-                    </h1>
+                    <div className="flex items-center justify-center gap-2">
+                        <span className="text-xl sm:text-2xl lg:text-3xl">{pageInfo.icon}</span>
+                        <h1
+                        className="text-xs sm:text-base lg:text-2xl font-bold tracking-wider truncate"
+                        style={{ fontFamily: "'Press Start 2P'", color: colors.primary }}
+                        >
+                        {pageInfo.title}
+                        </h1>
+                    </div>
                     <p
-                    className="text-xs sm:text-sm md:text-base mt-1 truncate"
-                    style={{ fontFamily: "'Press Start 2P'", color: colors.primary }}
+                    className="text-[10px] sm:text-xs md:text-sm mt-1 truncate opacity-70"
+                    style={{ color: colors.textMuted }}
                     >
-                    By: Enzo Esmeraldo
+                    {pageInfo.subtitle}
                     </p>
                 </div>
 
@@ -2214,8 +2441,8 @@ useEffect(() => {
                 </div>
 
                 </header>
-                <div className="p-4 sm:p-6 lg:p-8">{renderPage()}</div>
-                <footer className="text-center mt-12 py-6 border-t" style={{borderColor: colors.cardLight}}>
+                <div className="p-4 sm:p-6 lg:p-8 lg:py-4">{renderRoutes()}</div>
+                <footer className="text-center mt-8 py-6 border-t" style={{borderColor: colors.cardLight}}>
                     <p className="text-sm" style={{color: colors.textMuted}}>Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{color: colors.text}}>
                     Enzo Esmeraldo</a>
                     </p>
@@ -2228,7 +2455,59 @@ useEffect(() => {
                 </footer>
             </div>
         </div>
-        <style>{` @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); .custom-scrollbar::-webkit-scrollbar { width: 12px; } .custom-scrollbar::-webkit-scrollbar-track { background: var(--scrollbar-track-color); } .custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb-color); border-radius: 20px; border: 3px solid var(--scrollbar-thumb-border-color); } @keyframes fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } } .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } .image-pixelated { image-rendering: pixelated; } .bg-primary { background-color: ${colors.primary}; } input[type="checkbox"]:checked + div + div { transform: translateX(100%); background-color: ${colors.primary}; }`}</style>
+        <style>{` 
+            @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap'); 
+            
+            .custom-scrollbar::-webkit-scrollbar { width: 12px; } 
+            .custom-scrollbar::-webkit-scrollbar-track { background: var(--scrollbar-track-color); } 
+            .custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--scrollbar-thumb-color); border-radius: 20px; border: 3px solid var(--scrollbar-thumb-border-color); } 
+            
+            @keyframes fade-in { 
+                from { opacity: 0; transform: scale(0.95); } 
+                to { opacity: 1; transform: scale(1); } 
+            } 
+            
+            @keyframes scale-in { 
+                from { opacity: 0; transform: scale(0.9); } 
+                to { opacity: 1; transform: scale(1); } 
+            }
+            
+            @keyframes slide-up { 
+                from { opacity: 0; transform: translateY(20px); } 
+                to { opacity: 1; transform: translateY(0); } 
+            }
+            
+            @keyframes shimmer {
+                100% { transform: translateX(100%); }
+            }
+            
+            .animate-fade-in { animation: fade-in 0.2s ease-out forwards; } 
+            .animate-scale-in { animation: scale-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+            .animate-slide-up { animation: slide-up 0.3s ease-out forwards; }
+            
+            .image-pixelated { image-rendering: pixelated; } 
+            .bg-primary { background-color: ${colors.primary}; } 
+            
+            input[type="checkbox"]:checked + div + div { transform: translateX(100%); background-color: ${colors.primary}; }
+            
+            /* Glassmorphism card effect */
+            .glass-card {
+                background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+                backdrop-filter: blur(10px);
+                border: 1px solid rgba(255,255,255,0.1);
+            }
+            
+            /* Button hover effects */
+            .btn-interactive {
+                transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .btn-interactive:hover {
+                transform: scale(1.03);
+            }
+            .btn-interactive:active {
+                transform: scale(0.97);
+            }
+        `}</style>
       </div>
     );
 }
