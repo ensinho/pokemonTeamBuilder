@@ -3257,4 +3257,4 @@ This typically indicates that your device does not have a healthy Internet conne
             .btn-interactive:active {
                 transform: scale(0.97);
             }
-        `})]})}Rx.createRoot(document.getElementById("root")).render(f.jsx(rl.StrictMode,{children:f.jsx(qR,{children:f.jsx(K6,{})})}));
+        `})]})}Rx.createRoot(document.getElementById("root")).render(f.jsx(rl.StrictMode,{children:f.jsx(qR,{basename:"/pokemonTeamBuilder",children:f.jsx(K6,{})})}));
