@@ -6,7 +6,7 @@ import './index.css' // <-- ADICIONE ESTA LINHA
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/pokemonTeamBuilder">
       <App />
     </BrowserRouter>
   </React.StrictMode>,
