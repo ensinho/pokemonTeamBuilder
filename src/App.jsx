@@ -36,11 +36,11 @@ const THEMES = {
     },
     light: {
         primary: '#6353b3',
-        background: '#F3F4F6',
+        background: '#E8EAF0',
         card: '#FFFFFF',
-        cardLight: '#E5E7EB',
-        text: '#1F2937',
-        textMuted: '#6B7280'
+        cardLight: '#F3F4F6',
+        text: '#111827',
+        textMuted: '#4B5563'
     }
 };
 
@@ -90,6 +90,7 @@ const typeChart = {
 
 const GithubIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clipRule="evenodd" /></svg>);
 const LinkedinIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>);
+const StarsIcon = ({ className = "w-6 h-6", color }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-stars"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17.8 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M6.2 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M12 9.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /></svg> );
 const StarIcon = ({ className = "w-6 h-6", isFavorite, color }) => ( <svg className={className} fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: isFavorite ? '#FBBF24' : color }}> <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.95-.69l1.519-4.674z" /> </svg> );
 const TrashIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" /> </svg> );
 const ClearIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" clipRule="evenodd" d="M10 8.586l3.95-3.95a1 1 0 111.414 1.414L11.414 10l3.95 3.95a1 1 0 01-1.414 1.414L10 11.414l-3.95 3.95a1 1 0 01-1.414-1.414L8.586 10l-3.95-3.95a1 1 0 011.414-1.414L10 8.586z" /></svg>);
@@ -103,6 +104,7 @@ const SavedTeamsIcon = () => (<svg className="w-6 h-6 shrink-0" xmlns="http://ww
 const CollapseLeftIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>);
 const CollapseRightIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>);
 const ShareIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.35a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" /></svg>);
+const HeartIcon = ({ className = "w-6 h-6 shrink-0" }) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>);
 const SuccessToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 7.2a2.2 2.2 0 0 1 2.2 -2.2h1a2.2 2.2 0 0 0 1.55 -.64l.7 -.7a2.2 2.2 0 0 1 3.12 0l.7 .7c.412 .41 .97 .64 1.55 .64h1a2.2 2.2 0 0 1 2.2 2.2v1c0 .58 .23 1.138 .64 1.55l.7 .7a2.2 2.2 0 0 1 0 3.12l-.7 .7a2.2 2.2 0 0 0 -.64 1.55v1a2.2 2.2 0 0 1 -2.2 2.2h-1a2.2 2.2 0 0 0 -1.55 .64l-.7 .7a2.2 2.2 0 0 1 -3.12 0l-.7 -.7a2.2 2.2 0 0 0 -1.55 -.64h-1a2.2 2.2 0 0 1 -2.2 -2.2v-1a2.2 2.2 0 0 0 -.64 -1.55l-.7 -.7a2.2 2.2 0 0 1 0 -3.12l.7 -.7a2.2 2.2 0 0 0 .64 -1.55v-1" /><path d="M9 12l2 2l4 -4" /></svg>);
 const ErrorToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" /><path d="M12 6l-2 4l4 3l-2 4v3" /></svg>);
 const WarningToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>);
@@ -113,10 +115,10 @@ const EditIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w
 const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sparkles"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" /></svg>);
 const ShowdownIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>);
 const DiceIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-dice shrink-0"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="4" width="16" height="16" rx="2" /><circle cx="8.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="15.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="15.5" r=".5" fill="currentColor" /></svg>);
-const FlowerIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-laurel-wreath"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16.956 2.057c.355 .124 .829 .375 1.303 .796a3.77 3.77 0 0 1 1.246 2.204c.173 .989 -.047 1.894 -.519 2.683l-.123 .194q -.097 .147 -.196 .272q .066 .234 .117 .471q .26 -.178 .545 -.307c.851 -.389 1.727 -.442 2.527 -.306q .226 .04 .346 .076a1 1 0 0 1 .689 .712l.029 .13q .015 .08 .03 .18a4.45 4.45 0 0 1 -.324 2.496a3.94 3.94 0 0 1 -1.71 1.85l-.242 .12a4.23 4.23 0 0 1 -2.234 .349a9 9 0 0 1 -.443 1.023c.37 .016 .748 .093 1.128 .24c.732 .28 1.299 .758 1.711 1.367a3.95 3.95 0 0 1 .654 1.613a1 1 0 0 1 -.356 .917a3.8 3.8 0 0 1 -.716 .443c-.933 .455 -1.978 .588 -3.043 .179l-.032 -.015l-.205 -.086a3.6 3.6 0 0 1 -1.33 -1.069l-.143 -.197a4 4 0 0 1 -.26 -.433a6 6 0 0 1 -.927 .511q .18 .262 .337 .56a7.4 7.4 0 0 1 .66 1.747a1 1 0 0 1 -1.95 .444l-.028 -.11a6 6 0 0 0 -.449 -1.143c-.342 -.645 -.71 -.968 -1.048 -.968s-.706 .323 -1.048 .969a5.6 5.6 0 0 0 -.367 .874l-.082 .269l-.028 .11a1 1 0 0 1 -1.95 -.444a7.3 7.3 0 0 1 .66 -1.747q .158 -.298 .337 -.561a6.4 6.4 0 0 1 -.93 -.508a4 4 0 0 1 -.256 .43c-.366 .541 -.855 .98 -1.473 1.267l-.238 .1c-.994 .382 -1.97 .292 -2.855 -.091l-.188 -.087a3.8 3.8 0 0 1 -.716 -.443a1 1 0 0 1 -.356 -.917a3.95 3.95 0 0 1 .654 -1.613a3.6 3.6 0 0 1 1.71 -1.368c.38 -.146 .758 -.223 1.13 -.24a9 9 0 0 1 -.445 -1.023a4.23 4.23 0 0 1 -2.233 -.348a4 4 0 0 1 -.916 -.587l-.207 -.191a4 4 0 0 1 -.724 -.977l-.105 -.216a4.45 4.45 0 0 1 -.265 -2.806a1 1 0 0 1 .69 -.712q .119 -.036 .345 -.076c.801 -.135 1.678 -.082 2.53 .308q .283 .129 .545 .304q .048 -.235 .112 -.47a5 5 0 0 1 -.194 -.272c-.556 -.832 -.83 -1.806 -.642 -2.877l.05 -.242a3.75 3.75 0 0 1 1.027 -1.803l.169 -.159a4 4 0 0 1 1.303 -.796a1 1 0 0 1 .975 .178c.2 .168 .462 .446 .719 .83c.556 .833 .83 1.807 .642 2.878a3.77 3.77 0 0 1 -1.246 2.204c-.303 .27 -.607 .47 -.879 .61a7.5 7.5 0 0 0 -.255 1.971c0 3.502 2.285 6.272 5 6.272s5 -2.77 5 -6.276a7.6 7.6 0 0 0 -.253 -1.967a4.3 4.3 0 0 1 -.881 -.61a3.77 3.77 0 0 1 -1.246 -2.204c-.188 -1.07 .086 -2.045 .642 -2.877c.257 -.385 .52 -.663 .72 -.831a1 1 0 0 1 .974 -.178" /></svg>);
+const FlowerIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon icon-tabler icons-tabler-filled icon-tabler-laurel-wreath"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16.956 2.057c.355 .124 .829 .375 1.303 .796a3.77 3.77 0 0 1 1.246 2.204c.173 .989 -.047 1.894 -.519 2.683l-.123 .194q -.097 .147 -.196 .272q .066 .234 .117 .471q .26 -.178 .545 -.307c.851 -.389 1.727 -.442 2.527 -.306q .226 .04 .346 .076a1 1 0 0 1 .689 .712l.029 .13q .015 .08 .03 .18a4.45 4.45 0 0 1 -.324 2.496a3.94 3.94 0 0 1 -1.71 1.85l-.242 .12a4.23 4.23 0 0 1 -2.234 .349a9 9 0 0 1 -.443 1.023c.37 .016 .748 .093 1.128 .24c.732 .28 1.299 .758 1.711 1.367a3.95 3.95 0 0 1 .654 1.613a1 1 0 0 1 -.356 .917a3.8 3.8 0 0 1 -.716 .443c-.933 .455 -1.978 .588 -3.043 .179l-.032 -.015l-.205 -.086a3.6 3.6 0 0 1 -1.33 -1.069l-.143 -.197a4 4 0 0 1 -.26 -.433a6 6 0 0 1 -.927 .511q .18 .262 .337 .56a7.4 7.4 0 0 1 .66 1.747a1 1 0 0 1 -1.95 .444l-.028 -.11a6 6 0 0 0 -.449 -1.143c-.342 -.645 -.71 -.968 -1.048 -.968s-.706 .323 -1.048 .969a5.6 5.6 0 0 0 -.367 .874l-.082 .269l-.028 .11a1 1 0 0 1 -1.95 -.444a7.3 7.3 0 0 1 .66 -1.747q .158 -.298 .337 -.561a6.4 6.4 0 0 1 -.93 -.508a4 4 0 0 1 -.256 .43c-.366 .541 -.855 .98 -1.473 1.267l-.238 .1c-.994 .382 -1.97 .292 -2.855 -.091l-.188 -.087a3.8 3.8 0 0 1 -.716 -.443a1 1 0 0 1 -.356 -.917a3.95 3.95 0 0 1 .654 -1.613a3.6 3.6 0 0 1 1.71 -1.368c.38 -.146 .758 -.223 1.13 -.24a9 9 0 0 1 -.445 -1.023a4.23 4.23 0 0 1 -2.233 -.348a4 4 0 0 1 -.916 -.587l-.207 -.191a4 4 0 0 1 -.724 -.977l-.105 -.216a4.45 4.45 0 0 1 -.265 -2.806a1 1 0 0 1 .69 -.712q .119 -.036 .345 -.076c.801 -.135 1.678 -.082 2.53 .308q .283 .129 .545 .304q .048 -.235 .112 -.47a5 5 0 0 1 -.194 -.272c-.556 -.832 -.83 -1.806 -.642 -2.877l.05 -.242a3.75 3.75 0 0 1 1.027 -1.803l.169 -.159a4 4 0 0 1 1.303 -.796a1 1 0 0 1 .975 .178c.2 .168 .462 .446 .719 .83c.556 .833 .83 1.807 .642 2.878a3.77 3.77 0 0 1 -1.246 2.204c-.303 .27 -.607 .47 -.879 .61a7.5 7.5 0 0 0 -.255 1.971c0 3.502 2.285 6.272 5 6.272s5 -2.77 5 -6.276a7.6 7.6 0 0 0 -.253 -1.967a4.3 4.3 0 0 1 -.881 -.61a3.77 3.77 0 0 1 -1.246 -2.204c-.188 -1.07 .086 -2.045 .642 -2.877c.257 -.385 .52 -.663 .72 -.831a1 1 0 0 1 .974 -.178" /></svg>);
 
 // Patch Notes Version - increment this to show patch notes again
-const PATCH_NOTES_VERSION = '1.2.0';
+const PATCH_NOTES_VERSION = '1.3.0';
 
 // Patch Notes Modal Component
 const PatchNotesModal = ({ onClose, colors }) => {
@@ -148,25 +150,44 @@ const PatchNotesModal = ({ onClose, colors }) => {
 
                 {/* Patch Notes Content */}
                 <div className="space-y-5">
-                    {/* New Feature */}
+                    {/* New Home Page */}
+                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">👌</span>
+                            <h3 className="font-bold" style={{ color: colors.primary }}>Redesigned Home Page</h3>
+                        </div>
+                        <p className="text-sm mb-2" style={{ color: colors.text }}>
+                            Experience a completely revamped home page with:
+                        </p>
+                        <ul className="text-sm space-y-1 ml-4" style={{ color: colors.text }}>
+                            <li>• Personalized greetings based on time of day</li>
+                            <li>• Customizable partner Pokémon</li>
+                            <li>• Daily Pokémon showcase</li>
+                            <li>• Trainer stats and achievements</li>
+                            <li>• Quick access to your last team</li>
+                        </ul>
+                    </div>
+
+                    {/* Favorites Feature */}
+                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className="text-lg">⭐</span>
+                            <h3 className="font-bold" style={{ color: colors.primary }}>Favorites System</h3>
+                        </div>
+                        <p className="text-sm" style={{ color: colors.text }}>
+                            Mark your favorite Pokémon with a star! Access them quickly from the new Favorites page and see them featured on your home page.
+                        </p>
+                    </div>
+
+
+                    {/* Random Generator */}
                     <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
                         <div className="flex items-center gap-2 mb-2">
                             <span className="text-lg">🎲</span>
                             <h3 className="font-bold" style={{ color: colors.primary }}>Random Pokémon Generator</h3>
                         </div>
                         <p className="text-sm" style={{ color: colors.text }}>
-                            A brand new feature to generate random Pokémon! Filter by generation, type, legendary status, and more. Perfect for randomizer challenges or team inspiration.
-                        </p>
-                    </div>
-
-                    {/* UI Improvements */}
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-lg">🎨</span>
-                            <h3 className="font-bold" style={{ color: colors.primary }}>UI Improvements</h3>
-                        </div>
-                        <p className="text-sm" style={{ color: colors.text }}>
-                            Smoother animations, better scrolling experience, and refined visual elements throughout the app.
+                            Generate random Pokémon with advanced filters by generation, type, legendary status, and more!
                         </p>
                     </div>
                 </div>
@@ -184,6 +205,213 @@ const PatchNotesModal = ({ onClose, colors }) => {
                         Made with ❤️ by Enzo Esmeraldo
                     </p>
                 </div>
+            </div>
+        </div>
+    );
+};
+
+// Greeting Pokemon Selector Modal
+const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentPokemonId, colors, db }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedType, setSelectedType] = useState(null);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [fullPokemonList, setFullPokemonList] = useState(allPokemons || []);
+    const [lastDoc, setLastDoc] = useState(null);
+    const [hasMore, setHasMore] = useState(true);
+    
+    // Load more Pokemon in batches
+    const loadMorePokemons = useCallback(async () => {
+        if (!db || isLoadingMore || !hasMore) return;
+        
+        setIsLoadingMore(true);
+        try {
+            const constraints = [
+                orderBy('id'),
+                limit(200) // Load 200 at a time
+            ];
+            
+            if (lastDoc) {
+                constraints.push(startAfter(lastDoc));
+            }
+            
+            const q = query(
+                collection(db, 'artifacts/pokemonTeamBuilder/pokemons'),
+                ...constraints
+            );
+            
+            const snapshot = await getDocs(q);
+            if (snapshot.empty || snapshot.docs.length < 200) {
+                setHasMore(false);
+            }
+            
+            const newPokemons = snapshot.docs.map(doc => doc.data());
+            const lastVisible = snapshot.docs[snapshot.docs.length - 1];
+            
+            setFullPokemonList(prev => {
+                const combined = [...prev, ...newPokemons];
+                const unique = combined.filter((pokemon, index, self) => 
+                    index === self.findIndex(p => p.id === pokemon.id)
+                );
+                return unique;
+            });
+            setLastDoc(lastVisible);
+        } catch (error) {
+            console.error('Error loading more Pokemon:', error);
+            setHasMore(false);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [db, lastDoc, isLoadingMore, hasMore]);
+    
+    useEffect(() => {
+        if (fullPokemonList.length < 100 && hasMore) {
+            loadMorePokemons();
+        }
+    }, []);
+    
+    const filteredPokemons = useMemo(() => {
+        return fullPokemonList.filter(pokemon => {
+            const matchesSearch = pokemon.name.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesType = !selectedType || pokemon.types?.includes(selectedType);
+            return matchesSearch && matchesType;
+        });
+    }, [fullPokemonList, searchTerm, selectedType]);
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+            <div 
+                className="rounded-2xl shadow-xl w-full max-w-7xl max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in"
+                style={{ backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
+                onClick={e => e.stopPropagation()}
+            >
+                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10">
+                    <CloseIcon />
+                </button>
+                
+                <div className="mb-6">
+                    <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
+                        Choose Your Partner Pokémon
+                    </h2>
+                    <p className="text-sm" style={{ color: colors.textMuted }}>
+                        Select a Pokémon to display on your greeting card
+                    </p>
+                </div>
+                
+                {/* Search and filter */}
+                <div className="mb-4 space-y-3">
+                    <input
+                        type="text"
+                        placeholder="Search Pokémon..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-2 rounded-lg border-2 transition-all focus:outline-none"
+                        style={{ 
+                            backgroundColor: colors.cardLight, 
+                            color: colors.text,
+                            borderColor: colors.cardLight,
+                        }}
+                    />
+                    
+                    {/* Type filter */}
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            onClick={() => setSelectedType(null)}
+                            className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
+                            style={{ 
+                                backgroundColor: !selectedType ? colors.primary : colors.cardLight,
+                                color: !selectedType ? 'white' : colors.text
+                            }}
+                        >
+                            All Types
+                        </button>
+                        {Object.keys(typeColors).slice(0, 8).map(type => (
+                            <button
+                                key={type}
+                                onClick={() => setSelectedType(type)}
+                                className="px-3 py-1 rounded-full text-xs font-semibold text-white transition-all"
+                                style={{ 
+                                    backgroundColor: selectedType === type ? typeColors[type] : colors.cardLight,
+                                    opacity: selectedType === type ? 1 : 0.7
+                                }}
+                            >
+                                {type}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                
+                {/* Clear selection option */}
+                {currentPokemonId && (
+                    <button
+                        onClick={() => onSelect(null)}
+                        className="w-full mb-4 p-3 rounded-lg border-2 border-dashed transition-all hover:scale-[1.02]"
+                        style={{ borderColor: colors.textMuted, color: colors.textMuted }}
+                    >
+                        <span className="text-2xl mb-1 block">✨</span>
+                        Remove custom Pokémon (use default)
+                    </button>
+                )}
+                
+                {/* Pokemon grid */}
+                <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3">
+                    {filteredPokemons.map(pokemon => (
+                        <button
+                            key={pokemon.id}
+                            onClick={() => onSelect(pokemon.id)}
+                            className="p-3 rounded-xl text-center transition-all hover:scale-105 hover:shadow-lg relative"
+                            style={{ 
+                                backgroundColor: currentPokemonId === pokemon.id ? colors.primary + '20' : colors.cardLight,
+                                border: currentPokemonId === pokemon.id ? `2px solid ${colors.primary}` : 'none'
+                            }}
+                        >
+                            {currentPokemonId === pokemon.id && (
+                                <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary }}>
+                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                            )}
+                            <img 
+                                src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                alt={pokemon.name}
+                                className="w-16 h-16 mx-auto"
+                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                            />
+                            <p className="text-xs capitalize truncate mt-1" style={{ color: colors.text }}>
+                                {pokemon.name}
+                            </p>
+                        </button>
+                    ))}
+                </div>
+                
+                {/* Load More Button */}
+                {hasMore && !searchTerm && !selectedType && (
+                    <div className="mt-4 text-center">
+                        <button
+                            onClick={loadMorePokemons}
+                            disabled={isLoadingMore}
+                            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ backgroundColor: colors.primary, color: 'white' }}
+                        >
+                            {isLoadingMore ? (
+                                <div className="flex items-center gap-2">
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    Loading more...
+                                </div>
+                            ) : (
+                                `Load More Pokémon (${fullPokemonList.length}/1025+)`
+                            )}
+                        </button>
+                    </div>
+                )}
+                
+                {filteredPokemons.length === 0 && (
+                    <div className="text-center py-12">
+                        <p style={{ color: colors.textMuted }}>
+                            {searchTerm || selectedType ? 'No Pokémon found matching your filters' : 'No Pokémon available'}
+                        </p>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -273,11 +501,18 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
     );
 };
 
-const PokemonCard = React.memo(({ onCardClick, details, lastRef, isSuggested, colors }) => {
+const PokemonCard = React.memo(({ onCardClick, details, lastRef, isSuggested, colors, isFavorite, onToggleFavorite }) => {
 
     const handleCardClick = (e) => {
         e.stopPropagation();
         onCardClick(details);
+    };
+
+    const handleFavoriteClick = (e) => {
+        e.stopPropagation();
+        if (onToggleFavorite) {
+            onToggleFavorite(details.id);
+        }
     };
     
     if (!details) {
@@ -292,6 +527,19 @@ const PokemonCard = React.memo(({ onCardClick, details, lastRef, isSuggested, co
         style={{ backgroundColor: colors.cardLight }}
         >
         {isSuggested && <div className="absolute -top-2 -right-2 text-xs bg-green-500 text-white font-bold py-1 px-2 rounded-full z-10 animate-bounce">Suggested</div>}
+        
+        {/* Favorite Star - Always visible when favorite, otherwise on hover */}
+        {onToggleFavorite && (
+            <button 
+                onClick={handleFavoriteClick}
+                className={`absolute top-1 left-1 z-10 p-1 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 ${isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+                style={{ backgroundColor: isFavorite ? 'rgba(251, 191, 36, 0.2)' : 'rgba(0,0,0,0.3)' }}
+                title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+            >
+                <StarIcon className="w-4 h-4" isFavorite={isFavorite} color={colors.textMuted} />
+            </button>
+        )}
+        
         <img
             src={details.sprite || POKEBALL_PLACEHOLDER_URL}
             onError={(e) => {
@@ -385,7 +633,7 @@ const AbilityChip = ({ ability }) => {
     );
 }
 
-const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, showPokemonDetails, db }) => {
+const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, showPokemonDetails, db, isFavorite, onToggleFavorite }) => {
     const [showShiny, setShowShiny] = useState(false);
     const [evolutionDetails, setEvolutionDetails] = useState([]);
 
@@ -435,12 +683,12 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     const spriteToShow = showShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite);
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-4 " onClick={onClose}>
-            <div className="rounded-2xl shadow-2xl w-full max-w-lg p-6 relative animate-scale-in" style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}} onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-5 " onClick={onClose}>
+            <div className="rounded-2xl shadow-2xl w-full max-w-lg p-4 relative animate-scale-in" style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}} onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white hover:rotate-90 transition-all duration-200"><CloseIcon /></button>
                 <div className="text-center">
                     <div className="relative inline-block">
-                        <img src={spriteToShow || POKEBALL_PLACEHOLDER_URL} alt={pokemon.name} className="mx-auto h-32 w-36 image-pixelated hover:scale-110 transition-transform duration-300"/>
+                        <img src={spriteToShow || POKEBALL_PLACEHOLDER_URL} alt={pokemon.name} className="mx-auto h-30 w-32 image-pixelated hover:scale-110 transition-transform duration-300"/>
                         <button 
                              onClick={() => setShowShiny(!showShiny)} 
                              className={`absolute bottom-0 right-0 p-1 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 ${showShiny ? 'bg-yellow-500' : 'bg-gray-700'}`} 
@@ -448,13 +696,22 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                              title="Toggle Shiny">
                             <SparklesIcon />
                         </button>
+                        {onToggleFavorite && (
+                            <button 
+                                onClick={() => onToggleFavorite(pokemon.id)} 
+                                className={`absolute bottom-0 left-0 p-1 rounded-full transition-all duration-200 hover:scale-110 active:scale-95`} 
+                                style={{backgroundColor: isFavorite ? 'rgba(251, 191, 36, 0.3)' : 'rgba(107, 114, 128, 0.7)', color: 'white'}} 
+                                title={isFavorite ? "Remove from favorites" : "Add to favorites"}>
+                                <StarIcon className="w-5 h-5" isFavorite={isFavorite} color="white" />
+                            </button>
+                        )}
                     </div>
                     <h2 className="text-3xl font-bold capitalize mt-2" style={{color: colors.text}}>{pokemon.name} <span style={{color: colors.textMuted}}>#{pokemon.id}</span></h2>
                     <div className="flex justify-center gap-2 mt-2">
                         {pokemon.types.map(type => <TypeBadge key={type} type={type} colors={colors} />)}
                     </div>
                 </div>
-                <div className="mt-6">
+                <div className="mt-4">
                     <h3 className="text-xl font-bold mb-3 text-center" style={{color: colors.text}}>Base Stats</h3>
                     <div className="space-y-2">
                         {pokemon.stats?.map(stat => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
@@ -482,7 +739,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                         {pokemon.abilities?.map((ability, index) => <AbilityChip key={index} ability={ability} />)}
                     </div>
                 </div>
-                <div className="mt-8 flex justify-center" >
+                <div className="mt-4 flex justify-center" >
                     {!isAlreadyOnTeam && onAdd && (
                         <button onClick={() => { onAdd(pokemon); onClose(); }} className="bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95">
                             <PlusIcon /> Add to Team
@@ -736,8 +993,16 @@ const TeamBuilderView = ({
     isInitialLoading,
     availablePokemons, handleAddPokemonToTeam, lastPokemonElementRef, isFetchingMore,
     selectedTypes, handleTypeSelection, showDetails,
-    suggestedPokemonIds, colors, onEditTeamPokemon
-}) => (
+    suggestedPokemonIds, colors, onEditTeamPokemon,
+    favoritePokemons, onToggleFavoritePokemon,
+    showOnlyFavorites, setShowOnlyFavorites
+}) => {
+    // Filter available pokemons based on favorites toggle
+    const displayedPokemons = showOnlyFavorites 
+        ? availablePokemons.filter(p => favoritePokemons.has(p.id))
+        : availablePokemons;
+
+    return (
     <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <div className="lg:col-span-3 space-y-8">
             <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
@@ -817,12 +1082,20 @@ const TeamBuilderView = ({
             <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: colors.card}}>
                 <div className="mb-4">
                     <h2 className="text-lg md:text-xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Choose your Pokémon!</h2>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                         <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
                             <option value="all" style={{color: colors.text}}>All Generations</option>
                             {generations.map(gen => <option key={gen} value={gen} className="capitalize" style={{color: colors.text}}>{gen.replace('-', ' ')}</option>)}
                         </select>
+                        <button 
+                            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                            className={`w-full p-3 rounded-lg border-2 focus:outline-none flex items-center justify-center gap-2 font-semibold transition-all duration-200 ${showOnlyFavorites ? 'ring-2 ring-yellow-400' : ''}`}
+                            style={{backgroundColor: showOnlyFavorites ? 'rgba(251, 191, 36, 0.2)' : colors.cardLight, borderColor: 'transparent', color: colors.text}}
+                        >
+                            <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color={colors.textMuted} />
+                            {showOnlyFavorites ? 'Favorites' : 'Favorites'}
+                        </button>
                     </div>
                 </div>
                 <div className="relative flex-grow h-[60vh]">
@@ -834,10 +1107,25 @@ const TeamBuilderView = ({
                     <>
                         <div className="h-full overflow-y-auto custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
                             <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 p-2 py-4">
-                                {availablePokemons.map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemon} onCardClick={handleAddPokemonToTeam} lastRef={index === availablePokemons.length - 1 ? lastPokemonElementRef : null} isSuggested={suggestedPokemonIds.has(pokemon.id)} colors={colors} />)}
+                                {displayedPokemons.map((pokemon, index) => (
+                                    <PokemonCard 
+                                        key={pokemon.id} 
+                                        details={pokemon} 
+                                        onCardClick={handleAddPokemonToTeam} 
+                                        lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null} 
+                                        isSuggested={suggestedPokemonIds.has(pokemon.id)} 
+                                        colors={colors}
+                                        isFavorite={favoritePokemons.has(pokemon.id)}
+                                        onToggleFavorite={onToggleFavoritePokemon}
+                                    />
+                                ))}
                             </div>
                             {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
-                            {availablePokemons.length === 0 && !isInitialLoading && <p className="text-center py-8" style={{color: colors.textMuted}}>No Pokémon found with these filters. :(</p>}
+                            {displayedPokemons.length === 0 && !isInitialLoading && (
+                                <p className="text-center py-8" style={{color: colors.textMuted}}>
+                                    {showOnlyFavorites ? 'No favorite Pokémon found. Add some favorites!' : 'No Pokémon found with these filters. :('}
+                                </p>
+                            )}
                         </div>
                     </>)}
                 </div>
@@ -879,7 +1167,8 @@ const TeamBuilderView = ({
             )}
         </div>
     </main>
-);
+    );
+};
 
 const AllTeamsView = ({teams, onEdit, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, colors}) => (
     <div className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
@@ -912,20 +1201,35 @@ const PokedexView = ({
     lastPokemonElementRef, isFetchingMore,
     searchInput, setSearchInput, selectedTypes, handleTypeSelection,
     selectedGeneration, setSelectedGeneration, generations,
-    isInitialLoading, colors, showDetails
+    isInitialLoading, colors, showDetails,
+    favoritePokemons, onToggleFavoritePokemon,
+    showOnlyFavorites, setShowOnlyFavorites
 }) => {
+    // Filter pokemons based on favorites toggle
+    const displayedPokemons = showOnlyFavorites 
+        ? pokemons.filter(p => favoritePokemons.has(p.id))
+        : pokemons;
+
     return (
         <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
              <div className="lg:col-span-9">
                  <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: colors.card}}>
                      <div className="mb-4">
                          <h2 className="text-lg md:text-xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Pokédex</h2>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                              <input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                              <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
                                  <option value="all" style={{color: colors.text}}>All Generations</option>
                                  {generations.map(gen => <option key={gen} value={gen} className="capitalize" style={{color: colors.text}}>{gen.replace('-', ' ')}</option>)}
                              </select>
+                             <button 
+                                onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                                className={`w-full p-3 rounded-lg border-2 focus:outline-none flex items-center justify-center gap-2 font-semibold transition-all duration-200 ${showOnlyFavorites ? 'ring-2 ring-yellow-400' : ''}`}
+                                style={{backgroundColor: showOnlyFavorites ? 'rgba(251, 191, 36, 0.2)' : colors.cardLight, borderColor: 'transparent', color: colors.text}}
+                             >
+                                <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color={colors.textMuted} />
+                                {showOnlyFavorites ? 'Showing Favorites' : 'Show Favorites'}
+                             </button>
                          </div>
                      </div>
                      <div className="relative flex-grow h-[75vh]">
@@ -937,10 +1241,24 @@ const PokedexView = ({
                          <>
                              <div className="h-full overflow-y-auto custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
                                  <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-2">
-                                     {pokemons.map((pokemon, index) => <PokemonCard key={pokemon.id} details={pokemon} onCardClick={showDetails} lastRef={index === pokemons.length - 1 ? lastPokemonElementRef : null} colors={colors} />)}
+                                     {displayedPokemons.map((pokemon, index) => (
+                                         <PokemonCard 
+                                             key={pokemon.id} 
+                                             details={pokemon} 
+                                             onCardClick={showDetails} 
+                                             lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null} 
+                                             colors={colors}
+                                             isFavorite={favoritePokemons.has(pokemon.id)}
+                                             onToggleFavorite={onToggleFavoritePokemon}
+                                         />
+                                     ))}
                                  </div>
                                  {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
-                                 {pokemons.length === 0 && !isInitialLoading && <p className="text-center py-8" style={{color: colors.textMuted}}>No Pokémon found.</p>}
+                                 {displayedPokemons.length === 0 && !isInitialLoading && (
+                                     <p className="text-center py-8" style={{color: colors.textMuted}}>
+                                         {showOnlyFavorites ? 'No favorite Pokémon found. Add some favorites!' : 'No Pokémon found.'}
+                                     </p>
+                                 )}
                              </div>
                          </>)}
                      </div>
@@ -961,6 +1279,726 @@ const PokedexView = ({
              </div>
         </main>
     )
+};
+
+// Favorite Pokemons View
+const FavoritePokemonsView = ({
+    allPokemons,
+    favoritePokemons,
+    onToggleFavoritePokemon,
+    showDetails,
+    colors,
+    onAddToTeam,
+    isLoading
+}) => {
+    const [searchInput, setSearchInput] = useState('');
+    const [selectedType, setSelectedType] = useState('all');
+    
+    // Get favorite pokemon data from all pokemons
+    const favoritePokemonsList = useMemo(() => {
+        return allPokemons.filter(p => favoritePokemons.has(p.id));
+    }, [allPokemons, favoritePokemons]);
+    
+    // Apply filters
+    const filteredFavorites = useMemo(() => {
+        let filtered = favoritePokemonsList;
+        
+        if (searchInput) {
+            filtered = filtered.filter(p => 
+                p.name.toLowerCase().includes(searchInput.toLowerCase())
+            );
+        }
+        
+        if (selectedType !== 'all') {
+            filtered = filtered.filter(p => p.types.includes(selectedType));
+        }
+        
+        return filtered;
+    }, [favoritePokemonsList, searchInput, selectedType]);
+
+    return (
+        <main className="space-y-6">
+            <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+                    <div>
+                        <h2 className="text-lg md:text-xl font-bold" style={{ fontFamily: "'Press Start 2P'", color: colors.text }}>
+                            Favorite Pokémon
+                        </h2>
+                        <p className="text-sm mt-1" style={{ color: colors.textMuted }}>
+                            {favoritePokemons.size} Pokémon saved as favorites
+                        </p>
+                    </div>
+                </div>
+                
+                {/* Filters */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                    <input 
+                        type="text" 
+                        placeholder="Search favorites..." 
+                        value={searchInput} 
+                        onChange={(e) => setSearchInput(e.target.value)} 
+                        className="w-full p-3 rounded-lg border-2 focus:outline-none" 
+                        style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}
+                    />
+                    <select 
+                        value={selectedType} 
+                        onChange={e => setSelectedType(e.target.value)} 
+                        className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" 
+                        style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}
+                    >
+                        <option value="all">All Types</option>
+                        {Object.keys(typeColors).map(type => (
+                            <option key={type} value={type} className="capitalize">{type}</option>
+                        ))}
+                    </select>
+                </div>
+                
+                {/* Pokemon Grid */}
+                {isLoading ? (
+                    <div className="flex items-center justify-center py-16">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{borderColor: colors.primary}}></div>
+                    </div>
+                ) : filteredFavorites.length > 0 ? (
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+                        {filteredFavorites.map(pokemon => (
+                            <PokemonCard 
+                                key={pokemon.id} 
+                                details={pokemon} 
+                                onCardClick={showDetails} 
+                                colors={colors}
+                                isFavorite={true}
+                                onToggleFavorite={onToggleFavoritePokemon}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-16">
+                        <div className="mb-4">
+                            <StarIcon className="w-16 h-16 mx-auto" isFavorite={false} color={colors.textMuted} />
+                        </div>
+                        <h3 className="text-xl font-bold mb-2" style={{ color: colors.text }}>
+                            {favoritePokemons.size === 0 ? 'No favorites yet!' : 'No matches found'}
+                        </h3>
+                        <p style={{ color: colors.textMuted }}>
+                            {favoritePokemons.size === 0 
+                                ? 'Start adding Pokémon to your favorites by clicking the star icon on any Pokémon card.'
+                                : 'Try adjusting your search or filter criteria.'}
+                        </p>
+                    </div>
+                )}
+            </section>
+        </main>
+    );
+};
+
+// ============================================
+// HOME VIEW 
+// ============================================
+
+// Dicas do dia - Fun facts sobre Pokémon
+const POKEMON_TIPS = [
+    "Did you know Pikachu was inspired by a squirrel, not a mouse? The name comes from 'pika' (sparkle) + 'chu' (squeak sound in Japan)!",
+    "Ditto can transform into any Pokémon, but its eyes remain the same - a detail that helps identify it!",
+    "Magikarp can leap over mountains with its Splash, but the move still deals no damage... ironic, right?",
+    "Slowpoke takes 5 seconds to feel pain. If its tail is bitten, it won't notice until much later!",
+    "Cubone wears the skull of its deceased mother as a helmet. No one has ever seen its true face.",
+    "Gengar might be Clefable's shadow - they have almost identical silhouettes!",
+    "Vaporeon is composed of molecules so similar to water that it can become invisible when submerged.",
+    "Alakazam has an IQ of 5000, making it smarter than any supercomputer!",
+    "Shedinja has only 1 HP, but its Wonder Guard ability makes it immune to non-super effective moves.",
+    "Wobbuffet hides its true body - the black tail with eyes is the real Pokémon!",
+    "Arcanine was originally planned to be a legendary Pokémon, which is why it's called the 'Legendary Pokémon' in the Pokédex.",
+    "Rhydon was the first Pokémon ever created, not Bulbasaur!",
+    "Espeon and Umbreon represent the sun and the moon, evolving according to the time of day.",
+    "Mewtwo was cloned from Mew, but ended up becoming much more powerful than the original.",
+    "Tyranitar can bring down whole mountains and change the landscape when it's furious!",
+    "Eevee has the most possible evolutions of any Pokémon, currently totaling eight different forms!",
+    "Porygon is the first artificial Pokémon, created entirely out of programming code.",
+    "Dragonite can circle the globe in just 16 hours, flying at roughly 1,500 mph.",
+    "Lapras is known for its high intelligence and can understand human speech.",
+    "Snorlax's stomach is so strong it can digest rotten food without getting sick.",
+    "Farfetch'd carries a leek stalk as a weapon, but it will also eat it if it gets hungry enough!",
+    "Psyduck suffers from constant headaches. When the pain becomes too intense, it unleashes powerful psychic energy.",
+    "Meowth is the only Pokémon in the anime that taught itself to speak human language to impress a female Meowth.",
+    "Machamp can throw 500 punches in a single second with its four arms!",
+    "Gyarados is known as the Atrocious Pokémon because of its violent temper, often destroying entire cities in a rage.",
+    "Jigglypuff's song is so soothing that no one can stay awake to hear the whole thing.",
+    "Haunter can lick you with its gaseous tongue to steal your life force. Spooky!",
+    "Kangaskhan is never seen without its baby in its pouch until the baby is fully grown.",
+    "Mr. Mime creates invisible walls by vibrating its fingertips at high speeds.",
+    "Scyther moves so fast that it looks like there are several of them at once, creating a ninja-like illusion.",
+    "Electabuzz loves to feed on electricity and can often be found near power plants causing blackouts.",
+    "Magmar's body temperature is nearly 2,200 degrees Fahrenheit, making it a walking fireball.",
+    "Tauros whips itself with its three tails to get pumped up for battle.",
+    "Ditto cannot copy a Pokémon's HP stat, which is why it often transforms into high-HP Pokémon in competitive play.",
+    "Eevee's genetic code is unstable, which is why it can evolve into so many different types.",
+    "Kabutops was an ancient predator that swam in the oceans 300 million years ago.",
+    "Aerodactyl was resurrected from DNA found in amber, much like the dinosaurs in Jurassic Park!",
+    "Articuno's wings are said to be made of ice, and it can create blizzards just by flapping them.",
+    "Zapdos is capable of controlling thunderstorms and gains power when struck by lightning.",
+    "Moltres heals its wounds by dipping itself into the magma of an active volcano.",
+    "Dratini was once considered a myth until a fishing colony found one underwater.",
+    "Mew contains the DNA of every single Pokémon, making it the ancestor of all Pokémon.",
+    "Chikorita uses the leaf on its head to check the temperature and humidity of the air.",
+    "Cyndaquil flares the flames on its back when it is angry or startled.",
+    "Totodile has a habit of biting anything it sees, including its trainer!",
+    "Sentret stands on its tail to scout for danger from a distance.",
+    "Hoothoot has an internal organ that senses the earth's rotation, keeping perfect time.",
+    "Ledyba communicates with others using scents that change depending on its feelings.",
+    "Spinarak spins a web that is strong enough to trap small prey, and it waits patiently for days.",
+    "Pichu is not yet skilled at storing electricity and may accidentally discharge it when startled.",
+    "Cleffa is often seen dancing in a ring on nights with a full moon.",
+    "Igglybuff has a very soft and elastic body, allowing it to bounce like a ball.",
+    "Togepi stores happiness inside its shell and shares it with those who treat it well.",
+    "Natu cannot fly yet, so it hops around to get from place to place.",
+    "Mareep's wool grows continuously and stores static electricity. Touching it can give you a shock!",
+    "Bellossom is the only Pokémon that evolves from a dual-type (Gloom) into a single-type.",
+    "Marill's tail functions like a float, keeping it above water even in strong currents.",
+    "Sudowoodo pretends to be a tree to avoid being attacked, but it hates water!"
+];
+
+const HomeIcon = () => (<svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>);
+
+const HomeView = ({
+    colors,
+    navigate,
+    savedTeams,
+    favoritePokemons,
+    allPokemons,
+    recentTeams,
+    showDetails,
+    onToggleFavoritePokemon,
+    handleEditTeam,
+    greetingPokemonId,
+    onOpenPokemonSelector,
+    db,
+    theme
+}) => {
+    const [greetingPokemonData, setGreetingPokemonData] = useState(null);
+    
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+        if (hour >= 5 && hour < 12) {
+            return { text: "Good morning", emoji: "☀️", pokemon: "espeon", period: "morning" };
+        } else if (hour >= 12 && hour < 18) {
+            return { text: "Good afternoon", emoji: "🌤️", pokemon: "pikachu", period: "afternoon" };
+        } else {
+            return { text: "Good evening", emoji: "🌙", pokemon: "umbreon", period: "night" };
+        }
+    };
+    const greeting = getGreeting();
+    
+    // Fetch greeting Pokemon data from Firestore
+    useEffect(() => {
+        const fetchGreetingPokemon = async () => {
+            if (!db || !greetingPokemonId) {
+                // Use default Pokemon if no custom selection
+                const defaultNames = {
+                    morning: 'espeon',
+                    afternoon: 'pikachu',
+                    night: 'umbreon'
+                };
+                const defaultPokemon = allPokemons.find(p => p.name === defaultNames[greeting.period]);
+                setGreetingPokemonData(defaultPokemon || null);
+                return;
+            }
+            
+            try {
+                const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(greetingPokemonId));
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    setGreetingPokemonData(docSnap.data());
+                } else {
+                    // Fallback to finding in loaded Pokemon
+                    const fallback = allPokemons.find(p => p.id === greetingPokemonId);
+                    setGreetingPokemonData(fallback || null);
+                }
+            } catch (error) {
+                console.error('Error fetching greeting Pokemon:', error);
+                // Fallback to loaded Pokemon
+                const fallback = allPokemons.find(p => p.id === greetingPokemonId);
+                setGreetingPokemonData(fallback || null);
+            }
+        };
+        
+        fetchGreetingPokemon();
+    }, [db, greetingPokemonId, allPokemons, greeting.period]);
+
+    // daily pokemon
+    const getPokemonOfTheDay = () => {
+        const today = new Date();
+        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+        const pokemonId = (dayOfYear % 1025) + 1; // IDs de 1 a 1025
+        return allPokemons.find(p => p.id === pokemonId) || allPokemons[0];
+    };
+    const pokemonOfTheDay = getPokemonOfTheDay();
+
+    // daily tip
+    const getTipOfTheDay = () => {
+        const today = new Date();
+        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+        return POKEMON_TIPS[dayOfYear % POKEMON_TIPS.length];
+    };
+    const tipOfTheDay = getTipOfTheDay();
+
+    // trainer stats
+    const getTrainerStats = () => {
+        const allPokemonsInTeams = savedTeams.flatMap(t => t.pokemons);
+        const typeCounts = {};
+        
+        allPokemonsInTeams.forEach(p => {
+            const pokemon = allPokemons.find(ap => ap.id === p.id);
+            if (pokemon?.types) {
+                pokemon.types.forEach(type => {
+                    typeCounts[type] = (typeCounts[type] || 0) + 1;
+                });
+            }
+        });
+
+        const favoriteType = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0];
+        
+        return {
+            totalTeams: savedTeams.length,
+            favoriteTeams: savedTeams.filter(t => t.isFavorite).length,
+            totalFavoritePokemons: favoritePokemons.size,
+            favoriteType: favoriteType ? favoriteType[0] : null
+        };
+    };
+    const stats = getTrainerStats();
+
+    // favorites
+    const featuredFavorites = useMemo(() => {
+        return allPokemons.filter(p => favoritePokemons.has(p.id)).slice(0, 6);
+    }, [allPokemons, favoritePokemons]);
+
+    // last edited team
+    const lastEditedTeam = recentTeams[0];
+    
+    const pokemonPrimaryColor = pokemonOfTheDay?.types?.[0] ? typeColors[pokemonOfTheDay.types[0]] : colors.primary;
+    const pokemonSecondaryColor = pokemonOfTheDay?.types?.[1] ? typeColors[pokemonOfTheDay.types[1]] : pokemonPrimaryColor;
+    
+    const greetingPokemonColor = greetingPokemonData?.types?.[0] ? typeColors[greetingPokemonData.types[0]] : colors.primary;
+    const greetingPokemonSecondaryColor = greetingPokemonData?.types?.[1] ? typeColors[greetingPokemonData.types[1]] : greetingPokemonColor;
+    
+    // Pokemon-themed motivational messages
+    const motivationalMessages = [
+        "Ready to be the very best!",
+        "Your journey awaits, Trainer!",
+        "Let's catch 'em all today!",
+        "Adventure is out there!",
+        "Time to build your dream team!",
+        "Every Pokémon is unique!",
+        "Gotta catch 'em all!",
+        "Explore new possibilities!",
+    ];
+    const randomMessage = useMemo(() => {
+        const today = new Date();
+        const seed = today.getDate() + today.getMonth();
+        return motivationalMessages[seed % motivationalMessages.length];
+    }, []);
+
+    return (
+        <main className="space-y-6 pb-8">
+             <section 
+                className="relative overflow-hidden rounded-2xl p-6 md:p-8 group"
+                style={{ 
+                    background: `linear-gradient(135deg, ${greetingPokemonColor}25 0%, ${greetingPokemonSecondaryColor}10 50%, ${colors.card} 100%)`,
+                    border: `2px solid ${greetingPokemonColor}40`,
+                    boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                }}
+            >
+                {/* background partner pokemon */}
+                {greetingPokemonData && (
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none">
+                        <img 
+                            src={greetingPokemonData.animatedSprite || greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
+                            alt={greetingPokemonData.name}
+                            className="w-48 h-48 md:w-64 md:h-64 object-contain"
+                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                        />
+                    </div>
+                )}
+                
+                <div className="relative z-10">
+                    <div className="flex items-start justify-between mb-4">
+                        <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                                <span className="text-4xl md:text-5xl">{greeting.emoji}</span>
+                                <div>
+                                    <h1 className="text-2xl md:text-4xl font-bold" style={{ color: colors.text }}>
+                                        {greeting.text}, Trainer!
+                                    </h1>
+                                    <p className="text-sm md:text-base mt-1" style={{ color: colors.textMuted }}>
+                                        {randomMessage}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {/* partner pokemon */}
+                            {greetingPokemonData && (
+                                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm" 
+                                     style={{ backgroundColor: greetingPokemonColor + '20' }}>
+                                    <img 
+                                        src={greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
+                                        alt={greetingPokemonData.name}
+                                        className="w-8 h-8"
+                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    />
+                                    <span className="text-sm font-semibold capitalize" style={{ color: colors.text }}>
+                                        Partner: {greetingPokemonData.name}
+                                    </span>
+                                    {greetingPokemonData.types && (
+                                        <div className="flex gap-1">
+                                            {greetingPokemonData.types.map(type => (
+                                                <img 
+                                                    key={type}
+                                                    src={typeIcons[type]} 
+                                                    alt={type}
+                                                    className="w-4 h-4"
+                                                    title={type}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* change button */}
+                        <button
+                            onClick={onOpenPokemonSelector}
+                            className="p-3 rounded-xl transition-all hover:scale-110 active:scale-95 opacity-70 hover:opacity-100"
+                            style={{ backgroundColor: colors.cardLight }}
+                            title="Change partner Pokémon"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.text }}>
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div 
+                    className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none"
+                    style={{ backgroundColor: greetingPokemonColor }}
+                />
+                <div 
+                    className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-15 pointer-events-none"
+                    style={{ backgroundColor: greetingPokemonSecondaryColor }}
+                />
+            </section> 
+
+            {/* main grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* left column */}
+                <div className="lg:col-span-2 space-y-6">
+
+                    <div className="flex items-center justify-center gap-4">
+                        {/* daily mon */}
+                    {pokemonOfTheDay && (
+                        <section 
+                            className="rounded-2xl w-full p-6 relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.01] hover:shadow-xl"
+                            style={{ 
+                                backgroundColor: colors.card,
+                                borderLeft: `4px solid ${typeColors[pokemonOfTheDay.types?.[0]] || colors.primary}`,
+                                boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                            }}
+                            onClick={() => showDetails(pokemonOfTheDay)}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: colors.primary, color: 'white' }}>
+                                            ⭐ DAILY POKÉMON
+                                        </span>
+                                    </div>
+                                    <h2 className="text-2xl md:text-3xl font-bold capitalize mb-1" style={{ color: colors.text }}>
+                                        {pokemonOfTheDay.name}
+                                    </h2>
+                                    <p className="text-sm mb-3" style={{ color: colors.textMuted }}>
+                                        #{String(pokemonOfTheDay.id).padStart(3, '0')}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        {pokemonOfTheDay.types?.map(type => (
+                                            <span 
+                                                key={type}
+                                                className="px-3 py-1 rounded-full text-xs font-bold text-white capitalize"
+                                                style={{ backgroundColor: typeColors[type] }}
+                                            >
+                                                {type}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="relative">
+                                    <img 
+                                        src={pokemonOfTheDay.animatedSprite || POKEBALL_PLACEHOLDER_URL}
+                                        alt={pokemonOfTheDay.name}
+                                        className="w-24 h-24 md:w-32 md:h-32 object-contain hover:scale-110 transition-transform"
+                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    />
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); onToggleFavoritePokemon(pokemonOfTheDay.id); }}
+                                        className="absolute top-0 right-0 p-2 rounded-full transition-all hover:scale-110"
+                                        style={{ backgroundColor: favoritePokemons.has(pokemonOfTheDay.id) ? 'rgba(251, 191, 36, 0.3)' : colors.cardLight }}
+                                    >
+                                        <StarIcon className="w-5 h-5" isFavorite={favoritePokemons.has(pokemonOfTheDay.id)} color={colors.textMuted} />
+                                    </button>
+                                </div>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* daily tip */}
+                    <section 
+                        className="rounded-2xl w-full p-7"
+                        style={{ 
+                            backgroundColor: colors.card,
+                            borderLeft: `4px solid ${colors.primary}`,
+                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                        }}
+                    >
+                        <h3 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: colors.text }}>
+                            💡 Did you know?
+                        </h3>
+                        <p className="text-normal leading-relaxed" style={{ color: colors.textMuted }}>
+                            {tipOfTheDay}
+                        </p>
+                    </section>
+                    </div>
+
+                    {/* quick options */}
+                    <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {[
+                            { icon: <SwordsIcon />, label: "Criar Time", path: "/builder", color: "#7d65e1" },
+                            { icon: <PokeballIcon />, label: "Pokédex", path: "/pokedex", color: "#EE8130" },
+                            { icon: <DiceIcon />, label: "Aleatório", path: "/generator", color: "#6390F0" },
+                            { icon: <StarIcon className="w-6 h-6" isFavorite={true} color="#FBBF24" />, label: "Favoritos", path: "/favorites", color: "#FBBF24" }
+                        ].map((shortcut, index) => (
+                            <button
+                                key={index}
+                                onClick={() => navigate(shortcut.path)}
+                                className="p-4 rounded-xl flex flex-col items-center gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
+                                style={{ 
+                                    backgroundColor: colors.card, 
+                                    border: `2px solid ${shortcut.color}20`,
+                                    boxShadow: theme === 'light' ? '0 2px 4px -1px rgba(0, 0, 0, 0.08)' : 'none'
+                                }}
+                            >
+                                <div 
+                                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                                    style={{ backgroundColor: `${shortcut.color}20`, color: shortcut.color }}
+                                >
+                                    {shortcut.icon}
+                                </div>
+                                <span className="text-sm font-semibold" style={{ color: colors.text }}>
+                                    {shortcut.label}
+                                </span>
+                            </button>
+                        ))}
+                    </section>
+
+                    {/* favorites */}
+                    <section 
+                        className="rounded-2xl p-6" 
+                        style={{ 
+                            backgroundColor: colors.card,
+                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                        }}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold flex items-center gap-2" style={{ color: colors.text }}>
+                                ⭐ Your favorites
+                            </h3>
+                            {featuredFavorites.length > 0 && (
+                                <button 
+                                    onClick={() => navigate('/favorites')}
+                                    className="text-sm hover:underline p-2 rounded-lg font-semibold transition-all hover:scale-105"
+                                    style={{ color: colors.primary, backgroundColor: colors.primary + '30' }}
+                                >
+                                    Check all →
+                                </button>
+                            )}
+                        </div>
+                        {featuredFavorites.length > 0 ? (
+                            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+                                {featuredFavorites.map(pokemon => (
+                                    <div 
+                                        key={pokemon.id}
+                                        onClick={() => showDetails(pokemon)}
+                                        className="p-3 rounded-xl text-center cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg"
+                                        style={{ backgroundColor: colors.cardLight }}
+                                    >
+                                        <img 
+                                            src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                            alt={pokemon.name}
+                                            className="w-16 h-16 mx-auto"
+                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        />
+                                        <p className="text-xs capitalize truncate mt-1" style={{ color: colors.text }}>
+                                            {pokemon.name}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-12">
+                                <div className="text-6xl mb-3 opacity-30">⭐</div>
+                                <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
+                                    No favorite Pokémon yet!
+                                </p>
+                                <p className="text-xs mb-4" style={{ color: colors.textMuted }}>
+                                    Click the star icon on any Pokémon to add them here
+                                </p>
+                                <button
+                                    onClick={() => navigate('/pokedex')}
+                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:scale-105"
+                                    style={{ backgroundColor: colors.primary, color: 'white' }}
+                                >
+                                    Browse Pokédex
+                                </button>
+                            </div>
+                        )}
+                    </section>
+                </div>
+
+                {/* right column */}
+                <div className="space-y-6">
+                    
+                    {/* trainer stats */}
+                    <section 
+                        className="rounded-2xl p-6"
+                        style={{ 
+                            backgroundColor: colors.card,
+                            background: `linear-gradient(135deg, ${colors.card} 0%, ${colors.primary}15 100%)`,
+                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                        }}
+                    >
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
+                            🎖️ Trainer Stats
+                        </h3>
+                        {stats.totalTeams > 0 ? (
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="p-3 rounded-xl text-center" style={{ backgroundColor: colors.cardLight }}>
+                                    <p className="text-2xl font-bold" style={{ color: colors.primary }}>{stats.totalTeams}</p>
+                                    <p className="text-xs" style={{ color: colors.textMuted }}>Teams created</p>
+                                </div>
+                                <div className="p-3 rounded-xl text-center" style={{ backgroundColor: colors.cardLight }}>
+                                    <p className="text-2xl font-bold" style={{ color: '#FBBF24' }}>{stats.favoriteTeams}</p>
+                                    <p className="text-xs" style={{ color: colors.textMuted }}>Favorite Teams</p>
+                                </div>
+                                {stats.favoriteType && (
+                                    <div className="p-3 rounded-xl text-center" style={{ backgroundColor: colors.cardLight }}>
+                                        <div 
+                                            className="w-8 h-8 mx-auto rounded-full flex items-center justify-center mb-1"
+                                            style={{ backgroundColor: typeColors[stats.favoriteType] }}
+                                        >
+                                            <img src={typeIcons[stats.favoriteType]} alt={stats.favoriteType} className="w-5 h-5" />
+                                        </div>
+                                        <p className="text-xs capitalize" style={{ color: colors.textMuted }}>Favorite type</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <div className="text-5xl mb-3 opacity-30">🎖️</div>
+                                <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
+                                    No teams yet!
+                                </p>
+                                <p className="text-xs" style={{ color: colors.textMuted }}>
+                                    Create your first team to start tracking stats
+                                </p>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* last edited team */}
+                    <section 
+                        className="rounded-2xl p-6" 
+                        style={{ 
+                            backgroundColor: colors.card,
+                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                        }}
+                    >
+                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
+                            ♟️ Your last team
+                        </h3>
+                        {lastEditedTeam ? (
+                            <div 
+                                className="p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
+                                style={{ backgroundColor: colors.cardLight }}
+                                onClick={() => handleEditTeam(lastEditedTeam)}
+                            >
+                                <p className="font-bold truncate mb-2" style={{ color: colors.text }}>
+                                    {lastEditedTeam.name}
+                                </p>
+                                <div className="flex -space-x-2">
+                                    {lastEditedTeam.pokemons.slice(0, 6).map((p, i) => (
+                                        <img 
+                                            key={i}
+                                            src={p.sprite || POKEBALL_PLACEHOLDER_URL}
+                                            alt={p.name}
+                                            className="w-10 h-10 rounded-full border-2"
+                                            style={{ borderColor: colors.cardLight, backgroundColor: colors.card }}
+                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <div className="text-5xl mb-3 opacity-30">♟️</div>
+                                <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
+                                    No teams created yet!
+                                </p>
+                                <p className="text-xs mb-4" style={{ color: colors.textMuted }}>
+                                    Build your first dream team
+                                </p>
+                                <button
+                                    onClick={() => navigate('/builder')}
+                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:scale-105"
+                                    style={{ backgroundColor: colors.primary, color: 'white' }}
+                                >
+                                    Create Team
+                                </button>
+                            </div>
+                        )}
+                    </section>
+
+                    {/* explore by type */}
+                    <section 
+                        className="rounded-2xl p-4" 
+                        style={{ 
+                            backgroundColor: colors.card,
+                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                        }}
+                    >
+                        <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: colors.text }}>
+                            🔍 Explore by types!
+                        </h3>
+                        <div className="grid grid-cols-9 gap-1.5">
+                            {Object.entries(typeColors).map(([type, color]) => (
+                                <button
+                                    key={type}
+                                    onClick={() => navigate('/pokedex')}
+                                    className="p-1.5 rounded-md transition-all duration-200 hover:scale-110 hover:shadow-md"
+                                    
+                                    title={type}
+                                >
+                                    <img 
+                                        src={typeIcons[type]} 
+                                        alt={type} 
+                                        className="w-full h-auto"
+                                    />
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    );
 };
 
 // Pokemon Random Generator Data
@@ -1046,47 +2084,108 @@ const RandomGeneratorView = ({ colors, generations }) => {
         return 'Unknown';
     };
 
-    const fetchEvolutionChain = useCallback(async (evolutionChainUrl) => {
+    const fetchEvolutionChain = useCallback(async (evolutionChainUrl, targetPokemonId = null) => {
         try {
-            if (evolutionCache[evolutionChainUrl]) {
-                return evolutionCache[evolutionChainUrl];
+            const cacheKey = targetPokemonId ? `${evolutionChainUrl}_${targetPokemonId}` : evolutionChainUrl;
+            
+            if (evolutionCache[cacheKey]) {
+                return evolutionCache[cacheKey];
             }
 
             const evoRes = await fetch(evolutionChainUrl);
             const evoData = await evoRes.json();
             
-            const evolutions = [];
-            const processChain = (chain, stage = 1) => {
-                const speciesId = chain.species.url.split('/').filter(Boolean).pop();
-                let genIntroduced = 'Unknown';
-                
-                // Determine generation based on ID
-                const id = parseInt(speciesId);
-                for (const [gen, range] of Object.entries(GENERATION_RANGES)) {
-                    if (gen !== 'all' && id >= range.start && id <= range.end) {
-                        genIntroduced = gen.replace('generation-', 'Gen ').toUpperCase();
-                        break;
-                    }
-                }
-
-                evolutions.push({
-                    name: chain.species.name,
-                    id: speciesId,
-                    stage: stage,
-                    genIntroduced: genIntroduced,
-                    evolutionDetails: chain.evolution_details?.[0] || null
-                });
-                
-                if (chain.evolves_to && chain.evolves_to.length > 0) {
-                    chain.evolves_to.forEach(evo => processChain(evo, stage + 1));
-                }
-            };
+            // Eevee and its evolutions list (IDs: 133-136, 196-197, 470-471, 700)
+            const EEVEE_FAMILY = [133, 134, 135, 136, 196, 197, 470, 471, 700];
             
-            processChain(evoData.chain);
+            const evolutions = [];
+            
+            // Check if this is Eevee family and we have a target Pokemon
+            const isEeveeFamily = targetPokemonId && EEVEE_FAMILY.includes(parseInt(targetPokemonId));
+            
+            if (isEeveeFamily) {
+                // Special handling for Eevee family: only show linear path
+                const findPathToTarget = (chain, targetId, path = []) => {
+                    const speciesId = chain.species.url.split('/').filter(Boolean).pop();
+                    const currentPath = [...path, {
+                        name: chain.species.name,
+                        id: speciesId,
+                        chain: chain
+                    }];
+                    
+                    // If we found the target, return the path
+                    if (parseInt(speciesId) === parseInt(targetId)) {
+                        return currentPath;
+                    }
+                    
+                    // Search in evolves_to branches
+                    if (chain.evolves_to && chain.evolves_to.length > 0) {
+                        for (const evo of chain.evolves_to) {
+                            const result = findPathToTarget(evo, targetId, currentPath);
+                            if (result) return result;
+                        }
+                    }
+                    
+                    return null;
+                };
+                
+                const pathToTarget = findPathToTarget(evoData.chain, targetPokemonId);
+                
+                if (pathToTarget) {
+                    pathToTarget.forEach((node, index) => {
+                        const id = parseInt(node.id);
+                        let genIntroduced = 'Unknown';
+                        
+                        for (const [gen, range] of Object.entries(GENERATION_RANGES)) {
+                            if (gen !== 'all' && id >= range.start && id <= range.end) {
+                                genIntroduced = gen.replace('generation-', 'Gen ').toUpperCase();
+                                break;
+                            }
+                        }
+                        
+                        evolutions.push({
+                            name: node.name,
+                            id: node.id,
+                            stage: index + 1,
+                            genIntroduced: genIntroduced,
+                            evolutionDetails: node.chain.evolution_details?.[0] || null
+                        });
+                    });
+                }
+            } else {
+                // Normal processing for non-Eevee Pokemon
+                const processChain = (chain, stage = 1) => {
+                    const speciesId = chain.species.url.split('/').filter(Boolean).pop();
+                    let genIntroduced = 'Unknown';
+                    
+                    // Determine generation based on ID
+                    const id = parseInt(speciesId);
+                    for (const [gen, range] of Object.entries(GENERATION_RANGES)) {
+                        if (gen !== 'all' && id >= range.start && id <= range.end) {
+                            genIntroduced = gen.replace('generation-', 'Gen ').toUpperCase();
+                            break;
+                        }
+                    }
+
+                    evolutions.push({
+                        name: chain.species.name,
+                        id: speciesId,
+                        stage: stage,
+                        genIntroduced: genIntroduced,
+                        evolutionDetails: chain.evolution_details?.[0] || null
+                    });
+                    
+                    if (chain.evolves_to && chain.evolves_to.length > 0) {
+                        chain.evolves_to.forEach(evo => processChain(evo, stage + 1));
+                    }
+                };
+                
+                processChain(evoData.chain);
+            }
             
             setEvolutionCache(prev => ({
                 ...prev,
-                [evolutionChainUrl]: evolutions
+                [cacheKey]: evolutions
             }));
             
             return evolutions;
@@ -1136,7 +2235,7 @@ const RandomGeneratorView = ({ colors, generations }) => {
             const pokemonData = await pokemonRes.json();
             const speciesData = await speciesRes.json();
             
-            const evolutions = await fetchEvolutionChain(speciesData.evolution_chain.url);
+            const evolutions = await fetchEvolutionChain(speciesData.evolution_chain.url, pokemonId);
             const forms = await fetchPokemonForms(pokemonId, `${POKEAPI_BASE_URL}/pokemon-species/${pokemonId}`);
             
             // Determine evolution stage
@@ -1646,6 +2745,10 @@ export default function App() {
     // Theme State
     const [theme, setTheme] = useState('light');
     const colors = THEMES[theme];
+    
+    // Greeting Pokemon State
+    const [greetingPokemonId, setGreetingPokemonId] = useState(null);
+    const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
 
     // Firebase States
     const [userId, setUserId] = useState(null);
@@ -1686,6 +2789,11 @@ export default function App() {
     const [editingTeamId, setEditingTeamId] = useState(null);
     const [teamAnalysis, setTeamAnalysis] = useState({ strengths: new Set(), weaknesses: {} });
     
+    // Favorite Pokemons State
+    const [favoritePokemons, setFavoritePokemons] = useState(new Set());
+    const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+    const [pokedexShowOnlyFavorites, setPokedexShowOnlyFavorites] = useState(false);
+    
     // UI States (revisados para nova lógica de loading)
     const [isLoading, setIsLoading] = useState(true); // Loading inicial ou de filtro
     const [isFetchingMore, setIsFetchingMore] = useState(false); // Loading do scroll infinito
@@ -1720,18 +2828,22 @@ export default function App() {
         if (path.includes('/pokedex')) return 'pokedex';
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/generator')) return 'randomGenerator';
-        return 'builder';
+        if (path.includes('/favorites')) return 'favorites';
+        if (path.includes('/builder')) return 'builder';
+        return 'home';
     }, [location.pathname]);
 
     // Get page title and subtitle based on current route
     const pageInfo = useMemo(() => {
         const pages = {
+            'home': { title: 'Home', icon: '', subtitle: 'Welcome back, Trainer!' },
             'builder': { title: 'Pokémon Team Builder', icon: '', subtitle: 'Build your perfect team' },
             'pokedex': { title: 'Pokédex', icon: '', subtitle: 'Explore all Pokémon' },
             'allTeams': { title: 'Saved Teams', icon: '', subtitle: 'Your team collection' },
-            'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Discover new Pokémon' }
+            'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Discover new Pokémon' },
+            'favorites': { title: 'Favorite Pokémon', icon: '', subtitle: 'Your favorite collection' }
         };
-        return pages[currentPage] || pages['builder'];
+        return pages[currentPage] || pages['home'];
     }, [currentPage]);
 
     const showToast = useCallback((message, type = 'info') => {
@@ -1758,6 +2870,27 @@ export default function App() {
         return () => unsubscribe();
 
     }, [db, userId, showToast]);    
+
+    // Listener para Pokémons favoritos
+    useEffect(() => {
+        if (!db || !userId) return;
+
+        const favoritesDocRef = doc(db, `artifacts/${appId}/users/${userId}/favorites`, 'pokemons');
+
+        const unsubscribe = onSnapshot(favoritesDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                setFavoritePokemons(new Set(data.ids || []));
+            } else {
+                setFavoritePokemons(new Set());
+            }
+        }, (error) => {
+            console.error("Error listening to favorite pokemons:", error);
+        });
+
+        return () => unsubscribe();
+
+    }, [db, userId]);    
 
     // Busca dados estáticos (gens, items, natures) uma vez no início
     useEffect(() => {
@@ -2210,7 +3343,7 @@ useEffect(() => {
         setCurrentTeam(customizedTeam);
         setTeamName(team.name);
         setEditingTeamId(team.id);
-        navigate('/');
+        navigate('/builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [fetchPokemonDetails, showToast, navigate]);
@@ -2235,6 +3368,31 @@ useEffect(() => {
         try { await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, team.id), { ...team, isFavorite: !team.isFavorite }, { merge: true }); }
         catch (e) { showToast("Could not update favorite status.", 'error'); }
     }, [db, userId, showToast]);
+
+    const handleToggleFavoritePokemon = useCallback(async (pokemonId) => {
+        if (!db || !userId) return;
+        
+        const favoritesDocRef = doc(db, `artifacts/${appId}/users/${userId}/favorites`, 'pokemons');
+        
+        try {
+            const newFavorites = new Set(favoritePokemons);
+            if (newFavorites.has(pokemonId)) {
+                newFavorites.delete(pokemonId);
+                showToast("Removed from favorites!", "info");
+            } else {
+                newFavorites.add(pokemonId);
+                showToast("Added to favorites!", "success");
+            }
+            
+            await setDoc(favoritesDocRef, { 
+                ids: Array.from(newFavorites),
+                updatedAt: new Date().toISOString()
+            });
+        } catch (e) { 
+            console.error("Error toggling favorite pokemon:", e);
+            showToast("Could not update favorite status.", 'error'); 
+        }
+    }, [db, userId, favoritePokemons, showToast]);
 
     const handleTypeSelection = useCallback((type) => {
         const typeStateSetter = currentPage === 'pokedex' ? setPokedexSelectedTypes : setSelectedTypes;
@@ -2267,10 +3425,25 @@ useEffect(() => {
         });
     }, []);
     
+    const setGreetingPokemon = useCallback((pokemonId) => {
+        setGreetingPokemonId(pokemonId);
+        if (pokemonId) {
+            localStorage.setItem('greetingPokemon', pokemonId.toString());
+        } else {
+            localStorage.removeItem('greetingPokemon');
+        }
+        setShowGreetingPokemonSelector(false);
+    }, []);
+    
     useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
             setTheme(savedTheme); 
+        }
+        
+        const savedGreetingPokemon = localStorage.getItem('greetingPokemon');
+        if (savedGreetingPokemon) {
+            setGreetingPokemonId(parseInt(savedGreetingPokemon, 10));
         }
     }, []);
 
@@ -2303,6 +3476,21 @@ useEffect(() => {
                         isInitialLoading={isLoading}
                         colors={colors}
                         showDetails={showDetails}
+                        favoritePokemons={favoritePokemons}
+                        onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                        showOnlyFavorites={pokedexShowOnlyFavorites}
+                        setShowOnlyFavorites={setPokedexShowOnlyFavorites}
+                    />
+                } />
+                <Route path="/favorites" element={
+                    <FavoritePokemonsView 
+                        allPokemons={pokemons}
+                        favoritePokemons={favoritePokemons}
+                        onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                        showDetails={showDetails}
+                        colors={colors}
+                        onAddToTeam={handleAddPokemonToTeam}
+                        isLoading={isLoading}
                     />
                 } />
                 <Route path="/generator" element={
@@ -2311,7 +3499,7 @@ useEffect(() => {
                         generations={generations}
                     />
                 } />
-                <Route path="/" element={
+                <Route path="/builder" element={
                     <TeamBuilderView
                         currentTeam={currentTeam}
                         teamName={teamName}
@@ -2344,6 +3532,27 @@ useEffect(() => {
                         suggestedPokemonIds={suggestedPokemonIds}
                         colors={colors}
                         onEditTeamPokemon={handleEditTeamMember}
+                        favoritePokemons={favoritePokemons}
+                        onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                        showOnlyFavorites={showOnlyFavorites}
+                        setShowOnlyFavorites={setShowOnlyFavorites}
+                    />
+                } />
+                <Route path="/" element={
+                    <HomeView
+                        colors={colors}
+                        navigate={navigate}
+                        savedTeams={savedTeams}
+                        favoritePokemons={favoritePokemons}
+                        allPokemons={pokemons}
+                        recentTeams={recentTeams}
+                        showDetails={showDetails}
+                        onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                        handleEditTeam={handleEditTeam}
+                        greetingPokemonId={greetingPokemonId}
+                        onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                        db={db}
+                        theme={theme}
                     />
                 } />
                 <Route path="*" element={<Navigate to="/" replace />} />
@@ -2353,9 +3562,10 @@ useEffect(() => {
     
     return (
       <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
-        {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} db={db} />}
+        {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} db={db} isFavorite={favoritePokemons.has(modalPokemon.id)} onToggleFavorite={handleToggleFavoritePokemon} />}
         {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache}/>}
         {showPatchNotes && <PatchNotesModal onClose={handleClosePatchNotes} colors={colors} />}
+        {showGreetingPokemonSelector && <GreetingPokemonSelectorModal onClose={() => setShowGreetingPokemonSelector(false)} onSelect={setGreetingPokemon} allPokemons={pokemons} currentPokemonId={greetingPokemonId} colors={colors} db={db} />}
         
         {/* Delete Confirmation Dialog */}
         <ConfirmDialog 
@@ -2370,7 +3580,13 @@ useEffect(() => {
         
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : toast.type === 'info' ? 'bg-blue-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
-            <aside className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} style={{backgroundColor: colors.card}}>
+            <aside 
+                className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} 
+                style={{
+                    backgroundColor: colors.card,
+                    borderRight: theme === 'light' ? '1px solid #E5E7EB' : 'none'
+                }}
+            >
                 <div className="flex flex-col h-full">
                   <div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
                     <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: colors.primary}}>Menu</h2>
@@ -2379,7 +3595,13 @@ useEffect(() => {
                   <nav className="px-4 flex-grow">
                     <ul>
                       <li>
-                        <button onClick={() => { navigate('/'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'builder' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
+                        <button onClick={() => { navigate('/'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'home' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'home' ? 'white' : colors.text}}>
+                          <HomeIcon />
+                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Home</span>
+                        </button>
+                      </li>
+                      <li className="mt-2">
+                        <button onClick={() => { navigate('/builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'builder' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
                           <SwordsIcon />
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span>
                         </button>
@@ -2397,6 +3619,12 @@ useEffect(() => {
                         </button>
                       </li>
                       <li className="mt-2">
+                        <button onClick={() => { navigate('/favorites'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'favorites' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'favorites' ? 'white' : colors.text}}>
+                            <StarsIcon className="w-6 h-6 shrink-0" isFavorite={true} color={currentPage === 'favorites' ? 'white' : colors.text} />
+                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Favorites</span>
+                        </button>
+                      </li>
+                      <li className="mt-2">
                         <button onClick={() => { navigate('/teams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'allTeams' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
                           <SavedTeamsIcon/>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Saved Teams</span>
@@ -2407,7 +3635,12 @@ useEffect(() => {
                 </div>
             </aside>
             <div className="flex-1 min-w-0">
-                <header className="relative flex items-center justify-between pt-4 px-4 h-24">
+                <header 
+                    className="relative flex items-center justify-between pt-4 px-4 h-24"
+                    style={{
+                        borderBottom: theme === 'light' ? '1px solid #E5E7EB' : 'none'
+                    }}
+                >
                 <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     className="lg:hidden p-2 rounded-md"
