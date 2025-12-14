@@ -1472,7 +1472,8 @@ const HomeView = ({
     greetingPokemonId,
     onOpenPokemonSelector,
     db,
-    theme
+    theme,
+    onNavigateWithTypeFilter
 }) => {
     const [greetingPokemonData, setGreetingPokemonData] = useState(null);
     
@@ -1981,7 +1982,7 @@ const HomeView = ({
                             {Object.entries(typeColors).map(([type, color]) => (
                                 <button
                                     key={type}
-                                    onClick={() => navigate('/pokedex')}
+                                    onClick={() => onNavigateWithTypeFilter(type)}
                                     className="p-1.5 rounded-md transition-all duration-200 hover:scale-110 hover:shadow-md"
                                     
                                     title={type}
@@ -3402,6 +3403,12 @@ useEffect(() => {
             return newTypes;
         });
     }, [currentPage]);
+
+    const handleNavigateWithTypeFilter = useCallback((type) => {
+        setPokedexSelectedTypes(new Set([type]));
+        // Navigate to pokedex
+        navigate('/pokedex');
+    }, [navigate]);
     
     const showDetails = useCallback((pokemon) => {
         setModalPokemon(pokemon);
@@ -3553,6 +3560,7 @@ useEffect(() => {
                         onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
                         db={db}
                         theme={theme}
+                        onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
                     />
                 } />
                 <Route path="*" element={<Navigate to="/" replace />} />
