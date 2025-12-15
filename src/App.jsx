@@ -90,7 +90,7 @@ const typeChart = {
 
 const GithubIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clipRule="evenodd" /></svg>);
 const LinkedinIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>);
-const StarsIcon = ({ className = "w-6 h-6", color }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-stars"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17.8 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M6.2 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M12 9.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /></svg> );
+const StarsIcon = ({ className = "w-6 h-6", color }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" ><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17.8 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M6.2 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M12 9.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /></svg> );
 const StarIcon = ({ className = "w-6 h-6", isFavorite, color }) => ( <svg className={className} fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: isFavorite ? '#FBBF24' : color }}> <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.95-.69l1.519-4.674z" /> </svg> );
 const TrashIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" /> </svg> );
 const ClearIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" clipRule="evenodd" d="M10 8.586l3.95-3.95a1 1 0 111.414 1.414L11.414 10l3.95 3.95a1 1 0 01-1.414 1.414L10 11.414l-3.95 3.95a1 1 0 01-1.414-1.414L8.586 10l-3.95-3.95a1 1 0 011.414-1.414L10 8.586z" /></svg>);
@@ -683,7 +683,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     const spriteToShow = showShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite);
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-5 " onClick={onClose}>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-6" onClick={onClose}>
             <div className="rounded-2xl shadow-2xl w-full max-w-lg p-4 relative animate-scale-in" style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}} onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white hover:rotate-90 transition-all duration-200"><CloseIcon /></button>
                 <div className="text-center">
@@ -719,7 +719,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                 </div>
                  {evolutionDetails.length > 1 && (
                     <div className="mt-6">
-                        <h3 className="text-xl font-bold mb-3 text-center" style={{ color: colors.text }}>Evolution Line</h3>
+                        <h3 className="text-xl font-bold  text-center" style={{ color: colors.text }}>Evolution Line</h3>
                         <div className="flex justify-center items-center gap-2">
                             {evolutionDetails.map((evo, index) => (
                                 <React.Fragment key={evo.name}>
@@ -1476,6 +1476,7 @@ const HomeView = ({
     onNavigateWithTypeFilter
 }) => {
     const [greetingPokemonData, setGreetingPokemonData] = useState(null);
+    const [isDailyPokemonLoading, setIsDailyPokemonLoading] = useState(true);
     
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -1527,12 +1528,28 @@ const HomeView = ({
 
     // daily pokemon
     const getPokemonOfTheDay = () => {
+        if (!allPokemons || allPokemons.length === 0) {
+            return null;
+        }
+        
         const today = new Date();
         const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-        const pokemonId = (dayOfYear % 1025) + 1; // IDs de 1 a 1025
-        return allPokemons.find(p => p.id === pokemonId) || allPokemons[0];
+        
+        const seed = dayOfYear;
+        const random = ((seed * 9301 + 49297) % 233280) / 233280; 
+        const index = Math.floor(random * allPokemons.length);
+        
+        return allPokemons[index] || allPokemons[0];
     };
     const pokemonOfTheDay = getPokemonOfTheDay();
+    
+    useEffect(() => {
+        if (allPokemons && allPokemons.length > 0) {
+            setIsDailyPokemonLoading(false);
+        } else {
+            setIsDailyPokemonLoading(true);
+        }
+    }, [allPokemons]);
 
     // daily tip
     const getTipOfTheDay = () => {
@@ -1697,7 +1714,33 @@ const HomeView = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* daily mon */}
-                    {pokemonOfTheDay && (
+                    {isDailyPokemonLoading ? (
+                        <section 
+                            className="rounded-2xl w-full p-6 relative overflow-hidden animate-pulse"
+                            style={{ 
+                                backgroundColor: colors.card,
+                                borderLeft: `4px solid ${colors.primary}`,
+                                boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
+                            }}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="h-6 w-32 rounded-full" style={{ backgroundColor: colors.cardLight }}></div>
+                                    </div>
+                                    <div className="h-8 w-40 rounded mb-2" style={{ backgroundColor: colors.cardLight }}></div>
+                                    <div className="h-4 w-16 rounded mb-3" style={{ backgroundColor: colors.cardLight }}></div>
+                                    <div className="flex gap-2">
+                                        <div className="h-6 w-16 rounded-full" style={{ backgroundColor: colors.cardLight }}></div>
+                                        <div className="h-6 w-16 rounded-full" style={{ backgroundColor: colors.cardLight }}></div>
+                                    </div>
+                                </div>
+                                <div className="relative">
+                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-full" style={{ backgroundColor: colors.cardLight }}></div>
+                                </div>
+                            </div>
+                        </section>
+                    ) : pokemonOfTheDay && (
                         <section 
                             className="rounded-2xl w-full p-6 relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.01] hover:shadow-xl"
                             style={{ 
@@ -1772,10 +1815,10 @@ const HomeView = ({
                     {/* quick options */}
                     <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {[
-                            { icon: <SwordsIcon />, label: "Criar Time", path: "/builder", color: "#7d65e1" },
+                            { icon: <SwordsIcon />, label: "Create Team", path: "/builder", color: "#7d65e1" },
                             { icon: <PokeballIcon />, label: "Pokédex", path: "/pokedex", color: "#EE8130" },
-                            { icon: <DiceIcon />, label: "Aleatório", path: "/generator", color: "#6390F0" },
-                            { icon: <StarIcon className="w-6 h-6" isFavorite={true} color="#FBBF24" />, label: "Favoritos", path: "/favorites", color: "#FBBF24" }
+                            { icon: <DiceIcon />, label: "Random", path: "/generator", color: "#6390F0" },
+                            { icon: <StarIcon className="w-6 h-6" isFavorite={true} color="#FBBF24" />, label: "Favorites", path: "/favorites", color: "#FBBF24" }
                         ].map((shortcut, index) => (
                             <button
                                 key={index}
@@ -1895,7 +1938,7 @@ const HomeView = ({
                                             className="w-8 h-8 mx-auto rounded-full flex items-center justify-center mb-1"
                                             style={{ backgroundColor: typeColors[stats.favoriteType] }}
                                         >
-                                            <img src={typeIcons[stats.favoriteType]} alt={stats.favoriteType} className="w-5 h-5" />
+                                            <img src={typeIcons[stats.favoriteType]} alt={stats.favoriteType} className="w-6 h-6" />
                                         </div>
                                         <p className="text-xs capitalize" style={{ color: colors.textMuted }}>Favorite type</p>
                                     </div>
