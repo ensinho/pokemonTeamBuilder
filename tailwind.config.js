@@ -28,7 +28,7 @@ export default {
             },
             fontFamily: {
                 // Body — used everywhere by default via index.css setting on <html>.
-                sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+                sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
                 // Display — reserved for the brand mark / logo only.
                 display: ["'Press Start 2P'", 'monospace'],
                 // Legacy alias kept so existing `font-pixel` references still work.

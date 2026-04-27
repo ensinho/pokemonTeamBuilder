@@ -16,7 +16,7 @@ import {
     CollapseLeftIcon, CollapseRightIcon, ShareIcon, HeartIcon,
     SuccessToastIcon, ErrorToastIcon, WarningToastIcon, SunIcon, MoonIcon,
     SwordsIcon, EditIcon, SparklesIcon, ShowdownIcon, DiceIcon, FlowerIcon,
-    HomeIcon, RefreshIcon
+    HomeIcon, RefreshIcon, ArrowUpDownIcon, ChartColumnIcon, HouseIcon
 } from './components/icons';
 import { TypeBadge } from './components/TypeBadge';
 import { StatBar } from './components/StatBar';
@@ -29,8 +29,158 @@ import { TeamIdentitySummary } from './components/TeamIdentitySummary';
 import { useModalA11y } from './hooks/useModalA11y';
 
 // Patch Notes Modal Component
+// Mini visual previews mimicking the real components/locations they reference.
+const DragDropVisual = ({ colors }) => (
+    // Mirrors the team slot panel in the Builder (grid-cols-3 of sprite slots)
+    <div
+        className="grid grid-cols-3 gap-2 p-2 rounded-md"
+        style={{ backgroundColor: colors.background }}
+        aria-hidden="true"
+    >
+        {[0, 1, 2, 3, 4, 5].map((i) => {
+            const isDragging = i === 1;
+            const isTarget = i === 4;
+            return (
+                <div
+                    key={i}
+                    className="relative h-9 rounded flex items-center justify-center"
+                    style={{
+                        backgroundColor: colors.cardLight,
+                        opacity: isDragging ? 0.4 : 1,
+                        outline: isTarget ? `2px dashed ${colors.primary}` : 'none',
+                    }}
+                >
+                    <div
+                        className="w-5 h-5 rounded-full"
+                        style={{ backgroundColor: colors.primary + '99' }}
+                    />
+                    {isDragging && (
+                        <span
+                            className="absolute -right-1 -top-1 text-[10px]"
+                            style={{ color: colors.primary }}
+                        >
+                            ⇢
+                        </span>
+                    )}
+                </div>
+            );
+        })}
+    </div>
+);
+
+const BstVisual = ({ colors }) => {
+    // Mirrors TeamIdentitySummary's 3-badge row (Avg BST / Types / Lean)
+    const Badge = ({ label, value, hint }) => (
+        <div
+            className="rounded-md p-1.5 text-center"
+            style={{ backgroundColor: colors.background }}
+        >
+            <p
+                className="text-[8px] uppercase tracking-wider font-semibold"
+                style={{ color: colors.textMuted }}
+            >
+                {label}
+            </p>
+            <p className="text-sm font-bold leading-tight" style={{ color: colors.text }}>
+                {value}
+            </p>
+            <p className="text-[8px]" style={{ color: colors.textMuted }}>
+                {hint}
+            </p>
+        </div>
+    );
+    return (
+        <div className="grid grid-cols-3 gap-1.5" aria-hidden="true">
+            <Badge label="Avg BST" value="512" hint="Strong" />
+            <Badge label="Types" value="5" hint="Diverse" />
+            <Badge label="Lean" value="Mixed" hint="2/2/2" />
+        </div>
+    );
+};
+
+const HomeFlowVisual = ({ colors }) => (
+    // Mirrors the Home "Pick up where you left off" hero card
+    <div
+        className="rounded-md p-2"
+        style={{
+            background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
+            border: `1px solid ${colors.primary}55`,
+        }}
+        aria-hidden="true"
+    >
+        <p
+            className="text-[8px] font-bold uppercase tracking-wider mb-1"
+            style={{ color: colors.primary }}
+        >
+            Pick up where you left off
+        </p>
+        <div className="flex -space-x-1.5 mb-1.5">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div
+                    key={i}
+                    className="w-5 h-5 rounded-full border"
+                    style={{
+                        backgroundColor: colors.cardLight,
+                        borderColor: colors.card,
+                    }}
+                />
+            ))}
+        </div>
+        <div className="flex gap-1.5">
+            <span
+                className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-bold text-white"
+                style={{ backgroundColor: colors.primary }}
+            >
+                ✎ Continue editing
+            </span>
+            <span
+                className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold"
+                style={{ color: colors.text, backgroundColor: colors.cardLight }}
+            >
+                + Start new
+            </span>
+        </div>
+    </div>
+);
+
 const PatchNotesModal = ({ onClose, colors }) => {
     const dialogRef = useModalA11y(onClose);
+    const navigate = useNavigate();
+    const goTo = useCallback((path) => {
+        onClose();
+        navigate(path);
+    }, [navigate, onClose]);
+
+    const notes = [
+        {
+            key: 'dnd',
+            Icon: ArrowUpDownIcon,
+            title: 'Drag & Drop Team Reorder',
+            description: 'Reorder your team by dragging and dropping Pokemon cards in the Current Team panel.',
+            cta: 'Try it in the Builder',
+            path: '/builder',
+            Visual: DragDropVisual,
+        },
+        {
+            key: 'bst',
+            Icon: ChartColumnIcon,
+            title: 'BST Calculations + Info',
+            description: 'The team summary now shows Average BST, type diversity and offensive lean at a glance.',
+            cta: 'See it on a team',
+            path: '/builder',
+            Visual: BstVisual,
+        },
+        {
+            key: 'home',
+            Icon: HouseIcon,
+            title: 'Add + Continue Editing from Home',
+            description: 'Pick up your last team or start a new one straight from the Home hero card.',
+            cta: 'Go to Home',
+            path: '/',
+            Visual: HomeFlowVisual,
+        },
+    ];
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
             <div 
@@ -39,7 +189,7 @@ const PatchNotesModal = ({ onClose, colors }) => {
                 aria-modal="true"
                 aria-labelledby="patch-notes-title"
                 tabIndex={-1}
-                className="rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in focus:outline-none"
+                className="rounded-2xl shadow-xl w-full max-w-lg max-h-[95vh] overflow-y-auto custom-scrollbar p-5 relative animate-fade-in focus:outline-none"
                 style={{ backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={e => e.stopPropagation()}
             >
@@ -50,7 +200,7 @@ const PatchNotesModal = ({ onClose, colors }) => {
                 {/* Header */}
                 <div className="text-center mb-6">
                     <div className="flex items-center justify-center gap-4 mb-2">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
+                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
                             <FlowerIcon />
                         </div>
                         <h2 id="patch-notes-title" className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ color: colors.text }}>
@@ -58,52 +208,42 @@ const PatchNotesModal = ({ onClose, colors }) => {
                         </h2>
                     </div>
                     <p className="text-sm mt-2" style={{ color: colors.textMuted }}>
-                        Version {PATCH_NOTES_VERSION} • December 2025
+                        Version {PATCH_NOTES_VERSION} • April 2026
                     </p>
                 </div>
 
                 {/* Patch Notes Content */}
-                <div className="space-y-5">
-                    {/* New Home Page */}
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-lg">👌</span>
-                            <h3 className="font-bold" style={{ color: colors.primary }}>Redesigned Home Page</h3>
-                        </div>
-                        <p className="text-sm mb-2" style={{ color: colors.text }}>
-                            Experience a completely revamped home page with:
-                        </p>
-                        <ul className="text-sm space-y-1 ml-4" style={{ color: colors.text }}>
-                            <li>• Personalized greetings based on time of day</li>
-                            <li>• Customizable partner Pokémon</li>
-                            <li>• Daily Pokémon showcase</li>
-                            <li>• Trainer stats and achievements</li>
-                            <li>• Quick access to your last team</li>
-                        </ul>
-                    </div>
-
-                    {/* Favorites Feature */}
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-lg">⭐</span>
-                            <h3 className="font-bold" style={{ color: colors.primary }}>Favorites System</h3>
-                        </div>
-                        <p className="text-sm" style={{ color: colors.text }}>
-                            Mark your favorite Pokémon with a star! Access them quickly from the new Favorites page and see them featured on your home page.
-                        </p>
-                    </div>
-
-
-                    {/* Random Generator */}
-                    <div className="p-4 rounded-xl" style={{ backgroundColor: colors.cardLight }}>
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="text-lg">🎲</span>
-                            <h3 className="font-bold" style={{ color: colors.primary }}>Random Pokémon Generator</h3>
-                        </div>
-                        <p className="text-sm" style={{ color: colors.text }}>
-                            Generate random Pokémon with advanced filters by generation, type, legendary status, and more!
-                        </p>
-                    </div>
+                <div className="space-y-4">
+                    {notes.map(({ key, Icon, title, description, cta, path, Visual }) => (
+                        <button
+                            key={key}
+                            type="button"
+                            onClick={() => goTo(path)}
+                            className="w-full text-left p-4 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            style={{ backgroundColor: colors.cardLight }}
+                            aria-label={`${title} – ${cta}`}
+                        >
+                            <div className="rounded-lg overflow-hidden mb-3" style={{ backgroundColor: colors.card }}>
+                                <Visual colors={colors} />
+                            </div>
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-md" style={{ color: colors.primary, backgroundColor: colors.primary + '1A' }} aria-hidden="true">
+                                    <Icon className="w-4 h-4" />
+                                </span>
+                                <h3 className="font-bold" style={{ color: colors.primary }}>{title}</h3>
+                            </div>
+                            <p className="text-sm" style={{ color: colors.text }}>
+                                {description}
+                            </p>
+                            <span
+                                className="inline-flex items-center gap-1 mt-2 text-xs font-semibold"
+                                style={{ color: colors.primary }}
+                            >
+                                {cta}
+                                <span aria-hidden="true">→</span>
+                            </span>
+                        </button>
+                    ))}
                 </div>
 
                 {/* Footer */}
@@ -116,7 +256,7 @@ const PatchNotesModal = ({ onClose, colors }) => {
                         Got it, let's go!
                     </button>
                     <p className="text-xs mt-3" style={{ color: colors.textMuted }}>
-                        Made with ❤️ by Enzo Esmeraldo
+                        Made by Enzo Esmeraldo -- hope you like it!
                     </p>
                 </div>
             </div>
@@ -191,6 +331,13 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
             return matchesSearch && matchesType;
         });
     }, [fullPokemonList, searchTerm, selectedType]);
+
+    const highestLoadedId = useMemo(() => {
+        return fullPokemonList.reduce((maxId, pokemon) => {
+            const id = Number(pokemon?.id) || 0;
+            return id > maxId ? id : maxId;
+        }, 0);
+    }, [fullPokemonList]);
     
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
@@ -319,7 +466,7 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
                                     Loading more...
                                 </div>
                             ) : (
-                                `Load More Pokémon (${fullPokemonList.length}/1025+)`
+                                `Load More Pokémon (${fullPokemonList.length} loaded • max #${highestLoadedId})`
                             )}
                         </button>
                     </div>
@@ -942,7 +1089,7 @@ const TeamBuilderView = ({
             </div>
         </div>
 
-        <div className="lg:col-span-3 space-y-8 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto custom-scrollbar lg:pr-1" style={{'--scrollbar-track-color': colors.background, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.background}}>
+        <div className="lg:col-span-3 space-y-8 lg:sticky lg:top-4 lg:self-start">
             <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
                 <h2 className="text-lg md:text-xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: colors.primary, color: colors.text}}>Current Team</h2>
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
@@ -1107,7 +1254,7 @@ const TeamBuilderView = ({
             </section>
         </div>
 
-        <div className="lg:col-span-3 space-y-8 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto custom-scrollbar lg:pr-1" style={{'--scrollbar-track-color': colors.background, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.background}}>
+        <div className="lg:col-span-3 space-y-8 lg:sticky lg:top-4 lg:self-start">
             <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
                 <h3 className="text-sm md:text-base font-bold mb-3 text-center uppercase tracking-wider" style={{color: colors.text}}>Filter by Type</h3>
                 <div className="grid grid-cols-5 lg:grid-cols-5 gap-1.5">
@@ -1530,167 +1677,176 @@ const HomeView = ({
 
     return (
         <main className="space-y-6 pb-8">
-             <section 
-                className="relative overflow-hidden rounded-2xl p-6 md:p-8 group"
-                style={{ 
-                    background: `linear-gradient(135deg, ${greetingPokemonColor}25 0%, ${greetingPokemonSecondaryColor}10 50%, ${colors.card} 100%)`,
-                    border: `2px solid ${greetingPokemonColor}40`,
-                    boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                }}
-            >
-                {/* background partner pokemon */}
-                {greetingPokemonData && (
-                    <div className="absolute right-0 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none">
-                        <img 
-                            src={greetingPokemonData.animatedSprite || greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
-                            alt={greetingPokemonData.name}
-                            className="w-48 h-48 md:w-64 md:h-64 object-contain"
-                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                        />
-                    </div>
-                )}
-                
-                <div className="relative z-10">
-                    <div className="flex items-start justify-between mb-4">
-                        <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                                <span className="text-4xl md:text-5xl">{greeting.emoji}</span>
-                                <div>
-                                    <h1 className="text-2xl md:text-4xl font-bold" style={{ color: colors.text }}>
-                                        {greeting.text}, Trainer!
-                                    </h1>
-                                    <p className="text-sm md:text-base mt-1" style={{ color: colors.textMuted }}>
-                                        {randomMessage}
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            {/* partner pokemon */}
-                            {greetingPokemonData && (
-                                <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-sm" 
-                                     style={{ backgroundColor: greetingPokemonColor + '20' }}>
-                                    <img 
-                                        src={greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
-                                        alt={greetingPokemonData.name}
-                                        className="w-8 h-8"
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                    />
-                                    <span className="text-sm font-semibold capitalize" style={{ color: colors.text }}>
-                                        Partner: {greetingPokemonData.name}
-                                    </span>
-                                    {greetingPokemonData.types && (
-                                        <div className="flex gap-1">
-                                            {greetingPokemonData.types.map(type => (
-                                                <img 
-                                                    key={type}
-                                                    src={typeIcons[type]} 
-                                                    alt={type}
-                                                    className="w-4 h-4"
-                                                    title={type}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
+            {/* Hero row — greeting + primary CTA share one responsive row.
+                Mobile: stacked. lg+: 6/6 split (greeting compact, CTA wider). */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+
+                {/* Greeting card — compact, partner-themed, no oversized sprite */}
+                <section
+                    className="lg:col-span-6 relative overflow-hidden rounded-2xl p-6 elevation-1 flex flex-col justify-between min-h-[220px]"
+                    style={{
+                        background: `linear-gradient(135deg, ${greetingPokemonColor}28 0%, ${greetingPokemonSecondaryColor}12 55%, ${colors.card} 100%)`,
+                        border: `1px solid ${greetingPokemonColor}40`,
+                    }}
+                    aria-label="Trainer greeting"
+                >
+                    {/* faint background partner sprite */}
+                    {greetingPokemonData && (
+                        <div className="absolute -right-6 -bottom-6 opacity-30 pointer-events-none">
+                            <img
+                                src={greetingPokemonData.animatedSprite || greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
+                                alt=""
+                                aria-hidden="true"
+                                className="w-40 h-40 md:w-48 md:h-48 object-contain"
+                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                            />
                         </div>
-                        
-                        {/* change button */}
+                    )}
+
+                    <div className="relative z-10 flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                            <span className="text-3xl md:text-4xl leading-none select-none" aria-hidden="true">{greeting.emoji}</span>
+                            <div className="min-w-0">
+                                <h1 className="text-xl md:text-2xl font-extrabold tracking-tight truncate" style={{ color: colors.text }}>
+                                    {greeting.text}, Trainer!
+                                </h1>
+                                <p className="text-sm mt-1" style={{ color: colors.textMuted }}>
+                                    {randomMessage}
+                                </p>
+                            </div>
+                        </div>
                         <button
                             onClick={onOpenPokemonSelector}
-                            className="p-3 rounded-xl transition-all hover:scale-110 active:scale-95 opacity-70 hover:opacity-100"
+                            type="button"
+                            aria-label="Change partner Pokémon"
+                            className="flex-shrink-0 p-2 rounded-lg transition-all hover:scale-110 active:scale-95 opacity-70 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             style={{ backgroundColor: colors.cardLight }}
                             title="Change partner Pokémon"
                         >
-                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.text }}>
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" style={{ color: colors.text }}>
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                             </svg>
                         </button>
                     </div>
-                </div>
-                
-                <div 
-                    className="absolute -bottom-10 -left-10 w-40 h-40 rounded-full blur-3xl opacity-20 pointer-events-none"
-                    style={{ backgroundColor: greetingPokemonColor }}
-                />
-                <div 
-                    className="absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-15 pointer-events-none"
-                    style={{ backgroundColor: greetingPokemonSecondaryColor }}
-                />
-            </section> 
 
-            {/* primary CTA: continue your last team — the home page's main job */}
-            {lastEditedTeam ? (
-                <section
-                    className="rounded-2xl p-6 md:p-8 relative overflow-hidden group cursor-pointer transition-all duration-200 hover:shadow-xl bg-surface focus-within:ring-2 focus-within:ring-primary"
-                    style={{
-                        background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
-                        border: `2px solid ${colors.primary}55`,
-                    }}
-                    onClick={() => handleEditTeam(lastEditedTeam)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEditTeam(lastEditedTeam); } }}
-                    aria-label={`Continue editing team ${lastEditedTeam.name}`}
-                >
-                    <div className="flex flex-col md:flex-row md:items-center gap-6">
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: colors.primary }}>
+                    {/* Partner chip — pinned to the bottom so card heights match the CTA card */}
+                    {greetingPokemonData && (
+                        <div className="relative z-10 mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm self-start max-w-full"
+                             style={{ backgroundColor: greetingPokemonColor + '22' }}>
+                            <img
+                                src={greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
+                                alt=""
+                                aria-hidden="true"
+                                className="w-7 h-7 flex-shrink-0"
+                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                            />
+                            <span className="text-xs sm:text-sm font-semibold capitalize truncate" style={{ color: colors.text }}>
+                                Partner: {greetingPokemonData.name}
+                            </span>
+                            {greetingPokemonData.types && (
+                                <div className="flex gap-1 flex-shrink-0">
+                                    {greetingPokemonData.types.map(type => (
+                                        <img
+                                            key={type}
+                                            src={typeIcons[type]}
+                                            alt={type}
+                                            className="w-4 h-4"
+                                            title={type}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </section>
+
+                {/* Primary CTA — continue last team OR build first team */}
+                {lastEditedTeam ? (
+                    <section
+                        className="lg:col-span-6 rounded-2xl p-6 relative overflow-hidden group cursor-pointer transition-all duration-200 elevation-1 hover:shadow-elevation-2 bg-surface focus-within:ring-2 focus-within:ring-primary flex flex-col justify-between min-h-[220px]"
+                        style={{
+                            background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
+                            border: `1px solid ${colors.primary}55`,
+                        }}
+                        onClick={() => handleEditTeam(lastEditedTeam)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEditTeam(lastEditedTeam); } }}
+                        aria-label={`Continue editing team ${lastEditedTeam.name}`}
+                    >
+                        <div className="min-w-0">
+                            <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.primary }}>
                                 Pick up where you left off
                             </p>
-                            <h2 className="text-2xl md:text-3xl font-bold truncate mb-3" style={{ color: colors.text }}>
+                            <h2 className="text-xl md:text-2xl font-extrabold tracking-tight truncate mb-3" style={{ color: colors.text }}>
                                 {lastEditedTeam.name}
                             </h2>
-                            <div className="flex -space-x-2 mb-4">
+                            <div className="flex -space-x-2 mb-4 flex-wrap">
                                 {lastEditedTeam.pokemons.slice(0, 6).map((p, i) => (
                                     <img
                                         key={i}
                                         src={p.sprite || POKEBALL_PLACEHOLDER_URL}
                                         alt={p.name}
-                                        className="w-12 h-12 md:w-14 md:h-14 rounded-full border-2"
+                                        className="w-11 h-11 md:w-12 md:h-12 rounded-full border-2 flex-shrink-0"
                                         style={{ borderColor: colors.card, backgroundColor: colors.cardLight }}
                                         onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                     />
                                 ))}
                             </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
                             <button
                                 type="button"
                                 onClick={(e) => { e.stopPropagation(); handleEditTeam(lastEditedTeam); }}
-                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                                 style={{ backgroundColor: colors.primary }}
                                 aria-label={`Continue editing ${lastEditedTeam.name}`}
                             >
                                 <EditIcon />
                                 Continue editing
                             </button>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); navigate('/builder'); }}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                style={{ color: colors.text }}
+                            >
+                                <SwordsIcon />
+                                Start new
+                            </button>
                         </div>
-                    </div>
-                </section>
-            ) : (
-                <section
-                    className="rounded-2xl p-6 md:p-8 relative overflow-hidden text-center"
-                    style={{
-                        background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
-                        border: `2px solid ${colors.primary}55`,
-                    }}
-                >
-                    <h2 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: colors.text }}>
-                        Build your first team
-                    </h2>
-                    <p className="text-sm md:text-base mb-5" style={{ color: colors.textMuted }}>
-                        Start your journey — pick six Pokémon, set their movesets, and dominate.
-                    </p>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/builder')}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
-                        style={{ backgroundColor: colors.primary }}
+                    </section>
+                ) : (
+                    <section
+                        className="lg:col-span-7 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[220px] elevation-1 bg-surface"
+                        style={{
+                            background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
+                            border: `1px solid ${colors.primary}55`,
+                        }}
                     >
-                        <SwordsIcon />
-                        Create your first team
-                    </button>
-                </section>
-            )}
+                        <div>
+                            <p className="text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.primary }}>
+                                New trainer
+                            </p>
+                            <h2 className="text-xl md:text-2xl font-extrabold tracking-tight mb-2" style={{ color: colors.text }}>
+                                Build your first team
+                            </h2>
+                            <p className="text-sm" style={{ color: colors.textMuted }}>
+                                Pick six Pokémon, set their movesets, and dominate.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/builder')}
+                            className="self-start inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                            style={{ backgroundColor: colors.primary }}
+                        >
+                            <SwordsIcon />
+                            Create your first team
+                        </button>
+                    </section>
+                )}
+            </div>
 
             {/* main grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1944,6 +2100,8 @@ const HomeView = ({
 const RandomGeneratorView = ({ colors, generations }) => {
     const [generatedPokemon, setGeneratedPokemon] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isLoadingAllIds, setIsLoadingAllIds] = useState(false);
+    const [allPokemonIds, setAllPokemonIds] = useState([]);
     const [pokemonCount, setPokemonCount] = useState(3);
     const [selectedRegion, setSelectedRegion] = useState('all');
     const [selectedType, setSelectedType] = useState('all');
@@ -2166,6 +2324,34 @@ const RandomGeneratorView = ({ colors, generations }) => {
         }
     }, [fetchEvolutionChain, fetchPokemonForms]);
 
+    const loadAllPokemonIds = useCallback(async () => {
+        if (allPokemonIds.length > 0) return allPokemonIds;
+
+        setIsLoadingAllIds(true);
+        try {
+            // Pull full pokemon index from PokéAPI so "All Regions" includes
+            // forms/entries with IDs above 1025 (e.g. mega evolutions).
+            const response = await fetch(`${POKEAPI_BASE_URL}/pokemon?limit=20000`);
+            const data = await response.json();
+
+            const ids = (data.results || [])
+                .map((entry) => {
+                    const parts = entry.url.split('/').filter(Boolean);
+                    return Number(parts[parts.length - 1]);
+                })
+                .filter((id) => Number.isInteger(id) && id > 0);
+
+            const uniqueSortedIds = Array.from(new Set(ids)).sort((a, b) => a - b);
+            setAllPokemonIds(uniqueSortedIds);
+            return uniqueSortedIds;
+        } catch (error) {
+            console.error('Error loading full Pokemon index:', error);
+            return [];
+        } finally {
+            setIsLoadingAllIds(false);
+        }
+    }, [allPokemonIds]);
+
     const generateRandomPokemon = useCallback(async () => {
         setIsLoading(true);
         setGeneratedPokemon([]);
@@ -2173,10 +2359,18 @@ const RandomGeneratorView = ({ colors, generations }) => {
         try {
             // Build the pool of valid Pokemon IDs
             let validIds = [];
-            const range = GENERATION_RANGES[selectedRegion] || GENERATION_RANGES['all'];
-            
-            for (let id = range.start; id <= range.end; id++) {
-                validIds.push(id);
+            if (selectedRegion === 'all') {
+                validIds = await loadAllPokemonIds();
+            } else {
+                const range = GENERATION_RANGES[selectedRegion] || GENERATION_RANGES['all'];
+                for (let id = range.start; id <= range.end; id++) {
+                    validIds.push(id);
+                }
+            }
+
+            if (validIds.length === 0) {
+                setGeneratedPokemon([]);
+                return;
             }
             
             // Filter by legendary status
@@ -2221,7 +2415,7 @@ const RandomGeneratorView = ({ colors, generations }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [pokemonCount, selectedRegion, selectedType, legendaryFilter, fullyEvolvedFilter, fetchFullPokemonData]);
+    }, [pokemonCount, selectedRegion, selectedType, legendaryFilter, fullyEvolvedFilter, fetchFullPokemonData, loadAllPokemonIds]);
 
     // Generate on mount
     useEffect(() => {
@@ -2569,11 +2763,11 @@ const RandomGeneratorView = ({ colors, generations }) => {
                     
                     <button 
                         onClick={generateRandomPokemon}
-                        disabled={isLoading}
+                        disabled={isLoading || isLoadingAllIds}
                         className="px-6 py-2 rounded-lg font-bold text-white transition-colors hover:opacity-90 disabled:opacity-50"
                         style={{ backgroundColor: colors.primary }}
                     >
-                        {isLoading ? 'Generating...' : 'Generate'}
+                        {isLoading ? 'Generating...' : isLoadingAllIds ? 'Loading index...' : 'Generate'}
                     </button>
                 </div>
             </section>
@@ -3481,9 +3675,9 @@ useEffect(() => {
         />
         
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-success' : toast.type === 'warning' ? 'bg-warning' : toast.type === 'info' ? 'bg-info' : 'bg-danger'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
-        <div className="flex min-h-screen">
+        <div className="flex h-screen overflow-hidden">
             <aside 
-                className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} 
+                className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out lg:h-screen overflow-y-auto custom-scrollbar ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} 
                 style={{
                     backgroundColor: colors.card,
                     borderRight: theme === 'light' ? '1px solid #E5E7EB' : 'none'
@@ -3536,7 +3730,7 @@ useEffect(() => {
                   </nav>
                 </div>
             </aside>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 h-screen overflow-y-auto custom-scrollbar">
                 <header 
                     className="relative flex items-center justify-between pt-4 px-4 h-24"
                     style={{

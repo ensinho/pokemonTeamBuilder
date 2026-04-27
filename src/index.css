@@ -58,17 +58,19 @@
 }
 
 /* Typography stack — display reserved for logo + a single hero eyebrow.
-   Body is Inter (loaded in index.html), with system fallbacks. */
+   Body is Plus Jakarta Sans (loaded in index.html), with system fallbacks. */
 :root {
     --font-display: 'Press Start 2P', monospace;
-    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 html, body {
     font-family: var(--font-body);
-    font-feature-settings: 'cv11', 'ss01';
+    font-feature-settings: 'ss01', 'cv11';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    letter-spacing: -0.005em;
 }
 
 html,
