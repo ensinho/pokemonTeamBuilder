@@ -4,132 +4,46 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit, startAfter, where, getDocs } from 'firebase/firestore';
 
-import NormalIcon from "./assets/typeIcons/Normal_icon_LA.png";
-import FireIcon from "./assets/typeIcons/Fire_icon_LA.png";
-import WaterIcon from "./assets/typeIcons/Water_icon_LA.png";
-import ElectricIcon from "./assets/typeIcons/Electric_icon_LA.png";
-import GrassIcon from "./assets/typeIcons/Grass_icon_LA.png";
-import IceIcon from "./assets/typeIcons/Ice_icon_LA.png";
-import FightingIcon from "./assets/typeIcons/Fighting_icon_LA.png";
-import PoisonIcon from "./assets/typeIcons/Poison_icon_LA.png";
-import GroundIcon from "./assets/typeIcons/Ground_icon_LA.png";
-import FlyingIcon from "./assets/typeIcons/Flying_icon_LA.png";
-import PsychicIcon from "./assets/typeIcons/Psychic_icon_LA.png";
-import BugIcon from "./assets/typeIcons/Bug_icon_LA.png";
-import RockIcon from "./assets/typeIcons/Rock_icon_LA.png";
-import GhostIcon from "./assets/typeIcons/Ghost_icon_LA.png";
-import DragonIcon from "./assets/typeIcons/Dragon_icon_LA.png";
-import DarkIcon from "./assets/typeIcons/Dark_icon_LA.png";
-import SteelIcon from "./assets/typeIcons/Steel_icon_LA.png";
-import FairyIcon from "./assets/typeIcons/Fairy_icon_LA.png";
-
-const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
-
-const THEMES = {
-    dark: {
-        primary: '#7d65e1',
-        background: '#111827',
-        card: '#1F2937',
-        cardLight: '#374151',
-        text: '#FFFFFF',
-        textMuted: '#9CA3AF'
-    },
-    light: {
-        primary: '#6353b3',
-        background: '#E8EAF0',
-        card: '#FFFFFF',
-        cardLight: '#F3F4F6',
-        text: '#111827',
-        textMuted: '#4B5563'
-    }
-};
-
-const typeColors = { normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C', grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1', ground: '#E2BF65', flying: '#A98FF3', psychic: '#F95587', bug: '#A6B91A', rock: '#B6A136', ghost: '#735797', dragon: '#6F35FC', dark: '#705746', steel: '#B7B7CE', fairy: '#D685AD' };
-const typeIcons = {
-    normal: NormalIcon,
-    fire: FireIcon,
-    water: WaterIcon,
-    electric: ElectricIcon,
-    grass: GrassIcon,
-    ice: IceIcon,
-    fighting: FightingIcon,
-    poison: PoisonIcon,
-    ground: GroundIcon,
-    flying: FlyingIcon,
-    psychic: PsychicIcon,
-    bug: BugIcon,
-    rock: RockIcon,
-    ghost: GhostIcon,
-    dragon: DragonIcon,
-    dark: DarkIcon,
-    steel: SteelIcon,
-    fairy: FairyIcon
-};
-
-
-const typeChart = {
-    normal: { damageTaken: { Fighting: 2, Ghost: 0 }, damageDealt: { Rock: 0.5, Steel: 0.5 } },
-    fire: { damageTaken: { Water: 2, Ground: 2, Rock: 2, Fire: 0.5, Grass: 0.5, Ice: 0.5, Bug: 0.5, Steel: 0.5, Fairy: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Rock: 0.5, Dragon: 0.5, Grass: 2, Ice: 2, Bug: 2, Steel: 2 } },
-    water: { damageTaken: { Grass: 2, Electric: 2, Fire: 0.5, Water: 0.5, Ice: 0.5, Steel: 0.5 }, damageDealt: { Water: 0.5, Grass: 0.5, Dragon: 0.5, Fire: 2, Ground: 2, Rock: 2 } },
-    grass: { damageTaken: { Fire: 2, Ice: 2, Poison: 2, Flying: 2, Bug: 2, Water: 0.5, Grass: 0.5, Electric: 0.5, Ground: 0.5 }, damageDealt: { Fire: 0.5, Grass: 0.5, Poison: 0.5, Flying: 0.5, Bug: 0.5, Steel: 0.5, Dragon: 0.5, Water: 2, Ground: 2, Rock: 2 } },
-    electric: { damageTaken: { Ground: 2, Electric: 0.5, Flying: 0.5, Steel: 0.5 }, damageDealt: { Grass: 0.5, Electric: 0.5, Dragon: 0.5, Ground: 0, Water: 2, Flying: 2 } },
-    ice: { damageTaken: { Fire: 2, Fighting: 2, Rock: 2, Steel: 2, Ice: 0.5 }, damageDealt: { Fire: 0.5, Water: 0.5, Ice: 0.5, Steel: 0.5, Grass: 2, Ground: 2, Flying: 2, Dragon: 2 } },
-    fighting: { damageTaken: { Flying: 2, Psychic: 2, Fairy: 2, Bug: 0.5, Rock: 0.5, Dark: 0.5 }, damageDealt: { Flying: 0.5, Psychic: 0.5, Bug: 0.5, Fairy: 0.5, Poison: 0.5, Ghost: 0, Normal: 2, Ice: 2, Rock: 2, Dark: 2, Steel: 2 } },
-    poison: { damageTaken: { Ground: 2, Psychic: 2, Grass: 0.5, Fighting: 0.5, Poison: 0.5, Bug: 0.5, Fairy: 0.5 }, damageDealt: { Ground: 0.5, Rock: 0.5, Poison: 0.5, Ghost: 0.5, Steel: 0, Grass: 2, Fairy: 2 } },
-    ground: { damageTaken: { Water: 2, Grass: 2, Ice: 2, Poison: 0.5, Rock: 0.5, Electric: 0 }, damageDealt: { Grass: 0.5, Bug: 0.5, Flying: 0, Fire: 2, Electric: 2, Poison: 2, Rock: 2, Steel: 2 } },
-    flying: { damageTaken: { Electric: 2, Ice: 2, Rock: 2, Grass: 0.5, Fighting: 0.5, Bug: 0.5, Ground: 0 }, damageDealt: { Electric: 0.5, Rock: 0.5, Steel: 0.5, Grass: 2, Fighting: 2, Bug: 2 } },
-    psychic: { damageTaken: { Bug: 2, Ghost: 2, Dark: 2, Fighting: 0.5, Psychic: 0.5 }, damageDealt: { Steel: 0.5, Psychic: 0.5, Dark: 0, Fighting: 2, Poison: 2 } },
-    bug: { damageTaken: { Fire: 2, Flying: 2, Rock: 2, Grass: 0.5, Fighting: 0.5, Ground: 0.5 }, damageDealt: { Fire: 0.5, Fighting: 0.5, Poison: 0.5, Flying: 0.5, Ghost: 0.5, Steel: 0.5, Fairy: 0.5, Grass: 2, Psychic: 2, Dark: 2 } },
-    rock: { damageTaken: { Water: 2, Grass: 2, Fighting: 2, Ground: 2, Steel: 2, Normal: 0.5, Fire: 0.5, Poison: 0.5, Flying: 0.5 }, damageDealt: { Fighting: 0.5, Ground: 0.5, Steel: 0.5, Fire: 2, Ice: 2, Flying: 2, Bug: 2 } },
-    ghost: { damageTaken: { Ghost: 2, Dark: 2, Poison: 0.5, Bug: 0.5, Normal: 0, Fighting: 0 }, damageDealt: { Steel: 0.5, Dark: 0.5, Normal: 0, Ghost: 2, Psychic: 2 } },
-    dragon: { damageTaken: { Ice: 2, Dragon: 2, Fairy: 2, Fire: 0.5, Water: 0.5, Grass: 0.5, Electric: 0.5 }, damageDealt: { Steel: 0.5, Fairy: 0, Dragon: 2 } },
-    dark: { damageTaken: { Fighting: 2, Bug: 2, Fairy: 2, Ghost: 0.5, Dark: 0.5, Psychic: 0 }, damageDealt: { Fighting: 0.5, Dark: 0.5, Fairy: 0.5, Ghost: 2, Psychic: 2 } },
-    steel: { damageTaken: { Fire: 2, Fighting: 2, Ground: 2, Normal: 0.5, Grass: 0.5, Ice: 0.5, Flying: 0.5, Psychic: 0.5, Bug: 0.5, Rock: 0.5, Dragon: 0.5, Steel: 0.5, Fairy: 0.5, Poison: 0 }, damageDealt: { Fire: 0.5, Water: 0.5, Electric: 0.5, Steel: 0.5, Ice: 2, Rock: 2, Fairy: 2 } },
-    fairy: { damageTaken: { Poison: 2, Steel: 2, Fighting: 0.5, Bug: 0.5, Dark: 0.5, Dragon: 0 }, damageDealt: { Fire: 0.5, Poison: 0.5, Steel: 0.5, Fighting: 2, Dragon: 2, Dark: 2 } }
-};
-
-const GithubIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.378.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clipRule="evenodd" /></svg>);
-const LinkedinIcon = ({ color }) => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={{ color: color }}><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" /></svg>);
-const StarsIcon = ({ className = "w-6 h-6", color }) => ( <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" ><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M17.8 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M6.2 19.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /><path d="M12 9.817l-2.172 1.138a.392 .392 0 0 1 -.568 -.41l.415 -2.411l-1.757 -1.707a.389 .389 0 0 1 .217 -.665l2.428 -.352l1.086 -2.193a.392 .392 0 0 1 .702 0l1.086 2.193l2.428 .352a.39 .39 0 0 1 .217 .665l-1.757 1.707l.414 2.41a.39 .39 0 0 1 -.567 .411l-2.172 -1.138z" /></svg> );
-const StarIcon = ({ className = "w-6 h-6", isFavorite, color }) => ( <svg className={className} fill={isFavorite ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} style={{ color: isFavorite ? '#FBBF24' : color }}> <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.95-.69l1.519-4.674z" /> </svg> );
-const TrashIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" /> </svg> );
-const ClearIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" clipRule="evenodd" d="M10 8.586l3.95-3.95a1 1 0 111.414 1.414L11.414 10l3.95 3.95a1 1 0 01-1.414 1.414L10 11.414l-3.95 3.95a1 1 0 01-1.414-1.414L8.586 10l-3.95-3.95a1 1 0 011.414-1.414L10 8.586z" /></svg>);
-const SaveIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}> <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /> </svg> );
-const PlusIcon = () => ( <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"> <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /> </svg> );
-const MenuIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>);
-const CloseIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>);
-const InfoIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>);
-const PokeballIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-pokeball shrink-0"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" /><path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /><path d="M3 12h6" /><path d="M15 12h6" /></svg>);
-const SavedTeamsIcon = () => (<svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" /></svg>);
-const CollapseLeftIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" /></svg>);
-const CollapseRightIcon = () => (<svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" /></svg>);
-const ShareIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.35a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" /></svg>);
-const HeartIcon = ({ className = "w-6 h-6 shrink-0" }) => (<svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>);
-const SuccessToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M5 7.2a2.2 2.2 0 0 1 2.2 -2.2h1a2.2 2.2 0 0 0 1.55 -.64l.7 -.7a2.2 2.2 0 0 1 3.12 0l.7 .7c.412 .41 .97 .64 1.55 .64h1a2.2 2.2 0 0 1 2.2 2.2v1c0 .58 .23 1.138 .64 1.55l.7 .7a2.2 2.2 0 0 1 0 3.12l-.7 .7a2.2 2.2 0 0 0 -.64 1.55v1a2.2 2.2 0 0 1 -2.2 2.2h-1a2.2 2.2 0 0 0 -1.55 .64l-.7 .7a2.2 2.2 0 0 1 -3.12 0l-.7 -.7a2.2 2.2 0 0 0 -1.55 -.64h-1a2.2 2.2 0 0 1 -2.2 -2.2v-1a2.2 2.2 0 0 0 -.64 -1.55l-.7 -.7a2.2 2.2 0 0 1 0 -3.12l.7 -.7a2.2 2.2 0 0 0 .64 -1.55v-1" /><path d="M9 12l2 2l4 -4" /></svg>);
-const ErrorToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" ><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" /><path d="M12 6l-2 4l4 3l-2 4v3" /></svg>);
-const WarningToastIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M12 8v4" /><path d="M12 16h.01" /></svg>);
-const SunIcon = ({ color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sun" style={{ color: color }}><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" /><path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" /></svg>);
-const MoonIcon = ({ color }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-moon" style={{ color: color }}><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" /></svg>);
-const SwordsIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-swords"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M21 3v5l-11 9l-4 4l-3 -3l4 -4l9 -11z" /><path d="M5 13l6 6" /><path d="M14.32 17.32l3.68 3.68l3 -3l-3.365 -3.365" /><path d="M10 5.5l-2 -2.5h-5v5l3 2.5" /></svg>);
-const EditIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" /><path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" /></svg>);
-const SparklesIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-sparkles"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" /></svg>);
-const ShowdownIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-upload"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" /><path d="M7 9l5 -5l5 5" /><path d="M12 4l0 12" /></svg>);
-const DiceIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-dice shrink-0"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><rect x="4" y="4" width="16" height="16" rx="2" /><circle cx="8.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="8.5" r=".5" fill="currentColor" /><circle cx="15.5" cy="15.5" r=".5" fill="currentColor" /><circle cx="8.5" cy="15.5" r=".5" fill="currentColor" /></svg>);
-const FlowerIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon icon-tabler icons-tabler-filled icon-tabler-laurel-wreath"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M16.956 2.057c.355 .124 .829 .375 1.303 .796a3.77 3.77 0 0 1 1.246 2.204c.173 .989 -.047 1.894 -.519 2.683l-.123 .194q -.097 .147 -.196 .272q .066 .234 .117 .471q .26 -.178 .545 -.307c.851 -.389 1.727 -.442 2.527 -.306q .226 .04 .346 .076a1 1 0 0 1 .689 .712l.029 .13q .015 .08 .03 .18a4.45 4.45 0 0 1 -.324 2.496a3.94 3.94 0 0 1 -1.71 1.85l-.242 .12a4.23 4.23 0 0 1 -2.234 .349a9 9 0 0 1 -.443 1.023c.37 .016 .748 .093 1.128 .24c.732 .28 1.299 .758 1.711 1.367a3.95 3.95 0 0 1 .654 1.613a1 1 0 0 1 -.356 .917a3.8 3.8 0 0 1 -.716 .443c-.933 .455 -1.978 .588 -3.043 .179l-.032 -.015l-.205 -.086a3.6 3.6 0 0 1 -1.33 -1.069l-.143 -.197a4 4 0 0 1 -.26 -.433a6 6 0 0 1 -.927 .511q .18 .262 .337 .56a7.4 7.4 0 0 1 .66 1.747a1 1 0 0 1 -1.95 .444l-.028 -.11a6 6 0 0 0 -.449 -1.143c-.342 -.645 -.71 -.968 -1.048 -.968s-.706 .323 -1.048 .969a5.6 5.6 0 0 0 -.367 .874l-.082 .269l-.028 .11a1 1 0 0 1 -1.95 -.444a7.3 7.3 0 0 1 .66 -1.747q .158 -.298 .337 -.561a6.4 6.4 0 0 1 -.93 -.508a4 4 0 0 1 -.256 .43c-.366 .541 -.855 .98 -1.473 1.267l-.238 .1c-.994 .382 -1.97 .292 -2.855 -.091l-.188 -.087a3.8 3.8 0 0 1 -.716 -.443a1 1 0 0 1 -.356 -.917a3.95 3.95 0 0 1 .654 -1.613a3.6 3.6 0 0 1 1.71 -1.368c.38 -.146 .758 -.223 1.13 -.24a9 9 0 0 1 -.445 -1.023a4.23 4.23 0 0 1 -2.233 -.348a4 4 0 0 1 -.916 -.587l-.207 -.191a4 4 0 0 1 -.724 -.977l-.105 -.216a4.45 4.45 0 0 1 -.265 -2.806a1 1 0 0 1 .69 -.712q .119 -.036 .345 -.076c.801 -.135 1.678 -.082 2.53 .308q .283 .129 .545 .304q .048 -.235 .112 -.47a5 5 0 0 1 -.194 -.272c-.556 -.832 -.83 -1.806 -.642 -2.877l.05 -.242a3.75 3.75 0 0 1 1.027 -1.803l.169 -.159a4 4 0 0 1 1.303 -.796a1 1 0 0 1 .975 .178c.2 .168 .462 .446 .719 .83c.556 .833 .83 1.807 .642 2.878a3.77 3.77 0 0 1 -1.246 2.204c-.303 .27 -.607 .47 -.879 .61a7.5 7.5 0 0 0 -.255 1.971c0 3.502 2.285 6.272 5 6.272s5 -2.77 5 -6.276a7.6 7.6 0 0 0 -.253 -1.967a4.3 4.3 0 0 1 -.881 -.61a3.77 3.77 0 0 1 -1.246 -2.204c-.188 -1.07 .086 -2.045 .642 -2.877c.257 -.385 .52 -.663 .72 -.831a1 1 0 0 1 .974 -.178" /></svg>);
-
-// Patch Notes Version - increment this to show patch notes again
-const PATCH_NOTES_VERSION = '1.3.0';
+// Extracted modules
+import { PATCH_NOTES_VERSION, POKEBALL_PLACEHOLDER_URL, THEMES, applyTheme } from './constants/theme';
+import { typeColors, typeIcons, typeChart } from './constants/types';
+import { firebaseConfig, appId, POKEAPI_BASE_URL } from './constants/firebase';
+import { GENERATION_RANGES, LEGENDARY_IDS, NATURES_LIST, POKEMON_TIPS } from './constants/pokemon';
+import { useDebounce } from './hooks/useDebounce';
+import {
+    GithubIcon, LinkedinIcon, StarsIcon, StarIcon, TrashIcon, ClearIcon, SaveIcon,
+    PlusIcon, MenuIcon, CloseIcon, InfoIcon, PokeballIcon, SavedTeamsIcon,
+    CollapseLeftIcon, CollapseRightIcon, ShareIcon, HeartIcon,
+    SuccessToastIcon, ErrorToastIcon, WarningToastIcon, SunIcon, MoonIcon,
+    SwordsIcon, EditIcon, SparklesIcon, ShowdownIcon, DiceIcon, FlowerIcon,
+    HomeIcon, RefreshIcon
+} from './components/icons';
+import { TypeBadge } from './components/TypeBadge';
+import { StatBar } from './components/StatBar';
+import { AbilityChip } from './components/AbilityChip';
+import { SkeletonCard } from './components/SkeletonCard';
+import { PokemonCard } from './components/PokemonCard';
+import { Sprite } from './components/Sprite';
+import { EmptyState } from './components/EmptyState';
+import { TeamIdentitySummary } from './components/TeamIdentitySummary';
+import { useModalA11y } from './hooks/useModalA11y';
 
 // Patch Notes Modal Component
 const PatchNotesModal = ({ onClose, colors }) => {
+    const dialogRef = useModalA11y(onClose);
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
             <div 
-                className="rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in"
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="patch-notes-title"
+                tabIndex={-1}
+                className="rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in focus:outline-none"
                 style={{ backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={e => e.stopPropagation()}
             >
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10">
+                <button onClick={onClose} type="button" aria-label="Close patch notes" className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
                     <CloseIcon />
                 </button>
                 
@@ -139,7 +53,7 @@ const PatchNotesModal = ({ onClose, colors }) => {
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
                             <FlowerIcon />
                         </div>
-                        <h2 className="text-2xl font-bold" style={{ color: colors.text, fontFamily: "'Press Start 2P'" }}>
+                        <h2 id="patch-notes-title" className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ color: colors.text }}>
                             What's New!
                         </h2>
                     </div>
@@ -212,6 +126,7 @@ const PatchNotesModal = ({ onClose, colors }) => {
 
 // Greeting Pokemon Selector Modal
 const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentPokemonId, colors, db }) => {
+    const dialogRef = useModalA11y(onClose);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedType, setSelectedType] = useState(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -278,18 +193,23 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
     }, [fullPokemonList, searchTerm, selectedType]);
     
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
             <div 
-                className="rounded-2xl shadow-xl w-full max-w-7xl max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in"
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="greeting-selector-title"
+                tabIndex={-1}
+                className="rounded-2xl shadow-xl w-full max-w-7xl max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in focus:outline-none"
                 style={{ backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={e => e.stopPropagation()}
             >
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10">
+                <button onClick={onClose} type="button" aria-label="Close partner selector" className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
                     <CloseIcon />
                 </button>
                 
                 <div className="mb-6">
-                    <h2 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
+                    <h2 id="greeting-selector-title" className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
                         Choose Your Partner Pokémon
                     </h2>
                     <p className="text-sm" style={{ color: colors.textMuted }}>
@@ -406,80 +326,45 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
                 )}
                 
                 {filteredPokemons.length === 0 && (
-                    <div className="text-center py-12">
-                        <p style={{ color: colors.textMuted }}>
-                            {searchTerm || selectedType ? 'No Pokémon found matching your filters' : 'No Pokémon available'}
-                        </p>
-                    </div>
+                    <EmptyState
+                        compact
+                        title={searchTerm || selectedType ? 'No matches' : 'No Pokémon available'}
+                        message={searchTerm || selectedType ? 'Try clearing filters or a different search.' : 'Pokémon data is loading.'}
+                    />
                 )}
             </div>
         </div>
     );
 };
 
-const TypeBadge = ({ type, colors }) => ( <span className="text-xs text-white font-semibold mr-1 mb-1 px-2.5 py-1 rounded-full shadow-sm" style={{ backgroundColor: typeColors[type] || '#777' }}> {type.toUpperCase()} </span> );
-
-const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
-};
-const appId = import.meta.env.VITE_APP_ID || 'pokemonTeamBuilder';
-const POKEAPI_BASE_URL = import.meta.env.VITE_POKEAPI_BASE_URL || 'https://pokeapi.co/api/v2';
-
-// --- Custom Hooks ---
-const useDebounce = (value, delay) => {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-    return debouncedValue;
-};
-
-// --- Helper Components ---
-
-// Skeleton Loading Component
-const SkeletonCard = ({ colors }) => (
-    <div className="rounded-lg p-3 text-center h-[172px] overflow-hidden relative" style={{backgroundColor: colors.cardLight}}>
-        {/* Shimmer effect overlay */}
-        <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
-        <div className="mx-auto h-24 w-24 rounded-md animate-pulse" style={{backgroundColor: colors.card}}></div>
-        <div className="mt-2 h-5 w-20 mx-auto rounded animate-pulse" style={{backgroundColor: colors.card}}></div>
-        <div className="flex justify-center items-center mt-2 gap-2">
-            <div className="h-5 w-5 rounded-full animate-pulse" style={{backgroundColor: colors.card}}></div>
-            <div className="h-5 w-5 rounded-full animate-pulse" style={{backgroundColor: colors.card}}></div>
-        </div>
-    </div>
-);
-
 // Confirmation Dialog Component
 const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Delete", colors }) => {
+    const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     if (!isOpen) return null;
-    
+    const titleId = 'confirm-dialog-title';
+    const descId = 'confirm-dialog-desc';
+
     return (
-        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={onClose}>
+        <div className="fixed inset-0 bg-black/10 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={onClose} role="presentation">
             <div 
-                className="rounded-2xl shadow-2xl w-full max-w-md p-6 relative transform transition-all animate-scale-in"
+                ref={dialogRef}
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby={titleId}
+                aria-describedby={descId}
+                tabIndex={-1}
+                className="rounded-2xl shadow-2xl w-full max-w-md p-6 relative transform transition-all animate-scale-in focus:outline-none"
                 style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}}
                 onClick={e => e.stopPropagation()}
             >
                 <div className="text-center">
-                    <div className="mx-auto w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-4">
-                        <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="mx-auto w-14 h-14 rounded-full bg-danger/20 flex items-center justify-center mb-4">
+                        <svg className="w-7 h-7 text-danger" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                     </div>
-                    <h3 className="text-xl font-bold mb-2" style={{color: colors.text}}>{title}</h3>
-                    <p className="text-sm mb-6" style={{color: colors.textMuted}}>{message}</p>
+                    <h3 id={titleId} className="text-xl font-bold mb-2" style={{color: colors.text}}>{title}</h3>
+                    <p id={descId} className="text-sm mb-6" style={{color: colors.textMuted}}>{message}</p>
                 </div>
                 <div className="flex gap-3">
                     <button 
@@ -491,7 +376,7 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
                     </button>
                     <button 
                         onClick={() => { onConfirm(); onClose(); }}
-                        className="flex-1 py-3 px-4 rounded-xl font-semibold bg-red-600 hover:bg-red-700 text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        className="flex-1 py-3 px-4 rounded-xl font-semibold bg-danger hover:opacity-90 text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                     >
                         {confirmText}
                     </button>
@@ -501,139 +386,8 @@ const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText
     );
 };
 
-const PokemonCard = React.memo(({ onCardClick, details, lastRef, isSuggested, colors, isFavorite, onToggleFavorite }) => {
-
-    const handleCardClick = (e) => {
-        e.stopPropagation();
-        onCardClick(details);
-    };
-
-    const handleFavoriteClick = (e) => {
-        e.stopPropagation();
-        if (onToggleFavorite) {
-            onToggleFavorite(details.id);
-        }
-    };
-    
-    if (!details) {
-        return <SkeletonCard colors={colors} />;
-    }
-    
-    return (
-       <div
-        ref={lastRef}
-        onClick={handleCardClick}
-        className={`rounded-lg p-3 text-center group relative cursor-pointer transition-all duration-200 hover:scale-[1.03] hover:shadow-xl active:scale-[0.98] ${isSuggested ? 'ring-2 ring-green-400 shadow-lg' : ''}`}
-        style={{ backgroundColor: colors.cardLight }}
-        >
-        {isSuggested && <div className="absolute -top-2 -right-2 text-xs bg-green-500 text-white font-bold py-1 px-2 rounded-full z-10 animate-bounce">Suggested</div>}
-        
-        {/* Favorite Star - Always visible when favorite, otherwise on hover */}
-        {onToggleFavorite && (
-            <button 
-                onClick={handleFavoriteClick}
-                className={`absolute top-1 left-1 z-10 p-1 rounded-full transition-all duration-200 hover:scale-110 active:scale-95 ${isFavorite ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
-                style={{ backgroundColor: isFavorite ? 'rgba(251, 191, 36, 0.2)' : 'rgba(0,0,0,0.3)' }}
-                title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-            >
-                <StarIcon className="w-4 h-4" isFavorite={isFavorite} color={colors.textMuted} />
-            </button>
-        )}
-        
-        <img
-            src={details.sprite || POKEBALL_PLACEHOLDER_URL}
-            onError={(e) => {
-            e.currentTarget.src = POKEBALL_PLACEHOLDER_URL;
-            }}
-            alt={details.name}
-            className="mx-auto w-full h-auto max-w-[120px] group-hover:scale-110 transition-transform duration-300"
-        />
-        <p className="mt-2 text-sm font-semibold capitalize" style={{color: colors.text}}>{details.name}</p>
-        <div className="flex justify-center items-center mt-1 gap-1">
-            {details.types.map((type) => (
-            <img key={type} src={typeIcons[type]} alt={type} className="w-5 h-5 transition-transform group-hover:scale-110" />
-            ))}
-        </div>
-        </div>
-    );
-});
-
-const StatBar = ({ stat, value, colors }) => {
-    const statColors = { hp: 'bg-red-500', attack: 'bg-orange-500', defense: 'bg-yellow-500', 'special-attack': 'bg-blue-500', 'special-defense': 'bg-green-500', speed: 'bg-pink-500' };
-    const width = (value / 255) * 100;
-    return (
-        <div className="flex items-center gap-2">
-            <p className="w-1/3 text-sm font-semibold capitalize text-right" style={{color: colors.text}}>{stat.replace('-', ' ')}</p>
-            <div className="w-2/3 rounded-full h-4" style={{backgroundColor: colors.cardLight}}>
-                <div className={`${statColors[stat]} h-4 rounded-full text-xs text-white flex items-center justify-end pr-2`} style={{ width: `${width}%` }}>{value}</div>
-            </div>
-        </div>
-    );
-};
-
-const AbilityChip = ({ ability }) => {
-    const [description, setDescription] = useState('');
-    const [isTooltipVisible, setTooltipVisible] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const touchTimeout = useRef(null);
-
-    const fetchAbilityDescription = useCallback(async () => {
-        if (description || isLoading) return;
-        setIsLoading(true);
-        try {
-            const res = await fetch(ability.url);
-            const data = await res.json();
-            const effectEntry = data.effect_entries.find(entry => entry.language.name === 'en');
-            setDescription(effectEntry?.short_effect || 'No description available.');
-        } catch (error) {
-            setDescription('Could not load description.');
-        } finally {
-            setIsLoading(false);
-        }
-    }, [ability.url, description, isLoading]);
-
-    const handleMouseEnter = () => {
-        fetchAbilityDescription();
-        setTooltipVisible(true);
-    };
-
-    const handleMouseLeave = () => {
-        setTooltipVisible(false);
-    };
-    
-    const handleTouchStart = () => {
-        fetchAbilityDescription();
-        touchTimeout.current = setTimeout(() => {
-             setTooltipVisible(true);
-        }, 300);
-    };
-
-    const handleTouchEnd = () => {
-        clearTimeout(touchTimeout.current);
-        setTimeout(() => {
-            setTooltipVisible(false);
-        }, 2000);
-    };
-
-    return (
-        <span 
-            className="relative capitalize text-white inline-block bg-gray-700 px-3 py-1 rounded-full text-sm cursor-pointer"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-        >
-            {ability.name.replace('-', ' ')}
-            {isTooltipVisible && (
-                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-700 text-white text-xs rounded-md shadow-lg z-20">
-                    {isLoading ? 'Loading...' : description}
-                </span>
-            )}
-        </span>
-    );
-}
-
 const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, showPokemonDetails, db, isFavorite, onToggleFavorite }) => {
+    const dialogRef = useModalA11y(onClose);
     const [showShiny, setShowShiny] = useState(false);
     const [evolutionDetails, setEvolutionDetails] = useState([]);
 
@@ -683,9 +437,18 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     const spriteToShow = showShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite);
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-6" onClick={onClose}>
-            <div className="rounded-2xl shadow-2xl w-full max-w-lg p-4 relative animate-scale-in" style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}} onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white hover:rotate-90 transition-all duration-200"><CloseIcon /></button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-6" onClick={onClose} role="presentation">
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="pokemon-detail-title"
+                tabIndex={-1}
+                className="rounded-2xl shadow-2xl w-full max-w-lg p-4 relative animate-scale-in focus:outline-none"
+                style={{backgroundColor: colors.card, border: `1px solid ${colors.cardLight}`}}
+                onClick={e => e.stopPropagation()}
+            >
+                <button onClick={onClose} type="button" aria-label={`Close ${pokemon.name} details`} className="absolute top-4 right-4 text-muted hover:text-fg hover:rotate-90 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1"><CloseIcon /></button>
                 <div className="text-center">
                     <div className="relative inline-block">
                         <img src={spriteToShow || POKEBALL_PLACEHOLDER_URL} alt={pokemon.name} className="mx-auto h-30 w-32 image-pixelated hover:scale-110 transition-transform duration-300"/>
@@ -706,7 +469,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                             </button>
                         )}
                     </div>
-                    <h2 className="text-3xl font-bold capitalize mt-2" style={{color: colors.text}}>{pokemon.name} <span style={{color: colors.textMuted}}>#{pokemon.id}</span></h2>
+                    <h2 id="pokemon-detail-title" className="text-3xl font-bold capitalize mt-2" style={{color: colors.text}}>{pokemon.name} <span style={{color: colors.textMuted}}>#{pokemon.id}</span></h2>
                     <div className="flex justify-center gap-2 mt-2">
                         {pokemon.types.map(type => <TypeBadge key={type} type={type} colors={colors} />)}
                     </div>
@@ -755,6 +518,9 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
+    const [activeTab, setActiveTab] = useState('loadout');
+    const dialogRef = useRef(null);
+    const previouslyFocusedRef = useRef(null);
     const statNames = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
 
     const fetchMoveDetails = useCallback(async (moveUrl, moveName) => {
@@ -784,6 +550,29 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
         const totalEVs = Object.values(customization.evs).reduce((sum, ev) => sum + ev, 0);
         setRemainingEVs(510 - totalEVs);
     }, [customization.evs]);
+
+    // Focus trap + Esc handler + restore focus on close (a11y)
+    useEffect(() => {
+        previouslyFocusedRef.current = document.activeElement;
+        const node = dialogRef.current;
+        if (node) {
+            const focusable = node.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            (focusable || node).focus?.();
+        }
+        const onKey = (e) => {
+            if (e.key === 'Escape') {
+                e.stopPropagation();
+                onClose();
+            }
+        };
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            if (previouslyFocusedRef.current && previouslyFocusedRef.current.focus) {
+                previouslyFocusedRef.current.focus();
+            }
+        };
+    }, [onClose]);
 
     const handleEvChange = (stat, value) => {
         const numericValue = Number(value);
@@ -843,97 +632,191 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
 
     if (!pokemon) return null;
 
-    return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose}>
-            <div className="rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in" style={{backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}} onClick={e => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"><CloseIcon /></button>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="flex flex-col items-center">
-                        <img src={customization.isShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite)} alt={pokemon.name} className="mx-auto h-32 w-36 image-pixelated" />
-                        <h2 className="text-3xl font-bold capitalize mt-2" style={{color: colors.text}}>{pokemon.name}</h2>
-                        <div className="flex justify-center gap-2 mt-2">
-                            {pokemon.types.map(type => <TypeBadge key={type} type={type} colors={colors} />)}
-                        </div>
-                        
-                        <div className="w-full mt-4 grid grid-cols-2 gap-4">
-                           <div>
-                                <label className="block text-sm font-bold mb-1" style={{color: colors.text}}>Item</label>
-                                <select value={customization.item} onChange={(e) => handleCustomizationChange('item', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
-                                    <option value="">None</option>
-                                    {items.map(item => <option key={item.name} value={item.name} className="capitalize">{item.name.replace(/-/g, ' ')}</option>)}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-bold mb-1" style={{color: colors.text}}>Nature</label>
-                                <select value={customization.nature} onChange={(e) => handleCustomizationChange('nature', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
-                                    {natures.map(n => <option key={n.name} value={n.name} className="capitalize">{n.name.replace(/-/g, ' ')}</option>)}
-                                </select>
-                            </div>
-                             <div>
-                                <label className="block text-sm font-bold mb-1" style={{color: colors.text}}>Tera Type</label>
-                                <select value={customization.teraType} onChange={(e) => handleCustomizationChange('teraType', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
-                                    {Object.keys(typeColors).map(type => <option key={type} value={type} className="capitalize">{type}</option>)}
-                                </select>
-                            </div>
-                            <div className="flex items-center justify-start pt-5">
-                                <label htmlFor="shiny-toggle" className="flex items-center cursor-pointer">
-                                    <div className="relative">
-                                        <input type="checkbox" id="shiny-toggle" className="sr-only" checked={customization.isShiny} onChange={(e) => handleCustomizationChange('isShiny', e.target.checked)} />
-                                        <div className="block w-10 h-6 bg-gray-600 rounded-full"></div>
-                                        <div className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition"></div>
-                                    </div>
-                                    <div className="ml-3 text-sm font-bold" style={{color: colors.text}}>Shiny</div>
-                                </label>
-                            </div>
-                        </div>
+    const tabs = [
+        { id: 'loadout', label: 'Loadout' },
+        { id: 'stats', label: 'Stats & EVs' },
+        { id: 'moves', label: `Moves (${customization.moves.length}/4)` },
+    ];
 
-                         <div className="w-full mt-4">
-                            <label className="block text-lg font-bold mb-2" style={{color: colors.text}}>Ability</label>
-                            <select value={customization.ability} onChange={(e) => handleCustomizationChange('ability', e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
-                                {pokemon.abilities.map((ability) => (
-                                    <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
-                                ))}
-                            </select>
-                        </div>
-                        
-                        {/* Base Stats Section */}
-                        <div className="w-full mt-4">
-                            <h3 className="text-lg font-bold mb-2" style={{color: colors.text}}>Base Stats</h3>
-                            <div className="space-y-1.5">
-                                {pokemon.stats?.map(stat => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
+    return (
+        <div
+            className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+            role="presentation"
+        >
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="team-editor-title"
+                tabIndex={-1}
+                className="rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col relative animate-fade-in focus:outline-none"
+                style={{backgroundColor: colors.card}}
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Sticky header: title + tabs + close */}
+                <header className="px-6 pt-5 pb-3 border-b" style={{ borderColor: colors.cardLight }}>
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <img
+                                src={customization.isShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite)}
+                                alt={pokemon.name}
+                                className="h-14 w-14 image-pixelated flex-shrink-0"
+                            />
+                            <div className="min-w-0">
+                                <h2 id="team-editor-title" className="text-xl md:text-2xl font-bold capitalize truncate" style={{color: colors.text}}>{pokemon.name}</h2>
+                                <div className="flex gap-1.5 mt-1">
+                                    {pokemon.types.map(type => <TypeBadge key={type} type={type} colors={colors} />)}
+                                </div>
                             </div>
                         </div>
+                        <button
+                            onClick={onClose}
+                            type="button"
+                            className="p-2 rounded-lg text-muted hover:text-fg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            aria-label="Close editor"
+                        >
+                            <CloseIcon />
+                        </button>
                     </div>
 
-                    {/* Right Column */}
-                    <div>
-                        <h3 className="text-lg font-bold" style={{color: colors.text}}>Stats & EVs</h3>
-                        <p className="text-sm mb-2" style={{color: colors.textMuted}}>Remaining EVs: <span className="font-bold text-lg" style={{color: colors.primary}}>{remainingEVs}</span></p>
-                        
-                        <div className="space-y-3">
-                            {statNames.map((statName, i) => {
-                                const baseStat = pokemon.stats[i].base_stat;
-                                const ev = customization.evs[statName];
-                                const totalStat = calculateStat(baseStat, ev, statName);
-                                return (
-                                <div key={statName}>
-                                    <div className="flex justify-between items-center capitalize text-sm">
-                                        <span style={{color: colors.text}}>{statName.replace(/-/g, ' ')}</span>
-                                        <span style={{color: colors.textMuted}}>{ev} / {totalStat}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <input type="range" min="0" max="252" value={ev} step="4" onChange={(e) => handleEvChange(statName, e.target.value)} className="w-full h-2 rounded-lg appearance-none cursor-pointer" style={{backgroundColor: colors.cardLight}}/>
-                                    </div>
-                                </div>
-                                )
-                            })}
-                        </div>
+                    <div role="tablist" aria-label="Editor sections" className="mt-4 flex gap-1 border-b -mb-3" style={{ borderColor: 'transparent' }}>
+                        {tabs.map(t => (
+                            <button
+                                key={t.id}
+                                role="tab"
+                                type="button"
+                                id={`tab-${t.id}`}
+                                aria-selected={activeTab === t.id}
+                                aria-controls={`panel-${t.id}`}
+                                onClick={() => setActiveTab(t.id)}
+                                className={`px-4 py-2 text-sm font-semibold rounded-t-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${activeTab === t.id ? 'border-b-2' : 'opacity-70 hover:opacity-100'}`}
+                                style={{
+                                    color: activeTab === t.id ? colors.primary : colors.textMuted,
+                                    borderColor: activeTab === t.id ? colors.primary : 'transparent',
+                                }}
+                            >
+                                {t.label}
+                            </button>
+                        ))}
+                    </div>
+                </header>
 
-                        <div className="mt-6">
-                             <h3 className="text-lg font-bold mb-2" style={{color: colors.text}}>Move Selection</h3>
-                             <div className="grid grid-cols-2 gap-2 min-h-[80px] mb-4 p-2 rounded-lg" style={{backgroundColor: colors.background}}>
+                {/* Scrollable body */}
+                <div
+                    className="flex-1 overflow-y-auto custom-scrollbar p-6"
+                    style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}
+                >
+                    {activeTab === 'loadout' && (
+                        <div role="tabpanel" id="panel-loadout" aria-labelledby="tab-loadout" className="space-y-5">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="editor-item" className="block text-sm font-bold mb-1" style={{color: colors.text}}>Item</label>
+                                    <select id="editor-item" value={customization.item} onChange={(e) => handleCustomizationChange('item', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                                        <option value="">None</option>
+                                        {items.map(item => <option key={item.name} value={item.name} className="capitalize">{item.name.replace(/-/g, ' ')}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="editor-nature" className="block text-sm font-bold mb-1" style={{color: colors.text}}>Nature</label>
+                                    <select id="editor-nature" value={customization.nature} onChange={(e) => handleCustomizationChange('nature', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                                        {natures.map(n => <option key={n.name} value={n.name} className="capitalize">{n.name.replace(/-/g, ' ')}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label htmlFor="editor-tera" className="block text-sm font-bold mb-1" style={{color: colors.text}}>Tera Type</label>
+                                    <select id="editor-tera" value={customization.teraType} onChange={(e) => handleCustomizationChange('teraType', e.target.value)} className="w-full p-2 rounded-lg border-2 capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                                        {Object.keys(typeColors).map(type => <option key={type} value={type} className="capitalize">{type}</option>)}
+                                    </select>
+                                </div>
+                                <div className="flex items-end">
+                                    {/* Accessible switch (role=switch, keyboard, focus-visible) */}
+                                    <button
+                                        type="button"
+                                        role="switch"
+                                        aria-checked={customization.isShiny}
+                                        onClick={() => handleCustomizationChange('isShiny', !customization.isShiny)}
+                                        className="inline-flex items-center gap-3 group focus:outline-none"
+                                    >
+                                        <span
+                                            className={`relative inline-block w-11 h-6 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-primary ${customization.isShiny ? 'bg-success' : 'bg-surface-raised'}`}
+                                            aria-hidden="true"
+                                        >
+                                            <span
+                                                className={`absolute top-0.5 left-0.5 inline-block w-5 h-5 bg-white rounded-full shadow transition-transform ${customization.isShiny ? 'translate-x-5' : 'translate-x-0'}`}
+                                            />
+                                        </span>
+                                        <span className="text-sm font-bold" style={{color: colors.text}}>Shiny ✨</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label htmlFor="editor-ability" className="block text-base font-bold mb-2" style={{color: colors.text}}>Ability</label>
+                                <select id="editor-ability" value={customization.ability} onChange={(e) => handleCustomizationChange('ability', e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
+                                    {pokemon.abilities.map((ability) => (
+                                        <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <h3 className="text-base font-bold mb-2" style={{color: colors.text}}>Base Stats</h3>
+                                <div className="space-y-1.5">
+                                    {pokemon.stats?.map(stat => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'stats' && (
+                        <div role="tabpanel" id="panel-stats" aria-labelledby="tab-stats">
+                            <div className="flex items-baseline justify-between mb-3">
+                                <h3 className="text-lg font-bold" style={{color: colors.text}}>Effort Values</h3>
+                                <p className="text-sm" style={{color: colors.textMuted}}>
+                                    Remaining: <span className="font-bold text-lg" style={{color: remainingEVs === 0 ? colors.success : colors.primary}}>{remainingEVs}</span> / 510
+                                </p>
+                            </div>
+                            {/* Total EV progress ring substitute: a visible bar */}
+                            <div className="h-2 w-full rounded-full overflow-hidden mb-5" style={{backgroundColor: colors.cardLight}}>
+                                <div
+                                    className="h-full transition-all"
+                                    style={{ width: `${((510 - remainingEVs) / 510) * 100}%`, backgroundColor: colors.primary }}
+                                />
+                            </div>
+
+                            <div className="space-y-3">
+                                {statNames.map((statName, i) => {
+                                    const baseStat = pokemon.stats[i].base_stat;
+                                    const ev = customization.evs[statName];
+                                    const totalStat = calculateStat(baseStat, ev, statName);
+                                    return (
+                                    <div key={statName}>
+                                        <div className="flex justify-between items-center capitalize text-sm">
+                                            <span style={{color: colors.text}}>{statName.replace(/-/g, ' ')}</span>
+                                            <span style={{color: colors.textMuted}}>EV {ev} · stat {totalStat}</span>
+                                        </div>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max="252"
+                                            value={ev}
+                                            step="4"
+                                            onChange={(e) => handleEvChange(statName, e.target.value)}
+                                            className="w-full h-2 rounded-lg appearance-none cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            style={{backgroundColor: colors.cardLight}}
+                                            aria-label={`${statName.replace(/-/g, ' ')} EV`}
+                                        />
+                                    </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'moves' && (
+                        <div role="tabpanel" id="panel-moves" aria-labelledby="tab-moves">
+                            <div className="grid grid-cols-2 gap-2 min-h-[80px] mb-4 p-2 rounded-lg" style={{backgroundColor: colors.background}}>
                                 {customization.moves.map(moveName => {
                                     const moveType = moveDetailsCache[moveName]?.type;
                                     return (
@@ -948,37 +831,58 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
                                     </div>
                                 ))}
                             </div>
-                             <input type="text" placeholder="Search moves..." value={moveSearch} onChange={(e) => setMoveSearch(e.target.value)} className="w-full p-2 rounded-lg mb-2" style={{backgroundColor: colors.cardLight, color: colors.text}}/>
-                             <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto custom-scrollbar pr-2" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
+                            <input
+                                type="text"
+                                placeholder="Search moves..."
+                                value={moveSearch}
+                                onChange={(e) => setMoveSearch(e.target.value)}
+                                className="w-full p-2 rounded-lg mb-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                style={{backgroundColor: colors.cardLight, color: colors.text}}
+                                aria-label="Search moves"
+                            />
+                            <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto custom-scrollbar pr-2" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
                                 {filteredMoves.map((move) => {
                                     const moveType = moveDetailsCache[move.name]?.type;
                                     const isSelected = customization.moves.includes(move.name);
-                                    
-                                    const style = isSelected 
+                                    const style = isSelected
                                       ? { backgroundColor: moveType ? typeColors[moveType] : colors.primary, color: 'white' }
                                       : { backgroundColor: colors.cardLight, color: colors.text };
-
                                     return (
-                                        <button 
-                                            key={move.name} 
+                                        <button
+                                            key={move.name}
+                                            type="button"
                                             onClick={() => handleMoveToggle(move.name)}
-                                            className={`p-2 rounded-lg text-sm capitalize transition-colors ${!isSelected && 'hover:opacity-80'}`}
+                                            aria-pressed={isSelected}
+                                            className={`p-2 rounded-lg text-sm capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${!isSelected && 'hover:opacity-80'}`}
                                             style={style}
                                             >
                                             {move.name.replace(/-/g, ' ')}
                                         </button>
                                     )
                                 })}
-                             </div>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
 
-                <div className="mt-8 flex justify-end">
-                     <button onClick={handleSaveChanges} className="bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-colors">
-                        <SaveIcon /> Confirm Changes
+                {/* Sticky footer with Cancel + Save — always visible */}
+                <footer className="px-6 py-4 border-t flex items-center justify-end gap-2" style={{ borderColor: colors.cardLight }}>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-lg font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                    >
+                        Cancel
                     </button>
-                </div>
+                    <button
+                        type="button"
+                        onClick={handleSaveChanges}
+                        className="bg-primary hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                    >
+                        <SaveIcon /> Save changes
+                    </button>
+                </footer>
             </div>
         </div>
     )
@@ -986,7 +890,7 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
 
 
 const TeamBuilderView = ({
-    currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleSaveTeam, editingTeamId, handleClearTeam,
+    currentTeam, teamName, setTeamName, handleRemoveFromTeam, handleReorderTeam, handleSaveTeam, editingTeamId, handleClearTeam,
     recentTeams, onNavigateToTeams, handleToggleFavorite, handleEditTeam, handleShareTeam, requestDeleteTeam, handleExportToShowdown,
     teamAnalysis,
     searchInput, setSearchInput, selectedGeneration, setSelectedGeneration, generations,
@@ -997,6 +901,10 @@ const TeamBuilderView = ({
     favoritePokemons, onToggleFavoritePokemon,
     showOnlyFavorites, setShowOnlyFavorites
 }) => {
+    // Drag state for team-slot reordering. Keyboard reorder uses Alt+Arrow
+    // and doesn't need this — it goes straight to handleReorderTeam.
+    const [dragIndex, setDragIndex] = React.useState(null);
+
     // Filter available pokemons based on favorites toggle
     const displayedPokemons = showOnlyFavorites 
         ? availablePokemons.filter(p => favoritePokemons.has(p.id))
@@ -1004,23 +912,84 @@ const TeamBuilderView = ({
 
     return (
     <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div className="lg:col-span-3 space-y-8">
+        {/* Mobile / tablet sticky team strip — keeps the team in view while browsing the pokédex */}
+        <div className="lg:hidden -mx-4 sticky top-0 z-30 px-4 py-2 backdrop-blur-md border-b" style={{ backgroundColor: colors.background + 'EE', borderColor: colors.cardLight }}>
+            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar">
+                {Array.from({ length: 6 }).map((_, i) => {
+                    const p = currentTeam[i];
+                    return (
+                        <button
+                            key={p?.instanceId ?? `empty-${i}`}
+                            type="button"
+                            onClick={() => p && onEditTeamPokemon(p)}
+                            className="flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            style={{ borderColor: p ? colors.primary : colors.cardLight, backgroundColor: colors.card }}
+                            aria-label={p ? `Edit ${p.name}` : `Empty slot ${i + 1}`}
+                            title={p ? p.name : 'Empty slot'}
+                        >
+                            <img
+                                src={p?.sprite || POKEBALL_PLACEHOLDER_URL}
+                                alt={p?.name || ''}
+                                className={`w-9 h-9 ${p ? '' : 'opacity-40'}`}
+                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                            />
+                        </button>
+                    );
+                })}
+                <span className="ml-1 text-xs font-semibold whitespace-nowrap" style={{ color: colors.textMuted }}>
+                    {currentTeam.length}/6
+                </span>
+            </div>
+        </div>
+
+        <div className="lg:col-span-3 space-y-8 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto custom-scrollbar lg:pr-1" style={{'--scrollbar-track-color': colors.background, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.background}}>
             <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
-                <h2 className="text-base md:text-lg font-bold mb-4 border-b-2 pb-2" style={{fontFamily: "'Press Start 2P'", borderColor: colors.primary, color: colors.text}}>Current Team</h2>
+                <h2 className="text-lg md:text-xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: colors.primary, color: colors.text}}>Current Team</h2>
                 <input type="text" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder="Team Name" className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                 <div className="grid grid-cols-3 gap-4 min-h-[120px] p-4 rounded-lg mt-4 " style={{backgroundColor: colors.background}}>
-                    {currentTeam.map(p => (
-                        <div key={p.instanceId} className="text-center relative group cursor-pointer" onClick={() => onEditTeamPokemon(p)}>
-                            <img
-                            src={p.animatedSprite || p.sprite || POKEBALL_PLACEHOLDER_URL}
-                            onError={(e) => { e.currentTarget.src = p.sprite || POKEBALL_PLACEHOLDER_URL }}
-                            alt={p.name}
-                            className="mx-auto h-20 w-20"
-                            />
+                    {currentTeam.map((p, idx) => (
+                        <div
+                            key={p.instanceId}
+                            className={`text-center relative group cursor-grab active:cursor-grabbing rounded-lg transition-all ${dragIndex === idx ? 'opacity-40' : 'opacity-100'} hover:bg-surface-raised/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
+                            draggable
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`${p.name}, slot ${idx + 1} of ${currentTeam.length}. Drag to reorder, or hold Alt and press Arrow keys.`}
+                            onClick={() => onEditTeamPokemon(p)}
+                            onKeyDown={(e) => {
+                                if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowUp')) {
+                                    e.preventDefault();
+                                    handleReorderTeam?.(idx, Math.max(0, idx - 1));
+                                } else if (e.altKey && (e.key === 'ArrowRight' || e.key === 'ArrowDown')) {
+                                    e.preventDefault();
+                                    handleReorderTeam?.(idx, Math.min(currentTeam.length - 1, idx + 1));
+                                } else if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    onEditTeamPokemon(p);
+                                }
+                            }}
+                            onDragStart={(e) => {
+                                setDragIndex(idx);
+                                e.dataTransfer.effectAllowed = 'move';
+                                e.dataTransfer.setData('text/plain', String(idx));
+                            }}
+                            onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+                            onDrop={(e) => {
+                                e.preventDefault();
+                                const from = Number(e.dataTransfer.getData('text/plain'));
+                                if (!Number.isNaN(from)) handleReorderTeam?.(from, idx);
+                                setDragIndex(null);
+                            }}
+                            onDragEnd={() => setDragIndex(null)}
+                        >
+                            <div className="mx-auto h-20 w-20">
+                                <Sprite src={p.animatedSprite || p.sprite} alt={p.name} className="w-full h-full" />
+                            </div>
                             <p className="text-xs capitalize truncate" style={{color: colors.text}}>{p.name}</p>
 
                              <button
                                 onClick={(e) => { e.stopPropagation(); onEditTeamPokemon(p); }}
+                                aria-label={`Edit ${p.name}`}
                                 className="absolute top-1 left-1 bg-gray-700 bg-opacity-50 text-white rounded-full h-6 w-6 flex items-center justify-center transition-opacity text-sm opacity-100 visible lg:opacity-0 lg:invisible lg:group-hover:opacity-100 lg:group-hover:visible"
                                 >
                                 <EditIcon />
@@ -1028,8 +997,9 @@ const TeamBuilderView = ({
 
                             <button
                             onClick={(e) => { e.stopPropagation(); handleRemoveFromTeam(p.instanceId); }}
+                            aria-label={`Remove ${p.name} from team`}
                             className="
-                                absolute top-1 right-1 bg-red-600 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm
+                                absolute top-1 right-1 bg-danger text-white rounded-full h-6 w-6 flex items-center justify-center text-sm
                                 opacity-100 visible
                                 lg:opacity-0 lg:invisible
                                 lg:group-hover:opacity-100 lg:group-hover:visible
@@ -1043,17 +1013,19 @@ const TeamBuilderView = ({
 
                     {Array.from({ length: 6 - currentTeam.length }).map((_, i) => (<div key={i} className="flex items-center justify-center"><img src={POKEBALL_PLACEHOLDER_URL} alt="Empty team slot" className="w-12 h-12 opacity-40"/></div>))}
                 </div>
+
+                <TeamIdentitySummary team={currentTeam} />
                 <div className="flex items-center gap-2 mt-4">
                     <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]" style={{backgroundColor: colors.primary, color: colors.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
-                    <button onClick={handleExportToShowdown} className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Export to Showdown"><ShowdownIcon /></button>
-                    <button onClick={handleShareTeam} className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Share Team"><ShareIcon /></button>
-                    <button onClick={handleClearTeam} className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Clear Team"><ClearIcon /></button>
+                    <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Export to Showdown"><ShowdownIcon /></button>
+                    <button onClick={handleShareTeam} type="button" aria-label="Share team" className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Share Team"><ShareIcon /></button>
+                    <button onClick={handleClearTeam} type="button" aria-label="Clear team" className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Clear Team"><ClearIcon /></button>
                 </div>
             </section>
             
             <section className="p-6 rounded-xl shadow-lg backdrop-blur-sm" style={{backgroundColor: colors.card, borderTop: `1px solid ${colors.cardLight}`}}>
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-base md:text-lg font-bold" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Recent Teams</h2>
+                    <h2 className="text-lg md:text-xl font-bold" style={{color: colors.text}}>Recent Teams</h2>
                     <button onClick={onNavigateToTeams} className="text-sm hover:underline transition-all duration-200 hover:scale-105" style={{color: colors.primary}}>View All</button>
                 </div>
                 <div className="space-y-4 max-h-96 overflow-y-auto pr-2 custom-scrollbar" style={{'--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card}}>
@@ -1070,7 +1042,7 @@ const TeamBuilderView = ({
                                     <StarIcon isFavorite={team.isFavorite} color={colors.textMuted} />
                                 </button>
                                 <button onClick={() => handleEditTeam(team)} className="text-xs font-bold py-1 px-3 rounded-full transition-all duration-200 hover:scale-105 active:scale-95" style={{backgroundColor: colors.primary, color: colors.background}} >Edit</button>
-                                <button onClick={() => requestDeleteTeam(team.id, team.name)} className="bg-red-600 p-1 hover:bg-red-700 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"><TrashIcon /></button>
+                                <button onClick={() => requestDeleteTeam(team.id, team.name)} className="bg-danger p-1 hover:opacity-90 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"><TrashIcon /></button>
                             </div>
                         </div>
                     )) : <p className="text-center py-4" style={{color: colors.textMuted}}>No recent teams yet.</p>}
@@ -1081,7 +1053,7 @@ const TeamBuilderView = ({
         <div className="lg:col-span-6">
             <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: colors.card}}>
                 <div className="mb-4">
-                    <h2 className="text-lg md:text-xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Choose your Pokémon!</h2>
+                    <h2 className="text-xl md:text-2xl font-bold mb-4" style={{color: colors.text}}>Choose your Pokémon!</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                         <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
@@ -1111,7 +1083,8 @@ const TeamBuilderView = ({
                                     <PokemonCard 
                                         key={pokemon.id} 
                                         details={pokemon} 
-                                        onCardClick={handleAddPokemonToTeam} 
+                                        onCardClick={showDetails}
+                                        onAddToTeam={handleAddPokemonToTeam}
                                         lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null} 
                                         isSuggested={suggestedPokemonIds.has(pokemon.id)} 
                                         colors={colors}
@@ -1122,9 +1095,11 @@ const TeamBuilderView = ({
                             </div>
                             {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
                             {displayedPokemons.length === 0 && !isInitialLoading && (
-                                <p className="text-center py-8" style={{color: colors.textMuted}}>
-                                    {showOnlyFavorites ? 'No favorite Pokémon found. Add some favorites!' : 'No Pokémon found with these filters. :('}
-                                </p>
+                                <EmptyState
+                                    compact
+                                    title={showOnlyFavorites ? 'No favorites match' : 'No Pökemon found'}
+                                    message={showOnlyFavorites ? 'Try clearing filters or favoriting more Pokémon.' : 'Try a different search, generation, or type.'}
+                                />
                             )}
                         </div>
                     </>)}
@@ -1132,12 +1107,12 @@ const TeamBuilderView = ({
             </section>
         </div>
 
-        <div className="lg:col-span-3 space-y-8">
+        <div className="lg:col-span-3 space-y-8 lg:sticky lg:top-4 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto custom-scrollbar lg:pr-1" style={{'--scrollbar-track-color': colors.background, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.background}}>
             <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
-                <h3 className="text-base md:text-lg font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Filter by Type</h3>
+                <h3 className="text-sm md:text-base font-bold mb-3 text-center uppercase tracking-wider" style={{color: colors.text}}>Filter by Type</h3>
                 <div className="grid grid-cols-5 lg:grid-cols-5 gap-1.5">
                     {Object.keys(typeColors).map(type => (
-                        <button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:opacity-75 ${selectedTypes.has(type) ? 'ring-2 ring-purple' : ''}`} style={{backgroundColor: colors.cardLight}} title={type}>
+                        <button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:opacity-75 ${selectedTypes.has(type) ? 'ring-2 ring-primary' : ''}`} style={{backgroundColor: colors.cardLight}} title={type}>
                             <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
                         </button>
                     ))}
@@ -1147,18 +1122,18 @@ const TeamBuilderView = ({
                 <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
                     <h3 className="text-lg md:text-xl font-bold mb-4" style={{color: colors.text}}>Team Analysis</h3>
                     <div>
-                        <h4 className="font-semibold mb-2 text-green-400">Offensive Coverage:</h4>
+                        <h4 className="font-semibold mb-2 text-success">Offensive Coverage:</h4>
                         <div className="flex flex-wrap gap-1">
                             {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map(type => <TypeBadge key={type} type={type} colors={colors} />) : <p className="text-sm" style={{color: colors.textMuted}}>No type advantages found.</p>}
                         </div>
                     </div>
                     <div className="mt-4">
-                        <h4 className="font-semibold mb-2 text-red-400">Defensive Weaknesses:</h4>
+                        <h4 className="font-semibold mb-2 text-danger">Defensive Weaknesses:</h4>
                         <div className="flex flex-wrap gap-1">
                             {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses).sort(([,a],[,b]) => b-a).map(([type, score]) => (
                                 <div key={type} className="flex items-center">
                                     <TypeBadge type={type} colors={colors} />
-                                    <span className="text-xs text-red-300">({score}x)</span>
+                                    <span className="text-xs text-danger">({score}x)</span>
                                 </div>
                             )) : <p className="text-sm" style={{color: colors.textMuted}}>Your team is rock solid!</p>}
                         </div>
@@ -1188,7 +1163,7 @@ const AllTeamsView = ({teams, onEdit, requestDelete, onToggleFavorite, searchTer
                     </div>
                     <div className="flex items-center gap-2 mt-auto pt-2">
                         <button onClick={() => onEdit(team)} className="w-full bg-primary hover:bg-purple-500/30 text-white font-bold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-[1.03] active:scale-[0.98]">Edit</button>
-                        <button onClick={() => requestDelete(team.id, team.name)} className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"><TrashIcon /></button>
+                        <button onClick={() => requestDelete(team.id, team.name)} className="p-2 bg-danger hover:opacity-90 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"><TrashIcon /></button>
                     </div>
                 </div>
             )) : <p className="col-span-full text-center py-8" style={{color: colors.textMuted}}>No teams found.</p>}
@@ -1215,7 +1190,7 @@ const PokedexView = ({
              <div className="lg:col-span-9">
                  <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{backgroundColor: colors.card}}>
                      <div className="mb-4">
-                         <h2 className="text-lg md:text-xl font-bold mb-4" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Pokédex</h2>
+                         <h2 className="text-xl md:text-2xl font-bold mb-4" style={{color: colors.text}}>Pokédex</h2>
                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                              <input type="text" placeholder="Search Pokémon..." value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}/>
                              <select value={selectedGeneration} onChange={e => setSelectedGeneration(e.target.value)} className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize" style={{backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text}}>
@@ -1255,9 +1230,11 @@ const PokedexView = ({
                                  </div>
                                  {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{borderColor: colors.primary}}></div></div>}
                                  {displayedPokemons.length === 0 && !isInitialLoading && (
-                                     <p className="text-center py-8" style={{color: colors.textMuted}}>
-                                         {showOnlyFavorites ? 'No favorite Pokémon found. Add some favorites!' : 'No Pokémon found.'}
-                                     </p>
+                                     <EmptyState
+                                         compact
+                                         title={showOnlyFavorites ? 'No favorites match' : 'Nothing here'}
+                                         message={showOnlyFavorites ? 'Try clearing filters or favoriting more Pokémon.' : 'Try a different search or filter combination.'}
+                                     />
                                  )}
                              </div>
                          </>)}
@@ -1267,10 +1244,10 @@ const PokedexView = ({
 
              <div className="lg:col-span-3 space-y-8">
                  <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
-                     <h3 className="text-base md:text-lg font-bold mb-3 text-center" style={{fontFamily: "'Press Start 2P'", color: colors.text}}>Filter by Type</h3>
+                     <h3 className="text-sm md:text-base font-bold mb-3 text-center uppercase tracking-wider" style={{color: colors.text}}>Filter by Type</h3>
                      <div className="grid grid-cols-5 lg:grid-cols-5 gap-1.5">
                          {Object.keys(typeColors).map(type => (
-                             <button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:opacity-75 ${selectedTypes.has(type) ? 'ring-2 ring-purple' : ''}`} style={{backgroundColor: colors.cardLight}} title={type}>
+                             <button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:opacity-75 ${selectedTypes.has(type) ? 'ring-2 ring-primary' : ''}`} style={{backgroundColor: colors.cardLight}} title={type}>
                                  <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
                              </button>
                          ))}
@@ -1321,7 +1298,7 @@ const FavoritePokemonsView = ({
             <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
                     <div>
-                        <h2 className="text-lg md:text-xl font-bold" style={{ fontFamily: "'Press Start 2P'", color: colors.text }}>
+                        <h2 className="text-xl md:text-2xl font-bold tracking-tight" style={{ color: colors.text }}>
                             Favorite Pokémon
                         </h2>
                         <p className="text-sm mt-1" style={{ color: colors.textMuted }}>
@@ -1394,70 +1371,6 @@ const FavoritePokemonsView = ({
 // ============================================
 // HOME VIEW 
 // ============================================
-
-// Dicas do dia - Fun facts sobre Pokémon
-const POKEMON_TIPS = [
-    "Did you know Pikachu was inspired by a squirrel, not a mouse? The name comes from 'pika' (sparkle) + 'chu' (squeak sound in Japan)!",
-    "Ditto can transform into any Pokémon, but its eyes remain the same - a detail that helps identify it!",
-    "Magikarp can leap over mountains with its Splash, but the move still deals no damage... ironic, right?",
-    "Slowpoke takes 5 seconds to feel pain. If its tail is bitten, it won't notice until much later!",
-    "Cubone wears the skull of its deceased mother as a helmet. No one has ever seen its true face.",
-    "Gengar might be Clefable's shadow - they have almost identical silhouettes!",
-    "Vaporeon is composed of molecules so similar to water that it can become invisible when submerged.",
-    "Alakazam has an IQ of 5000, making it smarter than any supercomputer!",
-    "Shedinja has only 1 HP, but its Wonder Guard ability makes it immune to non-super effective moves.",
-    "Wobbuffet hides its true body - the black tail with eyes is the real Pokémon!",
-    "Arcanine was originally planned to be a legendary Pokémon, which is why it's called the 'Legendary Pokémon' in the Pokédex.",
-    "Rhydon was the first Pokémon ever created, not Bulbasaur!",
-    "Espeon and Umbreon represent the sun and the moon, evolving according to the time of day.",
-    "Mewtwo was cloned from Mew, but ended up becoming much more powerful than the original.",
-    "Tyranitar can bring down whole mountains and change the landscape when it's furious!",
-    "Eevee has the most possible evolutions of any Pokémon, currently totaling eight different forms!",
-    "Porygon is the first artificial Pokémon, created entirely out of programming code.",
-    "Dragonite can circle the globe in just 16 hours, flying at roughly 1,500 mph.",
-    "Lapras is known for its high intelligence and can understand human speech.",
-    "Snorlax's stomach is so strong it can digest rotten food without getting sick.",
-    "Farfetch'd carries a leek stalk as a weapon, but it will also eat it if it gets hungry enough!",
-    "Psyduck suffers from constant headaches. When the pain becomes too intense, it unleashes powerful psychic energy.",
-    "Meowth is the only Pokémon in the anime that taught itself to speak human language to impress a female Meowth.",
-    "Machamp can throw 500 punches in a single second with its four arms!",
-    "Gyarados is known as the Atrocious Pokémon because of its violent temper, often destroying entire cities in a rage.",
-    "Jigglypuff's song is so soothing that no one can stay awake to hear the whole thing.",
-    "Haunter can lick you with its gaseous tongue to steal your life force. Spooky!",
-    "Kangaskhan is never seen without its baby in its pouch until the baby is fully grown.",
-    "Mr. Mime creates invisible walls by vibrating its fingertips at high speeds.",
-    "Scyther moves so fast that it looks like there are several of them at once, creating a ninja-like illusion.",
-    "Electabuzz loves to feed on electricity and can often be found near power plants causing blackouts.",
-    "Magmar's body temperature is nearly 2,200 degrees Fahrenheit, making it a walking fireball.",
-    "Tauros whips itself with its three tails to get pumped up for battle.",
-    "Ditto cannot copy a Pokémon's HP stat, which is why it often transforms into high-HP Pokémon in competitive play.",
-    "Eevee's genetic code is unstable, which is why it can evolve into so many different types.",
-    "Kabutops was an ancient predator that swam in the oceans 300 million years ago.",
-    "Aerodactyl was resurrected from DNA found in amber, much like the dinosaurs in Jurassic Park!",
-    "Articuno's wings are said to be made of ice, and it can create blizzards just by flapping them.",
-    "Zapdos is capable of controlling thunderstorms and gains power when struck by lightning.",
-    "Moltres heals its wounds by dipping itself into the magma of an active volcano.",
-    "Dratini was once considered a myth until a fishing colony found one underwater.",
-    "Mew contains the DNA of every single Pokémon, making it the ancestor of all Pokémon.",
-    "Chikorita uses the leaf on its head to check the temperature and humidity of the air.",
-    "Cyndaquil flares the flames on its back when it is angry or startled.",
-    "Totodile has a habit of biting anything it sees, including its trainer!",
-    "Sentret stands on its tail to scout for danger from a distance.",
-    "Hoothoot has an internal organ that senses the earth's rotation, keeping perfect time.",
-    "Ledyba communicates with others using scents that change depending on its feelings.",
-    "Spinarak spins a web that is strong enough to trap small prey, and it waits patiently for days.",
-    "Pichu is not yet skilled at storing electricity and may accidentally discharge it when startled.",
-    "Cleffa is often seen dancing in a ring on nights with a full moon.",
-    "Igglybuff has a very soft and elastic body, allowing it to bounce like a ball.",
-    "Togepi stores happiness inside its shell and shares it with those who treat it well.",
-    "Natu cannot fly yet, so it hops around to get from place to place.",
-    "Mareep's wool grows continuously and stores static electricity. Touching it can give you a shock!",
-    "Bellossom is the only Pokémon that evolves from a dual-type (Gloom) into a single-type.",
-    "Marill's tail functions like a float, keeping it above water even in strong currents.",
-    "Sudowoodo pretends to be a tree to avoid being attacked, but it hates water!"
-];
-
-const HomeIcon = () => (<svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>);
 
 const HomeView = ({
     colors,
@@ -1706,6 +1619,79 @@ const HomeView = ({
                 />
             </section> 
 
+            {/* primary CTA: continue your last team — the home page's main job */}
+            {lastEditedTeam ? (
+                <section
+                    className="rounded-2xl p-6 md:p-8 relative overflow-hidden group cursor-pointer transition-all duration-200 hover:shadow-xl bg-surface focus-within:ring-2 focus-within:ring-primary"
+                    style={{
+                        background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
+                        border: `2px solid ${colors.primary}55`,
+                    }}
+                    onClick={() => handleEditTeam(lastEditedTeam)}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleEditTeam(lastEditedTeam); } }}
+                    aria-label={`Continue editing team ${lastEditedTeam.name}`}
+                >
+                    <div className="flex flex-col md:flex-row md:items-center gap-6">
+                        <div className="flex-1 min-w-0">
+                            <p className="text-xs font-bold uppercase tracking-wider mb-2" style={{ color: colors.primary }}>
+                                Pick up where you left off
+                            </p>
+                            <h2 className="text-2xl md:text-3xl font-bold truncate mb-3" style={{ color: colors.text }}>
+                                {lastEditedTeam.name}
+                            </h2>
+                            <div className="flex -space-x-2 mb-4">
+                                {lastEditedTeam.pokemons.slice(0, 6).map((p, i) => (
+                                    <img
+                                        key={i}
+                                        src={p.sprite || POKEBALL_PLACEHOLDER_URL}
+                                        alt={p.name}
+                                        className="w-12 h-12 md:w-14 md:h-14 rounded-full border-2"
+                                        style={{ borderColor: colors.card, backgroundColor: colors.cardLight }}
+                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    />
+                                ))}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); handleEditTeam(lastEditedTeam); }}
+                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                                style={{ backgroundColor: colors.primary }}
+                                aria-label={`Continue editing ${lastEditedTeam.name}`}
+                            >
+                                <EditIcon />
+                                Continue editing
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            ) : (
+                <section
+                    className="rounded-2xl p-6 md:p-8 relative overflow-hidden text-center"
+                    style={{
+                        background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
+                        border: `2px solid ${colors.primary}55`,
+                    }}
+                >
+                    <h2 className="text-2xl md:text-3xl font-bold mb-2" style={{ color: colors.text }}>
+                        Build your first team
+                    </h2>
+                    <p className="text-sm md:text-base mb-5" style={{ color: colors.textMuted }}>
+                        Start your journey — pick six Pokémon, set their movesets, and dominate.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/builder')}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                        style={{ backgroundColor: colors.primary }}
+                    >
+                        <SwordsIcon />
+                        Create your first team
+                    </button>
+                </section>
+            )}
+
             {/* main grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 
@@ -1715,13 +1701,8 @@ const HomeView = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* daily mon */}
                     {isDailyPokemonLoading ? (
-                        <section 
-                            className="rounded-2xl w-full p-6 relative overflow-hidden animate-pulse"
-                            style={{ 
-                                backgroundColor: colors.card,
-                                borderLeft: `4px solid ${colors.primary}`,
-                                boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                            }}
+                        <section
+                            className="rounded-2xl w-full p-6 relative overflow-hidden animate-pulse elevation-1 bg-surface"
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex-1">
@@ -1741,20 +1722,15 @@ const HomeView = ({
                             </div>
                         </section>
                     ) : pokemonOfTheDay && (
-                        <section 
-                            className="rounded-2xl w-full p-6 relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.01] hover:shadow-xl"
-                            style={{ 
-                                backgroundColor: colors.card,
-                                borderLeft: `4px solid ${typeColors[pokemonOfTheDay.types?.[0]] || colors.primary}`,
-                                boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                            }}
+                        <section
+                            className="rounded-2xl w-full p-6 relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.01] elevation-1 hover:shadow-elevation-2 bg-surface"
                             onClick={() => showDetails(pokemonOfTheDay)}
                         >
                             <div className="flex items-center justify-between">
                                 <div>
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ backgroundColor: colors.primary, color: 'white' }}>
-                                            ⭐ DAILY POKÉMON
+                                            DAILY POKÉMON
                                         </span>
                                     </div>
                                     <h2 className="text-2xl md:text-3xl font-bold capitalize mb-1" style={{ color: colors.text }}>
@@ -1795,16 +1771,11 @@ const HomeView = ({
                     )}
 
                     {/* daily tip */}
-                    <section 
-                        className="rounded-2xl w-full p-7"
-                        style={{ 
-                            backgroundColor: colors.card,
-                            borderLeft: `4px solid ${colors.primary}`,
-                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                        }}
+                    <section
+                        className="rounded-2xl w-full p-7 elevation-1 bg-surface"
                     >
                         <h3 className="text-lg font-bold mb-3 flex items-center gap-2" style={{ color: colors.text }}>
-                            💡 Did you know?
+                            Did you know?
                         </h3>
                         <p className="text-normal leading-relaxed" style={{ color: colors.textMuted }}>
                             {tipOfTheDay}
@@ -1844,16 +1815,12 @@ const HomeView = ({
                     </section>
 
                     {/* favorites */}
-                    <section 
-                        className="rounded-2xl p-6" 
-                        style={{ 
-                            backgroundColor: colors.card,
-                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                        }}
+                    <section
+                        className="rounded-2xl p-6 elevation-1 bg-surface"
                     >
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold flex items-center gap-2" style={{ color: colors.text }}>
-                                ⭐ Your favorites
+                                Your favorites
                             </h3>
                             {featuredFavorites.length > 0 && (
                                 <button 
@@ -1887,22 +1854,12 @@ const HomeView = ({
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12">
-                                <div className="text-6xl mb-3 opacity-30">⭐</div>
-                                <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
-                                    No favorite Pokémon yet!
-                                </p>
-                                <p className="text-xs mb-4" style={{ color: colors.textMuted }}>
-                                    Click the star icon on any Pokémon to add them here
-                                </p>
-                                <button
-                                    onClick={() => navigate('/pokedex')}
-                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:scale-105"
-                                    style={{ backgroundColor: colors.primary, color: 'white' }}
-                                >
-                                    Browse Pokédex
-                                </button>
-                            </div>
+                            <EmptyState
+                                compact
+                                title="No favorite Pokémon yet!"
+                                message="Tap the star on any Pokémon card to pin it here."
+                                action={{ label: 'Browse Pokédex', onClick: () => navigate('/pokedex') }}
+                            />
                         )}
                     </section>
                 </div>
@@ -1911,16 +1868,11 @@ const HomeView = ({
                 <div className="space-y-6">
                     
                     {/* trainer stats */}
-                    <section 
-                        className="rounded-2xl p-6"
-                        style={{ 
-                            backgroundColor: colors.card,
-                            background: `linear-gradient(135deg, ${colors.card} 0%, ${colors.primary}15 100%)`,
-                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                        }}
+                    <section
+                        className="rounded-2xl p-6 elevation-1 bg-surface"
                     >
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
-                            🎖️ Trainer Stats
+                            Trainer Stats
                         </h3>
                         {stats.totalTeams > 0 ? (
                             <div className="grid grid-cols-3 gap-3">
@@ -1945,81 +1897,23 @@ const HomeView = ({
                                 )}
                             </div>
                         ) : (
-                            <div className="text-center py-8">
-                                <div className="text-5xl mb-3 opacity-30">🎖️</div>
-                                <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
-                                    No teams yet!
-                                </p>
-                                <p className="text-xs" style={{ color: colors.textMuted }}>
-                                    Create your first team to start tracking stats
-                                </p>
-                            </div>
+                            <EmptyState
+                                compact
+                                title="No teams yet!"
+                                message="Create your first team to start tracking stats."
+                                action={{ label: 'Build a team', onClick: () => navigate('/builder') }}
+                            />
                         )}
                     </section>
 
-                    {/* last edited team */}
-                    <section 
-                        className="rounded-2xl p-6" 
-                        style={{ 
-                            backgroundColor: colors.card,
-                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                        }}
-                    >
-                        <h3 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: colors.text }}>
-                            ♟️ Your last team
-                        </h3>
-                        {lastEditedTeam ? (
-                            <div 
-                                className="p-4 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
-                                style={{ backgroundColor: colors.cardLight }}
-                                onClick={() => handleEditTeam(lastEditedTeam)}
-                            >
-                                <p className="font-bold truncate mb-2" style={{ color: colors.text }}>
-                                    {lastEditedTeam.name}
-                                </p>
-                                <div className="flex -space-x-2">
-                                    {lastEditedTeam.pokemons.slice(0, 6).map((p, i) => (
-                                        <img 
-                                            key={i}
-                                            src={p.sprite || POKEBALL_PLACEHOLDER_URL}
-                                            alt={p.name}
-                                            className="w-10 h-10 rounded-full border-2"
-                                            style={{ borderColor: colors.cardLight, backgroundColor: colors.card }}
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                        />
-                                    ))}
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="text-center py-8">
-                                <div className="text-5xl mb-3 opacity-30">♟️</div>
-                                <p className="text-sm mb-2" style={{ color: colors.textMuted }}>
-                                    No teams created yet!
-                                </p>
-                                <p className="text-xs mb-4" style={{ color: colors.textMuted }}>
-                                    Build your first dream team
-                                </p>
-                                <button
-                                    onClick={() => navigate('/builder')}
-                                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all hover:scale-105"
-                                    style={{ backgroundColor: colors.primary, color: 'white' }}
-                                >
-                                    Create Team
-                                </button>
-                            </div>
-                        )}
-                    </section>
+                    {/* last edited team — promoted to hero CTA at top of page */}
 
                     {/* explore by type */}
-                    <section 
-                        className="rounded-2xl p-4" 
-                        style={{ 
-                            backgroundColor: colors.card,
-                            boxShadow: theme === 'light' ? '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' : 'none'
-                        }}
+                    <section
+                        className="rounded-2xl p-4 elevation-1 bg-surface"
                     >
                         <h3 className="text-sm font-bold mb-3 flex items-center gap-2" style={{ color: colors.text }}>
-                            🔍 Explore by types!
+                            Explore by types
                         </h3>
                         <div className="grid grid-cols-9 gap-1.5">
                             {Object.entries(typeColors).map(([type, color]) => (
@@ -2045,68 +1939,7 @@ const HomeView = ({
     );
 };
 
-// Pokemon Random Generator Data
-const GENERATION_RANGES = {
-    'all': { start: 1, end: 1025 },
-    'generation-i': { start: 1, end: 151 },
-    'generation-ii': { start: 152, end: 251 },
-    'generation-iii': { start: 252, end: 386 },
-    'generation-iv': { start: 387, end: 493 },
-    'generation-v': { start: 494, end: 649 },
-    'generation-vi': { start: 650, end: 721 },
-    'generation-vii': { start: 722, end: 809 },
-    'generation-viii': { start: 810, end: 905 },
-    'generation-ix': { start: 906, end: 1025 }
-};
-
-const LEGENDARY_IDS = new Set([
-    // Gen 1
-    144, 145, 146, 150, 151,
-    // Gen 2
-    243, 244, 245, 249, 250, 251,
-    // Gen 3
-    377, 378, 379, 380, 381, 382, 383, 384, 385, 386,
-    // Gen 4
-    480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493,
-    // Gen 5
-    494, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649,
-    // Gen 6
-    716, 717, 718, 719, 720, 721,
-    // Gen 7
-    785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809,
-    // Gen 8
-    888, 889, 890, 891, 892, 893, 894, 895, 896, 897, 898, 905,
-    // Gen 9
-    1001, 1002, 1003, 1004, 1007, 1008, 1009, 1010, 1014, 1015, 1016, 1017, 1024, 1025
-]);
-
-const NATURES_LIST = [
-    { name: 'Hardy', plus: null, minus: null },
-    { name: 'Lonely', plus: 'Attack', minus: 'Defense' },
-    { name: 'Brave', plus: 'Attack', minus: 'Speed' },
-    { name: 'Adamant', plus: 'Attack', minus: 'Sp. Atk' },
-    { name: 'Naughty', plus: 'Attack', minus: 'Sp. Def' },
-    { name: 'Bold', plus: 'Defense', minus: 'Attack' },
-    { name: 'Docile', plus: null, minus: null },
-    { name: 'Relaxed', plus: 'Defense', minus: 'Speed' },
-    { name: 'Impish', plus: 'Defense', minus: 'Sp. Atk' },
-    { name: 'Lax', plus: 'Defense', minus: 'Sp. Def' },
-    { name: 'Timid', plus: 'Speed', minus: 'Attack' },
-    { name: 'Hasty', plus: 'Speed', minus: 'Defense' },
-    { name: 'Serious', plus: null, minus: null },
-    { name: 'Jolly', plus: 'Speed', minus: 'Sp. Atk' },
-    { name: 'Naive', plus: 'Speed', minus: 'Sp. Def' },
-    { name: 'Modest', plus: 'Sp. Atk', minus: 'Attack' },
-    { name: 'Mild', plus: 'Sp. Atk', minus: 'Defense' },
-    { name: 'Quiet', plus: 'Sp. Atk', minus: 'Speed' },
-    { name: 'Bashful', plus: null, minus: null },
-    { name: 'Rash', plus: 'Sp. Atk', minus: 'Sp. Def' },
-    { name: 'Calm', plus: 'Sp. Def', minus: 'Attack' },
-    { name: 'Gentle', plus: 'Sp. Def', minus: 'Defense' },
-    { name: 'Sassy', plus: 'Sp. Def', minus: 'Speed' },
-    { name: 'Careful', plus: 'Sp. Def', minus: 'Sp. Atk' },
-    { name: 'Quirky', plus: null, minus: null }
-];
+// Pokemon Random Generator Data — moved to ./constants/pokemon.js
 
 const RandomGeneratorView = ({ colors, generations }) => {
     const [generatedPokemon, setGeneratedPokemon] = useState([]);
@@ -2654,7 +2487,7 @@ const RandomGeneratorView = ({ colors, generations }) => {
         <main className="space-y-6">
             {/* Filters Section */}
             <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
-                <h2 className="text-lg md:text-xl font-bold mb-4" style={{ fontFamily: "'Press Start 2P'", color: colors.text }}>
+                <h2 className="text-xl md:text-2xl font-bold mb-4" style={{ color: colors.text }}>
                     Random Pokémon Generator
                 </h2>
                 
@@ -2772,9 +2605,11 @@ const RandomGeneratorView = ({ colors, generations }) => {
                         ))}
                     </div>
                 ) : (
-                    <p className="text-center py-8" style={{ color: colors.textMuted }}>
-                        No Pokémon found with the selected filters. Try adjusting your criteria.
-                    </p>
+                    <EmptyState
+                        compact
+                        title="Nothing rolled"
+                        message="No Pokémon match the selected filters. Try loosening them."
+                    />
                 )}
             </section>
         </main>
@@ -3261,6 +3096,19 @@ useEffect(() => {
         setCurrentTeam(prev => prev.filter(p => p.instanceId !== instanceId));
     }, []);
 
+    // Reorder a team slot. Pure index-based swap so UI drag and keyboard
+    // controls share the same code path.
+    const handleReorderTeam = useCallback((fromIndex, toIndex) => {
+        setCurrentTeam(prev => {
+            if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return prev;
+            if (fromIndex >= prev.length || toIndex >= prev.length) return prev;
+            const next = prev.slice();
+            const [moved] = next.splice(fromIndex, 1);
+            next.splice(toIndex, 0, moved);
+            return next;
+        });
+    }, []);
+
     const handleClearTeam = useCallback(() => {
         setCurrentTeam([]);
         setTeamName('');
@@ -3471,6 +3319,7 @@ useEffect(() => {
         setTheme(prevTheme => {
             const newTheme = prevTheme === 'dark' ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
             return newTheme;
         });
     }, []);
@@ -3489,6 +3338,7 @@ useEffect(() => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme) {
             setTheme(savedTheme); 
+            applyTheme(savedTheme);
         }
         
         const savedGreetingPokemon = localStorage.getItem('greetingPokemon');
@@ -3555,6 +3405,7 @@ useEffect(() => {
                         teamName={teamName}
                         setTeamName={setTeamName}
                         handleRemoveFromTeam={handleRemoveFromTeam}
+                        handleReorderTeam={handleReorderTeam}
                         handleSaveTeam={handleSaveTeam}
                         editingTeamId={editingTeamId}
                         handleClearTeam={handleClearTeam}
@@ -3629,7 +3480,7 @@ useEffect(() => {
             colors={colors}
         />
         
-        <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-green-600' : toast.type === 'warning' ? 'bg-yellow-600' : toast.type === 'info' ? 'bg-blue-600' : 'bg-red-600'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
+        <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out ${toast.type === 'success' ? 'bg-success' : toast.type === 'warning' ? 'bg-warning' : toast.type === 'info' ? 'bg-info' : 'bg-danger'}`}>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}{toast.message}</div> ))}</div>
         <div className="flex min-h-screen">
             <aside 
                 className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} 
@@ -3640,8 +3491,8 @@ useEffect(() => {
             >
                 <div className="flex flex-col h-full">
                   <div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-                    <h2 className={`text-xl font-bold transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{fontFamily: "'Press Start 2P'", color: colors.primary}}>Menu</h2>
-                    <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="p-1 rounded-lg hidden lg:block transition-colors hover:opacity-80" style={{color: colors.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button>
+                    <h2 className={`text-base font-bold uppercase tracking-wider transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{color: colors.primary}}>Menu</h2>
+                    <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} type="button" aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-expanded={!isSidebarCollapsed} className="p-1 rounded-lg hidden lg:block transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{color: colors.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button>
                   </div>
                   <nav className="px-4 flex-grow">
                     <ul>
@@ -3694,7 +3545,10 @@ useEffect(() => {
                 >
                 <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    className="lg:hidden p-2 rounded-md"
+                    type="button"
+                    aria-label={isSidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                    aria-expanded={isSidebarOpen}
+                    className="lg:hidden p-2 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     style={{ backgroundColor: colors.cardLight, color: colors.text }}
                 >
                     {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
@@ -3704,8 +3558,8 @@ useEffect(() => {
                     <div className="flex items-center justify-center gap-2">
                         <span className="text-xl sm:text-2xl lg:text-3xl">{pageInfo.icon}</span>
                         <h1
-                        className="text-xs sm:text-base lg:text-2xl font-bold tracking-wider truncate"
-                        style={{ fontFamily: "'Press Start 2P'", color: colors.primary }}
+                        className="font-display text-[10px] sm:text-sm lg:text-xl tracking-wider truncate"
+                        style={{ color: colors.primary }}
                         >
                         {pageInfo.title}
                         </h1>
@@ -3719,7 +3573,7 @@ useEffect(() => {
                 </div>
 
                 <div className="flex items-center gap-2 lg:mr-4 sm:mr-0">
-                    <button onClick={toggleTheme} className="p-2 rounded-md" style={{ backgroundColor: colors.cardLight, color: colors.text }}>
+                    <button onClick={toggleTheme} type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} className="p-2 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{ backgroundColor: colors.cardLight, color: colors.text }}>
                         {theme === 'dark' ? <SunIcon color={colors.text} /> : <MoonIcon color={colors.text} />}
                     </button>
                 </div>

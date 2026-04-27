@@ -1,3 +1,156 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   THEME TOKENS
+   Single source of truth for runtime colors. Mirrored in
+   src/constants/theme.js (THEMES) so legacy components that
+   still receive a `colors` prop keep working.
+
+   Switch theme by calling applyTheme('dark'|'light').
+   ============================================================ */
+
+:root,
+:root[data-theme='dark'] {
+    --color-primary: #7d65e1;
+    --color-primary-soft: rgba(125, 101, 225, 0.18);
+    --color-accent: #FBBF24;          /* brand gold — favorites, shiny, achievements */
+    --color-accent-soft: rgba(251, 191, 36, 0.18);
+    --color-bg: #111827;
+    --color-surface: #1F2937;
+    --color-surface-raised: #374151;
+    --color-fg: #FFFFFF;
+    --color-muted: #9CA3AF;
+    --color-border: #374151;
+    --color-success: #34D399;
+    --color-danger: #F87171;
+    --color-warning: #FBBF24;
+    --color-info: #60A5FA;
+
+    /* Elevation — single source for shadows. Light/dark each set their own. */
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.35);
+    --elevation-2: 0 8px 24px -8px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3);
+    --elevation-3: 0 20px 40px -12px rgba(0,0,0,0.65);
+}
+
+:root[data-theme='light'] {
+    --color-primary: #6353b3;
+    --color-primary-soft: rgba(99, 83, 179, 0.14);
+    --color-accent: #B45309;
+    --color-accent-soft: rgba(180, 83, 9, 0.12);
+    --color-bg: #E8EAF0;
+    --color-surface: #FFFFFF;
+    --color-surface-raised: #F3F4F6;
+    --color-fg: #111827;
+    --color-muted: #4B5563;
+    --color-border: #E5E7EB;
+    --color-success: #047857;
+    --color-danger: #B91C1C;
+    --color-warning: #B45309;
+    --color-info: #1D4ED8;
+
+    --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
+    --elevation-2: 0 4px 12px -4px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
+    --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
+}
+
+/* Typography stack — display reserved for logo + a single hero eyebrow.
+   Body is Inter (loaded in index.html), with system fallbacks. */
+:root {
+    --font-display: 'Press Start 2P', monospace;
+    --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+html, body {
+    font-family: var(--font-body);
+    font-feature-settings: 'cv11', 'ss01';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+}
+
+/* Global focus-visible ring — keyboard users always get a clear focus state.
+   Mouse users keep clean visuals via :focus-visible (WCAG 2.4.7). */
+*:focus {
+    outline: none;
+}
+*:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Theme-aware scrollbar — replaces the per-element CSS variable
+   plumbing that used to live on every scrollable container. */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 12px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: var(--color-surface);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary);
+    border-radius: 20px;
+    border: 3px solid var(--color-surface);
+}
+
+.image-pixelated {
+    image-rendering: pixelated;
+}
+
+/* Editor modal shiny toggle — moved out of the inline App.jsx style block. */
+input[type='checkbox']:checked + div + div {
+    transform: translateX(100%);
+    background-color: var(--color-primary);
+}
+
+/* Glass card effect (HomeView hero) */
+.glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Elevation utilities — replace ad-hoc inline ternary shadows.
+   Use class="elevation-1" instead of inline style={{ boxShadow: theme === 'light' ? ... }}. */
+.elevation-1 { box-shadow: var(--elevation-1); }
+.elevation-2 { box-shadow: var(--elevation-2); }
+.elevation-3 { box-shadow: var(--elevation-3); }
+
+/* Sprite fade-in — wraps Pokémon sprite <img>s so they don't pop in
+   unstyled. Combine with width/height + object-contain on the <img>. */
+@keyframes sprite-fade-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.sprite-fade {
+    animation: sprite-fade-in 220ms ease-out;
+}
+.sprite-img {
+    /* prevent CLS — caller still provides width/height utilities */
+    object-fit: contain;
+    image-rendering: auto;
+}
+
+/* Brand utility — gold accent for shiny / favorite / achievement chips. */
+.text-accent { color: var(--color-accent); }
+.bg-accent { background-color: var(--color-accent); }
+.bg-accent-soft { background-color: var(--color-accent-soft); }
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
