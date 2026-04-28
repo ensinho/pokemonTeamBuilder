@@ -95,6 +95,13 @@ export const SavedTeamsIcon = () => (
     </svg>
 );
 
+export const AccountIcon = ({ color = 'currentColor', className = 'w-6 h-6 shrink-0' }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke={color}>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A11.96 11.96 0 0 1 12 15c2.485 0 4.79.755 6.879 2.047M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+        <circle cx="12" cy="12" r="9" strokeWidth={2} />
+    </svg>
+);
+
 export const CollapseLeftIcon = () => (
     <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />

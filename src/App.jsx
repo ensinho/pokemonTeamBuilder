@@ -1,7 +1,17 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import {
+    getAuth,
+    signInAnonymously,
+    onAuthStateChanged,
+    signInWithCustomToken,
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    EmailAuthProvider,
+    linkWithCredential,
+    signOut,
+} from 'firebase/auth';
 import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit, startAfter, where, getDocs } from 'firebase/firestore';
 
 // Extracted modules
@@ -16,7 +26,7 @@ import {
     CollapseLeftIcon, CollapseRightIcon, ShareIcon, HeartIcon,
     SuccessToastIcon, ErrorToastIcon, WarningToastIcon, SunIcon, MoonIcon,
     SwordsIcon, EditIcon, SparklesIcon, ShowdownIcon, DiceIcon, FlowerIcon,
-    HomeIcon, RefreshIcon, ArrowUpDownIcon, ChartColumnIcon, HouseIcon
+    HomeIcon, RefreshIcon, ArrowUpDownIcon, ChartColumnIcon, HouseIcon, AccountIcon
 } from './components/icons';
 import { TypeBadge } from './components/TypeBadge';
 import { StatBar } from './components/StatBar';
@@ -27,6 +37,8 @@ import { Sprite } from './components/Sprite';
 import { EmptyState } from './components/EmptyState';
 import { TeamIdentitySummary } from './components/TeamIdentitySummary';
 import { FooterFeedback } from './components/FooterFeedback';
+import { AuthModal } from './components/AuthModal';
+import { SyncPromptModal } from './components/SyncPromptModal';
 import { useModalA11y } from './hooks/useModalA11y';
 
 // Patch Notes Modal Component
@@ -1855,7 +1867,7 @@ const HomeView = ({
                     </section>
                 ) : (
                     <section
-                        className="lg:col-span-7 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[220px] elevation-1 bg-surface"
+                        className="lg:col-span-6 rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[220px] elevation-1 bg-surface"
                         style={{
                             background: `linear-gradient(135deg, ${colors.primary}22 0%, ${colors.card} 70%)`,
                             border: `1px solid ${colors.primary}55`,
@@ -2863,7 +2875,15 @@ export default function App() {
     // Firebase States
     const [userId, setUserId] = useState(null);
     const [db, setDb] = useState(null);
+    const [auth, setAuth] = useState(null);
     const [isAuthReady, setIsAuthReady] = useState(false);
+    const [isAnonymous, setIsAnonymous] = useState(true);
+    const [userEmail, setUserEmail] = useState(null);
+
+    // Auth UI state
+    const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
+    const [showSyncPrompt, setShowSyncPrompt] = useState(false);
+    const syncPromptShownRef = useRef(false);
     
     // --- ESTADOS REVISADOS PARA BUSCA NO FIRESTORE ---
     const [pokemons, setPokemons] = useState([]); // Lista de pokémons visíveis
@@ -3177,22 +3197,27 @@ useEffect(() => {
     useEffect(() => {
         try {
             const app = initializeApp(firebaseConfig);
-            const auth = getAuth(app);
+            const authInstance = getAuth(app);
+            setAuth(authInstance);
             setDb(getFirestore(app));
 
-            const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            const unsubscribe = onAuthStateChanged(authInstance, async (user) => {
                 if (user) {
                     setUserId(user.uid);
+                    setIsAnonymous(!!user.isAnonymous);
+                    setUserEmail(user.email || null);
                     setIsAuthReady(true);
                 } else {
                     try {
                         const token = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
                         if (token) {
-                            await signInWithCustomToken(auth, token);
+                            await signInWithCustomToken(authInstance, token);
                         } else {
-                            await signInAnonymously(auth);
+                            await signInAnonymously(authInstance);
                         }
-                        setUserId(auth.currentUser.uid);
+                        setUserId(authInstance.currentUser.uid);
+                        setIsAnonymous(!!authInstance.currentUser.isAnonymous);
+                        setUserEmail(authInstance.currentUser.email || null);
                     } catch (error) {
                         showToast("Authentication failed. Please refresh.", "error");
                     } finally {
@@ -3555,6 +3580,120 @@ useEffect(() => {
             return newTheme;
         });
     }, []);
+
+    // ---------------------------------------------------------------
+    // Auth — sign up / sign in / sign out helpers.
+    // Sign up uses linkWithCredential when the user is currently
+    // anonymous so existing teams/favorites are preserved on the
+    // same uid. Otherwise it falls back to createUserWithEmailAndPassword.
+    // Sign out re-creates an anonymous session so the app keeps working.
+    // ---------------------------------------------------------------
+    const handleSignUp = useCallback(async (email, password) => {
+        if (!auth) throw new Error('Auth not ready');
+        const current = auth.currentUser;
+        if (current && current.isAnonymous) {
+            const credential = EmailAuthProvider.credential(email, password);
+            const result = await linkWithCredential(current, credential);
+            setIsAnonymous(false);
+            setUserEmail(result.user.email || email);
+            showToast(`Account created — your data is now synced as ${result.user.email || email}.`, 'success');
+        } else {
+            const result = await createUserWithEmailAndPassword(auth, email, password);
+            setIsAnonymous(false);
+            setUserEmail(result.user.email || email);
+            showToast(`Welcome, ${result.user.email || email}!`, 'success');
+        }
+        setShowSyncPrompt(false);
+        syncPromptShownRef.current = true;
+    }, [auth, showToast]);
+
+    const handleSignIn = useCallback(async (email, password) => {
+        if (!auth) throw new Error('Auth not ready');
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        setIsAnonymous(false);
+        setUserEmail(result.user.email || email);
+        showToast(`Signed in as ${result.user.email || email}.`, 'success');
+        setShowSyncPrompt(false);
+        syncPromptShownRef.current = true;
+    }, [auth, showToast]);
+
+    const handleSignOut = useCallback(async () => {
+        if (!auth) return;
+        try {
+            await signOut(auth);
+            // onAuthStateChanged will fire with null and re-sign-in anonymously.
+            showToast('Signed out.', 'info');
+        } catch (e) {
+            showToast('Could not sign out. Try again.', 'error');
+        }
+    }, [auth, showToast]);
+
+    // ---------------------------------------------------------------
+    // Theme preference sync — persists the user's theme choice on the
+    // profile doc so it follows them across devices once signed in.
+    // ---------------------------------------------------------------
+    const themeHydratedFromProfile = useRef(false);
+
+    // Load preferences from Firestore when the user becomes known.
+    useEffect(() => {
+        if (!db || !userId) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                const prefRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'preferences');
+                const snap = await getDoc(prefRef);
+                if (cancelled) return;
+                if (snap.exists()) {
+                    const data = snap.data();
+                    if (data.theme && THEMES[data.theme]) {
+                        setTheme(data.theme);
+                        applyTheme(data.theme);
+                        localStorage.setItem('theme', data.theme);
+                    }
+                }
+            } catch (e) {
+                // Non-fatal: keep local theme.
+            } finally {
+                themeHydratedFromProfile.current = true;
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [db, userId]);
+
+    // Persist theme to Firestore whenever it changes (after hydration).
+    useEffect(() => {
+        if (!db || !userId || !themeHydratedFromProfile.current) return;
+        const prefRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'preferences');
+        setDoc(prefRef, { theme, updatedAt: Date.now() }, { merge: true }).catch(() => {
+            // Best-effort; ignore failures.
+        });
+    }, [db, userId, theme]);
+
+    // ---------------------------------------------------------------
+    // Sync nudge — after 30 seconds, prompt anonymous users to create
+    // an account so their data follows them across devices. Only fires
+    // once per browser (dismissal is remembered in localStorage).
+    // ---------------------------------------------------------------
+    useEffect(() => {
+        if (!isAuthReady) return;
+        if (!isAnonymous) return;
+        if (syncPromptShownRef.current) return;
+        if (localStorage.getItem('syncPromptDismissed') === '1') return;
+
+        const timer = setTimeout(() => {
+            // Re-check at fire time to avoid racing with sign-in.
+            if (!syncPromptShownRef.current && isAnonymous) {
+                syncPromptShownRef.current = true;
+                setShowSyncPrompt(true);
+            }
+        }, 30000);
+        return () => clearTimeout(timer);
+    }, [isAuthReady, isAnonymous]);
+
+    const handleDismissSyncPrompt = useCallback(() => {
+        setShowSyncPrompt(false);
+        try { localStorage.setItem('syncPromptDismissed', '1'); } catch (_) { /* ignore */ }
+    }, []);
     
     const setGreetingPokemon = useCallback((pokemonId) => {
         setGreetingPokemonId(pokemonId);
@@ -3700,6 +3839,28 @@ useEffect(() => {
         {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache}/>}
         {showPatchNotes && <PatchNotesModal onClose={handleClosePatchNotes} colors={colors} />}
         {showGreetingPokemonSelector && <GreetingPokemonSelectorModal onClose={() => setShowGreetingPokemonSelector(false)} onSelect={setGreetingPokemon} allPokemons={pokemons} currentPokemonId={greetingPokemonId} colors={colors} db={db} />}
+
+        {/* Auth modal — sign in / sign up */}
+        {authModal.open && (
+            <AuthModal
+                mode={authModal.mode}
+                canLink={isAnonymous}
+                onSignIn={handleSignIn}
+                onSignUp={handleSignUp}
+                onClose={() => setAuthModal({ open: false, mode: authModal.mode })}
+                colors={colors}
+            />
+        )}
+
+        {/* Optional sync nudge after ~30s of anonymous use */}
+        {showSyncPrompt && isAnonymous && (
+            <SyncPromptModal
+                colors={colors}
+                onSignUp={() => { setShowSyncPrompt(false); setAuthModal({ open: true, mode: 'signUp' }); }}
+                onSignIn={() => { setShowSyncPrompt(false); setAuthModal({ open: true, mode: 'signIn' }); }}
+                onDismiss={handleDismissSyncPrompt}
+            />
+        )}
         
         {/* Delete Confirmation Dialog */}
         <ConfirmDialog 
@@ -3766,6 +3927,60 @@ useEffect(() => {
                       </li>
                     </ul>
                   </nav>
+                  {/* Sidebar account footer — login is optional but lives here so users can find it. */}
+                  <div
+                    className="mt-auto p-3 border-t"
+                    style={{ borderColor: colors.cardLight }}
+                  >
+                    {isAnonymous ? (
+                        <button
+                            type="button"
+                            onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
+                            aria-label="Sign in or create an account"
+                            title="Sign in"
+                            className={`w-full rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 p-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                            style={{ color: colors.text, backgroundColor: colors.cardLight }}
+                        >
+                            <AccountIcon color={colors.text} />
+                            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>
+                                Sign in
+                            </span>
+                        </button>
+                    ) : (
+                        <div className={`rounded-lg p-2 ${isSidebarCollapsed ? 'flex justify-center' : ''}`} style={{ backgroundColor: colors.cardLight }}>
+                            {isSidebarCollapsed ? (
+                                <button
+                                    type="button"
+                                    onClick={handleSignOut}
+                                    aria-label={`Signed in as ${userEmail || 'user'}. Sign out`}
+                                    title={`${userEmail || 'Signed in'} — click to sign out`}
+                                    className="p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    style={{ color: colors.text }}
+                                >
+                                    <AccountIcon color={colors.primary} />
+                                </button>
+                            ) : (
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <span style={{ color: colors.primary }}><AccountIcon color={colors.primary} /></span>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] uppercase tracking-wider" style={{ color: colors.textMuted }}>Signed in</p>
+                                        <p className="text-xs font-semibold truncate" title={userEmail || ''} style={{ color: colors.text }}>
+                                            {userEmail || 'Account'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleSignOut}
+                                        className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        style={{ color: colors.textMuted, border: `1px solid ${colors.border}` }}
+                                    >
+                                        Sign out
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                  </div>
                 </div>
             </aside>
             <div className="flex-1 min-w-0 h-screen overflow-y-auto custom-scrollbar">

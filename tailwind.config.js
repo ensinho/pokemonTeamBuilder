@@ -27,12 +27,10 @@ export default {
                 info: 'var(--color-info)',
             },
             fontFamily: {
-                // Body — used everywhere by default via index.css setting on <html>.
-                sans: ['Plus Jakarta Sans', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
-                // Display — reserved for the brand mark / logo only.
-                display: ["'Press Start 2P'", 'monospace'],
-                // Legacy alias kept so existing `font-pixel` references still work.
-                pixel: ["'Press Start 2P'", 'monospace'],
+                // Unified typography — all font utilities now use JetBrains Mono.
+                sans: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'monospace'],
+                display: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'monospace'],
+                pixel: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'monospace'],
             },
             boxShadow: {
                 'elevation-1': 'var(--elevation-1)',
