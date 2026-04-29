@@ -3875,6 +3875,14 @@ useEffect(() => {
         
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out min-w-[260px] ${toast.type === 'success' ? 'bg-success' : toast.type === 'warning' ? 'bg-warning' : toast.type === 'info' ? 'bg-info' : 'bg-danger'}`}><div className="flex items-center gap-2 min-w-0">{!toast.spriteUrl && (<>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}</>)}<span className="truncate">{toast.message}</span></div>{toast.spriteUrl && <img src={toast.spriteUrl} alt="" aria-hidden="true" className="w-16 h-16 image-pixelated -my-1 shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}</div> ))}</div>
         <div className="flex h-screen overflow-hidden">
+            {isSidebarOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 lg:hidden z-30 transition-opacity duration-300" 
+                    onClick={() => setIsSidebarOpen(false)}
+                    role="presentation"
+                    aria-label="Close sidebar"
+                />
+            )}
             <aside 
                 className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out lg:h-screen overflow-y-auto custom-scrollbar ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} 
                 style={{
@@ -3883,10 +3891,26 @@ useEffect(() => {
                 }}
             >
                 <div className="flex flex-col h-full">
-                  <div className={`flex items-center h-16 p-4 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-                    <h2 className={`text-base font-bold uppercase tracking-wider transition-opacity duration-200 whitespace-nowrap ${isSidebarCollapsed ? 'lg:opacity-0 lg:hidden' : 'opacity-100'}`} style={{color: colors.primary}}>Menu</h2>
-                    <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} type="button" aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-expanded={!isSidebarCollapsed} className="p-1 rounded-lg hidden lg:block transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{color: colors.textMuted}}>{isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}</button>
+                  <div className={`flex flex-col lg:flex-row items-center gap-3 px-3.5 py-2 transition-all duration-300 `}>
+                    <img 
+                      src="/LogoCuteGengarRounded.png" 
+                      alt="Pokémon Team Builder Logo" 
+                      className={`transition-all duration-300 shrink-0 ${isSidebarCollapsed ? 'w-12' : 'w-12'}`}
+                      style={{ height: 'auto' }}
+                    />
+                    <div className={`hidden lg:flex items-center flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
+                      <h2 className="text-xs font-bold uppercase tracking-wider whitespace-nowrap" style={{color: colors.primary}}>Menu</h2>
+                    </div>
+                    {!isSidebarCollapsed && (
+                      <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} type="button" aria-label="Collapse sidebar" className="hidden lg:block p-1 rounded-lg transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0" style={{color: colors.textMuted}}><CollapseLeftIcon /></button>
+                    )}
+                    <button onClick={() => setIsSidebarOpen(false)} type="button" aria-label="Close sidebar" className="lg:hidden p-1 rounded-lg transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0" style={{color: colors.textMuted}}><CloseIcon /></button>
                   </div>
+                  {isSidebarCollapsed && (
+                    <div className="hidden lg:flex justify-center px-4 py-2 border-b" style={{borderColor: colors.cardLight}}>
+                      <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} type="button" aria-label="Expand sidebar" aria-expanded={!isSidebarCollapsed} className="p-2 rounded-lg transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{color: colors.textMuted}}><CollapseRightIcon /></button>
+                    </div>
+                  )}
                   <nav className="px-4 flex-grow">
                     <ul>
                       <li>
