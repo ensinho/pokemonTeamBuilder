@@ -3162,15 +3162,20 @@ const RandomGeneratorView = ({ colors, generations }) => {
 };
 
 export default function App() {
+    const AUTH_SPLASH_MESSAGES = [
+        'Checking if you are who you say you are',
+        'Verifying trainer credentials',
+        'Confirming your identity with Professor Oak',
+        'Making sure this trainer card is yours',
+        'Securing your team data before we start',
+    ];
+
     // React Router hooks
     const navigate = useNavigate();
     const location = useLocation();
     
     // Theme State — initialize from localStorage synchronously so the JS
     // `colors` object matches the CSS vars set by main.jsx on first render.
-    // Otherwise inline-styled components render with light colors while
-    // CSS-token-driven surfaces render with dark, producing a flash of
-    // mismatched/black cards on initial load.
     const [theme, setTheme] = useState(() => {
         if (typeof window === 'undefined') return 'dark';
         try {
@@ -3205,6 +3210,10 @@ export default function App() {
     const [isAuthReady, setIsAuthReady] = useState(false);
     const [isAnonymous, setIsAnonymous] = useState(true);
     const [userEmail, setUserEmail] = useState(null);
+    const initialBootTimeRef = useRef(Date.now());
+    const [showInitialAuthSplash, setShowInitialAuthSplash] = useState(true);
+    const [authSplashProgress, setAuthSplashProgress] = useState(0);
+    const [authSplashMessage, setAuthSplashMessage] = useState(AUTH_SPLASH_MESSAGES[0]);
 
     // Auth UI state
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
@@ -3556,8 +3565,53 @@ useEffect(() => {
             return () => unsubscribe();
         } catch (e) {
             showToast("Failed to connect to services.", "error");
+            setIsAuthReady(true);
         }
     }, [showToast]);
+
+    useEffect(() => {
+        if (!isAuthReady || !showInitialAuthSplash) return;
+        const elapsedMs = Date.now() - initialBootTimeRef.current;
+        const remainingMs = Math.max(0, 900 - elapsedMs);
+        const timer = setTimeout(() => {
+            setShowInitialAuthSplash(false);
+        }, remainingMs);
+        return () => clearTimeout(timer);
+    }, [isAuthReady, showInitialAuthSplash]);
+
+    useEffect(() => {
+        if (!showInitialAuthSplash) return;
+        setAuthSplashProgress(0);
+        const timer = setTimeout(() => setAuthSplashProgress(100), 30);
+        return () => clearTimeout(timer);
+    }, [showInitialAuthSplash]);
+
+    useEffect(() => {
+        if (!showInitialAuthSplash) return;
+
+        const pickMessage = (current) => {
+            if (AUTH_SPLASH_MESSAGES.length <= 1) return AUTH_SPLASH_MESSAGES[0] || '';
+            let next = current;
+            while (next === current) {
+                next = AUTH_SPLASH_MESSAGES[Math.floor(Math.random() * AUTH_SPLASH_MESSAGES.length)];
+            }
+            return next;
+        };
+
+        setAuthSplashMessage(prev => pickMessage(prev));
+
+        let timerId;
+        const scheduleNext = () => {
+            const randomDelay = 700 + Math.floor(Math.random() * 1100);
+            timerId = setTimeout(() => {
+                setAuthSplashMessage(prev => pickMessage(prev));
+                scheduleNext();
+            }, randomDelay);
+        };
+
+        scheduleNext();
+        return () => clearTimeout(timerId);
+    }, [showInitialAuthSplash]);
 
     // Função para construir a query do Firestore dinamicamente
    const buildPokemonQuery = (isLoadMore = false) => {
@@ -4280,6 +4334,37 @@ useEffect(() => {
             </Routes>
         );
     };
+
+    if (showInitialAuthSplash) {
+        return (
+            <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
+                <div className="w-full max-w-xs text-center">
+                    <img
+                        src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'}
+                        alt="Pokémon Team Builder"
+                        className="mx-auto w-28 h-auto"
+                    />
+                    <div
+                        className="mt-5 h-1 w-full overflow-hidden rounded-full"
+                        style={{ backgroundColor: colors.cardLight }}
+                        aria-hidden="true"
+                    >
+                        <span
+                            className="block h-full rounded-full"
+                            style={{
+                                width: `${authSplashProgress}%`,
+                                backgroundColor: '#7c3aed',
+                                transition: 'width 0.9s ease-out',
+                            }}
+                        />
+                    </div>
+                    <p className="mt-3 text-xs" style={{ color: colors.textMuted }}>
+                        {authSplashMessage}
+                    </p>
+                </div>
+            </div>
+        );
+    }
     
     return (
       <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
@@ -4590,6 +4675,7 @@ useEffect(() => {
             .btn-interactive:active {
                 transform: scale(0.97);
             }
+
         `}</style>
       </div>
     );
