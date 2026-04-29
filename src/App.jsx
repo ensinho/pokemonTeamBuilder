@@ -3893,7 +3893,7 @@ useEffect(() => {
                 <div className="flex flex-col h-full">
                   <div className={`flex flex-col lg:flex-row items-center gap-3 px-3.5 py-2 transition-all duration-300 `}>
                     <img 
-                      src="/LogoCuteGengarRounded.png" 
+                      src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'} 
                       alt="Pokémon Team Builder Logo" 
                       className={`transition-all duration-300 shrink-0 ${isSidebarCollapsed ? 'w-12' : 'w-12'}`}
                       style={{ height: 'auto' }}
