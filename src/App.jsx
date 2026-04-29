@@ -12,7 +12,7 @@ import {
     linkWithCredential,
     signOut,
 } from 'firebase/auth';
-import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit, startAfter, where, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit, startAfter, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Extracted modules
 import { PATCH_NOTES_VERSION, POKEBALL_PLACEHOLDER_URL, THEMES, applyTheme } from './constants/theme';
@@ -39,12 +39,33 @@ import { TeamIdentitySummary } from './components/TeamIdentitySummary';
 import { FooterFeedback } from './components/FooterFeedback';
 import { AuthModal } from './components/AuthModal';
 import { SyncPromptModal } from './components/SyncPromptModal';
+import { ProfileView } from './components/ProfileView';
 import { useModalA11y } from './hooks/useModalA11y';
 
 // Patch Notes Modal Component
+const TrainerAvatar = ({ pokemonId, size = 24, color = 'currentColor', className = '' }) => {
+    if (pokemonId) {
+        return (
+            <span
+                className={`inline-flex items-center justify-center rounded-full overflow-hidden shrink-0 ${className}`}
+                style={{ width: size, height: size, backgroundColor: 'var(--color-primary-soft)' }}
+                aria-hidden="true"
+            >
+                <img
+                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`}
+                    alt=""
+                    className="image-pixelated"
+                    style={{ width: size + 8, height: size, objectFit: 'contain', marginTop: 2 }}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+            </span>
+        );
+    }
+    return <AccountIcon color={color} className={`shrink-0 ${className}`} />;
+};
+
 // Mini visual previews mimicking the real components/locations they reference.
 const DragDropVisual = ({ colors }) => (
-    // Mirrors the team slot panel in the Builder (grid-cols-3 of sprite slots)
     <div
         className="grid grid-cols-3 gap-2 p-2 rounded-md"
         style={{ backgroundColor: colors.background }}
@@ -183,6 +204,250 @@ const HomeFlowVisual = ({ colors }) => (
     </div>
 );
 
+// Mirrors the new ProfileView trainer card hero — gradient banner with
+// avatar, name, and the streak badge that's the "hooked" element.
+const ProfileVisual = ({ colors }) => (
+    <div
+        className="rounded-md p-2 relative overflow-hidden"
+        style={{
+            backgroundImage: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.accent} 120%)`,
+            color: '#fff',
+        }}
+        aria-hidden="true"
+    >
+        <div className="flex items-center gap-2">
+            <div
+                className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-extrabold"
+                style={{ backgroundColor: 'rgba(255,255,255,0.22)' }}
+            >
+                T
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-[7px] uppercase tracking-[0.18em] opacity-80 font-semibold">
+                    Trainer Profile
+                </p>
+                <p className="text-[10px] font-extrabold leading-tight truncate">
+                    Your Name
+                </p>
+            </div>
+            <div
+                className="rounded px-1.5 py-1 text-center"
+                style={{ backgroundColor: 'rgba(0,0,0,0.25)' }}
+            >
+                <p className="text-[6px] uppercase opacity-80">Streak</p>
+                <p className="text-[10px] font-extrabold leading-none">7d</p>
+            </div>
+        </div>
+        <div className="flex gap-1 mt-1.5">
+            {['#7d65e1', '#6353b3', '#38BDF8', '#CA8A04'].map((c) => (
+                <span
+                    key={c}
+                    className="w-3 h-3 rounded-full border"
+                    style={{ backgroundColor: c, borderColor: 'rgba(255,255,255,0.6)' }}
+                />
+            ))}
+        </div>
+    </div>
+);
+
+// ——————————————————————————————————————————————
+// PageGuide — small i button that opens a contextual tip popover.
+// ——————————————————————————————————————————————
+const PAGE_GUIDE_TIPS = {
+    home: {
+        title: 'Home',
+        tips: [
+            'Your journey starts here — every great team has a story. What\'s yours today?',
+            'The Pokémon of the Day is different every 24h. Some days it\'ll surprise you.',
+            'The little companion in the greeting? That can be yours. Make it personal.',
+        ],
+    },
+    builder: {
+        title: 'Team Builder',
+        tips: [
+            'A team isn\'t six random picks — it\'s a statement. Feel the synergy as you build.',
+            'Dig into each slot. Moves, item, nature — that\'s where good teams become great ones.',
+            'Watch the summary bar shift as you add Pokémon. A well-balanced team has its own rhythm.',
+        ],
+    },
+    allTeams: {
+        title: 'Saved Teams',
+        tips: [
+            'Every team here was a moment of inspiration. Revisit them — past-you had good taste.',
+            'Star the ones that feel special. Some teams deserve to be remembered.',
+            '🎮 Rate your teams 1–6 in your head, then edit the worst one until it earns a higher spot.',
+        ],
+    },
+    pokedex: {
+        title: 'Pokédex',
+        tips: [
+            'Over a thousand Pokémon, and you only need six. The fun is in the choosing.',
+            'Open any card and let the stats tell a story — sometimes the underdog surprises you.',
+            'Star the ones that catch your eye. Your favourites say a lot about your style.',
+        ],
+    },
+    favorites: {
+        title: 'Favourite Pokémon',
+        tips: [
+            'This is your taste — unfiltered. Every star you gave meant something.',
+            'Scroll through and notice a pattern. Your favourite type might be more obvious than you think.',
+            'See someone here you\'ve never actually used? Maybe it\'s time.',
+        ],
+    },
+    randomGenerator: {
+        title: 'Random Generator',
+        tips: [
+            'Let go of the plan. Some of the best teams happen by accident.',
+            'That Pokémon you\'d never pick yourself? Give it a chance — it might be your next favourite.',
+            '🎮 Nuzlocke Draft: generate 12, pick only 6 — and never reroll. Play with what fate gives you.',
+        ],
+    },
+};
+
+const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [suggestionText, setSuggestionText] = useState('');
+    const [isSending, setIsSending] = useState(false);
+    const [sent, setSent] = useState(false);
+    const containerRef = useRef(null);
+    const guide = PAGE_GUIDE_TIPS[pageKey];
+
+    useEffect(() => {
+        if (!isOpen) return;
+        setSuggestionText('');
+        setSent(false);
+        const handleOutside = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setIsOpen(false);
+            }
+        };
+        const handleEsc = (e) => { if (e.key === 'Escape') setIsOpen(false); };
+        document.addEventListener('mousedown', handleOutside);
+        document.addEventListener('keydown', handleEsc);
+        return () => {
+            document.removeEventListener('mousedown', handleOutside);
+            document.removeEventListener('keydown', handleEsc);
+        };
+    }, [isOpen]);
+
+    const handleSendSuggestion = useCallback(async (e) => {
+        e.preventDefault();
+        const text = suggestionText.trim();
+        if (!db || !userId || !text || isSending) return;
+        setIsSending(true);
+        try {
+            await addDoc(collection(db, `artifacts/${appId}/suggestions`), {
+                userId,
+                text,
+                page: pageKey,
+                pageTitle: guide?.title ?? pageKey,
+                createdAt: serverTimestamp(),
+            });
+            setSent(true);
+            setSuggestionText('');
+            showToast?.('Thanks for your feedback!', 'success');
+        } catch (err) {
+            console.error('Failed to submit page suggestion:', err);
+            showToast?.('Could not send your suggestion. Try again.', 'error');
+        } finally {
+            setIsSending(false);
+        }
+    }, [db, userId, suggestionText, isSending, pageKey, guide, showToast]);
+
+    if (!guide) return null;
+
+    return (
+        <div ref={containerRef} className="relative inline-flex items-center">
+            <button
+                type="button"
+                onClick={() => setIsOpen(v => !v)}
+                aria-label={`Guide for ${guide.title}`}
+                aria-expanded={isOpen}
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                style={{
+                    color: isOpen ? colors.primary : colors.textMuted,
+                    backgroundColor: isOpen ? colors.primary + '1A' : 'transparent',
+                }}
+            >
+                <InfoIcon />
+            </button>
+
+            {isOpen && (
+                <div
+                    className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-80 rounded-xl shadow-2xl animate-fade-in flex flex-col"
+                    style={{
+                        backgroundColor: colors.card,
+                        border: `1px solid ${colors.primary}40`,
+                    }}
+                    role="dialog"
+                    aria-label={`${guide.title} guide`}
+                >
+                    {/* Tips */}
+                    <div className="p-4">
+                        <div className="flex items-center gap-2 mb-3">
+                            <span
+                                className="inline-flex items-center justify-center w-6 h-6 rounded-md shrink-0"
+                                style={{ color: colors.primary, backgroundColor: colors.primary + '1A' }}
+                                aria-hidden="true"
+                            >
+                                <InfoIcon />
+                            </span>
+                            <h4 className="font-bold text-sm" style={{ color: colors.primary }}>
+                                {guide.title} Guide
+                            </h4>
+                        </div>
+                        <ul className="space-y-2">
+                            {guide.tips.map((tip, i) => (
+                                <li key={i} className="flex items-start gap-2 text-sm leading-snug" style={{ color: colors.text }}>
+                                    <span className="mt-0.5 shrink-0 text-[10px] font-extrabold" style={{ color: colors.primary }}>✦</span>
+                                    <span>{tip}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+
+                    {/* Suggestion footer */}
+                    <div
+                        className="px-4 py-3 rounded-b-xl border-t"
+                        style={{ borderColor: colors.cardLight, backgroundColor: colors.background + '99' }}
+                    >
+                        {sent ? (
+                            <p className="text-xs text-center font-semibold" style={{ color: colors.primary }}>
+                                ✓ Thanks for your feedback!
+                            </p>
+                        ) : (
+                            <>
+                                <p className="text-[11px] mb-2" style={{ color: colors.textMuted }}>
+                                    Have a suggestion about this page?
+                                </p>
+                                <form onSubmit={handleSendSuggestion} className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={suggestionText}
+                                        onChange={(e) => setSuggestionText(e.target.value.slice(0, 500))}
+                                        placeholder="Your idea..."
+                                        maxLength={500}
+                                        className="flex-1 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!suggestionText.trim() || isSending || !db || !userId}
+                                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        style={{ backgroundColor: colors.primary }}
+                                    >
+                                        {isSending ? '...' : 'Send'}
+                                    </button>
+                                </form>
+                            </>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const PatchNotesModal = ({ onClose, colors }) => {
     const dialogRef = useModalA11y(onClose);
     const navigate = useNavigate();
@@ -193,13 +458,13 @@ const PatchNotesModal = ({ onClose, colors }) => {
 
     const notes = [
         {
-            key: 'dnd',
-            Icon: ArrowUpDownIcon,
-            title: 'Drag & Drop Team Reorder',
-            description: 'Reorder your team by dragging and dropping Pokemon cards in the Current Team panel.',
-            cta: 'Try it in the Builder',
-            path: '/builder',
-            Visual: DragDropVisual,
+            key: 'profile',
+            Icon: AccountIcon,
+            title: 'Profile, Themes & Streak',
+            description: 'New Profile screen with a trainer card, login streak, two new themes (Midnight, Solar) and cross-device sync of your preferences.',
+            cta: 'Open your profile',
+            path: '/profile',
+            Visual: ProfileVisual,
         },
         {
             key: 'bst',
@@ -209,15 +474,6 @@ const PatchNotesModal = ({ onClose, colors }) => {
             cta: 'See it on a team',
             path: '/builder',
             Visual: BstVisual,
-        },
-        {
-            key: 'home',
-            Icon: HouseIcon,
-            title: 'Add + Continue Editing from Home',
-            description: 'Pick up your last team or start a new one straight from the Home hero card.',
-            cta: 'Go to Home',
-            path: '/',
-            Visual: HomeFlowVisual,
         },
         {
             key: 'like',
@@ -2864,13 +3120,37 @@ export default function App() {
     const navigate = useNavigate();
     const location = useLocation();
     
-    // Theme State
-    const [theme, setTheme] = useState('light');
+    // Theme State — initialize from localStorage synchronously so the JS
+    // `colors` object matches the CSS vars set by main.jsx on first render.
+    // Otherwise inline-styled components render with light colors while
+    // CSS-token-driven surfaces render with dark, producing a flash of
+    // mismatched/black cards on initial load.
+    const [theme, setTheme] = useState(() => {
+        if (typeof window === 'undefined') return 'dark';
+        try {
+            const saved = localStorage.getItem('theme');
+            return saved && THEMES[saved] ? saved : 'dark';
+        } catch (_) {
+            return 'dark';
+        }
+    });
     const colors = THEMES[theme];
     
     // Greeting Pokemon State
     const [greetingPokemonId, setGreetingPokemonId] = useState(null);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
+
+    // Profile preferences (synced to Firestore via the same `preferences` doc).
+    const [displayName, setDisplayName] = useState('');
+    // Trainer streak — { count, longest, lastVisit (YYYY-MM-DD) }
+    const [streak, setStreak] = useState(() => {
+        if (typeof window === 'undefined') return { count: 0, longest: 0, lastVisit: null };
+        try {
+            const raw = localStorage.getItem('trainerStreak');
+            if (raw) return JSON.parse(raw);
+        } catch (_) { /* ignore */ }
+        return { count: 0, longest: 0, lastVisit: null };
+    });
 
     // Firebase States
     const [userId, setUserId] = useState(null);
@@ -2960,6 +3240,7 @@ export default function App() {
         if (path.includes('/generator')) return 'randomGenerator';
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
+        if (path.includes('/profile')) return 'profile';
         return 'home';
     }, [location.pathname]);
 
@@ -2971,7 +3252,8 @@ export default function App() {
             'pokedex': { title: 'Pokédex', icon: '', subtitle: 'Explore all Pokémon' },
             'allTeams': { title: 'Saved Teams', icon: '', subtitle: 'Your team collection' },
             'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Discover new Pokémon' },
-            'favorites': { title: 'Favorite Pokémon', icon: '', subtitle: 'Your favorite collection' }
+            'favorites': { title: 'Favorite Pokémon', icon: '', subtitle: 'Your favorite collection' },
+            'profile': { title: 'Profile', icon: '', subtitle: 'Trainer card & preferences' }
         };
         return pages[currentPage] || pages['home'];
     }, [currentPage]);
@@ -3573,13 +3855,33 @@ useEffect(() => {
     }, []);
     
     const toggleTheme = useCallback(() => {
+        // Cycle through all themes registered in THEMES so the header toggle
+        // exposes the new options (midnight, sakura) without extra UI.
+        // The Profile screen still offers explicit per-theme buttons.
         setTheme(prevTheme => {
-            const newTheme = prevTheme === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
+            const ids = Object.keys(THEMES);
+            const idx = ids.indexOf(prevTheme);
+            const newTheme = ids[(idx + 1) % ids.length] || 'dark';
+            try { localStorage.setItem('theme', newTheme); } catch (_) {}
             applyTheme(newTheme);
             return newTheme;
         });
     }, []);
+
+    // Profile-level setter for the theme picker. Validates against THEMES
+    // so an unknown id can never put the app in an inconsistent state.
+    const changeTheme = useCallback((nextTheme) => {
+        if (!THEMES[nextTheme]) return;
+        setTheme(nextTheme);
+        applyTheme(nextTheme);
+        try { localStorage.setItem('theme', nextTheme); } catch (_) {}
+    }, []);
+
+    const handleResetSyncPrompt = useCallback(() => {
+        try { localStorage.removeItem('syncPromptDismissed'); } catch (_) {}
+        syncPromptShownRef.current = false;
+        showToast('Reminders re-enabled.', 'info');
+    }, [showToast]);
 
     // ---------------------------------------------------------------
     // Auth — sign up / sign in / sign out helpers.
@@ -3631,8 +3933,12 @@ useEffect(() => {
     // ---------------------------------------------------------------
     // Theme preference sync — persists the user's theme choice on the
     // profile doc so it follows them across devices once signed in.
+    // The same `preferences` doc also stores the trainer profile fields
+    // (displayName, greetingPokemonId, streak) so all settings are
+    // multi-platform once the user has signed in.
     // ---------------------------------------------------------------
     const themeHydratedFromProfile = useRef(false);
+    const profileHydratedFromFirestore = useRef(false);
 
     // Load preferences from Firestore when the user becomes known.
     useEffect(() => {
@@ -3650,11 +3956,33 @@ useEffect(() => {
                         applyTheme(data.theme);
                         localStorage.setItem('theme', data.theme);
                     }
+                    if (typeof data.displayName === 'string') {
+                        setDisplayName(data.displayName);
+                    }
+                    if (Number.isInteger(data.greetingPokemonId)) {
+                        setGreetingPokemonId(data.greetingPokemonId);
+                        try { localStorage.setItem('greetingPokemon', String(data.greetingPokemonId)); } catch (_) {}
+                    }
+                    if (data.streak && typeof data.streak === 'object') {
+                        // Prefer the higher of local vs remote so users don't lose
+                        // a streak when they sign in from a fresh device.
+                        setStreak(prev => {
+                            const remote = data.streak;
+                            const merged = {
+                                count: Math.max(prev.count || 0, remote.count || 0),
+                                longest: Math.max(prev.longest || 0, remote.longest || 0, prev.count || 0, remote.count || 0),
+                                lastVisit: remote.lastVisit || prev.lastVisit || null,
+                            };
+                            try { localStorage.setItem('trainerStreak', JSON.stringify(merged)); } catch (_) {}
+                            return merged;
+                        });
+                    }
                 }
             } catch (e) {
                 // Non-fatal: keep local theme.
             } finally {
                 themeHydratedFromProfile.current = true;
+                profileHydratedFromFirestore.current = true;
             }
         })();
         return () => { cancelled = true; };
@@ -3669,6 +3997,54 @@ useEffect(() => {
         });
     }, [db, userId, theme]);
 
+    // Persist displayName / greetingPokemonId / streak together when any change.
+    useEffect(() => {
+        if (!db || !userId || !profileHydratedFromFirestore.current) return;
+        const prefRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'preferences');
+        setDoc(
+            prefRef,
+            { displayName, greetingPokemonId, streak, updatedAt: Date.now() },
+            { merge: true }
+        ).catch(() => { /* best-effort */ });
+    }, [db, userId, displayName, greetingPokemonId, streak]);
+
+    // ---------------------------------------------------------------
+    // Trainer streak — increments once per calendar day when the user
+    // opens the app. Resets if more than 1 day has passed since the
+    // last visit. Stored locally for guests and synced to Firestore
+    // for signed-in users via the preferences effect above.
+    // ---------------------------------------------------------------
+    const streakBumpedRef = useRef(false);
+    useEffect(() => {
+        if (streakBumpedRef.current) return;
+        // Defer until profile is hydrated for signed-in users so we don't
+        // overwrite a higher remote streak with a fresh local one.
+        if (db && userId && !profileHydratedFromFirestore.current) return;
+        streakBumpedRef.current = true;
+
+        const today = new Date();
+        const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
+
+        setStreak(prev => {
+            if (prev.lastVisit === todayStr) return prev; // already counted today
+            let nextCount;
+            if (!prev.lastVisit) {
+                nextCount = 1;
+            } else {
+                const last = new Date(prev.lastVisit + 'T00:00:00');
+                const diffDays = Math.round((today.setHours(0,0,0,0) - last.getTime()) / 86400000);
+                nextCount = diffDays === 1 ? (prev.count || 0) + 1 : 1;
+            }
+            const next = {
+                count: nextCount,
+                longest: Math.max(prev.longest || 0, nextCount),
+                lastVisit: todayStr,
+            };
+            try { localStorage.setItem('trainerStreak', JSON.stringify(next)); } catch (_) {}
+            return next;
+        });
+    }, [db, userId, isAuthReady]);
+
     // ---------------------------------------------------------------
     // Sync nudge — after 30 seconds, prompt anonymous users to create
     // an account so their data follows them across devices. Only fires
@@ -3678,17 +4054,21 @@ useEffect(() => {
         if (!isAuthReady) return;
         if (!isAnonymous) return;
         if (syncPromptShownRef.current) return;
+        // Don't nudge while the user is already engaged with the auth flow —
+        // the sign-in/sign-up modal is open, so a redundant prompt would
+        // overlap and look spammy. Timer restarts when the modal closes.
+        if (authModal.open) return;
         if (localStorage.getItem('syncPromptDismissed') === '1') return;
 
         const timer = setTimeout(() => {
-            // Re-check at fire time to avoid racing with sign-in.
-            if (!syncPromptShownRef.current && isAnonymous) {
+            // Re-check at fire time to avoid racing with sign-in / modal open.
+            if (!syncPromptShownRef.current && isAnonymous && !authModal.open) {
                 syncPromptShownRef.current = true;
                 setShowSyncPrompt(true);
             }
         }, 30000);
         return () => clearTimeout(timer);
-    }, [isAuthReady, isAnonymous]);
+    }, [isAuthReady, isAnonymous, authModal.open]);
 
     const handleDismissSyncPrompt = useCallback(() => {
         setShowSyncPrompt(false);
@@ -3706,16 +4086,16 @@ useEffect(() => {
     }, []);
     
     useEffect(() => {
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme) {
-            setTheme(savedTheme); 
-            applyTheme(savedTheme);
-        }
-        
+        // Theme is already hydrated from localStorage in the useState
+        // initializer above and applied by main.jsx before first paint.
+        // Re-apply here defensively in case main.jsx hadn't run (SSR/tests).
+        applyTheme(theme);
+
         const savedGreetingPokemon = localStorage.getItem('greetingPokemon');
         if (savedGreetingPokemon) {
             setGreetingPokemonId(parseInt(savedGreetingPokemon, 10));
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const renderRoutes = () => {
@@ -3828,6 +4208,28 @@ useEffect(() => {
                         onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
                     />
                 } />
+                <Route path="/profile" element={
+                    <ProfileView
+                        userEmail={userEmail}
+                        userId={userId}
+                        isAnonymous={isAnonymous}
+                        theme={theme}
+                        onChangeTheme={changeTheme}
+                        displayName={displayName}
+                        onChangeDisplayName={setDisplayName}
+                        greetingPokemonId={greetingPokemonId}
+                        onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                        streak={streak}
+                        savedTeamsCount={savedTeams.length}
+                        favoritePokemonsCount={favoritePokemons.size}
+                        onOpenSignIn={() => setAuthModal({ open: true, mode: 'signIn' })}
+                        onOpenSignUp={() => setAuthModal({ open: true, mode: 'signUp' })}
+                        onSignOut={handleSignOut}
+                        onResetSyncPrompt={handleResetSyncPrompt}
+                        onClearLocalGreeting={() => setGreetingPokemon(null)}
+                        db={db}
+                    />
+                } />
                 <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
         );
@@ -3914,39 +4316,45 @@ useEffect(() => {
                   <nav className="px-4 flex-grow">
                     <ul>
                       <li>
-                        <button onClick={() => { navigate('/'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'home' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'home' ? 'white' : colors.text}}>
-                          <HomeIcon />
+                        <button onClick={() => { navigate('/'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'home' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'home' ? 'white' : colors.text}}>
+                          <span className="nav-icon"><HomeIcon /></span>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Home</span>
                         </button>
                       </li>
                       <li className="mt-2">
-                        <button onClick={() => { navigate('/builder'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'builder' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
-                          <SwordsIcon />
+                        <button onClick={() => { navigate('/builder'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'builder' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
+                          <span className="nav-icon"><SwordsIcon /></span>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span>
                         </button>
                       </li>
                        <li className="mt-2">
-                        <button onClick={() => { navigate('/pokedex'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'pokedex' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
-                            <PokeballIcon />
+                        <button onClick={() => { navigate('/pokedex'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'pokedex' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
+                            <span className="nav-icon"><PokeballIcon /></span>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Pokédex</span>
                         </button>
                       </li>
                       <li className="mt-2">
-                        <button onClick={() => { navigate('/generator'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'randomGenerator' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'randomGenerator' ? 'white' : colors.text}}>
-                            <DiceIcon />
+                        <button onClick={() => { navigate('/generator'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'randomGenerator' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'randomGenerator' ? 'white' : colors.text}}>
+                            <span className="nav-icon"><DiceIcon /></span>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Random Generator</span>
                         </button>
                       </li>
                       <li className="mt-2">
-                        <button onClick={() => { navigate('/favorites'); setIsSidebarOpen(false); }} className={`w-full p-3 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'favorites' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'favorites' ? 'white' : colors.text}}>
-                            <StarsIcon className="w-6 h-6 shrink-0" isFavorite={true} color={currentPage === 'favorites' ? 'white' : colors.text} />
+                        <button onClick={() => { navigate('/favorites'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'favorites' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'favorites' ? 'white' : colors.text}}>
+                            <span className="nav-icon"><StarsIcon className="w-6 h-6 shrink-0" isFavorite={true} color={currentPage === 'favorites' ? 'white' : colors.text} /></span>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Favorites</span>
                         </button>
                       </li>
                       <li className="mt-2">
-                        <button onClick={() => { navigate('/teams'); setIsSidebarOpen(false); }} className={`w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 ${currentPage === 'allTeams' ? 'bg-primary' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
-                          <SavedTeamsIcon/>
+                        <button onClick={() => { navigate('/teams'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'allTeams' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
+                          <span className="nav-icon"><SavedTeamsIcon/></span>
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Saved Teams</span>
+                        </button>
+                      </li>
+                      <li className="mt-2">
+                        <button onClick={() => { navigate('/profile'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'profile' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'profile' ? 'white' : colors.text}}>
+                          <span className="nav-icon"><TrainerAvatar pokemonId={greetingPokemonId} color={currentPage === 'profile' ? 'white' : colors.text} /></span>
+                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Profile</span>
                         </button>
                       </li>
                     </ul>
@@ -3962,10 +4370,10 @@ useEffect(() => {
                             onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
                             aria-label="Sign in or create an account"
                             title="Sign in"
-                            className={`w-full rounded-lg font-bold flex items-center transition-colors hover:bg-purple-500/60 p-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}
+                            className={`nav-item w-full rounded-lg font-bold flex items-center transition-colors p-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}
                             style={{ color: colors.text, backgroundColor: colors.cardLight }}
                         >
-                            <AccountIcon color={colors.text} />
+                            <span className="nav-icon"><AccountIcon color={colors.text} /></span>
                             <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>
                                 Sign in
                             </span>
@@ -3975,23 +4383,31 @@ useEffect(() => {
                             {isSidebarCollapsed ? (
                                 <button
                                     type="button"
-                                    onClick={handleSignOut}
-                                    aria-label={`Signed in as ${userEmail || 'user'}. Sign out`}
-                                    title={`${userEmail || 'Signed in'} — click to sign out`}
+                                    onClick={() => navigate('/profile')}
+                                    aria-label={`Signed in as ${userEmail || 'user'}. Open profile`}
+                                    title={`${userEmail || 'Signed in'} — open profile`}
                                     className="p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     style={{ color: colors.text }}
                                 >
-                                    <AccountIcon color={colors.primary} />
+                                    <TrainerAvatar pokemonId={greetingPokemonId} color={colors.primary} />
                                 </button>
                             ) : (
                                 <div className="flex items-center gap-2 min-w-0">
-                                    <span style={{ color: colors.primary }}><AccountIcon color={colors.primary} /></span>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[10px] uppercase tracking-wider" style={{ color: colors.textMuted }}>Signed in</p>
-                                        <p className="text-xs font-semibold truncate" title={userEmail || ''} style={{ color: colors.text }}>
-                                            {userEmail || 'Account'}
-                                        </p>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/profile')}
+                                        aria-label="Open profile"
+                                        title="Open profile"
+                                        className="flex items-center gap-2 min-w-0 flex-1 text-left rounded p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    >
+                                        <span style={{ color: colors.primary }}><TrainerAvatar pokemonId={greetingPokemonId} color={colors.primary} /></span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-[10px] uppercase tracking-wider" style={{ color: colors.textMuted }}>Signed in</p>
+                                            <p className="text-xs font-semibold truncate" title={userEmail || ''} style={{ color: colors.text }}>
+                                                {userEmail || 'Account'}
+                                            </p>
+                                        </div>
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={handleSignOut}
@@ -4034,6 +4450,15 @@ useEffect(() => {
                         >
                         {pageInfo.title}
                         </h1>
+                        {PAGE_GUIDE_TIPS[currentPage] && (
+                            <PageGuide
+                                colors={colors}
+                                pageKey={currentPage}
+                                db={db}
+                                userId={userId}
+                                showToast={showToast}
+                            />
+                        )}
                     </div>
                     <p
                     className="text-[10px] sm:text-xs md:text-sm mt-1 truncate opacity-70"

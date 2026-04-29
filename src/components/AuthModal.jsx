@@ -14,7 +14,7 @@ import { CloseIcon } from './icons';
  *  - colors: theme colors object
  */
 export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onClose, colors }) {
-    const AUTH_GIF_URL = 'https://play.pokemonshowdown.com/sprites/ani/pikachu.gif';
+    const AUTH_GIF_URL = 'https://play.pokemonshowdown.com/sprites/ani/gengar.gif';
     const [mode, setMode] = useState(initialMode);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

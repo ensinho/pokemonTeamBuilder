@@ -5,7 +5,8 @@
 // Keep both in sync.
 // ============================================================
 
-export const PATCH_NOTES_VERSION = '1.3.0';
+// Bump this when the patch-notes screen has new content to surface.
+export const PATCH_NOTES_VERSION = '1.4.0';
 export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 
 // JS-side mirror of the CSS variables. Components that still
@@ -43,7 +44,50 @@ export const THEMES = {
         warning: '#B45309', // amber-700
         info: '#1D4ED8',    // blue-700
     },
+    // Midnight — deep blue/teal nocturnal theme. Inspired by night routes
+    // and lake legendaries (Cresselia / Lugia). Cooler than `dark`, with a
+    // teal accent that pops against navy surfaces.
+    midnight: {
+        primary: '#38BDF8',           // sky-400
+        primarySoft: 'rgba(56, 189, 248, 0.16)',
+        accent: '#22D3EE',            // cyan-400
+        background: '#0B1220',
+        card: '#111B2E',
+        cardLight: '#1B2742',
+        text: '#E2E8F0',
+        textMuted: '#94A3B8',
+        border: '#1E2A44',
+        success: '#34D399',
+        danger: '#FB7185',
+        warning: '#FBBF24',
+        info: '#60A5FA',
+    },
+    // Solar — soft warm yellow daylight theme. Lighter than amber/mustard,
+    // closer to morning sunlight — readable text with a gentle gold accent.
+    solar: {
+        primary: '#EAB308',           // yellow-500
+        primarySoft: 'rgba(234, 179, 8, 0.16)',
+        accent: '#F59E0B',            // amber-500
+        background: '#FFFDF2',        // warm off-white
+        card: '#FFFFFF',
+        cardLight: '#FEF9C3',         // yellow-100 — soft cream raised
+        text: '#3B2F09',
+        textMuted: '#7C6A2A',
+        border: '#FEF08A',            // yellow-200
+        success: '#047857',
+        danger: '#B91C1C',
+        warning: '#B45309',
+        info: '#1D4ED8',
+    },
 };
+
+// Display metadata for the theme picker UI. Order here drives render order.
+export const THEME_META = [
+    { id: 'dark',     label: 'Dark',     hint: 'Default night mode',         swatch: '#7d65e1' },
+    { id: 'light',    label: 'Light',    hint: 'Daylight, high contrast',    swatch: '#6353b3' },
+    { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights',    swatch: '#38BDF8' },
+    { id: 'solar',    label: 'Solar',    hint: 'Soft yellow daylight',       swatch: '#EAB308' },
+];
 
 // Apply a theme to the document. Sets data-theme + CSS vars so
 // Tailwind tokens (bg-surface, text-fg, etc.) resolve correctly.

@@ -55,6 +55,48 @@
     --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
 }
 
+:root[data-theme='midnight'] {
+    --color-primary: #38BDF8;
+    --color-primary-soft: rgba(56, 189, 248, 0.16);
+    --color-accent: #22D3EE;
+    --color-accent-soft: rgba(34, 211, 238, 0.16);
+    --color-bg: #0B1220;
+    --color-surface: #111B2E;
+    --color-surface-raised: #1B2742;
+    --color-fg: #E2E8F0;
+    --color-muted: #94A3B8;
+    --color-border: #1E2A44;
+    --color-success: #34D399;
+    --color-danger: #FB7185;
+    --color-warning: #FBBF24;
+    --color-info: #60A5FA;
+
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.45);
+    --elevation-2: 0 8px 24px -8px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.4);
+    --elevation-3: 0 20px 40px -12px rgba(0,0,0,0.75);
+}
+
+:root[data-theme='solar'] {
+    --color-primary: #EAB308;
+    --color-primary-soft: rgba(234, 179, 8, 0.16);
+    --color-accent: #F59E0B;
+    --color-accent-soft: rgba(245, 158, 11, 0.14);
+    --color-bg: #FFFDF2;
+    --color-surface: #FFFFFF;
+    --color-surface-raised: #FEF9C3;
+    --color-fg: #3B2F09;
+    --color-muted: #7C6A2A;
+    --color-border: #FEF08A;
+    --color-success: #047857;
+    --color-danger: #B91C1C;
+    --color-warning: #B45309;
+    --color-info: #1D4ED8;
+
+    --elevation-1: 0 1px 2px rgba(120, 90, 15, 0.06), 0 1px 1px rgba(120, 90, 15, 0.04);
+    --elevation-2: 0 4px 12px -4px rgba(120, 90, 15, 0.12), 0 2px 4px rgba(120, 90, 15, 0.06);
+    --elevation-3: 0 20px 40px -16px rgba(120, 90, 15, 0.18);
+}
+
 /* Typography stack — JetBrains Mono across the whole app. */
 :root {
     --font-display: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
@@ -152,4 +194,58 @@ input[type='checkbox']:checked + div + div {
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
     }
+}
+
+/* ============================================================
+   SIDEBAR NAVIGATION — theme-aware hover + active "reverberate"
+   Replaces the hardcoded `hover:bg-purple-500/60` so hover tints
+   adapt to whatever theme the user picked. The active item's icon
+   pulses softly to draw the eye to the current location.
+   ============================================================ */
+.nav-item {
+    position: relative;
+}
+.nav-item:hover {
+    background-color: var(--color-primary-soft);
+}
+.nav-item.is-active {
+    background-color: var(--color-primary);
+    color: #fff;
+}
+.nav-item.is-active:hover {
+    /* Slightly deepen the active row on hover instead of tinting it back. */
+    filter: brightness(1.08);
+}
+
+/* Reverberating pulse for the icon of the currently selected nav item.
+   Uses a ::before halo that scales + fades behind the icon, plus a tiny
+   icon scale for a "pulse" feel. Pure CSS, GPU-friendly. */
+.nav-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+.nav-item.is-active .nav-icon::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 9999px;
+    background-color: rgba(255, 255, 255, 0.55);
+    z-index: -1;
+    animation: nav-reverberate 1.8s ease-out infinite;
+    pointer-events: none;
+}
+.nav-item.is-active .nav-icon {
+    animation: nav-icon-pulse 1.8s ease-in-out infinite;
+}
+@keyframes nav-reverberate {
+    0%   { transform: scale(0.6); opacity: 0.55; }
+    70%  { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes nav-icon-pulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.12); }
 }
