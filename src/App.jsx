@@ -573,76 +573,92 @@ const PatchNotesModal = ({ onClose, colors }) => {
 const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentPokemonId, colors, db }) => {
     const dialogRef = useModalA11y(onClose);
     const [searchTerm, setSearchTerm] = useState('');
+    const debouncedSearch = useDebounce(searchTerm, 350);
     const [selectedType, setSelectedType] = useState(null);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const [fullPokemonList, setFullPokemonList] = useState(allPokemons || []);
+
+    // Browse state — local paginated list shown when search is empty
+    const [browseList, setBrowseList] = useState(allPokemons || []);
     const [lastDoc, setLastDoc] = useState(null);
     const [hasMore, setHasMore] = useState(true);
-    
-    // Load more Pokemon in batches
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    // Search state — Firestore query results shown while user is typing
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+
+    const isSearchActive = debouncedSearch.trim().length > 0;
+
+    // ── Browse: load next batch ──────────────────────────────────────────────
     const loadMorePokemons = useCallback(async () => {
         if (!db || isLoadingMore || !hasMore) return;
-        
         setIsLoadingMore(true);
         try {
-            const constraints = [
-                orderBy('id'),
-                limit(200) // Load 200 at a time
-            ];
-            
-            if (lastDoc) {
-                constraints.push(startAfter(lastDoc));
-            }
-            
-            const q = query(
-                collection(db, 'artifacts/pokemonTeamBuilder/pokemons'),
-                ...constraints
-            );
-            
+            const constraints = [orderBy('id'), limit(200)];
+            if (lastDoc) constraints.push(startAfter(lastDoc));
+            const q = query(collection(db, 'artifacts/pokemonTeamBuilder/pokemons'), ...constraints);
             const snapshot = await getDocs(q);
-            if (snapshot.empty || snapshot.docs.length < 200) {
-                setHasMore(false);
-            }
-            
-            const newPokemons = snapshot.docs.map(doc => doc.data());
+            if (snapshot.empty || snapshot.docs.length < 200) setHasMore(false);
+            const newPokemons = snapshot.docs.map(d => d.data());
             const lastVisible = snapshot.docs[snapshot.docs.length - 1];
-            
-            setFullPokemonList(prev => {
+            setBrowseList(prev => {
                 const combined = [...prev, ...newPokemons];
-                const unique = combined.filter((pokemon, index, self) => 
-                    index === self.findIndex(p => p.id === pokemon.id)
-                );
-                return unique;
+                return combined.filter((p, i, self) => i === self.findIndex(x => x.id === p.id));
             });
             setLastDoc(lastVisible);
-        } catch (error) {
-            console.error('Error loading more Pokemon:', error);
+        } catch (err) {
+            console.error('Error loading more Pokemon:', err);
             setHasMore(false);
         } finally {
             setIsLoadingMore(false);
         }
     }, [db, lastDoc, isLoadingMore, hasMore]);
-    
+
+    // Initial load if the seed list is small
     useEffect(() => {
-        if (fullPokemonList.length < 100 && hasMore) {
-            loadMorePokemons();
-        }
-    }, []);
-    
-    const filteredPokemons = useMemo(() => {
-        return fullPokemonList.filter(pokemon => {
-            const matchesSearch = pokemon.name.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesType = !selectedType || pokemon.types?.includes(selectedType);
-            return matchesSearch && matchesType;
-        });
-    }, [fullPokemonList, searchTerm, selectedType]);
+        if (browseList.length < 100 && hasMore) loadMorePokemons();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // ── Search: Firestore prefix query, fires on debounced value ────────────
+    useEffect(() => {
+        if (!isSearchActive) { setSearchResults([]); return; }
+        if (!db) return;
+
+        let cancelled = false;
+        const run = async () => {
+            setIsSearching(true);
+            try {
+                const term = debouncedSearch.toLowerCase();
+                const constraints = [
+                    orderBy('name'),
+                    where('name', '>=', term),
+                    where('name', '<=', term + '\uf8ff'),
+                    limit(100),
+                ];
+                if (selectedType) constraints.push(where('types', 'array-contains', selectedType));
+                const q = query(collection(db, 'artifacts/pokemonTeamBuilder/pokemons'), ...constraints);
+                const snap = await getDocs(q);
+                if (!cancelled) setSearchResults(snap.docs.map(d => d.data()));
+            } catch (err) {
+                console.error('Pokemon search error:', err);
+            } finally {
+                if (!cancelled) setIsSearching(false);
+            }
+        };
+        run();
+        return () => { cancelled = true; };
+    }, [debouncedSearch, isSearchActive, db, selectedType]);
+
+    // ── Displayed list ───────────────────────────────────────────────────────
+    // In browse mode, apply type filter locally; search mode already queries by type on Firestore.
+    const displayedPokemons = useMemo(() => {
+        if (isSearchActive) return searchResults;
+        if (!selectedType) return browseList;
+        return browseList.filter(p => p.types?.includes(selectedType));
+    }, [isSearchActive, searchResults, browseList, selectedType]);
 
     const highestLoadedId = useMemo(() => {
-        return fullPokemonList.reduce((maxId, pokemon) => {
-            const id = Number(pokemon?.id) || 0;
-            return id > maxId ? id : maxId;
-        }, 0);
-    }, [fullPokemonList]);
+        return browseList.reduce((max, p) => Math.max(max, Number(p?.id) || 0), 0);
+    }, [browseList]);
     
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
@@ -671,18 +687,44 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
                 
                 {/* Search and filter */}
                 <div className="mb-4 space-y-3">
-                    <input
-                        type="text"
-                        placeholder="Search Pokémon..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full px-4 py-2 rounded-lg border-2 transition-all focus:outline-none"
-                        style={{ 
-                            backgroundColor: colors.cardLight, 
-                            color: colors.text,
-                            borderColor: colors.cardLight,
-                        }}
-                    />
+                    <div className="relative">
+                        <input
+                            type="text"
+                            placeholder="Search Pokémon by name…"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg border-2 transition-all focus:outline-none pr-10"
+                            style={{ 
+                                backgroundColor: colors.cardLight, 
+                                color: colors.text,
+                                borderColor: isSearchActive ? colors.primary : colors.cardLight,
+                            }}
+                        />
+                        {isSearchActive && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchTerm('')}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-colors hover:opacity-70"
+                                aria-label="Clear search"
+                                style={{ color: colors.textMuted }}
+                            >
+                                <CloseIcon />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Mode indicator */}
+                    {isSearchActive ? (
+                        <p className="text-xs" style={{ color: colors.textMuted }}>
+                            {isSearching
+                                ? 'Searching…'
+                                : `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''} for "${debouncedSearch}"`}
+                        </p>
+                    ) : (
+                        <p className="text-xs" style={{ color: colors.textMuted }}>
+                            Browsing {browseList.length} loaded Pokémon — or type to search all of them.
+                        </p>
+                    )}
                     
                     {/* Type filter */}
                     <div className="flex flex-wrap gap-2">
@@ -725,39 +767,45 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
                 )}
                 
                 {/* Pokemon grid */}
-                <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3">
-                    {filteredPokemons.map(pokemon => (
-                        <button
-                            key={pokemon.id}
-                            onClick={() => onSelect(pokemon.id)}
-                            className="p-3 rounded-xl text-center transition-all hover:scale-105 hover:shadow-lg relative"
-                            style={{ 
-                                backgroundColor: currentPokemonId === pokemon.id ? colors.primary + '20' : colors.cardLight,
-                                border: currentPokemonId === pokemon.id ? `2px solid ${colors.primary}` : 'none'
-                            }}
-                        >
-                            {currentPokemonId === pokemon.id && (
-                                <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary }}>
-                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                </div>
-                            )}
-                            <img 
-                                src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
-                                alt={pokemon.name}
-                                className="w-16 h-16 mx-auto"
-                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                            />
-                            <p className="text-xs capitalize truncate mt-1" style={{ color: colors.text }}>
-                                {pokemon.name}
-                            </p>
-                        </button>
-                    ))}
-                </div>
+                {isSearching ? (
+                    <div className="flex items-center justify-center py-16">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: colors.primary }} />
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3">
+                        {displayedPokemons.map(pokemon => (
+                            <button
+                                key={pokemon.id}
+                                onClick={() => onSelect(pokemon.id)}
+                                className="p-3 rounded-xl text-center transition-all hover:scale-105 hover:shadow-lg relative"
+                                style={{ 
+                                    backgroundColor: currentPokemonId === pokemon.id ? colors.primary + '20' : colors.cardLight,
+                                    border: currentPokemonId === pokemon.id ? `2px solid ${colors.primary}` : 'none'
+                                }}
+                            >
+                                {currentPokemonId === pokemon.id && (
+                                    <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary }}>
+                                        <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                        </svg>
+                                    </div>
+                                )}
+                                <img 
+                                    src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                    alt={pokemon.name}
+                                    className="w-16 h-16 mx-auto"
+                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                />
+                                <p className="text-xs capitalize truncate mt-1" style={{ color: colors.text }}>
+                                    {pokemon.name}
+                                </p>
+                            </button>
+                        ))}
+                    </div>
+                )}
                 
-                {/* Load More Button */}
-                {hasMore && !searchTerm && !selectedType && (
+                {/* Load More — only in browse mode */}
+                {!isSearchActive && hasMore && (
                     <div className="mt-4 text-center">
                         <button
                             onClick={loadMorePokemons}
@@ -767,29 +815,27 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
                         >
                             {isLoadingMore ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    Loading more...
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Loading more…
                                 </div>
                             ) : (
-                                `Load More Pokémon (${fullPokemonList.length} loaded • max #${highestLoadedId})`
+                                `Load more Pokémon (${browseList.length} loaded · up to #${highestLoadedId})`
                             )}
                         </button>
                     </div>
                 )}
                 
-                {filteredPokemons.length === 0 && (
+                {!isSearching && displayedPokemons.length === 0 && (
                     <EmptyState
                         compact
-                        title={searchTerm || selectedType ? 'No matches' : 'No Pokémon available'}
-                        message={searchTerm || selectedType ? 'Try clearing filters or a different search.' : 'Pokémon data is loading.'}
+                        title={isSearchActive || selectedType ? 'No matches' : 'No Pokémon available'}
+                        message={isSearchActive ? `Nothing found for "${debouncedSearch}". Try a different name.` : selectedType ? 'Try clearing the type filter.' : 'Pokémon data is loading.'}
                     />
                 )}
             </div>
         </div>
     );
 };
-
-// Confirmation Dialog Component
 const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = "Delete", colors }) => {
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     if (!isOpen) return null;
