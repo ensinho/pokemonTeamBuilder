@@ -6,7 +6,7 @@
 // ============================================================
 
 // Bump this when the patch-notes screen has new content to surface.
-export const PATCH_NOTES_VERSION = '1.4.0';
+export const PATCH_NOTES_VERSION = '1.5.0';
 export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 
 // JS-side mirror of the CSS variables. Components that still
