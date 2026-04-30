@@ -40,6 +40,7 @@ import { FooterFeedback } from './components/FooterFeedback';
 import { AuthModal } from './components/AuthModal';
 import { SyncPromptModal } from './components/SyncPromptModal';
 import { ProfileView } from './components/ProfileView';
+import { MobileTeamBuilderView } from './components/MobileTeamBuilderView';
 import { useModalA11y } from './hooks/useModalA11y';
 
 // Patch Notes Modal Component
@@ -1409,37 +1410,46 @@ const TeamBuilderView = ({
         : availablePokemons;
 
     return (
-    <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* Mobile / tablet sticky team strip — keeps the team in view while browsing the pokédex */}
-        <div className="lg:hidden -mx-4 sticky top-0 z-30 px-4 py-2 backdrop-blur-md border-b" style={{ backgroundColor: colors.background + 'EE', borderColor: colors.cardLight }}>
-            <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar">
-                {Array.from({ length: 6 }).map((_, i) => {
-                    const p = currentTeam[i];
-                    return (
-                        <button
-                            key={p?.instanceId ?? `empty-${i}`}
-                            type="button"
-                            onClick={() => p && onEditTeamPokemon(p)}
-                            className="flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center transition-transform hover:scale-110 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ borderColor: p ? colors.primary : colors.cardLight, backgroundColor: colors.card }}
-                            aria-label={p ? `Edit ${p.name}` : `Empty slot ${i + 1}`}
-                            title={p ? p.name : 'Empty slot'}
-                        >
-                            <img
-                                src={p?.sprite || POKEBALL_PLACEHOLDER_URL}
-                                alt={p?.name || ''}
-                                className={`w-9 h-9 ${p ? '' : 'opacity-40'}`}
-                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                            />
-                        </button>
-                    );
-                })}
-                <span className="ml-1 text-xs font-semibold whitespace-nowrap" style={{ color: colors.textMuted }}>
-                    {currentTeam.length}/6
-                </span>
-            </div>
-        </div>
+    <>
+        <MobileTeamBuilderView
+            currentTeam={currentTeam}
+            teamName={teamName}
+            setTeamName={setTeamName}
+            handleRemoveFromTeam={handleRemoveFromTeam}
+            handleSaveTeam={handleSaveTeam}
+            editingTeamId={editingTeamId}
+            handleClearTeam={handleClearTeam}
+            recentTeams={recentTeams}
+            onNavigateToTeams={onNavigateToTeams}
+            handleToggleFavorite={handleToggleFavorite}
+            handleEditTeam={handleEditTeam}
+            requestDeleteTeam={requestDeleteTeam}
+            handleShareTeam={handleShareTeam}
+            handleExportToShowdown={handleExportToShowdown}
+            teamAnalysis={teamAnalysis}
+            searchInput={searchInput}
+            setSearchInput={setSearchInput}
+            selectedGeneration={selectedGeneration}
+            setSelectedGeneration={setSelectedGeneration}
+            generations={generations}
+            isInitialLoading={isInitialLoading}
+            displayedPokemons={displayedPokemons}
+            handleAddPokemonToTeam={handleAddPokemonToTeam}
+            lastPokemonElementRef={lastPokemonElementRef}
+            isFetchingMore={isFetchingMore}
+            selectedTypes={selectedTypes}
+            onToggleFavoritePokemon={onToggleFavoritePokemon}
+            handleTypeSelection={handleTypeSelection}
+            showDetails={showDetails}
+            suggestedPokemonIds={suggestedPokemonIds}
+            colors={colors}
+            onEditTeamPokemon={onEditTeamPokemon}
+            favoritePokemons={favoritePokemons}
+            showOnlyFavorites={showOnlyFavorites}
+            setShowOnlyFavorites={setShowOnlyFavorites}
+        />
 
+        <main className="hidden lg:grid lg:grid-cols-12 gap-8">
         <div className="lg:col-span-3 space-y-8 lg:sticky lg:top-4 lg:self-start">
             <section className="p-6 rounded-xl shadow-lg" style={{backgroundColor: colors.card}}>
                 <h2 className="text-lg md:text-xl font-bold mb-4 border-b-2 pb-2" style={{borderColor: colors.primary, color: colors.text}}>Current Team</h2>
@@ -1514,7 +1524,7 @@ const TeamBuilderView = ({
 
                 <TeamIdentitySummary team={currentTeam} />
                 <div className="flex items-center gap-2 mt-4">
-                    <button onClick={handleSaveTeam} className="w-full flex items-center justify-center font-bold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]" style={{backgroundColor: colors.primary, color: colors.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
+                    <button onClick={handleSaveTeam} className="w-full flex items-center justify-center gap-2 font-bold py-2 px-4 rounded-lg transition-all duration-200 hover:scale-[1.02] hover:shadow-lg active:scale-[0.98]" style={{backgroundColor: colors.primary, color: colors.background}}> <SaveIcon /> {editingTeamId ? 'Update' : 'Save'} </button>
                     <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Export to Showdown"><ShowdownIcon /></button>
                     <button onClick={handleShareTeam} type="button" aria-label="Share team" className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Share Team"><ShareIcon /></button>
                     <button onClick={handleClearTeam} type="button" aria-label="Clear team" className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{backgroundColor: colors.cardLight, color: colors.text}} title="Clear Team"><ClearIcon /></button>
@@ -1640,6 +1650,7 @@ const TeamBuilderView = ({
             )}
         </div>
     </main>
+    </>
     );
 };
 
