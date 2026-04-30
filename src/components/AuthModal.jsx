@@ -14,7 +14,9 @@ import { CloseIcon } from './icons';
  *  - colors: theme colors object
  */
 export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onClose, colors }) {
-    const AUTH_GIF_URL = 'https://play.pokemonshowdown.com/sprites/ani/gengar.gif';
+    const randomLoginPokemons = ['pikachu', 'eevee', 'charmander', 'gengar', 'squirtle', 'togepi', 'piplup', 'snivy'];
+    const randomSelected = randomLoginPokemons[Math.floor(Math.random() * randomLoginPokemons.length)];
+    const AUTH_GIF_URL = `https://play.pokemonshowdown.com/sprites/ani/${randomSelected}.gif`;
     const [mode, setMode] = useState(initialMode);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -98,12 +100,12 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                     >
                         <img
                             src={AUTH_GIF_URL}
-                            alt="Pokemon animado"
+                            alt="Animated Pokemon"
                             loading="lazy"
                             className="w-24 h-24 image-pixelated"
                         />
                         <p className="text-[11px] mt-2 text-center" style={{ color: colors.textMuted }}>
-                            {isSignUp ? 'Comece sua jornada de treinador!' : 'Seu time esta te esperando!'}
+                            {isSignUp ? 'Start your journey!' : 'Your team is waiting for you!'}
                         </p>
                     </div>
 

@@ -10,8 +10,8 @@ import {
 import { CloseIcon, ShareIcon } from './icons';
 
 // Author/brand link baked into every shared snippet.
-const BRAND_URL = 'https://github.com/ensinho';
-const BRAND_LABEL = 'github.com/ensinho';
+const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
+const BRAND_LABEL = 'github.com/ensinho/pokemonTeamBuilder';
 const BRAND_LOGO_URL = `${import.meta.env.BASE_URL || '/'}LogoCuteGengarRounded.png`.replace(/\/{2,}/g, '/');
 
 // ---------------------------------------------------------------------------
