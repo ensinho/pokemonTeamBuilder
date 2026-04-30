@@ -314,8 +314,62 @@ export const ShareSnippetModal = ({
         [title]
     );
 
+    const isCoarsePointerDevice = useMemo(() => {
+        if (typeof window === 'undefined') return false;
+        const hasCoarsePointer =
+            typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches;
+        const hasTouchPoints = typeof navigator !== 'undefined' && navigator.maxTouchPoints > 0;
+        return hasCoarsePointer || hasTouchPoints;
+    }, []);
+
+    const canShareFiles = useMemo(() => {
+        if (
+            typeof navigator === 'undefined' ||
+            typeof navigator.share !== 'function' ||
+            typeof navigator.canShare !== 'function' ||
+            typeof File === 'undefined'
+        ) {
+            return false;
+        }
+
+        try {
+            const probeFile = new File(['pokemon'], 'probe.png', { type: 'image/png' });
+            return navigator.canShare({ files: [probeFile] });
+        } catch {
+            return false;
+        }
+    }, []);
+
+    const shareImageFile = useCallback(
+        async (sharePayload = {}) => {
+            if (!canShareFiles) return false;
+
+            const blob = await exportBlob();
+            const file = new File([blob], fileName, { type: 'image/png' });
+
+            if (!navigator.canShare({ files: [file] })) {
+                return false;
+            }
+
+            await navigator.share({ ...sharePayload, files: [file] });
+            return true;
+        },
+        [canShareFiles, exportBlob, fileName]
+    );
+
+    const prefersNativeSave = isCoarsePointerDevice && canShareFiles;
+
     const handleDownload = useCallback(async () => {
         try {
+            if (prefersNativeSave) {
+                const openedShareSheet = await shareImageFile({
+                    title: title || 'My Pokémon Team',
+                });
+
+                if (openedShareSheet) {
+                    return;
+                }
+            }
             const blob = await exportBlob();
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -326,10 +380,11 @@ export const ShareSnippetModal = ({
             a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
             showToast?.('Snippet downloaded!', 'success');
-        } catch {
+        } catch (err) {
+            if (err && err.name === 'AbortError') return;
             showToast?.('Could not generate image.', 'error');
         }
-    }, [exportBlob, fileName, showToast]);
+    }, [prefersNativeSave, shareImageFile, title, exportBlob, fileName, showToast]);
 
     const handleCopyLink = useCallback(async () => {
         if (!shareUrl) return;
@@ -356,18 +411,18 @@ export const ShareSnippetModal = ({
 
     const handleNativeShare = useCallback(async () => {
         try {
-            const blob = await exportBlob();
-            const file = new File([blob], fileName, { type: 'image/png' });
             const sharePayload = {
                 title: title || 'My Pokémon Team',
                 text: shareUrl
                     ? `${title || 'My Pokémon Team'} — ${shareUrl}`
                     : title || 'My Pokémon Team',
             };
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({ ...sharePayload, files: [file] });
+
+            const didShareFile = await shareImageFile(sharePayload);
+            if (didShareFile) {
                 return;
             }
+
             if (navigator.share) {
                 await navigator.share({ ...sharePayload, url: shareUrl || undefined });
                 return;
@@ -378,7 +433,7 @@ export const ShareSnippetModal = ({
             if (err && err.name === 'AbortError') return; // user cancelled
             showToast?.('Sharing failed. Try downloading instead.', 'error');
         }
-    }, [exportBlob, fileName, title, shareUrl, handleCopyLink, showToast]);
+    }, [shareImageFile, title, shareUrl, handleCopyLink, showToast]);
 
     if (!isOpen) return null;
 
@@ -410,7 +465,9 @@ export const ShareSnippetModal = ({
                             Share your team
                         </h3>
                         <p className="text-xs mt-0.5" style={{ color: colors.textMuted }}>
-                            Generate a snippet image, then share or copy the link.
+                            {prefersNativeSave
+                                ? 'On mobile, Save image opens your phone share sheet so you can save it to Photos.'
+                                : 'Generate a snippet image, then share or copy the link.'}
                         </p>
                     </div>
                     <button
@@ -542,7 +599,7 @@ export const ShareSnippetModal = ({
                         className="py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                         style={{ backgroundColor: colors.cardLight, color: colors.text }}
                     >
-                        Download image
+                        {prefersNativeSave ? 'Save image' : 'Download image'}
                     </button>
                     <button
                         type="button"
@@ -555,6 +612,11 @@ export const ShareSnippetModal = ({
                         {canNativeShare ? 'Share…' : 'Copy link'}
                     </button>
                 </div>
+                {prefersNativeSave && (
+                    <p className="mt-2 text-[11px]" style={{ color: colors.textMuted }}>
+                        Tip: on iPhone, choose Save Image or Save to Photos in the native sheet.
+                    </p>
+                )}
             </div>
         </div>
     );

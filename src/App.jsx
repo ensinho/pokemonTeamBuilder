@@ -832,7 +832,7 @@ const GreetingPokemonSelectorModal = ({ onClose, onSelect, allPokemons, currentP
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: colors.primary }} />
                     </div>
                 ) : (
-                    <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-8 gap-3">
+                    <div className="grid grid-cols-3  md:grid-cols-5 lg:grid-cols-8 gap-3">
                         {displayedPokemons.map(pokemon => (
                             <button
                                 key={pokemon.id}

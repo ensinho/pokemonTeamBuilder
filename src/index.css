@@ -106,6 +106,7 @@
 html, body {
     font-family: var(--font-body);
     font-feature-settings: 'ss01', 'cv11';
+    -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
@@ -185,6 +186,16 @@ input[type='checkbox']:checked + div + div {
 .text-accent { color: var(--color-accent); }
 .bg-accent { background-color: var(--color-accent); }
 .bg-accent-soft { background-color: var(--color-accent-soft); }
+
+/* iOS Safari zooms focused fields when their font-size is under 16px.
+   Keep edit controls at a safe size on smaller screens instead of disabling zoom. */
+@media (max-width: 768px) {
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
 
 @media (prefers-reduced-motion: reduce) {
     *,
