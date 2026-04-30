@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 import { typeIcons } from '../constants/types';
 import { EmptyState } from './EmptyState';
 import { Sprite } from './Sprite';
 import { TypeBadge } from './TypeBadge';
+import { AnchoredPopover } from './AnchoredPopover';
 import {
     ClearIcon,
+    InfoIcon,
     SaveIcon,
     ShareIcon,
     ShowdownIcon,
@@ -104,6 +106,149 @@ const MobilePokemonPickerCard = ({
                 </div>
             </div>
         </article>
+    );
+};
+
+// ---------------------------------------------------------------------------
+// TeamAnalysisChip — condensed indicator that lives under the team slots.
+// Tap toggles a small popover with the breakdown so users on mobile can
+// glance at the team rating without scrolling to the full analysis section.
+// ---------------------------------------------------------------------------
+const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const triggerRef = useRef(null);
+    const popoverRef = useRef(null);
+
+    const { rating, ratingColor, strengthCount, weaknessCount, topStrengths, topWeaknesses } = useMemo(() => {
+        const sCount = teamAnalysis?.strengths?.size || 0;
+        const wEntries = Object.entries(teamAnalysis?.weaknesses || {});
+        const wCount = wEntries.length;
+        // Score ranges roughly -12..+18; coarse bucketing keeps the chip
+        // language honest without pretending to be a deep tier list.
+        const score = sCount * 2 - wEntries.reduce((sum, [, v]) => sum + Math.max(0, v), 0);
+        let label = 'Building';
+        let color = colors.textMuted;
+        if (teamSize >= 1) {
+            if (score >= 8) { label = 'Excellent'; color = colors.success; }
+            else if (score >= 3) { label = 'Strong'; color = colors.success; }
+            else if (score >= -2) { label = 'Balanced'; color = colors.info || colors.primary; }
+            else { label = 'Risky'; color = colors.danger; }
+        }
+        return {
+            rating: label,
+            ratingColor: color,
+            strengthCount: sCount,
+            weaknessCount: wCount,
+            topStrengths: Array.from(teamAnalysis?.strengths || []).sort().slice(0, 6),
+            topWeaknesses: wEntries.sort(([, a], [, b]) => b - a).slice(0, 6),
+        };
+    }, [teamAnalysis, teamSize, colors]);
+
+    useEffect(() => {
+        if (!isOpen) return undefined;
+        const onDocClick = (event) => {
+            if (triggerRef.current?.contains(event.target) || popoverRef.current?.contains(event.target)) {
+                return;
+            }
+            if (triggerRef.current || popoverRef.current) {
+                setIsOpen(false);
+            }
+        };
+        const onKey = (event) => { if (event.key === 'Escape') setIsOpen(false); };
+        document.addEventListener('mousedown', onDocClick);
+        document.addEventListener('touchstart', onDocClick);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', onDocClick);
+            document.removeEventListener('touchstart', onDocClick);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, [isOpen]);
+
+    if (teamSize === 0) return null;
+
+    return (
+        <div className="mt-2.5 flex justify-center">
+            <button
+                ref={triggerRef}
+                type="button"
+                onClick={() => setIsOpen((v) => !v)}
+                aria-expanded={isOpen}
+                aria-label="Show team analysis"
+                className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                style={{
+                    backgroundColor: colors.cardLight,
+                    color: colors.text,
+                    border: `1px solid ${ratingColor}55`,
+                }}
+            >
+                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: ratingColor }} aria-hidden="true" />
+                <span style={{ color: ratingColor }}>{rating}</span>
+                <span className="opacity-70">·</span>
+                <span style={{ color: colors.success }}>{strengthCount}↑</span>
+                <span style={{ color: colors.danger }}>{weaknessCount}↓</span>
+                <InfoIcon />
+            </button>
+
+            <AnchoredPopover
+                isOpen={isOpen}
+                anchorRef={triggerRef}
+                popoverRef={popoverRef}
+                role="dialog"
+                ariaLabel="Team analysis summary"
+                className="w-[min(20rem,calc(100vw-2rem))] rounded-2xl p-3 shadow-2xl"
+                style={{
+                    backgroundColor: colors.card,
+                    border: `1px solid ${colors.cardLight}`,
+                }}
+                arrowStyle={{
+                    backgroundColor: colors.card,
+                    borderTop: `1px solid ${colors.cardLight}`,
+                    borderLeft: `1px solid ${colors.cardLight}`,
+                }}
+            >
+                    <div className="mb-2 flex items-center justify-between gap-2">
+                        <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: colors.textMuted }}>
+                            Team Snapshot
+                        </p>
+                        <span
+                            className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                            style={{ backgroundColor: `${ratingColor}22`, color: ratingColor }}
+                        >
+                            {rating}
+                        </span>
+                    </div>
+
+                    <div className="mb-2">
+                        <p className="text-[10px] font-semibold mb-1" style={{ color: colors.success }}>
+                            Offensive Coverage ({strengthCount})
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                            {topStrengths.length > 0 ? topStrengths.map((type) => (
+                                <TypeBadge key={type} type={type} colors={colors} />
+                            )) : (
+                                <span className="text-[11px]" style={{ color: colors.textMuted }}>No advantages yet.</span>
+                            )}
+                        </div>
+                    </div>
+
+                    <div>
+                        <p className="text-[10px] font-semibold mb-1" style={{ color: colors.danger }}>
+                            Defensive Weaknesses ({weaknessCount})
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1">
+                            {topWeaknesses.length > 0 ? topWeaknesses.map(([type, score]) => (
+                                <span key={type} className="inline-flex items-center gap-1">
+                                    <TypeBadge type={type} colors={colors} />
+                                    <span className="text-[10px] font-bold" style={{ color: colors.danger }}>×{score}</span>
+                                </span>
+                            )) : (
+                                <span className="text-[11px]" style={{ color: colors.textMuted }}>Rock solid defence.</span>
+                            )}
+                        </div>
+                    </div>
+            </AnchoredPopover>
+        </div>
     );
 };
 
@@ -212,7 +357,7 @@ export const MobileTeamBuilderView = ({
     return (
         <div className="space-y-4 lg:hidden">
             <div
-                className="sticky top-0 z-30 -mx-4 border-b px-4 pb-4 pt-3 backdrop-blur-xl"
+                className="sticky top-0 z-20 -mx-4 border-b px-4 pb-4 pt-3 backdrop-blur-xl"
                 style={{
                     background: `linear-gradient(180deg, ${colors.background}F5 0%, ${colors.background}EA 100%)`,
                     borderColor: colors.cardLight,
@@ -294,6 +439,12 @@ export const MobileTeamBuilderView = ({
                             />
                         ))}
                     </div>
+
+                    <TeamAnalysisChip
+                        teamAnalysis={teamAnalysis}
+                        teamSize={currentTeam.length}
+                        colors={colors}
+                    />
                 </section>
             </div>
 
@@ -440,6 +591,60 @@ export const MobileTeamBuilderView = ({
                 </div>
             </section>
 
+            {currentTeam.length > 0 && (
+                <section
+                    className="rounded-[28px] p-4 animate-fade-in"
+                    style={{ backgroundColor: colors.card, boxShadow: 'var(--elevation-2)' }}
+                    aria-label="Team analysis"
+                >
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                        <p
+                            className="text-[11px] font-bold uppercase tracking-[0.24em]"
+                            style={{ color: colors.textMuted }}
+                        >
+                            Team Analysis
+                        </p>
+                        <span className="text-[10px]" style={{ color: colors.textMuted }}>
+                            tap chip above for details
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-2xl p-3" style={{ backgroundColor: colors.background }}>
+                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.success }}>
+                                Strengths · {teamAnalysis.strengths.size}
+                            </p>
+                            <div className="flex flex-wrap gap-1">
+                                {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().slice(0, 8).map((type) => (
+                                    <TypeBadge key={type} type={type} colors={colors} />
+                                )) : (
+                                    <span className="text-[11px]" style={{ color: colors.textMuted }}>None yet.</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl p-3" style={{ backgroundColor: colors.background }}>
+                            <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.danger }}>
+                                Weaknesses · {Object.keys(teamAnalysis.weaknesses).length}
+                            </p>
+                            <div className="flex flex-wrap items-center gap-1">
+                                {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses)
+                                    .sort(([, a], [, b]) => b - a)
+                                    .slice(0, 8)
+                                    .map(([type, score]) => (
+                                        <span key={type} className="inline-flex items-center gap-0.5">
+                                            <TypeBadge type={type} colors={colors} />
+                                            <span className="text-[10px] font-bold" style={{ color: colors.danger }}>×{score}</span>
+                                        </span>
+                                    )) : (
+                                    <span className="text-[11px]" style={{ color: colors.textMuted }}>Rock solid.</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            )}
+
             <section
                 className="rounded-[28px] p-5"
                 style={{ backgroundColor: colors.card, boxShadow: 'var(--elevation-2)' }}
@@ -530,59 +735,6 @@ export const MobileTeamBuilderView = ({
                 </div>
             </section>
 
-            {currentTeam.length > 0 && (
-                <section
-                    className="rounded-[28px] p-5"
-                    style={{ backgroundColor: colors.card, boxShadow: 'var(--elevation-2)' }}
-                >
-                    <p
-                        className="text-[11px] font-bold uppercase tracking-[0.24em]"
-                        style={{ color: colors.textMuted }}
-                    >
-                        Team Analysis
-                    </p>
-                    <h3 className="mt-2 text-xl font-bold" style={{ color: colors.text }}>
-                        Coverage snapshot
-                    </h3>
-
-                    <div className="mt-4">
-                        <h4 className="font-semibold" style={{ color: colors.success }}>
-                            Offensive Coverage
-                        </h4>
-                        <div className="mt-2 flex flex-wrap gap-1">
-                            {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().map((type) => (
-                                <TypeBadge key={type} type={type} colors={colors} />
-                            )) : (
-                                <p className="text-sm" style={{ color: colors.textMuted }}>
-                                    No type advantages found.
-                                </p>
-                            )}
-                        </div>
-                    </div>
-
-                    <div className="mt-4">
-                        <h4 className="font-semibold" style={{ color: colors.danger }}>
-                            Defensive Weaknesses
-                        </h4>
-                        <div className="mt-2 flex flex-wrap gap-1">
-                            {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses)
-                                .sort(([, scoreA], [, scoreB]) => scoreB - scoreA)
-                                .map(([type, score]) => (
-                                    <div key={type} className="flex items-center gap-1">
-                                        <TypeBadge type={type} colors={colors} />
-                                        <span className="text-xs" style={{ color: colors.danger }}>
-                                            ({score}x)
-                                        </span>
-                                    </div>
-                                )) : (
-                                <p className="text-sm" style={{ color: colors.textMuted }}>
-                                    Your team is rock solid.
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                </section>
-            )}
         </div>
     );
 };

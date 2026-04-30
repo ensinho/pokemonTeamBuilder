@@ -41,6 +41,9 @@ import { AuthModal } from './components/AuthModal';
 import { SyncPromptModal } from './components/SyncPromptModal';
 import { ProfileView } from './components/ProfileView';
 import { MobileTeamBuilderView } from './components/MobileTeamBuilderView';
+import { ShareSnippetModal } from './components/ShareSnippetModal';
+import { SHARE_BACKGROUNDS } from './assets/backgrounds';
+import { AnchoredPopover } from './components/AnchoredPopover';
 import { useModalA11y } from './hooks/useModalA11y';
 
 // Patch Notes Modal Component
@@ -205,6 +208,47 @@ const HomeFlowVisual = ({ colors }) => (
     </div>
 );
 
+// Mirrors the Team Share Snippet modal preview + action flow.
+const SNIPPET_VISUAL_BG = SHARE_BACKGROUNDS[0]?.url || '';
+
+const SnippetVisual = ({ colors }) => (
+    <div
+        className="rounded-md p-2"
+        style={{ backgroundColor: colors.background }}
+        aria-hidden="true"
+    >
+        <div
+            className="relative rounded-md overflow-hidden p-2"
+            style={{
+                backgroundImage: `linear-gradient(135deg, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.42) 100%), url(${SNIPPET_VISUAL_BG})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                border: `1px solid ${colors.primary}44`,
+            }}
+        >
+            <p className="text-[7px] font-bold uppercase tracking-wider text-white/90 mb-1">
+                Team Snippet
+            </p>
+            <div className="flex items-end justify-between gap-2">
+                <div className="flex -space-x-1">
+                    {[0, 1, 2].map((i) => (
+                        <span
+                            key={i}
+                            className="w-4 h-4 rounded-full border"
+                            style={{ borderColor: 'rgba(255,255,255,0.7)', backgroundColor: 'rgba(255,255,255,0.2)' }}
+                        />
+                    ))}
+                </div>
+                <span className="w-4 h-4 rounded-sm" style={{ backgroundColor: '#fff' }} />
+            </div>
+        </div>
+        <div className="mt-2 flex items-center gap-1.5">
+            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold text-white" style={{ backgroundColor: colors.primary }}>Share</span>
+            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold" style={{ backgroundColor: colors.cardLight, color: colors.text }}>Download</span>
+        </div>
+    </div>
+);
+
 // Mirrors the new ProfileView trainer card hero — gradient banner with
 // avatar, name, and the streak badge that's the "hooked" element.
 const ProfileVisual = ({ colors }) => (
@@ -310,7 +354,8 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
     const [suggestionText, setSuggestionText] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [sent, setSent] = useState(false);
-    const containerRef = useRef(null);
+    const triggerRef = useRef(null);
+    const popoverRef = useRef(null);
     const guide = PAGE_GUIDE_TIPS[pageKey];
 
     useEffect(() => {
@@ -318,15 +363,20 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
         setSuggestionText('');
         setSent(false);
         const handleOutside = (e) => {
-            if (containerRef.current && !containerRef.current.contains(e.target)) {
+            if (triggerRef.current?.contains(e.target) || popoverRef.current?.contains(e.target)) {
+                return;
+            }
+            if (triggerRef.current || popoverRef.current) {
                 setIsOpen(false);
             }
         };
         const handleEsc = (e) => { if (e.key === 'Escape') setIsOpen(false); };
         document.addEventListener('mousedown', handleOutside);
+        document.addEventListener('touchstart', handleOutside);
         document.addEventListener('keydown', handleEsc);
         return () => {
             document.removeEventListener('mousedown', handleOutside);
+            document.removeEventListener('touchstart', handleOutside);
             document.removeEventListener('keydown', handleEsc);
         };
     }, [isOpen]);
@@ -358,8 +408,9 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
     if (!guide) return null;
 
     return (
-        <div ref={containerRef} className="relative inline-flex items-center">
+        <div className="inline-flex items-center">
             <button
+                ref={triggerRef}
                 type="button"
                 onClick={() => setIsOpen(v => !v)}
                 aria-label={`Guide for ${guide.title}`}
@@ -373,16 +424,24 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
                 <InfoIcon />
             </button>
 
-            {isOpen && (
-                <div
-                    className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-80 rounded-xl shadow-2xl animate-fade-in flex flex-col"
-                    style={{
-                        backgroundColor: colors.card,
-                        border: `1px solid ${colors.primary}40`,
-                    }}
-                    role="dialog"
-                    aria-label={`${guide.title} guide`}
-                >
+            <AnchoredPopover
+                isOpen={isOpen}
+                anchorRef={triggerRef}
+                popoverRef={popoverRef}
+                className="w-[min(20rem,calc(100vw-1.5rem))] rounded-xl shadow-2xl flex flex-col"
+                style={{
+                    backgroundColor: colors.card,
+                    border: `1px solid ${colors.primary}40`,
+                }}
+                role="dialog"
+                ariaLabel={`${guide.title} guide`}
+                viewportPadding={12}
+                arrowStyle={{
+                    backgroundColor: colors.card,
+                    borderTop: `1px solid ${colors.primary}40`,
+                    borderLeft: `1px solid ${colors.primary}40`,
+                }}
+            >
                     {/* Tips */}
                     <div className="p-4">
                         <div className="flex items-center gap-2 mb-3">
@@ -443,8 +502,7 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
                             </>
                         )}
                     </div>
-                </div>
-            )}
+            </AnchoredPopover>
         </div>
     );
 };
@@ -459,6 +517,15 @@ const PatchNotesModal = ({ onClose, colors }) => {
 
     const notes = [
         {
+            key: 'snippet',
+            Icon: ShareIcon,
+            title: 'Team Snippet Sharing',
+            description: 'Share your team as a polished image with custom title, background, QR code, and quick download/share actions.',
+            cta: 'Open builder and tap Share',
+            path: '/builder',
+            Visual: SnippetVisual,
+        },
+        {
             key: 'profile',
             Icon: AccountIcon,
             title: 'Profile, Themes & Streak',
@@ -466,15 +533,6 @@ const PatchNotesModal = ({ onClose, colors }) => {
             cta: 'Open your profile',
             path: '/profile',
             Visual: ProfileVisual,
-        },
-        {
-            key: 'bst',
-            Icon: ChartColumnIcon,
-            title: 'BST Calculations + Info',
-            description: 'The team summary now shows Average BST, type diversity and offensive lean at a glance.',
-            cta: 'See it on a team',
-            path: '/builder',
-            Visual: BstVisual,
         },
         {
             key: 'like',
@@ -485,6 +543,7 @@ const PatchNotesModal = ({ onClose, colors }) => {
             path: '/',
             Visual: LikeFeedbackVisual,
         },
+        
     ];
 
     return (
@@ -3284,6 +3343,7 @@ export default function App() {
     const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [deleteConfirmation, setDeleteConfirmation] = useState({ isOpen: false, teamId: null, teamName: '' });
+    const [shareModal, setShareModal] = useState({ isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' });
     
     // Check if patch notes should be shown (only once per version)
     useEffect(() => {
@@ -3514,23 +3574,49 @@ useEffect(() => {
                 const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
                 const teamPokemonDetails = await Promise.all(detailsPromises);
                 
-                const customizedTeam = teamPokemonDetails.map((detail, i) => ({
-                    ...detail,
-                    instanceId: teamData.pokemons[i].instanceId, // Make sure instanceId is loaded
-                    customization: teamData.pokemons[i].customization
-                }));
+                const customizedTeam = teamPokemonDetails.map((detail, i) => {
+                    if (!detail) return null;
+                    const savedPokemonData = teamData.pokemons[i] || {};
+                    // Provide defaults so older shared teams (without per-pokemon
+                    // customization) still load without throwing in the editor.
+                    const defaultCustomization = {
+                        item: '',
+                        nature: 'serious',
+                        teraType: detail.types[0],
+                        isShiny: false,
+                        ability: detail.abilities[0].name,
+                        moves: detail.moves.slice(0, 4).map(m => m.name),
+                        evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
+                        ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
+                    };
+                    return {
+                        ...detail,
+                        instanceId: savedPokemonData.instanceId || `${detail.id}-${Date.now()}-${i}`,
+                        customization: { ...defaultCustomization, ...(savedPokemonData.customization || {}) },
+                    };
+                });
 
                 setCurrentTeam(customizedTeam.filter(Boolean));
                 setTeamName(teamData.name);
                 setEditingTeamId(null);
                 showToast(`Loaded team: ${teamData.name}`, "success");
+
+                // Drop them straight into the builder so they can tweak/save
+                // the team they just received. Strip the ?team= query param so
+                // a refresh doesn't re-trigger the loader.
+                navigate('/builder');
+                try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete('team');
+                    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+                } catch { /* ignore history failures */ }
             } else {
                 showToast("Shared team not found.", "error");
             }
         } catch (error) {
             showToast("Failed to load shared team.", "error");
         }
-    }, [db, showToast, sharedTeamLoaded]);
+    }, [db, showToast, sharedTeamLoaded, navigate]);
 
     useEffect(() => {
         if (!db || isLoading || !isAuthReady) return;
@@ -3709,18 +3795,57 @@ useEffect(() => {
         }
     }, [isFetchingMore, hasMore, db, lastVisibleDoc, currentPage, selectedGeneration, debouncedSearchTerm, JSON.stringify(Array.from(selectedTypes)), pokedexSelectedGeneration, debouncedPokedexSearchTerm, JSON.stringify(Array.from(pokedexSelectedTypes))]);
 
-    // Observer para o scroll infinito
-    const observer = useRef();
-    const lastPokemonElementRef = useCallback(node => {
-        if (isFetchingMore || isLoading) return;
-        if (observer.current) observer.current.disconnect();
-        observer.current = new IntersectionObserver(entries => {
-            if (entries[0].isIntersecting && hasMore) {
-                fetchMorePokemons();
+    // Observer para o scroll infinito.
+    //
+    // Both the desktop (`hidden lg:grid`) and mobile (`lg:hidden`) builders
+    // mount their own picker grids at the same time — only one is visible
+    // via CSS. The previous implementation stored a single observed node, so
+    // whichever component rendered last (desktop) would overwrite the mobile
+    // sentinel with a `display:none` element that never intersects the
+    // viewport — breaking infinite scroll on mobile after the first batch.
+    //
+    // We now track every currently-mounted "last card" node in a Set and
+    // observe all of them. Whichever one is actually visible triggers the
+    // fetch; hidden ones simply never report `isIntersecting`.
+    const observer = useRef(null);
+    const observedNodes = useRef(new Set());
+    // Keep the latest fetchMorePokemons in a ref so the IntersectionObserver
+    // (created once) never invokes a stale closure with an outdated
+    // `lastVisibleDoc`. Using a stale closure causes Firestore to startAfter
+    // the same doc repeatedly, returning the same 50 Pokémon and producing
+    // duplicate React keys (e.g. 99, 100, ...).
+    const fetchMoreRef = useRef(fetchMorePokemons);
+    useEffect(() => {
+        fetchMoreRef.current = fetchMorePokemons;
+    }, [fetchMorePokemons]);
+
+    const lastPokemonElementRef = useCallback((node) => {
+        if (!observer.current) {
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries.some((entry) => entry.isIntersecting)) {
+                    fetchMoreRef.current?.();
+                }
+            }, { rootMargin: '200px' });
+        }
+
+        // Drop nodes that React detached so we don't keep observing stale refs.
+        observedNodes.current.forEach((tracked) => {
+            if (!tracked.isConnected) {
+                observer.current.unobserve(tracked);
+                observedNodes.current.delete(tracked);
             }
         });
-        if (node) observer.current.observe(node);
-    }, [isFetchingMore, isLoading, hasMore, fetchMorePokemons]);
+
+        if (node && !observedNodes.current.has(node)) {
+            observedNodes.current.add(node);
+            observer.current.observe(node);
+        }
+    }, []);
+
+    useEffect(() => () => {
+        if (observer.current) observer.current.disconnect();
+        observedNodes.current.clear();
+    }, []);
 
      const handleAddPokemonToTeam = useCallback((pokemon) => {
         if (currentTeam.length >= 6) return showToast("Your team is full (6 Pokémon)!", 'warning');
@@ -3800,18 +3925,41 @@ useEffect(() => {
     const handleShareTeam = useCallback(async () => {
         if (!db || !isAuthReady) return showToast("Database not ready.", "error");
         if (currentTeam.length === 0) return showToast("Cannot share an empty team!", "warning");
-        
+
+        // Snapshot the team for the snippet right away so the modal can render
+        // even before the upload completes.
+        const snippetPokemons = currentTeam.map(p => ({
+            id: p.id,
+            name: p.name,
+            sprite: p.sprite || '',
+        }));
+        const safeName = teamName || "Unnamed Team";
+
+        // Open the modal immediately. Clipboard / Web Share API calls happen
+        // from the modal's button handlers, preserving the user-gesture
+        // requirement that mobile browsers (esp. iOS Safari) enforce on
+        // navigator.clipboard.writeText / navigator.share.
+        setShareModal({ isOpen: true, shareUrl: '', pokemons: snippetPokemons, defaultTitle: safeName });
+
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
-        const teamData = { name: teamName || "Unnamed Team", pokemons: currentTeam.map(p => ({id: p.id, name: p.name, sprite: p.sprite || ''})) };
+        const teamData = {
+            name: safeName,
+            pokemons: currentTeam.map(p => ({
+                id: p.id,
+                name: p.name,
+                sprite: p.sprite || '',
+                instanceId: p.instanceId,
+                customization: p.customization,
+            })),
+            createdAt: new Date().toISOString(),
+        };
 
         try {
             await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
             const shareUrl = `${window.location.origin}${window.location.pathname}?team=${teamId}`;
-            
-            await navigator.clipboard.writeText(shareUrl);
-            showToast("Share link copied to clipboard!", "success");
-
+            setShareModal(prev => prev.isOpen ? { ...prev, shareUrl } : prev);
         } catch (error) {
+            setShareModal({ isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' });
             showToast("Could not generate share link.", "error");
         }
     }, [db, currentTeam, teamName, showToast, isAuthReady]);
@@ -4384,6 +4532,17 @@ useEffect(() => {
         {showPatchNotes && <PatchNotesModal onClose={handleClosePatchNotes} colors={colors} />}
         {showGreetingPokemonSelector && <GreetingPokemonSelectorModal onClose={() => setShowGreetingPokemonSelector(false)} onSelect={setGreetingPokemon} allPokemons={pokemons} currentPokemonId={greetingPokemonId} colors={colors} db={db} />}
 
+        {/* Share snippet modal — image preview + native share / link copy */}
+        <ShareSnippetModal
+            isOpen={shareModal.isOpen}
+            onClose={() => setShareModal({ isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' })}
+            pokemons={shareModal.pokemons}
+            defaultTitle={shareModal.defaultTitle}
+            shareUrl={shareModal.shareUrl}
+            colors={colors}
+            showToast={showToast}
+        />
+
         {/* Auth modal — sign in / sign up */}
         {authModal.open && (
             <AuthModal
@@ -4435,7 +4594,7 @@ useEffect(() => {
                 }}
             >
                 <div className="flex flex-col h-full">
-                  <div className={`flex flex-col lg:flex-row items-center gap-3 px-3.5 py-2 transition-all duration-300 `}>
+                  <div className={`flex flex-row items-center justify-between gap-3 px-3.5 py-2 transition-all duration-300 `}>
                     <img 
                       src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'} 
                       alt="Pokémon Team Builder Logo" 
