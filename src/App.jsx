@@ -3626,7 +3626,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                 </div>
 
                 <div className="space-y-2.5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-1 gap-2.5">
                        {/*  <button
                             type="button"
                             onClick={handleToggleGuideLayout}
@@ -3669,7 +3669,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                                 <span className="min-w-0">
                                     <span className="inline-flex items-center gap-2 text-sm font-bold" style={{ color: colors.text }}>
                                         <ChartColumnIcon className="w-4 h-4" />
-                                        Round filters
+                                        Filters 
                                     </span>
                                     <span className="mt-1 block text-[11px] sm:text-xs leading-relaxed" style={{ color: colors.textMuted }}>
                                         {isFiltersExpanded
@@ -3703,7 +3703,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                             className="rounded-2xl p-3 sm:p-4"
                             style={{ backgroundColor: colors.background, border: `1px solid ${colors.cardLight}` }}
                         >
-                            <div className="flex items-center gap-2 mb-2.5">
+                           {/*  <div className="flex items-center gap-2 mb-2.5">
                                 <span
                                     className="inline-flex items-center justify-center w-8 h-8 rounded-xl"
                                     style={{ backgroundColor: colors.primary + '1A', color: colors.primary }}
@@ -3718,7 +3718,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                                         Works especially well on mobile when one trainer controls the screen.
                                     </p>
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                                 {[
