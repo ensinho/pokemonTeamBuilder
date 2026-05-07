@@ -14,11 +14,13 @@ import { appId } from '../constants/firebase';
 import { HeartIcon, CloseIcon } from './icons';
 import { useModalA11y } from '../hooks/useModalA11y';
 
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
 /**
  * Compact footer feedback: a small like pill (counter) and a tiny
  * "Have a suggestion?" text link that opens a modal with a textarea.
  */
-export const FooterFeedback = ({ db, userId, colors, showToast }) => {
+export const FooterFeedback = ({ db, userId, userEmail, displayName, colors, showToast }) => {
     const [likeCount, setLikeCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
     const [isToggling, setIsToggling] = useState(false);
@@ -130,6 +132,8 @@ export const FooterFeedback = ({ db, userId, colors, showToast }) => {
                     onClose={() => setShowSuggestionModal(false)}
                     db={db}
                     userId={userId}
+                    userEmail={userEmail}
+                    displayName={displayName}
                     colors={colors}
                     showToast={showToast}
                 />
@@ -138,29 +142,53 @@ export const FooterFeedback = ({ db, userId, colors, showToast }) => {
     );
 };
 
-const SuggestionModal = ({ onClose, db, userId, colors, showToast }) => {
+const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, colors, showToast }) => {
     const dialogRef = useModalA11y(onClose);
+    const [contactEmail, setContactEmail] = useState(userEmail || '');
     const [suggestion, setSuggestion] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const emailRef = useRef(null);
     const textareaRef = useRef(null);
 
     useEffect(() => {
-        textareaRef.current?.focus();
-    }, []);
+        if (userEmail) {
+            textareaRef.current?.focus();
+            return;
+        }
+        emailRef.current?.focus();
+    }, [userEmail]);
 
     const handleSubmit = useCallback(
         async (e) => {
             e.preventDefault();
             const text = suggestion.trim();
+            const normalizedEmail = contactEmail.trim().toLowerCase();
             if (!db || !userId || !text || isSubmitting) return;
+            if (!isValidEmail(normalizedEmail)) {
+                showToast?.('Add a valid email so I can reply.', 'warning');
+                return;
+            }
             if (text.length > 1000) {
                 showToast?.('Suggestion is too long (max 1000 chars).', 'warning');
                 return;
             }
             setIsSubmitting(true);
             try {
+                const normalizedDisplayName = displayName?.trim() || null;
                 await addDoc(collection(db, `artifacts/${appId}/suggestions`), {
                     userId,
+                    userEmail: normalizedEmail,
+                    contactEmail: normalizedEmail,
+                    authEmail: userEmail || null,
+                    displayName: normalizedDisplayName,
+                    source: 'footer',
+                    pageTitle: 'Footer',
+                    author: {
+                        userId,
+                        email: normalizedEmail,
+                        authEmail: userEmail || null,
+                        displayName: normalizedDisplayName,
+                    },
                     text,
                     createdAt: serverTimestamp(),
                     userAgent:
@@ -175,10 +203,11 @@ const SuggestionModal = ({ onClose, db, userId, colors, showToast }) => {
                 setIsSubmitting(false);
             }
         },
-        [db, userId, suggestion, isSubmitting, showToast, onClose]
+        [db, userId, userEmail, displayName, contactEmail, suggestion, isSubmitting, showToast, onClose]
     );
 
     const remaining = 1000 - suggestion.length;
+    const isContactEmailValid = isValidEmail(contactEmail);
 
     return (
         <div
@@ -220,6 +249,21 @@ const SuggestionModal = ({ onClose, db, userId, colors, showToast }) => {
                 </p>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                    <input
+                        ref={emailRef}
+                        type="email"
+                        value={contactEmail}
+                        onChange={(e) => setContactEmail(e.target.value.slice(0, 254))}
+                        placeholder="Your email for replies"
+                        autoComplete="email"
+                        maxLength={254}
+                        className="w-full p-3 rounded-lg border-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        style={{
+                            backgroundColor: colors.cardLight,
+                            color: colors.text,
+                            borderColor: colors.cardLight,
+                        }}
+                    />
                     <textarea
                         ref={textareaRef}
                         value={suggestion}
@@ -259,6 +303,7 @@ const SuggestionModal = ({ onClose, db, userId, colors, showToast }) => {
                                 disabled={
                                     !db ||
                                     !userId ||
+                                    !isContactEmailValid ||
                                     !suggestion.trim() ||
                                     isSubmitting
                                 }

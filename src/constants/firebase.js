@@ -10,3 +10,8 @@ export const firebaseConfig = {
 
 export const appId = import.meta.env.VITE_APP_ID || 'pokemonTeamBuilder';
 export const POKEAPI_BASE_URL = import.meta.env.VITE_POKEAPI_BASE_URL || 'https://pokeapi.co/api/v2';
+export const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
+    .split(',')
+    .map(email => email.trim().toLowerCase())
+    .filter(Boolean);
+export const ADMIN_EMAIL_ENDPOINT = import.meta.env.VITE_ADMIN_EMAIL_ENDPOINT || '';

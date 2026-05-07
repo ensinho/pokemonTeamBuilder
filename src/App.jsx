@@ -17,7 +17,7 @@ import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, q
 // Extracted modules
 import { PATCH_NOTES_VERSION, POKEBALL_PLACEHOLDER_URL, THEMES, applyTheme } from './constants/theme';
 import { typeColors, typeIcons, typeChart } from './constants/types';
-import { firebaseConfig, appId, POKEAPI_BASE_URL } from './constants/firebase';
+import { firebaseConfig, appId, POKEAPI_BASE_URL, ADMIN_EMAILS } from './constants/firebase';
 import { GENERATION_RANGES, LEGENDARY_IDS, NATURES_LIST, POKEMON_TIPS } from './constants/pokemon';
 import { useDebounce } from './hooks/useDebounce';
 import {
@@ -42,6 +42,7 @@ import { SyncPromptModal } from './components/SyncPromptModal';
 import { ProfileView } from './components/ProfileView';
 import { MobileTeamBuilderView } from './components/MobileTeamBuilderView';
 import { ShareSnippetModal } from './components/ShareSnippetModal';
+import { AdminDashboardView } from './components/AdminDashboardView';
 import { SHARE_BACKGROUNDS } from './assets/backgrounds';
 import { AnchoredPopover } from './components/AnchoredPopover';
 import { useModalA11y } from './hooks/useModalA11y';
@@ -349,8 +350,11 @@ const PAGE_GUIDE_TIPS = {
     },
 };
 
-const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
+const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+const PageGuide = ({ colors, pageKey, db, userId, userEmail, displayName, showToast }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [suggestionEmail, setSuggestionEmail] = useState(userEmail || '');
     const [suggestionText, setSuggestionText] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [sent, setSent] = useState(false);
@@ -360,6 +364,7 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
 
     useEffect(() => {
         if (!isOpen) return;
+        setSuggestionEmail(userEmail || '');
         setSuggestionText('');
         setSent(false);
         const handleOutside = (e) => {
@@ -379,16 +384,33 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
             document.removeEventListener('touchstart', handleOutside);
             document.removeEventListener('keydown', handleEsc);
         };
-    }, [isOpen]);
+    }, [isOpen, userEmail]);
 
     const handleSendSuggestion = useCallback(async (e) => {
         e.preventDefault();
         const text = suggestionText.trim();
+        const normalizedEmail = suggestionEmail.trim().toLowerCase();
         if (!db || !userId || !text || isSending) return;
+        if (!isValidEmail(normalizedEmail)) {
+            showToast?.('Add a valid email so I can reply.', 'warning');
+            return;
+        }
         setIsSending(true);
         try {
+            const normalizedDisplayName = displayName?.trim() || null;
             await addDoc(collection(db, `artifacts/${appId}/suggestions`), {
                 userId,
+                userEmail: normalizedEmail,
+                contactEmail: normalizedEmail,
+                authEmail: userEmail || null,
+                displayName: normalizedDisplayName,
+                source: 'pageGuide',
+                author: {
+                    userId,
+                    email: normalizedEmail,
+                    authEmail: userEmail || null,
+                    displayName: normalizedDisplayName,
+                },
                 text,
                 page: pageKey,
                 pageTitle: guide?.title ?? pageKey,
@@ -403,9 +425,11 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
         } finally {
             setIsSending(false);
         }
-    }, [db, userId, suggestionText, isSending, pageKey, guide, showToast]);
+    }, [db, userId, userEmail, displayName, suggestionEmail, suggestionText, isSending, pageKey, guide, showToast]);
 
     if (!guide) return null;
+
+    const isSuggestionEmailValid = isValidEmail(suggestionEmail);
 
     return (
         <div className="inline-flex items-center">
@@ -480,24 +504,36 @@ const PageGuide = ({ colors, pageKey, db, userId, showToast }) => {
                                 <p className="text-[11px] mb-2" style={{ color: colors.textMuted }}>
                                     Have a suggestion about this page?
                                 </p>
-                                <form onSubmit={handleSendSuggestion} className="flex gap-2">
+                                <form onSubmit={handleSendSuggestion} className="flex flex-col gap-2">
                                     <input
-                                        type="text"
-                                        value={suggestionText}
-                                        onChange={(e) => setSuggestionText(e.target.value.slice(0, 500))}
-                                        placeholder="Your idea..."
-                                        maxLength={500}
-                                        className="flex-1 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        type="email"
+                                        value={suggestionEmail}
+                                        onChange={(e) => setSuggestionEmail(e.target.value.slice(0, 254))}
+                                        placeholder="Your email"
+                                        autoComplete="email"
+                                        maxLength={254}
+                                        className="w-full px-3 py-1.5 rounded-lg text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         style={{ backgroundColor: colors.cardLight, color: colors.text }}
                                     />
-                                    <button
-                                        type="submit"
-                                        disabled={!suggestionText.trim() || isSending || !db || !userId}
-                                        className="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                        style={{ backgroundColor: colors.primary }}
-                                    >
-                                        {isSending ? '...' : 'Send'}
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={suggestionText}
+                                            onChange={(e) => setSuggestionText(e.target.value.slice(0, 500))}
+                                            placeholder="Your idea..."
+                                            maxLength={500}
+                                            className="flex-1 px-3 py-1.5 rounded-lg text-xs focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                        />
+                                        <button
+                                            type="submit"
+                                            disabled={!suggestionText.trim() || !isSuggestionEmailValid || isSending || !db || !userId}
+                                            className="px-3 py-1.5 rounded-lg text-xs font-bold text-white transition-all hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                            style={{ backgroundColor: colors.primary }}
+                                        >
+                                            {isSending ? '...' : 'Send'}
+                                        </button>
+                                    </div>
                                 </form>
                             </>
                         )}
@@ -3992,6 +4028,10 @@ export default function App() {
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [showSyncPrompt, setShowSyncPrompt] = useState(false);
     const syncPromptShownRef = useRef(false);
+    const isAdmin = useMemo(() => {
+        const normalizedEmail = (userEmail || '').trim().toLowerCase();
+        return Boolean(normalizedEmail && ADMIN_EMAILS.includes(normalizedEmail));
+    }, [userEmail]);
     
     // --- ESTADOS REVISADOS PARA BUSCA NO FIRESTORE ---
     const [pokemons, setPokemons] = useState([]); // Lista de pokémons visíveis
@@ -4070,6 +4110,7 @@ export default function App() {
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
         if (path.includes('/profile')) return 'profile';
+        if (path.includes('/admin')) return 'admin';
         return 'home';
     }, [location.pathname]);
 
@@ -4082,7 +4123,8 @@ export default function App() {
             'allTeams': { title: 'Saved Teams', icon: '', subtitle: 'Your team collection' },
             'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Discover new Pokémon' },
             'favorites': { title: 'Favorite Pokémon', icon: '', subtitle: 'Your favorite collection' },
-            'profile': { title: 'Profile', icon: '', subtitle: 'Trainer card & preferences' }
+            'profile': { title: 'Profile', icon: '', subtitle: 'Trainer card & preferences' },
+            'admin': { title: 'Admin Dashboard', icon: '', subtitle: 'Suggestions and replies' }
         };
         return pages[currentPage] || pages['home'];
     }, [currentPage]);
@@ -5013,10 +5055,10 @@ useEffect(() => {
         const prefRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'preferences');
         setDoc(
             prefRef,
-            { displayName, greetingPokemonId, streak, updatedAt: Date.now() },
+            { displayName, greetingPokemonId, streak, email: userEmail || null, isAnonymous, updatedAt: Date.now() },
             { merge: true }
         ).catch(() => { /* best-effort */ });
-    }, [db, userId, displayName, greetingPokemonId, streak]);
+    }, [db, userId, displayName, greetingPokemonId, streak, userEmail, isAnonymous]);
 
     // ---------------------------------------------------------------
     // Trainer streak — increments once per calendar day when the user
@@ -5163,6 +5205,17 @@ useEffect(() => {
                         db={db}
                         userId={userId}
                     />
+                } />
+                <Route path="/admin" element={
+                    isAdmin ? (
+                        <AdminDashboardView
+                            db={db}
+                            auth={auth}
+                            isAdmin={isAdmin}
+                            colors={colors}
+                            showToast={showToast}
+                        />
+                    ) : <Navigate to="/" replace />
                 } />
                 <Route path="/builder" element={
                     <TeamBuilderView
@@ -5413,6 +5466,14 @@ useEffect(() => {
                           <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Profile</span>
                         </button>
                       </li>
+                                            {isAdmin && (
+                                                <li className="mt-2">
+                                                    <button onClick={() => { navigate('/admin'); setIsSidebarOpen(false); }} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'admin' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'admin' ? 'white' : colors.text}}>
+                                                        <span className="nav-icon"><ChartColumnIcon className="w-6 h-6" /></span>
+                                                        <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Admin</span>
+                                                    </button>
+                                                </li>
+                                            )}
                     </ul>
                   </nav>
                   {/* Sidebar account footer — login is optional but lives here so users can find it. */}
@@ -5512,6 +5573,8 @@ useEffect(() => {
                                 pageKey={currentPage}
                                 db={db}
                                 userId={userId}
+                                userEmail={userEmail}
+                                displayName={displayName}
                                 showToast={showToast}
                             />
                         )}
@@ -5537,7 +5600,7 @@ useEffect(() => {
                         <span>
                             Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{color: colors.text}}>Enzo Esmeraldo</a>
                         </span>
-                        <FooterFeedback db={db} userId={userId} colors={colors} showToast={showToast} />
+                        <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} colors={colors} showToast={showToast} />
                     </p>
 
                 <div className="flex justify-center gap-4 mt-4">
