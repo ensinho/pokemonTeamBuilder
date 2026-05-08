@@ -22,7 +22,7 @@ const getFirebaseProjectId = () => process.env.FIREBASE_PROJECT_ID
     || 'pokemonbuilder-8f80d';
 
 const getAllowedOrigins = () => splitList(process.env.EMAIL_ALLOWED_ORIGINS || '')
-    .concat(['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://127.0.0.1:3000']);
+    .concat(['https://pokemonbuilder.app', 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://127.0.0.1:3000']);
 
 const setCorsHeaders = (req, res) => {
     const origin = req.headers.origin || '';
@@ -113,7 +113,7 @@ const validatePayload = (payload) => {
 
 const createTransport = () => {
     const emailFrom = process.env.ADMIN_EMAIL_FROM || 'pokemonteambuilderadmin@gmail.com';
-    const password = process.env.ADMIN_EMAIL_APP_PASSWORD;
+    const password = process.env.ADMIN_EMAIL_APP_PASSWORD?.trim();
 
     if (!password) {
         const error = new Error('Email password is not configured.');
