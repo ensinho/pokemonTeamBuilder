@@ -19,6 +19,8 @@
   "dependencies": {
     "firebase": "^11.10.0",
     "gh-pages": "^6.3.0",
+    "jose": "^5.10.0",
+    "nodemailer": "^8.0.7",
     "qrcode": "^1.5.4",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

@@ -7,7 +7,7 @@ admin.initializeApp();
 
 const adminEmailAppPassword = defineSecret('ADMIN_EMAIL_APP_PASSWORD');
 const adminEmails = defineString('ADMIN_EMAILS', { default: 'enzopo625@gmail.com' });
-const emailFrom = defineString('ADMIN_EMAIL_FROM', { default: 'enzopo625@gmail.com' });
+const emailFrom = defineString('ADMIN_EMAIL_FROM', { default: 'pokemonteambuilderadmin@gmail.com' });
 const emailFromName = defineString('ADMIN_EMAIL_FROM_NAME', { default: 'Pokemon Team Builder' });
 const allowedOrigins = defineString('EMAIL_ALLOWED_ORIGINS', {
   default: 'https://ensinho.github.io,http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173',
