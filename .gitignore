@@ -27,4 +27,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.md
+*.md
