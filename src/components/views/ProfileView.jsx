@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { THEME_META } from '../constants/theme';
-import { Sprite } from './Sprite';
+import { THEME_META } from '../../constants/theme';
+import { Sprite } from '../Sprite';
 import {
     AccountIcon, EditIcon, SparklesIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, FlowerIcon, SaveIcon, RefreshIcon, TrashIcon,
-} from './icons';
+} from '../icons';
 
 /**
  * ProfileView — single screen for the user's account, preferences and

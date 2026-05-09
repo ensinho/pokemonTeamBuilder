@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { CloseIcon, PokeballIcon } from './icons';
+import { CloseIcon, PokeballIcon } from '../icons';
 
 /**
  * SyncPromptModal — friendly nudge shown after the user has spent

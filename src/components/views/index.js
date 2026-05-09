@@ -1,0 +1,9 @@
+export { AdminDashboardView } from './AdminDashboardView';
+export { AllTeamsView } from './AllTeamsView';
+export { FavoritePokemonsView } from './FavoritePokemonsView';
+export { HomeView } from './HomeView';
+export { MobileTeamBuilderView } from './MobileTeamBuilderView';
+export { PokedexView } from './PokedexView';
+export { ProfileView } from './ProfileView';
+export { RandomGeneratorView } from './RandomGeneratorView';
+export { TeamBuilderView } from './TeamBuilderView';

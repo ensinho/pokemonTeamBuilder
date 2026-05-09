@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { useModalA11y } from '../hooks/useModalA11y';
+import { useModalA11y } from '../../hooks/useModalA11y';
 import {
     SHARE_BACKGROUNDS,
     DEFAULT_BACKGROUND_ID,
     SNIPPET_DIMENSIONS,
     getBackgroundById,
-} from '../assets/backgrounds';
-import { CloseIcon, ShareIcon } from './icons';
+} from '../../assets/backgrounds';
+import { CloseIcon, ShareIcon } from '../icons';
 
 // Author/brand link baked into every shared snippet.
 const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';

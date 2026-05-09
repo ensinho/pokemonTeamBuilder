@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
-import { typeIcons } from '../constants/types';
-import { EmptyState } from './EmptyState';
-import { Sprite } from './Sprite';
-import { TypeBadge } from './TypeBadge';
-import { AnchoredPopover } from './AnchoredPopover';
+import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { typeIcons } from '../../constants/types';
+import { EmptyState } from '../EmptyState';
+import { Sprite } from '../Sprite';
+import { TypeBadge } from '../TypeBadge';
+import { AnchoredPopover } from '../AnchoredPopover';
 import {
     ClearIcon,
     InfoIcon,
@@ -13,7 +13,7 @@ import {
     ShowdownIcon,
     StarIcon,
     TrashIcon,
-} from './icons';
+} from '../icons';
 
 const MobilePokemonPickerCard = ({
     pokemon,

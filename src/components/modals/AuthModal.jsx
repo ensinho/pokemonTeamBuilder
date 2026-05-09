@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { CloseIcon } from './icons';
+import { CloseIcon } from '../icons';
 
 /**
  * AuthModal — minimal email + password sign in / sign up modal.

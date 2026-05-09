@@ -10,8 +10,8 @@ import {
     serverTimestamp,
     updateDoc,
 } from 'firebase/firestore';
-import { appId, ADMIN_EMAIL_ENDPOINT } from '../constants/firebase';
-import { SHARE_BACKGROUNDS } from '../assets/backgrounds';
+import { appId, ADMIN_EMAIL_ENDPOINT } from '../../constants/firebase';
+import { SHARE_BACKGROUNDS } from '../../assets/backgrounds';
 import {
     AccountIcon,
     ChartColumnIcon,
@@ -20,7 +20,7 @@ import {
     SaveIcon,
     ShareIcon,
     SparklesIcon,
-} from './icons';
+} from '../icons';
 
 const DEFAULT_REPLY_SUBJECT = 'Thanks for your Pokemon Team Builder suggestion';
 const DEFAULT_REPLY_MESSAGE = 'I really appreciate you taking the time to help improve Pokemon Team Builder. Your feedback helps me decide what to polish next.';
