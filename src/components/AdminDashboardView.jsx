@@ -377,6 +377,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                     ...(token ? { Authorization: `Bearer ${token}` } : {}),
                 },
                 body: JSON.stringify({
+                    appId,
                     to: selectedAuthor.email,
                     subject: subject.trim() || DEFAULT_REPLY_SUBJECT,
                     text: emailTemplate.plainText,
@@ -388,12 +389,18 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                 }),
             });
 
-            if (!response.ok) throw new Error(`Email endpoint returned ${response.status}`);
-            await markSuggestionResponded('email-endpoint');
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                throw new Error(result.error || `Email endpoint returned ${response.status}`);
+            }
+
+            if (!result.suggestionUpdated) {
+                await markSuggestionResponded('email-endpoint');
+            }
             showToast?.('Email sent.', 'success');
         } catch (err) {
             console.error('Failed to send email:', err);
-            showToast?.('Could not send email from the endpoint.', 'error');
+            showToast?.(err.message || 'Could not send email from the endpoint.', 'error');
         } finally {
             setIsSendingEmail(false);
         }
@@ -685,7 +692,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                 )}
                                 {!ADMIN_EMAIL_ENDPOINT && hasRecipientEmail && (
                                     <p className="mt-3 text-xs" style={{ color: colors.textMuted }}>
-                                        Direct sending needs VITE_ADMIN_EMAIL_ENDPOINT. Draft mode opens your email app with the reply text.
+                                        Direct sending needs an email backend endpoint. Draft mode opens your email app with the reply text.
                                     </p>
                                 )}
                             </aside>

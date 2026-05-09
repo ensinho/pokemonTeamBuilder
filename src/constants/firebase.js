@@ -14,4 +14,4 @@ export const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
     .split(',')
     .map(email => email.trim().toLowerCase())
     .filter(Boolean);
-export const ADMIN_EMAIL_ENDPOINT = import.meta.env.VITE_ADMIN_EMAIL_ENDPOINT || '';
+export const ADMIN_EMAIL_ENDPOINT = import.meta.env.VITE_ADMIN_EMAIL_ENDPOINT || '/api/send-admin-reply';

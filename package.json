@@ -11,12 +11,8 @@
     "build": "vite build",
     "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",
-    "functions:install": "npm --prefix functions install",
-    "functions:serve": "npx firebase-tools emulators:start --only functions",
-    "functions:deploy": "npx firebase-tools deploy --only functions",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist",
-    "deploy:all": "npm run deploy && npm run functions:deploy"
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "firebase": "^11.10.0",

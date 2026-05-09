@@ -22,7 +22,16 @@ const getFirebaseProjectId = () => process.env.FIREBASE_PROJECT_ID
     || 'pokemonbuilder-8f80d';
 
 const getAllowedOrigins = () => splitList(process.env.EMAIL_ALLOWED_ORIGINS || '')
-    .concat(['https://pokemonbuilder.app', 'http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://127.0.0.1:3000']);
+    .concat([
+        'https://pokemonbuilder.app',
+        'https://ensinho.github.io',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://localhost:4173',
+        'http://127.0.0.1:4173',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
+    ]);
 
 const setCorsHeaders = (req, res) => {
     const origin = req.headers.origin || '';
@@ -73,10 +82,17 @@ const verifyAdminToken = async (req) => {
     }
 
     const projectId = getFirebaseProjectId();
-    const { payload } = await jwtVerify(token, FIREBASE_CERTS, {
-        issuer: `https://securetoken.google.com/${projectId}`,
-        audience: projectId,
-    });
+    let payload;
+    try {
+        ({ payload } = await jwtVerify(token, FIREBASE_CERTS, {
+            issuer: `https://securetoken.google.com/${projectId}`,
+            audience: projectId,
+        }));
+    } catch (_) {
+        const error = new Error('Invalid Firebase ID token.');
+        error.status = 401;
+        throw error;
+    }
 
     const email = String(payload.email || '').trim().toLowerCase();
     const allowedAdminEmails = splitList(process.env.ADMIN_EMAILS || process.env.VITE_ADMIN_EMAILS || 'enzopo625@gmail.com');
@@ -172,7 +188,7 @@ export default async function handler(req, res) {
             html: validation.html,
         });
 
-        res.status(200).json({ ok: true, messageId: info.messageId || null });
+        res.status(200).json({ ok: true, messageId: info.messageId || null, suggestionUpdated: false });
     } catch (err) {
         console.error('Failed to send admin reply email:', err);
         res.status(err.status || 500).json({ error: err.status ? err.message : 'Could not send email.' });
