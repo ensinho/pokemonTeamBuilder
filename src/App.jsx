@@ -17,8 +17,16 @@ import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, q
 // Extracted modules
 import { PATCH_NOTES_VERSION, POKEBALL_PLACEHOLDER_URL, THEMES, applyTheme } from './constants/theme';
 import { typeColors, typeIcons, typeChart } from './constants/types';
-import { firebaseConfig, appId, POKEAPI_BASE_URL, ADMIN_EMAILS } from './constants/firebase';
+import { firebaseConfig, appId, ADMIN_EMAILS } from './constants/firebase';
 import { GENERATION_RANGES, LEGENDARY_IDS, NATURES_LIST, POKEMON_TIPS } from './constants/pokemon';
+import {
+    getEvolutionChainData,
+    getMoveDetails,
+    getPokemonApiData,
+    getPokemonSpeciesData,
+    getStaticPokemonDetail,
+    loadPokemonReferenceData,
+} from './services/pokemonDataCache';
 import { useDebounce } from './hooks/useDebounce';
 import {
     GithubIcon, LinkedinIcon, StarsIcon, StarIcon, TrashIcon, ClearIcon, SaveIcon,
@@ -625,11 +633,11 @@ const PatchNotesModal = ({ onClose, colors }) => {
                             aria-label={`${title} – ${cta}`}
                         >
                             <div className="rounded-lg overflow-hidden mb-3" style={{ backgroundColor: colors.card }}>
-                                <Visual colors={colors} />
+                                {React.createElement(Visual, { colors })}
                             </div>
                             <div className="flex items-center gap-2 mb-1">
                                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-md" style={{ color: colors.primary, backgroundColor: colors.primary + '1A' }} aria-hidden="true">
-                                    <Icon className="w-4 h-4" />
+                                    {React.createElement(Icon, { className: 'w-4 h-4' })}
                                 </span>
                                 <h3 className="font-bold" style={{ color: colors.primary }}>{title}</h3>
                             </div>
@@ -1043,19 +1051,18 @@ const CompactStatBar = ({ stat, value, colors }) => {
     );
 };
 
-const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, showPokemonDetails, db, isFavorite, onToggleFavorite }) => {
+const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, showPokemonDetails, db, pokemonDetailsCache = {}, setPokemonDetailsCache, isFavorite, onToggleFavorite }) => {
     const dialogRef = useModalA11y(onClose);
     const [showShiny, setShowShiny] = useState(false);
     const [evolutionDetails, setEvolutionDetails] = useState([]);
     const pokemonWeaknesses = useMemo(() => getPokemonWeaknessEntries(pokemon?.types || []), [pokemon]);
 
     useEffect(() => {
-        if (!pokemon || !pokemon.evolution_chain_url || !db) return;
+        if (!pokemon || !pokemon.evolution_chain_url) return;
         
         const fetchEvolutionChain = async () => {
             try {
-                const res = await fetch(pokemon.evolution_chain_url);
-                const data = await res.json();
+                const data = await getEvolutionChainData(pokemon.evolution_chain_url);
                 const chain = [];
                 let evoData = data.chain;
                 do {
@@ -1064,13 +1071,27 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
                         url: evoData.species.url
                     });
                     evoData = evoData.evolves_to[0];
-                } while (!!evoData && evoData.hasOwnProperty('evolves_to'));
+                } while (!!evoData && Object.prototype.hasOwnProperty.call(evoData, 'evolves_to'));
 
                 const detailsPromises = chain.map(async (evo) => {
                     const id = evo.url.split('/').filter(Boolean).pop();
+                    if (pokemonDetailsCache[id]) {
+                        return pokemonDetailsCache[id];
+                    }
+                    const staticDetail = await getStaticPokemonDetail(id);
+                    if (staticDetail) {
+                        setPokemonDetailsCache?.(prev => ({ ...prev, [id]: staticDetail }));
+                        return staticDetail;
+                    }
+                    if (!db) return { name: evo.name, sprite: POKEBALL_PLACEHOLDER_URL };
                     const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id);
                     const docSnap = await getDoc(docRef);
-                    return docSnap.exists() ? docSnap.data() : { name: evo.name, sprite: POKEBALL_PLACEHOLDER_URL };
+                    if (docSnap.exists()) {
+                        const detail = docSnap.data();
+                        setPokemonDetailsCache?.(prev => ({ ...prev, [id]: detail }));
+                        return detail;
+                    }
+                    return { name: evo.name, sprite: POKEBALL_PLACEHOLDER_URL };
                 });
                 
                 const resolvedDetails = await Promise.all(detailsPromises);
@@ -1082,7 +1103,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
         };
 
         fetchEvolutionChain();
-    }, [pokemon, db]);
+    }, [pokemon, db, pokemonDetailsCache, setPokemonDetailsCache]);
 
     const handleEvolutionClick = (pokeData) => {
         onClose(); 
@@ -1220,7 +1241,7 @@ const PokemonDetailModal = ({ pokemon, onClose, onAdd, currentTeam, colors, show
     );
 };
 
-const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache, setMoveDetailsCache }) => {
+const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => {} }) => {
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
@@ -1231,21 +1252,12 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
     const pokemonWeaknesses = useMemo(() => getPokemonWeaknessEntries(pokemon?.types || []), [pokemon]);
 
     const fetchMoveDetails = useCallback(async (moveUrl, moveName) => {
-        if (moveDetailsCache[moveName]) {
+        if (moveDetailsCache[moveName] !== undefined) {
             return moveDetailsCache[moveName];
         }
         try {
-            const res = await fetch(moveUrl);
-            const data = await res.json();
-            const moveData = {
-                name: data.name,
-                type: data.type.name,
-                power: data.power,
-                accuracy: data.accuracy,
-                pp: data.pp,
-                damage_class: data.damage_class.name,
-            };
-            setMoveDetailsCache(prev => ({...prev, [moveName]: moveData}));
+            const moveData = await getMoveDetails(moveUrl, moveName);
+            setMoveDetailsCache(prev => ({...prev, [moveName]: moveData || null}));
             return moveData;
         } catch (error) {
             console.error(`Failed to fetch details for move: ${moveName}`, error);
@@ -1331,7 +1343,7 @@ const TeamPokemonEditorModal = ({ pokemon, onClose, onSave, colors, items, natur
 
     useEffect(() => {
         filteredMoves.slice(0, 20).forEach(m => {
-            if (!moveDetailsCache[m.name]) {
+            if (moveDetailsCache[m.name] === undefined) {
                 fetchMoveDetails(m.url, m.name);
             }
         });
@@ -2020,7 +2032,6 @@ const FavoritePokemonsView = ({
     onToggleFavoritePokemon,
     showDetails,
     colors,
-    onAddToTeam,
     isLoading
 }) => {
     const [searchInput, setSearchInput] = useState('');
@@ -2334,14 +2345,11 @@ const HomeView = ({
     // last edited team
     const lastEditedTeam = recentTeams[0];
     
-    const pokemonPrimaryColor = pokemonOfTheDay?.types?.[0] ? typeColors[pokemonOfTheDay.types[0]] : colors.primary;
-    const pokemonSecondaryColor = pokemonOfTheDay?.types?.[1] ? typeColors[pokemonOfTheDay.types[1]] : pokemonPrimaryColor;
-    
     const greetingPokemonColor = greetingPokemonData?.types?.[0] ? typeColors[greetingPokemonData.types[0]] : colors.primary;
     const greetingPokemonSecondaryColor = greetingPokemonData?.types?.[1] ? typeColors[greetingPokemonData.types[1]] : greetingPokemonColor;
     
     // Pokemon-themed motivational messages
-    const motivationalMessages = [
+    const motivationalMessages = useMemo(() => [
         "Ready to be the very best!",
         "Your journey awaits, Trainer!",
         "Let's catch 'em all today!",
@@ -2350,12 +2358,12 @@ const HomeView = ({
         "Every Pokémon is unique!",
         "Gotta catch 'em all!",
         "Explore new possibilities!",
-    ];
+    ], []);
     const randomMessage = useMemo(() => {
         const today = new Date();
         const seed = today.getDate() + today.getMonth();
         return motivationalMessages[seed % motivationalMessages.length];
-    }, []);
+    }, [motivationalMessages]);
 
     return (
         <main className="space-y-6 pb-8">
@@ -2753,7 +2761,7 @@ const HomeView = ({
                             Explore by types
                         </h3>
                         <div className="grid grid-cols-9 gap-1.5">
-                            {Object.entries(typeColors).map(([type, color]) => (
+                            {Object.keys(typeColors).map((type) => (
                                 <button
                                     key={type}
                                     onClick={() => onNavigateWithTypeFilter(type)}
@@ -2925,7 +2933,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
     const [legendaryFilter, setLegendaryFilter] = useState('all');
     const [fullyEvolvedFilter, setFullyEvolvedFilter] = useState('all');
     const [formsFilter, setFormsFilter] = useState('all');
-    const [evolutionCache, setEvolutionCache] = useState({});
+    const evolutionCacheRef = useRef({});
     const [showIntroModal, setShowIntroModal] = useState(false);
     const [isGuideLayoutExpanded, setIsGuideLayoutExpanded] = useState(true);
     const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
@@ -3028,7 +3036,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
 
                 const seen = snap.exists() && snap.data()?.randomGeneratorIntroSeen === true;
                 if (seen) {
-                    try { localStorage.setItem(introStorageKey, '1'); } catch (_) {}
+                    try { localStorage.setItem(introStorageKey, '1'); } catch (_) { /* ignore */ }
                 }
                 setShowIntroModal(!seen);
             } catch (_) {
@@ -3045,7 +3053,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
 
     const handleCloseIntroModal = useCallback(() => {
         setShowIntroModal(false);
-        try { localStorage.setItem(introStorageKey, '1'); } catch (_) {}
+        try { localStorage.setItem(introStorageKey, '1'); } catch (_) { /* ignore */ }
 
         if (!db || !userId) return;
 
@@ -3055,18 +3063,10 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
         });
     }, [db, userId, introStorageKey]);
 
-    const handleToggleGuideLayout = useCallback(() => {
-        setIsGuideLayoutExpanded((prev) => {
-            const next = !prev;
-            try { localStorage.setItem(guideLayoutStorageKey, next ? '1' : '0'); } catch (_) {}
-            return next;
-        });
-    }, [guideLayoutStorageKey]);
-
     const handleToggleFiltersLayout = useCallback(() => {
         setIsFiltersExpanded((prev) => {
             const next = !prev;
-            try { localStorage.setItem(filtersLayoutStorageKey, next ? '1' : '0'); } catch (_) {}
+            try { localStorage.setItem(filtersLayoutStorageKey, next ? '1' : '0'); } catch (_) { /* ignore */ }
             return next;
         });
     }, [filtersLayoutStorageKey]);
@@ -3084,12 +3084,11 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
         try {
             const cacheKey = targetPokemonId ? `${evolutionChainUrl}_${targetPokemonId}` : evolutionChainUrl;
 
-            if (evolutionCache[cacheKey]) {
-                return evolutionCache[cacheKey];
+            if (evolutionCacheRef.current[cacheKey]) {
+                return evolutionCacheRef.current[cacheKey];
             }
 
-            const evoRes = await fetch(evolutionChainUrl);
-            const evoData = await evoRes.json();
+            const evoData = await getEvolutionChainData(evolutionChainUrl);
             const EEVEE_FAMILY = [133, 134, 135, 136, 196, 197, 470, 471, 700];
             const evolutions = [];
             const isEeveeFamily = targetPokemonId && EEVEE_FAMILY.includes(parseInt(targetPokemonId, 10));
@@ -3169,17 +3168,14 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                 processChain(evoData.chain);
             }
 
-            setEvolutionCache((prev) => ({
-                ...prev,
-                [cacheKey]: evolutions,
-            }));
+            evolutionCacheRef.current[cacheKey] = evolutions;
 
             return evolutions;
         } catch (error) {
             console.error('Error fetching evolution chain:', error);
             return [];
         }
-    }, [evolutionCache]);
+    }, []);
 
     const fetchPokemonForms = useCallback(async (speciesData) => {
         try {
@@ -3189,8 +3185,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                     .slice(0, 5)
                     .map(async (variety) => {
                         try {
-                            const formRes = await fetch(variety.pokemon.url);
-                            const formData = await formRes.json();
+                            const formData = await getPokemonApiData(variety.pokemon.url);
                             return {
                                 name: variety.pokemon.name,
                                 sprite: formData.sprites.front_default || formData.sprites.other?.['official-artwork']?.front_default,
@@ -3214,17 +3209,38 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
         }
 
         try {
-            const [pokemonRes, speciesRes] = await Promise.all([
-                fetch(`${POKEAPI_BASE_URL}/pokemon/${pokemonId}`),
-                fetch(`${POKEAPI_BASE_URL}/pokemon-species/${pokemonId}`),
-            ]);
+            const randomNature = NATURES_LIST[Math.floor(Math.random() * NATURES_LIST.length)];
+            const getRandomGender = (genderRate) => {
+                if (genderRate === 0) return 'Male';
+                if (genderRate === 8) return 'Female';
+                if (genderRate !== -1 && Number.isInteger(genderRate)) {
+                    return Math.random() < (genderRate / 8) ? 'Female' : 'Male';
+                }
+                return 'Genderless';
+            };
 
-            if (!pokemonRes.ok || !speciesRes.ok) {
-                return null;
+            const staticPokemonData = await getStaticPokemonDetail(pokemonId);
+            if (staticPokemonData?.evolutions) {
+                const fullPokemon = {
+                    ...staticPokemonData,
+                    generation: getGenerationName(staticPokemonData.id),
+                    abilities: (staticPokemonData.abilities || []).map((ability) => typeof ability === 'string' ? ability : ability.name).filter(Boolean),
+                    habitat: staticPokemonData.habitat || 'Unknown',
+                    growthRate: staticPokemonData.growthRate || 'Unknown',
+                    nature: randomNature,
+                    gender: getRandomGender(staticPokemonData.genderRate),
+                };
+                pokemonDataCacheRef.current[pokemonId] = fullPokemon;
+                return fullPokemon;
             }
 
-            const pokemonData = await pokemonRes.json();
-            const speciesData = await speciesRes.json();
+            const [pokemonData, speciesData] = await Promise.all([
+                getPokemonApiData(pokemonId),
+                getPokemonSpeciesData(pokemonId),
+            ]);
+
+            if (!pokemonData || !speciesData) return null;
+
             const evolutions = speciesData.evolution_chain?.url
                 ? await fetchEvolutionChain(speciesData.evolution_chain.url, pokemonId)
                 : [];
@@ -3232,16 +3248,6 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
             const currentEvo = evolutions.find((evolution) => parseInt(evolution.id, 10) === pokemonId);
             const evolutionStage = currentEvo?.stage || 1;
             const isFullyEvolved = !evolutions.some((evolution) => evolution.stage > evolutionStage);
-            const randomNature = NATURES_LIST[Math.floor(Math.random() * NATURES_LIST.length)];
-
-            let gender = 'Genderless';
-            if (speciesData.gender_rate === 0) {
-                gender = 'Male';
-            } else if (speciesData.gender_rate === 8) {
-                gender = 'Female';
-            } else if (speciesData.gender_rate !== -1) {
-                gender = Math.random() < (speciesData.gender_rate / 8) ? 'Female' : 'Male';
-            }
 
             const fullPokemon = {
                 id: pokemonData.id,
@@ -3262,7 +3268,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                 isMythical: speciesData.is_mythical,
                 habitat: speciesData.habitat?.name || 'Unknown',
                 nature: randomNature,
-                gender,
+                gender: getRandomGender(speciesData.gender_rate),
                 baseHappiness: speciesData.base_happiness,
                 captureRate: speciesData.capture_rate,
                 growthRate: speciesData.growth_rate?.name || 'Unknown',
@@ -3383,7 +3389,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
     const PokemonDetailCard = ({ pokemon, roundNumber }) => {
         const [evoSprites, setEvoSprites] = useState({});
         const [loadingSprites, setLoadingSprites] = useState(true);
-        const evolutionChain = Array.isArray(pokemon.evolutions) ? pokemon.evolutions : [];
+        const evolutionChain = useMemo(() => Array.isArray(pokemon.evolutions) ? pokemon.evolutions : [], [pokemon.evolutions]);
         const hasEvolutionLine = evolutionChain.length > 1;
 
         useEffect(() => {
@@ -3400,8 +3406,7 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
                     await Promise.all(
                         evolutionChain.map(async (evo) => {
                             try {
-                                const res = await fetch(`${POKEAPI_BASE_URL}/pokemon/${evo.id}`);
-                                const data = await res.json();
+                                const data = await getPokemonApiData(evo.id);
                                 sprites[evo.id] = data.sprites.front_default;
                             } catch {
                                 sprites[evo.id] = null;
@@ -3970,15 +3975,15 @@ const RandomGeneratorView = ({ colors, generations, db, userId }) => {
     );
 };
 
-export default function App() {
-    const AUTH_SPLASH_MESSAGES = [
-        'Checking if you are who you say you are',
-        'Verifying trainer credentials',
-        'Confirming your identity with Professor Oak',
-        'Making sure this trainer card is yours',
-        'Securing your team data before we start',
-    ];
+const AUTH_SPLASH_MESSAGES = [
+    'Checking if you are who you say you are',
+    'Verifying trainer credentials',
+    'Confirming your identity with Professor Oak',
+    'Making sure this trainer card is yours',
+    'Securing your team data before we start',
+];
 
+export default function App() {
     // React Router hooks
     const navigate = useNavigate();
     const location = useLocation();
@@ -4059,6 +4064,8 @@ export default function App() {
     const [pokedexSelectedTypes, setPokedexSelectedTypes] = useState(new Set());
     const [pokedexSearchInput, setPokedexSearchInput] = useState('');
     const debouncedPokedexSearchTerm = useDebounce(pokedexSearchInput, 300);
+    const selectedTypesList = useMemo(() => Array.from(selectedTypes), [selectedTypes]);
+    const pokedexSelectedTypesList = useMemo(() => Array.from(pokedexSelectedTypes), [pokedexSelectedTypes]);
 
     // Team States (permanecem os mesmos)
     const [currentTeam, setCurrentTeam] = useState([]);
@@ -4081,7 +4088,7 @@ export default function App() {
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
     const [modalPokemon, setModalPokemon] = useState(null);
     const [editingTeamMember, setEditingTeamMember] = useState(null);
-    const [maxToasts, setMaxToasts] = useState(3);
+    const maxToasts = 3;
     const [suggestedPokemonIds, setSuggestedPokemonIds] = useState(new Set());
     const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
@@ -4178,25 +4185,22 @@ export default function App() {
 
     // Busca dados estáticos (gens, items, natures) uma vez no início
     useEffect(() => {
+        let cancelled = false;
         const fetchStaticData = async () => {
              try {
-                const genRes = await fetch(`${POKEAPI_BASE_URL}/generation`);
-                const genData = await genRes.json();
-                setGenerations(genData.results.map(g => g.name));
-
-                const itemRes = await fetch(`${POKEAPI_BASE_URL}/item?limit=2000`);
-                const itemData = await itemRes.json();
-                setItems(itemData.results);
-                
-                const natureRes = await fetch(`${POKEAPI_BASE_URL}/nature`);
-                const natureData = await natureRes.json();
-                setNatures(natureData.results);
+                const referenceData = await loadPokemonReferenceData();
+                if (cancelled) return;
+                setGenerations(referenceData.generations);
+                setItems(referenceData.items);
+                setNatures(referenceData.natures);
              } catch (e) {
+                if (cancelled) return;
                 showToast("Failed to load filter data.", "error");
              }
         }
         fetchStaticData();
-    }, []);
+        return () => { cancelled = true; };
+    }, [showToast]);
 
 useEffect(() => {
     const teamDetails = currentTeam; 
@@ -4277,21 +4281,20 @@ useEffect(() => {
         savedTeams.sort((a,b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)).slice(0,3),
     [savedTeams]);
     
-    const allFilteredTeams = useMemo(() => {
-        let teams = [...savedTeams].sort((a,b) => (b.isFavorite - a.isFavorite) || new Date(b.updatedAt || a.createdAt) - new Date(a.updatedAt || a.createdAt));
-        if (teamSearchTerm) {
-            teams = teams.filter(team => team.name.toLowerCase().includes(teamSearchTerm.toLowerCase()));
-        }
-        return teams;
-    }, [savedTeams, teamSearchTerm]);
-    
      const fetchPokemonDetails = useCallback(async (pokemonId) => {
         if (pokemonDetailsCache[pokemonId]) {
             return pokemonDetailsCache[pokemonId];
         }
-        if (!db) return null;
 
         try {
+            const staticDetail = await getStaticPokemonDetail(pokemonId);
+            if (staticDetail) {
+                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: staticDetail }));
+                return staticDetail;
+            }
+
+            if (!db) return null;
+
             const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(pokemonId));
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
@@ -4361,7 +4364,7 @@ useEffect(() => {
         } catch (error) {
             showToast("Failed to load shared team.", "error");
         }
-    }, [db, showToast, sharedTeamLoaded, navigate]);
+    }, [db, showToast, sharedTeamLoaded, navigate, fetchPokemonDetails]);
 
     useEffect(() => {
         if (!db || isLoading || !isAuthReady) return;
@@ -4456,10 +4459,10 @@ useEffect(() => {
     }, [showInitialAuthSplash]);
 
     // Função para construir a query do Firestore dinamicamente
-   const buildPokemonQuery = (isLoadMore = false) => {
+   const buildPokemonQuery = useCallback((isLoadMore = false, cursor = null) => {
         const genToUse = currentPage === 'pokedex' ? pokedexSelectedGeneration : selectedGeneration;
         const searchToUse = (currentPage === 'pokedex' ? debouncedPokedexSearchTerm : debouncedSearchTerm).toLowerCase();
-        const typesToUse = Array.from(currentPage === 'pokedex' ? pokedexSelectedTypes : selectedTypes);
+       const typesToUse = currentPage === 'pokedex' ? pokedexSelectedTypesList : selectedTypesList;
 
         let q = collection(db, 'artifacts/pokemonTeamBuilder/pokemons');
         const constraints = [];
@@ -4479,14 +4482,14 @@ useEffect(() => {
             constraints.push(orderBy('id'));
         }
 
-        if (isLoadMore && lastVisibleDoc) {
-            constraints.push(startAfter(lastVisibleDoc));
+        if (isLoadMore && cursor) {
+            constraints.push(startAfter(cursor));
         }
 
         constraints.push(limit(50));
         
         return query(q, ...constraints);
-    };
+    }, [db, currentPage, pokedexSelectedGeneration, selectedGeneration, debouncedPokedexSearchTerm, debouncedSearchTerm, pokedexSelectedTypesList, selectedTypesList]);
 
     // Efeito para buscar pokémons quando os filtros mudam
     useEffect(() => {
@@ -4512,17 +4515,13 @@ useEffect(() => {
         };
 
         fetchInitial();
-    }, [
-        db, isAuthReady, currentPage, 
-        debouncedSearchTerm, selectedGeneration, JSON.stringify(Array.from(selectedTypes)), 
-        debouncedPokedexSearchTerm, pokedexSelectedGeneration, JSON.stringify(Array.from(pokedexSelectedTypes))
-    ]);
+    }, [db, isAuthReady, buildPokemonQuery, showToast]);
 
     const fetchMorePokemons = useCallback(async () => {
         if (isFetchingMore || !hasMore || !db || !lastVisibleDoc) return;
 
         setIsFetchingMore(true);
-        const q = buildPokemonQuery(true);
+        const q = buildPokemonQuery(true, lastVisibleDoc);
         try {
             const documentSnapshots = await getDocs(q);
             const newBatch = documentSnapshots.docs.map(doc => doc.data());
@@ -4538,7 +4537,7 @@ useEffect(() => {
         } finally {
             setIsFetchingMore(false);
         }
-    }, [isFetchingMore, hasMore, db, lastVisibleDoc, currentPage, selectedGeneration, debouncedSearchTerm, JSON.stringify(Array.from(selectedTypes)), pokedexSelectedGeneration, debouncedPokedexSearchTerm, JSON.stringify(Array.from(pokedexSelectedTypes))]);
+    }, [isFetchingMore, hasMore, db, lastVisibleDoc, buildPokemonQuery, showToast]);
 
     // Observer para o scroll infinito.
     //
@@ -4914,7 +4913,7 @@ useEffect(() => {
             const ids = Object.keys(THEMES);
             const idx = ids.indexOf(prevTheme);
             const newTheme = ids[(idx + 1) % ids.length] || 'dark';
-            try { localStorage.setItem('theme', newTheme); } catch (_) {}
+            try { localStorage.setItem('theme', newTheme); } catch (_) { /* ignore */ }
             applyTheme(newTheme);
             return newTheme;
         });
@@ -4926,11 +4925,11 @@ useEffect(() => {
         if (!THEMES[nextTheme]) return;
         setTheme(nextTheme);
         applyTheme(nextTheme);
-        try { localStorage.setItem('theme', nextTheme); } catch (_) {}
+        try { localStorage.setItem('theme', nextTheme); } catch (_) { /* ignore */ }
     }, []);
 
     const handleResetSyncPrompt = useCallback(() => {
-        try { localStorage.removeItem('syncPromptDismissed'); } catch (_) {}
+        try { localStorage.removeItem('syncPromptDismissed'); } catch (_) { /* ignore */ }
         syncPromptShownRef.current = false;
         showToast('Reminders re-enabled.', 'info');
     }, [showToast]);
@@ -5013,7 +5012,7 @@ useEffect(() => {
                     }
                     if (Number.isInteger(data.greetingPokemonId)) {
                         setGreetingPokemonId(data.greetingPokemonId);
-                        try { localStorage.setItem('greetingPokemon', String(data.greetingPokemonId)); } catch (_) {}
+                        try { localStorage.setItem('greetingPokemon', String(data.greetingPokemonId)); } catch (_) { /* ignore */ }
                     }
                     if (data.streak && typeof data.streak === 'object') {
                         // Prefer the higher of local vs remote so users don't lose
@@ -5025,7 +5024,7 @@ useEffect(() => {
                                 longest: Math.max(prev.longest || 0, remote.longest || 0, prev.count || 0, remote.count || 0),
                                 lastVisit: remote.lastVisit || prev.lastVisit || null,
                             };
-                            try { localStorage.setItem('trainerStreak', JSON.stringify(merged)); } catch (_) {}
+                            try { localStorage.setItem('trainerStreak', JSON.stringify(merged)); } catch (_) { /* ignore */ }
                             return merged;
                         });
                     }
@@ -5092,7 +5091,7 @@ useEffect(() => {
                 longest: Math.max(prev.longest || 0, nextCount),
                 lastVisit: todayStr,
             };
-            try { localStorage.setItem('trainerStreak', JSON.stringify(next)); } catch (_) {}
+            try { localStorage.setItem('trainerStreak', JSON.stringify(next)); } catch (_) { /* ignore */ }
             return next;
         });
     }, [db, userId, isAuthReady]);
@@ -5335,8 +5334,8 @@ useEffect(() => {
     
     return (
       <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
-        {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} db={db} isFavorite={favoritePokemons.has(modalPokemon.id)} onToggleFavorite={handleToggleFavoritePokemon} />}
-        {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache}/>}
+        {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} setPokemonDetailsCache={setPokemonDetailsCache} db={db} isFavorite={favoritePokemons.has(modalPokemon.id)} onToggleFavorite={handleToggleFavoritePokemon} />}
+        {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache} setMoveDetailsCache={setMoveDetailsCache}/>}
         {showPatchNotes && <PatchNotesModal onClose={handleClosePatchNotes} colors={colors} />}
         {showGreetingPokemonSelector && <GreetingPokemonSelectorModal onClose={() => setShowGreetingPokemonSelector(false)} onSelect={setGreetingPokemon} allPokemons={pokemons} currentPokemonId={greetingPokemonId} colors={colors} db={db} />}
 

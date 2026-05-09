@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-08T23:26:31.891Z",
+  "source": "https://pokeapi.co/api/v2",
+  "maxNationalDexId": 1025,
+  "files": {
+    "generations": "generations.json",
+    "items": "items.json",
+    "natures": "natures.json",
+    "pokemonIndex": "pokemon-index.json",
+    "pokemonDetails": []
+  }
+}

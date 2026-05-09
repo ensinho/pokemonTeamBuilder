@@ -1,25 +1,25 @@
 import { useCallback, useRef, useState } from 'react';
+import { getAbilityDescription } from '../services/pokemonDataCache';
 
 export const AbilityChip = ({ ability }) => {
+    const abilityResource = ability?.ability || ability;
+    const abilityName = typeof abilityResource === 'string' ? abilityResource : abilityResource?.name || '';
     const [description, setDescription] = useState('');
     const [isTooltipVisible, setTooltipVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const touchTimeout = useRef(null);
 
     const fetchAbilityDescription = useCallback(async () => {
-        if (description || isLoading) return;
+        if (description || isLoading || !abilityName) return;
         setIsLoading(true);
         try {
-            const res = await fetch(ability.url);
-            const data = await res.json();
-            const effectEntry = data.effect_entries.find((entry) => entry.language.name === 'en');
-            setDescription(effectEntry?.short_effect || 'No description available.');
+            setDescription(await getAbilityDescription(abilityResource));
         } catch {
             setDescription('Could not load description.');
         } finally {
             setIsLoading(false);
         }
-    }, [ability.url, description, isLoading]);
+    }, [abilityResource, abilityName, description, isLoading]);
 
     const show = () => {
         fetchAbilityDescription();
@@ -47,7 +47,7 @@ export const AbilityChip = ({ ability }) => {
             onTouchEnd={handleTouchEnd}
             tabIndex={0}
         >
-            {ability.name.replace('-', ' ')}
+            {abilityName.replace('-', ' ')}
             {isTooltipVisible && (
                 <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-surface text-fg text-xs rounded-md shadow-lg z-20 border border-border">
                     {isLoading ? 'Loading...' : description}

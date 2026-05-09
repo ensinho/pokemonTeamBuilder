@@ -70,7 +70,6 @@ const MobilePokemonPickerCard = ({
                 )}
 
                 <button
-                    type="button"
                     onClick={handleFavoriteClick}
                     className="rounded-full p-1.5 transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-warning"
                     style={{
@@ -323,7 +322,6 @@ export const MobileTeamBuilderView = ({
     isFetchingMore,
     selectedTypes,
     handleTypeSelection,
-    showDetails,
     suggestedPokemonIds,
     colors,
     onEditTeamPokemon,

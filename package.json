@@ -6,8 +6,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "data:cache": "node scripts/build-pokemon-cache.mjs",
+    "data:cache:details": "node scripts/build-pokemon-cache.mjs --details=1-151",
     "build": "vite build",
-    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --max-warnings 0",
     "preview": "vite preview",
     "functions:install": "npm --prefix functions install",
     "functions:serve": "npx firebase-tools emulators:start --only functions",
