@@ -16,8 +16,8 @@
 }
 
 .pokemon-card--suggested {
-    border-color: var(--color-success);
-    background: var(--color-surface-raised);
+    border-color: color-mix(in srgb, var(--color-success) 28%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 5%, var(--color-surface));
 }
 
 .pokemon-card:hover {
@@ -53,13 +53,14 @@
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    background: var(--color-success);
+    border: 1px solid color-mix(in srgb, var(--color-success) 24%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
     padding: 0.22rem 0.46rem;
     font-size: 0.58rem;
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-fg);
+    color: var(--color-success);
 }
 
 .pokemon-card__favorite {

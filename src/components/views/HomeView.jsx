@@ -3,11 +3,12 @@ import { doc, getDoc } from 'firebase/firestore';
 
 import '../../styles/home-view.css';
 
-import { SHARE_BACKGROUNDS } from '../../assets/backgrounds';
+import { DEFAULT_BACKGROUND_ID, SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 import { POKEMON_TIPS } from '../../constants/pokemon';
 import { getPokemonApiData, getStaticPokemonDetail } from '../../services/pokemonDataCache';
+import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import {
     AccountIcon,
@@ -29,6 +30,9 @@ const getDayOfYear = () => {
     return Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
 };
 
+const getDefaultHeroBackgroundId = () =>
+    SHARE_BACKGROUNDS[getDayOfYear() % SHARE_BACKGROUNDS.length]?.id || DEFAULT_BACKGROUND_ID;
+
 const toGreetingPokemonData = (pokemonData) => {
     if (!pokemonData) return null;
 
@@ -41,7 +45,9 @@ const toGreetingPokemonData = (pokemonData) => {
         name: pokemonData.name,
         types: pokemonData.types?.map((typeEntry) => typeEntry.type?.name).filter(Boolean) || [],
         sprite: pokemonData.sprites?.other?.['official-artwork']?.front_default || pokemonData.sprites?.front_default || POKEBALL_PLACEHOLDER_URL,
+        shinySprite: pokemonData.sprites?.other?.['official-artwork']?.front_shiny || pokemonData.sprites?.front_shiny || POKEBALL_PLACEHOLDER_URL,
         animatedSprite: pokemonData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default || pokemonData.sprites?.front_default || POKEBALL_PLACEHOLDER_URL,
+        animatedShinySprite: pokemonData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_shiny || pokemonData.sprites?.front_shiny || POKEBALL_PLACEHOLDER_URL,
     };
 };
 
@@ -114,12 +120,14 @@ export function HomeView({
     onToggleFavoritePokemon,
     handleEditTeam,
     greetingPokemonId,
+    greetingPokemonIsShiny,
+    heroBackgroundId,
+    onChangeHeroBackground,
     onOpenPokemonSelector,
     db,
 }) {
     const [greetingPokemonData, setGreetingPokemonData] = useState(null);
     const [isDailyPokemonLoading, setIsDailyPokemonLoading] = useState(true);
-    const [heroBackgroundIndex, setHeroBackgroundIndex] = useState(() => getDayOfYear() % SHARE_BACKGROUNDS.length);
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -260,9 +268,6 @@ export function HomeView({
 
     const lastEditedTeam = recentTeams[0];
 
-    const greetingPokemonColor = greetingPokemonData?.types?.[0]
-        ? typeColors[greetingPokemonData.types[0]]
-        : colors.primary;
     const motivationalMessages = useMemo(
         () => [
             'Ready to be the very best!',
@@ -283,12 +288,20 @@ export function HomeView({
         return motivationalMessages[seed % motivationalMessages.length];
     }, [motivationalMessages]);
 
-    const heroBackground = SHARE_BACKGROUNDS[heroBackgroundIndex] || SHARE_BACKGROUNDS[0];
+    const resolvedHeroBackgroundId = heroBackgroundId || getDefaultHeroBackgroundId();
+    const heroBackground = getBackgroundById(resolvedHeroBackgroundId);
+    const heroAccent = heroBackground?.accent || colors.primary;
+    const heroAccentSoft = heroBackground?.accentSoft || `${colors.primary}18`;
+    const heroAccentBorder = heroBackground?.border || `${colors.primary}40`;
+    const heroSurface = heroBackground?.surface || 'rgba(17, 24, 39, 0.58)';
+    const heroSurfaceBorder = heroBackground?.surfaceBorder || `${colors.primary}30`;
 
     const handleCycleHeroBackground = () => {
-        if (SHARE_BACKGROUNDS.length < 2) return;
+        if (SHARE_BACKGROUNDS.length < 2 || !onChangeHeroBackground) return;
 
-        setHeroBackgroundIndex((currentIndex) => (currentIndex + 1) % SHARE_BACKGROUNDS.length);
+        const currentIndex = SHARE_BACKGROUNDS.findIndex((background) => background.id === resolvedHeroBackgroundId);
+        const nextIndex = currentIndex >= 0 ? (currentIndex + 1) % SHARE_BACKGROUNDS.length : 0;
+        onChangeHeroBackground(SHARE_BACKGROUNDS[nextIndex]?.id || DEFAULT_BACKGROUND_ID);
     };
 
     const overviewMetrics = [
@@ -337,8 +350,11 @@ export function HomeView({
                 <section
                     className="home-panel home-panel--hero p-4 md:p-5"
                     style={{
-                        '--home-hero-accent-soft': `${greetingPokemonColor}18`,
-                        '--home-hero-accent-border': `${greetingPokemonColor}40`,
+                        '--home-hero-accent': heroAccent,
+                        '--home-hero-accent-soft': heroAccentSoft,
+                        '--home-hero-accent-border': heroAccentBorder,
+                        '--home-hero-surface': heroSurface,
+                        '--home-hero-surface-border': heroSurfaceBorder,
                         '--home-hero-wallpaper-image': heroBackground ? `url(${heroBackground.url})` : 'none',
                     }}
                     aria-label="Trainer overview"
@@ -379,15 +395,9 @@ export function HomeView({
                                 </div>
 
                                 {greetingPokemonData && (
-                                    <div
-                                        className="home-partner-chip"
-                                        style={{
-                                            backgroundColor: `${greetingPokemonColor}16`,
-                                            borderColor: `${greetingPokemonColor}33`,
-                                        }}
-                                    >
+                                    <div className="home-partner-chip">
                                         <img
-                                            src={greetingPokemonData.animatedSprite || greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
+                                            src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny })}
                                             alt=""
                                             aria-hidden="true"
                                             className="home-partner-chip__sprite"
@@ -449,7 +459,7 @@ export function HomeView({
                     {greetingPokemonData && (
                         <div className="home-hero__art" aria-hidden="true">
                             <img
-                                src={greetingPokemonData.animatedSprite || greetingPokemonData.sprite || POKEBALL_PLACEHOLDER_URL}
+                                src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
                                 alt=""
                                 className="home-hero__sprite"
                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
@@ -489,7 +499,7 @@ export function HomeView({
                                 {lastEditedTeam.pokemons.slice(0, 6).map((pokemon, index) => (
                                     <img
                                         key={index}
-                                        src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                        src={getTeamPokemonDisplaySprite(pokemon)}
                                         alt={pokemon.name}
                                         className="home-sprite-stack__item"
                                         onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}

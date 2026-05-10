@@ -2,17 +2,19 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, getDocs, limit, orderBy, query, startAfter, where } from 'firebase/firestore';
 
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
-import { typeColors } from '../../constants/types';
+import { typeIcons } from '../../constants/types';
 import { useDebounce } from '../../hooks/useDebounce';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { CloseIcon } from '../icons';
 
-export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, currentPokemonId, colors, db }) {
+export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, currentPokemonId, currentPokemonIsShiny, colors, db }) {
     const dialogRef = useModalA11y(onClose);
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 350);
     const [selectedType, setSelectedType] = useState(null);
+    const [isShinySelection, setIsShinySelection] = useState(Boolean(currentPokemonIsShiny));
 
     const [browseList, setBrowseList] = useState(allPokemons || []);
     const [lastDoc, setLastDoc] = useState(null);
@@ -23,6 +25,10 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
     const [isSearching, setIsSearching] = useState(false);
 
     const isSearchActive = debouncedSearch.trim().length > 0;
+
+    useEffect(() => {
+        setIsShinySelection(Boolean(currentPokemonIsShiny));
+    }, [currentPokemonId, currentPokemonIsShiny]);
 
     const loadMorePokemons = useCallback(async () => {
         if (!db || isLoadingMore || !hasMore) return;
@@ -104,6 +110,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
         () => browseList.reduce((max, pokemon) => Math.max(max, Number(pokemon?.id) || 0), 0),
         [browseList],
     );
+    const selectedTypeLabel = selectedType ? `${selectedType.charAt(0).toUpperCase()}${selectedType.slice(1)}` : 'All types';
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
@@ -126,11 +133,42 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         Choose Your Partner Pokémon
                     </h2>
                     <p className="text-sm" style={{ color: colors.textMuted }}>
-                        Select a Pokémon to display on your greeting card
+                        Select a Pokémon to display on your greeting card and trainer icon.
                     </p>
                 </div>
 
                 <div className="mb-4 space-y-3">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div className="min-w-0">
+                            <p className="team-builder-panel__eyebrow">Partner filters</p>
+                            {isSearchActive ? (
+                                <p className="mt-1 text-xs" style={{ color: colors.textMuted }}>
+                                    {isSearching
+                                        ? 'Searching...'
+                                        : `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''} for "${debouncedSearch}"`}
+                                </p>
+                            ) : (
+                                <p className="mt-1 text-xs" style={{ color: colors.textMuted }}>
+                                    Browsing {browseList.length} loaded Pokemon — or type to search all of them.
+                                </p>
+                            )}
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => setIsShinySelection((previous) => !previous)}
+                            className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all"
+                            style={{
+                                backgroundColor: isShinySelection ? `${colors.accent}18` : colors.cardLight,
+                                borderColor: isShinySelection ? `${colors.accent}44` : colors.border,
+                                color: isShinySelection ? colors.accent : colors.text,
+                            }}
+                        >
+                            <span>Shiny partner</span>
+                            <span>{isShinySelection ? 'On' : 'Off'}</span>
+                        </button>
+                    </div>
+
                     <div className="relative">
                         <input
                             type="text"
@@ -157,48 +195,58 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         )}
                     </div>
 
-                    {isSearchActive ? (
-                        <p className="text-xs" style={{ color: colors.textMuted }}>
-                            {isSearching
-                                ? 'Searching…'
-                                : `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''} for "${debouncedSearch}"`}
-                        </p>
-                    ) : (
-                        <p className="text-xs" style={{ color: colors.textMuted }}>
-                            Browsing {browseList.length} loaded Pokémon — or type to search all of them.
-                        </p>
-                    )}
+                    <div
+                        className="team-builder-picker-toolbar team-builder-picker-toolbar--compact"
+                        style={{ borderBottomColor: colors.border }}
+                    >
+                        <div className="team-builder-picker-focus" role="group" aria-label="Partner type filter">
+                            <button
+                                type="button"
+                                onClick={() => setSelectedType(null)}
+                                className={`team-builder-type-button team-builder-type-button--compact ${!selectedType ? 'is-active' : ''}`}
+                                title="All types"
+                                aria-pressed={!selectedType}
+                            >
+                                <span className="text-[0.6rem] font-bold uppercase tracking-[0.08em]">All</span>
+                            </button>
+                            <div className="team-builder-type-grid team-builder-type-grid--compact">
+                                {Object.keys(typeIcons).map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => setSelectedType(type)}
+                                        className={`team-builder-type-button team-builder-type-button--compact ${selectedType === type ? 'is-active' : ''}`}
+                                        title={type}
+                                        aria-pressed={selectedType === type}
+                                    >
+                                        <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <span className="team-builder-picker-summary">{selectedTypeLabel}</span>
+                    </div>
 
                     <div className="flex flex-wrap gap-2">
                         <button
+                            type="button"
                             onClick={() => setSelectedType(null)}
-                            className="px-3 py-1 rounded-full text-xs font-semibold transition-all"
+                            className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
                             style={{
-                                backgroundColor: !selectedType ? colors.primary : colors.cardLight,
-                                color: !selectedType ? 'white' : colors.text,
+                                borderColor: !selectedType ? colors.primary : colors.border,
+                                backgroundColor: !selectedType ? colors.primary + '14' : colors.cardLight,
+                                color: !selectedType ? colors.primary : colors.textMuted,
                             }}
                         >
-                            All Types
+                            Clear type filter
                         </button>
-                        {Object.keys(typeColors).slice(0, 8).map((type) => (
-                            <button
-                                key={type}
-                                onClick={() => setSelectedType(type)}
-                                className="px-3 py-1 rounded-full text-xs font-semibold text-white transition-all"
-                                style={{
-                                    backgroundColor: selectedType === type ? typeColors[type] : colors.cardLight,
-                                    opacity: selectedType === type ? 1 : 0.7,
-                                }}
-                            >
-                                {type}
-                            </button>
-                        ))}
                     </div>
                 </div>
 
                 {currentPokemonId && (
                     <button
-                        onClick={() => onSelect(null)}
+                        onClick={() => onSelect({ pokemonId: null, isShiny: false })}
                         className="w-full mb-4 p-3 rounded-lg border-2 border-dashed transition-all hover:scale-[1.02]"
                         style={{ borderColor: colors.textMuted, color: colors.textMuted }}
                     >
@@ -216,7 +264,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         {displayedPokemons.map((pokemon) => (
                             <button
                                 key={pokemon.id}
-                                onClick={() => onSelect(pokemon.id)}
+                                onClick={() => onSelect({ pokemonId: pokemon.id, isShiny: isShinySelection })}
                                 className="p-3 rounded-xl text-center transition-all hover:scale-105 hover:shadow-lg relative"
                                 style={{
                                     backgroundColor: currentPokemonId === pokemon.id ? colors.primary + '20' : colors.cardLight,
@@ -231,7 +279,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                                     </div>
                                 )}
                                 <img
-                                    src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                    src={getPokemonDisplaySprite(pokemon, { shiny: isShinySelection })}
                                     alt={pokemon.name}
                                     className="w-16 h-16 mx-auto"
                                     onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}

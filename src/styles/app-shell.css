@@ -152,6 +152,9 @@
 .app-shell__account-button,
 .app-shell__icon-button,
 .app-shell__account-summary,
+.app-shell__account-menu-trigger,
+.app-shell__account-theme-option,
+.app-shell__account-menu-item,
 .app-shell__account-signout,
 .app-shell__footer-link {
     transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
@@ -260,13 +263,62 @@
     padding: 0.55rem;
 }
 
+.app-shell__account-menu {
+    position: relative;
+}
+
 .app-shell__account-card.is-collapsed {
     padding: 0.5rem;
 }
 
-.app-shell__account-card.is-collapsed .app-shell__icon-button {
+.app-shell__account-card.is-collapsed .app-shell__icon-button,
+.app-shell__account-card.is-collapsed .app-shell__account-menu-trigger {
     width: var(--app-shell-rail-button-size);
     height: var(--app-shell-rail-button-size);
+}
+
+.app-shell__account-summary-block {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 0.85rem;
+    background: transparent;
+    padding: 0.35rem;
+    text-align: left;
+}
+
+.app-shell__account-avatar,
+.app-shell__account-popover-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.app-shell__account-copy,
+.app-shell__account-popover-copy {
+    min-width: 0;
+}
+
+.app-shell__account-summary-block:hover {
+    border-color: var(--color-border);
+    background: var(--color-surface);
+}
+
+.app-shell__account-summary-block.is-open {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.app-shell__account-summary-block:focus-visible,
+.app-shell__account-menu-trigger:focus-visible,
+.app-shell__account-menu-item:focus-visible,
+.app-shell__account-theme-option:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }
 
 .app-shell__account-summary {
@@ -278,6 +330,34 @@
     border-radius: 0.85rem;
     padding: 0.35rem;
     text-align: left;
+}
+
+.app-shell__account-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.2rem;
+    height: 2.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.8rem;
+    background: var(--color-surface);
+    color: var(--color-muted);
+}
+
+.app-shell__account-menu-trigger svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.app-shell__account-menu-trigger.is-open {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.app-shell__account-menu-trigger.is-open svg {
+    transform: rotate(180deg);
 }
 
 .app-shell__account-email {
@@ -299,6 +379,167 @@
     border-radius: 0.8rem;
     background: var(--color-surface);
     color: var(--color-muted);
+}
+
+.app-shell__account-popover {
+    width: min(21rem, calc(100vw - 1.5rem));
+    border-radius: 1.05rem;
+    overflow: hidden;
+}
+
+.app-shell__account-popover.is-collapsed {
+    width: min(19rem, calc(100vw - 1.5rem));
+}
+
+.app-shell__account-popover-body {
+    display: flex;
+    flex-direction: column;
+}
+
+.app-shell__account-popover-head,
+.app-shell__account-popover-section {
+    padding: 0.85rem;
+}
+
+.app-shell__account-popover-head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+    background: linear-gradient(180deg, var(--color-surface-raised), var(--color-surface));
+}
+
+.app-shell__account-popover-name {
+    margin: 0;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.app-shell__account-popover-email,
+.app-shell__account-menu-item-note,
+.app-shell__account-theme-hint {
+    margin: 0.25rem 0 0;
+    font-size: 0.74rem;
+    line-height: 1.45;
+    color: var(--color-muted);
+}
+
+.app-shell__account-popover-label {
+    margin: 0 0 0.55rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.app-shell__account-popover-section + .app-shell__account-popover-section {
+    border-top: 1px solid var(--color-border);
+}
+
+.app-shell__account-menu-item {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+    gap: 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.9rem;
+    background: var(--color-surface-raised);
+    padding: 0.75rem;
+    text-align: left;
+    color: var(--color-fg);
+}
+
+.app-shell__account-menu-item:hover,
+.app-shell__account-theme-option:hover,
+.app-shell__account-menu-trigger:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--elevation-1);
+}
+
+.app-shell__account-menu-item-icon {
+    display: inline-flex;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.app-shell__account-menu-item-icon svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.app-shell__account-menu-item-copy,
+.app-shell__account-theme-copy {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+}
+
+.app-shell__account-menu-item-label,
+.app-shell__account-theme-name {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.app-shell__account-menu-item--danger {
+    border-color: color-mix(in srgb, var(--color-danger) 24%, var(--color-border));
+    color: var(--color-danger);
+}
+
+.app-shell__account-menu-item--danger .app-shell__account-menu-item-label {
+    color: var(--color-danger);
+}
+
+.app-shell__account-theme-grid {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.app-shell__account-theme-option {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.85rem;
+    background: var(--color-surface-raised);
+    padding: 0.62rem 0.68rem;
+    text-align: left;
+    color: var(--color-fg);
+}
+
+.app-shell__account-theme-option.is-active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.app-shell__account-theme-swatch {
+    width: 0.92rem;
+    height: 0.92rem;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--app-shell-theme-swatch);
+}
+
+.app-shell__account-theme-icon {
+    display: inline-flex;
+    margin-left: auto;
+    color: var(--color-muted);
+}
+
+.app-shell__account-theme-icon svg {
+    width: 0.95rem;
+    height: 0.95rem;
 }
 
 .app-shell__account-signout {

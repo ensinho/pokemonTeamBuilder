@@ -11,11 +11,14 @@ export const AnchoredPopover = ({
     className = '',
     style = {},
     arrowStyle,
+    arrowTopStyle,
+    arrowBottomStyle,
     viewportPadding = 16,
     offset = 10,
     zIndex = 80,
     role = 'dialog',
     ariaLabel,
+    placement = 'bottom',
 }) => {
     const [position, setPosition] = useState(null);
 
@@ -35,18 +38,23 @@ export const AnchoredPopover = ({
 
             const anchorRect = anchorRef.current.getBoundingClientRect();
             const popoverRect = popoverRef.current.getBoundingClientRect();
+            const isTopPlacement = placement === 'top';
             const centeredLeft = anchorRect.left + (anchorRect.width / 2) - (popoverRect.width / 2);
             const maxLeft = Math.max(viewportPadding, window.innerWidth - popoverRect.width - viewportPadding);
             const left = clamp(centeredLeft, viewportPadding, maxLeft);
-            const top = anchorRect.bottom + offset;
-            const maxHeight = Math.max(140, window.innerHeight - top - viewportPadding);
+            const top = isTopPlacement
+                ? Math.max(viewportPadding, anchorRect.top - popoverRect.height - offset)
+                : anchorRect.bottom + offset;
+            const maxHeight = isTopPlacement
+                ? Math.max(140, anchorRect.top - viewportPadding - offset)
+                : Math.max(140, window.innerHeight - top - viewportPadding);
             const arrowLeft = clamp(
                 anchorRect.left + (anchorRect.width / 2) - left,
                 18,
                 Math.max(18, popoverRect.width - 18)
             );
 
-            setPosition({ top, left, maxHeight, arrowLeft });
+            setPosition({ top, left, maxHeight, arrowLeft, placement });
         };
 
         const scheduleUpdate = () => {
@@ -71,7 +79,7 @@ export const AnchoredPopover = ({
             window.removeEventListener('resize', scheduleUpdate);
             window.removeEventListener('scroll', scheduleUpdate, true);
         };
-    }, [isOpen, anchorRef, popoverRef, viewportPadding, offset]);
+    }, [isOpen, anchorRef, popoverRef, viewportPadding, offset, placement]);
 
     if (!isOpen || typeof document === 'undefined') {
         return null;
@@ -94,12 +102,14 @@ export const AnchoredPopover = ({
                 ...style,
             }}
         >
-            {arrowStyle && (
+            {(arrowStyle || arrowTopStyle || arrowBottomStyle) && (
                 <span
-                    className="absolute -top-1.5 h-3 w-3 -translate-x-1/2 rotate-45"
+                    className={`absolute h-3 w-3 -translate-x-1/2 rotate-45 ${position?.placement === 'top' ? '-bottom-1.5' : '-top-1.5'}`}
                     style={{
                         left: position ? `${position.arrowLeft}px` : '50%',
-                        ...arrowStyle,
+                        ...(position?.placement === 'top'
+                            ? (arrowBottomStyle ?? arrowStyle)
+                            : (arrowTopStyle ?? arrowStyle)),
                     }}
                     aria-hidden="true"
                 />

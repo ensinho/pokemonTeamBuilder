@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import '../../styles/random-generator-view.css';
 import { appId } from '../../constants/firebase';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { GENERATION_RANGES, LEGENDARY_IDS, NATURES_LIST } from '../../constants/pokemon';
@@ -11,6 +12,7 @@ import {
     getStaticPokemonDetail,
 } from '../../services/pokemonDataCache';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { AnchoredPopover } from '../AnchoredPopover';
 import { EmptyState } from '../EmptyState';
 import {
     ChartColumnIcon,
@@ -24,6 +26,15 @@ import {
 const RANDOM_GENERATOR_INTRO_STORAGE_PREFIX = 'randomGeneratorIntroSeen';
 const RANDOM_GENERATOR_GUIDE_LAYOUT_STORAGE_PREFIX = 'randomGeneratorGuideLayoutExpanded';
 const RANDOM_GENERATOR_FILTERS_LAYOUT_STORAGE_PREFIX = 'randomGeneratorFiltersLayoutExpanded';
+
+const RANDOM_GENERATOR_STAT_LABELS = Object.freeze({
+    hp: 'HP',
+    attack: 'Attack',
+    defense: 'Defense',
+    'special-attack': 'Sp. Atk',
+    'special-defense': 'Sp. Def',
+    speed: 'Speed',
+});
 
 const RandomGeneratorIntroModal = ({ onClose, colors }) => {
     const dialogRef = useModalA11y(onClose);
@@ -155,6 +166,167 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                 </div>
             </div>
         </div>
+    );
+};
+
+const formatPokemonStatLabel = (statName = '') => RANDOM_GENERATOR_STAT_LABELS[statName] || statName.replace(/-/g, ' ');
+
+const getStrongestStat = (stats = []) => {
+    if (!Array.isArray(stats) || stats.length === 0) return null;
+    return stats.reduce((best, stat) => (!best || stat.base_stat > best.base_stat ? stat : best), null);
+};
+
+const getPokemonStatusMeta = (pokemon, colors) => {
+    if (pokemon.isLegendary) {
+        return {
+            label: 'Legendary',
+            tone: colors.warning,
+            hint: 'Rare, high-impact roster pull.',
+        };
+    }
+
+    if (pokemon.isMythical) {
+        return {
+            label: 'Mythical',
+            tone: colors.primary,
+            hint: 'Event-tier and unusually rare.',
+        };
+    }
+
+    return {
+        label: 'Regular',
+        tone: colors.text,
+        hint: 'Standard encounter pool.',
+    };
+};
+
+const StatusInfoCard = ({ pokemon, colors }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const anchorRef = useRef(null);
+    const popoverRef = useRef(null);
+    const closeTimerRef = useRef(null);
+
+    const statusMeta = useMemo(() => getPokemonStatusMeta(pokemon, colors), [pokemon, colors]);
+    const strongestStat = useMemo(() => getStrongestStat(pokemon.stats), [pokemon.stats]);
+
+    const clearCloseTimer = useCallback(() => {
+        if (typeof window === 'undefined' || !closeTimerRef.current) return;
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+    }, []);
+
+    const openPopover = useCallback(() => {
+        clearCloseTimer();
+        setIsOpen(true);
+    }, [clearCloseTimer]);
+
+    const scheduleClose = useCallback(() => {
+        if (typeof window === 'undefined') return;
+        clearCloseTimer();
+        closeTimerRef.current = window.setTimeout(() => {
+            setIsOpen(false);
+            closeTimerRef.current = null;
+        }, 90);
+    }, [clearCloseTimer]);
+
+    useEffect(() => () => {
+        if (typeof window !== 'undefined' && closeTimerRef.current) {
+            window.clearTimeout(closeTimerRef.current);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isOpen) return undefined;
+
+        const handlePointerDown = (event) => {
+            const target = event.target;
+            if (!(target instanceof Node)) return;
+            if (anchorRef.current?.contains(target) || popoverRef.current?.contains(target)) return;
+            setIsOpen(false);
+        };
+
+        const handleKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                setIsOpen(false);
+            }
+        };
+
+        document.addEventListener('pointerdown', handlePointerDown);
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('pointerdown', handlePointerDown);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [isOpen]);
+
+    return (
+        <>
+            <button
+                ref={anchorRef}
+                type="button"
+                className="random-generator-meta-card random-generator-status-card"
+                style={{ '--random-generator-status-tone': statusMeta.tone }}
+                aria-expanded={isOpen}
+                aria-label={`Status details for ${pokemon.name}`}
+                onClick={() => {
+                    clearCloseTimer();
+                    setIsOpen((prev) => !prev);
+                }}
+                onMouseEnter={openPopover}
+                onMouseLeave={scheduleClose}
+            >
+                <span className="random-generator-status-card__meta">
+                    <span className="random-generator-meta-card__label">Status</span>
+                    <span className="random-generator-meta-card__value random-generator-status-card__value">
+                        {statusMeta.label}
+                    </span>
+                </span>
+                <span className="random-generator-status-card__icon" aria-hidden="true">
+                    <InfoIcon />
+                </span>
+            </button>
+
+            <AnchoredPopover
+                isOpen={isOpen}
+                anchorRef={anchorRef}
+                popoverRef={popoverRef}
+                className="random-generator-status-popover"
+                style={{
+                    backgroundColor: colors.card,
+                    border: `1px solid ${colors.border}`,
+                }}
+                arrowStyle={{
+                    backgroundColor: colors.card,
+                    borderTop: `1px solid ${colors.border}`,
+                    borderLeft: `1px solid ${colors.border}`,
+                }}
+                placement="top"
+                role="tooltip"
+                ariaLabel={`${pokemon.name} status details`}
+            >
+                <div
+                    className="random-generator-status-popover__body"
+                    onMouseEnter={openPopover}
+                    onMouseLeave={scheduleClose}
+                >
+                    <p className="random-generator-status-popover__eyebrow">Card info</p>
+                    <div className="random-generator-status-popover__row">
+                        <span>Status</span>
+                        <strong style={{ color: statusMeta.tone }}>{statusMeta.label}</strong>
+                    </div>
+                    <div className="random-generator-status-popover__row">
+                        <span>Strongest stat</span>
+                        <strong>
+                            {strongestStat
+                                ? `${formatPokemonStatLabel(strongestStat.name)} ${strongestStat.base_stat}`
+                                : 'Unknown'}
+                        </strong>
+                    </div>
+                    <p className="random-generator-status-popover__hint">{statusMeta.hint}</p>
+                </div>
+            </AnchoredPopover>
+        </>
     );
 };
 
@@ -652,7 +824,6 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                 } catch (error) {
                     console.error('Error fetching evo sprites:', error);
                 }
-
                 setEvoSprites(sprites);
                 setLoadingSprites(false);
             };
@@ -661,33 +832,36 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
         }, [evolutionChain, hasEvolutionLine]);
 
         const primaryType = pokemon.types[0];
+        const primaryTypeColor = typeColors[primaryType] || colors.primary;
 
         const EvolutionSprite = ({ evo, isCurrent = false }) => {
             const spriteSrc = isCurrent ? (pokemon.sprite || POKEBALL_PLACEHOLDER_URL) : (evoSprites[evo.id] || POKEBALL_PLACEHOLDER_URL);
 
             return (
-                <div className="flex flex-col items-center min-w-[68px]">
+                <div className={`random-generator-evolution-node ${isCurrent ? 'is-current' : ''}`}>
                     <div
-                        className="rounded-2xl p-1.5"
+                        className="random-generator-evolution-node__art"
                         style={{
-                            backgroundColor: isCurrent ? typeColors[primaryType] + '1F' : colors.card,
-                            border: isCurrent ? `2px solid ${typeColors[primaryType]}` : `1px solid ${colors.cardLight}`,
-                            opacity: isCurrent ? 1 : 0.78,
+                            backgroundColor: isCurrent ? typeColors[primaryType] + '14' : colors.background,
+                            borderColor: isCurrent ? typeColors[primaryType] : colors.border,
                         }}
                     >
                         {loadingSprites ? (
-                            <div className={`rounded-xl animate-pulse ${isCurrent ? 'w-16 h-16 sm:w-20 sm:h-20' : 'w-12 h-12 sm:w-14 sm:h-14'}`} style={{ backgroundColor: colors.cardLight }} />
+                            <div
+                                className={`random-generator-evolution-node__skeleton ${isCurrent ? 'is-current' : ''} animate-pulse`}
+                                style={{ backgroundColor: colors.cardLight }}
+                            />
                         ) : (
                             <img
                                 src={spriteSrc}
                                 alt={evo.name}
-                                className={`${isCurrent ? 'w-16 h-16 sm:w-20 sm:h-20' : 'w-12 h-12 sm:w-14 sm:h-14'} object-contain`}
+                                className={`random-generator-evolution-node__image ${isCurrent ? 'is-current' : ''}`}
                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                             />
                         )}
                     </div>
                     <p
-                        className={`mt-1 text-center capitalize font-semibold leading-tight ${isCurrent ? 'text-xs sm:text-sm max-w-[84px]' : 'text-[10px] sm:text-[11px] max-w-[68px]'}`}
+                        className={`random-generator-evolution-node__name ${isCurrent ? 'is-current' : ''}`}
                         style={{ color: isCurrent ? colors.text : colors.textMuted }}
                     >
                         {evo.name.replace(/-/g, ' ')}
@@ -698,83 +872,120 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
 
         return (
             <article
-                className="rounded-3xl overflow-hidden h-full"
+                className="random-generator-card"
                 style={{
-                    backgroundColor: colors.card,
-                    border: `2px solid ${typeColors[primaryType]}44`,
+                    '--random-generator-type-color': primaryTypeColor,
+                    '--random-generator-type-soft': `${primaryTypeColor}18`,
+                    '--random-generator-type-border': `${primaryTypeColor}44`,
                 }}
             >
-                <div
-                    className="px-4 pt-4 pb-4 sm:px-5 sm:pt-5"
-                    style={{ background: `linear-gradient(135deg, ${typeColors[primaryType]}18 0%, ${colors.card} 80%)` }}
-                >
-                    <div className="flex items-start justify-between gap-3">
-                        <div className="flex flex-wrap gap-2">
-                            <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ backgroundColor: colors.card, color: colors.primary }}>
+                <div className="random-generator-card__hero">
+                    <div className="random-generator-card__top">
+                        <div className="random-generator-card__chip-row">
+                            <span className="random-generator-card__chip" style={{ color: colors.primary }}>
                                 Round {roundNumber}
                             </span>
-                            <span className="rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-[0.16em]" style={{ backgroundColor: colors.card, color: colors.textMuted }}>
+                            <span className="random-generator-card__chip" style={{ color: colors.textMuted }}>
                                 #{String(pokemon.id).padStart(3, '0')}
                             </span>
                         </div>
-                        <span className="rounded-full px-3 py-1 text-[10px] font-semibold" style={{ backgroundColor: typeColors[primaryType] + '1A', color: typeColors[primaryType] }}>
+                        <span className="random-generator-card__chip" style={{ backgroundColor: `${primaryTypeColor}1A`, color: primaryTypeColor }}>
                             {pokemon.generation}
                         </span>
                     </div>
 
-                    <div className="mt-4 flex flex-col items-center text-center">
+                    <div className="random-generator-card__hero-body">
                         <div
-                            className="rounded-[1.5rem] p-3"
+                            className="random-generator-card__art"
                             style={{
-                                backgroundColor: typeColors[primaryType] + '1A',
-                                border: `2px solid ${typeColors[primaryType]}`,
+                                backgroundColor: `${primaryTypeColor}1A`,
+                                borderColor: primaryTypeColor,
                             }}
                         >
                             <img
                                 src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
                                 alt={pokemon.name}
-                                className="w-24 h-24 sm:w-28 sm:h-28 object-contain"
+                                className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                             />
                         </div>
-                        <h3 className="mt-3 text-xl sm:text-2xl font-extrabold capitalize tracking-tight" style={{ color: colors.text }}>
-                            {pokemon.name.replace(/-/g, ' ')}
-                        </h3>
-                        <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-                            {pokemon.types.map((type) => (
-                                <span
-                                    key={type}
-                                    className="px-2.5 py-1 rounded-full text-[10px] font-bold text-white uppercase"
-                                    style={{ backgroundColor: typeColors[type] }}
-                                >
-                                    {type}
-                                </span>
-                            ))}
+                        <div className="random-generator-card__identity">
+                            <h3 className="random-generator-card__title">
+                                {pokemon.name.replace(/-/g, ' ')}
+                            </h3>
+                            <div className="random-generator-card__taxonomy">
+                                <div className="random-generator-card__type-list">
+                                    {pokemon.types.map((type) => (
+                                        <span
+                                            key={type}
+                                            className="random-generator-card__type-pill"
+                                            style={{ backgroundColor: typeColors[type] }}
+                                        >
+                                            {type}
+                                        </span>
+                                    ))}
+                                </div>
+                                {pokemon.abilities?.length > 0 && (
+                                    <div className="random-generator-card__ability-group">
+                                        <span className="random-generator-card__ability-label">Abilities</span>
+                                        <div className="random-generator-card__ability-list">
+                                            {pokemon.abilities.map((ability, index) => (
+                                                <span
+                                                    key={ability}
+                                                    className={`random-generator-card__ability-pill ${index === 0 ? 'is-primary' : ''} capitalize`}
+                                                >
+                                                    {ability.replace(/-/g, ' ')}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+                    </div>
+                </div>
+
+                <div className="random-generator-card__body">
+                    <div className="random-generator-meta-grid">
+                        <div className="random-generator-meta-card">
+                            <p className="random-generator-meta-card__label">Height</p>
+                            <p className="random-generator-meta-card__value">{pokemon.height}m</p>
+                        </div>
+                        <div className="random-generator-meta-card">
+                            <p className="random-generator-meta-card__label">Weight</p>
+                            <p className="random-generator-meta-card__value">{pokemon.weight}kg</p>
+                        </div>
+                        <div className="random-generator-meta-card">
+                            <p className="random-generator-meta-card__label">Habitat</p>
+                            <p className="random-generator-meta-card__value random-generator-meta-card__value--small capitalize">
+                                {pokemon.habitat?.replace(/-/g, ' ') || 'Unknown'}
+                            </p>
+                        </div>
+                        <StatusInfoCard pokemon={pokemon} colors={colors} />
                     </div>
 
                     {hasEvolutionLine && (
-                        <div className="mt-4 rounded-2xl p-3" style={{ backgroundColor: colors.cardLight }}>
-                            <div className="flex items-center justify-between gap-3 mb-2">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: colors.primary }}>
+                        <div className="random-generator-section random-generator-section--compact random-generator-section--centered">
+                            <div className="random-generator-section__header random-generator-section__header--centered">
+                                <p className="random-generator-section__label" style={{ color: colors.primary }}>
                                     Evolution line
                                 </p>
-                                <span className="text-[10px] font-semibold" style={{ color: colors.textMuted }}>
+                                <span className="random-generator-section__meta" style={{ color: colors.textMuted }}>
                                     {pokemon.isFullyEvolved ? 'Final stage' : `Stage ${pokemon.evolutionStage}`}
                                 </span>
                             </div>
                             <div
-                                className="overflow-x-auto custom-scrollbar pb-1"
+                                className="random-generator-evolution-strip overflow-x-auto custom-scrollbar"
                                 style={{ '--scrollbar-track-color': colors.cardLight, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.cardLight }}
                             >
-                                <div className="flex items-center gap-1.5 min-w-max">
+                                <div className="random-generator-evolution-strip__track">
                                     {evolutionChain.map((evo, index) => {
                                         const isCurrent = parseInt(evo.id, 10) === pokemon.id;
                                         return (
                                             <React.Fragment key={evo.id}>
                                                 <EvolutionSprite evo={evo} isCurrent={isCurrent} />
                                                 {index < evolutionChain.length - 1 && (
-                                                    <span className="text-base sm:text-lg" style={{ color: colors.textMuted }}>→</span>
+                                                    <span className="random-generator-evolution-separator" style={{ color: colors.textMuted }}>→</span>
                                                 )}
                                             </React.Fragment>
                                         );
@@ -783,47 +994,24 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             </div>
                         </div>
                     )}
-                </div>
-
-                <div className="px-4 pb-4 pt-3 sm:px-5 sm:pb-5 space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: colors.cardLight }}>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: colors.textMuted }}>Height</p>
-                            <p className="mt-1 text-base font-bold" style={{ color: colors.text }}>{pokemon.height}m</p>
-                        </div>
-                        <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: colors.cardLight }}>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: colors.textMuted }}>Weight</p>
-                            <p className="mt-1 text-base font-bold" style={{ color: colors.text }}>{pokemon.weight}kg</p>
-                        </div>
-                        <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: colors.cardLight }}>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: colors.textMuted }}>Habitat</p>
-                            <p className="mt-1 text-sm font-bold capitalize" style={{ color: colors.text }}>{pokemon.habitat?.replace(/-/g, ' ') || 'Unknown'}</p>
-                        </div>
-                        <div className="rounded-2xl p-3 text-center" style={{ backgroundColor: colors.cardLight }}>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: colors.textMuted }}>Status</p>
-                            <p className="mt-1 text-sm font-bold" style={{ color: pokemon.isLegendary ? '#FFD700' : pokemon.isMythical ? '#DA70D6' : colors.text }}>
-                                {pokemon.isLegendary ? 'Legendary' : pokemon.isMythical ? 'Mythical' : 'Regular'}
-                            </p>
-                        </div>
-                    </div>
 
                     {pokemon.forms && pokemon.forms.length > 0 && formsFilter !== 'no-forms' && (
-                        <div className="rounded-2xl p-3" style={{ backgroundColor: colors.cardLight }}>
-                            <div className="flex items-center justify-between gap-2 mb-2">
-                                <p className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: colors.textMuted }}>
+                        <div className="random-generator-section random-generator-section--compact">
+                            <div className="random-generator-section__header">
+                                <p className="random-generator-section__label">
                                     Alternate forms
                                 </p>
-                                <span className="text-[10px] font-semibold" style={{ color: colors.primary }}>
+                                <span className="random-generator-section__meta">
                                     {pokemon.forms.length}
                                 </span>
                             </div>
-                            <div className="flex flex-wrap justify-center gap-2">
+                            <div className="random-generator-forms-grid">
                                 {pokemon.forms.slice(0, 4).map((form) => (
-                                    <div key={form.name} className="text-center max-w-[60px]">
+                                    <div key={form.name} className="random-generator-form">
                                         {form.sprite && (
                                             <img src={form.sprite} alt={form.name} className="w-10 h-10 mx-auto" />
                                         )}
-                                        <p className="mt-1 text-[9px] capitalize leading-tight" style={{ color: colors.text }}>
+                                        <p className="random-generator-form__name">
                                             {form.name.replace(pokemon.name + '-', '').replace(/-/g, ' ')}
                                         </p>
                                     </div>
@@ -831,60 +1019,33 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             </div>
                         </div>
                     )}
-
-                    <div className="rounded-2xl p-3" style={{ backgroundColor: colors.cardLight }}>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-center mb-2" style={{ color: colors.textMuted }}>
-                            Abilities
-                        </p>
-                        <div className="flex flex-wrap justify-center gap-1.5">
-                            {pokemon.abilities.map((ability, index) => (
-                                <span
-                                    key={ability}
-                                    className="text-[11px] px-2.5 py-1 rounded-full capitalize font-semibold"
-                                    style={{
-                                        backgroundColor: index === 0 ? typeColors[primaryType] : colors.card,
-                                        color: index === 0 ? 'white' : colors.text,
-                                    }}
-                                >
-                                    {ability.replace(/-/g, ' ')}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
                 </div>
             </article>
         );
     };
 
     return (
-        <main className="space-y-4 sm:space-y-6 pb-8">
+        <main className="random-generator-view">
             {showIntroModal && <RandomGeneratorIntroModal onClose={handleCloseIntroModal} colors={colors} />}
 
-            <section className="rounded-3xl shadow-lg p-3 sm:p-5" style={{ backgroundColor: colors.card }}>
-                <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-3.5">
-                    <div className="max-w-2xl flex-1 min-w-0">
-                        <div className="min-w-0">
-                            <div className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em]"
-                                style={{ backgroundColor: colors.primary + '1A', color: colors.primary }}
-                            >
-                                <DiceIcon />
-                                Random Generator
-                            </div>
-                            <h2 className="mt-2 text-lg sm:text-2xl font-extrabold tracking-tight" style={{ color: colors.text }}>
-                                Build fast Pokemon guessing rounds
-                            </h2>
-                            <p className="mt-1.5 text-xs sm:text-sm leading-relaxed" style={{ color: colors.textMuted }}>
-                                Roll the secret Pokemon, keep the phone with the player who knows the answer, and let the rest of the group narrow it down with yes or no questions.
-                            </p>
+            <section className="random-generator-panel random-generator-panel--hero">
+                <div className="random-generator-panel__header">
+                    <div className="random-generator-panel__summary">
+                        <div className="random-generator-panel__eyebrow">
+                            <DiceIcon />
+                            Random Generator
                         </div>
+                        <h2 className="random-generator-panel__title">Build fast Pokemon guessing rounds</h2>
+                        <p className="random-generator-panel__description">
+                            Roll the secret Pokemon, keep the phone with the player who knows the answer, and let the rest of the group narrow it down with yes or no questions.
+                        </p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 lg:flex lg:flex-row lg:justify-end lg:min-w-[18rem]">
+                    <div className="random-generator-panel__actions">
                         <button
                             type="button"
                             onClick={() => setShowIntroModal(true)}
-                            className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                            className="random-generator-action random-generator-action--ghost"
                         >
                             <InfoIcon />
                             How to play
@@ -893,8 +1054,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             type="button"
                             onClick={generateRandomPokemon}
                             disabled={isLoading || isLoadingAllIds}
-                            className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-xl text-sm font-bold text-white transition-transform hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
-                            style={{ backgroundColor: colors.primary }}
+                            className="random-generator-action random-generator-action--primary"
                         >
                             <RefreshIcon />
                             {isLoading ? 'Generating...' : isLoadingAllIds ? 'Preparing pool...' : 'Generate round'}
@@ -902,82 +1062,37 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                     </div>
                 </div>
 
-                <div className="space-y-2.5">
-                    <div className="grid grid-cols-1 sm:grid-cols-1 gap-2.5">
-                        <button
-                            type="button"
-                            onClick={handleToggleFiltersLayout}
-                            className="w-full rounded-2xl p-3 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.background, color: colors.text }}
-                            aria-expanded={isFiltersExpanded}
-                            aria-controls="random-generator-filters-panel"
-                        >
-                            <span className="flex items-center justify-between gap-3">
-                                <span className="min-w-0">
-                                    <span className="inline-flex items-center gap-2 text-sm font-bold" style={{ color: colors.text }}>
-                                        <ChartColumnIcon className="w-4 h-4" />
-                                        Filters
-                                    </span>
-                                    <span className="mt-1 block text-[11px] sm:text-xs leading-relaxed" style={{ color: colors.textMuted }}>
-                                        {isFiltersExpanded
-                                            ? 'Hide the inputs and keep a compact chip summary.'
-                                            : `${filterSummaryChips.length} compact filter chip${filterSummaryChips.length !== 1 ? 's' : ''} visible.`}
-                                    </span>
+                <div className="random-generator-filters">
+                    <button
+                        type="button"
+                        onClick={handleToggleFiltersLayout}
+                        className="random-generator-filters__toggle"
+                        aria-expanded={isFiltersExpanded}
+                        aria-controls="random-generator-filters-panel"
+                    >
+                        <span className="flex items-center justify-between gap-3">
+                            <span className="min-w-0 flex items-center gap-2 text-sm font-bold text-fg">
+                                <span className="inline-flex items-center gap-2 text-sm font-bold text-fg">
+                                    <ChartColumnIcon className="w-4 h-4" />
+                                    Filters
                                 </span>
-                                <span
-                                    className={`shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-xl transition-transform duration-300 ${isFiltersExpanded ? '-rotate-90' : 'rotate-90'}`}
-                                    style={{ backgroundColor: colors.primary + '14', color: colors.primary }}
-                                    aria-hidden="true"
-                                >
-                                    <CollapseRightIcon />
+                                <span className="random-generator-filters__toggle-copy">
+                                    {isFiltersExpanded
+                                        ? 'Hide the inputs and keep a compact chip summary.'
+                                        : `${filterSummaryChips.length} compact filter chip${filterSummaryChips.length !== 1 ? 's' : ''} visible.`}
                                 </span>
                             </span>
-                        </button>
-                    </div>
-
-                    <div
-                        id="random-generator-guide-panel"
-                        className="overflow-hidden transition-all duration-300 ease-out"
-                        style={{
-                            maxHeight: isGuideLayoutExpanded ? '24rem' : '0px',
-                            opacity: isGuideLayoutExpanded ? 1 : 0,
-                            transform: isGuideLayoutExpanded ? 'translateY(0)' : 'translateY(-8px)',
-                            pointerEvents: isGuideLayoutExpanded ? 'auto' : 'none',
-                        }}
-                        aria-hidden={!isGuideLayoutExpanded}
-                    >
-                        <div
-                            className="rounded-2xl p-3 sm:p-4"
-                            style={{ backgroundColor: colors.background, border: `1px solid ${colors.cardLight}` }}
-                        >
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                {[
-                                    { title: '1. Roll', text: 'Choose how many Pokemon you want in the round.' },
-                                    { title: '2. Ask', text: 'Friends narrow it down with yes or no questions only.' },
-                                    { title: '3. Reveal', text: 'Open the answer after the best guess or final clue.' },
-                                ].map((step) => (
-                                    <div key={step.title} className="rounded-xl p-2.5" style={{ backgroundColor: colors.card }}>
-                                        <p className="text-[10px] font-bold uppercase tracking-[0.16em]" style={{ color: colors.primary }}>
-                                            {step.title}
-                                        </p>
-                                        <p className="mt-1 text-[11px] sm:text-xs leading-relaxed" style={{ color: colors.textMuted }}>
-                                            {step.text}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                            <span className={`random-generator-filters__toggle-icon ${isFiltersExpanded ? 'is-expanded' : ''}`} aria-hidden="true">
+                                <CollapseRightIcon />
+                            </span>
+                        </span>
+                    </button>
 
                     {!isFiltersExpanded && (
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="random-generator-filters__summary">
                             {filterSummaryChips.map((chip) => (
-                                <span
-                                    key={chip.key}
-                                    className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
-                                >
-                                    <span style={{ color: colors.textMuted }}>{chip.label}</span>
+                                <span key={chip.key} className="random-generator-filters__chip">
+                                    <span className="text-muted">{chip.label}</span>
                                     <span>{chip.value}</span>
                                 </span>
                             ))}
@@ -995,16 +1110,13 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         }}
                         aria-hidden={!isFiltersExpanded}
                     >
-                        <div className="grid grid-cols-2 xl:grid-cols-3 gap-2.5 pt-0.5">
-                            <label className="block">
-                                <span className="block text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] mb-1.5" style={{ color: colors.textMuted }}>
-                                    Pokemon count
-                                </span>
+                        <div className="random-generator-filters__grid">
+                            <label className="random-generator-field">
+                                <span className="random-generator-field__label">Pokemon count</span>
                                 <select
                                     value={pokemonCount}
                                     onChange={(e) => setPokemonCount(parseInt(e.target.value, 10))}
-                                    className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    className="random-generator-select"
                                 >
                                     {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((count) => (
                                         <option key={count} value={count}>{count}</option>
@@ -1012,15 +1124,12 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                                 </select>
                             </label>
 
-                            <label className="block">
-                                <span className="block text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] mb-1.5" style={{ color: colors.textMuted }}>
-                                    Region pool
-                                </span>
+                            <label className="random-generator-field">
+                                <span className="random-generator-field__label">Region pool</span>
                                 <select
                                     value={selectedRegion}
                                     onChange={(e) => setSelectedRegion(e.target.value)}
-                                    className="w-full px-3 py-2.5 rounded-xl text-sm capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    className="random-generator-select capitalize"
                                 >
                                     <option value="all">All regions</option>
                                     {regionOptions.map((generation) => (
@@ -1031,15 +1140,12 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                                 </select>
                             </label>
 
-                            <label className="block">
-                                <span className="block text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] mb-1.5" style={{ color: colors.textMuted }}>
-                                    Type filter
-                                </span>
+                            <label className="random-generator-field">
+                                <span className="random-generator-field__label">Type filter</span>
                                 <select
                                     value={selectedType}
                                     onChange={(e) => setSelectedType(e.target.value)}
-                                    className="w-full px-3 py-2.5 rounded-xl text-sm capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    className="random-generator-select capitalize"
                                 >
                                     <option value="all">All types</option>
                                     {Object.keys(typeColors).map((type) => (
@@ -1048,15 +1154,12 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                                 </select>
                             </label>
 
-                            <label className="block">
-                                <span className="block text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] mb-1.5" style={{ color: colors.textMuted }}>
-                                    Legendary pool
-                                </span>
+                            <label className="random-generator-field">
+                                <span className="random-generator-field__label">Legendary pool</span>
                                 <select
                                     value={legendaryFilter}
                                     onChange={(e) => setLegendaryFilter(e.target.value)}
-                                    className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    className="random-generator-select"
                                 >
                                     <option value="all">Any rarity</option>
                                     <option value="legendary">Legendary only</option>
@@ -1064,15 +1167,12 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                                 </select>
                             </label>
 
-                            <label className="block">
-                                <span className="block text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] mb-1.5" style={{ color: colors.textMuted }}>
-                                    Evolution stage
-                                </span>
+                            <label className="random-generator-field">
+                                <span className="random-generator-field__label">Evolution stage</span>
                                 <select
                                     value={fullyEvolvedFilter}
                                     onChange={(e) => setFullyEvolvedFilter(e.target.value)}
-                                    className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    className="random-generator-select"
                                 >
                                     <option value="all">Any stage</option>
                                     <option value="fully-evolved">Fully evolved only</option>
@@ -1080,15 +1180,12 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                                 </select>
                             </label>
 
-                            <label className="block">
-                                <span className="block text-[10px] sm:text-xs font-bold uppercase tracking-[0.16em] mb-1.5" style={{ color: colors.textMuted }}>
-                                    Form filter
-                                </span>
+                            <label className="random-generator-field">
+                                <span className="random-generator-field__label">Form filter</span>
                                 <select
                                     value={formsFilter}
                                     onChange={(e) => setFormsFilter(e.target.value)}
-                                    className="w-full px-3 py-2.5 rounded-xl text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    className="random-generator-select"
                                 >
                                     <option value="all">Any form pool</option>
                                     <option value="with-forms">Only Pokemon with alt forms</option>
@@ -1100,17 +1197,15 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                 </div>
             </section>
 
-            <section className="rounded-3xl shadow-lg p-4 sm:p-6" style={{ backgroundColor: colors.card }}>
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
+            <section className="random-generator-panel random-generator-panel--results">
+                <div className="random-generator-results__header">
                     <div>
-                        <h3 className="text-xl font-bold tracking-tight" style={{ color: colors.text }}>
-                            Current roll
-                        </h3>
-                        <p className="mt-1 text-sm" style={{ color: colors.textMuted }}>
+                        <h3 className="random-generator-results__title">Current roll</h3>
+                        <p className="random-generator-results__copy">
                             {generationSummary.generated} of {generationSummary.requested} Pokemon ready for this round.
                         </p>
                         {generationSummary.exhausted && generationSummary.generated < generationSummary.requested && (
-                            <p className="mt-2 text-xs leading-relaxed" style={{ color: colors.textMuted }}>
+                            <p className="random-generator-results__hint">
                                 Only {generationSummary.generated} Pokemon matched the current filters. Loosen one or two parameters to fill the full round.
                             </p>
                         )}
@@ -1120,8 +1215,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         type="button"
                         onClick={generateRandomPokemon}
                         disabled={isLoading || isLoadingAllIds}
-                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                        className="random-generator-action random-generator-action--ghost"
                     >
                         <RefreshIcon />
                         Reroll
@@ -1129,9 +1223,9 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                 </div>
 
                 {isLoading ? (
-                    <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+                    <div className="random-generator-results__grid">
                         {Array.from({ length: pokemonCount }).map((_, index) => (
-                            <div key={index} className="rounded-3xl overflow-hidden animate-pulse" style={{ backgroundColor: colors.cardLight }}>
+                            <div key={index} className="rounded-2xl overflow-hidden border border-border bg-surface-raised animate-pulse">
                                 <div className="h-56 relative" style={{ backgroundColor: colors.card }}>
                                     <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/5 to-transparent"></div>
                                 </div>
@@ -1147,7 +1241,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         ))}
                     </div>
                 ) : generatedPokemon.length > 0 ? (
-                    <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3">
+                    <div className="random-generator-results__grid">
                         {generatedPokemon.map((pokemon, index) => (
                             <PokemonDetailCard key={`${pokemon.id}-${index}`} pokemon={pokemon} roundNumber={index + 1} />
                         ))}

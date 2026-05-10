@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
+import '../../styles/profile-view.css';
 import { THEME_META } from '../../constants/theme';
+import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { Sprite } from '../Sprite';
 import {
-    AccountIcon, EditIcon, SparklesIcon, StarsIcon, SavedTeamsIcon,
-    SunIcon, MoonIcon, FlowerIcon, SaveIcon, RefreshIcon, TrashIcon,
+    AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
+    SunIcon, MoonIcon, SaveIcon, RefreshIcon,
 } from '../icons';
 
 /**
@@ -19,56 +21,34 @@ import {
  */
 
 const ThemeSwatchIcon = ({ id, color }) => {
-    if (id === 'dark' || id === 'midnight') return <MoonIcon className="w-4 h-4" color={color} />;
-    if (id === 'sakura') return <FlowerIcon className="w-4 h-4" color={color} />;
+    if (id === 'dark' || id === 'midnight' || id === 'eclipse') return <MoonIcon className="w-4 h-4" color={color} />;
     return <SunIcon className="w-4 h-4" color={color} />;
 };
 
-const SectionCard = ({ title, subtitle, icon, children }) => (
-    <section
-        className="rounded-xl p-5 md:p-6 border"
-        style={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-border)' }}
-    >
-        <header className="flex items-start gap-3 mb-4">
-            {icon && (
-                <div
-                    className="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: 'var(--color-primary-soft)', color: 'var(--color-primary)' }}
-                >
-                    {icon}
+const SectionCard = ({ title, subtitle, icon, meta, className = '', children }) => (
+    <section className={['profile-card', className].filter(Boolean).join(' ')}>
+        <header className="profile-card__header">
+            <div className="profile-card__header-main">
+                {icon ? <div className="profile-card__icon">{icon}</div> : null}
+                <div className="profile-card__heading">
+                    <h3 className="profile-card__title">{title}</h3>
+                    {subtitle ? <p className="profile-card__subtitle">{subtitle}</p> : null}
                 </div>
-            )}
-            <div className="min-w-0">
-                <h3 className="text-base md:text-lg font-bold" style={{ color: 'var(--color-fg)' }}>
-                    {title}
-                </h3>
-                {subtitle && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--color-muted)' }}>
-                        {subtitle}
-                    </p>
-                )}
             </div>
+            {meta ? <div className="profile-card__meta">{meta}</div> : null}
         </header>
         {children}
     </section>
 );
 
-const Stat = ({ label, value, hint }) => (
-    <div
-        className="rounded-lg p-3 flex-1 min-w-[120px]"
-        style={{ backgroundColor: 'var(--color-surface-raised)' }}
-    >
-        <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'var(--color-muted)' }}>
-            {label}
-        </p>
-        <p className="text-xl md:text-2xl font-bold mt-1 leading-none" style={{ color: 'var(--color-fg)' }}>
-            {value}
-        </p>
-        {hint && (
-            <p className="text-[10px] mt-1" style={{ color: 'var(--color-muted)' }}>
-                {hint}
-            </p>
-        )}
+const OverviewStat = ({ icon, label, value, hint }) => (
+    <div className="profile-overview-stat">
+        <div className="profile-overview-stat__top">
+            <span className="profile-overview-stat__icon">{icon}</span>
+            <span className="profile-overview-stat__label">{label}</span>
+        </div>
+        <p className="profile-overview-stat__value">{value}</p>
+        {hint ? <p className="profile-overview-stat__hint">{hint}</p> : null}
     </div>
 );
 
@@ -83,6 +63,7 @@ export function ProfileView({
     displayName,
     onChangeDisplayName,
     greetingPokemonId,
+    greetingPokemonIsShiny,
     onOpenPokemonSelector,
     // engagement
     streak,                // { count, longest, lastVisit }
@@ -116,6 +97,8 @@ export function ProfileView({
 
     const streakCount = streak?.count || 0;
     const streakLongest = Math.max(streak?.longest || 0, streakCount);
+    const activeTheme = THEME_META.find((entry) => entry.id === theme) || THEME_META[0];
+    const syncLabel = isAnonymous ? 'Local only' : 'Synced';
     const streakHint = useMemo(() => {
         if (streakCount === 0) return 'Visit tomorrow to start a streak!';
         if (streakCount === 1) return 'Nice start — come back tomorrow!';
@@ -125,52 +108,34 @@ export function ProfileView({
     }, [streakCount]);
 
     return (
-        <div className="max-w-5xl mx-auto px-1 pb-10">
-            {/* Trainer Card hero */}
-            <div
-                className="relative overflow-hidden rounded-2xl p-6 md:p-8 mb-6"
-                style={{
-                    backgroundImage: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 120%)',
-                    color: '#fff',
-                    boxShadow: 'var(--elevation-2)',
-                }}
-            >
-                <div className="absolute inset-0 opacity-10 pointer-events-none"
-                     style={{ backgroundImage: 'radial-gradient(circle at 30% 20%, rgba(255,255,255,0.6), transparent 40%)' }} />
-                <div className="relative flex flex-col md:flex-row md:items-center gap-5">
-                    {/* Avatar slot — uses greeting Pokémon if set */}
+        <div className="profile-view">
+            <section className="profile-hero">
+                <div className="profile-hero__main">
                     <button
                         type="button"
                         onClick={onOpenPokemonSelector}
-                        className="group relative shrink-0 w-24 h-24 md:w-28 md:h-28 rounded-2xl flex items-center justify-center"
-                        style={{ backgroundColor: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(6px)' }}
+                        className="profile-avatar-button"
                         aria-label="Change trainer avatar Pokémon"
                         title="Change avatar Pokémon"
                     >
                         {greetingPokemonId ? (
                             <Sprite
-                                src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${greetingPokemonId}.png`}
+                                src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
                                 alt="Trainer avatar"
-                                className="w-20 h-20 md:w-24 md:h-24 object-contain"
+                                className="profile-avatar-button__sprite"
                             />
                         ) : (
-                            <span className="text-3xl font-extrabold tracking-wider">{initials}</span>
+                            <span className="profile-avatar-button__initials">{initials}</span>
                         )}
-                        <span
-                            className="absolute -bottom-1 -right-1 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.45)' }}
-                        >
-                            <EditIcon className="w-3.5 h-3.5" color="#fff" />
+                        <span className="profile-avatar-button__edit">
+                            <EditIcon className="w-3.5 h-3.5" color="currentColor" />
                         </span>
                     </button>
 
-                    {/* Identity */}
-                    <div className="flex-1 min-w-0">
-                        <p className="text-[11px] uppercase tracking-[0.18em] opacity-80 font-semibold">
-                            Trainer Profile
-                        </p>
+                    <div className="profile-hero__identity">
+                        <p className="profile-hero__eyebrow">Trainer profile</p>
                         {editingName ? (
-                            <div className="flex items-center gap-2 mt-1">
+                            <div className="profile-name-editor">
                                 <input
                                     autoFocus
                                     value={nameDraft}
@@ -181,14 +146,12 @@ export function ProfileView({
                                     }}
                                     maxLength={24}
                                     placeholder="Your trainer name"
-                                    className="flex-1 min-w-0 rounded-md px-3 py-2 text-base md:text-lg font-bold focus:outline-none"
-                                    style={{ backgroundColor: 'rgba(255,255,255,0.18)', color: '#fff' }}
+                                    className="profile-name-input"
                                 />
                                 <button
                                     type="button"
                                     onClick={handleSaveName}
-                                    className="px-3 py-2 rounded-md text-xs font-bold uppercase tracking-wider"
-                                    style={{ backgroundColor: '#fff', color: 'var(--color-primary)' }}
+                                    className="profile-button profile-button--primary"
                                 >
                                     Save
                                 </button>
@@ -197,139 +160,66 @@ export function ProfileView({
                             <button
                                 type="button"
                                 onClick={() => setEditingName(true)}
-                                className="mt-0.5 inline-flex items-center gap-2 group"
+                                className="profile-hero__name-button"
                                 title="Edit trainer name"
                             >
-                                <h2 className="text-2xl md:text-3xl font-extrabold leading-tight">
-                                    {trainerLabel}
-                                </h2>
-                                <EditIcon className="w-4 h-4 opacity-60 group-hover:opacity-100 transition-opacity" color="#fff" />
+                                <h2 className="profile-hero__name">{trainerLabel}</h2>
+                                <EditIcon className="w-4 h-4" color="currentColor" />
                             </button>
                         )}
-                        <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
-                            <span
-                                className="px-2 py-0.5 rounded-full font-semibold"
-                                style={{ backgroundColor: 'rgba(255,255,255,0.22)' }}
-                            >
-                                {isAnonymous ? 'Guest' : 'Synced'}
-                            </span>
+                        <div className="profile-hero__meta">
+                            <span className="profile-pill profile-pill--accent">{isAnonymous ? 'Guest' : 'Synced'}</span>
                             {!isAnonymous && userEmail && (
-                                <span className="opacity-90 truncate max-w-[260px]" title={userEmail}>{userEmail}</span>
+                                <span className="profile-hero__email" title={userEmail}>{userEmail}</span>
                             )}
                             {userId && (
-                                <span className="opacity-60 font-mono text-[10px]" title={userId}>
+                                <span className="profile-hero__id" title={userId}>
                                     #{userId.slice(0, 8)}
                                 </span>
                             )}
                         </div>
-                    </div>
-
-                    {/* Streak badge — the engagement hook */}
-                    <div
-                        className="shrink-0 rounded-xl p-3 md:p-4 text-center min-w-[120px]"
-                        style={{ backgroundColor: 'rgba(0,0,0,0.22)' }}
-                        aria-label={`Current streak: ${streakCount} days`}
-                    >
-                        <p className="text-[10px] uppercase tracking-wider opacity-80 font-semibold">Streak</p>
-                        <p className="text-3xl md:text-4xl font-extrabold leading-none mt-1">
-                            {streakCount}
-                            <span className="text-base font-bold ml-1 opacity-90">d</span>
-                        </p>
-                        <p className="text-[10px] mt-1 opacity-80">
-                            best: {streakLongest}d
-                        </p>
+                        <p className="profile-hero__hint">{streakHint}</p>
                     </div>
                 </div>
 
-                {/* Streak hint line */}
-                <p className="relative mt-4 text-xs opacity-90">{streakHint}</p>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-2">
-                {/* ----------- Account ----------- */}
-                <SectionCard
-                    title="Account"
-                    subtitle={isAnonymous ? 'Save your progress to sync everywhere.' : 'Your data is synced across devices.'}
-                    icon={<AccountIcon className="w-5 h-5" />}
-                >
-                    {isAnonymous ? (
-                        <div className="space-y-3">
-                            <p className="text-sm" style={{ color: 'var(--color-muted)' }}>
-                                You're using the app as a guest. Create an account to keep your teams,
-                                favorites and preferences across browsers and devices.
+                <div className="profile-hero__side">
+                    <div className="profile-streak-card" aria-label={`Current streak: ${streakCount} days`}>
+                        <p className="profile-streak-card__label">Current streak</p>
+                        <div className="profile-streak-card__value-row">
+                            <p className="profile-streak-card__value">
+                                {streakCount}
+                                <span>d</span>
                             </p>
-                            <div className="flex flex-wrap gap-2">
-                                <button
-                                    type="button"
-                                    onClick={onOpenSignUp}
-                                    className="px-4 py-2 rounded-lg text-sm font-bold"
-                                    style={{ backgroundColor: 'var(--color-primary)', color: '#fff' }}
-                                >
-                                    Create account
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={onOpenSignIn}
-                                    className="px-4 py-2 rounded-lg text-sm font-semibold border"
-                                    style={{ color: 'var(--color-fg)', borderColor: 'var(--color-border)' }}
-                                >
-                                    Sign in
-                                </button>
-                            </div>
+                            <span className="profile-pill">best {streakLongest}d</span>
                         </div>
-                    ) : (
-                        <div className="space-y-3">
-                            <div
-                                className="rounded-lg p-3 flex items-center justify-between gap-3"
-                                style={{ backgroundColor: 'var(--color-surface-raised)' }}
-                            >
-                                <div className="min-w-0">
-                                    <p className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: 'var(--color-muted)' }}>
-                                        Email
-                                    </p>
-                                    <p className="text-sm font-semibold truncate" style={{ color: 'var(--color-fg)' }} title={userEmail || ''}>
-                                        {userEmail || '—'}
-                                    </p>
-                                </div>
-                                <span
-                                    className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider"
-                                    style={{ backgroundColor: 'var(--color-success)', color: '#fff' }}
-                                >
-                                    Synced
-                                </span>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={onSignOut}
-                                className="w-full px-4 py-2 rounded-lg text-sm font-semibold border"
-                                style={{ color: 'var(--color-danger)', borderColor: 'var(--color-border)' }}
-                            >
-                                Sign out
-                            </button>
-                        </div>
-                    )}
-                </SectionCard>
-
-                {/* ----------- Stats ----------- */}
-                <SectionCard
-                    title="Trainer Stats"
-                    subtitle="Your progress at a glance."
-                    icon={<SparklesIcon className="w-5 h-5" />}
-                >
-                    <div className="flex flex-wrap gap-3">
-                        <Stat label="Streak" value={`${streakCount}d`} hint={`best ${streakLongest}d`} />
-                        <Stat label="Teams" value={savedTeamsCount} hint="saved" />
-                        <Stat label="Favorites" value={favoritePokemonsCount} hint="Pokémon" />
                     </div>
-                </SectionCard>
 
-                {/* ----------- Appearance ----------- */}
+                    <div className="profile-overview-grid">
+                        <OverviewStat
+                            icon={<SavedTeamsIcon className="w-4 h-4" />}
+                            label="Teams"
+                            value={savedTeamsCount}
+                            hint="saved"
+                        />
+                        <OverviewStat
+                            icon={<StarsIcon className="w-4 h-4" />}
+                            label="Favorites"
+                            value={favoritePokemonsCount}
+                            hint="Pokemon"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <div className="profile-layout">
                 <SectionCard
+                    className="profile-card--appearance"
+                    meta={<span className="profile-pill profile-pill--accent">{activeTheme.label}</span>}
                     title="Appearance"
                     subtitle="Pick the theme that follows you across devices."
                     icon={<SunIcon className="w-5 h-5" />}
                 >
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="profile-theme-grid">
                         {THEME_META.map((t) => {
                             const selected = theme === t.id;
                             return (
@@ -338,114 +228,150 @@ export function ProfileView({
                                     type="button"
                                     onClick={() => onChangeTheme(t.id)}
                                     aria-pressed={selected}
-                                    className="text-left rounded-lg p-3 border transition-transform hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2"
-                                    style={{
-                                        backgroundColor: selected ? 'var(--color-primary-soft)' : 'var(--color-surface-raised)',
-                                        borderColor: selected ? 'var(--color-primary)' : 'var(--color-border)',
-                                    }}
+                                    className={`profile-theme-card ${selected ? 'is-selected' : ''}`}
+                                    style={{ '--profile-theme-swatch': t.swatch }}
                                 >
-                                    <div className="flex items-center gap-2">
-                                        <span
-                                            className="inline-block w-5 h-5 rounded-full border"
-                                            style={{ backgroundColor: t.swatch, borderColor: 'rgba(0,0,0,0.2)' }}
-                                            aria-hidden="true"
-                                        />
-                                        <span className="text-sm font-bold" style={{ color: 'var(--color-fg)' }}>
-                                            {t.label}
-                                        </span>
-                                        <span className="ml-auto" style={{ color: selected ? 'var(--color-primary)' : 'var(--color-muted)' }}>
-                                            <ThemeSwatchIcon id={t.id} color={selected ? 'var(--color-primary)' : 'var(--color-muted)'} />
+                                    <div className="profile-theme-card__header">
+                                        <span className="profile-theme-card__swatch" aria-hidden="true"></span>
+                                        <span className="profile-theme-card__label">{t.label}</span>
+                                        <span className="profile-theme-card__icon">
+                                            <ThemeSwatchIcon id={t.id} color="currentColor" />
                                         </span>
                                     </div>
-                                    <p className="text-[11px] mt-1" style={{ color: 'var(--color-muted)' }}>
-                                        {t.hint}
-                                    </p>
+                                    <p className="profile-theme-card__hint">{t.hint}</p>
                                 </button>
                             );
                         })}
                     </div>
                 </SectionCard>
 
-                {/* ----------- Avatar / Greeting Pokémon ----------- */}
                 <SectionCard
+                    className="profile-card--account"
+                    meta={<span className="profile-pill">{syncLabel}</span>}
+                    title="Account"
+                    subtitle={isAnonymous ? 'Save your progress to sync everywhere.' : 'Your data is synced across devices.'}
+                    icon={<AccountIcon className="w-5 h-5" />}
+                >
+                    {isAnonymous ? (
+                        <div className="profile-account-block">
+                            <p className="profile-support-copy">
+                                You are using the app as a guest. Create an account to keep your teams,
+                                favorites, and preferences across browsers and devices.
+                            </p>
+                            <div className="profile-button-row">
+                                <button
+                                    type="button"
+                                    onClick={onOpenSignUp}
+                                    className="profile-button profile-button--primary"
+                                >
+                                    Create account
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={onOpenSignIn}
+                                    className="profile-button"
+                                >
+                                    Sign in
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="profile-account-block">
+                            <div className="profile-account-row">
+                                <div className="min-w-0">
+                                    <p className="profile-account-row__label">Email</p>
+                                    <p className="profile-account-row__value" title={userEmail || ''}>
+                                        {userEmail || '—'}
+                                    </p>
+                                </div>
+                                <span className="profile-pill profile-pill--accent">Synced</span>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={onSignOut}
+                                className="profile-button profile-button--danger profile-button--block"
+                            >
+                                Sign out
+                            </button>
+                        </div>
+                    )}
+                </SectionCard>
+
+                <SectionCard
+                    className="profile-card--sync"
+                    meta={<span className="profile-pill">{db ? 'Cloud' : 'Offline'}</span>}
+                    title="Data & Sync"
+                    subtitle={db ? 'Connected to cloud storage.' : 'Working offline.'}
+                    icon={<SaveIcon className="w-5 h-5" />}
+                >
+                    <div className="profile-sync-list">
+                        <div className="profile-sync-row">
+                            <span className="profile-sync-row__label">Theme preference</span>
+                            <span className="profile-sync-row__value">{syncLabel}</span>
+                        </div>
+                        <div className="profile-sync-row">
+                            <span className="profile-sync-row__label">Home wallpaper</span>
+                            <span className="profile-sync-row__value">{syncLabel}</span>
+                        </div>
+                        <div className="profile-sync-row">
+                            <span className="profile-sync-row__label">Trainer name & avatar</span>
+                            <span className="profile-sync-row__value">{syncLabel}</span>
+                        </div>
+                        <div className="profile-sync-row">
+                            <span className="profile-sync-row__label">Login streak</span>
+                            <span className="profile-sync-row__value">{syncLabel}</span>
+                        </div>
+                    </div>
+
+                    <div className="profile-button-row profile-button-row--tight">
+                        <button
+                            type="button"
+                            onClick={onResetSyncPrompt}
+                            className="profile-button"
+                            title="Allow the 'Save your progress' nudge to appear again"
+                        >
+                            <RefreshIcon className="w-3.5 h-3.5" />
+                            Reset reminders
+                        </button>
+                    </div>
+                </SectionCard>
+
+                <SectionCard
+                    className="profile-card--avatar"
                     title="Trainer Avatar"
-                    subtitle="Your greeting Pokémon also appears on Home."
+                    subtitle="Your greeting Pokemon also appears on Home."
                     icon={<StarsIcon className="w-5 h-5" />}
                 >
-                    <div className="flex items-center gap-4">
-                        <div
-                            className="w-20 h-20 rounded-xl flex items-center justify-center"
-                            style={{ backgroundColor: 'var(--color-surface-raised)' }}
-                        >
+                    <div className="profile-avatar-card">
+                        <div className="profile-avatar-preview">
                             {greetingPokemonId ? (
                                 <Sprite
-                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${greetingPokemonId}.png`}
+                                    src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
                                     alt="Greeting Pokémon"
-                                    className="w-16 h-16 object-contain"
+                                    className="profile-avatar-preview__sprite"
                                 />
                             ) : (
-                                <span className="text-2xl font-bold" style={{ color: 'var(--color-muted)' }}>?</span>
+                                <span className="profile-avatar-preview__fallback">?</span>
                             )}
                         </div>
-                        <div className="flex-1 flex flex-col gap-2">
+                        <div className="profile-avatar-actions">
                             <button
                                 type="button"
                                 onClick={onOpenPokemonSelector}
-                                className="px-3 py-2 rounded-lg text-sm font-semibold"
-                                style={{ backgroundColor: 'var(--color-primary)', color: '#fff' }}
+                                className="profile-button profile-button--primary"
                             >
-                                {greetingPokemonId ? 'Change Pokémon' : 'Pick a Pokémon'}
+                                {greetingPokemonId ? 'Change Pokemon' : 'Pick a Pokemon'}
                             </button>
                             {greetingPokemonId && (
                                 <button
                                     type="button"
                                     onClick={onClearLocalGreeting}
-                                    className="px-3 py-2 rounded-lg text-xs font-semibold border"
-                                    style={{ color: 'var(--color-muted)', borderColor: 'var(--color-border)' }}
+                                    className="profile-button"
                                 >
                                     Remove
                                 </button>
                             )}
                         </div>
-                    </div>
-                </SectionCard>
-
-                {/* ----------- Sync / Data ----------- */}
-                <SectionCard
-                    title="Data & Sync"
-                    subtitle={db ? 'Connected to cloud storage.' : 'Working offline.'}
-                    icon={<SaveIcon className="w-5 h-5" />}
-                >
-                    <ul className="text-xs space-y-2" style={{ color: 'var(--color-muted)' }}>
-                        <li className="flex items-center justify-between gap-3">
-                            <span>Theme preference</span>
-                            <span className="font-semibold" style={{ color: 'var(--color-fg)' }}>
-                                {isAnonymous ? 'Local only' : 'Synced'}
-                            </span>
-                        </li>
-                        <li className="flex items-center justify-between gap-3">
-                            <span>Trainer name & avatar</span>
-                            <span className="font-semibold" style={{ color: 'var(--color-fg)' }}>
-                                {isAnonymous ? 'Local only' : 'Synced'}
-                            </span>
-                        </li>
-                        <li className="flex items-center justify-between gap-3">
-                            <span>Login streak</span>
-                            <span className="font-semibold" style={{ color: 'var(--color-fg)' }}>
-                                {isAnonymous ? 'Local only' : 'Synced'}
-                            </span>
-                        </li>
-                    </ul>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            onClick={onResetSyncPrompt}
-                            className="px-3 py-2 rounded-lg text-xs font-semibold border inline-flex items-center gap-1.5"
-                            style={{ color: 'var(--color-fg)', borderColor: 'var(--color-border)' }}
-                            title="Allow the 'Save your progress' nudge to appear again"
-                        >
-                            <RefreshIcon className="w-3.5 h-3.5" /> Reset reminders
-                        </button>
                     </div>
                 </SectionCard>
             </div>

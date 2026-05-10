@@ -686,7 +686,8 @@
 }
 
 .team-builder-mobile-card.is-suggested {
-    border-color: var(--color-success);
+    border-color: color-mix(in srgb, var(--color-success) 28%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 5%, var(--color-surface));
     box-shadow: var(--elevation-1);
 }
 
@@ -694,13 +695,14 @@
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
-    background: var(--color-success);
+    border: 1px solid color-mix(in srgb, var(--color-success) 24%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
     padding: 0.2rem 0.45rem;
     font-size: 0.5rem;
     font-weight: 700;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--color-fg);
+    color: var(--color-success);
 }
 
 .team-builder-mobile-card__favorite {

@@ -27,6 +27,73 @@
     background: linear-gradient(135deg, var(--home-hero-accent-soft, var(--color-primary-soft)) 0%, var(--color-surface) 42%, var(--color-surface) 100%);
 }
 
+.home-panel--hero .home-panel__eyebrow {
+    color: var(--home-hero-accent, var(--color-primary));
+}
+
+.home-panel--hero .home-metric-card {
+    background: var(--home-hero-surface, var(--color-surface-raised));
+    border-color: var(--home-hero-surface-border, var(--color-border));
+}
+
+.home-panel--hero .home-button--primary {
+    border-color: var(--home-hero-accent-border, var(--color-primary));
+    background: var(--home-hero-accent-soft, var(--color-primary-soft));
+    color: var(--home-hero-accent, var(--color-primary));
+}
+
+.home-panel--hero .home-button--secondary,
+.home-panel--hero .home-icon-button {
+    border-color: var(--home-hero-surface-border, var(--color-border));
+    background: var(--home-hero-surface, var(--color-surface-raised));
+}
+
+.home-panel--hero .home-icon-button {
+    color: var(--home-hero-accent, var(--color-muted));
+}
+
+.home-panel--hero .home-icon-button:hover {
+    border-color: var(--home-hero-accent-border, var(--color-primary));
+}
+
+:root[data-theme='light'] .home-panel--hero,
+:root[data-theme='daybreak'] .home-panel--hero {
+    --home-hero-frost-surface: var(--color-surface);
+    --home-hero-frost-surface: color-mix(in srgb, var(--color-surface) 74%, transparent);
+    --home-hero-frost-surface-strong: var(--color-surface);
+    --home-hero-frost-surface-strong: color-mix(in srgb, var(--color-surface) 82%, transparent);
+    --home-hero-frost-border: var(--color-border);
+    --home-hero-frost-border: color-mix(in srgb, var(--color-border) 72%, var(--color-surface));
+    --home-hero-frost-primary: var(--color-primary-soft);
+    --home-hero-frost-primary: color-mix(in srgb, var(--color-primary-soft) 64%, var(--color-surface));
+}
+
+:root[data-theme='light'] .home-panel--hero .home-metric-card,
+:root[data-theme='light'] .home-panel--hero .home-button--secondary,
+:root[data-theme='light'] .home-panel--hero .home-icon-button,
+:root[data-theme='light'] .home-partner-chip,
+:root[data-theme='daybreak'] .home-panel--hero .home-metric-card,
+:root[data-theme='daybreak'] .home-panel--hero .home-button--secondary,
+:root[data-theme='daybreak'] .home-panel--hero .home-icon-button,
+:root[data-theme='daybreak'] .home-partner-chip {
+    background: var(--home-hero-frost-surface);
+    border-color: var(--home-hero-frost-border);
+    backdrop-filter: blur(14px) saturate(1.15);
+}
+
+:root[data-theme='light'] .home-panel--hero .home-button--primary,
+:root[data-theme='daybreak'] .home-panel--hero .home-button--primary {
+    background: var(--home-hero-frost-primary);
+    border-color: color-mix(in srgb, var(--color-primary) 28%, var(--color-surface));
+    color: var(--color-primary);
+    backdrop-filter: blur(14px) saturate(1.15);
+}
+
+:root[data-theme='light'] .home-panel--hero .home-icon-button:hover,
+:root[data-theme='daybreak'] .home-panel--hero .home-icon-button:hover {
+    border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-surface));
+}
+
 .home-panel--hero::before {
     content: '';
     position: absolute;
@@ -36,7 +103,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    opacity: 0.18;
+    opacity: 0.7;
     transform: scale(1.03);
 }
 
@@ -171,6 +238,8 @@
     border: 1px solid var(--color-border);
     border-radius: 999px;
     padding: 0.42rem 0.66rem;
+    background: var(--home-hero-surface, var(--color-surface-raised));
+    border-color: var(--home-hero-surface-border, var(--color-border));
     backdrop-filter: blur(8px);
 }
 
@@ -180,7 +249,7 @@
     font-weight: 700;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--color-muted);
+    color: var(--home-hero-accent, var(--color-muted));
 }
 
 .home-partner-chip__name {

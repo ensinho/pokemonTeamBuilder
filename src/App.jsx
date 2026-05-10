@@ -15,10 +15,11 @@ import {
 import { getFirestore, collection, doc, getDoc, setDoc, onSnapshot, deleteDoc, query, orderBy, limit, startAfter, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
 
 // Extracted modules
-import { PATCH_NOTES_VERSION, POKEBALL_PLACEHOLDER_URL, THEMES, applyTheme } from './constants/theme';
+import { PATCH_NOTES_VERSION, POKEBALL_PLACEHOLDER_URL, THEMES, THEME_META, applyTheme } from './constants/theme';
 import { typeColors, typeIcons, typeChart } from './constants/types';
 import { firebaseConfig, appId, ADMIN_EMAILS } from './constants/firebase';
 import { GENERATION_RANGES, LEGENDARY_IDS, NATURES_LIST } from './constants/pokemon';
+import { getBackgroundById } from './assets/backgrounds';
 import {
     getEvolutionChainData,
     getMoveDetails,
@@ -57,11 +58,17 @@ import {
     TeamBuilderView,
 } from './components/views';
 import { AnchoredPopover } from './components/AnchoredPopover';
+import { SidebarAccountMenu } from './components/SidebarAccountMenu';
 import { useModalA11y } from './hooks/useModalA11y';
+import {
+    getPokemonArtworkSpriteUrl,
+    getPokemonFrontSpriteUrl,
+    getTeamPokemonDisplaySprite,
+} from './utils/pokemonSprites';
 import './styles/app-shell.css';
 
 // Shared trainer avatar helper
-const TrainerAvatar = ({ pokemonId, size = 24, color = 'currentColor', className = '' }) => {
+const TrainerAvatar = ({ pokemonId, isShiny = false, size = 24, color = 'currentColor', className = '' }) => {
     if (pokemonId) {
         return (
             <span
@@ -70,7 +77,7 @@ const TrainerAvatar = ({ pokemonId, size = 24, color = 'currentColor', className
                 aria-hidden="true"
             >
                 <img
-                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemonId}.png`}
+                    src={getPokemonFrontSpriteUrl(pokemonId, { shiny: isShiny })}
                     alt=""
                     className="image-pixelated"
                     style={{ width: size + 8, height: size, objectFit: 'contain', marginTop: 2 }}
@@ -1061,7 +1068,17 @@ export default function App() {
     
     // Greeting Pokemon State
     const [greetingPokemonId, setGreetingPokemonId] = useState(null);
+    const [greetingPokemonIsShiny, setGreetingPokemonIsShiny] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
+    const [homeWallpaperId, setHomeWallpaperId] = useState(() => {
+        if (typeof window === 'undefined') return null;
+        try {
+            const saved = localStorage.getItem('homeWallpaperId');
+            return saved && getBackgroundById(saved).id === saved ? saved : null;
+        } catch (_) {
+            return null;
+        }
+    });
 
     // Profile preferences (synced to Firestore via the same `preferences` doc).
     const [displayName, setDisplayName] = useState('');
@@ -1188,8 +1205,8 @@ export default function App() {
             'allTeams': { title: 'Saved Teams', icon: '', subtitle: 'Revisit and manage your collection' },
             'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Generate a fresh starting point' },
             'favorites': { title: 'Favorite Pokémon', icon: '', subtitle: 'Quick access to your pinned roster' },
+            'admin': { title: 'Admin Dashboard', icon: '', subtitle: 'Suggestions and replies' },
             'profile': { title: 'Profile', icon: '', subtitle: 'Trainer card and preferences' },
-            'admin': { title: 'Admin Dashboard', icon: '', subtitle: 'Suggestions and replies' }
         };
         return pages[currentPage] || pages['home'];
     }, [currentPage]);
@@ -1729,6 +1746,17 @@ useEffect(() => {
         setTeamName('');
         setEditingTeamId(null);
     }, []);
+
+    const serializeTeamPokemon = useCallback((pokemon) => ({
+        id: pokemon.id,
+        name: pokemon.name,
+        sprite: pokemon.sprite || getPokemonArtworkSpriteUrl(pokemon.id),
+        shinySprite: pokemon.shinySprite || getPokemonArtworkSpriteUrl(pokemon.id, { shiny: true }),
+        animatedSprite: pokemon.animatedSprite || getPokemonFrontSpriteUrl(pokemon.id),
+        animatedShinySprite: pokemon.animatedShinySprite || getPokemonFrontSpriteUrl(pokemon.id, { shiny: true }),
+        instanceId: pokemon.instanceId,
+        customization: pokemon.customization,
+    }), []);
     
         const handleSaveTeam = useCallback(async () => {
         if (!db || !userId) return showToast("Database connection not ready.", 'error');
@@ -1743,13 +1771,7 @@ useEffect(() => {
         const existingTeam = savedTeams.find(t => t.id === editingTeamId);
         const teamData = { 
             name: teamName, 
-            pokemons: currentTeam.map(p => ({
-                id: p.id,
-                name: p.name,
-                sprite: p.sprite,
-                instanceId: p.instanceId,
-                customization: p.customization
-            })), 
+            pokemons: currentTeam.map(serializeTeamPokemon), 
             isFavorite: existingTeam?.isFavorite || false, 
             createdAt: existingTeam?.createdAt || new Date().toISOString(), 
             updatedAt: new Date().toISOString() 
@@ -1760,7 +1782,7 @@ useEffect(() => {
             showToast(`Team "${teamName}" saved!`, 'success');
             handleClearTeam();
         } catch (e) { showToast("Error saving team.", 'error'); }
-    }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam]);
+    }, [db, userId, currentTeam, teamName, editingTeamId, savedTeams, showToast, handleClearTeam, serializeTeamPokemon]);
 
     const formatShowdownCase = useCallback(
         (str = '') => str.split('-').filter(Boolean).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
@@ -1841,7 +1863,7 @@ useEffect(() => {
         const snippetPokemons = teamMembers.map((member) => ({
             id: member.id,
             name: member.name,
-            sprite: member.sprite || '',
+            sprite: getTeamPokemonDisplaySprite(member) || '',
         }));
 
         setShareModal({ isOpen: true, shareUrl: '', pokemons: snippetPokemons, defaultTitle: safeName });
@@ -1849,13 +1871,7 @@ useEffect(() => {
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
         const teamData = {
             name: safeName,
-            pokemons: teamMembers.map((member) => ({
-                id: member.id,
-                name: member.name,
-                sprite: member.sprite || '',
-                instanceId: member.instanceId,
-                customization: member.customization,
-            })),
+            pokemons: teamMembers.map(serializeTeamPokemon),
             createdAt: new Date().toISOString(),
         };
 
@@ -1870,7 +1886,7 @@ useEffect(() => {
             setShareModal({ isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' });
             showToast('Could not generate share link.', 'error');
         }
-    }, [db, isAuthReady, showToast]);
+    }, [db, isAuthReady, showToast, serializeTeamPokemon]);
 
     const handleShareTeam = useCallback(async () => {
         await shareTeamByData(currentTeam, teamName || 'Unnamed Team');
@@ -2081,7 +2097,7 @@ useEffect(() => {
     // Theme preference sync — persists the user's theme choice on the
     // profile doc so it follows them across devices once signed in.
     // The same `preferences` doc also stores the trainer profile fields
-    // (displayName, greetingPokemonId, streak) so all settings are
+    // (displayName, greetingPokemonId, homeWallpaperId, streak) so all settings are
     // multi-platform once the user has signed in.
     // ---------------------------------------------------------------
     const themeHydratedFromProfile = useRef(false);
@@ -2106,9 +2122,26 @@ useEffect(() => {
                     if (typeof data.displayName === 'string') {
                         setDisplayName(data.displayName);
                     }
-                    if (Number.isInteger(data.greetingPokemonId)) {
-                        setGreetingPokemonId(data.greetingPokemonId);
-                        try { localStorage.setItem('greetingPokemon', String(data.greetingPokemonId)); } catch (_) { /* ignore */ }
+                    if (Number.isInteger(data.greetingPokemon?.id)) {
+                        const nextGreeting = {
+                            id: data.greetingPokemon.id,
+                            isShiny: Boolean(data.greetingPokemon.isShiny),
+                        };
+                        setGreetingPokemonId(nextGreeting.id);
+                        setGreetingPokemonIsShiny(nextGreeting.isShiny);
+                        try { localStorage.setItem('greetingPokemon', JSON.stringify(nextGreeting)); } catch (_) { /* ignore */ }
+                    } else if (Number.isInteger(data.greetingPokemonId)) {
+                        const nextGreeting = {
+                            id: data.greetingPokemonId,
+                            isShiny: Boolean(data.greetingPokemonIsShiny),
+                        };
+                        setGreetingPokemonId(nextGreeting.id);
+                        setGreetingPokemonIsShiny(nextGreeting.isShiny);
+                        try { localStorage.setItem('greetingPokemon', JSON.stringify(nextGreeting)); } catch (_) { /* ignore */ }
+                    }
+                    if (typeof data.homeWallpaperId === 'string' && getBackgroundById(data.homeWallpaperId).id === data.homeWallpaperId) {
+                        setHomeWallpaperId(data.homeWallpaperId);
+                        try { localStorage.setItem('homeWallpaperId', data.homeWallpaperId); } catch (_) { /* ignore */ }
                     }
                     if (data.streak && typeof data.streak === 'object') {
                         // Prefer the higher of local vs remote so users don't lose
@@ -2144,16 +2177,26 @@ useEffect(() => {
         });
     }, [db, userId, theme]);
 
-    // Persist displayName / greetingPokemonId / streak together when any change.
+    // Persist displayName / greetingPokemonId / homeWallpaperId / streak together when any change.
     useEffect(() => {
         if (!db || !userId || !profileHydratedFromFirestore.current) return;
         const prefRef = doc(db, `artifacts/${appId}/users/${userId}/profile`, 'preferences');
         setDoc(
             prefRef,
-            { displayName, greetingPokemonId, streak, email: userEmail || null, isAnonymous, updatedAt: Date.now() },
+            {
+                displayName,
+                greetingPokemonId,
+                greetingPokemon: greetingPokemonId ? { id: greetingPokemonId, isShiny: greetingPokemonIsShiny } : null,
+                greetingPokemonIsShiny,
+                homeWallpaperId: homeWallpaperId || null,
+                streak,
+                email: userEmail || null,
+                isAnonymous,
+                updatedAt: Date.now(),
+            },
             { merge: true }
         ).catch(() => { /* best-effort */ });
-    }, [db, userId, displayName, greetingPokemonId, streak, userEmail, isAnonymous]);
+    }, [db, userId, displayName, greetingPokemonId, greetingPokemonIsShiny, homeWallpaperId, streak, userEmail, isAnonymous]);
 
     // ---------------------------------------------------------------
     // Trainer streak — increments once per calendar day when the user
@@ -2222,14 +2265,38 @@ useEffect(() => {
         try { localStorage.setItem('syncPromptDismissed', '1'); } catch (_) { /* ignore */ }
     }, []);
     
-    const setGreetingPokemon = useCallback((pokemonId) => {
-        setGreetingPokemonId(pokemonId);
-        if (pokemonId) {
-            localStorage.setItem('greetingPokemon', pokemonId.toString());
+    const setGreetingPokemon = useCallback((selection) => {
+        const nextId = typeof selection === 'object' && selection !== null
+            ? selection.pokemonId ?? selection.id ?? null
+            : selection;
+        const nextIsShiny = typeof selection === 'object' && selection !== null
+            ? Boolean(selection.isShiny)
+            : false;
+
+        setGreetingPokemonId(nextId || null);
+        setGreetingPokemonIsShiny(Boolean(nextId) && nextIsShiny);
+
+        if (nextId) {
+            localStorage.setItem('greetingPokemon', JSON.stringify({ id: nextId, isShiny: nextIsShiny }));
         } else {
             localStorage.removeItem('greetingPokemon');
         }
         setShowGreetingPokemonSelector(false);
+    }, []);
+
+    const setHomeWallpaperPreference = useCallback((backgroundId) => {
+        const nextBackgroundId = typeof backgroundId === 'string' && getBackgroundById(backgroundId).id === backgroundId
+            ? backgroundId
+            : null;
+
+        setHomeWallpaperId(nextBackgroundId);
+        try {
+            if (nextBackgroundId) {
+                localStorage.setItem('homeWallpaperId', nextBackgroundId);
+            } else {
+                localStorage.removeItem('homeWallpaperId');
+            }
+        } catch (_) { /* ignore */ }
     }, []);
     
     useEffect(() => {
@@ -2240,7 +2307,25 @@ useEffect(() => {
 
         const savedGreetingPokemon = localStorage.getItem('greetingPokemon');
         if (savedGreetingPokemon) {
-            setGreetingPokemonId(parseInt(savedGreetingPokemon, 10));
+            try {
+                const parsedGreeting = JSON.parse(savedGreetingPokemon);
+                if (Number.isInteger(parsedGreeting?.id)) {
+                    setGreetingPokemonId(parsedGreeting.id);
+                    setGreetingPokemonIsShiny(Boolean(parsedGreeting.isShiny));
+                } else {
+                    const legacyGreetingId = parseInt(savedGreetingPokemon, 10);
+                    if (Number.isInteger(legacyGreetingId)) {
+                        setGreetingPokemonId(legacyGreetingId);
+                        setGreetingPokemonIsShiny(false);
+                    }
+                }
+            } catch (_) {
+                const legacyGreetingId = parseInt(savedGreetingPokemon, 10);
+                if (Number.isInteger(legacyGreetingId)) {
+                    setGreetingPokemonId(legacyGreetingId);
+                    setGreetingPokemonIsShiny(false);
+                }
+            }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -2364,6 +2449,9 @@ useEffect(() => {
                         onToggleFavoritePokemon={handleToggleFavoritePokemon}
                         handleEditTeam={handleEditTeam}
                         greetingPokemonId={greetingPokemonId}
+                        greetingPokemonIsShiny={greetingPokemonIsShiny}
+                        heroBackgroundId={homeWallpaperId}
+                        onChangeHeroBackground={setHomeWallpaperPreference}
                         onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
                         db={db}
                         theme={theme}
@@ -2380,6 +2468,7 @@ useEffect(() => {
                         displayName={displayName}
                         onChangeDisplayName={setDisplayName}
                         greetingPokemonId={greetingPokemonId}
+                        greetingPokemonIsShiny={greetingPokemonIsShiny}
                         onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
                         streak={streak}
                         savedTeamsCount={savedTeams.length}
@@ -2433,7 +2522,7 @@ useEffect(() => {
         {modalPokemon && <PokemonDetailModal pokemon={modalPokemon} onClose={() => setModalPokemon(null)} onAdd={currentPage === 'builder' ? handleAddPokemonToTeam : null} currentTeam={currentTeam} colors={colors} showPokemonDetails={showDetails} pokemonDetailsCache={pokemonDetailsCache} setPokemonDetailsCache={setPokemonDetailsCache} db={db} isFavorite={favoritePokemons.has(modalPokemon.id)} onToggleFavorite={handleToggleFavoritePokemon} />}
         {editingTeamMember && <TeamPokemonEditorModal pokemon={editingTeamMember} onClose={() => setEditingTeamMember(null)} onSave={handleUpdateTeamMember} colors={colors} items={items} natures={natures} moveDetailsCache={moveDetailsCache} setMoveDetailsCache={setMoveDetailsCache}/>}
         {showPatchNotes && <PatchNotesModal onClose={handleClosePatchNotes} colors={colors} />}
-        {showGreetingPokemonSelector && <GreetingPokemonSelectorModal onClose={() => setShowGreetingPokemonSelector(false)} onSelect={setGreetingPokemon} allPokemons={pokemons} currentPokemonId={greetingPokemonId} colors={colors} db={db} />}
+        {showGreetingPokemonSelector && <GreetingPokemonSelectorModal onClose={() => setShowGreetingPokemonSelector(false)} onSelect={setGreetingPokemon} allPokemons={pokemons} currentPokemonId={greetingPokemonId} currentPokemonIsShiny={greetingPokemonIsShiny} colors={colors} db={db} />}
 
         {/* Share snippet modal — image preview + native share / link copy */}
         <ShareSnippetModal
@@ -2563,44 +2652,20 @@ useEffect(() => {
                             </span>
                         </button>
                     ) : (
-                                                <div className={`app-shell__account-card ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
-                            {isSidebarCollapsed ? (
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/profile')}
-                                    aria-label={`Signed in as ${userEmail || 'user'}. Open profile`}
-                                    title={`${userEmail || 'Signed in'} — open profile`}
-                                                                        className="app-shell__icon-button"
-                                >
-                                    <TrainerAvatar pokemonId={greetingPokemonId} color={colors.primary} />
-                                </button>
-                            ) : (
-                                                                <div className="flex items-center gap-3 min-w-0">
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/profile')}
-                                        aria-label="Open profile"
-                                        title="Open profile"
-                                                                                className="app-shell__account-summary"
-                                    >
-                                                                                <span><TrainerAvatar pokemonId={greetingPokemonId} color={colors.primary} /></span>
-                                        <div className="flex-1 min-w-0">
-                                                                                        <p className="app-shell__account-label">Signed in</p>
-                                                                                        <p className="app-shell__account-email" title={userEmail || ''}>
-                                                {userEmail || 'Account'}
-                                            </p>
-                                        </div>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={handleSignOut}
-                                                                                className="app-shell__account-signout"
-                                    >
-                                        Sign out
-                                    </button>
-                                </div>
-                            )}
-                        </div>
+                                                <SidebarAccountMenu
+                                                    collapsed={isSidebarCollapsed}
+                                                    avatar={<TrainerAvatar pokemonId={greetingPokemonId} isShiny={greetingPokemonIsShiny} color={colors.primary} />}
+                                                    displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
+                                                    email={userEmail || ''}
+                                                    currentTheme={theme}
+                                                    themes={THEME_META}
+                                                    onOpenProfile={() => {
+                                                        navigate('/profile');
+                                                        setIsSidebarOpen(false);
+                                                    }}
+                                                    onChangeTheme={changeTheme}
+                                                    onSignOut={handleSignOut}
+                                                />
                     )}
                   </div>
                 </div>

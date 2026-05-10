@@ -22,10 +22,46 @@ export const SNIPPET_DIMENSIONS = Object.freeze({
 });
 
 export const SHARE_BACKGROUNDS = [
-    { id: 'classic', name: 'Lapras',  url: bg1 },
-    { id: 'sunset',  name: 'Latias',   url: bg2 },
-    { id: 'forest',  name: 'Lugia',   url: bg3 },
-    { id: 'ocean',   name: 'Plain',    url: bg4 },
+    {
+        id: 'classic',
+        name: 'Lapras',
+        url: bg1,
+        accent: '#6FA5D8',
+        accentSoft: 'rgba(111, 165, 216, 0.18)',
+        border: 'rgba(111, 165, 216, 0.34)',
+        surface: 'rgba(17, 42, 70, 0.62)',
+        surfaceBorder: 'rgba(111, 165, 216, 0.30)',
+    },
+    {
+        id: 'sunset',
+        name: 'Latias',
+        url: bg2,
+        accent: '#F08A7C',
+        accentSoft: 'rgba(240, 138, 124, 0.18)',
+        border: 'rgba(240, 138, 124, 0.34)',
+        surface: 'rgba(80, 34, 37, 0.58)',
+        surfaceBorder: 'rgba(240, 138, 124, 0.32)',
+    },
+    {
+        id: 'forest',
+        name: 'Lugia',
+        url: bg3,
+        accent: '#4FAFA0',
+        accentSoft: 'rgba(79, 175, 160, 0.18)',
+        border: 'rgba(79, 175, 160, 0.34)',
+        surface: 'rgba(22, 54, 49, 0.58)',
+        surfaceBorder: 'rgba(79, 175, 160, 0.30)',
+    },
+    {
+        id: 'ocean',
+        name: 'Plain',
+        url: bg4,
+        accent: '#7F9ABF',
+        accentSoft: 'rgba(127, 154, 191, 0.18)',
+        border: 'rgba(127, 154, 191, 0.34)',
+        surface: 'rgba(28, 40, 62, 0.58)',
+        surfaceBorder: 'rgba(127, 154, 191, 0.28)',
+    },
 ];
 
 export const DEFAULT_BACKGROUND_ID = SHARE_BACKGROUNDS[0].id;

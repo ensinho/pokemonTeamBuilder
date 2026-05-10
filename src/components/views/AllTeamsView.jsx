@@ -1,5 +1,6 @@
 import React from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
 
 export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, colors }) {
@@ -27,7 +28,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                             {team.pokemons.map((pokemon) => (
                                 <img
                                     key={pokemon.id}
-                                    src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                    src={getTeamPokemonDisplaySprite(pokemon)}
                                     onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                     alt={pokemon.name}
                                     className="h-12 w-12 -ml-3 border-2 rounded-full transition-transform duration-200 hover:scale-110 hover:z-10"

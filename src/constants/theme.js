@@ -29,6 +29,23 @@ export const THEMES = {
         warning: '#FBBF24',
         info: '#60A5FA',
     },
+    // Eclipse — the darkest theme in the set. True near-black surfaces
+    // with bright neon-purple accents that pop (GitHub darkest aesthetic).
+    eclipse: {
+        primary: '#a78bfa',
+        primarySoft: 'rgba(167, 139, 250, 0.18)',
+        accent: '#c084fc',
+        background: '#0d0d0d',
+        card: '#161616',
+        cardLight: '#262626',
+        text: '#F5F3FF',
+        textMuted: '#909090',
+        border: '#333333',
+        success: '#34D399',
+        danger: '#FB7185',
+        warning: '#FBBF24',
+        info: '#60A5FA',
+    },
     light: {
         primary: '#6353b3',
         primarySoft: 'rgba(99, 83, 179, 0.14)',
@@ -43,6 +60,23 @@ export const THEMES = {
         danger: '#B91C1C',  // red-700
         warning: '#B45309', // amber-700
         info: '#1D4ED8',    // blue-700
+    },
+    // Daybreak — daytime sibling of Midnight. Keeps the same cool blue
+    // family, but shifts the surfaces to airy daylight neutrals.
+    daybreak: {
+        primary: '#2563EB',
+        primarySoft: 'rgba(37, 99, 235, 0.14)',
+        accent: '#0EA5E9',
+        background: '#EEF5FF',
+        card: '#FFFFFF',
+        cardLight: '#E4EEFB',
+        text: '#0F172A',
+        textMuted: '#5B6B84',
+        border: '#CBD9EE',
+        success: '#047857',
+        danger: '#B91C1C',
+        warning: '#B45309',
+        info: '#1D4ED8',
     },
     // Midnight — deep blue/teal nocturnal theme. Inspired by night routes
     // and lake legendaries (Cresselia / Lugia). Cooler than `dark`, with a
@@ -84,8 +118,10 @@ export const THEMES = {
 // Display metadata for the theme picker UI. Order here drives render order.
 export const THEME_META = [
     { id: 'dark',     label: 'Dark',     hint: 'Default night mode',         swatch: '#7d65e1' },
-    { id: 'light',    label: 'Light',    hint: 'Daylight, high contrast',    swatch: '#6353b3' },
+    { id: 'eclipse',  label: 'Eclipse',  hint: 'Ultra-dark violet neon',     swatch: '#8B5CF6' },
     { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights',    swatch: '#38BDF8' },
+    { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight',         swatch: '#2563EB' },
+    { id: 'light',    label: 'Light',    hint: 'Daylight, high contrast',    swatch: '#6353b3' },
     { id: 'solar',    label: 'Solar',    hint: 'Soft yellow daylight',       swatch: '#EAB308' },
 ];
 

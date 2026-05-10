@@ -5,6 +5,7 @@ import { EmptyState } from '../EmptyState';
 import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
 import { AnchoredPopover } from '../AnchoredPopover';
+import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import {
     ClearIcon,
     InfoIcon,
@@ -249,7 +250,7 @@ const MobileTeamSlot = ({ pokemon, index, colors, onEdit, onRemove }) => (
             title={pokemon ? pokemon.name : `Empty slot ${index + 1}`}
         >
             {pokemon ? (
-                <Sprite src={pokemon.animatedSprite || pokemon.sprite} alt={pokemon.name} className="h-9 w-9" />
+                <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} alt={pokemon.name} className="h-9 w-9" />
             ) : (
                 <img
                     src={POKEBALL_PLACEHOLDER_URL}
@@ -613,7 +614,7 @@ export const MobileTeamBuilderView = ({
                                         {team.pokemons.map((pokemon) => (
                                             <img
                                                 key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
-                                                src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                                src={getTeamPokemonDisplaySprite(pokemon)}
                                                 alt={pokemon.name}
                                                 className="-ml-2 h-9 w-9 rounded-full border-2 first:ml-0"
                                                 style={{ borderColor: colors.background, backgroundColor: colors.card }}

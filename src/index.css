@@ -8,7 +8,7 @@
    src/constants/theme.js (THEMES) so legacy components that
    still receive a `colors` prop keep working.
 
-   Switch theme by calling applyTheme('dark'|'light').
+    Switch theme by calling applyTheme(themeId).
    ============================================================ */
 
 :root,
@@ -53,6 +53,48 @@
     --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
     --elevation-2: 0 4px 12px -4px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
     --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
+}
+
+:root[data-theme='daybreak'] {
+    --color-primary: #2563EB;
+    --color-primary-soft: rgba(37, 99, 235, 0.14);
+    --color-accent: #0EA5E9;
+    --color-accent-soft: rgba(14, 165, 233, 0.12);
+    --color-bg: #EEF5FF;
+    --color-surface: #FFFFFF;
+    --color-surface-raised: #E4EEFB;
+    --color-fg: #0F172A;
+    --color-muted: #5B6B84;
+    --color-border: #CBD9EE;
+    --color-success: #047857;
+    --color-danger: #B91C1C;
+    --color-warning: #B45309;
+    --color-info: #1D4ED8;
+
+    --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
+    --elevation-2: 0 4px 12px -4px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
+    --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
+}
+
+:root[data-theme='eclipse'] {
+    --color-primary: #a78bfa;
+    --color-primary-soft: rgba(167, 139, 250, 0.18);
+    --color-accent: #c084fc;
+    --color-accent-soft: rgba(192, 132, 252, 0.18);
+    --color-bg: #0d0d0d;
+    --color-surface: #161616;
+    --color-surface-raised: #262626;
+    --color-fg: #F5F3FF;
+    --color-muted: #909090;
+    --color-border: #333333;
+    --color-success: #34D399;
+    --color-danger: #FB7185;
+    --color-warning: #FBBF24;
+    --color-info: #60A5FA;
+
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.5);
+    --elevation-2: 0 12px 28px -10px rgba(0,0,0,0.72), 0 2px 6px rgba(0,0,0,0.45);
+    --elevation-3: 0 22px 48px -14px rgba(0,0,0,0.82);
 }
 
 :root[data-theme='midnight'] {
