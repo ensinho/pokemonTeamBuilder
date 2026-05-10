@@ -58,6 +58,7 @@ import {
 } from './components/views';
 import { AnchoredPopover } from './components/AnchoredPopover';
 import { useModalA11y } from './hooks/useModalA11y';
+import './styles/app-shell.css';
 
 // Shared trainer avatar helper
 const TrainerAvatar = ({ pokemonId, size = 24, color = 'currentColor', className = '' }) => {
@@ -81,6 +82,137 @@ const TrainerAvatar = ({ pokemonId, size = 24, color = 'currentColor', className
     return <AccountIcon color={color} className={`shrink-0 ${className}`} />;
 };
 
+const ShellNavButton = ({ active, collapsed, label, onClick, icon }) => (
+    <button
+        type="button"
+        onClick={onClick}
+        title={collapsed ? label : undefined}
+        aria-current={active ? 'page' : undefined}
+        className={`app-shell__nav-link ${active ? 'is-active' : ''} ${collapsed ? 'is-collapsed' : ''}`}
+    >
+        <span className="app-shell__nav-icon" aria-hidden="true">{icon}</span>
+        <span className={`app-shell__nav-text ${collapsed ? 'is-hidden' : ''}`}>{label}</span>
+    </button>
+);
+
+const ALL_POKEMON_TYPES = Object.keys(typeIcons);
+
+const toChartKey = (type) => type.charAt(0).toUpperCase() + type.slice(1);
+
+const getPokemonWeaknessEntries = (defendingTypes = []) => {
+    if (!Array.isArray(defendingTypes) || defendingTypes.length === 0) {
+        return [];
+    }
+
+    return ALL_POKEMON_TYPES
+        .map((attackType) => {
+            const multiplier = defendingTypes.reduce((product, defendingType) => {
+                const damageTaken = typeChart[defendingType]?.damageTaken;
+                return product * (damageTaken?.[toChartKey(attackType)] ?? 1);
+            }, 1);
+
+            return { type: attackType, multiplier };
+        })
+        .filter(({ multiplier }) => multiplier > 1)
+        .sort((a, b) => b.multiplier - a.multiplier || a.type.localeCompare(b.type));
+};
+
+const CompactStatBar = ({ stat, value, colors }) => {
+    const formattedStat = stat.replace(/special-/g, 'sp. ').replace(/-/g, ' ');
+    const width = `${Math.min(100, (value / 255) * 100)}%`;
+
+    return (
+        <div className="grid grid-cols-[3.9rem_minmax(0,1fr)_2rem] items-center gap-2 text-xs">
+            <span className="truncate capitalize" style={{ color: colors.textMuted }}>
+                {formattedStat}
+            </span>
+            <div className="h-2 rounded-full" style={{ backgroundColor: colors.cardLight }}>
+                <div className="h-full rounded-full" style={{ width, backgroundColor: colors.primary }} />
+            </div>
+            <span className="text-right font-semibold" style={{ color: colors.text }}>
+                {value}
+            </span>
+        </div>
+    );
+};
+
+const WeaknessBadge = ({ type, multiplier, colors }) => (
+    <span
+        className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-semibold"
+        style={{
+            backgroundColor: `${typeColors[type]}18`,
+            borderColor: `${typeColors[type]}33`,
+            color: colors.text,
+        }}
+    >
+        <img src={typeIcons[type]} alt={type} className="h-4 w-4" />
+        <span className="capitalize">{type}</span>
+        <span style={{ color: colors.danger }}>x{multiplier}</span>
+    </span>
+);
+
+const ConfirmDialog = ({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', colors }) => {
+    const dialogRef = useModalA11y(isOpen ? onClose : undefined);
+
+    if (!isOpen) return null;
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            onClick={onClose}
+            role="presentation"
+        >
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="confirm-dialog-title"
+                tabIndex={-1}
+                className="w-full max-w-md rounded-2xl p-5 shadow-2xl focus:outline-none"
+                style={{
+                    backgroundColor: colors.card,
+                    border: `1px solid ${colors.border}`,
+                }}
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="space-y-2">
+                    <h2 id="confirm-dialog-title" className="text-lg font-bold" style={{ color: colors.text }}>
+                        {title}
+                    </h2>
+                    <p className="text-sm leading-relaxed" style={{ color: colors.textMuted }}>
+                        {message}
+                    </p>
+                </div>
+
+                <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-semibold transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        style={{
+                            color: colors.text,
+                            border: `1px solid ${colors.border}`,
+                        }}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            onConfirm?.();
+                            onClose?.();
+                        }}
+                        className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                        style={{ backgroundColor: colors.danger }}
+                    >
+                        {confirmText}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // ——————————————————————————————————————————————
 // PageGuide — small i button that opens a contextual tip popover.
 // ——————————————————————————————————————————————
@@ -94,7 +226,7 @@ const PAGE_GUIDE_TIPS = {
         ],
     },
     builder: {
-        title: 'Team Builder',
+        title: 'Builder',
         tips: [
             'A team isn\'t six random picks — it\'s a statement. Feel the synergy as you build.',
             'Dig into each slot. Moves, item, nature — that\'s where good teams become great ones.',
@@ -1050,17 +1182,55 @@ export default function App() {
     // Get page title and subtitle based on current route
     const pageInfo = useMemo(() => {
         const pages = {
-            'home': { title: 'Home', icon: '', subtitle: 'Welcome back, Trainer!' },
-            'builder': { title: 'Pokémon Team Builder', icon: '', subtitle: 'Build your perfect team' },
-            'pokedex': { title: 'Pokédex', icon: '', subtitle: 'Explore all Pokémon' },
-            'allTeams': { title: 'Saved Teams', icon: '', subtitle: 'Your team collection' },
-            'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Discover new Pokémon' },
-            'favorites': { title: 'Favorite Pokémon', icon: '', subtitle: 'Your favorite collection' },
-            'profile': { title: 'Profile', icon: '', subtitle: 'Trainer card & preferences' },
+            'home': { title: 'Home', icon: '', subtitle: 'Overview and next actions' },
+            'builder': { title: 'Team Builder', icon: '', subtitle: 'Build and tune your current roster' },
+            'pokedex': { title: 'Pokédex', icon: '', subtitle: 'Search and compare Pokémon' },
+            'allTeams': { title: 'Saved Teams', icon: '', subtitle: 'Revisit and manage your collection' },
+            'randomGenerator': { title: 'Random Generator', icon: '', subtitle: 'Generate a fresh starting point' },
+            'favorites': { title: 'Favorite Pokémon', icon: '', subtitle: 'Quick access to your pinned roster' },
+            'profile': { title: 'Profile', icon: '', subtitle: 'Trainer card and preferences' },
             'admin': { title: 'Admin Dashboard', icon: '', subtitle: 'Suggestions and replies' }
         };
         return pages[currentPage] || pages['home'];
     }, [currentPage]);
+
+    const pageSectionLabel = useMemo(() => {
+        const sections = {
+            home: 'Overview',
+            builder: 'Build',
+            pokedex: 'Explore',
+            allTeams: 'Collection',
+            randomGenerator: 'Generator',
+            favorites: 'Pinned',
+            profile: 'Profile',
+            admin: 'Admin',
+        };
+
+        return sections[currentPage] || 'Workspace';
+    }, [currentPage]);
+
+    const pageFrameClassName = useMemo(() => {
+        if (currentPage === 'home') return '';
+        return 'app-shell__page-frame';
+    }, [currentPage]);
+
+    const navigationItems = useMemo(() => {
+        const items = [
+            { key: 'home', label: 'Home', path: '/', icon: <HomeIcon /> },
+            { key: 'builder', label: 'Builder', path: '/builder', icon: <SwordsIcon /> },
+            { key: 'pokedex', label: 'Pokédex', path: '/pokedex', icon: <PokeballIcon /> },
+            { key: 'randomGenerator', label: 'Generator', path: '/generator', icon: <DiceIcon /> },
+            { key: 'favorites', label: 'Favorites', path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
+            { key: 'allTeams', label: 'Saved Teams', path: '/teams', icon: <SavedTeamsIcon /> },
+            { key: 'profile', label: 'Profile', path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
+        ];
+
+        if (isAdmin) {
+            items.push({ key: 'admin', label: 'Admin', path: '/admin', icon: <ChartColumnIcon className="w-5 h-5 shrink-0" /> });
+        }
+
+        return items;
+    }, [isAdmin]);
 
     const showToast = useCallback((message, type = 'info', options = {}) => {
         const id = Date.now() + Math.random();
@@ -2310,142 +2480,113 @@ useEffect(() => {
         />
         
         <div className="fixed top-5 right-5 z-50 space-y-2">{toasts.slice(0, maxToasts).map(toast => ( <div key={toast.id} className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out min-w-[260px] ${toast.type === 'success' ? 'bg-success' : toast.type === 'warning' ? 'bg-warning' : toast.type === 'info' ? 'bg-info' : 'bg-danger'}`}><div className="flex items-center gap-2 min-w-0">{!toast.spriteUrl && (<>{toast.type === 'success' && <SuccessToastIcon />}{toast.type === 'error' && <ErrorToastIcon />}{toast.type === 'warning' && <WarningToastIcon />}</>)}<span className="truncate">{toast.message}</span></div>{toast.spriteUrl && <img src={toast.spriteUrl} alt="" aria-hidden="true" className="w-16 h-16 image-pixelated -my-1 shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}</div> ))}</div>
-        <div className="flex h-screen overflow-hidden">
+                <div className="app-shell">
             {isSidebarOpen && (
                 <div 
-                    className="fixed inset-0 bg-black/50 lg:hidden z-30 transition-opacity duration-300" 
+                                        className="app-shell__overlay lg:hidden" 
                     onClick={() => setIsSidebarOpen(false)}
                     role="presentation"
                     aria-label="Close sidebar"
                 />
             )}
             <aside 
-                className={`fixed lg:relative lg:translate-x-0 inset-y-0 left-0 z-40 transition-all duration-300 ease-in-out lg:h-screen overflow-y-auto custom-scrollbar ${isSidebarCollapsed ? 'lg:w-20' : 'w-64'} ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`} 
-                style={{
-                    backgroundColor: colors.card,
-                    borderRight: theme === 'light' ? `1px solid ${colors.border}` : 'none'
-                }}
+                                className={`app-shell__sidebar custom-scrollbar ${isSidebarCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}
             >
-                <div className="flex flex-col h-full">
-                  <div className={`flex flex-row items-center justify-between gap-3 px-3.5 py-2 transition-all duration-300 `}>
-                    <img 
-                      src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'} 
-                      alt="Pokémon Team Builder Logo" 
-                      className={`transition-all duration-300 shrink-0 ${isSidebarCollapsed ? 'w-12' : 'w-12'}`}
-                      style={{ height: 'auto' }}
-                    />
-                    <div className={`hidden lg:flex items-center flex-1 transition-all duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
-                      <h2 className="text-xs font-bold uppercase tracking-wider whitespace-nowrap" style={{color: colors.primary}}>Menu</h2>
-                    </div>
-                    {!isSidebarCollapsed && (
-                      <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} type="button" aria-label="Collapse sidebar" className="hidden lg:block p-1 rounded-lg transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0" style={{color: colors.textMuted}}><CollapseLeftIcon /></button>
-                    )}
-                    <button onClick={() => setIsSidebarOpen(false)} type="button" aria-label="Close sidebar" className="lg:hidden p-1 rounded-lg transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0" style={{color: colors.textMuted}}><CloseIcon /></button>
-                  </div>
-                  {isSidebarCollapsed && (
-                    <div className="hidden lg:flex justify-center px-4 py-2 border-b" style={{borderColor: colors.cardLight}}>
-                      <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} type="button" aria-label="Expand sidebar" aria-expanded={!isSidebarCollapsed} className="p-2 rounded-lg transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{color: colors.textMuted}}><CollapseRightIcon /></button>
-                    </div>
-                  )}
-                  <nav className="px-4 flex-grow">
-                    <ul>
-                      <li>
-                                                <button onClick={() => { navigate('/'); setIsSidebarOpen(false); }} aria-current={currentPage === 'home' ? 'page' : undefined} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'home' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'home' ? 'white' : colors.text}}>
-                          <span className="nav-icon"><HomeIcon /></span>
-                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Home</span>
-                        </button>
-                      </li>
-                      <li className="mt-2">
-                                                <button onClick={() => { navigate('/builder'); setIsSidebarOpen(false); }} aria-current={currentPage === 'builder' ? 'page' : undefined} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'builder' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'builder' ? 'white' : colors.text}}>
-                          <span className="nav-icon"><SwordsIcon /></span>
-                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Team Builder</span>
-                        </button>
-                      </li>
-                       <li className="mt-2">
-                        <button onClick={() => { navigate('/pokedex'); setIsSidebarOpen(false); }} aria-current={currentPage === 'pokedex' ? 'page' : undefined} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'pokedex' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'pokedex' ? 'white' : colors.text}}>
-                            <span className="nav-icon"><PokeballIcon /></span>
-                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Pokédex</span>
-                        </button>
-                      </li>
-                      <li className="mt-2">
-                                                <button onClick={() => { navigate('/generator'); setIsSidebarOpen(false); }} aria-current={currentPage === 'randomGenerator' ? 'page' : undefined} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'randomGenerator' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'randomGenerator' ? 'white' : colors.text}}>
-                            <span className="nav-icon"><DiceIcon /></span>
-                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Random Generator</span>
-                        </button>
-                      </li>
-                      <li className="mt-2">
-                                                <button onClick={() => { navigate('/favorites'); setIsSidebarOpen(false); }} aria-current={currentPage === 'favorites' ? 'page' : undefined} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'favorites' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'favorites' ? 'white' : colors.text}}>
-                            <span className="nav-icon"><StarsIcon className="w-6 h-6 shrink-0" isFavorite={true} color={currentPage === 'favorites' ? 'white' : colors.text} /></span>
-                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Favorites</span>
-                        </button>
-                      </li>
-                      <li className="mt-2">
-                                                <button onClick={() => { navigate('/teams'); setIsSidebarOpen(false); }} aria-current={currentPage === 'allTeams' ? 'page' : undefined} className={`nav-item w-full p-3 mt-2 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'allTeams' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'allTeams' ? 'white' : colors.text}}>
-                          <span className="nav-icon"><SavedTeamsIcon/></span>
-                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Saved Teams</span>
-                        </button>
-                      </li>
-                      <li className="mt-2">
-                                                <button onClick={() => { navigate('/profile'); setIsSidebarOpen(false); }} aria-current={currentPage === 'profile' ? 'page' : undefined} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'profile' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'profile' ? 'white' : colors.text}}>
-                          <span className="nav-icon"><TrainerAvatar pokemonId={greetingPokemonId} color={currentPage === 'profile' ? 'white' : colors.text} /></span>
-                          <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Profile</span>
-                        </button>
-                      </li>
-                                            {isAdmin && (
-                                                <li className="mt-2">
-                                                    <button onClick={() => { navigate('/admin'); setIsSidebarOpen(false); }} aria-current={currentPage === 'admin' ? 'page' : undefined} className={`nav-item w-full p-3 rounded-lg font-bold flex items-center transition-colors ${currentPage === 'admin' ? 'is-active' : ''} ${isSidebarCollapsed ? 'justify-center' : ''}`} style={{color: currentPage === 'admin' ? 'white' : colors.text}}>
-                                                        <span className="nav-icon"><ChartColumnIcon className="w-6 h-6" /></span>
-                                                        <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>Admin</span>
+                                <div className="app-shell__sidebar-inner">
+                                    <div className={`app-shell__brand ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+                                        <div className="app-shell__brand-main">
+                                            <img 
+                                                src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'} 
+                                                alt="Pokémon Team Builder Logo" 
+                                                className="app-shell__brand-logo"
+                                            />
+                                            <div className={`app-shell__brand-copy ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
+                                                <p className="app-shell__brand-label">Pokemon Team Builder</p>
+                                            </div>
+                                        </div>
+                                        {!isSidebarCollapsed && (
+                                            <button
+                                                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                                                type="button"
+                                                aria-label="Collapse sidebar"
+                                                aria-expanded="true"
+                                                className="app-shell__icon-button app-shell__collapse-toggle hidden lg:inline-flex"
+                                            >
+                                                <CollapseLeftIcon />
+                                            </button>
+                                        )}
+                                        <button onClick={() => setIsSidebarOpen(false)} type="button" aria-label="Close sidebar" className="app-shell__icon-button lg:hidden"><CloseIcon /></button>
+                                    </div>
+                                    <nav className="app-shell__nav" aria-label="Primary">
+                                        <ul className="app-shell__nav-list">
+                                            {isSidebarCollapsed && (
+                                                <li className="app-shell__nav-control hidden lg:block">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsSidebarCollapsed(false)}
+                                                        aria-label="Expand sidebar"
+                                                        aria-expanded="false"
+                                                        className="app-shell__nav-link app-shell__nav-link--control is-collapsed"
+                                                    >
+                                                        <span className="app-shell__nav-icon" aria-hidden="true"><CollapseRightIcon /></span>
                                                     </button>
                                                 </li>
                                             )}
-                    </ul>
-                  </nav>
-                  {/* Sidebar account footer — login is optional but lives here so users can find it. */}
-                  <div
-                    className="mt-auto p-3 border-t"
-                    style={{ borderColor: colors.cardLight }}
-                  >
+                                            {navigationItems.map((item) => (
+                                                <li key={item.key}>
+                                                    <ShellNavButton
+                                                        active={currentPage === item.key}
+                                                        collapsed={isSidebarCollapsed}
+                                                        label={item.label}
+                                                        icon={item.icon}
+                                                        onClick={() => {
+                                                                navigate(item.path);
+                                                                setIsSidebarOpen(false);
+                                                        }}
+                                                    />
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </nav>
+                                    <div className="app-shell__account">
                     {isAnonymous ? (
                         <button
                             type="button"
                             onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
                             aria-label="Sign in or create an account"
                             title="Sign in"
-                            className={`nav-item w-full rounded-lg font-bold flex items-center transition-colors p-3 ${isSidebarCollapsed ? 'justify-center' : ''}`}
-                            style={{ color: colors.text, backgroundColor: colors.cardLight }}
+                                                        className={`app-shell__account-button ${isSidebarCollapsed ? 'is-collapsed' : ''}`}
                         >
-                            <span className="nav-icon"><AccountIcon color={colors.text} /></span>
-                            <span className={`whitespace-nowrap overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'lg:w-0 lg:ml-0 opacity-0' : 'w-auto ml-3 opacity-100'}`}>
+                                                        <span className="app-shell__nav-icon"><AccountIcon className="w-5 h-5 shrink-0" /></span>
+                                                        <span className={`app-shell__nav-text ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
                                 Sign in
                             </span>
                         </button>
                     ) : (
-                        <div className={`rounded-lg p-2 ${isSidebarCollapsed ? 'flex justify-center' : ''}`} style={{ backgroundColor: colors.cardLight }}>
+                                                <div className={`app-shell__account-card ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
                             {isSidebarCollapsed ? (
                                 <button
                                     type="button"
                                     onClick={() => navigate('/profile')}
                                     aria-label={`Signed in as ${userEmail || 'user'}. Open profile`}
                                     title={`${userEmail || 'Signed in'} — open profile`}
-                                    className="p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{ color: colors.text }}
+                                                                        className="app-shell__icon-button"
                                 >
                                     <TrainerAvatar pokemonId={greetingPokemonId} color={colors.primary} />
                                 </button>
                             ) : (
-                                <div className="flex items-center gap-2 min-w-0">
+                                                                <div className="flex items-center gap-3 min-w-0">
                                     <button
                                         type="button"
                                         onClick={() => navigate('/profile')}
                                         aria-label="Open profile"
                                         title="Open profile"
-                                        className="flex items-center gap-2 min-w-0 flex-1 text-left rounded p-1 -m-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                                                                className="app-shell__account-summary"
                                     >
-                                        <span style={{ color: colors.primary }}><TrainerAvatar pokemonId={greetingPokemonId} color={colors.primary} /></span>
+                                                                                <span><TrainerAvatar pokemonId={greetingPokemonId} color={colors.primary} /></span>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] uppercase tracking-wider" style={{ color: colors.textMuted }}>Signed in</p>
-                                            <p className="text-xs font-semibold truncate" title={userEmail || ''} style={{ color: colors.text }}>
+                                                                                        <p className="app-shell__account-label">Signed in</p>
+                                                                                        <p className="app-shell__account-email" title={userEmail || ''}>
                                                 {userEmail || 'Account'}
                                             </p>
                                         </div>
@@ -2453,8 +2594,7 @@ useEffect(() => {
                                     <button
                                         type="button"
                                         onClick={handleSignOut}
-                                        className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                        style={{ color: colors.textMuted, border: `1px solid ${colors.border}` }}
+                                                                                className="app-shell__account-signout"
                                     >
                                         Sign out
                                     </button>
@@ -2465,33 +2605,22 @@ useEffect(() => {
                   </div>
                 </div>
             </aside>
-            <div className="flex-1 min-w-0 h-screen overflow-y-auto custom-scrollbar">
-                <header 
-                    className="relative flex items-center justify-between pt-4 px-4 h-24"
-                    style={{
-                        borderBottom: theme === 'light' ? `1px solid ${colors.border}` : 'none'
-                    }}
-                >
+            <div className="app-shell__content custom-scrollbar">
+                <header className="app-shell__header">
+                <div className="app-shell__header-main">
                 <button
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                     type="button"
                     aria-label={isSidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
                     aria-expanded={isSidebarOpen}
-                    className="lg:hidden p-2 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                    className="app-shell__icon-button app-shell__mobile-menu lg:hidden"
                 >
                     {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
                 </button>
 
-                <div className="flex-1 text-center px-2 marginLeft">
-                    <div className="flex items-center justify-center gap-2">
-                        <span className="text-xl sm:text-2xl lg:text-3xl">{pageInfo.icon}</span>
-                        <h1
-                        className="font-display text-[10px] sm:text-sm lg:text-xl tracking-wider truncate"
-                        style={{ color: colors.primary }}
-                        >
-                        {pageInfo.title}
-                        </h1>
+                <div className="app-shell__header-copy">
+                    <div className="app-shell__header-title-row">
+                        <h1 className="app-shell__header-title">{pageInfo.title}</h1>
                         {PAGE_GUIDE_TIPS[currentPage] && (
                             <PageGuide
                                 colors={colors}
@@ -2504,35 +2633,35 @@ useEffect(() => {
                             />
                         )}
                     </div>
-                    <p
-                    className="text-[10px] sm:text-xs md:text-sm mt-1 truncate opacity-70"
-                    style={{ color: colors.textMuted }}
-                    >
-                    {pageInfo.subtitle}
-                    </p>
+                    <p className="app-shell__header-subtitle">{pageInfo.subtitle}</p>
+                </div>
                 </div>
 
-                <div className="flex items-center gap-2 lg:mr-4 sm:mr-0">
-                    <button onClick={toggleTheme} type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} className="p-2 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" style={{ backgroundColor: colors.cardLight, color: colors.text }}>
-                        {theme === 'dark' ? <SunIcon color={colors.text} /> : <MoonIcon color={colors.text} />}
+                <div className="app-shell__header-actions">
+                    <button onClick={toggleTheme} type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} className="app-shell__icon-button">
+                        {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
                     </button>
                 </div>
 
                 </header>
-                <div className="p-4 sm:p-6 lg:p-8 lg:py-4">{renderRoutes()}</div>
-                <footer className="text-center mt-8 py-6 border-t" style={{borderColor: colors.cardLight}}>
-                    <p className="text-sm inline-flex items-center flex-wrap justify-center gap-x-1" style={{color: colors.textMuted}}>
+                <div className="app-shell__body">
+                    {pageFrameClassName ? <div className={pageFrameClassName}>{renderRoutes()}</div> : renderRoutes()}
+                </div>
+                <footer className="app-shell__footer">
+                    <div className="app-shell__footer-row">
+                    <p className="app-shell__footer-credit">
                         <span>
-                            Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{color: colors.text}}>Enzo Esmeraldo</a>
+                            Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
                         </span>
                         <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} colors={colors} showToast={showToast} />
                     </p>
 
-                <div className="flex justify-center gap-4 mt-4">
-                        <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="hover:opacity-80" style={{color: colors.textMuted}}><GithubIcon color={colors.textMuted} /></a>
-                        <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="hover:opacity-80" style={{color: colors.textMuted}}><LinkedinIcon color={colors.textMuted} /></a>
+                    <div className="app-shell__footer-links">
+                        <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
+                        <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
                     </div>
-                    <p className="text-xs mt-2" style={{color: colors.textMuted}}>Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="underline hover:opacity-80" style={{color: colors.text}}>PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p>
+                    </div>
+                    <p className="app-shell__footer-copy">Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p>
                 </footer>
             </div>
         </div>

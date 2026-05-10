@@ -1,4 +1,5 @@
 import React from 'react';
+import '../../styles/team-builder-view.css';
 import { typeColors, typeIcons } from '../../constants/types';
 import { EmptyState } from '../EmptyState';
 import { PokemonCard } from '../PokemonCard';
@@ -26,93 +27,120 @@ export function PokedexView({
     const displayedPokemons = showOnlyFavorites
         ? pokemons.filter((pokemon) => favoritePokemons.has(pokemon.id))
         : pokemons;
+    const selectedTypeCount = selectedTypes.size;
 
     return (
-        <main className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            <div className="lg:col-span-9">
-                <section className="p-6 rounded-xl shadow-lg h-full flex flex-col" style={{ backgroundColor: colors.card }}>
-                    <div className="mb-4">
-                        <h2 className="text-xl md:text-2xl font-bold mb-4" style={{ color: colors.text }}>Pokédex</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <input
-                                type="text"
-                                placeholder="Search Pokémon..."
-                                value={searchInput}
-                                onChange={(e) => setSearchInput(e.target.value)}
-                                className="w-full p-3 rounded-lg border-2 focus:outline-none"
-                                style={{ backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text }}
-                            />
-                            <select
-                                value={selectedGeneration}
-                                onChange={(e) => setSelectedGeneration(e.target.value)}
-                                className="w-full p-3 rounded-lg border-2 focus:outline-none appearance-none capitalize"
-                                style={{ backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text }}
-                            >
-                                <option value="all" style={{ color: colors.text }}>All Generations</option>
-                                {generations.map((generation) => (
-                                    <option key={generation} value={generation} className="capitalize" style={{ color: colors.text }}>
-                                        {generation.replace('-', ' ')}
-                                    </option>
-                                ))}
-                            </select>
-                            <button
-                                onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                                className={`w-full p-3 rounded-lg border-2 focus:outline-none flex items-center justify-center gap-2 font-semibold transition-all duration-200 ${showOnlyFavorites ? 'ring-2 ring-yellow-400' : ''}`}
-                                style={{ backgroundColor: showOnlyFavorites ? 'rgba(251, 191, 36, 0.2)' : colors.cardLight, borderColor: 'transparent', color: colors.text }}
-                            >
-                                <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color={colors.textMuted} />
-                                {showOnlyFavorites ? 'Showing Favorites' : 'Show Favorites'}
-                            </button>
+        <main className="team-builder grid grid-cols-1">
+            <section className="team-builder-panel team-builder-panel--picker p-4">
+                <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
+                    <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
+                        <h2 className="team-builder-panel__title team-builder-panel__title--compact">Pokédex</h2>
+                        <span className="team-builder-panel__meta team-builder-panel__meta--compact">{displayedPokemons.length}</span>
+                    </div>
+                </div>
+
+                <div className="team-builder-picker-toolbar team-builder-picker-toolbar--compact mt-3">
+                    <div className="team-builder-picker-focus" role="group" aria-label="Type focus">
+                        <div className="team-builder-type-grid team-builder-type-grid--compact">
+                            {Object.keys(typeColors).map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => handleTypeSelection(type)}
+                                    className={`team-builder-type-button team-builder-type-button--compact ${selectedTypes.has(type) ? 'is-active' : ''}`}
+                                    title={type}
+                                    aria-pressed={selectedTypes.has(type)}
+                                >
+                                    <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
+                                </button>
+                            ))}
                         </div>
                     </div>
-                    <div className="relative flex-grow h-[75vh]">
-                        {isInitialLoading ? (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: colors.primary }}></div>
-                            </div>
-                        ) : (
-                            <>
-                                <div className="h-full overflow-y-auto custom-scrollbar" style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}>
-                                    <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-2">
-                                        {displayedPokemons.map((pokemon, index) => (
-                                            <PokemonCard
-                                                key={pokemon.id}
-                                                details={pokemon}
-                                                onCardClick={showDetails}
-                                                lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
-                                                colors={colors}
-                                                isFavorite={favoritePokemons.has(pokemon.id)}
-                                                onToggleFavorite={onToggleFavoritePokemon}
-                                            />
-                                        ))}
-                                    </div>
-                                    {isFetchingMore && <div className="flex justify-center py-4"><div className="animate-spin rounded-full h-8 w-8 border-b-2" style={{ borderColor: colors.primary }}></div></div>}
-                                    {displayedPokemons.length === 0 && !isInitialLoading && (
-                                        <EmptyState
-                                            compact
-                                            title={showOnlyFavorites ? 'No favorites match' : 'Nothing here'}
-                                            message={showOnlyFavorites ? 'Try clearing filters or favoriting more Pokémon.' : 'Try a different search or filter combination.'}
-                                        />
-                                    )}
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </section>
-            </div>
+                    <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? 'All types' : `${selectedTypeCount} active`}</span>
+                </div>
 
-            <div className="lg:col-span-3 space-y-8">
-                <section className="p-6 rounded-xl shadow-lg" style={{ backgroundColor: colors.card }}>
-                    <h3 className="text-sm md:text-base font-bold mb-3 text-center uppercase tracking-wider" style={{ color: colors.text }}>Filter by Type</h3>
-                    <div className="grid grid-cols-5 lg:grid-cols-5 gap-1.5">
-                        {Object.keys(typeColors).map((type) => (
-                            <button key={type} onClick={() => handleTypeSelection(type)} className={`p-1.5 rounded-lg bg-transparent transition-colors hover:opacity-75 ${selectedTypes.has(type) ? 'ring-2 ring-primary' : ''}`} style={{ backgroundColor: colors.cardLight }} title={type}>
-                                <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
-                            </button>
-                        ))}
-                    </div>
-                </section>
-            </div>
+                <div className="team-builder-filter-layout team-builder-filter-layout--compact mt-3">
+                    <label className="team-builder-control team-builder-control--compact">
+                        <span className="team-builder-control__label team-builder-control__label--compact">Search</span>
+                        <input
+                            type="text"
+                            placeholder="Search by name"
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            className="team-builder-field team-builder-field--compact"
+                        />
+                    </label>
+
+                    <label className="team-builder-control team-builder-control--compact">
+                        <span className="team-builder-control__label team-builder-control__label--compact">Generation</span>
+                        <select
+                            value={selectedGeneration}
+                            onChange={(e) => setSelectedGeneration(e.target.value)}
+                            className="team-builder-field team-builder-field--compact team-builder-select"
+                        >
+                            <option value="all">All generations</option>
+                            {generations.map((generation) => (
+                                <option key={generation} value={generation} className="capitalize">
+                                    {generation.replace('-', ' ')}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+
+                    <label className="team-builder-control team-builder-control--compact">
+                        <span className="team-builder-control__label team-builder-control__label--compact">Pinned only</span>
+                        <button
+                            type="button"
+                            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                            className={`team-builder-toggle team-builder-toggle--compact ${showOnlyFavorites ? 'is-active' : ''}`}
+                            aria-pressed={showOnlyFavorites}
+                        >
+                            <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
+                            {showOnlyFavorites ? 'Showing favorites' : 'Show favorites'}
+                        </button>
+                    </label>
+                </div>
+
+                <div className="team-builder-results mt-4">
+                    {isInitialLoading ? (
+                        <div className="team-builder-spinner-wrap h-full">
+                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                        </div>
+                    ) : (
+                        <div className="team-builder-results__scroll custom-scrollbar">
+                            <div className="team-builder-results__grid grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 lg:grid-cols-7 xl:grid-cols-8 gap-4 p-1 py-4">
+                                {displayedPokemons.map((pokemon, index) => (
+                                    <PokemonCard
+                                        key={pokemon.id}
+                                        details={pokemon}
+                                        onCardClick={showDetails}
+                                        lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
+                                        colors={colors}
+                                        isFavorite={favoritePokemons.has(pokemon.id)}
+                                        onToggleFavorite={onToggleFavoritePokemon}
+                                    />
+                                ))}
+                            </div>
+
+                            {isFetchingMore && (
+                                <div className="team-builder-spinner-wrap py-4">
+                                    <div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div>
+                                </div>
+                            )}
+
+                            {displayedPokemons.length === 0 && !isInitialLoading && (
+                                <div className="px-2 pb-4">
+                                    <EmptyState
+                                        compact
+                                        title={showOnlyFavorites ? 'No favorites match' : 'No Pokémon found'}
+                                        message={showOnlyFavorites ? 'Try clearing filters or favoriting more Pokémon.' : 'Try a different search, generation, or type.'}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </section>
         </main>
     );
 }

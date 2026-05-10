@@ -81,8 +81,8 @@ export function TeamIdentitySummary({ team }) {
     if (!stats) return null;
 
     return (
-        <div className="grid grid-cols-3 gap-2 mt-4" aria-label="Team identity summary">
-            <Badge label="Avg BST" value={stats.avgBst ?? '—'} hint={stats.bstLabel} />
+        <div className="grid grid-cols-3 gap-1.5 mt-3" aria-label="Team identity summary">
+            <Badge label="BST" value={stats.avgBst ?? '—'} hint={stats.bstLabel} />
             <Badge label="Types" value={stats.typeCount} hint={stats.typeCount >= 5 ? 'Diverse' : stats.typeCount >= 3 ? 'OK' : 'Narrow'} />
             <Badge label="Lean" value={stats.leanLabel} hint={`${stats.physical}/${stats.special}/${stats.mixed}`} />
         </div>
@@ -91,10 +91,10 @@ export function TeamIdentitySummary({ team }) {
 
 function Badge({ label, value, hint }) {
     return (
-        <div className="rounded-lg p-2 text-center bg-surface-raised">
-            <p className="text-[10px] uppercase tracking-wider text-muted font-semibold">{label}</p>
-            <p className="text-base font-bold text-fg leading-tight">{value}</p>
-            {hint && <p className="text-[10px] text-muted">{hint}</p>}
+        <div className="rounded-xl p-1.5 text-center bg-surface-raised">
+            <p className="text-[9px] uppercase tracking-wider text-muted font-semibold leading-none">{label}</p>
+            <p className="mt-1 text-sm font-bold text-fg leading-none">{value}</p>
+            {hint && <p className="mt-1 truncate text-[9px] text-muted leading-none">{hint}</p>}
         </div>
     );
 }

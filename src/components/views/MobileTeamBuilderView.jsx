@@ -48,21 +48,13 @@ const MobilePokemonPickerCard = ({
             aria-label={`Add ${pokemon.name} to team`}
             onClick={handleCardClick}
             onKeyDown={handleKeyDown}
-            className={`relative overflow-hidden rounded-2xl border p-2 text-left transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
-                isSuggested ? 'ring-2 ring-success' : ''
+            className={`team-builder-mobile-card ${
+                isSuggested ? 'is-suggested' : ''
             }`}
-            style={{
-                backgroundColor: colors.card,
-                borderColor: colors.cardLight,
-                boxShadow: 'var(--elevation-1)',
-            }}
         >
             <div className="flex items-start justify-between gap-1">
                 {isSuggested ? (
-                    <div
-                        className="rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.14em] text-white"
-                        style={{ backgroundColor: colors.success }}
-                    >
+                    <div className="team-builder-mobile-card__badge">
                         New
                     </div>
                 ) : (
@@ -71,11 +63,7 @@ const MobilePokemonPickerCard = ({
 
                 <button
                     onClick={handleFavoriteClick}
-                    className="rounded-full p-1.5 transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-warning"
-                    style={{
-                        backgroundColor: isFavorite ? 'rgba(251, 191, 36, 0.16)' : colors.cardLight,
-                        color: isFavorite ? '#FBBF24' : colors.textMuted,
-                    }}
+                    className={`team-builder-mobile-card__favorite ${isFavorite ? 'is-active' : ''}`}
                     aria-label={isFavorite ? `Remove ${pokemon.name} from favorites` : `Add ${pokemon.name} to favorites`}
                     title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                 >
@@ -83,14 +71,14 @@ const MobilePokemonPickerCard = ({
                 </button>
             </div>
 
-            <div className="mt-1.5 rounded-2xl p-1.5" style={{ backgroundColor: colors.background }}>
+            <div className="team-builder-mobile-card__media">
                 <div className="mx-auto aspect-square w-full max-w-[84px]">
                     <Sprite src={pokemon.sprite} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>
 
             <div className="mt-2">
-                <p className="truncate text-[11px] font-bold capitalize leading-tight" style={{ color: colors.text }}>
+                <p className="team-builder-mobile-card__name">
                     {pokemon.name}
                 </p>
                 <div className="mt-1 flex items-center gap-1">
@@ -256,11 +244,7 @@ const MobileTeamSlot = ({ pokemon, index, colors, onEdit, onRemove }) => (
         <button
             type="button"
             onClick={() => pokemon && onEdit?.(pokemon)}
-            className="flex aspect-square w-full items-center justify-center rounded-xl border transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-            style={{
-                backgroundColor: colors.background,
-                borderColor: pokemon ? colors.primary : colors.cardLight,
-            }}
+            className={`team-builder-mobile-slot ${pokemon ? 'is-filled' : 'is-empty'}`}
             aria-label={pokemon ? `Edit ${pokemon.name}` : `Empty team slot ${index + 1}`}
             title={pokemon ? pokemon.name : `Empty slot ${index + 1}`}
         >
@@ -283,8 +267,7 @@ const MobileTeamSlot = ({ pokemon, index, colors, onEdit, onRemove }) => (
                     event.stopPropagation();
                     onRemove?.(pokemon.instanceId);
                 }}
-                className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full text-white shadow-md transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger"
-                style={{ backgroundColor: colors.danger }}
+                className="team-builder-mobile-slot__remove"
                 aria-label={`Remove ${pokemon.name} from team`}
                 title="Remove from team"
             >
@@ -353,41 +336,30 @@ export const MobileTeamBuilderView = ({
     };
 
     return (
-        <div className="space-y-4 lg:hidden">
-            <div
-                className="sticky top-0 z-20 -mx-4 border-b px-4 pb-4 pt-3 backdrop-blur-xl"
-                style={{
-                    background: `linear-gradient(180deg, ${colors.background}F5 0%, ${colors.background}EA 100%)`,
-                    borderColor: colors.cardLight,
-                }}
-            >
-                <section
-                    className="rounded-[24px] border p-3"
-                    style={{
-                        backgroundColor: colors.card,
-                        borderColor: colors.cardLight,
-                        boxShadow: 'var(--elevation-2)',
-                    }}
-                >
-                    <div className="flex items-center gap-2">
+        <div className="team-builder-mobile space-y-4 lg:hidden">
+            <div className="team-builder-mobile__sticky">
+                <section className="team-builder-panel team-builder-mobile__composer p-4">
+                    <div className="team-builder-panel__header">
+                        <div>
+                            <p className="team-builder-panel__eyebrow">Current roster</p>
+                            <h2 className="team-builder-panel__title team-builder-panel__title--small">Team builder</h2>
+                        </div>
+                        <span className="team-builder-panel__meta">{currentTeam.length}/6</span>
+                    </div>
+
+                    <div className="team-builder-mobile__composer-row mt-4">
                         <input
                             type="text"
                             value={teamName}
                             onChange={(event) => setTeamName(event.target.value)}
                             placeholder="Team name"
-                            className="min-w-0 flex-1 rounded-xl border px-3 py-2.5 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{
-                                backgroundColor: colors.background,
-                                borderColor: 'transparent',
-                                color: colors.text,
-                            }}
+                            className="team-builder-field min-w-0 flex-1"
                             aria-label="Team name"
                         />
                         <button
                             type="button"
                             onClick={handleSaveTeam}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.primary }}
+                            className="team-builder-icon-button team-builder-icon-button--primary"
                             aria-label={editingTeamId ? 'Update team' : 'Save team'}
                             title={editingTeamId ? 'Update team' : 'Save team'}
                         >
@@ -396,8 +368,7 @@ export const MobileTeamBuilderView = ({
                         <button
                             type="button"
                             onClick={handleShareTeam}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                            className="team-builder-icon-button"
                             aria-label="Share team"
                             title="Share team"
                         >
@@ -406,8 +377,7 @@ export const MobileTeamBuilderView = ({
                         <button
                             type="button"
                             onClick={handleExportToShowdown}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                            className="team-builder-icon-button"
                             aria-label="Export team"
                             title="Export team"
                         >
@@ -416,8 +386,7 @@ export const MobileTeamBuilderView = ({
                         <button
                             type="button"
                             onClick={handleClearTeam}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-danger"
-                            style={{ backgroundColor: colors.cardLight, color: colors.danger }}
+                            className="team-builder-icon-button team-builder-icon-button--danger"
                             aria-label="Clear team"
                             title="Clear team"
                         >
@@ -425,7 +394,7 @@ export const MobileTeamBuilderView = ({
                         </button>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-6 gap-1.5">
+                    <div className="team-builder-mobile__slots mt-3">
                         {Array.from({ length: 6 }).map((_, index) => (
                             <MobileTeamSlot
                                 key={currentTeam[index]?.instanceId ?? `mobile-slot-${index}`}
@@ -446,111 +415,88 @@ export const MobileTeamBuilderView = ({
                 </section>
             </div>
 
-            <section
-                className="rounded-[24px] p-4"
-                style={{ backgroundColor: colors.card, boxShadow: 'var(--elevation-2)' }}
-            >
-                <input
-                    type="text"
-                    placeholder="Search Pokemon..."
-                    value={searchInput}
-                    onChange={(event) => setSearchInput(event.target.value)}
-                    className="w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    style={{
-                        backgroundColor: colors.background,
-                        borderColor: 'transparent',
-                        color: colors.text,
-                    }}
-                />
+            <section className="team-builder-panel p-4">
+                <div className="team-builder-mobile__filters">
+                    <label className="team-builder-control team-builder-mobile__filter-control team-builder-mobile__filter-control--full">
+                        <span className="team-builder-control__label">Search</span>
+                        <input
+                            type="text"
+                            placeholder="Search Pokemon"
+                            value={searchInput}
+                            onChange={(event) => setSearchInput(event.target.value)}
+                            className="team-builder-field"
+                        />
+                    </label>
 
-                <div className="mt-2 grid grid-cols-3 gap-2">
-                    <select
-                        value={selectedGeneration}
-                        onChange={(event) => setSelectedGeneration(event.target.value)}
-                        className="min-w-0 rounded-xl border px-3 py-3 text-sm capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{
-                            backgroundColor: colors.background,
-                            borderColor: 'transparent',
-                            color: colors.text,
-                        }}
-                    >
-                        <option value="all">All Generations</option>
-                        {generations.map((generation) => (
-                            <option key={generation} value={generation} className="capitalize">
-                                {generation.replace('-', ' ')}
-                            </option>
-                        ))}
-                    </select>
+                    <label className="team-builder-control team-builder-mobile__filter-control">
+                        <span className="team-builder-control__label">Generation</span>
+                        <select
+                            value={selectedGeneration}
+                            onChange={(event) => setSelectedGeneration(event.target.value)}
+                            className="team-builder-field team-builder-select"
+                        >
+                            <option value="all">All Generations</option>
+                            {generations.map((generation) => (
+                                <option key={generation} value={generation} className="capitalize">
+                                    {generation.replace('-', ' ')}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
 
-                    <select
-                        value={selectedTypeValue}
-                        onChange={(event) => handleTypeSelectChange(event.target.value)}
-                        className="min-w-0 rounded-xl border px-3 py-3 text-sm capitalize focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{
-                            backgroundColor: colors.background,
-                            borderColor: 'transparent',
-                            color: colors.text,
-                        }}
-                    >
-                        <option value="all">All Types</option>
-                        {Object.keys(typeIcons).map((type) => (
-                            <option key={type} value={type} className="capitalize">
-                                {type}
-                            </option>
-                        ))}
-                    </select>
+                    <label className="team-builder-control team-builder-mobile__filter-control">
+                        <span className="team-builder-control__label">Type</span>
+                        <select
+                            value={selectedTypeValue}
+                            onChange={(event) => handleTypeSelectChange(event.target.value)}
+                            className="team-builder-field team-builder-select"
+                        >
+                            <option value="all">All Types</option>
+                            {Object.keys(typeIcons).map((type) => (
+                                <option key={type} value={type} className="capitalize">
+                                    {type}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
 
-                    <button
-                        type="button"
-                        onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                        className="flex min-h-[44px] items-center justify-center rounded-xl border transition-transform duration-200 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-warning"
-                        style={{
-                            backgroundColor: showOnlyFavorites ? 'rgba(251, 191, 36, 0.14)' : colors.background,
-                            borderColor: showOnlyFavorites ? '#FBBF24' : 'transparent',
-                            color: colors.text,
-                        }}
-                        aria-label={showOnlyFavorites ? 'Show all Pokemon' : 'Show favorites only'}
-                        aria-pressed={showOnlyFavorites}
-                        title={showOnlyFavorites ? 'Show all Pokemon' : 'Show favorites only'}
-                    >
-                        <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color={colors.textMuted} />
-                    </button>
+                    <label className="team-builder-control team-builder-mobile__filter-control">
+                        <span className="team-builder-control__label">Pinned only</span>
+                        <button
+                            type="button"
+                            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                            className={`team-builder-toggle ${showOnlyFavorites ? 'is-active' : ''}`}
+                            aria-label={showOnlyFavorites ? 'Show all Pokemon' : 'Show favorites only'}
+                            aria-pressed={showOnlyFavorites}
+                            title={showOnlyFavorites ? 'Show all Pokemon' : 'Show favorites only'}
+                        >
+                            <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
+                            {showOnlyFavorites ? 'Favorites' : 'All'}
+                        </button>
+                    </label>
                 </div>
             </section>
 
-            <section
-                className="rounded-[24px] p-4"
-                style={{ backgroundColor: colors.card, boxShadow: 'var(--elevation-2)' }}
-            >
+            <section className="team-builder-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                        <p
-                            className="text-[11px] font-bold uppercase tracking-[0.24em]"
-                            style={{ color: colors.textMuted }}
-                        >
-                            Available Pokemon
-                        </p>
+                        <p className="team-builder-panel__eyebrow">Pokédex feed</p>
+                        <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">Available Pokémon</h3>
                     </div>
-                    <span
-                        className="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.18em]"
-                        style={{ backgroundColor: colors.cardLight, color: colors.textMuted }}
-                    >
+                    <span className="team-builder-panel__meta">
                         {displayedPokemons.length}
                     </span>
                 </div>
 
-                <div className="mt-2 h-[56vh] overflow-hidden rounded-2xl" style={{ backgroundColor: colors.background }}>
+                <div className="team-builder-mobile__available mt-2">
                     {isInitialLoading ? (
-                        <div className="flex h-full items-center justify-center">
-                            <div
-                                className="h-12 w-12 animate-spin rounded-full border-b-2"
-                                style={{ borderColor: colors.primary }}
-                            />
+                        <div className="team-builder-spinner-wrap h-full">
+                            <div className="team-builder-spinner" aria-hidden="true" />
                         </div>
                     ) : (
                         <>
                             <div className="h-full overflow-y-auto p-2 custom-scrollbar">
-                                <div className="grid grid-cols-3 gap-2">
+                                <div className="team-builder-mobile__grid grid grid-cols-3 gap-2">
                                     {displayedPokemons.map((pokemon, index) => (
                                         <MobilePokemonPickerCard
                                             key={pokemon.id}
@@ -566,11 +512,8 @@ export const MobileTeamBuilderView = ({
                                 </div>
 
                                 {isFetchingMore && (
-                                    <div className="flex justify-center py-4">
-                                        <div
-                                            className="h-8 w-8 animate-spin rounded-full border-b-2"
-                                            style={{ borderColor: colors.primary }}
-                                        />
+                                    <div className="team-builder-spinner-wrap py-4">
+                                        <div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true" />
                                     </div>
                                 )}
 
@@ -590,25 +533,19 @@ export const MobileTeamBuilderView = ({
             </section>
 
             {currentTeam.length > 0 && (
-                <section
-                    className="rounded-[28px] p-4 animate-fade-in"
-                    style={{ backgroundColor: colors.card, boxShadow: 'var(--elevation-2)' }}
-                    aria-label="Team analysis"
-                >
+                <section className="team-builder-panel p-4 animate-fade-in" aria-label="Team analysis">
                     <div className="flex items-center justify-between gap-2 mb-3">
-                        <p
-                            className="text-[11px] font-bold uppercase tracking-[0.24em]"
-                            style={{ color: colors.textMuted }}
-                        >
-                            Team Analysis
-                        </p>
-                        <span className="text-[10px]" style={{ color: colors.textMuted }}>
+                        <div>
+                            <p className="team-builder-panel__eyebrow">Analysis</p>
+                            <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">Team analysis</h3>
+                        </div>
+                        <span className="text-[10px] text-muted">
                             tap chip above for details
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3">
-                        <div className="rounded-2xl p-3" style={{ backgroundColor: colors.background }}>
+                    <div className="team-builder-analysis-grid">
+                        <div className="team-builder-analysis-card">
                             <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.success }}>
                                 Strengths · {teamAnalysis.strengths.size}
                             </p>
@@ -621,7 +558,7 @@ export const MobileTeamBuilderView = ({
                             </div>
                         </div>
 
-                        <div className="rounded-2xl p-3" style={{ backgroundColor: colors.background }}>
+                        <div className="team-builder-analysis-card">
                             <p className="text-[10px] font-bold uppercase tracking-wider mb-1.5" style={{ color: colors.danger }}>
                                 Weaknesses · {Object.keys(teamAnalysis.weaknesses).length}
                             </p>
@@ -643,19 +580,11 @@ export const MobileTeamBuilderView = ({
                 </section>
             )}
 
-            <section
-                className="rounded-[28px] p-5"
-                style={{ backgroundColor: colors.card, boxShadow: 'var(--elevation-2)' }}
-            >
+            <section className="team-builder-panel p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p
-                            className="text-[11px] font-bold uppercase tracking-[0.24em]"
-                            style={{ color: colors.textMuted }}
-                        >
-                            Recent Teams
-                        </p>
-                        <h3 className="mt-2 text-xl font-bold" style={{ color: colors.text }}>
+                        <p className="team-builder-panel__eyebrow">Saved work</p>
+                        <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">
                             Resume a saved lineup
                         </h3>
                     </div>
@@ -673,12 +602,11 @@ export const MobileTeamBuilderView = ({
                     {recentTeams.length > 0 ? recentTeams.map((team) => (
                         <div
                             key={team.id}
-                            className="rounded-3xl p-4"
-                            style={{ backgroundColor: colors.background }}
+                            className="team-builder-mobile__recent-card"
                         >
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-base font-bold" style={{ color: colors.text }}>
+                                    <p className="truncate text-base font-bold text-fg">
                                         {team.name}
                                     </p>
                                     <div className="mt-2 flex">
@@ -698,11 +626,10 @@ export const MobileTeamBuilderView = ({
                                 <button
                                     type="button"
                                     onClick={() => handleToggleFavorite(team)}
-                                    className="rounded-full p-2"
-                                    style={{ backgroundColor: colors.card, color: colors.textMuted }}
+                                    className={`team-builder-icon-button ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
                                     aria-label={team.isFavorite ? `Remove ${team.name} from favorites` : `Favorite ${team.name}`}
                                 >
-                                    <StarIcon isFavorite={team.isFavorite} color={colors.textMuted} />
+                                    <StarIcon isFavorite={team.isFavorite} color="currentColor" />
                                 </button>
                             </div>
 
@@ -710,23 +637,21 @@ export const MobileTeamBuilderView = ({
                                 <button
                                     type="button"
                                     onClick={() => handleEditTeam(team)}
-                                    className="flex-1 rounded-2xl px-3 py-3 text-sm font-semibold text-white"
-                                    style={{ backgroundColor: colors.primary }}
+                                    className="team-builder-button team-builder-button--primary team-builder-button--grow"
                                 >
                                     Edit
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => requestDeleteTeam(team.id, team.name)}
-                                    className="rounded-2xl px-4 py-3 text-sm font-semibold"
-                                    style={{ backgroundColor: colors.card, color: colors.danger }}
+                                    className="team-builder-button team-builder-button--secondary !text-danger"
                                 >
                                     Delete
                                 </button>
                             </div>
                         </div>
                     )) : (
-                        <p className="rounded-3xl p-4 text-sm" style={{ backgroundColor: colors.background, color: colors.textMuted }}>
+                        <p className="team-builder-empty-note text-sm">
                             No recent teams yet.
                         </p>
                     )}
