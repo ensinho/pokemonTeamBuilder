@@ -317,6 +317,10 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
         };
     }, [profileMap, suggestions]);
 
+    const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+    const secondaryButtonClassName = 'inline-flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-sm font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+    const tertiaryButtonClassName = 'inline-flex items-center gap-1 rounded-lg bg-surface-raised px-3 py-1.5 text-xs font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+
     const copyToClipboard = useCallback(async (value, successMessage) => {
         if (!value) return;
         try {
@@ -408,8 +412,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
     if (!isAdmin) {
         return (
-            <div className="rounded-xl p-6 border text-center" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
-                <p className="font-bold" style={{ color: colors.text }}>Admin access unavailable.</p>
+            <div className="rounded-xl border border-border bg-surface p-6 text-center">
+                <p className="font-bold text-fg">Admin access unavailable.</p>
             </div>
         );
     }
@@ -417,13 +421,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
     return (
         <div className="max-w-7xl mx-auto pb-10">
             <section
-                className="rounded-2xl p-5 md:p-6 mb-5 overflow-hidden relative border"
-                style={{
-                    backgroundImage: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 120%)',
-                    borderColor: colors.primary,
-                    color: '#fff',
-                    boxShadow: 'var(--elevation-2)',
-                }}
+                className="relative mb-5 overflow-hidden rounded-2xl border border-primary p-5 text-white shadow-elevation-2 md:p-6"
+                style={{ backgroundImage: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 120%)' }}
             >
                 <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex items-center gap-4 min-w-0">
@@ -453,11 +452,11 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             </section>
 
             <div className="grid gap-5 xl:grid-cols-[minmax(320px,420px)_1fr]">
-                <section className="rounded-xl border overflow-hidden" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
-                    <div className="p-4 border-b" style={{ borderColor: colors.border }}>
+                <section className="overflow-hidden rounded-xl border border-border bg-surface">
+                    <div className="border-b border-border p-4">
                         <div className="flex items-center justify-between gap-3 mb-3">
-                            <h3 className="font-bold" style={{ color: colors.text }}>Suggestions</h3>
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold" style={{ color: colors.textMuted }}>
+                            <h3 className="font-bold text-fg">Suggestions</h3>
+                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted">
                                 <RefreshIcon className="w-3.5 h-3.5" />
                                 Live
                             </span>
@@ -466,8 +465,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                             placeholder="Search feedback, user, page..."
-                            className="w-full px-3 py-2 rounded-lg text-sm border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.cardLight, borderColor: colors.border, color: colors.text }}
+                            className={controlClassName}
                         />
                         <div className="grid grid-cols-3 gap-2 mt-3">
                             {[
@@ -481,11 +479,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         key={value}
                                         type="button"
                                         onClick={() => setStatusFilter(value)}
-                                        className="px-2 py-1.5 rounded-lg text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                        style={{
-                                            backgroundColor: active ? colors.primary : colors.cardLight,
-                                            color: active ? '#fff' : colors.text,
-                                        }}
+                                        className={`rounded-lg px-2 py-1.5 text-xs font-bold transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'bg-primary text-white' : 'bg-surface-raised text-fg'}`}
                                     >
                                         {label}
                                     </button>
@@ -496,7 +490,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
                     <div className="max-h-[42rem] overflow-y-auto custom-scrollbar p-3 space-y-2">
                         {isLoading && (
-                            <div className="p-4 text-sm rounded-lg" style={{ backgroundColor: colors.cardLight, color: colors.textMuted }}>
+                            <div className="rounded-lg bg-surface-raised p-4 text-sm text-muted">
                                 Loading suggestions...
                             </div>
                         )}
@@ -506,7 +500,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                             </div>
                         )}
                         {!isLoading && !error && filteredSuggestions.length === 0 && (
-                            <div className="p-5 text-center text-sm rounded-lg" style={{ backgroundColor: colors.cardLight, color: colors.textMuted }}>
+                            <div className="rounded-lg bg-surface-raised p-5 text-center text-sm text-muted">
                                 No suggestions found.
                             </div>
                         )}
@@ -519,16 +513,12 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                     key={suggestion.id}
                                     type="button"
                                     onClick={() => setSelectedId(suggestion.id)}
-                                    className="w-full text-left rounded-lg p-3 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                    style={{
-                                        backgroundColor: active ? colors.primary + '22' : colors.cardLight,
-                                        border: `1px solid ${active ? colors.primary : 'transparent'}`,
-                                    }}
+                                    className={`w-full rounded-lg border p-3 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'border-primary bg-primary-soft' : 'border-transparent bg-surface-raised'}`}
                                 >
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
-                                            <p className="text-sm font-bold truncate" style={{ color: colors.text }}>{author.name}</p>
-                                            <p className="text-[11px] truncate" style={{ color: colors.textMuted }}>{author.email || 'No email captured'}</p>
+                                            <p className="truncate text-sm font-bold text-fg">{author.name}</p>
+                                            <p className="truncate text-[11px] text-muted">{author.email || 'No email captured'}</p>
                                         </div>
                                         <span
                                             className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold"
@@ -537,10 +527,10 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             {answered ? 'Answered' : 'Open'}
                                         </span>
                                     </div>
-                                    <p className="text-xs mt-2 line-clamp-2" style={{ color: colors.text }}>
+                                    <p className="mt-2 line-clamp-2 text-xs text-fg">
                                         {suggestion.text || 'Empty suggestion'}
                                     </p>
-                                    <div className="flex items-center justify-between gap-2 mt-2 text-[10px]" style={{ color: colors.textMuted }}>
+                                    <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-muted">
                                         <span className="truncate">{suggestion.pageTitle || suggestion.page}</span>
                                         <span className="shrink-0">{formatDate(suggestion.createdAt)}</span>
                                     </div>
@@ -550,60 +540,58 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                     </div>
                 </section>
 
-                <section className="rounded-xl border min-h-[34rem]" style={{ backgroundColor: colors.card, borderColor: colors.border }}>
+                <section className="min-h-[34rem] rounded-xl border border-border bg-surface">
                     {selectedSuggestion ? (
                         <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(320px,420px)] gap-0">
-                            <div className="p-5 md:p-6 border-b lg:border-b-0 lg:border-r" style={{ borderColor: colors.border }}>
+                            <div className="border-b border-border p-5 md:p-6 lg:border-b-0 lg:border-r">
                                 <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-5">
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <span className="inline-flex w-9 h-9 rounded-lg items-center justify-center" style={{ backgroundColor: colors.primary + '1A', color: colors.primary }}>
+                                            <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary-soft text-primary">
                                                 <AccountIcon className="w-5 h-5" />
                                             </span>
                                             <div className="min-w-0">
-                                                <h3 className="text-xl font-extrabold truncate" style={{ color: colors.text }}>{selectedAuthor.name}</h3>
-                                                <p className="text-xs truncate" style={{ color: colors.textMuted }}>{selectedAuthor.email || 'No email available'}</p>
+                                                <h3 className="truncate text-xl font-extrabold text-fg">{selectedAuthor.name}</h3>
+                                                <p className="truncate text-xs text-muted">{selectedAuthor.email || 'No email available'}</p>
                                             </div>
                                         </div>
                                         {selectedAuthor.userId && (
-                                            <p className="text-[11px] font-mono" style={{ color: colors.textMuted }}>#{selectedAuthor.userId}</p>
+                                            <p className="text-[11px] font-mono text-muted">#{selectedAuthor.userId}</p>
                                         )}
                                     </div>
-                                    <div className="text-left md:text-right text-xs" style={{ color: colors.textMuted }}>
-                                        <p className="font-semibold" style={{ color: colors.text }}>{selectedSuggestion.pageTitle || selectedSuggestion.page}</p>
+                                    <div className="text-left text-xs text-muted md:text-right">
+                                        <p className="font-semibold text-fg">{selectedSuggestion.pageTitle || selectedSuggestion.page}</p>
                                         <p>{formatDate(selectedSuggestion.createdAt)}</p>
                                         {selectedSuggestion.respondedAt && <p>Answered {formatDate(selectedSuggestion.respondedAt)}</p>}
                                     </div>
                                 </div>
 
-                                <div className="rounded-xl p-4 mb-5" style={{ backgroundColor: colors.cardLight }}>
-                                    <div className="flex items-center gap-2 mb-2" style={{ color: colors.primary }}>
+                                <div className="mb-5 rounded-xl bg-surface-raised p-4">
+                                    <div className="mb-2 flex items-center gap-2 text-primary">
                                         <InfoIcon />
                                         <p className="text-xs uppercase tracking-wider font-bold">Suggestion</p>
                                     </div>
-                                    <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap" style={{ color: colors.text }}>
+                                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg md:text-base">
                                         {selectedSuggestion.text || 'Empty suggestion'}
                                     </p>
                                 </div>
 
                                 <div className="space-y-3">
                                     <label className="block">
-                                        <span className="block text-xs font-bold mb-1" style={{ color: colors.textMuted }}>Subject</span>
+                                        <span className="mb-1 block text-xs font-bold text-muted">Subject</span>
                                         <input
                                             value={subject}
                                             onChange={(event) => setSubject(event.target.value.slice(0, 120))}
-                                            className="w-full px-3 py-2 rounded-lg text-sm border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                            style={{ backgroundColor: colors.cardLight, borderColor: colors.border, color: colors.text }}
+                                            className={controlClassName}
                                         />
                                     </label>
                                     <label className="block">
-                                        <span className="block text-xs font-bold mb-1" style={{ color: colors.textMuted }}>Message</span>
+                                        <span className="mb-1 block text-xs font-bold text-muted">Message</span>
                                         <textarea
                                             value={customMessage}
                                             onChange={(event) => setCustomMessage(event.target.value.slice(0, 1500))}
                                             rows={7}
-                                            className="w-full px-3 py-2 rounded-lg text-sm border resize-y focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                            style={{ backgroundColor: colors.cardLight, borderColor: colors.border, color: colors.text }}
+                                            className={`${controlClassName} resize-y`}
                                         />
                                     </label>
                                     <div className="flex flex-wrap gap-2">
@@ -611,8 +599,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             type="button"
                                             onClick={handleSendEmail}
                                             disabled={!hasRecipientEmail || isSendingEmail}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold text-white transition-all hover:opacity-90 disabled:opacity-45 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                            style={{ backgroundColor: colors.primary }}
+                                            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             <ShareIcon />
                                             {ADMIN_EMAIL_ENDPOINT ? (isSendingEmail ? 'Sending...' : 'Send Email') : 'Open Draft'}
@@ -620,8 +607,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         <button
                                             type="button"
                                             onClick={() => copyToClipboard(htmlEmail, 'HTML email copied.')}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                            style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                            className={secondaryButtonClassName}
                                         >
                                             <SparklesIcon />
                                             Copy HTML
@@ -629,8 +615,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         <button
                                             type="button"
                                             onClick={() => copyToClipboard(plainTextEmail, 'Plain email copied.')}
-                                            className="px-4 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                            style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                            className="rounded-lg bg-surface-raised px-4 py-2 text-sm font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             Copy Text
                                         </button>
@@ -638,8 +623,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             type="button"
                                             onClick={() => markSuggestionResponded('manual')}
                                             disabled={isMarkingResponded}
-                                            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all hover:opacity-90 disabled:opacity-45 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                            style={{ backgroundColor: colors.success, color: '#fff' }}
+                                            className="inline-flex items-center gap-2 rounded-lg bg-success px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             <SaveIcon />
                                             {isMarkingResponded ? 'Saving...' : 'Mark Answered'}
@@ -650,12 +634,11 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
                             <aside className="p-5 md:p-6">
                                 <div className="flex items-center justify-between gap-3 mb-3">
-                                    <h4 className="font-bold" style={{ color: colors.text }}>Email Preview</h4>
+                                    <h4 className="font-bold text-fg">Email Preview</h4>
                                     <button
                                         type="button"
                                         onClick={() => setEmailBackgroundId(pickRandomBackgroundId())}
-                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                        className={tertiaryButtonClassName}
                                     >
                                         <RefreshIcon className="w-3.5 h-3.5" />
                                         Shuffle
@@ -686,12 +669,12 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                     </div>
                                 </div>
                                 {!hasRecipientEmail && (
-                                    <p className="mt-3 text-xs" style={{ color: colors.warning }}>
+                                    <p className="mt-3 text-xs text-warning">
                                         This suggestion has no captured email, so only copy actions are available.
                                     </p>
                                 )}
                                 {!ADMIN_EMAIL_ENDPOINT && hasRecipientEmail && (
-                                    <p className="mt-3 text-xs" style={{ color: colors.textMuted }}>
+                                    <p className="mt-3 text-xs text-muted">
                                         Direct sending needs an email backend endpoint. Draft mode opens your email app with the reply text.
                                     </p>
                                 )}
@@ -700,11 +683,11 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                     ) : (
                         <div className="h-full min-h-[34rem] flex items-center justify-center p-6 text-center">
                             <div>
-                                <div className="w-12 h-12 rounded-xl mx-auto flex items-center justify-center mb-3" style={{ backgroundColor: colors.primary + '1A', color: colors.primary }}>
+                                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft text-primary">
                                     <ChartColumnIcon className="w-6 h-6" />
                                 </div>
-                                <p className="font-bold" style={{ color: colors.text }}>No suggestion selected</p>
-                                <p className="text-sm mt-1" style={{ color: colors.textMuted }}>Choose a suggestion from the inbox.</p>
+                                <p className="font-bold text-fg">No suggestion selected</p>
+                                <p className="mt-1 text-sm text-muted">Choose a suggestion from the inbox.</p>
                             </div>
                         </div>
                     )}

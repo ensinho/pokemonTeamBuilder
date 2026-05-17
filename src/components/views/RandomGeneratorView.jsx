@@ -69,8 +69,8 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                 aria-modal="true"
                 aria-labelledby="random-generator-intro-title"
                 tabIndex={-1}
-                className="w-full max-w-xl max-h-[min(88vh,42rem)] sm:max-h-[min(86vh,44rem)] rounded-[1.75rem] overflow-hidden shadow-2xl animate-scale-in focus:outline-none flex flex-col"
-                style={{ backgroundColor: colors.card, border: `1px solid ${colors.primary}33` }}
+                className="flex w-full max-w-xl max-h-[min(88vh,42rem)] flex-col overflow-hidden rounded-[1.75rem] bg-surface shadow-2xl animate-scale-in focus:outline-none sm:max-h-[min(86vh,44rem)]"
+                style={{ border: `1px solid ${colors.primary}33` }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div
@@ -84,23 +84,20 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                         type="button"
                         onClick={onClose}
                         aria-label="Close random generator guide"
-                        className="absolute top-3 right-3 p-2 rounded-xl transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{ color: colors.textMuted, backgroundColor: colors.cardLight }}
+                        className="absolute top-3 right-3 rounded-xl bg-surface-raised p-2 text-muted transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         <CloseIcon />
                     </button>
 
-                    <div className="inline-flex items-center gap-2 rounded-full px-2.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-[0.18em]"
-                        style={{ backgroundColor: colors.primary + '1F', color: colors.primary }}
-                    >
+                    <div className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary sm:text-xs">
                         <DiceIcon />
                         Guessing game mode
                     </div>
 
-                    <h2 id="random-generator-intro-title" className="mt-3 pr-10 text-xl sm:text-2xl font-extrabold tracking-tight" style={{ color: colors.text }}>
+                    <h2 id="random-generator-intro-title" className="mt-3 pr-10 text-xl font-extrabold tracking-tight text-fg sm:text-2xl">
                         Turn this screen into a Pokemon party game
                     </h2>
-                    <p className="mt-2 max-w-2xl text-xs sm:text-sm leading-relaxed" style={{ color: colors.textMuted }}>
+                    <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted sm:text-sm">
                         Use the Random Generator as a quick yes-or-no challenge. You keep the rolled Pokemon on screen, your friends ask questions, and the reveal happens only when someone gets the answer right.
                     </p>
                 </div>
@@ -113,35 +110,30 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                         {steps.map((step, index) => (
                             <div
                                 key={step.title}
-                                className="rounded-2xl p-3"
-                                style={{ backgroundColor: colors.background, border: `1px solid ${colors.cardLight}` }}
+                                className="rounded-2xl border border-surface-raised bg-bg p-3"
                             >
-                                <span
-                                    className="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-extrabold mb-2.5"
-                                    style={{ backgroundColor: colors.primary + '1A', color: colors.primary }}
-                                >
+                                <span className="mb-2.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-xs font-extrabold text-primary">
                                     {index + 1}
                                 </span>
-                                <p className="text-xs sm:text-sm font-bold" style={{ color: colors.text }}>
+                                <p className="text-xs font-bold text-fg sm:text-sm">
                                     {step.title}
                                 </p>
-                                <p className="mt-1.5 text-[11px] sm:text-xs leading-relaxed" style={{ color: colors.textMuted }}>
+                                <p className="mt-1.5 text-[11px] leading-relaxed text-muted sm:text-xs">
                                     {step.description}
                                 </p>
                             </div>
                         ))}
                     </div>
 
-                    <div className="rounded-2xl p-3" style={{ backgroundColor: colors.background }}>
-                        <p className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: colors.primary }}>
+                    <div className="rounded-2xl bg-bg p-3">
+                        <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
                             Good first questions
                         </p>
                         <div className="mt-2.5 flex flex-wrap gap-1.5">
                             {questionIdeas.map((idea) => (
                                 <span
                                     key={idea}
-                                    className="rounded-full px-2.5 py-1 text-[11px] font-semibold"
-                                    style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                                    className="rounded-full bg-surface-raised px-2.5 py-1 text-[11px] font-semibold text-fg"
                                 >
                                     {idea}
                                 </span>
@@ -150,14 +142,13 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                     </div>
 
                     <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <p className="text-[11px] sm:text-xs leading-relaxed" style={{ color: colors.textMuted }}>
+                        <p className="text-[11px] leading-relaxed text-muted sm:text-xs">
                             This guide shows automatically only the first time for this trainer profile.
                         </p>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
-                            style={{ backgroundColor: colors.primary }}
+                            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                         >
                             <DiceIcon />
                             Start playing

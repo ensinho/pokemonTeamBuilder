@@ -58,6 +58,37 @@ export function TeamBuilderView({
     setShowOnlyFavorites,
 }) {
     const [dragIndex, setDragIndex] = React.useState(null);
+    const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
+        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+            return false;
+        }
+        return window.matchMedia('(min-width: 1024px)').matches;
+    });
+
+    React.useEffect(() => {
+        if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+            return undefined;
+        }
+
+        const desktopMediaQuery = window.matchMedia('(min-width: 1024px)');
+        const handleDesktopLayoutChange = (event) => {
+            setIsDesktopLayout(event.matches);
+        };
+
+        setIsDesktopLayout(desktopMediaQuery.matches);
+
+        if (typeof desktopMediaQuery.addEventListener === 'function') {
+            desktopMediaQuery.addEventListener('change', handleDesktopLayoutChange);
+            return () => {
+                desktopMediaQuery.removeEventListener('change', handleDesktopLayoutChange);
+            };
+        }
+
+        desktopMediaQuery.addListener(handleDesktopLayoutChange);
+        return () => {
+            desktopMediaQuery.removeListener(handleDesktopLayoutChange);
+        };
+    }, []);
 
     const displayedPokemons = showOnlyFavorites
         ? availablePokemons.filter((pokemon) => favoritePokemons.has(pokemon.id))
@@ -66,45 +97,47 @@ export function TeamBuilderView({
 
     return (
         <>
-            <MobileTeamBuilderView
-                currentTeam={currentTeam}
-                teamName={teamName}
-                setTeamName={setTeamName}
-                handleRemoveFromTeam={handleRemoveFromTeam}
-                handleSaveTeam={handleSaveTeam}
-                editingTeamId={editingTeamId}
-                handleClearTeam={handleClearTeam}
-                recentTeams={recentTeams}
-                onNavigateToTeams={onNavigateToTeams}
-                handleToggleFavorite={handleToggleFavorite}
-                handleEditTeam={handleEditTeam}
-                requestDeleteTeam={requestDeleteTeam}
-                handleShareTeam={handleShareTeam}
-                handleExportToShowdown={handleExportToShowdown}
-                teamAnalysis={teamAnalysis}
-                searchInput={searchInput}
-                setSearchInput={setSearchInput}
-                selectedGeneration={selectedGeneration}
-                setSelectedGeneration={setSelectedGeneration}
-                generations={generations}
-                isInitialLoading={isInitialLoading}
-                displayedPokemons={displayedPokemons}
-                handleAddPokemonToTeam={handleAddPokemonToTeam}
-                lastPokemonElementRef={lastPokemonElementRef}
-                isFetchingMore={isFetchingMore}
-                selectedTypes={selectedTypes}
-                onToggleFavoritePokemon={onToggleFavoritePokemon}
-                handleTypeSelection={handleTypeSelection}
-                showDetails={showDetails}
-                suggestedPokemonIds={suggestedPokemonIds}
-                colors={colors}
-                onEditTeamPokemon={onEditTeamPokemon}
-                favoritePokemons={favoritePokemons}
-                showOnlyFavorites={showOnlyFavorites}
-                setShowOnlyFavorites={setShowOnlyFavorites}
-            />
+            {!isDesktopLayout ? (
+                <MobileTeamBuilderView
+                    currentTeam={currentTeam}
+                    teamName={teamName}
+                    setTeamName={setTeamName}
+                    handleRemoveFromTeam={handleRemoveFromTeam}
+                    handleSaveTeam={handleSaveTeam}
+                    editingTeamId={editingTeamId}
+                    handleClearTeam={handleClearTeam}
+                    recentTeams={recentTeams}
+                    onNavigateToTeams={onNavigateToTeams}
+                    handleToggleFavorite={handleToggleFavorite}
+                    handleEditTeam={handleEditTeam}
+                    requestDeleteTeam={requestDeleteTeam}
+                    handleShareTeam={handleShareTeam}
+                    handleExportToShowdown={handleExportToShowdown}
+                    teamAnalysis={teamAnalysis}
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    selectedGeneration={selectedGeneration}
+                    setSelectedGeneration={setSelectedGeneration}
+                    generations={generations}
+                    isInitialLoading={isInitialLoading}
+                    displayedPokemons={displayedPokemons}
+                    handleAddPokemonToTeam={handleAddPokemonToTeam}
+                    lastPokemonElementRef={lastPokemonElementRef}
+                    isFetchingMore={isFetchingMore}
+                    selectedTypes={selectedTypes}
+                    onToggleFavoritePokemon={onToggleFavoritePokemon}
+                    handleTypeSelection={handleTypeSelection}
+                    showDetails={showDetails}
+                    suggestedPokemonIds={suggestedPokemonIds}
+                    colors={colors}
+                    onEditTeamPokemon={onEditTeamPokemon}
+                    favoritePokemons={favoritePokemons}
+                    showOnlyFavorites={showOnlyFavorites}
+                    setShowOnlyFavorites={setShowOnlyFavorites}
+                />
+            ) : null}
 
-            <main className="team-builder hidden lg:grid lg:grid-cols-12 gap-6 xl:gap-7">
+            {isDesktopLayout ? <main className="team-builder grid grid-cols-12 gap-6 xl:gap-7">
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <section className="team-builder-panel p-4">
                         <div className="team-builder-current-head">
@@ -386,7 +419,7 @@ export function TeamBuilderView({
                         </div>
                     </section>
                 </div>
-            </main>
+            </main> : null}
         </>
     );
 }
