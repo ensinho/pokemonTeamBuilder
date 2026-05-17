@@ -178,12 +178,12 @@ body {
     width: 12px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--color-surface);
+    background: var(--scrollbar-track-color, var(--color-surface));
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: var(--color-primary);
+    background-color: var(--scrollbar-thumb-color, var(--color-primary));
     border-radius: 20px;
-    border: 3px solid var(--color-surface);
+    border: 3px solid var(--scrollbar-thumb-border-color, var(--color-surface));
 }
 
 .image-pixelated {

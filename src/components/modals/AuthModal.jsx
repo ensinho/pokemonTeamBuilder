@@ -54,8 +54,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in"
-            style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in"
             onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
         >
             <div
@@ -64,29 +63,24 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                 aria-modal="true"
                 aria-labelledby="auth-modal-title"
                 tabIndex={-1}
-                className="w-full max-w-sm rounded-xl shadow-2xl animate-scale-in"
-                style={{ backgroundColor: colors.card, color: colors.text }}
+                className="w-full max-w-sm rounded-xl bg-surface text-fg shadow-2xl animate-scale-in"
             >
-                <header
-                    className="flex items-center justify-between px-5 py-4 border-b"
-                    style={{ borderColor: colors.cardLight }}
-                >
-                    <h2 id="auth-modal-title" className="text-lg font-bold" style={{ color: colors.primary }}>
+                <header className="flex items-center justify-between border-b border-surface-raised px-5 py-4">
+                    <h2 id="auth-modal-title" className="text-lg font-bold text-primary">
                         {isSignUp ? 'Create your account' : 'Welcome back'}
                     </h2>
                     <button
                         type="button"
                         onClick={onClose}
                         aria-label="Close"
-                        className="p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{ color: colors.textMuted }}
+                        className="rounded-md p-1 text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         <CloseIcon />
                     </button>
                 </header>
 
                 <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3">
-                    <p className="text-xs" style={{ color: colors.textMuted }}>
+                    <p className="text-xs text-muted">
                         {isSignUp
                             ? (canLink
                                 ? 'We will keep your current teams and favorites linked to this email so you can sign in from any device.'
@@ -94,23 +88,20 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             : 'Sign in to load your teams, favorites and preferences on this device.'}
                     </p>
 
-                    <div
-                        className="rounded-lg border p-3 flex flex-col items-center"
-                        style={{ backgroundColor: colors.background, borderColor: colors.border }}
-                    >
+                    <div className="flex flex-col items-center rounded-lg border border-border bg-bg p-3">
                         <img
                             src={AUTH_GIF_URL}
                             alt="Animated Pokemon"
                             loading="lazy"
                             className="w-24 h-24 image-pixelated"
                         />
-                        <p className="text-[11px] mt-2 text-center" style={{ color: colors.textMuted }}>
+                        <p className="mt-2 text-center text-[11px] text-muted">
                             {isSignUp ? 'Start your journey!' : 'Your team is waiting for you!'}
                         </p>
                     </div>
 
                     <label className="block">
-                        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted">
                             Email
                         </span>
                         <input
@@ -119,18 +110,13 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 w-full px-3 py-2 rounded-md border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{
-                                backgroundColor: colors.background,
-                                borderColor: colors.border,
-                                color: colors.text,
-                            }}
+                            className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             placeholder="trainer@pokemail.com"
                         />
                     </label>
 
                     <label className="block">
-                        <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: colors.textMuted }}>
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted">
                             Password
                         </span>
                         <input
@@ -140,18 +126,13 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             minLength={6}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 w-full px-3 py-2 rounded-md border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{
-                                backgroundColor: colors.background,
-                                borderColor: colors.border,
-                                color: colors.text,
-                            }}
+                            className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             placeholder="••••••••"
                         />
                     </label>
 
                     {error && (
-                        <p className="text-sm" style={{ color: colors.danger }} role="alert">
+                        <p className="text-sm text-danger" role="alert">
                             {error}
                         </p>
                     )}
@@ -159,8 +140,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                     <button
                         type="submit"
                         disabled={busy}
-                        className="w-full py-2 rounded-md font-bold text-white transition-opacity disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{ backgroundColor: colors.primary }}
+                        className="w-full rounded-md bg-primary py-2 font-bold text-white transition-opacity disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         {busy ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in'}
                     </button>
@@ -169,8 +149,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                         <button
                             type="button"
                             onClick={() => { setError(''); setMode(isSignUp ? 'signIn' : 'signUp'); }}
-                            className="text-xs underline hover:opacity-80"
-                            style={{ color: colors.textMuted }}
+                            className="text-xs text-muted underline hover:opacity-80"
                         >
                             {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
                         </button>

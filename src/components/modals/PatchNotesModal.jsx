@@ -8,25 +8,17 @@ import { AccountIcon, CloseIcon, FlowerIcon, HeartIcon, ShareIcon } from '../ico
 
 const LikeFeedbackVisual = ({ colors }) => (
     <div
-        className="rounded-md p-3 flex items-center justify-center gap-2"
-        style={{ backgroundColor: colors.background }}
+        className="flex items-center justify-center gap-2 rounded-md bg-bg p-3"
         aria-hidden="true"
     >
-        <span className="text-[10px]" style={{ color: colors.textMuted }}>
+        <span className="text-[10px] text-muted">
             Developed by Enzo Esmeraldo
         </span>
-        <span
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-            style={{
-                backgroundColor: colors.primary,
-                color: 'white',
-                border: `1px solid ${colors.primary}`,
-            }}
-        >
+        <span className="inline-flex items-center gap-1 rounded-full border border-primary bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
             <HeartIcon className="w-3 h-3 shrink-0" />
             <span>1</span>
         </span>
-        <span className="text-[9px] underline" style={{ color: colors.textMuted }}>
+        <span className="text-[9px] text-muted underline">
             Have a suggestion?
         </span>
     </div>
@@ -36,8 +28,7 @@ const SNIPPET_VISUAL_BG = SHARE_BACKGROUNDS[0]?.url || '';
 
 const SnippetVisual = ({ colors }) => (
     <div
-        className="rounded-md p-2"
-        style={{ backgroundColor: colors.background }}
+        className="rounded-md bg-bg p-2"
         aria-hidden="true"
     >
         <div
@@ -66,8 +57,8 @@ const SnippetVisual = ({ colors }) => (
             </div>
         </div>
         <div className="mt-2 flex items-center gap-1.5">
-            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold text-white" style={{ backgroundColor: colors.primary }}>Share</span>
-            <span className="text-[8px] px-1.5 py-0.5 rounded font-bold" style={{ backgroundColor: colors.cardLight, color: colors.text }}>Download</span>
+            <span className="rounded bg-primary px-1.5 py-0.5 text-[8px] font-bold text-white">Share</span>
+            <span className="rounded bg-surface-raised px-1.5 py-0.5 text-[8px] font-bold text-fg">Download</span>
         </div>
     </div>
 );
@@ -155,31 +146,31 @@ export function PatchNotesModal({ onClose, colors }) {
     ];
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="patch-notes-title"
                 tabIndex={-1}
-                className="rounded-2xl shadow-xl w-full max-w-lg max-h-[95vh] flex flex-col relative animate-fade-in focus:outline-none"
-                style={{ backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
+                className="relative flex w-full max-w-lg max-h-[95vh] flex-col rounded-2xl bg-surface shadow-xl animate-fade-in focus:outline-none"
+                style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >
                 <button onClick={onClose} type="button" aria-label="Close patch notes" className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
                     <CloseIcon />
                 </button>
 
-                <div className="text-center px-5 pt-5 pb-4 border-b shrink-0" style={{ borderColor: colors.cardLight }}>
+                <div className="shrink-0 border-b border-surface-raised px-5 pb-4 pt-5 text-center">
                     <div className="flex items-center justify-center gap-4 mb-2">
-                        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full" style={{ backgroundColor: colors.primary + '20' }}>
+                        <div className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary-soft text-primary">
                             <FlowerIcon />
                         </div>
-                        <h2 id="patch-notes-title" className="text-2xl md:text-3xl font-extrabold tracking-tight" style={{ color: colors.text }}>
+                        <h2 id="patch-notes-title" className="text-2xl font-extrabold tracking-tight text-fg md:text-3xl">
                             What's New!
                         </h2>
                     </div>
-                    <p className="text-sm mt-1" style={{ color: colors.textMuted }}>
+                    <p className="mt-1 text-sm text-muted">
                         Version {PATCH_NOTES_VERSION} • April 2026
                     </p>
                 </div>
@@ -190,23 +181,22 @@ export function PatchNotesModal({ onClose, colors }) {
                             key={key}
                             type="button"
                             onClick={() => goTo(path)}
-                            className="w-full text-left p-4 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.cardLight }}
+                            className="w-full rounded-xl bg-surface-raised p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             aria-label={`${title} – ${cta}`}
                         >
-                            <div className="rounded-lg overflow-hidden mb-3" style={{ backgroundColor: colors.card }}>
+                            <div className="mb-3 overflow-hidden rounded-lg bg-surface">
                                 <Visual colors={colors} />
                             </div>
                             <div className="flex items-center gap-2 mb-1">
-                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-md" style={{ color: colors.primary, backgroundColor: colors.primary + '1A' }} aria-hidden="true">
+                                <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
                                     <Icon className="w-4 h-4" />
                                 </span>
-                                <h3 className="font-bold" style={{ color: colors.primary }}>{title}</h3>
+                                <h3 className="font-bold text-primary">{title}</h3>
                             </div>
-                            <p className="text-sm" style={{ color: colors.text }}>
+                            <p className="text-sm text-fg">
                                 {description}
                             </p>
-                            <span className="inline-flex items-center gap-1 mt-2 text-xs font-semibold" style={{ color: colors.primary }}>
+                            <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
                                 {cta}
                                 <span aria-hidden="true">→</span>
                             </span>
@@ -214,15 +204,14 @@ export function PatchNotesModal({ onClose, colors }) {
                     ))}
                 </div>
 
-                <div className="text-center px-5 pt-4 pb-5 border-t shrink-0" style={{ borderColor: colors.cardLight }}>
+                <div className="shrink-0 border-t border-surface-raised px-5 pb-5 pt-4 text-center">
                     <button
                         onClick={onClose}
-                        className="px-8 py-3 rounded-lg font-bold text-white transition-colors hover:opacity-90"
-                        style={{ backgroundColor: colors.primary }}
+                        className="rounded-lg bg-primary px-8 py-3 font-bold text-white transition-colors hover:opacity-90"
                     >
                         Got it, let's go!
                     </button>
-                    <p className="text-xs mt-3" style={{ color: colors.textMuted }}>
+                    <p className="mt-3 text-xs text-muted">
                         Made by Enzo Esmeraldo -- hope you like it!
                     </p>
                 </div>

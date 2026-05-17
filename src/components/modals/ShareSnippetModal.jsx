@@ -451,20 +451,18 @@ export const ShareSnippetModal = ({
                 aria-modal="true"
                 aria-labelledby="share-snippet-title"
                 tabIndex={-1}
-                className="w-full sm:max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-2xl mx-4 shadow-2xl p-4 sm:p-5 animate-scale-in focus:outline-none"
+                className="mx-4 w-full max-h-[92vh] overflow-y-auto rounded-2xl border border-surface-raised bg-surface p-4 shadow-2xl animate-scale-in focus:outline-none sm:max-w-lg sm:rounded-2xl sm:p-5"
                 style={{
-                    backgroundColor: colors.card,
-                    border: `1px solid ${colors.cardLight}`,
                     paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-start justify-between mb-4">
                     <div>
-                        <h3 id="share-snippet-title" className="text-xl font-bold" style={{ color: colors.text }}>
+                        <h3 id="share-snippet-title" className="text-xl font-bold text-fg">
                             Share your team
                         </h3>
-                        <p className="text-xs mt-0.5" style={{ color: colors.textMuted }}>
+                        <p className="mt-0.5 text-xs text-muted">
                             {prefersNativeSave
                                 ? 'On mobile, Save image opens your phone share sheet so you can save it to Photos.'
                                 : 'Generate a snippet image, then share or copy the link.'}
@@ -474,18 +472,14 @@ export const ShareSnippetModal = ({
                         type="button"
                         onClick={onClose}
                         aria-label="Close share dialog"
-                        className="p-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"
-                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                        className="rounded-lg bg-surface-raised p-2 text-fg transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                         <CloseIcon />
                     </button>
                 </div>
 
                 {/* Preview */}
-                <div
-                    className="relative rounded-xl overflow-hidden mb-4"
-                    style={{ backgroundColor: colors.background, aspectRatio: '16 / 9' }}
-                >
+                <div className="relative mb-4 aspect-video overflow-hidden rounded-xl bg-bg">
                     {previewUrl ? (
                         <img
                             src={previewUrl}
@@ -494,8 +488,7 @@ export const ShareSnippetModal = ({
                         />
                     ) : (
                         <div
-                            className="w-full h-full flex items-center justify-center text-xs"
-                            style={{ color: colors.textMuted }}
+                            className="flex h-full w-full items-center justify-center text-xs text-muted"
                         >
                             {isRendering ? 'Rendering preview…' : 'Preview unavailable'}
                         </div>
@@ -505,7 +498,7 @@ export const ShareSnippetModal = ({
                 </div>
 
                 {/* Title input */}
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: colors.textMuted }}>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
                     Title
                 </label>
                 <input
@@ -514,11 +507,10 @@ export const ShareSnippetModal = ({
                     onChange={(e) => setTitle(e.target.value.slice(0, 60))}
                     placeholder="My Pokémon Team"
                     maxLength={60}
-                    className="w-full p-2.5 mb-3 rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-sm"
-                    style={{ backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text }}
+                    className="mb-3 w-full rounded-lg border-2 border-transparent bg-surface-raised p-2.5 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
 
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-1" style={{ color: colors.textMuted }}>
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
                     Subtitle
                 </label>
                 <input
@@ -527,12 +519,11 @@ export const ShareSnippetModal = ({
                     onChange={(e) => setSubtitle(e.target.value.slice(0, 80))}
                     placeholder="Optional"
                     maxLength={80}
-                    className="w-full p-2.5 mb-4 rounded-lg border-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary text-sm"
-                    style={{ backgroundColor: colors.cardLight, borderColor: 'transparent', color: colors.text }}
+                    className="mb-4 w-full rounded-lg border-2 border-transparent bg-surface-raised p-2.5 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
 
                 {/* Background picker */}
-                <label className="block text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: colors.textMuted }}>
+                <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
                     Background
                 </label>
                 <div className="grid grid-cols-4 gap-2 mb-5" role="radiogroup" aria-label="Background">
@@ -545,11 +536,7 @@ export const ShareSnippetModal = ({
                                 role="radio"
                                 aria-checked={selected}
                                 onClick={() => setBackgroundId(bg.id)}
-                                className="relative aspect-video rounded-lg overflow-hidden transition-all duration-200 hover:scale-[1.03] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                style={{
-                                    outline: selected ? `3px solid ${colors.primary}` : 'none',
-                                    outlineOffset: selected ? 2 : 0,
-                                }}
+                                className={`relative aspect-video overflow-hidden rounded-lg transition-all duration-200 hover:scale-[1.03] active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface' : ''}`}
                                 title={bg.name}
                             >
                                 <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
@@ -567,23 +554,20 @@ export const ShareSnippetModal = ({
                 {/* Share URL row */}
                 {shareUrl && (
                     <div
-                        className="flex items-center gap-2 p-2 rounded-lg mb-4"
-                        style={{ backgroundColor: colors.cardLight }}
+                        className="mb-4 flex items-center gap-2 rounded-lg bg-surface-raised p-2"
                     >
                         <input
                             type="text"
                             readOnly
                             value={shareUrl}
                             onFocus={(e) => e.target.select()}
-                            className="flex-1 min-w-0 bg-transparent text-xs focus:outline-none"
-                            style={{ color: colors.textMuted }}
+                            className="min-w-0 flex-1 bg-transparent text-xs text-muted focus:outline-none"
                             aria-label="Share URL"
                         />
                         <button
                             type="button"
                             onClick={handleCopyLink}
-                            className="text-xs font-bold px-3 py-1.5 rounded-md text-white"
-                            style={{ backgroundColor: colors.primary }}
+                            className="rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white"
                         >
                             Copy
                         </button>
@@ -596,8 +580,7 @@ export const ShareSnippetModal = ({
                         type="button"
                         onClick={handleDownload}
                         disabled={isRendering}
-                        className="py-2.5 px-4 rounded-xl font-semibold text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
-                        style={{ backgroundColor: colors.cardLight, color: colors.text }}
+                        className="rounded-xl bg-surface-raised px-4 py-2.5 text-sm font-semibold text-fg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                     >
                         {prefersNativeSave ? 'Save image' : 'Download image'}
                     </button>
@@ -605,15 +588,14 @@ export const ShareSnippetModal = ({
                         type="button"
                         onClick={handleNativeShare}
                         disabled={isRendering}
-                        className="py-2.5 px-4 rounded-xl font-bold text-sm text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 inline-flex items-center justify-center gap-2"
-                        style={{ backgroundColor: colors.primary }}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                     >
                         <ShareIcon />
                         {canNativeShare ? 'Share…' : 'Copy link'}
                     </button>
                 </div>
                 {prefersNativeSave && (
-                    <p className="mt-2 text-[11px]" style={{ color: colors.textMuted }}>
+                    <p className="mt-2 text-[11px] text-muted">
                         Tip: on iPhone, choose Save Image or Save to Photos in the native sheet.
                     </p>
                 )}

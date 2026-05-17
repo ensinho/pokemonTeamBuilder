@@ -38,8 +38,7 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss, colors }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 animate-fade-in"
-            style={{ backgroundColor: 'rgba(0,0,0,0.55)' }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-4 animate-fade-in sm:items-center"
             onMouseDown={(e) => { if (e.target === e.currentTarget) onDismiss?.(); }}
         >
             <div
@@ -48,16 +47,12 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss, colors }) {
                 aria-modal="true"
                 aria-labelledby="sync-prompt-title"
                 tabIndex={-1}
-                className="w-full max-w-md rounded-xl shadow-2xl animate-scale-in"
-                style={{ backgroundColor: colors.card, color: colors.text }}
+                className="w-full max-w-md rounded-xl bg-surface text-fg shadow-2xl animate-scale-in"
             >
-                <header
-                    className="flex items-start justify-between gap-2 px-5 py-4 border-b"
-                    style={{ borderColor: colors.cardLight }}
-                >
+                <header className="flex items-start justify-between gap-2 border-b border-surface-raised px-5 py-4">
                     <div className="flex items-center gap-2">
-                        <span style={{ color: colors.primary }}><PokeballIcon /></span>
-                        <h2 id="sync-prompt-title" className="text-lg font-bold" style={{ color: colors.primary }}>
+                        <span className="text-primary"><PokeballIcon /></span>
+                        <h2 id="sync-prompt-title" className="text-lg font-bold text-primary">
                             Save your progress?
                         </h2>
                     </div>
@@ -65,19 +60,18 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss, colors }) {
                         type="button"
                         onClick={onDismiss}
                         aria-label="Dismiss"
-                        className="p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{ color: colors.textMuted }}
+                        className="rounded-md p-1 text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         <CloseIcon />
                     </button>
                 </header>
 
                 <div className="px-5 py-4 space-y-3">
-                    <p className="text-sm" style={{ color: colors.text }}>
+                    <p className="text-sm text-fg">
                         Looks like you're enjoying the team builder! Want to sync your teams,
                         favorites and theme so you can pick up where you left off on any device?
                     </p>
-                    <p className="text-xs" style={{ color: colors.textMuted }}>
+                    <p className="text-xs text-muted">
                         It's optional and takes 10 seconds. Your current data will be linked to the new account.
                     </p>
 
@@ -85,16 +79,14 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss, colors }) {
                         <button
                             type="button"
                             onClick={onSignUp}
-                            className="flex-1 py-2 rounded-md font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ backgroundColor: colors.primary }}
+                            className="flex-1 rounded-md bg-primary py-2 font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             Create account
                         </button>
                         <button
                             type="button"
                             onClick={onSignIn}
-                            className="flex-1 py-2 rounded-md font-semibold border focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            style={{ borderColor: colors.border, color: colors.text, backgroundColor: colors.cardLight }}
+                            className="flex-1 rounded-md border border-border bg-surface-raised py-2 font-semibold text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             I already have one
                         </button>
@@ -103,8 +95,7 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss, colors }) {
                     <button
                         type="button"
                         onClick={onDismiss}
-                        className="w-full text-xs underline mt-1 hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-                        style={{ color: colors.textMuted }}
+                        className="mt-1 w-full rounded text-xs text-muted underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         Maybe later
                     </button>

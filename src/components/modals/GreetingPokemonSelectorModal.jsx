@@ -113,15 +113,15 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
     const selectedTypeLabel = selectedType ? `${selectedType.charAt(0).toUpperCase()}${selectedType.slice(1)}` : 'All types';
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4" onClick={onClose} role="presentation">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="greeting-selector-title"
                 tabIndex={-1}
-                className="rounded-2xl shadow-xl w-full max-w-7xl max-h-[85vh] overflow-y-auto custom-scrollbar p-6 relative animate-fade-in focus:outline-none"
-                style={{ backgroundColor: colors.card, '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
+                className="relative w-full max-w-7xl max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl custom-scrollbar animate-fade-in focus:outline-none"
+                style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >
                 <button onClick={onClose} type="button" aria-label="Close partner selector" className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
@@ -129,10 +129,10 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                 </button>
 
                 <div className="mb-6">
-                    <h2 id="greeting-selector-title" className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
+                    <h2 id="greeting-selector-title" className="mb-2 text-2xl font-bold text-fg">
                         Choose Your Partner Pokémon
                     </h2>
-                    <p className="text-sm" style={{ color: colors.textMuted }}>
+                    <p className="text-sm text-muted">
                         Select a Pokémon to display on your greeting card and trainer icon.
                     </p>
                 </div>
@@ -142,13 +142,13 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         <div className="min-w-0">
                             <p className="team-builder-panel__eyebrow">Partner filters</p>
                             {isSearchActive ? (
-                                <p className="mt-1 text-xs" style={{ color: colors.textMuted }}>
+                                <p className="mt-1 text-xs text-muted">
                                     {isSearching
                                         ? 'Searching...'
                                         : `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''} for "${debouncedSearch}"`}
                                 </p>
                             ) : (
-                                <p className="mt-1 text-xs" style={{ color: colors.textMuted }}>
+                                <p className="mt-1 text-xs text-muted">
                                     Browsing {browseList.length} loaded Pokemon — or type to search all of them.
                                 </p>
                             )}
@@ -157,12 +157,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         <button
                             type="button"
                             onClick={() => setIsShinySelection((previous) => !previous)}
-                            className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all"
-                            style={{
-                                backgroundColor: isShinySelection ? `${colors.accent}18` : colors.cardLight,
-                                borderColor: isShinySelection ? `${colors.accent}44` : colors.border,
-                                color: isShinySelection ? colors.accent : colors.text,
-                            }}
+                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${isShinySelection ? 'border-accent bg-accent-soft text-accent' : 'border-border bg-surface-raised text-fg'}`}
                         >
                             <span>Shiny partner</span>
                             <span>{isShinySelection ? 'On' : 'Off'}</span>
@@ -175,30 +170,21 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                             placeholder="Search Pokémon by name…"
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
-                            className="w-full px-4 py-2 rounded-lg border-2 transition-all focus:outline-none pr-10"
-                            style={{
-                                backgroundColor: colors.cardLight,
-                                color: colors.text,
-                                borderColor: isSearchActive ? colors.primary : colors.cardLight,
-                            }}
+                            className={`w-full rounded-lg border-2 px-4 py-2 pr-10 text-fg transition-all focus:outline-none ${isSearchActive ? 'border-primary bg-surface-raised' : 'border-surface-raised bg-surface-raised'}`}
                         />
                         {isSearchActive && (
                             <button
                                 type="button"
                                 onClick={() => setSearchTerm('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded transition-colors hover:opacity-70"
                                 aria-label="Clear search"
-                                style={{ color: colors.textMuted }}
+                                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted transition-colors hover:opacity-70"
                             >
                                 <CloseIcon />
                             </button>
                         )}
                     </div>
 
-                    <div
-                        className="team-builder-picker-toolbar team-builder-picker-toolbar--compact"
-                        style={{ borderBottomColor: colors.border }}
-                    >
+                    <div className="team-builder-picker-toolbar team-builder-picker-toolbar--compact border-b border-border">
                         <div className="team-builder-picker-focus" role="group" aria-label="Partner type filter">
                             <button
                                 type="button"
@@ -232,12 +218,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         <button
                             type="button"
                             onClick={() => setSelectedType(null)}
-                            className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
-                            style={{
-                                borderColor: !selectedType ? colors.primary : colors.border,
-                                backgroundColor: !selectedType ? colors.primary + '14' : colors.cardLight,
-                                color: !selectedType ? colors.primary : colors.textMuted,
-                            }}
+                            className={`team-builder-button team-builder-button--inline team-builder-button--inline-compact ${!selectedType ? 'border-primary bg-primary-soft text-primary' : 'border-border bg-surface-raised text-muted'}`}
                         >
                             Clear type filter
                         </button>
@@ -247,8 +228,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                 {currentPokemonId && (
                     <button
                         onClick={() => onSelect({ pokemonId: null, isShiny: false })}
-                        className="w-full mb-4 p-3 rounded-lg border-2 border-dashed transition-all hover:scale-[1.02]"
-                        style={{ borderColor: colors.textMuted, color: colors.textMuted }}
+                        className="mb-4 w-full rounded-lg border-2 border-dashed border-muted p-3 text-muted transition-all hover:scale-[1.02]"
                     >
                         <span className="text-2xl mb-1 block">✨</span>
                         Remove custom Pokémon (use default)
@@ -257,7 +237,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
 
                 {isSearching ? (
                     <div className="flex items-center justify-center py-16">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2" style={{ borderColor: colors.primary }} />
+                        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-primary" />
                     </div>
                 ) : (
                     <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-3">
@@ -265,14 +245,10 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                             <button
                                 key={pokemon.id}
                                 onClick={() => onSelect({ pokemonId: pokemon.id, isShiny: isShinySelection })}
-                                className="p-3 rounded-xl text-center transition-all hover:scale-105 hover:shadow-lg relative"
-                                style={{
-                                    backgroundColor: currentPokemonId === pokemon.id ? colors.primary + '20' : colors.cardLight,
-                                    border: currentPokemonId === pokemon.id ? `2px solid ${colors.primary}` : 'none',
-                                }}
+                                className={`relative rounded-xl p-3 text-center transition-all hover:scale-105 hover:shadow-lg ${currentPokemonId === pokemon.id ? 'border-2 border-primary bg-primary-soft' : 'border-2 border-transparent bg-surface-raised'}`}
                             >
                                 {currentPokemonId === pokemon.id && (
-                                    <div className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: colors.primary }}>
+                                    <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary">
                                         <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                         </svg>
@@ -284,7 +260,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                                     className="w-16 h-16 mx-auto"
                                     onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                 />
-                                <p className="text-xs capitalize truncate mt-1" style={{ color: colors.text }}>
+                                <p className="mt-1 truncate text-xs capitalize text-fg">
                                     {pokemon.name}
                                 </p>
                             </button>
@@ -297,8 +273,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         <button
                             onClick={loadMorePokemons}
                             disabled={isLoadingMore}
-                            className="px-6 py-3 rounded-lg font-semibold transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-                            style={{ backgroundColor: colors.primary, color: 'white' }}
+                            className="rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-all hover:scale-105 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                             {isLoadingMore ? (
                                 <div className="flex items-center gap-2">

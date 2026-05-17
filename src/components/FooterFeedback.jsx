@@ -20,7 +20,7 @@ const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
  * Compact footer feedback: a small like pill (counter) and a tiny
  * "Have a suggestion?" text link that opens a modal with a textarea.
  */
-export const FooterFeedback = ({ db, userId, userEmail, displayName, colors, showToast }) => {
+export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }) => {
     const [likeCount, setLikeCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
     const [isToggling, setIsToggling] = useState(false);
@@ -107,21 +107,15 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, colors, sho
                     aria-pressed={hasLiked}
                     aria-label={hasLiked ? 'Remove your like' : 'Like this app'}
                     title={hasLiked ? 'You liked this' : 'Like this app'}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                    style={{
-                        backgroundColor: hasLiked ? colors.primary : colors.cardLight,
-                        color: hasLiked ? 'white' : colors.text,
-                        border: `1px solid ${hasLiked ? colors.primary : colors.cardLight}`,
-                    }}
+                    className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-white' : 'border-surface-raised bg-surface-raised text-fg'}`}
                 >
-                    <HeartIcon color={hasLiked ? 'white' : colors.text} />
+                    <HeartIcon color="currentColor" />
                     <span>{likeCount}</span>
                 </button>
                 <button
                     type="button"
                     onClick={() => setShowSuggestionModal(true)}
-                    className="text-[11px] underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
-                    style={{ color: colors.textMuted }}
+                    className="rounded text-[11px] text-muted underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                     Have a suggestion?
                 </button>
@@ -134,7 +128,6 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, colors, sho
                     userId={userId}
                     userEmail={userEmail}
                     displayName={displayName}
-                    colors={colors}
                     showToast={showToast}
                 />
             )}
@@ -142,7 +135,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, colors, sho
     );
 };
 
-const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, colors, showToast }) => {
+const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, showToast }) => {
     const dialogRef = useModalA11y(onClose);
     const [contactEmail, setContactEmail] = useState(userEmail || '');
     const [suggestion, setSuggestion] = useState('');
@@ -221,11 +214,7 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, colors, 
                 aria-modal="true"
                 aria-labelledby="suggestion-modal-title"
                 tabIndex={-1}
-                className="rounded-2xl shadow-2xl w-full max-w-md p-6 relative animate-scale-in focus:outline-none"
-                style={{
-                    backgroundColor: colors.card,
-                    border: `1px solid ${colors.cardLight}`,
-                }}
+                className="relative w-full max-w-md rounded-2xl border border-surface-raised bg-surface p-6 shadow-2xl animate-scale-in focus:outline-none"
                 onClick={(e) => e.stopPropagation()}
             >
                 <button
@@ -239,12 +228,11 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, colors, 
 
                 <h2
                     id="suggestion-modal-title"
-                    className="text-xl font-bold mb-1"
-                    style={{ color: colors.text }}
+                    className="mb-1 text-xl font-bold text-fg"
                 >
                     Send a suggestion
                 </h2>
-                <p className="text-sm mb-4" style={{ color: colors.textMuted }}>
+                <p className="mb-4 text-sm text-muted">
                     Got an idea, bug or feature request? I'd love to hear it.
                 </p>
 
@@ -257,12 +245,7 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, colors, 
                         placeholder="Your email for replies"
                         autoComplete="email"
                         maxLength={254}
-                        className="w-full p-3 rounded-lg border-2 text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{
-                            backgroundColor: colors.cardLight,
-                            color: colors.text,
-                            borderColor: colors.cardLight,
-                        }}
+                        className="w-full rounded-lg border-2 border-surface-raised bg-surface-raised p-3 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     />
                     <textarea
                         ref={textareaRef}
@@ -272,29 +255,17 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, colors, 
                         }
                         placeholder="Type your suggestion here..."
                         rows={5}
-                        className="w-full p-3 rounded-lg border-2 text-sm resize-y focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        style={{
-                            backgroundColor: colors.cardLight,
-                            color: colors.text,
-                            borderColor: colors.cardLight,
-                        }}
+                        className="w-full resize-y rounded-lg border-2 border-surface-raised bg-surface-raised p-3 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     />
                     <div className="flex items-center justify-between gap-2 flex-wrap">
-                        <span
-                            className="text-xs"
-                            style={{ color: colors.textMuted }}
-                        >
+                        <span className="text-xs text-muted">
                             {remaining} characters left
                         </span>
                         <div className="flex gap-2">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95"
-                                style={{
-                                    backgroundColor: colors.cardLight,
-                                    color: colors.text,
-                                }}
+                                className="rounded-lg bg-surface-raised px-4 py-2 text-sm font-semibold text-fg transition-all hover:scale-[1.02] active:scale-95"
                             >
                                 Cancel
                             </button>
@@ -307,8 +278,7 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, colors, 
                                     !suggestion.trim() ||
                                     isSubmitting
                                 }
-                                className="px-4 py-2 rounded-lg font-bold text-white text-sm transition-all hover:opacity-90 hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                style={{ backgroundColor: colors.primary }}
+                                className="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-all hover:scale-[1.02] hover:opacity-90 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                                 {isSubmitting ? 'Sending...' : 'Send'}
                             </button>
