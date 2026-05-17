@@ -1,67 +1,198 @@
 import React from 'react';
+import '../../styles/team-builder-view.css';
+import '../../styles/all-teams-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
 
-export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, colors }) {
-    const searchControlClassName = 'mb-6 w-full rounded-lg border-2 border-transparent bg-surface-raised p-3 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
-    const iconButtonClassName = 'rounded-lg bg-surface p-2 text-fg transition-all duration-200 hover:scale-105 active:scale-95';
+const timestampToDate = (value) => {
+    if (!value) return null;
+    if (typeof value.toDate === 'function') return value.toDate();
+    if (value instanceof Date) return value;
+    if (typeof value === 'number') return new Date(value);
+    if (typeof value === 'string') {
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+    return null;
+};
+
+const formatTeamDate = (value) => {
+    const date = timestampToDate(value);
+    if (!date) return 'Unknown date';
+    return new Intl.DateTimeFormat(undefined, {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    }).format(date);
+};
+
+export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, onToggleFavorite, searchTerm, setSearchTerm }) {
+    const filteredTeams = React.useMemo(() => {
+        const normalizedSearch = searchTerm.trim().toLowerCase();
+        if (!normalizedSearch) return teams;
+
+        return teams.filter((team) => team.name?.toLowerCase().includes(normalizedSearch));
+    }, [teams, searchTerm]);
+
+    const favoriteCount = React.useMemo(() => {
+        return teams.filter((team) => team.isFavorite).length;
+    }, [teams]);
+
+    const iconButtonClassName = 'team-builder-icon-button team-builder-icon-button--small';
 
     return (
-        <div className="rounded-xl bg-surface p-6 shadow-lg">
-            <h2 className="mb-6 text-2xl font-bold text-fg md:text-3xl">All Saved Teams</h2>
-            <input
-                type="text"
-                placeholder="Search teams by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={searchControlClassName}
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {teams.length > 0 ? teams.map((team) => (
-                    <div key={team.id} className="flex flex-col justify-between rounded-lg bg-surface-raised p-4 transition-all duration-200 hover:scale-[1.02] hover:shadow-xl">
-                        <div className="flex justify-between items-start">
-                            <p className="mb-2 truncate text-xl font-bold text-fg">{team.name}</p>
-                            <button onClick={() => onToggleFavorite(team)} title="Favorite" className="text-muted transition-transform duration-200 hover:scale-110 active:scale-95">
-                                <StarIcon isFavorite={team.isFavorite} color={colors.textMuted} />
-                            </button>
+        <main className="all-teams-view">
+            <section className="team-builder-panel all-teams-view__panel p-5 md:p-6">
+                <div className="all-teams-view__header">
+                    <div>
+                        <p className="team-builder-panel__eyebrow">Saved work</p>
+                        <div className="all-teams-view__heading-row">
+                            <h2 className="team-builder-panel__title all-teams-view__title">Saved teams</h2>
+                            <span className="team-builder-panel__meta">{filteredTeams.length}</span>
                         </div>
-                        <div className="flex my-2">
-                            {team.pokemons.map((pokemon) => (
-                                <img
-                                    key={pokemon.id}
-                                    src={getTeamPokemonDisplaySprite(pokemon)}
-                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                    alt={pokemon.name}
-                                    className="-ml-3 h-12 w-12 rounded-full border-2 border-surface-raised bg-surface transition-transform duration-200 hover:z-10 hover:scale-110"
-                                />
-                            ))}
-                        </div>
-                        <div className="flex items-center gap-2 mt-auto pt-2">
-                            <button onClick={() => onEdit(team)} className="w-full rounded-lg bg-primary px-4 py-2 font-bold text-white transition-all duration-200 hover:scale-[1.03] hover:opacity-90 active:scale-[0.98]">Edit</button>
-                            <button
-                                type="button"
-                                onClick={() => onExport(team)}
-                                aria-label={`Export ${team.name} to Pokémon Showdown`}
-                                title="Export to Showdown"
-                                className={iconButtonClassName}
-                            >
-                                <ShowdownIcon />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => onShare(team)}
-                                aria-label={`Share ${team.name}`}
-                                title="Share Team"
-                                className={iconButtonClassName}
-                            >
-                                <ShareIcon />
-                            </button>
-                            <button onClick={() => requestDelete(team.id, team.name)} className="p-2 bg-danger hover:opacity-90 text-white rounded-lg transition-all duration-200 hover:scale-105 active:scale-95"><TrashIcon /></button>
-                        </div>
+                        <p className="team-builder-panel__copy all-teams-view__copy">
+                            Reopen, export, share, or prune the lineups you have already refined.
+                        </p>
                     </div>
-                )) : <p className="col-span-full py-8 text-center text-muted">No teams found.</p>}
-            </div>
-        </div>
+
+                    <div className="all-teams-view__summary" aria-label="Saved team summary">
+                        <span className="team-builder-picker-summary">{teams.length} total</span>
+                        <span className="team-builder-picker-summary">{favoriteCount} favorites</span>
+                    </div>
+                </div>
+
+                <div className="all-teams-view__toolbar">
+                    <label className="team-builder-control all-teams-view__search-control" htmlFor="saved-teams-search">
+                        <span className="team-builder-control__label">Search lineups</span>
+                        <input
+                            id="saved-teams-search"
+                            type="text"
+                            placeholder="Search teams by name..."
+                            value={searchTerm}
+                            onChange={(event) => setSearchTerm(event.target.value)}
+                            className="team-builder-field"
+                        />
+                    </label>
+
+                    <div className="all-teams-view__toolbar-actions">
+                        {searchTerm ? (
+                            <button
+                                type="button"
+                                onClick={() => setSearchTerm('')}
+                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
+                            >
+                                Clear search
+                            </button>
+                        ) : null}
+                        <span className="team-builder-picker-summary">{filteredTeams.length} visible</span>
+                    </div>
+                </div>
+
+                {filteredTeams.length > 0 ? (
+                    <div className="all-teams-view__grid">
+                        {filteredTeams.map((team) => (
+                            <article key={team.id} className="team-builder-recent-card team-builder-recent-card--wide all-teams-view__card">
+                                <div className="all-teams-view__card-head">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="all-teams-view__card-heading">
+                                            <p className="team-builder-recent-card__title all-teams-view__card-title">{team.name}</p>
+                                            {team.isFavorite ? <span className="all-teams-view__status">Pinned</span> : null}
+                                        </div>
+
+                                        <div className="all-teams-view__meta-list">
+                                            <span className="all-teams-view__meta-pill">Updated {formatTeamDate(team.updatedAt || team.createdAt)}</span>
+                                            <span className="all-teams-view__meta-pill">
+                                                {team.pokemons.length} {team.pokemons.length === 1 ? 'member' : 'members'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => onToggleFavorite(team)}
+                                        title={team.isFavorite ? 'Unfavorite team' : 'Favorite team'}
+                                        aria-label={team.isFavorite ? `Unfavorite ${team.name}` : `Favorite ${team.name}`}
+                                        className={`${iconButtonClassName} ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
+                                    >
+                                        <StarIcon className="h-4 w-4" isFavorite={team.isFavorite} color="currentColor" />
+                                    </button>
+                                </div>
+
+                                <div className="all-teams-view__preview">
+                                    <div className="team-builder-sprite-stack all-teams-view__sprite-stack" aria-label={`${team.name} team preview`}>
+                                        {team.pokemons.length > 0 ? team.pokemons.map((pokemon) => (
+                                            <img
+                                                key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
+                                                src={getTeamPokemonDisplaySprite(pokemon)}
+                                                onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                alt={pokemon.name}
+                                                className="team-builder-sprite-stack__item all-teams-view__sprite-item"
+                                            />
+                                        )) : (
+                                            <span className="all-teams-view__empty-stack">No Pokémon saved in this lineup yet.</span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="team-builder-recent-card__actions all-teams-view__actions">
+                                    <button
+                                        type="button"
+                                        onClick={() => onEdit(team)}
+                                        className="team-builder-button team-builder-button--primary team-builder-button--grow team-builder-button--small"
+                                    >
+                                        Edit lineup
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onExport(team)}
+                                        aria-label={`Export ${team.name} to Pokémon Showdown`}
+                                        title="Export to Showdown"
+                                        className={iconButtonClassName}
+                                    >
+                                        <ShowdownIcon />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onShare(team)}
+                                        aria-label={`Share ${team.name}`}
+                                        title="Share team"
+                                        className={iconButtonClassName}
+                                    >
+                                        <ShareIcon />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => requestDelete(team.id, team.name)}
+                                        aria-label={`Delete ${team.name}`}
+                                        title="Delete team"
+                                        className={`${iconButtonClassName} team-builder-icon-button--danger`}
+                                    >
+                                        <TrashIcon />
+                                    </button>
+                                </div>
+                            </article>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="team-builder-empty-note all-teams-view__empty">
+                        <p className="all-teams-view__empty-copy">
+                            {teams.length === 0
+                                ? 'Save a lineup from Builder to start your archive.'
+                                : 'No teams match the current search.'}
+                        </p>
+                        {teams.length > 0 && searchTerm ? (
+                            <button
+                                type="button"
+                                onClick={() => setSearchTerm('')}
+                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
+                            >
+                                Clear search
+                            </button>
+                        ) : null}
+                    </div>
+                )}
+            </section>
+        </main>
     );
 }
