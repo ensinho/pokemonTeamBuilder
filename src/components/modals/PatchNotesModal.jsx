@@ -6,7 +6,7 @@ import { SHARE_BACKGROUNDS } from '../../assets/backgrounds';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { AccountIcon, CloseIcon, FlowerIcon, HeartIcon, ShareIcon } from '../icons';
 
-const LikeFeedbackVisual = ({ colors }) => (
+const LikeFeedbackVisual = () => (
     <div
         className="flex items-center justify-center gap-2 rounded-md bg-bg p-3"
         aria-hidden="true"
@@ -176,32 +176,37 @@ export function PatchNotesModal({ onClose, colors }) {
                 </div>
 
                 <div className="space-y-4 px-5 py-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
-                    {notes.map(({ key, Icon, title, description, cta, path, Visual }) => (
-                        <button
-                            key={key}
-                            type="button"
-                            onClick={() => goTo(path)}
-                            className="w-full rounded-xl bg-surface-raised p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            aria-label={`${title} – ${cta}`}
-                        >
-                            <div className="mb-3 overflow-hidden rounded-lg bg-surface">
-                                <Visual colors={colors} />
-                            </div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
-                                    <Icon className="w-4 h-4" />
+                    {notes.map((note) => {
+                        const { key, title, description, cta, path } = note;
+                        const NoteIcon = note.Icon;
+                        const NoteVisual = note.Visual;
+                        return (
+                            <button
+                                key={key}
+                                type="button"
+                                onClick={() => goTo(path)}
+                                className="w-full rounded-xl bg-surface-raised p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                aria-label={`${title} – ${cta}`}
+                            >
+                                <div className="mb-3 overflow-hidden rounded-lg bg-surface">
+                                    <NoteVisual colors={colors} />
+                                </div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
+                                        <NoteIcon className="w-4 h-4" />
+                                    </span>
+                                    <h3 className="font-bold text-primary">{title}</h3>
+                                </div>
+                                <p className="text-sm text-fg">
+                                    {description}
+                                </p>
+                                <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                                    {cta}
+                                    <span aria-hidden="true">→</span>
                                 </span>
-                                <h3 className="font-bold text-primary">{title}</h3>
-                            </div>
-                            <p className="text-sm text-fg">
-                                {description}
-                            </p>
-                            <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                                {cta}
-                                <span aria-hidden="true">→</span>
-                            </span>
-                        </button>
-                    ))}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 <div className="shrink-0 border-t border-surface-raised px-5 pb-5 pt-4 text-center">

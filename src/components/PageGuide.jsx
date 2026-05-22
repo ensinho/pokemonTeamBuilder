@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 

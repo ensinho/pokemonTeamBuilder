@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useModalA11y } from '../../hooks/useModalA11y';
 
-export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', colors }) {
+export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm' }) {
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
 
     if (!isOpen) return null;

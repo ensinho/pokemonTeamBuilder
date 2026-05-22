@@ -24,7 +24,6 @@ import {
 } from '../icons';
 
 const RANDOM_GENERATOR_INTRO_STORAGE_PREFIX = 'randomGeneratorIntroSeen';
-const RANDOM_GENERATOR_GUIDE_LAYOUT_STORAGE_PREFIX = 'randomGeneratorGuideLayoutExpanded';
 const RANDOM_GENERATOR_FILTERS_LAYOUT_STORAGE_PREFIX = 'randomGeneratorFiltersLayoutExpanded';
 
 const RANDOM_GENERATOR_STAT_LABELS = Object.freeze({
@@ -334,12 +333,10 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
     const [formsFilter, setFormsFilter] = useState('all');
     const evolutionCacheRef = useRef({});
     const [showIntroModal, setShowIntroModal] = useState(false);
-    const [isGuideLayoutExpanded, setIsGuideLayoutExpanded] = useState(true);
     const [isFiltersExpanded, setIsFiltersExpanded] = useState(true);
     const [generationSummary, setGenerationSummary] = useState({ requested: 3, generated: 0, exhausted: false });
     const pokemonDataCacheRef = useRef({});
     const introStorageKey = useMemo(() => `${RANDOM_GENERATOR_INTRO_STORAGE_PREFIX}:${userId || 'guest'}`, [userId]);
-    const guideLayoutStorageKey = useMemo(() => `${RANDOM_GENERATOR_GUIDE_LAYOUT_STORAGE_PREFIX}:${userId || 'guest'}`, [userId]);
     const filtersLayoutStorageKey = useMemo(() => `${RANDOM_GENERATOR_FILTERS_LAYOUT_STORAGE_PREFIX}:${userId || 'guest'}`, [userId]);
     const regionOptions = useMemo(
         () => (Array.isArray(generations) && generations.length > 0
@@ -387,15 +384,6 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
 
         return chips;
     }, [pokemonCount, selectedRegion, selectedType, legendaryFilter, fullyEvolvedFilter, formsFilter]);
-
-    useEffect(() => {
-        try {
-            const saved = localStorage.getItem(guideLayoutStorageKey);
-            setIsGuideLayoutExpanded(saved !== '0');
-        } catch (_) {
-            setIsGuideLayoutExpanded(true);
-        }
-    }, [guideLayoutStorageKey]);
 
     useEffect(() => {
         try {

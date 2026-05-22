@@ -12,7 +12,7 @@ import { CloseIcon, PokeballIcon } from '../icons';
  *  - onDismiss(): close and don't show again this session
  *  - colors: theme colors object
  */
-export function SyncPromptModal({ onSignUp, onSignIn, onDismiss, colors }) {
+export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
     const dialogRef = useRef(null);
     const previouslyFocusedRef = useRef(null);
 

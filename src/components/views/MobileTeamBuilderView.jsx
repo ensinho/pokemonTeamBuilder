@@ -22,7 +22,6 @@ const MobilePokemonPickerCard = ({
     isSuggested,
     isFavorite,
     onToggleFavorite,
-    colors,
     lastRef,
 }) => {
     const handleCardClick = () => {
@@ -234,7 +233,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
     );
 };
 
-const MobileTeamSlot = ({ pokemon, index, colors, onEdit, onRemove }) => (
+const MobileTeamSlot = ({ pokemon, index, onEdit, onRemove }) => (
     <div className="relative min-w-0">
         <button
             type="button"

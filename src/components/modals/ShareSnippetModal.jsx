@@ -240,7 +240,6 @@ export const ShareSnippetModal = ({
     pokemons = [],
     defaultTitle = '',
     shareUrl = '',
-    colors,
     showToast,
 }) => {
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);

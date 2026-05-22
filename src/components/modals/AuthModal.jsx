@@ -13,7 +13,7 @@ import { CloseIcon } from '../icons';
  *  - onClose(): void
  *  - colors: theme colors object
  */
-export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onClose, colors }) {
+export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onClose }) {
     const randomLoginPokemons = ['pikachu', 'eevee', 'charmander', 'gengar', 'squirtle', 'togepi', 'piplup', 'snivy'];
     const randomSelected = randomLoginPokemons[Math.floor(Math.random() * randomLoginPokemons.length)];
     const AUTH_GIF_URL = `https://play.pokemonshowdown.com/sprites/ani/${randomSelected}.gif`;
