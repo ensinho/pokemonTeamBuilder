@@ -717,16 +717,56 @@
 }
 
 @media (max-width: 768px) {
+    .home-view {
+        max-width: 100%;
+    }
+
+    .home-panel--hero {
+        min-height: auto;
+    }
+
+    .home-hero__content {
+        gap: 0.75rem;
+    }
+
+    .home-hero__top {
+        gap: 0.75rem;
+    }
+
+    .home-hero__toolbar {
+        width: 100%;
+        min-width: 0;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .home-hero__icon-row {
+        justify-content: flex-end;
+    }
+
+    .home-partner-chip {
+        width: 100%;
+        align-self: stretch;
+        margin-left: 0;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .home-partner-chip__name {
+        font-size: 0.84rem;
+    }
+
+    .home-panel__title--hero {
+        font-size: clamp(1.55rem, 8vw, 2rem);
+    }
+
     .home-hero__art {
-        display: block;
-        right: 0.55rem;
-        bottom: 0.35rem;
-        opacity: 0.22;
+        display: none;
     }
 
     .home-hero__sprite {
-        height: 7rem;
-        width: 7rem;
+        height: 6rem;
+        width: 6rem;
     }
 
     .home-stat-grid,

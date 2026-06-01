@@ -588,12 +588,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                 <p className="generation-quiz__panel-eyebrow">Play</p>
                                 <h3 className="generation-quiz__panel-title">Answer</h3>
                             </div>
-                            {quizStarted && (
-                                <button type="button" onClick={startQuiz} className="generation-quiz__secondary-action">
-                                    <RefreshIcon />
-                                    Reset
-                                </button>
-                            )}
                         </div>
 
                         {!quizStarted ? (
@@ -603,25 +597,38 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                 message="Pick generations, then start."
                             />
                         ) : (
-                            <>
-                                <PokemonGenerationQuizAutocomplete
-                                    value={answerInput}
-                                    onChange={setAnswerInput}
-                                    onKeyDown={handleInputKeyDown}
-                                    suggestions={suggestions}
-                                    activeIndex={activeSuggestionIndex}
-                                    onSelectSuggestion={handleSelectSuggestion}
-                                    disabled={isComplete}
-                                    inputRef={inputRef}
-                                    helperText={helperText}
-                                    minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
-                                />
+                            <div className="generation-quiz__run-shell">
+                                <div className="generation-quiz__run-top">
+                                    <div className="generation-quiz__run-input-wrap">
+                                        <PokemonGenerationQuizAutocomplete
+                                            value={answerInput}
+                                            onChange={setAnswerInput}
+                                            onKeyDown={handleInputKeyDown}
+                                            suggestions={suggestions}
+                                            activeIndex={activeSuggestionIndex}
+                                            onSelectSuggestion={handleSelectSuggestion}
+                                            disabled={isComplete}
+                                            inputRef={inputRef}
+                                            helperText={helperText}
+                                            minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
+                                        />
+                                    </div>
 
-                                <div className="generation-quiz__feedback-row">
-                                    <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
-                                        {feedback.message}
-                                    </p>
-                                    <span className="generation-quiz__accuracy">Accuracy {accuracyPercent}%</span>
+                                    <div className="generation-quiz__mobile-progress" aria-label="Quiz progress summary">
+                                        <div className="generation-quiz__mobile-progress-main">
+                                            <strong>{foundCount}/{totalCount}</strong>
+                                            <span>{completionPercent}%</span>
+                                        </div>
+                                        <div className="generation-quiz__mobile-progress-meta">
+                                            <span>Left {remainingCount}</span>
+                                            <span>Acc {accuracyPercent}%</span>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" onClick={startQuiz} className="generation-quiz__secondary-action generation-quiz__secondary-action--run">
+                                        <RefreshIcon />
+                                        Reset
+                                    </button>
                                 </div>
 
                                 <div className="generation-quiz__metrics-grid" aria-label="Quiz progress">
@@ -637,6 +644,13 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         <span className="generation-quiz__metric-label">Done</span>
                                         <strong className="generation-quiz__metric-value">{completionPercent}%</strong>
                                     </article>
+                                </div>
+
+                                <div className="generation-quiz__feedback-row">
+                                    <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
+                                        {feedback.message}
+                                    </p>
+                                    <span className="generation-quiz__accuracy">Accuracy {accuracyPercent}%</span>
                                 </div>
 
                                 <div className="generation-quiz__progress-block" aria-hidden="true">
@@ -684,7 +698,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         </div>
                                     </div>
                                 )}
-                            </>
+                            </div>
                         )}
                     </section>
                 </div>

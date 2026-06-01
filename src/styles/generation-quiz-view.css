@@ -107,6 +107,25 @@
     padding: 1rem;
 }
 
+.generation-quiz__run-shell {
+    display: grid;
+}
+
+.generation-quiz__run-top {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+}
+
+.generation-quiz__run-input-wrap {
+    min-width: 0;
+    flex: 1;
+}
+
+.generation-quiz__mobile-progress {
+    display: none;
+}
+
 .generation-quiz__panel-header,
 .generation-quiz__actions-row,
 .generation-quiz__feedback-row,
@@ -190,6 +209,10 @@
     min-height: 2.8rem;
     padding: 0.75rem 1rem;
     font-weight: 700;
+}
+
+.generation-quiz__secondary-action--run {
+    flex-shrink: 0;
 }
 
 .generation-quiz__primary-action:disabled {
@@ -640,6 +663,60 @@
         border-radius: 1rem;
     }
 
+    .generation-quiz__play-panel {
+        padding: 0.7rem;
+    }
+
+    .generation-quiz__run-shell {
+        gap: 0.55rem;
+    }
+
+    .generation-quiz__run-top {
+        align-items: stretch;
+        gap: 0.45rem;
+    }
+
+    .generation-quiz__mobile-progress {
+        display: grid;
+        min-width: 5.7rem;
+        gap: 0.22rem;
+        align-content: center;
+        border: 1px solid var(--color-primary);
+        border-radius: 0.92rem;
+        background: var(--color-primary-soft);
+        padding: 0.5rem 0.58rem;
+        text-align: right;
+    }
+
+    .generation-quiz__mobile-progress-main {
+        display: grid;
+        gap: 0.08rem;
+    }
+
+    .generation-quiz__mobile-progress-main strong {
+        color: var(--color-fg);
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    .generation-quiz__mobile-progress-main span,
+    .generation-quiz__mobile-progress-meta {
+        font-size: 0.64rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .generation-quiz__mobile-progress-main span {
+        color: var(--color-primary);
+    }
+
+    .generation-quiz__mobile-progress-meta {
+        display: grid;
+        gap: 0.12rem;
+        color: var(--color-muted);
+    }
+
     .generation-quiz__panel-header,
     .generation-quiz__actions-row {
         flex-direction: column;
@@ -707,10 +784,23 @@
         font-size: 0.96rem;
     }
 
+    .generation-quiz__play-panel .generation-quiz__field-label,
+    .generation-quiz__play-panel .generation-quiz__panel-title {
+        font-size: 0.82rem;
+    }
+
     .generation-quiz__panel-eyebrow,
     .generation-quiz__recent-findings,
     .generation-quiz__generation-status-list,
     .generation-quiz__play-panel .generation-quiz__celebration {
+        display: none;
+    }
+
+    .generation-quiz__play-panel .generation-quiz__panel-header {
+        display: none;
+    }
+
+    .generation-quiz__metrics-grid {
         display: none;
     }
 
@@ -720,13 +810,17 @@
         margin-top: 0.6rem;
     }
 
-    .generation-quiz__play-panel .generation-quiz__panel-header {
-        margin-bottom: 0.15rem;
+    .generation-quiz__play-panel .generation-quiz__secondary-action--run {
+        min-height: 3.45rem;
+        min-width: 3.45rem;
+        border-radius: 0.92rem;
+        padding: 0.72rem;
+        font-size: 0;
     }
 
-    .generation-quiz__play-panel .generation-quiz__secondary-action {
-        min-height: 2.35rem;
-        padding: 0.58rem 0.8rem;
+    .generation-quiz__play-panel .generation-quiz__secondary-action--run svg {
+        width: 1rem;
+        height: 1rem;
     }
 
     .generation-quiz__generation-grid {
@@ -764,15 +858,29 @@
 
     .generation-quiz--running .generation-quiz__grid-panel {
         order: -2;
+        border: 0;
+        background: transparent;
+        box-shadow: none;
+        padding: 0;
+    }
+
+    .generation-quiz--running .generation-quiz__grid-panel .generation-quiz__panel-header {
+        margin-bottom: 0.1rem;
+        padding-inline: 0.1rem;
+    }
+
+    .generation-quiz--running .generation-quiz__grid-panel .generation-quiz__panel-title {
+        font-size: 0.82rem;
+    }
+
+    .generation-quiz--running .generation-quiz__grid-panel .generation-quiz__grid-meta {
+        font-size: 0.68rem;
     }
 
     .generation-quiz--running .generation-quiz__setup-panel {
         order: 2;
         opacity: 0.94;
-    }
-
-    .generation-quiz--running .generation-quiz__grid-panel .generation-quiz__panel-header {
-        margin-bottom: 0.1rem;
+        padding: 0.68rem;
     }
 
     .generation-quiz__grid {
