@@ -40,6 +40,7 @@ import {
     AdminDashboardView,
     AllTeamsView,
     FavoritePokemonsView,
+    GenerationQuizView,
     HomeView,
     PokedexView,
     ProfileView,
@@ -206,6 +207,7 @@ export default function AppLayout() {
         const path = location.pathname;
         if (path.includes('/pokedex')) return 'pokedex';
         if (path.includes('/teams')) return 'allTeams';
+        if (path.includes('/quiz')) return 'generationQuiz';
         if (path.includes('/generator')) return 'randomGenerator';
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
@@ -220,6 +222,7 @@ export default function AppLayout() {
             'builder': { title: 'Team Builder', subtitle: 'Build and tune your current roster' },
             'pokedex': { title: 'Pokédex', subtitle: 'Search and compare Pokémon' },
             'allTeams': { title: 'Saved Teams', subtitle: 'Revisit and manage your collection' },
+            'generationQuiz': { title: 'Generation Quiz', subtitle: 'Guess every Pokémon from your selected generations' },
             'randomGenerator': { title: 'Random Generator', subtitle: 'Generate a fresh starting point' },
             'favorites': { title: 'Favorite Pokémon', subtitle: 'Quick access to your pinned roster' },
             'admin': { title: 'Admin Dashboard', subtitle: 'Suggestions and replies' },
@@ -238,6 +241,7 @@ export default function AppLayout() {
             { key: 'home', label: 'Home', path: '/', icon: <HomeIcon /> },
             { key: 'builder', label: 'Builder', path: '/builder', icon: <SwordsIcon /> },
             { key: 'pokedex', label: 'Pokédex', path: '/pokedex', icon: <PokeballIcon /> },
+            { key: 'generationQuiz', label: 'Quiz', path: '/quiz', icon: <SuccessToastIcon /> },
             { key: 'randomGenerator', label: 'Generator', path: '/generator', icon: <DiceIcon /> },
             { key: 'favorites', label: 'Favorites', path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
             { key: 'allTeams', label: 'Saved Teams', path: '/teams', icon: <SavedTeamsIcon /> },
@@ -807,6 +811,12 @@ export default function AppLayout() {
                                             colors={colors}
                                             onAddToTeam={handleAddPokemon}
                                             isLoading={pokedex.isLoading}
+                                        />
+                                    } />
+                                    <Route path="/quiz" element={
+                                        <GenerationQuizView
+                                            showDetails={showDetails}
+                                            showToast={showToast}
                                         />
                                     } />
                                     <Route path="/teams" element={

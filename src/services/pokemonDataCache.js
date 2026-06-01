@@ -134,6 +134,42 @@ const fetchStaticJson = (path) => fetchJsonCached(getStaticDataUrl(path), {
     allow404: true,
 });
 
+const stripDiacritics = (value = '') => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+export const normalizePokemonQuizInput = (value = '') => stripDiacritics(String(value)
+    .toLowerCase()
+    .trim())
+    .replace(/[♀]/g, ' female ')
+    .replace(/[♂]/g, ' male ')
+    .replace(/[^a-z0-9]+/g, '');
+
+export const buildPokemonQuizNameAliases = (pokemonName = '') => {
+    const normalizedName = normalizePokemonQuizInput(pokemonName);
+    const aliases = new Set([normalizedName]);
+
+    const canonicalName = String(pokemonName).toLowerCase();
+
+    if (canonicalName === 'nidoran-f') {
+        aliases.add(normalizePokemonQuizInput('nidoran female'));
+        aliases.add(normalizePokemonQuizInput('female nidoran'));
+    }
+
+    if (canonicalName === 'nidoran-m') {
+        aliases.add(normalizePokemonQuizInput('nidoran male'));
+        aliases.add(normalizePokemonQuizInput('male nidoran'));
+    }
+
+    if (canonicalName === 'farfetchd') {
+        aliases.add(normalizePokemonQuizInput("farfetch'd"));
+    }
+
+    if (canonicalName === 'sirfetchd') {
+        aliases.add(normalizePokemonQuizInput("sirfetch'd"));
+    }
+
+    return Array.from(aliases).filter(Boolean);
+};
+
 const fetchPokeApiJson = (pathOrUrl, { cacheKey, ttlMs = REFERENCE_TTL_MS, storage = 'local' } = {}) => {
     const url = toPokeApiUrl(pathOrUrl);
     return fetchJsonCached(url, {
@@ -184,6 +220,17 @@ export const loadPokemonReferenceData = async () => {
     ]);
 
     return { generations, items, natures };
+};
+
+export const loadPokemonIndex = async () => {
+    const staticPokemonIndex = await fetchStaticJson('pokemon-index.json');
+    return normalizeResourceList(staticPokemonIndex, 'pokemons')
+        .map((entry) => ({
+            id: Number.parseInt(entry.id, 10),
+            name: entry.name,
+            url: entry.url,
+        }))
+        .filter((entry) => Number.isInteger(entry.id) && entry.id > 0 && entry.name);
 };
 
 let staticMoveMapPromise;
