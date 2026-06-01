@@ -6,6 +6,7 @@ export function PokemonGenerationQuizCard({
     isFound,
     isNew,
     isLoading,
+    isInteractable,
     onInspect,
 }) {
     if (!isFound) {
@@ -23,10 +24,14 @@ export function PokemonGenerationQuizCard({
     return (
         <button
             type="button"
-            onClick={() => onInspect(pokemon)}
-            disabled={isLoading}
-            className={`generation-quiz-card generation-quiz-card--revealed ${isNew ? 'is-new' : ''}`}
-            aria-label={`Open details for ${pokemon.displayName}`}
+            onClick={() => {
+                if (isInteractable && !isLoading) {
+                    onInspect(pokemon);
+                }
+            }}
+            disabled={!isInteractable || isLoading}
+            className={`generation-quiz-card generation-quiz-card--revealed ${isNew ? 'is-new' : ''} ${!isInteractable ? 'is-locked' : ''}`}
+            aria-label={isInteractable ? `Open details for ${pokemon.displayName}` : `${pokemon.displayName} details unlock after the quiz is complete`}
         >
             <div className="generation-quiz-card__header">
                 <span className="generation-quiz-card__number">#{pokemon.id}</span>
@@ -48,7 +53,9 @@ export function PokemonGenerationQuizCard({
             </div>
 
             <span className="generation-quiz-card__name">{pokemon.displayName}</span>
-            <span className="generation-quiz-card__hint">{isLoading ? 'Loading details…' : 'Tap for details'}</span>
+            <span className="generation-quiz-card__hint">
+                {isLoading ? 'Loading details…' : isInteractable ? 'Tap for details' : 'Finish the quiz to inspect'}
+            </span>
         </button>
     );
 }

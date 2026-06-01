@@ -202,6 +202,23 @@
     position: relative;
 }
 
+.generation-quiz-autocomplete__decoys {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+}
+
+.generation-quiz-autocomplete__decoy {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    border: 0;
+    padding: 0;
+}
+
 .generation-quiz__field {
     display: grid;
     gap: 0.55rem;
@@ -226,6 +243,10 @@
     color: var(--color-fg);
     padding: 0.95rem 1rem;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.generation-quiz__input:read-only {
+    caret-color: auto;
 }
 
 .generation-quiz-autocomplete__panel {
@@ -400,10 +421,25 @@
     transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
 }
 
+.generation-quiz-card--revealed:disabled {
+    cursor: default;
+}
+
+.generation-quiz-card--revealed.is-locked {
+    opacity: 0.88;
+}
+
 .generation-quiz-card--revealed:focus-visible,
 .generation-quiz-card--revealed:hover {
     border-color: var(--color-primary);
     box-shadow: var(--elevation-2);
+}
+
+.generation-quiz-card--revealed.is-locked:focus-visible,
+.generation-quiz-card--revealed.is-locked:hover {
+    border-color: var(--color-border);
+    box-shadow: none;
+    transform: none;
 }
 
 .generation-quiz-card.is-new {
@@ -499,9 +535,59 @@
     }
 
     .generation-quiz__layout {
-        grid-template-columns: minmax(0, 25rem) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 23rem) minmax(0, 1fr);
         align-items: start;
         min-height: 0;
+    }
+
+    .generation-quiz__stack {
+        gap: 0.75rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__panel {
+        padding: 0.85rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__panel-header,
+    .generation-quiz__stack .generation-quiz__actions-row,
+    .generation-quiz__stack .generation-quiz__feedback-row,
+    .generation-quiz__stack .generation-quiz__recent-findings-header {
+        gap: 0.6rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__actions-row,
+    .generation-quiz__stack .generation-quiz__feedback-row,
+    .generation-quiz__stack .generation-quiz__generation-status-list,
+    .generation-quiz__stack .generation-quiz__recent-findings,
+    .generation-quiz__stack .generation-quiz__celebration,
+    .generation-quiz__stack .generation-quiz__progress-block {
+        margin-top: 0.8rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__metrics-grid,
+    .generation-quiz__stack .generation-quiz__hero-stats {
+        gap: 0.6rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__metric-card,
+    .generation-quiz__stack .generation-quiz__hero-stat {
+        padding: 0.72rem 0.8rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__metric-value,
+    .generation-quiz__stack .generation-quiz__hero-stat-value,
+    .generation-quiz__stack .generation-quiz__selection-value {
+        font-size: 1.28rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__generation-chip {
+        padding: 0.52rem 0.78rem;
+        font-size: 0.81rem;
+    }
+
+    .generation-quiz__stack .generation-quiz__input {
+        min-height: 3rem;
+        padding: 0.82rem 0.92rem;
     }
 
     .generation-quiz__hero {
