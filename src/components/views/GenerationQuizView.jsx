@@ -499,7 +499,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
         && buildSelectionSignature(selectedGenerationList) !== buildSelectionSignature(activeGenerationList);
 
     return (
-        <main className="generation-quiz">
+        <main className={`generation-quiz ${quizStarted ? 'generation-quiz--running' : ''}`}>
             <section className="generation-quiz__hero team-builder-panel">
                 <div className="generation-quiz__hero-copy">
                     <span className="generation-quiz__eyebrow">
@@ -526,7 +526,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
             <section className="generation-quiz__layout">
                 <div className="generation-quiz__stack">
-                    <section className="generation-quiz__panel team-builder-panel">
+                    <section className="generation-quiz__panel generation-quiz__setup-panel team-builder-panel">
                         <div className="generation-quiz__panel-header">
                             <div>
                                 <p className="generation-quiz__panel-eyebrow">Setup</p>
@@ -582,7 +582,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         )}
                     </section>
 
-                    <section className="generation-quiz__panel team-builder-panel">
+                    <section className="generation-quiz__panel generation-quiz__play-panel team-builder-panel">
                         <div className="generation-quiz__panel-header">
                             <div>
                                 <p className="generation-quiz__panel-eyebrow">Play</p>
