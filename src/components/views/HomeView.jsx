@@ -662,7 +662,7 @@ export function HomeView({
                                     </section>
                                 ) : null}
 
-                                <section className="home-panel p-4">
+                                <section className="home-panel home-panel--note p-4">
                                     <p className="home-panel__eyebrow">Today&apos;s note</p>
                                     <h3 className="home-panel__section-title">Did you know?</h3>
                                     <p className="home-panel__description mt-3">{tipOfTheDay}</p>
@@ -702,7 +702,7 @@ export function HomeView({
                 </div>
 
                 <aside className="home-sidebar">
-                    <section className="home-panel p-4">
+                    <section className="home-panel home-panel--stats p-4">
                                 <div>
                                     <p className="home-panel__eyebrow">Profile</p>
                                     <h3 className="home-panel__section-title">Trainer stats</h3>

@@ -96,6 +96,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [newlyFoundId, setNewlyFoundId] = useState(null);
     const [loadingDetailId, setLoadingDetailId] = useState(null);
     const [bestRun, setBestRun] = useState(null);
+    const [gridFilter, setGridFilter] = useState('all'); // 'all', 'guessed', 'missing'
 
     const deferredAnswerInput = useDeferredValue(answerInput);
 
@@ -203,6 +204,17 @@ export function GenerationQuizView({ showDetails, showToast }) {
         () => activeEntries.filter((pokemon) => !foundIds.has(pokemon.id)),
         [activeEntries, foundIds]
     );
+
+    const visibleEntries = useMemo(() => {
+        if (!quizStarted) return [];
+        if (gridFilter === 'guessed') {
+            return activeEntries.filter((pokemon) => foundIds.has(pokemon.id));
+        }
+        if (gridFilter === 'missing') {
+            return activeEntries.filter((pokemon) => !foundIds.has(pokemon.id));
+        }
+        return activeEntries;
+    }, [activeEntries, gridFilter, foundIds, quizStarted]);
 
     const foundCount = foundIds.size;
     const totalCount = activeEntries.length;
@@ -380,6 +392,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
         setFoundOrder([]);
         setInvalidGuesses(0);
         setAnswerInput('');
+        setGridFilter('all');
         setActiveSuggestionIndex(0);
         setAnnouncement('New Generation Quiz started.');
         setFeedback({ tone: 'info', message: `${previewEntries.length} Pokémon ready.` });
@@ -710,7 +723,32 @@ export function GenerationQuizView({ showDetails, showToast }) {
                             <h3 className="generation-quiz__panel-title">Pokémon roster</h3>
                         </div>
                         {quizStarted && (
-                            <span className="generation-quiz__grid-meta">{totalCount} total cards</span>
+                            <div className="generation-quiz__grid-filters">
+                                <button
+                                    type="button"
+                                    onClick={() => setGridFilter('all')}
+                                    className={`generation-quiz__filter-btn ${gridFilter === 'all' ? 'is-active' : ''}`}
+                                >
+                                    All ({totalCount})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setGridFilter('guessed')}
+                                    className={`generation-quiz__filter-btn ${gridFilter === 'guessed' ? 'is-active' : ''}`}
+                                >
+                                    Guessed ({foundCount})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setGridFilter('missing')}
+                                    className={`generation-quiz__filter-btn ${gridFilter === 'missing' ? 'is-active' : ''}`}
+                                >
+                                    Missing ({remainingCount})
+                                </button>
+                            </div>
+                        )}
+                        {quizStarted && (
+                            <span className="generation-quiz__grid-meta">{visibleEntries.length} shown</span>
                         )}
                     </div>
 
@@ -726,7 +764,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         />
                     ) : (
                         <div className="generation-quiz__grid" role="list" aria-label="Pokémon quiz grid">
-                            {activeEntries.map((pokemon) => (
+                            {visibleEntries.map((pokemon) => (
                                 <div key={pokemon.id} role="listitem">
                                     <PokemonGenerationQuizCard
                                         pokemon={pokemon}

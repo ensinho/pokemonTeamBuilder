@@ -725,6 +725,39 @@
         min-height: auto;
     }
 
+    .home-panel--hero .home-action-row {
+        display: none;
+    }
+
+    .home-panel--feature .home-panel__description {
+        display: none;
+    }
+
+    .home-feature-points {
+        display: none;
+    }
+
+    .home-panel__caption {
+        display: none;
+    }
+
+    .home-quick-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-list-button {
+        align-items: center;
+    }
+
+    .home-list-button__description {
+        display: none;
+    }
+
+    .home-panel--stats,
+    .home-panel--note {
+        display: none;
+    }
+
     .home-hero__content {
         gap: 0.75rem;
     }
@@ -778,8 +811,7 @@
 @media (max-width: 640px) {
     .home-metric-row,
     .home-stat-grid,
-    .home-inline-meta,
-    .home-favorite-grid--sidebar {
+    .home-inline-meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
