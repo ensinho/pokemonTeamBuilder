@@ -723,6 +723,7 @@
 
     .home-panel--hero {
         min-height: auto;
+        padding: 0.85rem !important;
     }
 
     .home-panel--hero .home-action-row {
@@ -759,18 +760,18 @@
     }
 
     .home-hero__content {
-        gap: 0.75rem;
+        gap: 0.45rem;
     }
 
     .home-hero__top {
-        gap: 0.75rem;
+        gap: 0.45rem;
     }
 
     .home-hero__toolbar {
         width: 100%;
         min-width: 0;
         align-items: stretch;
-        gap: 0.5rem;
+        gap: 0.4rem;
     }
 
     .home-hero__icon-row {
@@ -783,14 +784,22 @@
         margin-left: 0;
         justify-content: flex-start;
         flex-wrap: wrap;
+        padding: 0.35rem 0.55rem;
+        gap: 0.5rem;
+    }
+
+    .home-partner-chip__sprite {
+        width: 2.1rem;
+        height: 2.1rem;
     }
 
     .home-partner-chip__name {
-        font-size: 0.84rem;
+        font-size: 0.82rem;
     }
 
     .home-panel__title--hero {
-        font-size: clamp(1.55rem, 8vw, 2rem);
+        font-size: clamp(1.35rem, 6vw, 1.7rem);
+        line-height: 1.15;
     }
 
     .home-hero__art {
@@ -802,6 +811,26 @@
         width: 6rem;
     }
 
+    .home-metric-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 0.45rem;
+    }
+
+    .home-metric-card {
+        padding: 0.45rem 0.55rem;
+        border-radius: 0.75rem;
+    }
+
+    .home-metric-card__label {
+        font-size: 0.62rem;
+        letter-spacing: 0.05em;
+    }
+
+    .home-metric-card__value {
+        margin-top: 0.2rem;
+        font-size: 0.9rem;
+    }
+
     .home-stat-grid,
     .home-inline-meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -809,7 +838,10 @@
 }
 
 @media (max-width: 640px) {
-    .home-metric-row,
+    .home-metric-row {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
     .home-stat-grid,
     .home-inline-meta {
         grid-template-columns: repeat(2, minmax(0, 1fr));

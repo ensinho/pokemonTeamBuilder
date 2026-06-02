@@ -584,7 +584,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                 className="generation-quiz__primary-action"
                             >
                                 <PokeballIcon />
-                                {quizStarted ? 'New run' : 'Start'}
+                                {quizStarted ? 'New run' : `Start (${previewEntries.length} Pokémon)`}
                             </button>
                         </div>
 

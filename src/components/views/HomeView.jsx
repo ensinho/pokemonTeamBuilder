@@ -362,7 +362,7 @@ export function HomeView({
                     <div className="home-hero__content">
                         <div className="home-hero__top">
                             <div className="min-w-0">
-                                <h1 className="home-panel__title home-panel__title--hero truncate">
+                                <h1 className="home-panel__title home-panel__title--hero">
                                     {greeting.text}, Trainer.
                                 </h1>
                                 <p className="home-panel__description max-w-2xl">
