@@ -304,12 +304,6 @@ export function HomeView({
         onChangeHeroBackground(SHARE_BACKGROUNDS[nextIndex]?.id || DEFAULT_BACKGROUND_ID);
     };
 
-    const overviewMetrics = [
-        { label: 'Teams', value: String(stats.totalTeams) },
-        { label: 'Pinned', value: String(stats.totalFavoritePokemons) },
-        { label: 'Type', value: stats.favoriteType ?? '--' },
-    ];
-
     const quickActions = [
         {
             label: 'Team Builder',
@@ -345,10 +339,10 @@ export function HomeView({
         : [];
 
     return (
-        <main className="home-view space-y-4 pb-8">
-            <section className="grid gap-4 xl:grid-cols-[minmax(0,1.62fr)_minmax(280px,0.84fr)]">
+        <main className="home-view space-y-3 pb-6">
+            <section className="grid gap-3.5 xl:grid-cols-[minmax(0,1.62fr)_minmax(280px,0.84fr)]">
                 <section
-                    className="home-panel home-panel--hero p-4 md:p-5"
+                    className="home-panel home-panel--hero p-4"
                     style={{
                         '--home-hero-accent': heroAccent,
                         '--home-hero-accent-soft': heroAccentSoft,
@@ -360,22 +354,23 @@ export function HomeView({
                     aria-label="Trainer overview"
                 >
                     <div className="home-hero__content">
-                        <div className="home-hero__top">
-                            <div className="min-w-0">
-                                <h1 className="home-panel__title home-panel__title--hero">
-                                    {greeting.text}, Trainer.
-                                </h1>
-                                <p className="home-panel__description max-w-2xl">
-                                    {randomMessage}
-                                </p>
-                            </div>
-                            <div className="home-hero__toolbar">
-                                <div className="home-hero__icon-row">
+                        <div className="home-hero__lead">
+                            <h1 className="home-panel__title home-panel__title--hero">
+                                {greeting.text}, Trainer.
+                            </h1>
+                            <p className="home-panel__description">
+                                {randomMessage}
+                            </p>
+                        </div>
+
+                        {greetingPokemonData && (
+                            <div className="home-partner-card glass-card">
+                                <div className="home-partner-card__actions">
                                     <button
                                         onClick={handleCycleHeroBackground}
                                         type="button"
                                         aria-label={`Change hero wallpaper. Current wallpaper: ${heroBackground?.name ?? 'default'}`}
-                                        className="home-icon-button"
+                                        className="home-partner-card__action-btn"
                                         title={`Change wallpaper${heroBackground ? ` (${heroBackground.name})` : ''}`}
                                     >
                                         <DiceIcon />
@@ -385,7 +380,7 @@ export function HomeView({
                                         onClick={onOpenPokemonSelector}
                                         type="button"
                                         aria-label="Change partner Pokémon"
-                                        className="home-icon-button"
+                                        className="home-partner-card__action-btn"
                                         title="Change partner Pokémon"
                                     >
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -394,23 +389,20 @@ export function HomeView({
                                     </button>
                                 </div>
 
-                                {greetingPokemonData && (
-                                    <div className="home-partner-chip">
-                                        <img
-                                            src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny })}
-                                            alt=""
-                                            aria-hidden="true"
-                                            className="home-partner-chip__sprite"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                        />
-                                        <div className="min-w-0">
-                                            <p className="home-partner-chip__label">Partner</p>
-                                            <p className="home-partner-chip__name capitalize">
-                                                {greetingPokemonData.name}
-                                            </p>
-                                        </div>
+                                <div className="home-partner-card__sprite-container">
+                                    <img
+                                        src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
+                                        alt={greetingPokemonData.name}
+                                        className="home-partner-card__sprite sprite-fade"
+                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    />
+                                </div>
+
+                                <div className="home-partner-card__info">
+                                    <div className="home-partner-card__meta">
+                                        <span className="home-partner-card__badge">Partner</span>
                                         {greetingPokemonData.types && (
-                                            <div className="ml-auto flex items-center gap-1.5">
+                                            <div className="home-partner-card__types">
                                                 {greetingPokemonData.types.map((type) => (
                                                     <img
                                                         key={type}
@@ -423,54 +415,18 @@ export function HomeView({
                                             </div>
                                         )}
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                        
-                        <div className="home-metric-row" aria-label="Trainer overview stats">
-                            {overviewMetrics.map(({ label, value }) => (
-                                <div key={label} className="home-metric-card">
-                                    <span className="home-metric-card__label">{label}</span>
-                                    <strong className="home-metric-card__value capitalize">{value}</strong>
+                                    <h3 className="home-partner-card__name capitalize">
+                                        {greetingPokemonData.name}
+                                    </h3>
                                 </div>
-                            ))}
-                        </div>
-
-                        <div className="home-action-row">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/builder')}
-                                className="home-button home-button--primary"
-                            >
-                                <SwordsIcon />
-                                Open team builder
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onOpenPokemonSelector}
-                                className="home-button home-button--secondary"
-                            >
-                                <EditIcon />
-                                Change partner
-                            </button>
-                        </div>
+                            </div>
+                        )}
                     </div>
-
-                    {greetingPokemonData && (
-                        <div className="home-hero__art" aria-hidden="true">
-                            <img
-                                src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
-                                alt=""
-                                className="home-hero__sprite"
-                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                            />
-                        </div>
-                    )}
                 </section>
 
                 {lastEditedTeam ? (
                     <section
-                        className="home-panel home-panel--feature home-panel--interactive flex min-h-[220px] cursor-pointer flex-col justify-between p-4 md:p-5"
+                        className="home-panel home-panel--feature home-panel--interactive flex min-h-[195px] cursor-pointer flex-col justify-between p-4"
                         onClick={() => handleEditTeam(lastEditedTeam)}
                         role="button"
                         tabIndex={0}
@@ -482,7 +438,7 @@ export function HomeView({
                         }}
                         aria-label={`Continue editing team ${lastEditedTeam.name}`}
                     >
-                        <div className="space-y-4 min-w-0">
+                        <div className="space-y-3.5 min-w-0">
                             <div>
                                 <p className="home-panel__eyebrow">
                                     Continue building
@@ -495,16 +451,27 @@ export function HomeView({
                                 </p>
                             </div>
 
-                            <div className="home-sprite-stack">
-                                {lastEditedTeam.pokemons.slice(0, 6).map((pokemon, index) => (
-                                    <img
-                                        key={index}
-                                        src={getTeamPokemonDisplaySprite(pokemon)}
-                                        alt={pokemon.name}
-                                        className="home-sprite-stack__item"
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                    />
-                                ))}
+                            <div className="home-team-slots">
+                                {Array.from({ length: 6 }).map((_, index) => {
+                                    const pokemon = lastEditedTeam.pokemons[index];
+                                    return (
+                                        <div key={index} className="home-team-slot">
+                                            {pokemon ? (
+                                                <img
+                                                    src={getTeamPokemonDisplaySprite(pokemon)}
+                                                    alt={pokemon.name}
+                                                    className="home-team-slot__sprite sprite-fade"
+                                                    title={pokemon.name}
+                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                />
+                                            ) : (
+                                                <div className="home-team-slot__empty">
+                                                    <PokeballIcon className="w-4 h-4" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             <dl className="home-inline-meta">
@@ -538,7 +505,7 @@ export function HomeView({
                         </div>
                     </section>
                 ) : (
-                    <section className="home-panel home-panel--feature flex min-h-[220px] flex-col justify-between p-4 md:p-5">
+                    <section className="home-panel home-panel--feature flex min-h-[195px] flex-col justify-between p-4">
                         <div className="space-y-3">
                             <div>
                                 <p className="home-panel__eyebrow">
@@ -580,227 +547,243 @@ export function HomeView({
             </section>
 
             <section className="home-dashboard">
-                <div className="space-y-5">
+                <div className="space-y-4">
                     <div className="home-story-grid">
-                                {isDailyPokemonLoading ? (
-                                    <section className="home-panel p-4 animate-pulse">
-                                        <div className="home-skeleton home-skeleton--short"></div>
-                                        <div className="mt-4 home-skeleton home-skeleton--title"></div>
-                                        <div className="mt-3 home-skeleton home-skeleton--meta"></div>
-                                        <div className="mt-6 flex gap-2">
-                                            <div className="home-skeleton home-skeleton--pill"></div>
-                                            <div className="home-skeleton home-skeleton--pill"></div>
-                                        </div>
-                                    </section>
-                                ) : pokemonOfTheDay ? (
-                                    <section
-                                        className="home-panel home-panel--interactive cursor-pointer p-4"
-                                        onClick={() => showDetails(pokemonOfTheDay)}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                showDetails(pokemonOfTheDay);
-                                            }
-                                        }}
-                                        aria-label={`Open details for ${pokemonOfTheDay.name}`}
-                                    >
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="min-w-0">
-                                                <p className="home-panel__eyebrow">Daily Pokémon</p>
-                                                <h3 className="home-panel__title home-panel__title--daily capitalize">{pokemonOfTheDay.name}</h3>
-                                                <p className="home-panel__description">#{String(pokemonOfTheDay.id).padStart(3, '0')}</p>
-                                                <div className="mt-4 flex flex-wrap gap-2">
-                                                    {pokemonOfTheDay.types?.map((type) => (
-                                                        <span
-                                                            key={type}
-                                                            className="home-type-pill capitalize"
-                                                            style={{
-                                                                backgroundColor: `${typeColors[type]}18`,
-                                                                borderColor: `${typeColors[type]}33`,
-                                                                color: typeColors[type],
-                                                            }}
-                                                        >
-                                                            {type}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            </div>
+                        {isDailyPokemonLoading ? (
+                            <section className="home-panel p-4 animate-pulse">
+                                <div className="home-skeleton home-skeleton--short"></div>
+                                <div className="mt-4 home-skeleton home-skeleton--title"></div>
+                                <div className="mt-3 home-skeleton home-skeleton--meta"></div>
+                                <div className="mt-6 flex gap-2">
+                                    <div className="home-skeleton home-skeleton--pill"></div>
+                                    <div className="home-skeleton home-skeleton--pill"></div>
+                                </div>
+                            </section>
+                        ) : pokemonOfTheDay ? (
+                            <section
+                                className="home-panel home-panel--daily home-panel--interactive cursor-pointer p-4"
+                                onClick={() => showDetails(pokemonOfTheDay)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        showDetails(pokemonOfTheDay);
+                                    }
+                                }}
+                                aria-label={`Open details for ${pokemonOfTheDay.name}`}
+                            >
+                                <div className="home-daily__header">
+                                    <div>
+                                        <p className="home-panel__eyebrow">Daily Pokémon</p>
+                                        <h3 className="home-panel__title home-panel__title--daily capitalize">
+                                            {pokemonOfTheDay.name}
+                                        </h3>
+                                    </div>
+                                    <span className="home-daily__number">
+                                        #{String(pokemonOfTheDay.id).padStart(3, '0')}
+                                    </span>
+                                </div>
 
-                                            <div className="flex flex-col items-end gap-3">
-                                                <button
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        onToggleFavoritePokemon(pokemonOfTheDay.id);
+                                <div className="home-daily__content">
+                                    <div className="home-daily__sprite-container">
+                                        <img
+                                            src={pokemonOfTheDay.animatedSprite || pokemonOfTheDay.sprite || POKEBALL_PLACEHOLDER_URL}
+                                            alt={pokemonOfTheDay.name}
+                                            className="home-daily__sprite sprite-fade"
+                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        />
+                                    </div>
+
+                                    <div className="home-daily__footer">
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {pokemonOfTheDay.types?.map((type) => (
+                                                <span
+                                                    key={type}
+                                                    className="home-type-pill capitalize"
+                                                    style={{
+                                                        backgroundColor: `${typeColors[type]}18`,
+                                                        borderColor: `${typeColors[type]}33`,
+                                                        color: typeColors[type],
                                                     }}
-                                                    className="home-icon-button"
-                                                    type="button"
-                                                    aria-label={favoritePokemons.has(pokemonOfTheDay.id) ? 'Remove from favorites' : 'Add to favorites'}
-                                                    style={favoritePokemons.has(pokemonOfTheDay.id)
-                                                        ? {
-                                                            backgroundColor: `${colors.accent}18`,
-                                                            borderColor: `${colors.accent}33`,
-                                                            color: colors.accent,
-                                                        }
-                                                        : undefined}
                                                 >
-                                                    <StarIcon
-                                                        className="w-5 h-5"
-                                                        isFavorite={favoritePokemons.has(pokemonOfTheDay.id)}
-                                                        color="currentColor"
-                                                    />
-                                                </button>
-                                                <img
-                                                    src={pokemonOfTheDay.animatedSprite || pokemonOfTheDay.sprite || POKEBALL_PLACEHOLDER_URL}
-                                                    alt={pokemonOfTheDay.name}
-                                                    className="home-daily__sprite"
-                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                />
-                                            </div>
+                                                    {type}
+                                                </span>
+                                            ))}
                                         </div>
-                                    </section>
-                                ) : null}
 
-                                <section className="home-panel home-panel--note p-4">
-                                    <p className="home-panel__eyebrow">Today&apos;s note</p>
-                                    <h3 className="home-panel__section-title">Did you know?</h3>
-                                    <p className="home-panel__description mt-3">{tipOfTheDay}</p>
-                                </section>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onToggleFavoritePokemon(pokemonOfTheDay.id);
+                                            }}
+                                            className="home-daily__fav-btn"
+                                            type="button"
+                                            aria-label={favoritePokemons.has(pokemonOfTheDay.id) ? 'Remove from favorites' : 'Add to favorites'}
+                                            style={favoritePokemons.has(pokemonOfTheDay.id)
+                                                ? {
+                                                    backgroundColor: `${colors.accent}18`,
+                                                    borderColor: `${colors.accent}33`,
+                                                    color: colors.accent,
+                                                }
+                                                : undefined}
+                                        >
+                                            <StarIcon
+                                                className="w-4 h-4"
+                                                isFavorite={favoritePokemons.has(pokemonOfTheDay.id)}
+                                                color="currentColor"
+                                            />
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
+                        ) : null}
+
+                        <section className="home-panel home-panel--note p-4">
+                            <p className="home-panel__eyebrow">Today&apos;s note</p>
+                            <h3 className="home-panel__section-title">Did you know?</h3>
+                            <p className="home-panel__description mt-3">{tipOfTheDay}</p>
+                        </section>
                     </div>
 
                     <section className="home-panel p-4">
-                            <div className="flex flex-wrap items-start justify-between gap-3">
-                                <div>
-                                    <p className="home-panel__eyebrow">Shortcuts</p>
-                                    <h3 className="home-panel__section-title">Pick your next move</h3>
-                                </div>
-                                <p className="home-panel__caption">
-                                    Quick jumps for the actions you use most.
-                                </p>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <p className="home-panel__eyebrow">Shortcuts</p>
                             </div>
+                        </div>
 
-                            <div className="home-quick-grid mt-4">
-                                {quickActions.map((shortcut) => (
-                                    <button
-                                        key={shortcut.path}
-                                        type="button"
-                                        onClick={() => navigate(shortcut.path)}
-                                        className="home-list-button"
-                                    >
-                                        <span className="home-list-button__icon" aria-hidden="true">
-                                            {shortcut.icon}
-                                        </span>
-                                        <span className="home-list-button__body">
-                                            <span className="home-list-button__title">{shortcut.label}</span>
-                                            <span className="home-list-button__description">{shortcut.description}</span>
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
+                        <div className="home-quick-grid mt-4">
+                            {quickActions.map((shortcut) => (
+                                <button
+                                    key={shortcut.path}
+                                    type="button"
+                                    onClick={() => navigate(shortcut.path)}
+                                    className="home-list-button"
+                                >
+                                    <span className="home-list-button__icon" aria-hidden="true">
+                                        {shortcut.icon}
+                                    </span>
+                                    <span className="home-list-button__body">
+                                        <span className="home-list-button__title">{shortcut.label}</span>
+                                        <span className="home-list-button__description">{shortcut.description}</span>
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
                     </section>
                 </div>
 
                 <aside className="home-sidebar">
                     <section className="home-panel home-panel--stats p-4">
-                                <div>
-                                    <p className="home-panel__eyebrow">Profile</p>
-                                    <h3 className="home-panel__section-title">Trainer stats</h3>
-                                </div>
+                        <div className="home-trainer-card__header">
+                            <div>
+                                <p className="home-panel__eyebrow">TRAINER CARD</p>
+                                <h3 className="home-panel__section-title">Stats & Identity</h3>
+                            </div>
+                            <div className="home-trainer-card__barcode" aria-hidden="true" />
+                        </div>
 
-                                {stats.totalTeams > 0 ? (
-                                    <div className="home-stat-grid mt-4">
-                                        <div className="home-stat-card">
-                                            <span className="home-stat-card__label">Teams</span>
-                                            <strong className="home-stat-card__value">{stats.totalTeams}</strong>
-                                        </div>
-                                        <div className="home-stat-card">
-                                            <span className="home-stat-card__label">Pinned Pokémon</span>
-                                            <strong className="home-stat-card__value">{stats.totalFavoritePokemons}</strong>
-                                        </div>
-                                        <div className="home-stat-card">
-                                            <span className="home-stat-card__label">Favorite type</span>
-                                            {stats.favoriteType ? (
-                                                <span className="home-stat-card__type capitalize">
-                                                    <span
-                                                        className="home-stat-card__type-icon"
-                                                        style={{ backgroundColor: typeColors[stats.favoriteType] }}
-                                                    >
-                                                        <img src={typeIcons[stats.favoriteType]} alt={stats.favoriteType} className="h-4 w-4" />
-                                                    </span>
-                                                    {stats.favoriteType}
-                                                </span>
-                                            ) : (
-                                                <strong className="home-stat-card__value">--</strong>
-                                            )}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="mt-4">
-                                        <TrainerStatsEmptyState
-                                            onCreateTeam={() => navigate('/builder')}
-                                            onBrowsePokedex={() => navigate('/pokedex')}
-                                        />
-                                    </div>
-                                )}
+                        {stats.totalTeams > 0 ? (
+                            <div className="home-stat-grid mt-4">
+                                <div className="home-stat-card">
+                                    <span className="home-stat-card__label">Teams</span>
+                                    <strong className="home-stat-card__value">{stats.totalTeams}</strong>
+                                </div>
+                                <div className="home-stat-card">
+                                    <span className="home-stat-card__label">Pinned</span>
+                                    <strong className="home-stat-card__value">{stats.totalFavoritePokemons}</strong>
+                                </div>
+                                <div className="home-stat-card home-stat-card--type">
+                                    <span className="home-stat-card__label">Favorite Type</span>
+                                    {stats.favoriteType ? (
+                                        <span
+                                            className="home-type-pill capitalize mt-2 justify-center"
+                                            style={{
+                                                backgroundColor: `${typeColors[stats.favoriteType]}18`,
+                                                borderColor: `${typeColors[stats.favoriteType]}33`,
+                                                color: typeColors[stats.favoriteType],
+                                                width: '100%'
+                                            }}
+                                        >
+                                            <img
+                                                src={typeIcons[stats.favoriteType]}
+                                                alt={stats.favoriteType}
+                                                className="h-3.5 w-3.5 mr-1"
+                                            />
+                                            {stats.favoriteType}
+                                        </span>
+                                    ) : (
+                                        <strong className="home-stat-card__value mt-2">--</strong>
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mt-4">
+                                <TrainerStatsEmptyState
+                                    onCreateTeam={() => navigate('/builder')}
+                                    onBrowsePokedex={() => navigate('/pokedex')}
+                                />
+                            </div>
+                        )}
                     </section>
 
                     <section className="home-panel p-4">
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                    <div>
-                                        <p className="home-panel__eyebrow">Pinned roster</p>
-                                        <h3 className="home-panel__section-title">Your favorites</h3>
-                                    </div>
-                                    {featuredFavorites.length > 0 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate('/favorites')}
-                                            className="home-button home-button--inline"
-                                        >
-                                            See all
-                                        </button>
-                                    )}
-                                </div>
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <p className="home-panel__eyebrow">Pinned roster</p>
+                                <h3 className="home-panel__section-title">Your favorites</h3>
+                            </div>
+                            {featuredFavorites.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/favorites')}
+                                    className="home-button home-button--inline"
+                                >
+                                    See all
+                                </button>
+                            )}
+                        </div>
 
-                                {featuredFavorites.length > 0 ? (
-                                    <div className="home-favorite-grid home-favorite-grid--sidebar mt-4">
-                                        {featuredFavorites.map((pokemon) => (
-                                            <div
-                                                key={pokemon.id}
-                                                onClick={() => showDetails(pokemon)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' || e.key === ' ') {
-                                                        e.preventDefault();
-                                                        showDetails(pokemon);
-                                                    }
-                                                }}
-                                                className="home-favorite-card home-favorite-card--compact"
-                                                role="button"
-                                                tabIndex={0}
-                                                aria-label={`Open details for ${pokemon.name}`}
-                                            >
-                                                <img
-                                                    src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
-                                                    alt={pokemon.name}
-                                                    className="home-favorite-card__sprite"
-                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                />
-                                                <p className="home-favorite-card__name capitalize">
-                                                    {pokemon.name}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="mt-4">
-                                        <EmptyState
-                                            compact
-                                            title="No favorite Pokémon yet!"
-                                            message="Tap the star on any Pokémon card to pin it here."
-                                            action={{ label: 'Browse Pokédex', onClick: () => navigate('/pokedex') }}
+                        {featuredFavorites.length > 0 ? (
+                            <div className="home-favorite-grid home-favorite-grid--sidebar mt-4">
+                                {featuredFavorites.map((pokemon) => (
+                                    <div
+                                        key={pokemon.id}
+                                        onClick={() => showDetails(pokemon)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' || e.key === ' ') {
+                                                e.preventDefault();
+                                                showDetails(pokemon);
+                                            }
+                                        }}
+                                        className="home-favorite-card home-favorite-card--compact"
+                                        role="button"
+                                        tabIndex={0}
+                                        aria-label={`Open details for ${pokemon.name}`}
+                                    >
+                                        <img
+                                            src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                            alt={pokemon.name}
+                                            className="home-favorite-card__sprite sprite-fade"
+                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                         />
+                                        <p className="home-favorite-card__name capitalize">
+                                            {pokemon.name}
+                                        </p>
                                     </div>
-                                )}
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="mt-4">
+                                <EmptyState
+                                    compact
+                                    title="No favorites yet!"
+                                    message="Tap the star on any Pokémon card to pin it here."
+                                    action={{ label: 'Browse Pokédex', onClick: () => navigate('/pokedex') }}
+                                />
+                            </div>
+                        )}
                     </section>
                 </aside>
             </section>

@@ -525,8 +525,8 @@ export function GenerationQuizView({ showDetails, showToast }) {
     }, [loadingDetailId, showDetails, showToast]);
 
     const helperText = isComplete
-        ? 'Every selected Pokémon has been found.'
-        : `Suggestions after ${MIN_AUTOCOMPLETE_CHARACTERS}+ characters.`;
+        ? 'All selected Pokémon found!'
+        : `Type to guess (${MIN_AUTOCOMPLETE_CHARACTERS}+ chars for suggestions)`;
 
     const allGenerationsSelected = selectedGenerationList.length === QUIZ_GENERATION_KEYS.length;
     const hasPendingSelectionChanges = quizStarted
@@ -534,234 +534,235 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
     return (
         <main className={`generation-quiz ${quizStarted ? 'generation-quiz--running' : ''}`}>
-            <header className="generation-quiz__header">
-                <div className="generation-quiz__header-copy">
-                    <span className="generation-quiz__eyebrow">
-                        <SparklesIcon />
-                        Generation Quiz
-                    </span>
-                    <h2 className="generation-quiz__title">Guess the selected Pokémon</h2>
-                    <p className="generation-quiz__lead">Select generations and guess the names of all the Pokémon in that pool.</p>
-                </div>
-            </header>
-
-            <section className="generation-quiz__layout-unified">
-                <section className="generation-quiz__controller-card team-builder-panel">
-                    {/* Generation Selector Row */}
-                    <div className="generation-quiz__selector-bar">
-                        <div className="generation-quiz__selector-header">
-                            <span className="generation-quiz__selector-label">Choose Generations</span>
-                            {hasPendingSelectionChanges && (
-                                <span className="generation-quiz__pending-note">
-                                    (Start a new run to use the new selection)
-                                </span>
-                            )}
-                        </div>
-                        <div className="generation-quiz__selector-body">
-                            <div className="generation-quiz__selector-pills" role="group" aria-label="Select generations">
-                                <button
-                                    type="button"
-                                    onClick={toggleAllGenerations}
-                                    className={`generation-quiz__selector-pill generation-quiz__selector-pill--all ${allGenerationsSelected ? 'is-active' : ''}`}
-                                    aria-pressed={allGenerationsSelected}
-                                >
-                                    All Gens
-                                </button>
-                                {QUIZ_GENERATION_KEYS.map((generationKey) => (
-                                    <button
-                                        key={generationKey}
-                                        type="button"
-                                        onClick={() => toggleGeneration(generationKey)}
-                                        className={`generation-quiz__selector-pill ${selectedGenerationKeys.has(generationKey) ? 'is-active' : ''}`}
-                                        aria-pressed={selectedGenerationKeys.has(generationKey)}
-                                    >
-                                        <span>{GENERATION_LABELS[generationKey]}</span>
-                                        <span className="generation-quiz__selector-pill-count">
-                                            {generationCounts.get(generationKey) || 0}
-                                        </span>
-                                    </button>
-                                ))}
-                            </div>
-                            <button
-                                type="button"
-                                onClick={startQuiz}
-                                disabled={isLoadingIndex || previewEntries.length === 0}
-                                className="generation-quiz__selector-start-btn"
-                            >
-                                <PokeballIcon />
-                                {quizStarted ? 'New Run' : `Start Quiz (${previewEntries.length} Pokémon)`}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Main Input Field */}
-                    <div className="generation-quiz__main-input-row">
-                        <PokemonGenerationQuizAutocomplete
-                            value={answerInput}
-                            onChange={setAnswerInput}
-                            onKeyDown={handleInputKeyDown}
-                            suggestions={suggestions}
-                            activeIndex={activeSuggestionIndex}
-                            onSelectSuggestion={handleSelectSuggestion}
-                            disabled={!quizStarted || isComplete}
-                            inputRef={inputRef}
-                            helperText={quizStarted ? helperText : "Select generations above and click Start to begin!"}
-                            minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
-                        />
-                        {quizStarted && feedback.message && (
-                            <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
-                                {feedback.message}
-                            </p>
+            <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel">
+                <div className="generation-quiz__panel-header">
+                    <div className="flex items-center gap-2">
+                        <h2 className="team-builder-panel__title team-builder-panel__title--compact">Pokémon Roster</h2>
+                        {quizStarted && (
+                            <span className="team-builder-panel__meta team-builder-panel__meta--compact">
+                                {foundCount}/{totalCount}
+                            </span>
                         )}
                     </div>
-
-                    {/* Hint/Tip Banner */}
-                    {quizStarted && consecutiveMisses >= 3 && currentTip && (
-                        <div className="generation-quiz__tip-banner">
-                            <SparklesIcon />
-                            <span className="generation-quiz__tip-text">{currentTip}</span>
+                    {quizStarted && (
+                        <div className="generation-quiz__grid-filters">
+                            <button
+                                type="button"
+                                onClick={() => setGridFilter('all')}
+                                className={`generation-quiz__filter-btn ${gridFilter === 'all' ? 'is-active' : ''}`}
+                            >
+                                All ({totalCount})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setGridFilter('guessed')}
+                                className={`generation-quiz__filter-btn ${gridFilter === 'guessed' ? 'is-active' : ''}`}
+                            >
+                                Guessed ({foundCount})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setGridFilter('missing')}
+                                className={`generation-quiz__filter-btn ${gridFilter === 'missing' ? 'is-active' : ''}`}
+                            >
+                                Missing ({remainingCount})
+                            </button>
                         </div>
                     )}
+                    {quizStarted && (
+                        <span className="generation-quiz__grid-meta">{visibleEntries.length} shown</span>
+                    )}
+                </div>
 
-                    {/* Compact Progress area */}
-                    {quizStarted ? (
-                        <div className="generation-quiz__compact-progress-row">
-                            <div className="generation-quiz__progress-bar-container">
-                                <div className="generation-quiz__progress-bar" aria-hidden="true">
-                                    <span className="generation-quiz__progress-fill" style={{ width: `${completionPercent}%` }} />
-                                </div>
+                {/* Generation Selector Row */}
+                <div className="generation-quiz__selector-bar mt-3">
+                    <div className="generation-quiz__selector-header">
+                        <span className="generation-quiz__selector-label">Generations</span>
+                        {hasPendingSelectionChanges && (
+                            <span className="generation-quiz__pending-note">
+                                (Restart to apply selection)
+                            </span>
+                        )}
+                    </div>
+                    <div className="generation-quiz__selector-body mt-2">
+                        <div className="generation-quiz__selector-pills" role="group" aria-label="Select generations">
+                            <button
+                                type="button"
+                                onClick={toggleAllGenerations}
+                                className={`generation-quiz__selector-pill generation-quiz__selector-pill--all ${allGenerationsSelected ? 'is-active' : ''}`}
+                                aria-pressed={allGenerationsSelected}
+                            >
+                                All Gens
+                            </button>
+                            {QUIZ_GENERATION_KEYS.map((generationKey) => (
+                                <button
+                                    key={generationKey}
+                                    type="button"
+                                    onClick={() => toggleGeneration(generationKey)}
+                                    className={`generation-quiz__selector-pill ${selectedGenerationKeys.has(generationKey) ? 'is-active' : ''}`}
+                                    aria-pressed={selectedGenerationKeys.has(generationKey)}
+                                >
+                                    <span>{GENERATION_LABELS[generationKey]}</span>
+                                    <span className="generation-quiz__selector-pill-count">
+                                        {generationCounts.get(generationKey) || 0}
+                                    </span>
+                                </button>
+                            ))}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={startQuiz}
+                            disabled={isLoadingIndex || previewEntries.length === 0}
+                            className="generation-quiz__selector-start-btn"
+                        >
+                            <PokeballIcon />
+                            {quizStarted ? 'Restart' : `Start (${previewEntries.length})`}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Sticky Controls Wrapper for mobile */}
+                {quizStarted && (
+                    <div className="generation-quiz__sticky-controls">
+                        {/* Main Input Field */}
+                        <div className="generation-quiz__main-input-row mt-3">
+                            <PokemonGenerationQuizAutocomplete
+                                value={answerInput}
+                                onChange={setAnswerInput}
+                                onKeyDown={handleInputKeyDown}
+                                suggestions={suggestions}
+                                activeIndex={activeSuggestionIndex}
+                                onSelectSuggestion={handleSelectSuggestion}
+                                disabled={!quizStarted || isComplete}
+                                inputRef={inputRef}
+                                helperText={quizStarted ? helperText : "Select generations above and click Start to begin."}
+                                minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
+                            />
+                            {feedback.message && (
+                                <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
+                                    {feedback.message}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Hint/Tip Banner */}
+                        {consecutiveMisses >= 3 && currentTip && (
+                            <div className="generation-quiz__tip-banner mt-3">
+                                <SparklesIcon />
+                                <span className="generation-quiz__tip-text">{currentTip}</span>
                             </div>
-                            <div className="generation-quiz__progress-details">
-                                <div className="generation-quiz__progress-metrics">
-                                    <span className="generation-quiz__metric-item">
-                                        <span className="generation-quiz__metric-label">Guessed:</span>
-                                        <strong className="generation-quiz__metric-value">{foundCount} / {totalCount} ({completionPercent}%)</strong>
-                                    </span>
-                                    <span className="generation-quiz__metric-item">
-                                        <span className="generation-quiz__metric-label">Remaining:</span>
-                                        <strong className="generation-quiz__metric-value">{remainingCount}</strong>
-                                    </span>
-                                    <span className="generation-quiz__metric-item">
-                                        <span className="generation-quiz__metric-label">Accuracy:</span>
-                                        <strong className="generation-quiz__metric-value">{accuracyPercent}%</strong>
-                                    </span>
+                        )}
+
+                        {/* Compact Progress Area */}
+                        {quizStarted ? (
+                            <div className="generation-quiz__compact-progress-row mt-3">
+                                <div className="generation-quiz__progress-bar-container">
+                                    <div className="generation-quiz__progress-bar" aria-hidden="true">
+                                        <span className="generation-quiz__progress-fill" style={{ width: `${completionPercent}%` }} />
+                                    </div>
+                                </div>
+                                <div className="generation-quiz__progress-details mt-2">
+                                    <div className="generation-quiz__progress-metrics">
+                                        <span className="generation-quiz__metric-item">
+                                            <span className="generation-quiz__metric-label">Progress:</span>
+                                            <strong className="generation-quiz__metric-value">{foundCount}/{totalCount} ({completionPercent}%)</strong>
+                                        </span>
+                                        <span className="generation-quiz__metric-item">
+                                            <span className="generation-quiz__metric-label">Accuracy:</span>
+                                            <strong className="generation-quiz__metric-value">{accuracyPercent}%</strong>
+                                        </span>
+                                    </div>
+
+                                    {recentFinds.length > 0 && (
+                                        <div className="generation-quiz__progress-recent">
+                                            <span className="generation-quiz__recent-label">Recent:</span>
+                                            <div className="generation-quiz__recent-chips">
+                                                {recentFinds.map((pokemon) => (
+                                                    <span key={pokemon.id} className="generation-quiz__recent-chip">
+                                                        {pokemon.displayName}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <button type="button" onClick={startQuiz} className="generation-quiz__compact-reset-btn">
+                                        <RefreshIcon /> Restart
+                                    </button>
                                 </div>
 
-                                {recentFinds.length > 0 && (
-                                    <div className="generation-quiz__progress-recent">
-                                        <span className="generation-quiz__recent-label">Recent:</span>
-                                        <div className="generation-quiz__recent-chips">
-                                            {recentFinds.map((pokemon) => (
-                                                <span key={pokemon.id} className="generation-quiz__recent-chip">
-                                                    {pokemon.displayName}
-                                                </span>
-                                            ))}
+                                {/* Generation status list */}
+                                <div className="generation-quiz__compact-gens-list mt-3">
+                                    {generationStats.map((generation) => (
+                                        <div
+                                            key={generation.generationKey}
+                                            className={`generation-quiz__compact-gen-status ${generation.complete ? 'is-complete' : ''}`}
+                                        >
+                                            <span className="generation-quiz__compact-gen-label">{generation.label}</span>
+                                            <span className="generation-quiz__compact-gen-value">
+                                                {generation.found}/{generation.total}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {isComplete && (
+                                    <div className="generation-quiz__celebration mt-3">
+                                        <SuccessToastIcon />
+                                        <div>
+                                            <strong>Congratulations!</strong>
+                                            <p>You guessed every selected Pokémon with {accuracyPercent}% accuracy.</p>
                                         </div>
                                     </div>
                                 )}
-
-                                <button type="button" onClick={startQuiz} className="generation-quiz__compact-reset-btn">
-                                    <RefreshIcon /> Reset
-                                </button>
                             </div>
-
-                            {/* Generation status list */}
-                            <div className="generation-quiz__compact-gens-list">
-                                {generationStats.map((generation) => (
-                                    <div
-                                        key={generation.generationKey}
-                                        className={`generation-quiz__compact-gen-status ${generation.complete ? 'is-complete' : ''}`}
-                                    >
-                                        <span className="generation-quiz__compact-gen-label">{generation.label}</span>
-                                        <span className="generation-quiz__compact-gen-value">
-                                            {generation.found}/{generation.total}
-                                        </span>
-                                    </div>
-                                ))}
+                        ) : (
+                            <div className="generation-quiz__compact-progress-row is-idle mt-3">
+                                <span className="generation-quiz__idle-note">
+                                    Best Run: <strong>{bestRun ? `${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy)` : 'No runs yet'}</strong>
+                                </span>
                             </div>
-
-                            {isComplete && (
-                                <div className="generation-quiz__celebration">
-                                    <SuccessToastIcon />
-                                    <div>
-                                        <strong>Congratulations!</strong>
-                                        <p>You guessed every selected Pokémon with {accuracyPercent}% accuracy.</p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="generation-quiz__compact-progress-row is-idle">
-                            <span className="generation-quiz__idle-note">
-                                Best Run: <strong>{bestRun ? `${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy)` : 'No runs yet'}</strong>
-                            </span>
-                        </div>
-                    )}
-                </section>
-
-                <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel">
-                    <div className="generation-quiz__panel-header">
-                        <div>
-                            <p className="generation-quiz__panel-eyebrow">Grid</p>
-                            <h3 className="generation-quiz__panel-title">Pokémon roster</h3>
-                        </div>
-                        {quizStarted && (
-                            <div className="generation-quiz__grid-filters">
-                                <button
-                                    type="button"
-                                    onClick={() => setGridFilter('all')}
-                                    className={`generation-quiz__filter-btn ${gridFilter === 'all' ? 'is-active' : ''}`}
-                                >
-                                    All ({totalCount})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setGridFilter('guessed')}
-                                    className={`generation-quiz__filter-btn ${gridFilter === 'guessed' ? 'is-active' : ''}`}
-                                >
-                                    Guessed ({foundCount})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setGridFilter('missing')}
-                                    className={`generation-quiz__filter-btn ${gridFilter === 'missing' ? 'is-active' : ''}`}
-                                >
-                                    Missing ({remainingCount})
-                                </button>
-                            </div>
-                        )}
-                        {quizStarted && (
-                            <span className="generation-quiz__grid-meta">{visibleEntries.length} shown</span>
                         )}
                     </div>
+                )}
 
-                    {isLoadingIndex ? (
-                        <div className="generation-quiz__loading-state">
-                            <div className="team-builder-spinner" aria-hidden="true"></div>
-                        </div>
-                    ) : !quizStarted ? (
-                        <EmptyState
-                            compact
-                            title="Grid locked"
-                            message="Start a quiz to reveal the roster placeholders and begin guessing."
-                        />
-                    ) : (
-                        <div className="generation-quiz__grid" role="list" aria-label="Pokémon quiz grid">
-                            {visibleEntries.map((pokemon) => (
-                                <div key={pokemon.id} role="listitem">
-                                    <PokemonGenerationQuizCard
-                                        pokemon={pokemon}
-                                        isFound={foundIds.has(pokemon.id)}
-                                        isNew={newlyFoundId === pokemon.id}
-                                        isLoading={loadingDetailId === pokemon.id}
-                                        isInteractable={isComplete}
-                                        onInspect={inspectPokemon}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
+                {quizStarted && <div className="generation-quiz-divider mt-4 mb-2" />}
+
+                {isLoadingIndex ? (
+                    <div className="generation-quiz__loading-state">
+                        <div className="team-builder-spinner" aria-hidden="true"></div>
+                    </div>
+                ) : !quizStarted ? (
+                    <EmptyState
+                        compact
+                        title="Let's start a quiz!"
+                        spriteSrc="/LogoCuteGengarRounded.png"
+                        message={
+                            bestRun
+                                ? `Select generations above and start the quiz. Your current best run is ${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy).`
+                                : "Select generations above and start the quiz to reveal the roster placeholders and begin guessing."
+                        }
+                        action={{
+                            label: `Start Quiz (${previewEntries.length} Pokémon)`,
+                            onClick: startQuiz
+                        }}
+                    />
+                ) : (
+                    <div className="generation-quiz__grid" role="list" aria-label="Pokémon quiz grid">
+                        {visibleEntries.map((pokemon) => (
+                            <div key={pokemon.id} role="listitem">
+                                <PokemonGenerationQuizCard
+                                    pokemon={pokemon}
+                                    isFound={foundIds.has(pokemon.id)}
+                                    isNew={newlyFoundId === pokemon.id}
+                                    isLoading={loadingDetailId === pokemon.id}
+                                    isInteractable={isComplete}
+                                    onInspect={inspectPokemon}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                )}
             </section>
 
             <div className="sr-only" aria-live="polite">{announcement}</div>

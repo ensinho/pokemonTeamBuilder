@@ -40,24 +40,24 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
 
     const steps = [
         {
-            title: 'Roll one or more Pokemon',
-            description: 'Pick your filters, choose the amount, and generate a fresh round in seconds.',
+            title: '1. Roll',
+            description: 'Set filters, choose count, and generate.',
         },
         {
-            title: 'Keep the answers with you',
-            description: 'One player sees the result on the phone while everyone else starts asking yes or no questions.',
+            title: '2. Host',
+            description: 'One player views the secret results.',
         },
         {
-            title: 'Reveal at the end',
-            description: 'Play one card at a time or use multiple rolls for a longer guessing session.',
+            title: '3. Reveal',
+            description: 'Show the card once they guess right.',
         },
     ];
 
     const questionIdeas = [
-        'Is it a legendary?',
-        'Is it from Johto?',
+        'Is it legendary?',
+        'Is it Gen I?',
         'Does it evolve?',
-        'Is one of its types Water?',
+        'Is it Water-type?',
     ];
 
     return (
@@ -94,10 +94,10 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                     </div>
 
                     <h2 id="random-generator-intro-title" className="mt-3 pr-10 text-xl font-extrabold tracking-tight text-fg sm:text-2xl">
-                        Turn this screen into a Pokemon party game
+                        Pokémon Guessing Game
                     </h2>
                     <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted sm:text-sm">
-                        Use the Random Generator as a quick yes-or-no challenge. You keep the rolled Pokemon on screen, your friends ask questions, and the reveal happens only when someone gets the answer right.
+                        Keep the screen hidden, let friends ask yes/no questions, and reveal when they guess right!
                     </p>
                 </div>
 
@@ -106,15 +106,12 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                     style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 >
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                        {steps.map((step, index) => (
+                        {steps.map((step) => (
                             <div
                                 key={step.title}
                                 className="rounded-2xl border border-surface-raised bg-bg p-3"
                             >
-                                <span className="mb-2.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary-soft text-xs font-extrabold text-primary">
-                                    {index + 1}
-                                </span>
-                                <p className="text-xs font-bold text-fg sm:text-sm">
+                                <p className="text-xs font-bold text-primary sm:text-sm">
                                     {step.title}
                                 </p>
                                 <p className="mt-1.5 text-[11px] leading-relaxed text-muted sm:text-xs">
@@ -142,7 +139,7 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
 
                     <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
                         <p className="text-[11px] leading-relaxed text-muted sm:text-xs">
-                            This guide shows automatically only the first time for this trainer profile.
+                            Guide shows on your first visit.
                         </p>
                         <button
                             type="button"
@@ -255,7 +252,7 @@ const StatusInfoCard = ({ pokemon, colors }) => {
             <button
                 ref={anchorRef}
                 type="button"
-                className="random-generator-meta-card random-generator-status-card"
+                className="random-generator-compact-meta__button"
                 style={{ '--random-generator-status-tone': statusMeta.tone }}
                 aria-expanded={isOpen}
                 aria-label={`Status details for ${pokemon.name}`}
@@ -266,15 +263,13 @@ const StatusInfoCard = ({ pokemon, colors }) => {
                 onMouseEnter={openPopover}
                 onMouseLeave={scheduleClose}
             >
-                <span className="random-generator-status-card__meta">
-                    <span className="random-generator-meta-card__label">Status</span>
-                    <span className="random-generator-meta-card__value random-generator-status-card__value">
-                        {statusMeta.label}
+                <span className="random-generator-compact-meta__label">Status</span>
+                <strong className="random-generator-compact-meta__value flex items-center justify-between gap-1">
+                    <span style={{ color: statusMeta.tone }}>{statusMeta.label}</span>
+                    <span className="random-generator-compact-meta__info-icon" aria-hidden="true">
+                        <InfoIcon className="w-3 h-3" />
                     </span>
-                </span>
-                <span className="random-generator-status-card__icon" aria-hidden="true">
-                    <InfoIcon />
-                </span>
+                </strong>
             </button>
 
             <AnchoredPopover
@@ -925,22 +920,24 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                 </div>
 
                 <div className="random-generator-card__body">
-                    <div className="random-generator-meta-grid">
-                        <div className="random-generator-meta-card">
-                            <p className="random-generator-meta-card__label">Height</p>
-                            <p className="random-generator-meta-card__value">{pokemon.height}m</p>
+                    <div className="random-generator-compact-meta">
+                        <div className="random-generator-compact-meta__item">
+                            <span className="random-generator-compact-meta__label">Height</span>
+                            <strong className="random-generator-compact-meta__value">{pokemon.height}m</strong>
                         </div>
-                        <div className="random-generator-meta-card">
-                            <p className="random-generator-meta-card__label">Weight</p>
-                            <p className="random-generator-meta-card__value">{pokemon.weight}kg</p>
+                        <div className="random-generator-compact-meta__item">
+                            <span className="random-generator-compact-meta__label">Weight</span>
+                            <strong className="random-generator-compact-meta__value">{pokemon.weight}kg</strong>
                         </div>
-                        <div className="random-generator-meta-card">
-                            <p className="random-generator-meta-card__label">Habitat</p>
-                            <p className="random-generator-meta-card__value random-generator-meta-card__value--small capitalize">
+                        <div className="random-generator-compact-meta__item">
+                            <span className="random-generator-compact-meta__label">Habitat</span>
+                            <strong className="random-generator-compact-meta__value capitalize">
                                 {pokemon.habitat?.replace(/-/g, ' ') || 'Unknown'}
-                            </p>
+                            </strong>
                         </div>
-                        <StatusInfoCard pokemon={pokemon} colors={colors} />
+                        <div className="random-generator-compact-meta__item">
+                            <StatusInfoCard pokemon={pokemon} colors={colors} />
+                        </div>
                     </div>
 
                     {hasEvolutionLine && (
@@ -1007,27 +1004,40 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
         <main className="random-generator-view">
             {showIntroModal && <RandomGeneratorIntroModal onClose={handleCloseIntroModal} colors={colors} />}
 
-            <section className="random-generator-panel random-generator-panel--hero">
-                <div className="random-generator-panel__header">
-                    <div className="random-generator-panel__summary">
-                        <div className="random-generator-panel__eyebrow">
-                            <DiceIcon />
-                            Random Generator
-                        </div>
-                        <h2 className="random-generator-panel__title">Build fast Pokemon guessing rounds</h2>
-                        <p className="random-generator-panel__description">
-                            Roll the secret Pokemon, keep the phone with the player who knows the answer, and let the rest of the group narrow it down with yes or no questions.
-                        </p>
+            <section className="random-generator-panel random-generator-panel--results">
+                {/* Unified top toolbar */}
+                <div className="random-generator-toolbar flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-3 border-b border-border">
+                    <div className="random-generator-filters-toggle-wrap">
+                        <button
+                            type="button"
+                            onClick={handleToggleFiltersLayout}
+                            className="random-generator-filters__toggle"
+                            aria-expanded={isFiltersExpanded}
+                            aria-controls="random-generator-filters-panel"
+                        >
+                            <span className="flex items-center justify-between gap-3">
+                                <span className="min-w-0 flex items-center gap-2 text-sm font-bold text-fg">
+                                    <ChartColumnIcon className="w-4 h-4 text-primary" />
+                                    Filters
+                                    <span className="random-generator-filters__count-badge text-muted text-xs font-normal ml-1">
+                                        ({filterSummaryChips.length} active)
+                                    </span>
+                                </span>
+                                <span className={`random-generator-filters__toggle-icon ${isFiltersExpanded ? 'is-expanded' : ''}`} aria-hidden="true">
+                                    <CollapseRightIcon />
+                                </span>
+                            </span>
+                        </button>
                     </div>
 
-                    <div className="random-generator-panel__actions">
+                    <div className="random-generator-actions flex items-center gap-2">
                         <button
                             type="button"
                             onClick={() => setShowIntroModal(true)}
                             className="random-generator-action random-generator-action--ghost"
                         >
                             <InfoIcon />
-                            How to play
+                            How to Play
                         </button>
                         <button
                             type="button"
@@ -1036,156 +1046,130 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             className="random-generator-action random-generator-action--primary"
                         >
                             <RefreshIcon />
-                            {isLoading ? 'Generating...' : isLoadingAllIds ? 'Preparing pool...' : 'Generate round'}
+                            {isLoading ? 'Generating...' : isLoadingAllIds ? 'Preparing pool...' : 'Generate'}
                         </button>
                     </div>
                 </div>
 
-                <div className="random-generator-filters">
-                    <button
-                        type="button"
-                        onClick={handleToggleFiltersLayout}
-                        className="random-generator-filters__toggle"
-                        aria-expanded={isFiltersExpanded}
-                        aria-controls="random-generator-filters-panel"
-                    >
-                        <span className="flex items-center justify-between gap-3">
-                            <span className="min-w-0 flex items-center gap-2 text-sm font-bold text-fg">
-                                <span className="inline-flex items-center gap-2 text-sm font-bold text-fg">
-                                    <ChartColumnIcon className="w-4 h-4" />
-                                    Filters
-                                </span>
-                                <span className="random-generator-filters__toggle-copy">
-                                    {isFiltersExpanded
-                                        ? 'Hide the inputs and keep a compact chip summary.'
-                                        : `${filterSummaryChips.length} compact filter chip${filterSummaryChips.length !== 1 ? 's' : ''} visible.`}
-                                </span>
-                            </span>
-                            <span className={`random-generator-filters__toggle-icon ${isFiltersExpanded ? 'is-expanded' : ''}`} aria-hidden="true">
-                                <CollapseRightIcon />
-                            </span>
-                        </span>
-                    </button>
+                {/* Collapsible Filters Grid */}
+                <div
+                    id="random-generator-filters-panel"
+                    className="overflow-hidden transition-all duration-300 ease-out"
+                    style={{
+                        maxHeight: isFiltersExpanded ? '40rem' : '0px',
+                        opacity: isFiltersExpanded ? 1 : 0,
+                        transform: isFiltersExpanded ? 'translateY(0)' : 'translateY(-8px)',
+                        pointerEvents: isFiltersExpanded ? 'auto' : 'none',
+                    }}
+                    aria-hidden={!isFiltersExpanded}
+                >
+                    <div className="random-generator-filters__grid pb-3 mb-3 border-b border-border">
+                        <label className="random-generator-field">
+                            <span className="random-generator-field__label">Count</span>
+                            <select
+                                value={pokemonCount}
+                                onChange={(e) => setPokemonCount(parseInt(e.target.value, 10))}
+                                className="random-generator-select"
+                            >
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((count) => (
+                                    <option key={count} value={count}>{count}</option>
+                                ))}
+                            </select>
+                        </label>
 
-                    {!isFiltersExpanded && (
-                        <div className="random-generator-filters__summary">
-                            {filterSummaryChips.map((chip) => (
-                                <span key={chip.key} className="random-generator-filters__chip">
-                                    <span className="text-muted">{chip.label}</span>
-                                    <span>{chip.value}</span>
-                                </span>
-                            ))}
-                        </div>
-                    )}
+                        <label className="random-generator-field">
+                            <span className="random-generator-field__label">Region</span>
+                            <select
+                                value={selectedRegion}
+                                onChange={(e) => setSelectedRegion(e.target.value)}
+                                className="random-generator-select capitalize"
+                            >
+                                <option value="all">All regions</option>
+                                {regionOptions.map((generation) => (
+                                    <option key={generation} value={generation} className="capitalize">
+                                        {generation.replace('generation-', 'Gen ').replace('-', ' ')}
+                                    </option>
+                                ))}
+                            </select>
+                        </label>
 
-                    <div
-                        id="random-generator-filters-panel"
-                        className="overflow-hidden transition-all duration-300 ease-out"
-                        style={{
-                            maxHeight: isFiltersExpanded ? '40rem' : '0px',
-                            opacity: isFiltersExpanded ? 1 : 0,
-                            transform: isFiltersExpanded ? 'translateY(0)' : 'translateY(-8px)',
-                            pointerEvents: isFiltersExpanded ? 'auto' : 'none',
-                        }}
-                        aria-hidden={!isFiltersExpanded}
-                    >
-                        <div className="random-generator-filters__grid">
-                            <label className="random-generator-field">
-                                <span className="random-generator-field__label">Pokemon count</span>
-                                <select
-                                    value={pokemonCount}
-                                    onChange={(e) => setPokemonCount(parseInt(e.target.value, 10))}
-                                    className="random-generator-select"
-                                >
-                                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map((count) => (
-                                        <option key={count} value={count}>{count}</option>
-                                    ))}
-                                </select>
-                            </label>
+                        <label className="random-generator-field">
+                            <span className="random-generator-field__label">Type</span>
+                            <select
+                                value={selectedType}
+                                onChange={(e) => setSelectedType(e.target.value)}
+                                className="random-generator-select capitalize"
+                            >
+                                <option value="all">All types</option>
+                                {Object.keys(typeColors).map((type) => (
+                                    <option key={type} value={type} className="capitalize">{type}</option>
+                                ))}
+                            </select>
+                        </label>
 
-                            <label className="random-generator-field">
-                                <span className="random-generator-field__label">Region pool</span>
-                                <select
-                                    value={selectedRegion}
-                                    onChange={(e) => setSelectedRegion(e.target.value)}
-                                    className="random-generator-select capitalize"
-                                >
-                                    <option value="all">All regions</option>
-                                    {regionOptions.map((generation) => (
-                                        <option key={generation} value={generation} className="capitalize">
-                                            {generation.replace('generation-', 'Gen ').replace('-', ' ')}
-                                        </option>
-                                    ))}
-                                </select>
-                            </label>
+                        <label className="random-generator-field">
+                            <span className="random-generator-field__label">Rarity</span>
+                            <select
+                                value={legendaryFilter}
+                                onChange={(e) => setLegendaryFilter(e.target.value)}
+                                className="random-generator-select"
+                            >
+                                <option value="all">Any rarity</option>
+                                <option value="legendary">Legendary only</option>
+                                <option value="non-legendary">Exclude legendaries</option>
+                            </select>
+                        </label>
 
-                            <label className="random-generator-field">
-                                <span className="random-generator-field__label">Type filter</span>
-                                <select
-                                    value={selectedType}
-                                    onChange={(e) => setSelectedType(e.target.value)}
-                                    className="random-generator-select capitalize"
-                                >
-                                    <option value="all">All types</option>
-                                    {Object.keys(typeColors).map((type) => (
-                                        <option key={type} value={type} className="capitalize">{type}</option>
-                                    ))}
-                                </select>
-                            </label>
+                        <label className="random-generator-field">
+                            <span className="random-generator-field__label">Stage</span>
+                            <select
+                                value={fullyEvolvedFilter}
+                                onChange={(e) => setFullyEvolvedFilter(e.target.value)}
+                                className="random-generator-select"
+                            >
+                                <option value="all">Any stage</option>
+                                <option value="fully-evolved">Fully evolved only</option>
+                                <option value="not-fully-evolved">Not fully evolved</option>
+                            </select>
+                        </label>
 
-                            <label className="random-generator-field">
-                                <span className="random-generator-field__label">Legendary pool</span>
-                                <select
-                                    value={legendaryFilter}
-                                    onChange={(e) => setLegendaryFilter(e.target.value)}
-                                    className="random-generator-select"
-                                >
-                                    <option value="all">Any rarity</option>
-                                    <option value="legendary">Legendary only</option>
-                                    <option value="non-legendary">Exclude legendaries</option>
-                                </select>
-                            </label>
-
-                            <label className="random-generator-field">
-                                <span className="random-generator-field__label">Evolution stage</span>
-                                <select
-                                    value={fullyEvolvedFilter}
-                                    onChange={(e) => setFullyEvolvedFilter(e.target.value)}
-                                    className="random-generator-select"
-                                >
-                                    <option value="all">Any stage</option>
-                                    <option value="fully-evolved">Fully evolved only</option>
-                                    <option value="not-fully-evolved">Not fully evolved</option>
-                                </select>
-                            </label>
-
-                            <label className="random-generator-field">
-                                <span className="random-generator-field__label">Form filter</span>
-                                <select
-                                    value={formsFilter}
-                                    onChange={(e) => setFormsFilter(e.target.value)}
-                                    className="random-generator-select"
-                                >
-                                    <option value="all">Any form pool</option>
-                                    <option value="with-forms">Only Pokemon with alt forms</option>
-                                    <option value="no-forms">Only Pokemon without alt forms</option>
-                                </select>
-                            </label>
-                        </div>
+                        <label className="random-generator-field">
+                            <span className="random-generator-field__label">Forms</span>
+                            <select
+                                value={formsFilter}
+                                onChange={(e) => setFormsFilter(e.target.value)}
+                                className="random-generator-select"
+                            >
+                                <option value="all">Any form pool</option>
+                                <option value="with-forms">Only Pokemon with alt forms</option>
+                                <option value="no-forms">Only Pokemon without alt forms</option>
+                            </select>
+                        </label>
                     </div>
                 </div>
-            </section>
 
-            <section className="random-generator-panel random-generator-panel--results">
+                {!isFiltersExpanded && (
+                    <div className="random-generator-filters__summary mb-4">
+                        {filterSummaryChips.map((chip) => (
+                            <span key={chip.key} className="random-generator-filters__chip">
+                                <span className="text-muted">{chip.label}</span>
+                                <span>{chip.value}</span>
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                <div className="random-generator-divider" />
+
                 <div className="random-generator-results__header">
                     <div>
-                        <h3 className="random-generator-results__title">Current roll</h3>
+                        <h3 className="random-generator-results__title">Current Roll</h3>
                         <p className="random-generator-results__copy">
-                            {generationSummary.generated} of {generationSummary.requested} Pokemon ready for this round.
+                            {generationSummary.generated}/{generationSummary.requested} Pokémon generated.
                         </p>
                         {generationSummary.exhausted && generationSummary.generated < generationSummary.requested && (
                             <p className="random-generator-results__hint">
-                                Only {generationSummary.generated} Pokemon matched the current filters. Loosen one or two parameters to fill the full round.
+                                Only {generationSummary.generated} matched. Loosen filters to generate all requested Pokémon.
                             </p>
                         )}
                     </div>

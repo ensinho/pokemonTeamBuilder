@@ -54,7 +54,7 @@ export function PokemonGenerationQuizCard({
 
             <span className="generation-quiz-card__name">{pokemon.displayName}</span>
             <span className="generation-quiz-card__hint">
-                {isLoading ? 'Loading details…' : isInteractable ? 'Tap for details' : 'Finish the quiz to inspect'}
+                {isLoading ? 'Loading...' : isInteractable ? 'Tap for info' : 'Locked'}
             </span>
         </button>
     );

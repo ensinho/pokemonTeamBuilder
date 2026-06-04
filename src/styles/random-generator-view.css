@@ -12,11 +12,11 @@
 }
 
 .random-generator-panel--hero {
-    padding: 0.95rem 1rem 1rem;
+    padding: 0.8rem 1rem;
 }
 
 .random-generator-panel--results {
-    padding: 1rem;
+    padding: 0.9rem 1rem;
 }
 
 .random-generator-panel__header,
@@ -49,11 +49,14 @@
 
 .random-generator-panel__title,
 .random-generator-results__title {
-    margin: 0.55rem 0 0;
+    margin: 0;
     color: var(--color-fg);
     font-size: clamp(1.1rem, 1.8vw, 1.55rem);
     font-weight: 700;
     letter-spacing: -0.03em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .random-generator-panel__description,
@@ -370,109 +373,104 @@
     padding: 0.8rem 1rem 0.95rem;
 }
 
-.random-generator-meta-grid {
+/* Compact meta grid for pokemon cards */
+.random-generator-compact-meta {
     display: grid;
-    gap: 0.45rem;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.random-generator-meta-card {
+    gap: 0.5rem;
     margin-top: 0.5rem;
+    background: color-mix(in srgb, var(--color-bg) 60%, var(--color-surface));
     border: 1px solid var(--color-border);
-    border-radius: 0.9rem;
-    background: color-mix(in srgb, var(--color-bg) 72%, var(--color-surface));
+    border-radius: 0.75rem;
+    padding: 0.6rem 0.75rem;
 }
 
-.random-generator-meta-card {
+.random-generator-compact-meta__item {
     display: flex;
-    min-height: 4rem;
     flex-direction: column;
     justify-content: center;
-    gap: 0.28rem;
-    padding: 0.65rem 0.75rem;
-    text-align: left;
+    gap: 0.15rem;
+    padding: 0.25rem 0;
 }
 
-.random-generator-meta-card__value {
-    margin: 0;
-    color: var(--color-fg);
-    font-size: 0.98rem;
+.random-generator-compact-meta__item:not(:nth-child(2n)) {
+    border-right: 1px solid var(--color-border);
+    padding-right: 0.75rem;
+}
+
+.random-generator-compact-meta__item:nth-child(2n) {
+    padding-left: 0.75rem;
+}
+
+.random-generator-compact-meta__label {
+    color: var(--color-muted);
+    font-size: 0.62rem;
     font-weight: 700;
-    line-height: 1.25;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 }
 
-.random-generator-meta-card__value--small {
-    font-size: 0.8rem;
+.random-generator-compact-meta__value {
+    color: var(--color-fg);
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
-.random-generator-status-card {
+.random-generator-compact-meta__button {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.25rem 0;
     width: 100%;
+    text-align: left;
     cursor: pointer;
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.65rem;
-    transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    background: transparent;
+    border: none;
+    transition: transform 180ms ease;
 }
 
-.random-generator-status-card:hover,
-.random-generator-status-card[aria-expanded='true'] {
-    border-color: color-mix(in srgb, var(--random-generator-status-tone, var(--color-primary)) 30%, var(--color-border));
-    box-shadow: var(--elevation-1);
-    transform: translateY(-1px);
+.random-generator-compact-meta__button:hover {
+    transform: translateY(-0.5px);
 }
 
-.random-generator-status-card__meta {
-    display: grid;
-    gap: 0.28rem;
-    min-width: 0;
-}
-
-.random-generator-status-card__value {
-    color: var(--random-generator-status-tone, var(--color-fg));
-}
-
-.random-generator-status-card__icon {
+.random-generator-compact-meta__info-icon {
     display: inline-flex;
-    height: 1.3rem;
-    width: 1.3rem;
     align-items: center;
     justify-content: center;
     border-radius: 999px;
-    background: color-mix(in srgb, var(--random-generator-status-tone, var(--color-primary)) 14%, transparent);
+    background: color-mix(in srgb, var(--random-generator-status-tone, var(--color-primary)) 15%, transparent);
     color: var(--random-generator-status-tone, var(--color-primary));
+    width: 1.15rem;
+    height: 1.15rem;
     flex-shrink: 0;
-}
-
-.random-generator-status-card__icon svg {
-    height: 1rem;
-    width: 1rem;
 }
 
 .random-generator-status-popover {
     width: min(15rem, calc(100vw - 1rem));
-    border-radius: 0.9rem;
+    border-radius: 0.75rem;
     box-shadow: var(--elevation-2);
 }
 
 .random-generator-status-popover__body {
     display: grid;
-    gap: 0.55rem;
-    padding: 0.75rem 0.85rem;
+    gap: 0.45rem;
+    padding: 0.6rem 0.75rem;
 }
 
 .random-generator-status-popover__row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.5rem;
     color: var(--color-muted);
-    font-size: 0.78rem;
+    font-size: 0.75rem;
 }
 
 .random-generator-status-popover__row strong {
     color: var(--color-fg);
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     font-weight: 700;
     text-align: right;
 }
@@ -480,8 +478,8 @@
 .random-generator-status-popover__hint {
     margin: 0;
     color: var(--color-muted);
-    font-size: 0.72rem;
-    line-height: 1.45;
+    font-size: 0.68rem;
+    line-height: 1.4;
 }
 
 .random-generator-section {
@@ -626,8 +624,29 @@
         justify-content: space-between;
     }
 
-    .random-generator-meta-grid {
+    .random-generator-compact-meta {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .random-generator-compact-meta__item {
+        padding: 0.25rem 0;
+    }
+
+    .random-generator-compact-meta__item:not(:last-child) {
+        border-right: 1px solid var(--color-border);
+        padding-right: 0.75rem;
+    }
+
+    .random-generator-compact-meta__item:last-child {
+        border-right: none;
+    }
+
+    .random-generator-compact-meta__item:not(:first-child) {
+        padding-left: 0.75rem;
+    }
+
+    .random-generator-compact-meta__item:first-child {
+        padding-left: 0;
     }
 }
 
@@ -691,3 +710,9 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
+
+.random-generator-divider {
+    height: 1px;
+    background-color: var(--color-border);
+    margin: 1rem 0 1.25rem;
+}

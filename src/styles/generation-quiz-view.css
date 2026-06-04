@@ -5,50 +5,35 @@
     padding: 0 0.5rem;
 }
 
-/* Header style - premium gradient styling */
+/* Header style - premium compact styling */
 .generation-quiz__header {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 1.5rem;
-    border-radius: 1.25rem;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: 1rem;
     background:
-        radial-gradient(circle at top right, var(--color-primary-soft), transparent 42%),
-        linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-raised) 160%);
+        radial-gradient(circle at top right, var(--color-primary-soft), transparent 50%),
+        linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-raised) 100%);
     border: 1px solid var(--color-border);
 }
 
-.generation-quiz__eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    margin: 0;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-primary);
-}
-
-.generation-quiz__eyebrow svg {
-    width: 0.9rem;
-    height: 0.9rem;
-}
-
 .generation-quiz__title {
-    margin: 0.25rem 0 0;
+    margin: 0;
     color: var(--color-fg);
     font-weight: 800;
-    font-size: clamp(1.4rem, 2.5vw, 2rem);
+    font-size: clamp(1.2rem, 2.2vw, 1.6rem);
     letter-spacing: -0.02em;
-    line-height: 1.1;
+    line-height: 1.2;
+    display: flex;
+    align-items: center;
 }
 
 .generation-quiz__lead {
     margin: 0;
     color: var(--color-muted);
-    font-size: 0.92rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.4;
 }
 
 /* Unified layout wrapper */
@@ -62,9 +47,9 @@
 .generation-quiz__controller-card {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    border-radius: 1.25rem;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 1rem;
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     box-shadow: var(--elevation-1);
@@ -75,8 +60,8 @@
 .generation-quiz__selector-bar {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    padding-bottom: 1.25rem;
+    gap: 0.5rem;
+    padding-bottom: 0.85rem;
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -818,25 +803,50 @@
         line-height: 1.4;
     }
 
-    .generation-quiz__controller-card {
-        padding: 0.85rem;
-        gap: 1rem;
-        border-radius: 1rem;
+    .generation-quiz__sticky-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
     }
 
     /* Keep it sticky when active on mobile */
-    .generation-quiz--running .generation-quiz__controller-card {
+    .generation-quiz--running .generation-quiz__sticky-controls {
         position: sticky;
-        top: calc(var(--app-shell-top-band-height, 5.35rem) + 0.25rem);
+        top: calc(var(--app-shell-top-band-height, 5.35rem) - 0.25rem);
         z-index: 18;
-        border-color: var(--color-primary);
-        background: color-mix(in srgb, var(--color-surface) 94%, var(--color-primary-soft));
-        box-shadow: var(--elevation-2);
+        background: var(--color-surface);
+        padding: 0.5rem 0 0.8rem 0;
+        border-bottom: 1px solid var(--color-border);
+        box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.15);
+        margin: 0 -0.85rem;
+        padding-left: 0.85rem;
+        padding-right: 0.85rem;
     }
 
     /* Hide selector pills on mobile running state to optimize screen estate */
     .generation-quiz--running .generation-quiz__selector-bar {
         display: none;
+    }
+
+    /* Hide non-essential progress details on mobile running state for vertical space savings */
+    .generation-quiz--running .generation-quiz__compact-gens-list,
+    .generation-quiz--running .generation-quiz__progress-recent,
+    .generation-quiz--running .generation-quiz__idle-note {
+        display: none !important;
+    }
+
+    .generation-quiz--running .generation-quiz__progress-details {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding-bottom: 0;
+    }
+
+    .generation-quiz--running .generation-quiz__compact-reset-btn {
+        width: auto;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.72rem;
     }
 
     .generation-quiz__selector-bar {
@@ -989,3 +999,9 @@
         height: 0.72rem;
     }
 }
+
+.generation-quiz-divider {
+    height: 1px;
+    background-color: var(--color-border);
+    margin: 1.25rem 0 1rem;
+}

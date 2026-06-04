@@ -18,7 +18,7 @@ export function EmptyState({ title, message, action, spriteSrc, compact = false 
     const sizePad = compact ? 'py-6' : 'py-12';
 
     return (
-        <div className={`flex flex-col items-center justify-center text-center ${sizePad}`}>
+        <div className={`flex flex-col mt-12 items-center justify-center text-center ${sizePad}`}>
             <img
                 src={sprite}
                 alt=""
