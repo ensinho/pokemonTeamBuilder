@@ -9,6 +9,7 @@
     border-radius: 1rem;
     background: var(--color-surface);
     box-shadow: var(--elevation-1);
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .random-generator-panel--hero {
@@ -81,18 +82,19 @@
 
 .random-generator-action {
     display: inline-flex;
-    min-height: 2.65rem;
+    min-height: 2.35rem;
+    height: 2.35rem;
     align-items: center;
     justify-content: center;
     gap: 0.45rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 0.6rem;
     background: var(--color-surface-raised);
     color: var(--color-fg);
-    padding: 0.65rem 0.9rem;
-    font-size: 0.88rem;
+    padding: 0 1rem;
+    font-size: 0.85rem;
     font-weight: 600;
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth);
 }
 
 .random-generator-action svg {
@@ -101,7 +103,7 @@
 }
 
 .random-generator-action:hover {
-    transform: translateY(-1px);
+    transform: translateY(-1.5px);
     box-shadow: var(--elevation-2);
 }
 
@@ -118,6 +120,10 @@
     color: #fff;
 }
 
+.random-generator-action--primary:hover {
+    box-shadow: 0 6px 16px -4px var(--color-primary-soft), var(--elevation-2);
+}
+
 .random-generator-filters {
     display: grid;
     gap: 0.6rem;
@@ -125,17 +131,27 @@
 
 .random-generator-filters__toggle {
     width: 100%;
-    border: 1px solid var(--color-border);
-    border-radius: 0.95rem;
-    background: var(--color-bg);
+    border: 1px solid transparent;
+    border-radius: 0.8rem;
+    background: var(--color-surface-raised);
     color: var(--color-fg);
-    padding: 0.8rem 0.9rem;
+    padding: 0.65rem 0.95rem;
     text-align: left;
-    transition: border-color 180ms ease, background-color 180ms ease;
+    transition: border-color var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth),
+                box-shadow var(--duration-normal) var(--ease-smooth);
 }
 
 .random-generator-filters__toggle:hover {
+    border-color: var(--color-border-hover);
+}
+
+.random-generator-filters__toggle:focus-visible,
+.random-generator-filters__toggle:focus {
+    outline: none;
     border-color: var(--color-primary);
+    background-color: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-soft), inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .random-generator-filters__toggle-icon {
@@ -147,7 +163,7 @@
     border-radius: 0.75rem;
     background: var(--color-primary-soft);
     color: var(--color-primary);
-    transition: transform 220ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth);
 }
 
 .random-generator-filters__toggle-icon.is-expanded {
@@ -198,13 +214,31 @@
 
 .random-generator-select {
     width: 100%;
-    min-height: 2.65rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.8rem;
+    height: 2.35rem;
+    min-height: 2.35rem;
+    border: 1px solid transparent;
+    border-radius: 0.6rem;
     background: var(--color-surface-raised);
     color: var(--color-fg);
-    padding: 0.65rem 0.8rem;
-    font-size: 0.88rem;
+    padding: 0 2.25rem 0 0.85rem;
+    font-size: 0.85rem;
+    box-sizing: border-box;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.85rem center;
+    background-size: 1rem;
+    transition: border-color var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth),
+                box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.random-generator-select:focus-visible,
+.random-generator-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background-color: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-soft), inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
 .random-generator-results__grid {
@@ -224,12 +258,22 @@
     border-radius: 1rem;
     background: var(--color-surface);
     box-shadow: var(--elevation-1);
-    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth);
+    
+    /* Staggered entrance animation */
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
+.random-generator-card:nth-child(1) { animation-delay: 0ms; }
+.random-generator-card:nth-child(2) { animation-delay: 60ms; }
+.random-generator-card:nth-child(3) { animation-delay: 120ms; }
+.random-generator-card:nth-child(4) { animation-delay: 180ms; }
+.random-generator-card:nth-child(5) { animation-delay: 240ms; }
+.random-generator-card:nth-child(6) { animation-delay: 300ms; }
+
 .random-generator-card:hover {
-    border-color: color-mix(in srgb, var(--random-generator-type-color, var(--color-primary)) 16%, var(--color-border));
-    transform: none;
+    border-color: color-mix(in srgb, var(--random-generator-type-color, var(--color-primary)) 28%, var(--color-border-hover));
+    transform: translateY(-2px);
     box-shadow: var(--elevation-2);
 }
 
@@ -428,7 +472,7 @@
     cursor: pointer;
     background: transparent;
     border: none;
-    transition: transform 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth);
 }
 
 .random-generator-compact-meta__button:hover {

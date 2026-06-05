@@ -18,11 +18,29 @@
 .home-panel {
     position: relative;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1.2rem;
     background: var(--color-surface);
-    box-shadow: var(--elevation-1);
-    transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+    box-shadow: var(--card-shadow, var(--elevation-1));
+    transition: transform var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth);
+
+    /* Staggered entrance animation */
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
+}
+
+/* Staggered delay per panel — each subsequent panel fades in 60ms later */
+.home-panel:nth-child(1) { animation-delay: 0ms; }
+.home-panel:nth-child(2) { animation-delay: 60ms; }
+.home-panel:nth-child(3) { animation-delay: 120ms; }
+.home-panel:nth-child(4) { animation-delay: 180ms; }
+.home-panel:nth-child(5) { animation-delay: 240ms; }
+.home-panel:nth-child(6) { animation-delay: 300ms; }
+.home-panel:nth-child(7) { animation-delay: 360ms; }
+.home-panel:nth-child(8) { animation-delay: 420ms; }
+
+/* Light-mode: reveal border on hover for card differentiation */
+.home-panel:hover {
+    border-color: var(--color-border-hover);
 }
 
 .home-panel--hero {
@@ -59,6 +77,12 @@
     transform: translateY(-2px);
     box-shadow: var(--elevation-2);
     border-color: var(--color-primary);
+}
+
+/* Colored button shadow for primary CTAs */
+.home-panel--interactive:hover .home-button--primary,
+.home-button--primary:hover {
+    box-shadow: 0 6px 16px -4px var(--color-primary-soft);
 }
 
 .home-panel--interactive:focus-within {
@@ -623,15 +647,49 @@
 }
 
 .home-stat-card {
-    padding: 0.6rem 0.4rem;
-    border-radius: 0.75rem;
+    padding: 0.85rem 0.5rem;
+    border-radius: 0.8rem;
     background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
+    border: 1px solid transparent;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     text-align: center;
+    box-shadow: none;
+    transition: transform var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth),
+                border-color var(--duration-normal) var(--ease-smooth),
+                box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.home-stat-card:hover {
+    transform: translateY(-1.5px);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--elevation-1);
+    background: var(--color-surface);
+}
+
+.home-stat-card__icon {
+    display: inline-flex;
+    width: 2.2rem;
+    height: 2.2rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+    transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.home-stat-card__icon svg {
+    width: 1.05rem;
+    height: 1.05rem;
+}
+
+.home-stat-card:hover .home-stat-card__icon {
+    transform: scale(1.08) rotate(5deg);
 }
 
 .home-stat-card--type {

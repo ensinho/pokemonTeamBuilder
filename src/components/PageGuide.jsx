@@ -55,6 +55,13 @@ const PAGE_GUIDE_TIPS = {
             '🎮 Nuzlocke Draft: generate 12, pick only 6 — and never reroll. Play with what fate gives you.',
         ],
     },
+    generationQuiz: {
+        title: 'Generation Quiz',
+        tips: [
+            'Select a generation and try to guess all pokémons from that!',
+            'Every generation has 100% its own vibe. Which one is your favourite?',
+        ],
+    }
 };
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());

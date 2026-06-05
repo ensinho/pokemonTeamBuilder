@@ -5,14 +5,17 @@
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 0.95rem;
     background: var(--color-surface);
     padding: 0.7rem 0.68rem 0.68rem;
     text-align: center;
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--card-shadow, var(--elevation-1));
     cursor: pointer;
-    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth);
+
+    /* Staggered entrance */
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .pokemon-card--suggested {
@@ -21,10 +24,10 @@
 }
 
 .pokemon-card:hover {
-    transform: translateY(-1px);
-    border-color: var(--color-border);
+    transform: translateY(-2px);
+    border-color: var(--color-border-hover);
     background: var(--color-surface-raised);
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--elevation-2);
 }
 
 .pokemon-card:focus-visible {
@@ -73,7 +76,7 @@
     border-radius: 999px;
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    transition: transform 180ms ease, opacity 180ms ease, background-color 180ms ease, color 180ms ease, border-color 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth), opacity var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth), color var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth);
 }
 
 .pokemon-card__favorite.is-active {
@@ -87,11 +90,12 @@
     max-width: 6.25rem;
     aspect-ratio: 1 / 1;
     margin: 0.1rem auto 0;
-    transition: transform 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-bounce);
 }
 
+/* Sprite lifts and scales on card hover — bounce easing for playfulness */
 .pokemon-card:hover .pokemon-card__media {
-    transform: translateY(-1px);
+    transform: translateY(-2px) scale(1.06);
 }
 
 .pokemon-card__name {
@@ -129,12 +133,13 @@
     font-size: 0.7rem;
     font-weight: 700;
     color: var(--color-primary);
-    transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth);
 }
 
+/* Colored glow on action button hover */
 .pokemon-card__action:hover {
     transform: translateY(-1px);
-    box-shadow: var(--elevation-1);
+    box-shadow: 0 6px 16px -4px var(--color-primary-soft);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -143,5 +148,6 @@
     .pokemon-card__media,
     .pokemon-card__action {
         transition-duration: 0.001ms !important;
+        animation: none !important;
     }
-}
+}

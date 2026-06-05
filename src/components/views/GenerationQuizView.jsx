@@ -691,21 +691,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                     </button>
                                 </div>
 
-                                {/* Generation status list */}
-                                <div className="generation-quiz__compact-gens-list mt-3">
-                                    {generationStats.map((generation) => (
-                                        <div
-                                            key={generation.generationKey}
-                                            className={`generation-quiz__compact-gen-status ${generation.complete ? 'is-complete' : ''}`}
-                                        >
-                                            <span className="generation-quiz__compact-gen-label">{generation.label}</span>
-                                            <span className="generation-quiz__compact-gen-value">
-                                                {generation.found}/{generation.total}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-
                                 {isComplete && (
                                     <div className="generation-quiz__celebration mt-3">
                                         <SuccessToastIcon />
@@ -726,7 +711,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                     </div>
                 )}
 
-                {quizStarted && <div className="generation-quiz-divider mt-4 mb-2" />}
+                {quizStarted && <div className="generation-quiz-divider mt-2 mb-1" />}
 
                 {isLoadingIndex ? (
                     <div className="generation-quiz__loading-state">
@@ -739,8 +724,8 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         spriteSrc="/LogoCuteGengarRounded.png"
                         message={
                             bestRun
-                                ? `Select generations above and start the quiz. Your current best run is ${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy).`
-                                : "Select generations above and start the quiz to reveal the roster placeholders and begin guessing."
+                                ? `Select a generation and try to guess all pokémons from that! Your current best run is ${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy).`
+                                : "Select a generation and try to guess all pokémons from that!"
                         }
                         action={{
                             label: `Start Quiz (${previewEntries.length} Pokémon)`,

@@ -1,11 +1,14 @@
 export const SkeletonCard = () => (
-    <div className="rounded-lg p-3 text-center h-[172px] overflow-hidden relative bg-surface-raised">
-        <div className="absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-        <div className="mx-auto h-24 w-24 rounded-md animate-pulse bg-surface" />
-        <div className="mt-2 h-5 w-20 mx-auto rounded animate-pulse bg-surface" />
-        <div className="flex justify-center items-center mt-2 gap-2">
-            <div className="h-5 w-5 rounded-full animate-pulse bg-surface" />
-            <div className="h-5 w-5 rounded-full animate-pulse bg-surface" />
+    <div className="pokemon-card p-3 flex flex-col items-center justify-between min-h-[11.5rem]">
+        <div className="pokemon-card__topbar">
+            <div className="flex gap-1">
+                <div className="h-4 w-4 rounded-full skeleton" />
+                <div className="h-4 w-4 rounded-full skeleton" />
+            </div>
+            <div className="h-4 w-12 rounded-full skeleton" />
         </div>
+        <div className="mx-auto h-20 w-20 rounded-md skeleton" style={{ margin: '0.1rem auto 0' }} />
+        <div className="mt-2 h-4 w-20 mx-auto rounded skeleton" />
+        <div className="h-7 w-full rounded-md skeleton mt-auto" />
     </div>
 );

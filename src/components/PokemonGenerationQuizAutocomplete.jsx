@@ -26,7 +26,7 @@ export function PokemonGenerationQuizAutocomplete({
             </div>
             <label className="generation-quiz__field" htmlFor="generation-quiz-answer">
                 <span className="generation-quiz__field-label">Name</span>
-                <div className="generation-quiz-autocomplete__input-wrap">
+                <div className="generation-quiz-autocomplete__input-wrap mt-2">
                     <input
                         ref={inputRef}
                         id="generation-quiz-answer"

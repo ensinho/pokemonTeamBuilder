@@ -13,7 +13,7 @@
 .profile-overview-stat,
 .profile-sync-row,
 .profile-account-row {
-    transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth), color var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), opacity var(--duration-normal) var(--ease-smooth);
 }
 
 .profile-hero {
@@ -29,6 +29,7 @@
         linear-gradient(145deg, var(--color-surface-raised), var(--color-surface));
     padding: 1.25rem;
     box-shadow: var(--elevation-2);
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .profile-hero__main {
@@ -54,14 +55,18 @@
 }
 
 .profile-avatar-button:hover,
-.profile-avatar-button:focus-visible,
-.profile-button:hover,
 .profile-theme-card:hover,
-.profile-card:hover,
+.profile-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--elevation-2);
+}
+
+.profile-button:hover,
 .profile-overview-stat:hover,
 .profile-account-row:hover,
 .profile-sync-row:hover {
-    transform: translateY(-1px);
+    transform: translateY(-1.5px);
     box-shadow: var(--elevation-1);
 }
 
@@ -247,7 +252,11 @@
 
 .profile-overview-stat {
     padding: 0.9rem;
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
+
+.profile-overview-stat:nth-child(1) { animation-delay: 40ms; }
+.profile-overview-stat:nth-child(2) { animation-delay: 100ms; }
 
 .profile-overview-stat__top {
     display: flex;
@@ -257,14 +266,19 @@
 
 .profile-overview-stat__icon {
     display: inline-flex;
-    width: 1.9rem;
-    height: 1.9rem;
+    width: 2.2rem;
+    height: 2.2rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
-    background: var(--color-surface-raised);
+    border: none;
+    border-radius: 50%;
+    background: var(--color-primary-soft);
     color: var(--color-primary);
+    transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.profile-overview-stat:hover .profile-overview-stat__icon {
+    transform: scale(1.08) rotate(5deg);
 }
 
 .profile-overview-stat__value {
@@ -293,6 +307,7 @@
     background: var(--color-surface);
     padding: 1rem;
     box-shadow: var(--elevation-1);
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .profile-card__header {
@@ -353,11 +368,21 @@
     background: var(--color-surface-raised);
     padding: 0.9rem;
     color: var(--color-fg);
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
+.profile-theme-card:nth-child(1) { animation-delay: 0ms; }
+.profile-theme-card:nth-child(2) { animation-delay: 40ms; }
+.profile-theme-card:nth-child(3) { animation-delay: 80ms; }
+.profile-theme-card:nth-child(4) { animation-delay: 120ms; }
+.profile-theme-card:nth-child(5) { animation-delay: 160ms; }
+.profile-theme-card:nth-child(6) { animation-delay: 200ms; }
+
 .profile-theme-card.is-selected {
+    border-style: dashed;
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .profile-theme-card__header {
@@ -523,10 +548,16 @@
 .profile-avatar-button:focus-visible,
 .profile-hero__name-button:focus-visible,
 .profile-button:focus-visible,
-.profile-theme-card:focus-visible,
-.profile-name-input:focus-visible {
+.profile-theme-card:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
+}
+
+.profile-name-input:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 0;
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
+    border-color: var(--color-primary);
 }
 
 @media (min-width: 640px) {

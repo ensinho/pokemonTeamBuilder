@@ -131,7 +131,7 @@ export default function AppLayout() {
     const [modalPokemon, setModalPokemon] = useState(null);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
-    
+
     // Auth Splash Loader
     const [showInitialAuthSplash, setShowInitialAuthSplash] = useState(true);
     const [authSplashProgress, setAuthSplashProgress] = useState(0);
@@ -236,30 +236,55 @@ export default function AppLayout() {
         return 'app-shell__page-frame';
     }, [currentPage]);
 
-    const navigationItems = useMemo(() => {
-        const items = [
-            { key: 'home', label: 'Home', path: '/', icon: <HomeIcon /> },
-            { key: 'builder', label: 'Builder', path: '/builder', icon: <SwordsIcon /> },
-            { key: 'pokedex', label: 'Pokédex', path: '/pokedex', icon: <PokeballIcon /> },
-            { key: 'generationQuiz', label: 'Quiz', path: '/quiz', icon: <SuccessToastIcon /> },
-            { key: 'randomGenerator', label: 'Generator', path: '/generator', icon: <DiceIcon /> },
-            { key: 'favorites', label: 'Favorites', path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
-            { key: 'allTeams', label: 'Saved Teams', path: '/teams', icon: <SavedTeamsIcon /> },
-            { key: 'profile', label: 'Profile', path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
+    const navigationGroups = useMemo(() => {
+        const groups = [
+            {
+                title: 'Dashboard',
+                items: [
+                    { key: 'home', label: 'Home', path: '/', icon: <HomeIcon /> },
+                ]
+            },
+            {
+                title: 'Team Building',
+                items: [
+                    { key: 'builder', label: 'Builder', path: '/builder', icon: <SwordsIcon /> },
+                    { key: 'pokedex', label: 'Pokédex', path: '/pokedex', icon: <PokeballIcon /> },
+                    { key: 'favorites', label: 'Favorites', path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'allTeams', label: 'Saved Teams', path: '/teams', icon: <SavedTeamsIcon /> },
+                ]
+            },
+            {
+                title: 'Guessing',
+                items: [
+                    { key: 'generationQuiz', label: 'Quiz', path: '/quiz', icon: <SuccessToastIcon /> },
+                    { key: 'randomGenerator', label: 'Generator', path: '/generator', icon: <DiceIcon /> },
+                ]
+            },
+            {
+                title: 'Trainer Profile',
+                items: [
+                    { key: 'profile', label: 'Profile', path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
+                ]
+            }
         ];
 
         if (isAdmin) {
-            items.push({ key: 'admin', label: 'Admin', path: '/admin', icon: <ChartColumnIcon className="w-5 h-5 shrink-0" /> });
+            groups.push({
+                title: 'Management',
+                items: [
+                    { key: 'admin', label: 'Admin', path: '/admin', icon: <ChartColumnIcon className="w-5 h-5 shrink-0" /> }
+                ]
+            });
         }
 
-        return items;
+        return groups;
     }, [isAdmin]);
 
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
         const available = pokedex.pokemons.filter(p => !teamIds.has(p.id));
-        
+
         return available.sort((a, b) => {
             const aIsSuggested = suggestedPokemonIds.has(a.id);
             const bIsSuggested = suggestedPokemonIds.has(b.id);
@@ -317,7 +342,7 @@ export default function AppLayout() {
                 const teamData = teamDoc.data();
                 const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
                 const teamPokemonDetails = await Promise.all(detailsPromises);
-                
+
                 const customizedTeam = teamPokemonDetails.map((detail, i) => {
                     if (!detail) return null;
                     const savedPokemonData = teamData.pokemons[i] || {};
@@ -368,7 +393,7 @@ export default function AppLayout() {
     // Saved team handlers
     const handleEditTeam = useCallback(async (team) => {
         showToast(`Loading team: ${team.name}...`, 'info');
-        
+
         const teamPokemonDetailsPromises = team.pokemons.map(p => fetchPokemonDetails(p.id));
         const teamPokemonDetails = await Promise.all(teamPokemonDetailsPromises);
 
@@ -382,7 +407,7 @@ export default function AppLayout() {
                 evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
                 ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
             };
-            
+
             return {
                 ...detail,
                 instanceId: savedPokemonData.instanceId,
@@ -545,11 +570,10 @@ export default function AppLayout() {
                 {toasts.slice(0, maxToasts).map(toast => (
                     <div
                         key={toast.id}
-                        className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out min-w-[260px] ${
-                            toast.type === 'success' ? 'bg-success' :
-                            toast.type === 'warning' ? 'bg-warning' :
-                            toast.type === 'info' ? 'bg-info' : 'bg-danger'
-                        }`}
+                        className={`flex items-center justify-between gap-3 px-4 py-2 rounded-lg shadow-lg text-white animate-fade-in-out min-w-[260px] ${toast.type === 'success' ? 'bg-success' :
+                                toast.type === 'warning' ? 'bg-warning' :
+                                    toast.type === 'info' ? 'bg-info' : 'bg-danger'
+                            }`}
                     >
                         <div className="flex items-center gap-2 min-w-0">
                             {!toast.spriteUrl && (
@@ -627,18 +651,27 @@ export default function AppLayout() {
                                         </button>
                                     </li>
                                 )}
-                                {navigationItems.map((item) => (
-                                    <li key={item.key}>
-                                        <ShellNavButton
-                                            active={currentPage === item.key}
-                                            collapsed={isSidebarCollapsed}
-                                            label={item.label}
-                                            icon={item.icon}
-                                            onClick={() => {
-                                                navigate(item.path);
-                                                setIsSidebarOpen(false);
-                                            }}
-                                        />
+                                {navigationGroups.map((group) => (
+                                    <li key={group.title} className="app-shell__nav-group">
+                                        <p className={`app-shell__nav-group-label ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
+                                            {group.title}
+                                        </p>
+                                        <ul className="app-shell__nav-group-list">
+                                            {group.items.map((item) => (
+                                                <li key={item.key}>
+                                                    <ShellNavButton
+                                                        active={currentPage === item.key}
+                                                        collapsed={isSidebarCollapsed}
+                                                        label={item.label}
+                                                        icon={item.icon}
+                                                        onClick={() => {
+                                                            navigate(item.path);
+                                                            setIsSidebarOpen(false);
+                                                        }}
+                                                    />
+                                                </li>
+                                            ))}
+                                        </ul>
                                     </li>
                                 ))}
                             </ul>

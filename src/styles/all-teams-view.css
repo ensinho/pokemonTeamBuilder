@@ -66,13 +66,34 @@
 .all-teams-view__card {
     min-height: 100%;
     gap: 0.8rem;
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
+.all-teams-view__card:nth-child(1) { animation-delay: 0ms; }
+.all-teams-view__card:nth-child(2) { animation-delay: 40ms; }
+.all-teams-view__card:nth-child(3) { animation-delay: 80ms; }
+.all-teams-view__card:nth-child(4) { animation-delay: 120ms; }
+.all-teams-view__card:nth-child(5) { animation-delay: 160ms; }
+.all-teams-view__card:nth-child(6) { animation-delay: 200ms; }
+.all-teams-view__card:nth-child(7) { animation-delay: 240ms; }
+.all-teams-view__card:nth-child(8) { animation-delay: 280ms; }
+
 .all-teams-view__card:hover {
-    border-color: color-mix(in srgb, var(--color-primary) 26%, var(--color-border));
+    border-color: var(--color-border-hover);
     background: var(--color-surface);
     box-shadow: var(--elevation-2);
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+}
+
+/* Card hover animations for actions */
+.all-teams-view__card:hover .team-builder-icon-button:not(.team-builder-icon-button--danger):not(.team-builder-icon-button--accent) {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.all-teams-view__card:hover .team-builder-icon-button--danger {
+    background: color-mix(in srgb, var(--color-danger) 12%, transparent);
 }
 
 .all-teams-view__card-head {
@@ -182,5 +203,181 @@
 
     .all-teams-view__actions .team-builder-button {
         min-width: 100%;
+    }
+}
+
+/* ============================================================
+   CONTINUOUS LIST VIEW SYSTEM (Reference 1 - Fleety & Ref 6)
+   ============================================================ */
+
+.all-teams-view__list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border);
+    border-radius: 1.15rem;
+    background: var(--color-surface);
+    overflow: hidden;
+    box-shadow: var(--elevation-1);
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
+}
+
+.all-teams-view__list-item {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+    transition: background-color var(--duration-normal) var(--ease-smooth);
+}
+
+.all-teams-view__list-item:last-child {
+    border-bottom: none;
+}
+
+.all-teams-view__list-item:hover {
+    background-color: var(--color-surface-raised);
+}
+
+.all-teams-view__list-item-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: 1.15rem;
+    align-self: stretch;
+    width: 1.5rem;
+}
+
+.all-teams-view__list-item-index {
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-muted);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+    opacity: 0.58;
+}
+
+.all-teams-view__list-item-line {
+    flex: 1;
+    width: 1px;
+    border-left: 1px dotted var(--color-border);
+    margin-bottom: -0.9rem;
+}
+
+.all-teams-view__list-item:last-child .all-teams-view__list-item-line {
+    display: none;
+}
+
+.all-teams-view__list-item-main {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 1.5rem;
+    min-width: 0;
+}
+
+.all-teams-view__list-item-info {
+    flex: 0 0 16.5rem;
+    min-width: 0;
+}
+
+.all-teams-view__list-item-title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.all-teams-view__list-item-meta {
+    display: flex;
+    align-items: center;
+    font-size: 0.74rem;
+    color: var(--color-muted);
+}
+
+.all-teams-view__list-item-preview {
+    flex: 1;
+    min-width: 0;
+}
+
+.all-teams-view__list-item-sprites {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    flex-wrap: wrap;
+}
+
+.all-teams-view__list-item-sprite-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.all-teams-view__list-item-sprite {
+    width: 2.3rem;
+    height: 2.3rem;
+    object-fit: contain;
+    transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.all-teams-view__list-item-sprite-wrap:hover .all-teams-view__list-item-sprite {
+    transform: scale(1.12) translateY(-2px);
+}
+
+.all-teams-view__list-item-sprite-name {
+    font-size: 0.58rem;
+    color: var(--color-muted);
+    text-transform: capitalize;
+    opacity: 0.65;
+    margin-top: -0.1rem;
+}
+
+.all-teams-view__list-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* Layout segment control styling */
+.all-teams-view__layout-toggle button {
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+@media (max-width: 1023px) {
+    .all-teams-view__list-item-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.85rem;
+    }
+
+    .all-teams-view__list-item-info {
+        flex: auto;
+        width: 100%;
+    }
+}
+
+@media (max-width: 767px) {
+    .all-teams-view__list-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .all-teams-view__list-item-actions {
+        width: 100%;
+        justify-content: flex-start;
+        border-top: 1px solid var(--color-border);
+        padding-top: 0.75rem;
+        margin-left: 0;
+    }
+
+    .all-teams-view__list-item-connector {
+        display: none;
     }
 }

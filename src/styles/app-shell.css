@@ -29,7 +29,7 @@
     border-right: 1px solid var(--color-border);
     background: var(--color-surface);
     box-shadow: var(--elevation-3);
-    transition: width 180ms ease, transform 180ms ease, border-color 180ms ease;
+    transition: width var(--duration-normal) var(--ease-smooth), transform var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth);
 }
 
 .app-shell__sidebar.is-open {
@@ -98,7 +98,7 @@
 
 .app-shell__brand-copy {
     min-width: 0;
-    transition: width 180ms ease, opacity 180ms ease;
+    transition: width var(--duration-normal) var(--ease-smooth), opacity var(--duration-normal) var(--ease-smooth);
 }
 
 .app-shell__brand-copy.is-hidden {
@@ -140,6 +140,54 @@
     gap: 0.35rem;
 }
 
+.app-shell__nav-group {
+    display: flex;
+    flex-direction: column;
+    margin-top: 1.15rem;
+}
+
+.app-shell__nav-group:first-child {
+    margin-top: 0;
+}
+
+.app-shell__sidebar.is-collapsed .app-shell__nav-group {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.app-shell__sidebar.is-collapsed .app-shell__nav-group:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+}
+
+.app-shell__nav-group-label {
+    margin: 0 0 0.45rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    padding-left: 0.8rem;
+    opacity: 0.48;
+    transition: opacity var(--duration-normal) var(--ease-smooth), height var(--duration-normal) var(--ease-smooth), margin var(--duration-normal) var(--ease-smooth);
+}
+
+.app-shell__nav-group-label.is-hidden {
+    opacity: 0;
+    height: 0;
+    margin: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.app-shell__nav-group-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
 .app-shell__nav-control {
     margin-bottom: 0.45rem;
 }
@@ -157,7 +205,7 @@
 .app-shell__account-menu-item,
 .app-shell__account-signout,
 .app-shell__footer-link {
-    transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+    transition: transform var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth), color var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), opacity var(--duration-normal) var(--ease-smooth);
 }
 
 .app-shell__nav-link,
@@ -185,16 +233,44 @@
 
 .app-shell__nav-link:hover,
 .app-shell__account-button:hover {
-    border-color: var(--color-border);
+    border-color: var(--color-border-hover);
     background: var(--color-surface-raised);
     color: var(--color-fg);
 }
 
 .app-shell__nav-link.is-active {
+    position: relative;
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
     color: var(--color-primary);
     box-shadow: var(--elevation-1);
+}
+
+/* Active indicator bar — left accent strip (Ref 4 pattern) */
+.app-shell__nav-link.is-active::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 25%;
+    bottom: 25%;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--color-primary);
+}
+
+.app-shell__sidebar.is-collapsed .app-shell__nav,
+.app-shell__sidebar.is-collapsed .app-shell__account {
+    padding-inline: 0;
+}
+
+.app-shell__sidebar.is-collapsed .app-shell__nav-list,
+.app-shell__sidebar.is-collapsed .app-shell__nav-group-list {
+    align-items: center;
+}
+
+.app-shell__nav-link.is-collapsed.is-active::before {
+    left: 0;
+    border-radius: 0 4px 4px 0;
 }
 
 .app-shell__nav-link.is-collapsed,
@@ -221,9 +297,9 @@
     justify-content: center;
 }
 
-.app-shell__nav-icon > svg,
-.app-shell__icon-button > svg,
-.app-shell__account-signout > svg {
+.app-shell__nav-icon>svg,
+.app-shell__icon-button>svg,
+.app-shell__account-signout>svg {
     display: block;
     height: 1.05rem;
     width: 1.05rem;
@@ -235,13 +311,11 @@
     font-weight: 600;
     line-height: 1.2;
     color: currentColor;
-    transition: width 180ms ease, opacity 180ms ease, margin 180ms ease;
+    transition: width var(--duration-normal) var(--ease-smooth), opacity var(--duration-normal) var(--ease-smooth), margin var(--duration-normal) var(--ease-smooth);
 }
 
 .app-shell__nav-text.is-hidden {
-    width: 0;
-    opacity: 0;
-    overflow: hidden;
+    display: none;
 }
 
 .app-shell__account {
@@ -268,7 +342,10 @@
 }
 
 .app-shell__account-card.is-collapsed {
-    padding: 0.5rem;
+    padding: 0;
+    background: transparent;
+    border-color: transparent;
+    box-shadow: none;
 }
 
 .app-shell__account-card.is-collapsed .app-shell__icon-button,
@@ -434,7 +511,7 @@
     color: var(--color-muted);
 }
 
-.app-shell__account-popover-section + .app-shell__account-popover-section {
+.app-shell__account-popover-section+.app-shell__account-popover-section {
     border-top: 1px solid var(--color-border);
 }
 
@@ -556,11 +633,26 @@
 }
 
 .app-shell__content {
+    position: relative;
     flex: 1;
     min-width: 0;
     height: 100vh;
     overflow-y: auto;
     background: var(--color-bg);
+}
+
+/* Subtle page background gradient — adds depth without distraction */
+.app-shell__content::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40vh;
+    background: radial-gradient(ellipse at top right, var(--color-primary-soft), transparent 60%);
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 0;
 }
 
 .app-shell__header {
@@ -574,7 +666,9 @@
     justify-content: space-between;
     gap: 1rem;
     border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+    backdrop-filter: blur(12px) saturate(1.2);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
     padding: 0.72rem 1rem;
 }
 
@@ -639,7 +733,7 @@
 
 .app-shell__footer {
     border-top: 1px solid var(--color-border);
-    padding: 1.5rem 1rem 2rem;
+    padding: 1.5rem 1rem 1rem;
 }
 
 .app-shell__footer-row {

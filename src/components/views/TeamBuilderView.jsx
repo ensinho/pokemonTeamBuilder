@@ -313,30 +313,57 @@ export function TeamBuilderView({
                             <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? 'All types' : `${selectedTypeCount} active`}</span>
                         </div>
 
-                        <div className="team-builder-filter-layout team-builder-filter-layout--compact mt-3">
-                            <label className="team-builder-control team-builder-control--compact">
-                                <span className="team-builder-control__label team-builder-control__label--compact">Search</span>
-                                <input type="text" placeholder="Search by name" value={searchInput} onChange={(e) => setSearchInput(e.target.value)} className="team-builder-field team-builder-field--compact" />
-                            </label>
-                            <label className="team-builder-control team-builder-control--compact">
-                                <span className="team-builder-control__label team-builder-control__label--compact">Generation</span>
-                                <select value={selectedGeneration} onChange={(e) => setSelectedGeneration(e.target.value)} className="team-builder-field team-builder-field--compact team-builder-select">
-                                    <option value="all">All generations</option>
-                                    {generations.map((generation) => <option key={generation} value={generation} className="capitalize">{generation.replace('-', ' ')}</option>)}
-                                </select>
-                            </label>
-                            <label className="team-builder-control team-builder-control--compact">
-                                <span className="team-builder-control__label team-builder-control__label--compact">Pinned only</span>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                                    className={`team-builder-toggle team-builder-toggle--compact ${showOnlyFavorites ? 'is-active' : ''}`}
-                                    aria-pressed={showOnlyFavorites}
+                        <div className="team-builder-unified-toolbar mt-3">
+                            <div className="team-builder-search-wrap">
+                                <span className="team-builder-search-icon" aria-hidden="true">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                                    </svg>
+                                </span>
+                                <input
+                                    type="text"
+                                    placeholder="Search by name..."
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    className="team-builder-field team-builder-field--compact team-builder-search-input"
+                                />
+                                {searchInput && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchInput('')}
+                                        className="team-builder-search-clear"
+                                        aria-label="Clear search"
+                                    >
+                                        <ClearIcon className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="team-builder-select-wrap">
+                                <select
+                                    value={selectedGeneration}
+                                    onChange={(e) => setSelectedGeneration(e.target.value)}
+                                    className="team-builder-field team-builder-field--compact team-builder-select"
+                                    aria-label="Generation filter"
                                 >
-                                    <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
-                                    {showOnlyFavorites ? 'Showing favorites' : 'Show favorites'}
-                                </button>
-                            </label>
+                                    <option value="all">All generations</option>
+                                    {generations.map((generation) => (
+                                        <option key={generation} value={generation} className="capitalize">
+                                            {generation.replace('-', ' ')}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                                className={`team-builder-toggle team-builder-toggle--compact ${showOnlyFavorites ? 'is-active' : ''}`}
+                                aria-pressed={showOnlyFavorites}
+                            >
+                                <StarIcon className="w-4 h-4" isFavorite={showOnlyFavorites} color="currentColor" />
+                                <span>{showOnlyFavorites ? 'Favorites' : 'All'}</span>
+                            </button>
                         </div>
 
                         <div className="team-builder-results mt-4">

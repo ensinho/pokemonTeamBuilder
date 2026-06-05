@@ -12,10 +12,12 @@ import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite } from '../../util
 import { EmptyState } from '../EmptyState';
 import {
     AccountIcon,
+    CloseIcon,
     DiceIcon,
     EditIcon,
     PokeballIcon,
     StarIcon,
+    SuccessToastIcon,
     SwordsIcon,
 } from '../icons';
 
@@ -88,21 +90,14 @@ const TrainerStatsEmptyState = ({ onCreateTeam, onBrowsePokedex }) => {
             </div>
 
             <div className="mt-4 flex flex-col gap-2">
-                <button
-                    type="button"
-                    onClick={onCreateTeam}
-                    className="home-button home-button--primary home-button--full"
-                >
-                    <SwordsIcon />
-                    Create first team
-                </button>
+
                 <button
                     type="button"
                     onClick={onBrowsePokedex}
                     className="home-button home-button--secondary home-button--full"
                 >
                     <PokeballIcon />
-                    Browse Pokedex
+                    Browse Pokédex
                 </button>
             </div>
         </div>
@@ -128,6 +123,13 @@ export function HomeView({
 }) {
     const [greetingPokemonData, setGreetingPokemonData] = useState(null);
     const [isDailyPokemonLoading, setIsDailyPokemonLoading] = useState(true);
+    const [isTipDismissed, setIsTipDismissed] = useState(() => {
+        try {
+            return localStorage.getItem('homeTipDismissed') === 'true';
+        } catch {
+            return false;
+        }
+    });
 
     const getGreeting = () => {
         const hour = new Date().getHours();
@@ -318,16 +320,16 @@ export function HomeView({
             icon: <PokeballIcon />,
         },
         {
-            label: 'Random Idea',
-            description: 'Generate a new starting point.',
-            path: '/generator',
-            icon: <DiceIcon />,
+            label: 'Quiz',
+            description: 'Challenge your Pokemon knowledge.',
+            path: '/quiz',
+            icon: <SuccessToastIcon className="w-5 h-5" color="currentColor" />,
         },
         {
-            label: 'Favorites',
-            description: 'Return to the Pokémon you pinned.',
-            path: '/favorites',
-            icon: <StarIcon className="w-5 h-5" color="currentColor" />,
+            label: 'Guesser',
+            description: 'Try a guessing game between friends.',
+            path: '/generator',
+            icon: <DiceIcon />,
         },
     ];
 
@@ -505,7 +507,7 @@ export function HomeView({
                         </div>
                     </section>
                 ) : (
-                    <section className="home-panel home-panel--feature flex min-h-[195px] flex-col justify-between p-4">
+                    <section className="home-panel home-panel--feature flex min-h-[200px] flex-col justify-between p-4">
                         <div className="space-y-3">
                             <div>
                                 <p className="home-panel__eyebrow">
@@ -518,28 +520,15 @@ export function HomeView({
                             <p className="home-panel__description max-w-lg">
                                 Pick six Pokémon, shape their movesets, and save a lineup worth revisiting.
                             </p>
-                            <ul className="home-feature-points">
-                                <li>Choose six slots with a clear role.</li>
-                                <li>Tune moves, nature, and items later.</li>
-                                <li>Save the lineup once it feels right.</li>
-                            </ul>
                         </div>
-                        <div className="home-action-row">
+                        <div className="home-action-row mt-8">
                             <button
                                 type="button"
                                 onClick={() => navigate('/builder')}
-                                className="home-button home-button--primary"
+                                className="home-button home-button--primary w-full"
                             >
                                 <SwordsIcon />
                                 Create your first team
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => navigate('/pokedex')}
-                                className="home-button home-button--secondary"
-                            >
-                                <PokeballIcon />
-                                Browse Pokédex
                             </button>
                         </div>
                     </section>
@@ -639,11 +628,26 @@ export function HomeView({
                             </section>
                         ) : null}
 
-                        <section className="home-panel home-panel--note p-4">
-                            <p className="home-panel__eyebrow">Today&apos;s note</p>
-                            <h3 className="home-panel__section-title">Did you know?</h3>
-                            <p className="home-panel__description mt-3">{tipOfTheDay}</p>
-                        </section>
+                        {!isTipDismissed && (
+                            <section className="home-panel home-panel--note relative p-4 pr-10">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setIsTipDismissed(true);
+                                        try {
+                                            localStorage.setItem('homeTipDismissed', 'true');
+                                        } catch (_) { }
+                                    }}
+                                    className="absolute top-3 right-3 text-muted hover:text-fg p-1.5 rounded-lg hover:bg-surface-raised transition-colors cursor-pointer"
+                                    aria-label="Dismiss note"
+                                >
+                                    <CloseIcon className="w-4.5 h-4.5" />
+                                </button>
+                                <p className="home-panel__eyebrow">Today&apos;s note</p>
+                                <h3 className="home-panel__section-title">Did you know?</h3>
+                                <p className="home-panel__description mt-3">{tipOfTheDay}</p>
+                            </section>
+                        )}
                     </div>
 
                     <section className="home-panel p-4">
@@ -687,34 +691,56 @@ export function HomeView({
                         {stats.totalTeams > 0 ? (
                             <div className="home-stat-grid mt-4">
                                 <div className="home-stat-card">
+                                    <span className="home-stat-card__icon">
+                                        <SwordsIcon />
+                                    </span>
                                     <span className="home-stat-card__label">Teams</span>
                                     <strong className="home-stat-card__value">{stats.totalTeams}</strong>
                                 </div>
                                 <div className="home-stat-card">
+                                    <span className="home-stat-card__icon">
+                                        <StarIcon isFavorite={true} color="currentColor" />
+                                    </span>
                                     <span className="home-stat-card__label">Pinned</span>
                                     <strong className="home-stat-card__value">{stats.totalFavoritePokemons}</strong>
                                 </div>
                                 <div className="home-stat-card home-stat-card--type">
-                                    <span className="home-stat-card__label">Favorite Type</span>
                                     {stats.favoriteType ? (
-                                        <span
-                                            className="home-type-pill capitalize mt-2 justify-center"
-                                            style={{
-                                                backgroundColor: `${typeColors[stats.favoriteType]}18`,
-                                                borderColor: `${typeColors[stats.favoriteType]}33`,
-                                                color: typeColors[stats.favoriteType],
-                                                width: '100%'
-                                            }}
-                                        >
-                                            <img
-                                                src={typeIcons[stats.favoriteType]}
-                                                alt={stats.favoriteType}
-                                                className="h-3.5 w-3.5 mr-1"
-                                            />
-                                            {stats.favoriteType}
-                                        </span>
+                                        <>
+                                            <span
+                                                className="home-stat-card__icon"
+                                                style={{
+                                                    backgroundColor: `${typeColors[stats.favoriteType]}18`,
+                                                    color: typeColors[stats.favoriteType],
+                                                }}
+                                            >
+                                                <img
+                                                    src={typeIcons[stats.favoriteType]}
+                                                    alt={stats.favoriteType}
+                                                    className="w-5 h-5 object-contain"
+                                                />
+                                            </span>
+                                            <span className="home-stat-card__label">Favorite Type</span>
+                                            <span
+                                                className="home-type-pill capitalize mt-1.5 justify-center"
+                                                style={{
+                                                    backgroundColor: `${typeColors[stats.favoriteType]}18`,
+                                                    borderColor: `${typeColors[stats.favoriteType]}33`,
+                                                    color: typeColors[stats.favoriteType],
+                                                    width: '100%'
+                                                }}
+                                            >
+                                                {stats.favoriteType}
+                                            </span>
+                                        </>
                                     ) : (
-                                        <strong className="home-stat-card__value mt-2">--</strong>
+                                        <>
+                                            <span className="home-stat-card__icon">
+                                                <PokeballIcon />
+                                            </span>
+                                            <span className="home-stat-card__label">Favorite Type</span>
+                                            <strong className="home-stat-card__value mt-1.5">--</strong>
+                                        </>
                                     )}
                                 </div>
                             </div>
@@ -728,63 +754,66 @@ export function HomeView({
                         )}
                     </section>
 
-                    <section className="home-panel p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                                <p className="home-panel__eyebrow">Pinned roster</p>
-                                <h3 className="home-panel__section-title">Your favorites</h3>
-                            </div>
-                            {featuredFavorites.length > 0 && (
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/favorites')}
-                                    className="home-button home-button--inline"
-                                >
-                                    See all
-                                </button>
-                            )}
-                        </div>
-
-                        {featuredFavorites.length > 0 ? (
-                            <div className="home-favorite-grid home-favorite-grid--sidebar mt-4">
-                                {featuredFavorites.map((pokemon) => (
-                                    <div
-                                        key={pokemon.id}
-                                        onClick={() => showDetails(pokemon)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                showDetails(pokemon);
-                                            }
-                                        }}
-                                        className="home-favorite-card home-favorite-card--compact"
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-label={`Open details for ${pokemon.name}`}
+                    {featuredFavorites.length > 0 ? (
+                        <section className="home-panel p-4">
+                            <div className="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <p className="home-panel__eyebrow">Pinned roster</p>
+                                    <h3 className="home-panel__section-title">Your favorites</h3>
+                                </div>
+                                {featuredFavorites.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/favorites')}
+                                        className="home-button home-button--inline"
                                     >
-                                        <img
-                                            src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
-                                            alt={pokemon.name}
-                                            className="home-favorite-card__sprite sprite-fade"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                        />
-                                        <p className="home-favorite-card__name capitalize">
-                                            {pokemon.name}
-                                        </p>
-                                    </div>
-                                ))}
+                                        See all
+                                    </button>
+                                )}
                             </div>
-                        ) : (
-                            <div className="mt-4">
-                                <EmptyState
-                                    compact
-                                    title="No favorites yet!"
-                                    message="Tap the star on any Pokémon card to pin it here."
-                                    action={{ label: 'Browse Pokédex', onClick: () => navigate('/pokedex') }}
-                                />
-                            </div>
-                        )}
-                    </section>
+
+                            {featuredFavorites.length > 0 ? (
+                                <div className="home-favorite-grid home-favorite-grid--sidebar mt-4">
+                                    {featuredFavorites.map((pokemon) => (
+                                        <div
+                                            key={pokemon.id}
+                                            onClick={() => showDetails(pokemon)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    showDetails(pokemon);
+                                                }
+                                            }}
+                                            className="home-favorite-card home-favorite-card--compact"
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`Open details for ${pokemon.name}`}
+                                        >
+                                            <img
+                                                src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                                alt={pokemon.name}
+                                                className="home-favorite-card__sprite sprite-fade"
+                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            />
+                                            <p className="home-favorite-card__name capitalize">
+                                                {pokemon.name}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="mt-4">
+                                    <EmptyState
+                                        compact
+                                        title="No favorites yet!"
+                                        message="Tap the star on any Pokémon card to pin it here."
+                                        action={{ label: 'Browse Pokédex', onClick: () => navigate('/pokedex') }}
+                                    />
+                                </div>
+                            )}
+                        </section>
+                    ) : ("")
+                    }
                 </aside>
             </section>
         </main>

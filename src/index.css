@@ -3,6 +3,37 @@
 @tailwind utilities;
 
 /* ============================================================
+   DESIGN SYSTEM FOUNDATION
+   Named easing curves, duration tokens, and spacing scale.
+   Consumed by every view CSS file for consistent motion.
+   ============================================================ */
+
+:root {
+    /* Easing curves — semantic names replace inline `ease` */
+    --ease-default: ease;
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* Duration tokens */
+    --duration-fast: 150ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --duration-entrance: 420ms;
+
+    /* Spacing scale — 4px base unit */
+    --space-1: 0.25rem;  /* 4px  */
+    --space-2: 0.5rem;   /* 8px  */
+    --space-3: 0.75rem;  /* 12px */
+    --space-4: 1rem;     /* 16px */
+    --space-5: 1.25rem;  /* 20px */
+    --space-6: 1.5rem;   /* 24px */
+    --space-8: 2rem;     /* 32px */
+    --space-10: 2.5rem;  /* 40px */
+}
+
+/* ============================================================
    THEME TOKENS
    Single source of truth for runtime colors. Mirrored in
    src/constants/theme.js (THEMES) so legacy components that
@@ -23,6 +54,7 @@
     --color-fg: #FFFFFF;
     --color-muted: #9CA3AF;
     --color-border: #374151;
+    --color-border-hover: color-mix(in srgb, #7d65e1 35%, #374151);
     --color-success: #34D399;
     --color-danger: #F87171;
     --color-warning: #FBBF24;
@@ -32,6 +64,10 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.35);
     --elevation-2: 0 8px 24px -8px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3);
     --elevation-3: 0 20px 40px -12px rgba(0,0,0,0.65);
+
+    /* Light-mode card strategy: dark themes keep borders */
+    --card-border-style: solid;
+    --card-border-color: var(--color-border);
 }
 
 :root[data-theme='light'] {
@@ -45,6 +81,7 @@
     --color-fg: #111827;
     --color-muted: #4B5563;
     --color-border: #E5E7EB;
+    --color-border-hover: color-mix(in srgb, #6353b3 30%, #E5E7EB);
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
@@ -53,6 +90,11 @@
     --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
     --elevation-2: 0 4px 12px -4px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
     --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
+
+    /* Light-mode card strategy: shadow separation, transparent borders */
+    --card-border-style: solid;
+    --card-border-color: transparent;
+    --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 :root[data-theme='daybreak'] {
@@ -66,6 +108,7 @@
     --color-fg: #0F172A;
     --color-muted: #5B6B84;
     --color-border: #CBD9EE;
+    --color-border-hover: color-mix(in srgb, #2563EB 30%, #CBD9EE);
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
@@ -74,6 +117,10 @@
     --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
     --elevation-2: 0 4px 12px -4px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
     --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
+
+    --card-border-style: solid;
+    --card-border-color: transparent;
+    --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 :root[data-theme='eclipse'] {
@@ -87,6 +134,7 @@
     --color-fg: #F5F3FF;
     --color-muted: #909090;
     --color-border: #333333;
+    --color-border-hover: color-mix(in srgb, #a78bfa 35%, #333333);
     --color-success: #34D399;
     --color-danger: #FB7185;
     --color-warning: #FBBF24;
@@ -95,6 +143,9 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.5);
     --elevation-2: 0 12px 28px -10px rgba(0,0,0,0.72), 0 2px 6px rgba(0,0,0,0.45);
     --elevation-3: 0 22px 48px -14px rgba(0,0,0,0.82);
+
+    --card-border-style: solid;
+    --card-border-color: var(--color-border);
 }
 
 :root[data-theme='midnight'] {
@@ -108,6 +159,7 @@
     --color-fg: #E2E8F0;
     --color-muted: #94A3B8;
     --color-border: #1E2A44;
+    --color-border-hover: color-mix(in srgb, #38BDF8 30%, #1E2A44);
     --color-success: #34D399;
     --color-danger: #FB7185;
     --color-warning: #FBBF24;
@@ -116,6 +168,9 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.45);
     --elevation-2: 0 8px 24px -8px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.4);
     --elevation-3: 0 20px 40px -12px rgba(0,0,0,0.75);
+
+    --card-border-style: solid;
+    --card-border-color: var(--color-border);
 }
 
 :root[data-theme='solar'] {
@@ -129,6 +184,7 @@
     --color-fg: #3B2F09;
     --color-muted: #7C6A2A;
     --color-border: #FEF08A;
+    --color-border-hover: color-mix(in srgb, #EAB308 30%, #FEF08A);
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
@@ -137,6 +193,10 @@
     --elevation-1: 0 1px 2px rgba(120, 90, 15, 0.06), 0 1px 1px rgba(120, 90, 15, 0.04);
     --elevation-2: 0 4px 12px -4px rgba(120, 90, 15, 0.12), 0 2px 4px rgba(120, 90, 15, 0.06);
     --elevation-3: 0 20px 40px -16px rgba(120, 90, 15, 0.18);
+
+    --card-border-style: solid;
+    --card-border-color: transparent;
+    --card-shadow: 0 1px 3px rgba(120, 90, 15, 0.06), 0 1px 2px rgba(120, 90, 15, 0.04);
 }
 
 /* Typography stack — JetBrains Mono across the whole app. */
@@ -210,18 +270,51 @@ input[type='checkbox']:checked + div + div {
 .elevation-3 { box-shadow: var(--elevation-3); }
 
 /* Sprite fade-in — wraps Pokémon sprite <img>s so they don't pop in
-   unstyled. Combine with width/height + object-contain on the <img>. */
+   unstyled. Enhanced with blur-to-sharp for a premium feel. */
 @keyframes sprite-fade-in {
-    from { opacity: 0; transform: scale(0.92); }
-    to   { opacity: 1; transform: scale(1); }
+    from { opacity: 0; transform: scale(0.85) translateY(4px); filter: blur(2px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 .sprite-fade {
-    animation: sprite-fade-in 220ms ease-out;
+    animation: sprite-fade-in var(--duration-slow) var(--ease-out-expo);
 }
 .sprite-img {
     /* prevent CLS — caller still provides width/height utilities */
     object-fit: contain;
     image-rendering: auto;
+}
+
+/* ============================================================
+   SHARED KEYFRAMES — entrance animations & loading states.
+   Used by all view CSS files for staggered content reveals.
+   ============================================================ */
+
+@keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+    0%   { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Skeleton loading utility — apply to placeholder blocks */
+.skeleton {
+    background: linear-gradient(
+        90deg,
+        var(--color-surface-raised) 25%,
+        color-mix(in srgb, var(--color-surface-raised) 60%, var(--color-surface)) 50%,
+        var(--color-surface-raised) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+    border-radius: 0.5rem;
 }
 
 /* Brand utility — gold accent for shiny / favorite / achievement chips. */
@@ -237,6 +330,158 @@ input[type='checkbox']:checked + div + div {
     textarea {
         font-size: 16px !important;
     }
+}
+
+/* ============================================================
+   GLOBAL COMPONENT UTILITIES (Reference 2 & shadcn/ui Inspired)
+   Button variants, badges, and inputs with systematic styling.
+   ============================================================ */
+
+/* Base Button */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 2.35rem;
+    padding: var(--space-2) var(--space-4);
+    border-radius: 0.6rem;
+    font-size: var(--text-base, 0.92rem);
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    user-select: none;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--color-fg);
+    transition: transform var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth),
+                border-color var(--duration-normal) var(--ease-smooth),
+                color var(--duration-normal) var(--ease-smooth),
+                box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn:active:not(:disabled) {
+    transform: translateY(0) scale(0.98);
+}
+
+.btn svg {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex-shrink: 0;
+}
+
+/* Button Variants */
+.btn-primary {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 16px -4px var(--color-primary-soft), var(--elevation-1);
+}
+
+.btn-secondary {
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    border-color: var(--color-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    transform: translateY(-1.5px);
+    background: var(--color-surface);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--elevation-1);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--color-fg);
+    border-color: var(--color-border);
+}
+
+.btn-outline:hover:not(:disabled) {
+    transform: translateY(-1.5px);
+    background: var(--color-surface-raised);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--elevation-1);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--color-fg);
+    border-color: transparent;
+}
+
+.btn-ghost:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background: var(--color-surface-raised);
+}
+
+/* Badge Base & Variants */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 1;
+    border: 1px solid transparent;
+}
+
+.badge-success {
+    border-color: color-mix(in srgb, var(--color-success) 24%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+    color: var(--color-success);
+}
+
+.badge-accent {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+}
+
+.badge-outline {
+    border-color: var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+}
+
+/* Clean Inputs Rest State (Reference 1 & 6) */
+.input-clean {
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    padding: 0.65rem 0.85rem;
+    font-size: 0.88rem;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    transition: border-color var(--duration-normal) var(--ease-smooth),
+                box-shadow var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth);
+}
+
+.input-clean:focus-visible,
+.input-clean:focus {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-soft), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
