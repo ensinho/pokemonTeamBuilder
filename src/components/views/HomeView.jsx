@@ -53,7 +53,7 @@ const toGreetingPokemonData = (pokemonData) => {
     };
 };
 
-const TrainerStatsEmptyState = ({ onCreateTeam, onBrowsePokedex }) => {
+const TrainerStatsEmptyState = ({ onBrowsePokedex }) => {
     const previewStats = [
         { label: 'Teams', value: '0' },
         { label: 'Pinned', value: '0' },
@@ -636,7 +636,9 @@ export function HomeView({
                                         setIsTipDismissed(true);
                                         try {
                                             localStorage.setItem('homeTipDismissed', 'true');
-                                        } catch (_) { }
+                                        } catch (_) {
+                                            // Ignore storage access errors
+                                        }
                                     }}
                                     className="absolute top-3 right-3 text-muted hover:text-fg p-1.5 rounded-lg hover:bg-surface-raised transition-colors cursor-pointer"
                                     aria-label="Dismiss note"

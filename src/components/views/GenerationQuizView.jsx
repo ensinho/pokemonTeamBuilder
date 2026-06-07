@@ -1,4 +1,5 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import '../../styles/generation-quiz-view.css';
 
@@ -21,6 +22,7 @@ import {
     SparklesIcon,
     SuccessToastIcon,
 } from '../icons';
+import { QuizCelebrationModal } from '../modals';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
@@ -78,10 +80,13 @@ const buildSelectionSignature = (generationKeys) => {
 };
 
 export function GenerationQuizView({ showDetails, showToast }) {
+    const navigate = useNavigate();
     const inputRef = useRef(null);
     const detailCacheRef = useRef({});
 
     const [pokemonIndex, setPokemonIndex] = useState([]);
+    const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
+    const [celebrationPokemon, setCelebrationPokemon] = useState(null);
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
     const [selectedGenerationKeys, setSelectedGenerationKeys] = useState(() => new Set(['generation-i']));
     const [activeGenerationKeys, setActiveGenerationKeys] = useState([]);
@@ -166,7 +171,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
         () => sortGenerationKeys(activeGenerationKeys),
         [activeGenerationKeys]
     );
-    const generationListForStats = quizStarted ? activeGenerationList : selectedGenerationList;
 
     const generationCounts = useMemo(() => {
         const counts = new Map(QUIZ_GENERATION_KEYS.map((generationKey) => [generationKey, 0]));
@@ -248,19 +252,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
     );
     const hasAutocompleteAccess = quizStarted && answerInput.trim().length >= MIN_AUTOCOMPLETE_CHARACTERS;
 
-    const generationStats = useMemo(() => generationListForStats.map((generationKey) => {
-        const total = generationCounts.get(generationKey) || 0;
-        const found = quizStarted
-            ? activeEntries.filter((pokemon) => pokemon.generationKey === generationKey && foundIds.has(pokemon.id)).length
-            : 0;
-        return {
-            generationKey,
-            label: GENERATION_LABELS[generationKey],
-            total,
-            found,
-            complete: total > 0 && found === total,
-        };
-    }), [activeEntries, foundIds, generationCounts, generationListForStats, quizStarted]);
 
     const selectionSignature = useMemo(
         () => buildSelectionSignature(quizStarted ? activeGenerationList : selectedGenerationList),
@@ -337,8 +328,16 @@ export function GenerationQuizView({ showDetails, showToast }) {
             setAnnouncement('Generation Quiz complete.');
             setFeedback({ tone: 'success', message: 'Quiz complete. Every selected Pokémon has been found.' });
             showToast?.('Generation Quiz complete!', 'success');
+
+            if (activeEntries.length > 0) {
+                const randomIndex = Math.floor(Math.random() * activeEntries.length);
+                setCelebrationPokemon(activeEntries[randomIndex]);
+            } else {
+                setCelebrationPokemon(null);
+            }
+            setIsCelebrationOpen(true);
         }
-    }, [isComplete, quizStarted, showToast]);
+    }, [isComplete, quizStarted, showToast, activeEntries]);
 
     useEffect(() => {
         if (!quizStarted) return;
@@ -751,6 +750,23 @@ export function GenerationQuizView({ showDetails, showToast }) {
             </section>
 
             <div className="sr-only" aria-live="polite">{announcement}</div>
+
+            {isCelebrationOpen && (
+                <QuizCelebrationModal
+                    isOpen={isCelebrationOpen}
+                    onClose={() => setIsCelebrationOpen(false)}
+                    onTryAnother={() => {
+                        setQuizStarted(false);
+                    }}
+                    onCloseQuiz={() => {
+                        setQuizStarted(false);
+                        navigate('/');
+                    }}
+                    pokemon={celebrationPokemon}
+                    accuracy={accuracyPercent}
+                    totalCount={totalCount}
+                />
+            )}
         </main>
     );
 }

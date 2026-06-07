@@ -6,3 +6,4 @@ export { PokemonDetailModal } from './PokemonDetailModal';
 export { ShareSnippetModal } from './ShareSnippetModal';
 export { SyncPromptModal } from './SyncPromptModal';
 export { TeamPokemonEditorModal } from './TeamPokemonEditorModal';
+export { QuizCelebrationModal } from './QuizCelebrationModal';
