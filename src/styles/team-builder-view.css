@@ -15,10 +15,10 @@
 }
 
 .team-builder-panel {
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1.15rem;
     background: var(--color-surface);
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--card-shadow, var(--elevation-1));
 }
 
 .team-builder-panel--picker {
@@ -430,9 +430,10 @@
 
 .team-builder-recent-card,
 .team-builder-mobile__recent-card {
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1rem;
     background: var(--color-surface-raised);
+    box-shadow: var(--card-shadow, var(--elevation-1));
     padding: 1rem;
 }
 
@@ -563,7 +564,8 @@
 .team-builder-mobile__available {
     flex: 1;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
+    box-shadow: var(--card-shadow, var(--elevation-1));
     border-radius: 1rem;
     background: var(--color-bg);
 }
@@ -653,9 +655,10 @@
 }
 
 .team-builder-analysis-card {
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1rem;
     background: var(--color-surface-raised);
+    box-shadow: var(--card-shadow, var(--elevation-1));
     padding: 0.9rem;
     
     /* Staggered entrance animation */
@@ -736,7 +739,8 @@
 .team-builder-mobile-card {
     position: relative;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
+    box-shadow: var(--card-shadow, var(--elevation-1));
     border-radius: 1rem;
     background: var(--color-surface);
     padding: 0.55rem;

@@ -211,9 +211,10 @@
 
 .profile-streak-card,
 .profile-overview-stat {
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1.1rem;
     background: var(--color-surface);
+    box-shadow: var(--card-shadow, var(--elevation-1));
 }
 
 .profile-streak-card {
@@ -302,11 +303,11 @@
 }
 
 .profile-card {
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1.25rem;
     background: var(--color-surface);
     padding: 1rem;
-    box-shadow: var(--elevation-1);
+    box-shadow: var(--card-shadow, var(--elevation-1));
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
@@ -363,9 +364,10 @@
 
 .profile-theme-card {
     text-align: left;
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1rem;
     background: var(--color-surface-raised);
+    box-shadow: var(--card-shadow, var(--elevation-1));
     padding: 0.9rem;
     color: var(--color-fg);
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
@@ -436,9 +438,10 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    border: 1px solid var(--color-border);
+    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     border-radius: 1rem;
     background: var(--color-surface-raised);
+    box-shadow: var(--card-shadow, var(--elevation-1));
     padding: 0.8rem 0.9rem;
 }
 

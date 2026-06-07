@@ -339,6 +339,12 @@
     transition: all 0.2s ease;
 }
 
+/* Empty slots use dashed borders and soft background */
+.home-team-slot:has(.home-team-slot__empty) {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-border) 70%, transparent);
+}
+
 .home-panel--interactive:hover .home-team-slot {
     border-color: color-mix(in srgb, var(--color-border) 70%, var(--color-fg) 30%);
 }
@@ -347,6 +353,10 @@
     border-color: var(--color-primary) !important;
     background: var(--color-surface) !important;
     transform: scale(1.05);
+}
+
+.home-team-slot:not(:has(.home-team-slot__empty)):hover {
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .home-team-slot__sprite {
@@ -410,7 +420,7 @@
     background: var(--color-primary);
     color: #ffffff;
     transform: translateY(-1.5px);
-    box-shadow: 0 4px 12px var(--color-primary-soft);
+    box-shadow: 0 6px 16px -4px var(--color-primary-soft);
 }
 
 .home-button--secondary {
@@ -770,7 +780,11 @@
 .home-empty-state {
     border: 1px dashed var(--color-border);
     border-radius: 1rem;
-    background: var(--color-bg);
+    background: linear-gradient(
+        135deg,
+        var(--color-bg) 0%,
+        color-mix(in srgb, var(--color-bg) 90%, var(--color-primary-soft)) 100%
+    );
     padding: 1rem;
 }
 
