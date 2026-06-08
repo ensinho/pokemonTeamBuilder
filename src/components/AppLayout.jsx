@@ -738,7 +738,7 @@ export default function AppLayout() {
                                         <button
                                             type="button"
                                             onClick={isIOS
-                                                ? () => showToast('Tap the Share button, then "Add to Home Screen"', 'info')
+                                                ? () => showToast('Share button -> "Add to Home Screen"', 'info')
                                                 : handleInstall
                                             }
                                             className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-sm font-bold text-white transition-opacity active:opacity-75"
