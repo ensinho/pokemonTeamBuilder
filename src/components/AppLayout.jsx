@@ -14,7 +14,7 @@ import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '../services/firebase';
+import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { usePokedex } from '../hooks/usePokedex';
 
@@ -1012,7 +1012,7 @@ export default function AppLayout() {
                                         <Route path="/admin" element={
                                             <AdminDashboardView
                                                 db={db}
-                                                auth={useAuthStore.getState().auth}
+                                                auth={auth}
                                                 isAdmin={isAdmin}
                                                 colors={colors}
                                                 showToast={showToast}
