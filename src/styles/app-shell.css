@@ -171,13 +171,13 @@
 
 .app-shell__brand {
     display: flex;
-    height: var(--app-shell-top-band-height);
+    height: 5.15rem;
     box-sizing: border-box;
     align-items: center;
     justify-content: space-between;
     gap: 0.625rem;
     border-bottom: 1px solid var(--color-border);
-    padding-block: 0.8rem;
+    padding-block: 1.21rem;
 }
 
 .app-shell__brand.is-collapsed {
@@ -186,7 +186,7 @@
     justify-content: center;
     gap: 0;
     padding-inline: 0;
-    padding-block: 0.55rem;
+    padding-block: 1.23rem;
 }
 
 .app-shell__brand-main {
@@ -901,7 +901,7 @@
 @media (min-width: 1024px) {
     .app-shell {
         --app-shell-gutter: 0.95rem;
-        --app-shell-top-band-height: 5.15rem;
+        --app-shell-top-band-height: 5.1rem;
     }
 
     .app-shell__sidebar {
@@ -936,4 +936,8 @@
     .app-shell__header-team {
         display: none;
     }
+}
+
+.app-shell__body.is-mobile-detail {
+    padding: 0;
 }

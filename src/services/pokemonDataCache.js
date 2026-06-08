@@ -266,7 +266,16 @@ export const getMoveDetails = async (moveUrl, moveName) => {
         accuracy: data.accuracy,
         pp: data.pp,
         damage_class: data.damage_class?.name,
+        machines: data.machines || [],
     };
+};
+
+export const getMachineDetails = async (machineUrl) => {
+    return fetchPokeApiJson(machineUrl, {
+        cacheKey: `machine:${getIdFromResource(machineUrl) || machineUrl}`,
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
 };
 
 export const getAbilityDescription = async (ability) => {

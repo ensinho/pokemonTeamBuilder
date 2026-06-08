@@ -18,7 +18,12 @@ import {
     Hammer,
     Activity,
     AlertCircle,
-    Info
+    Info,
+    Swords,
+    Image as ImageIcon,
+    Database,
+    Zap,
+    HandFist
 } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
@@ -29,12 +34,15 @@ import { PokemonCard } from '../PokemonCard';
 import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
-import { WeaknessBadge, getPokemonWeaknessEntries } from '../modals/pokemonModalShared';
+
 import {
     getPokemonEncountersData,
     getStaticPokemonDetail,
     getPokemonApiData,
     getEvolutionChainData,
+    getPokemonSpeciesData,
+    getMoveDetails,
+    getMachineDetails,
 } from '../../services/pokemonDataCache';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 
@@ -48,6 +56,39 @@ const METHOD_ICON_MAP = {
     'headbutt': Compass,
     'rock-smash': Hammer,
     'pokeflute': Music,
+};
+
+const PhysicalIcon = () => (
+    <svg className="w-5 h-4 inline-block text-[#ef4444]" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2l1.5 4.5 4.5-1.5-1.5 4.5 4.5 1.5-4.5 1.5 1.5 4.5-4.5-1.5-1.5 4.5-1.5-4.5-4.5 1.5 1.5-4.5-4.5-1.5 4.5-1.5-1.5-4.5 4.5 1.5z" />
+    </svg>
+);
+
+const SpecialIcon = () => (
+    <svg className="w-5 h-4 inline-block text-[#3b82f6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <circle cx="12" cy="12" r="8" />
+        <circle cx="12" cy="12" r="5" />
+        <circle cx="12" cy="12" r="2" fill="currentColor" />
+    </svg>
+);
+
+const StatusIcon = () => (
+    <svg className="w-5 h-4 inline-block text-[#9ca3af]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 4a8 8 0 0 1 0 16" fill="currentColor" opacity="0.3" />
+        <circle cx="12" cy="12" r="3" fill="currentColor" />
+    </svg>
+);
+
+const formatTmName = (tmName) => {
+    if (!tmName) return '—';
+    const match = tmName.match(/^(tm|hm|tr)(\d+)$/i);
+    if (match) {
+        const [_, type, num] = match;
+        if (type.toLowerCase() === 'tm') return num;
+        return `${type.toUpperCase()}${num}`;
+    }
+    return tmName.toUpperCase();
 };
 
 const VERSION_CONFIG = {
@@ -129,6 +170,40 @@ const formatLocationName = (name) => {
         .join(' ');
 };
 
+const POKEDEX_NAME_MAP = {
+    'national': 'National',
+    'kanto': 'Red/Blue/Yellow',
+    'original-johto': 'Gold/Silver/Crystal',
+    'hoenn': 'Ruby/Sapphire/Emerald',
+    'updated-hoenn': 'Omega Ruby/Alpha Sapphire',
+    'original-sinnoh': 'Diamond/Pearl/Platinum',
+    'extended-sinnoh': 'Platinum',
+    'updated-sinnoh': 'Brilliant Diamond/Shining Pearl',
+    'original-unova': 'Black/White',
+    'updated-unova': 'Black 2/White 2',
+    'kalos-central': 'X/Y — Central Kalos',
+    'kalos-coastal': 'X/Y — Coastal Kalos',
+    'kalos-mountain': 'X/Y — Mountain Kalos',
+    'original-alola': 'Sun/Moon',
+    'updated-alola': 'Ultra Sun/Ultra Moon',
+    'original-melemele': 'Sun/Moon (Melemele)',
+    'original-akala': 'Sun/Moon (Akala)',
+    'original-ulaula': 'Sun/Moon (Ula\'ula)',
+    'original-poni': 'Sun/Moon (Poni)',
+    'updated-melemele': 'Ultra Sun/Ultra Moon (Melemele)',
+    'updated-akala': 'Ultra Sun/Ultra Moon (Akala)',
+    'updated-ulaula': 'Ultra Sun/Ultra Moon (Ula\'ula)',
+    'updated-poni': 'Ultra Sun/Ultra Moon (Poni)',
+    'letsgo-kanto': 'Let\'s Go Pikachu/Eevee',
+    'galar': 'Sword/Shield',
+    'isle-of-armor': 'The Isle of Armor',
+    'crown-tundra': 'The Crown Tundra',
+    'hisui': 'Legends: Arceus',
+    'paldea': 'Scarlet/Violet',
+    'kitakami': 'The Teal Mask',
+    'blueberry': 'The Indigo Disk'
+};
+
 export function PokedexView({
     pokemons,
     lastPokemonElementRef,
@@ -155,13 +230,23 @@ export function PokedexView({
 
     const [selectedPokemon, setSelectedPokemon] = useState(null);
     const [selectedPokemonDetails, setSelectedPokemonDetails] = useState(null);
+    const [fullApiData, setFullApiData] = useState(null);
+    const [speciesData, setSpeciesData] = useState(null);
     const [encounters, setEncounters] = useState([]);
     const [isEncountersLoading, setIsEncountersLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('data'); // 'data' | 'locations'
+    const [activeTab, setActiveTab] = useState('data'); // 'data' | 'locations' | 'moves' | 'sprites'
     const [locationsVersionFilter, setLocationsVersionFilter] = useState('all');
     const [showShiny, setShowShiny] = useState(false);
     const [evolutionDetails, setEvolutionDetails] = useState([]);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
+    // Moves State
+    const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [] });
+    const [selectedMoveVersion, setSelectedMoveVersion] = useState('');
+    const [isMovesLoading, setIsMovesLoading] = useState(false);
+
+    // Sprite customization state
+    const [customSelectedSprite, setCustomSelectedSprite] = useState(null);
 
     const displayedPokemons = useMemo(() => {
         return showOnlyFavorites
@@ -247,8 +332,11 @@ export function PokedexView({
         if (!pokemonQueryParam) {
             setSelectedPokemon(null);
             setSelectedPokemonDetails(null);
+            setFullApiData(null);
+            setSpeciesData(null);
             setEvolutionDetails([]);
             setEncounters([]);
+            setCustomSelectedSprite(null);
         }
     }, [pokemonQueryParam]);
 
@@ -261,6 +349,9 @@ export function PokedexView({
             setIsEncountersLoading(true);
             setEncounters([]);
             setEvolutionDetails([]);
+            setFullApiData(null);
+            setSpeciesData(null);
+            setCustomSelectedSprite(null);
             setLocationsVersionFilter('all');
 
             try {
@@ -300,11 +391,22 @@ export function PokedexView({
                 if (cancelled) return;
                 setSelectedPokemonDetails(details || selectedPokemon);
 
+                // Load Full API Data
+                const apiData = await getPokemonApiData(selectedPokemon.id);
+                if (cancelled) return;
+                setFullApiData(apiData);
+
+                // Load Species Data
+                const specData = await getPokemonSpeciesData(selectedPokemon.id);
+                if (cancelled) return;
+                setSpeciesData(specData);
+
+                // Load Encounters
                 const encounterData = await getPokemonEncountersData(selectedPokemon.id);
                 if (cancelled) return;
                 setEncounters(encounterData || []);
             } catch (err) {
-                console.error('Failed to load encounters data', err);
+                console.error('Failed to load details and encounters data', err);
             } finally {
                 if (!cancelled) {
                     setIsEncountersLoading(false);
@@ -382,6 +484,108 @@ export function PokedexView({
         };
     }, [selectedPokemonDetails, db, pokemonDetailsCache, setPokemonDetailsCache]);
 
+    // List of unique version groups available for this Pokémon's moves
+    const availableMoveVersions = useMemo(() => {
+        if (!fullApiData || !fullApiData.moves) return [];
+        const versions = new Set();
+        fullApiData.moves.forEach((m) => {
+            m.version_group_details.forEach((vgd) => {
+                versions.add(vgd.version_group.name);
+            });
+        });
+        return Array.from(versions).sort();
+    }, [fullApiData]);
+
+    // Set default version group for moves
+    useEffect(() => {
+        if (availableMoveVersions.length > 0) {
+            const preferred = ['scarlet-violet', 'legends-arceus', 'sword-shield', 'sun-moon', 'x-y', 'black-white', 'heartgold-soulsilver', 'platinum'];
+            const found = preferred.find((p) => availableMoveVersions.includes(p));
+            setSelectedMoveVersion(found || availableMoveVersions[availableMoveVersions.length - 1]);
+        } else {
+            setSelectedMoveVersion('');
+        }
+    }, [availableMoveVersions]);
+
+    // Fetch details for filtered moves
+    useEffect(() => {
+        if (!fullApiData || !selectedMoveVersion) {
+            setResolvedMoves({ levelUp: [], machine: [] });
+            return;
+        }
+
+        let cancelled = false;
+        const resolveMoves = async () => {
+            setIsMovesLoading(true);
+            try {
+                const filteredMoves = [];
+                fullApiData.moves.forEach((m) => {
+                    const detail = m.version_group_details.find((vgd) => vgd.version_group.name === selectedMoveVersion);
+                    if (detail) {
+                        filteredMoves.push({
+                            name: m.move.name,
+                            url: m.move.url,
+                            learnMethod: detail.move_learn_method.name,
+                            level: detail.level_learned_at,
+                        });
+                    }
+                });
+
+                const promises = filteredMoves.map(async (fm) => {
+                    const moveDetails = await getMoveDetails(fm.url, fm.name);
+                    let tmName = '';
+                    if (fm.learnMethod === 'machine' && moveDetails?.machines) {
+                        const machEntry = moveDetails.machines.find(
+                            (mach) => mach.version_group.name === selectedMoveVersion
+                        );
+                        if (machEntry?.machine?.url) {
+                            try {
+                                const machDetails = await getMachineDetails(machEntry.machine.url);
+                                tmName = machDetails?.item?.name || '';
+                            } catch (e) {
+                                console.error('Failed to load machine details', e);
+                            }
+                        }
+                    }
+                    return {
+                        ...fm,
+                        type: moveDetails?.type || 'normal',
+                        power: moveDetails?.power,
+                        accuracy: moveDetails?.accuracy,
+                        damageClass: moveDetails?.damage_class || 'physical',
+                        pp: moveDetails?.pp,
+                        tmName,
+                    };
+                });
+
+                const resolved = await Promise.all(promises);
+                if (cancelled) return;
+
+                const levelUp = resolved
+                    .filter((m) => m.learnMethod === 'level-up')
+                    .sort((a, b) => a.level - b.level);
+
+                const machine = resolved
+                    .filter((m) => m.learnMethod === 'machine')
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                setResolvedMoves({ levelUp, machine });
+            } catch (err) {
+                console.error('Failed to resolve moves', err);
+            } finally {
+                if (!cancelled) {
+                    setIsMovesLoading(false);
+                }
+            }
+        };
+
+        resolveMoves();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [fullApiData, selectedMoveVersion]);
+
     const handleSelectPokemon = (pokemon) => {
         setSelectedPokemon(pokemon);
         setSearchParams({ pokemon: String(pokemon.id) });
@@ -414,9 +618,48 @@ export function PokedexView({
         }
     };
 
-    // Calculate weaknesses
-    const pokemonWeaknesses = useMemo(() => {
-        return getPokemonWeaknessEntries(selectedPokemonDetails?.types || []);
+
+    // Type effectiveness map (all 18 types defenses)
+    const typeDefenses = useMemo(() => {
+        if (!selectedPokemonDetails) return {};
+        const defendingTypes = selectedPokemonDetails.types || [];
+        const effectiveness = {};
+        const ALL_TYPES = [
+            'normal', 'fire', 'water', 'electric', 'grass', 'ice',
+            'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug',
+            'rock', 'ghost', 'dragon', 'dark', 'steel', 'fairy'
+        ];
+        const typeChart = {
+            normal: { damageTaken: { Fighting: 2, Ghost: 0 } },
+            fire: { damageTaken: { Fire: 0.5, Water: 2, Electric: 1, Grass: 0.5, Ice: 0.5, Fighting: 1, Poison: 1, Ground: 2, Flying: 1, Psychic: 1, Bug: 0.5, Rock: 2, Ghost: 1, Dragon: 1, Dark: 1, Steel: 0.5, Fairy: 0.5 } },
+            water: { damageTaken: { Fire: 0.5, Water: 0.5, Electric: 2, Grass: 2, Ice: 0.5, Fighting: 1, Poison: 1, Ground: 1, Flying: 1, Psychic: 1, Bug: 1, Rock: 1, Ghost: 1, Dragon: 1, Dark: 1, Steel: 0.5, Fairy: 1 } },
+            electric: { damageTaken: { Fire: 1, Water: 1, Electric: 0.5, Grass: 1, Ice: 1, Fighting: 1, Poison: 1, Ground: 2, Flying: 0.5, Psychic: 1, Bug: 1, Rock: 1, Ghost: 1, Dragon: 1, Dark: 1, Steel: 0.5, Fairy: 1 } },
+            grass: { damageTaken: { Fire: 2, Water: 0.5, Electric: 0.5, Grass: 0.5, Ice: 2, Fighting: 1, Poison: 2, Ground: 0.5, Flying: 2, Psychic: 1, Bug: 2, Rock: 1, Ghost: 1, Dragon: 1, Dark: 1, Steel: 1, Fairy: 1 } },
+            ice: { damageTaken: { Fire: 2, Water: 1, Electric: 1, Grass: 1, Ice: 0.5, Fighting: 2, Poison: 1, Ground: 1, Flying: 1, Psychic: 1, Bug: 1, Rock: 2, Ghost: 1, Dragon: 1, Dark: 1, Steel: 2, Fairy: 1 } },
+            fighting: { damageTaken: { Fire: 1, Water: 1, Electric: 1, Grass: 1, Ice: 1, Fighting: 1, Poison: 1, Ground: 1, Flying: 2, Psychic: 2, Bug: 0.5, Rock: 0.5, Ghost: 1, Dragon: 1, Dark: 0.5, Steel: 1, Fairy: 2 } },
+            poison: { damageTaken: { Fire: 1, Water: 1, Electric: 1, Grass: 0.5, Ice: 1, Fighting: 0.5, Poison: 0.5, Ground: 2, Flying: 1, Psychic: 2, Bug: 0.5, Rock: 1, Ghost: 1, Dragon: 1, Dark: 1, Steel: 1, Fairy: 0.5 } },
+            ground: { damageTaken: { Fire: 1, Water: 2, Electric: 0, Grass: 2, Ice: 2, Fighting: 1, Poison: 0.5, Ground: 1, Flying: 1, Psychic: 1, Bug: 1, Rock: 0.5, Ghost: 1, Dragon: 1, Dark: 1, Steel: 1, Fairy: 1 } },
+            flying: { damageTaken: { Fire: 1, Water: 1, Electric: 2, Grass: 0.5, Ice: 2, Fighting: 0.5, Poison: 1, Ground: 0, Flying: 1, Psychic: 1, Bug: 0.5, Rock: 2, Ghost: 1, Dragon: 1, Dark: 1, Steel: 1, Fairy: 1 } },
+            psychic: { damageTaken: { Fire: 1, Water: 1, Electric: 1, Grass: 1, Ice: 1, Fighting: 0.5, Poison: 1, Ground: 1, Flying: 1, Psychic: 0.5, Bug: 2, Rock: 1, Ghost: 2, Dragon: 1, Dark: 2, Steel: 1, Fairy: 1 } },
+            bug: { damageTaken: { Fire: 2, Water: 1, Electric: 1, Grass: 0.5, Ice: 1, Fighting: 0.5, Poison: 1, Ground: 0.5, Flying: 2, Psychic: 1, Bug: 1, Rock: 2, Ghost: 1, Dragon: 1, Dark: 1, Steel: 1, Fairy: 1 } },
+            rock: { damageTaken: { Fire: 0.5, Water: 2, Electric: 1, Grass: 2, Ice: 1, Fighting: 2, Poison: 0.5, Ground: 2, Flying: 0.5, Psychic: 1, Bug: 1, Rock: 1, Ghost: 1, Dragon: 1, Dark: 1, Steel: 2, Fairy: 1 } },
+            ghost: { damageTaken: { Normal: 0, Fire: 1, Water: 1, Electric: 1, Grass: 1, Ice: 1, Fighting: 0, Poison: 0.5, Ground: 1, Flying: 1, Psychic: 1, Bug: 0.5, Rock: 1, Ghost: 2, Dragon: 1, Dark: 2, Steel: 1, Fairy: 1 } },
+            dragon: { damageTaken: { Fire: 0.5, Water: 0.5, Electric: 0.5, Grass: 0.5, Ice: 2, Fighting: 1, Poison: 1, Ground: 1, Flying: 1, Psychic: 1, Bug: 1, Rock: 1, Ghost: 1, Dragon: 2, Dark: 1, Steel: 1, Fairy: 2 } },
+            dark: { damageTaken: { Fighting: 2, Psychic: 0, Bug: 2, Ghost: 0.5, Dragon: 1, Dark: 0.5, Fairy: 2 } },
+            steel: { damageTaken: { Normal: 0.5, Fire: 2, Water: 1, Electric: 1, Grass: 0.5, Ice: 0.5, Fighting: 2, Poison: 0, Ground: 2, Flying: 0.5, Psychic: 0.5, Bug: 0.5, Rock: 0.5, Ghost: 1, Dragon: 0.5, Dark: 1, Steel: 0.5, Fairy: 0.5 } },
+            fairy: { damageTaken: { Fighting: 0.5, Poison: 2, Bug: 0.5, Dragon: 0, Dark: 0.5, Steel: 2 } }
+        };
+
+        ALL_TYPES.forEach((attackType) => {
+            const multiplier = defendingTypes.reduce((product, defendingType) => {
+                const damageTaken = typeChart[defendingType]?.damageTaken;
+                const toChartKey = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+                return product * (damageTaken?.[toChartKey(attackType)] ?? 1);
+            }, 1);
+            effectiveness[attackType] = multiplier;
+        });
+
+        return effectiveness;
     }, [selectedPokemonDetails]);
 
     // Group encounters by Generation / Version Group
@@ -525,20 +768,175 @@ export function PokedexView({
             .filter((group) => group.locations.length > 0);
     }, [groupedEncounters, locationsVersionFilter]);
 
+    // Gen-by-Gen Sprites list mapping
+    const pokemonGenerationSprites = useMemo(() => {
+        if (!fullApiData || !fullApiData.sprites) return [];
+        const versions = fullApiData.sprites.versions;
+        if (!versions) return [];
+
+        const genList = [
+            {
+                name: 'Generation 1',
+                normal: versions['generation-i']?.['red-blue']?.front_default,
+                shiny: null
+            },
+            {
+                name: 'Generation 2',
+                normal: versions['generation-ii']?.['crystal']?.front_default || versions['generation-ii']?.['gold']?.front_default,
+                shiny: versions['generation-ii']?.['crystal']?.front_shiny || versions['generation-ii']?.['gold']?.front_shiny
+            },
+            {
+                name: 'Generation 3',
+                normal: versions['generation-iii']?.['emerald']?.front_default || versions['generation-iii']?.['ruby-sapphire']?.front_default,
+                shiny: versions['generation-iii']?.['emerald']?.front_shiny || versions['generation-iii']?.['ruby-sapphire']?.front_shiny
+            },
+            {
+                name: 'Generation 4',
+                normal: versions['generation-iv']?.['platinum']?.front_default || versions['generation-iv']?.['diamond-pearl']?.front_default,
+                shiny: versions['generation-iv']?.['platinum']?.front_shiny || versions['generation-iv']?.['diamond-pearl']?.front_shiny
+            },
+            {
+                name: 'Generation 5',
+                normal: versions['generation-v']?.['black-white']?.animated?.front_default || versions['generation-v']?.['black-white']?.front_default,
+                shiny: versions['generation-v']?.['black-white']?.animated?.front_shiny || versions['generation-v']?.['black-white']?.front_shiny
+            },
+            {
+                name: 'Generation 6',
+                normal: versions['generation-vi']?.['x-y']?.front_default || versions['generation-vi']?.['omega-ruby-alpha-sapphire']?.front_default,
+                shiny: versions['generation-vi']?.['x-y']?.front_shiny || versions['generation-vi']?.['omega-ruby-alpha-sapphire']?.front_shiny
+            },
+            {
+                name: 'Generation 7',
+                normal: versions['generation-vii']?.['ultra-sun-ultra-moon']?.front_default || versions['generation-vii']?.['icons']?.front_default,
+                shiny: versions['generation-vii']?.['ultra-sun-ultra-moon']?.front_shiny
+            },
+            {
+                name: 'Generation 8',
+                normal: versions['generation-viii']?.['brilliant-diamond-shining-pearl']?.front_default || versions['generation-viii']?.['icons']?.front_default,
+                shiny: null
+            },
+            {
+                name: 'Generation 9',
+                normal: versions['generation-ix']?.['scarlet-violet']?.front_default,
+                shiny: null
+            }
+        ];
+
+        return genList.filter((g) => g.normal);
+    }, [fullApiData]);
+
     const spriteToShow = useMemo(() => {
+        if (customSelectedSprite) return customSelectedSprite;
         if (!selectedPokemonDetails) return POKEBALL_PLACEHOLDER_URL;
         return showShiny
             ? (selectedPokemonDetails.animatedShinySprite || selectedPokemonDetails.shinySprite || selectedPokemonDetails.sprite)
             : (selectedPokemonDetails.animatedSprite || selectedPokemonDetails.sprite);
-    }, [selectedPokemonDetails, showShiny]);
+    }, [selectedPokemonDetails, showShiny, customSelectedSprite]);
 
-    // Render detailed content (Data or Locations tabs)
+    // Data parsing for Pokedex Data sections
+    const formattedId = useMemo(() => {
+        if (!selectedPokemonDetails?.id) return '';
+        return String(selectedPokemonDetails.id).padStart(4, '0');
+    }, [selectedPokemonDetails]);
+
+    const pokemonGenus = useMemo(() => {
+        return speciesData?.genera?.find((g) => g.language.name === 'en')?.genus || '';
+    }, [speciesData]);
+
+    const heightInM = useMemo(() => {
+        const hVal = selectedPokemonDetails?.height || fullApiData?.height;
+        return hVal ? hVal / 10 : 0;
+    }, [selectedPokemonDetails, fullApiData]);
+
+    const heightInFt = useMemo(() => {
+        if (!heightInM) return '';
+        const ftTotal = heightInM * 3.28084;
+        const ft = Math.floor(ftTotal);
+        const inches = Math.round((ftTotal % 1) * 12);
+        return `${ft}′${inches.toString().padStart(2, '0')}″`;
+    }, [heightInM]);
+
+    const weightInKg = useMemo(() => {
+        const wVal = selectedPokemonDetails?.weight || fullApiData?.weight;
+        return wVal ? wVal / 10 : 0;
+    }, [selectedPokemonDetails, fullApiData]);
+
+    const weightInLbs = useMemo(() => {
+        return weightInKg ? (weightInKg * 2.20462).toFixed(1) : '';
+    }, [weightInKg]);
+
+    const evYield = useMemo(() => {
+        if (!fullApiData?.stats) return 'None';
+        const evs = [];
+        const STAT_MAP = {
+            'hp': 'HP',
+            'attack': 'Atk',
+            'defense': 'Def',
+            'special-attack': 'Sp. Atk',
+            'special-defense': 'Sp. Def',
+            'speed': 'Speed'
+        };
+        fullApiData.stats.forEach((s) => {
+            if (s.effort > 0) {
+                evs.push(`${s.effort} ${STAT_MAP[s.stat.name] || s.stat.name}`);
+            }
+        });
+        return evs.join(', ') || 'None';
+    }, [fullApiData]);
+
+    const genderRate = speciesData?.gender_rate;
+    const genderText = useMemo(() => {
+        if (genderRate === undefined) return '';
+        if (genderRate === -1) return 'Genderless';
+        const femalePercent = (genderRate / 8) * 100;
+        const malePercent = 100 - femalePercent;
+        return `${malePercent}% male, ${femalePercent}% female`;
+    }, [genderRate]);
+
+    const eggGroups = useMemo(() => {
+        return speciesData?.egg_groups?.map((g) => g.name).join(', ') || 'Unknown';
+    }, [speciesData]);
+
+
+    const baseFriendshipText = useMemo(() => {
+        if (speciesData?.base_happiness === undefined) return '';
+        const val = speciesData.base_happiness;
+        let label = 'normal';
+        if (val < 50) label = 'lower than normal';
+        else if (val >= 100) label = 'higher than normal';
+        return `${val} (${label})`;
+    }, [speciesData]);
+
+    const growthRateText = useMemo(() => {
+        if (!speciesData?.growth_rate?.name) return '';
+        return speciesData.growth_rate.name
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }, [speciesData]);
+
+    const eggCyclesText = useMemo(() => {
+        if (speciesData?.hatch_counter === undefined) return '';
+        const cycles = speciesData.hatch_counter;
+        const minSteps = cycles * 244;
+        const maxSteps = cycles * 257;
+        return `${cycles} (${minSteps.toLocaleString()}-${maxSteps.toLocaleString()} steps)`;
+    }, [speciesData]);
+
+    const catchRateText = useMemo(() => {
+        if (speciesData?.capture_rate === undefined) return '';
+        const rate = speciesData.capture_rate;
+        const percent = ((rate / 765) * 100).toFixed(1);
+        return `${rate} (${percent}% with PokéBall, full HP)`;
+    }, [speciesData]);
+
+    // Render detailed content (Data, Locations, Moves, or Sprites tabs)
     const renderDetailsContent = () => {
         if (!selectedPokemonDetails) return null;
 
         if (activeTab === 'data') {
             return (
-                <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
+                <div className="flex-1 flex flex-col space-y-5 animate-scale-in">
                     {/* Sprite & Stats Layout - Side-by-side row on desktop, stacked on mobile */}
                     <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.3fr] gap-4 items-stretch">
                         {/* Profile Card */}
@@ -578,15 +976,6 @@ export function PokedexView({
                                     ))}
                                 </div>
                             </div>
-                            
-                            <div className="mt-4 w-full border-t border-border pt-3">
-                                <h4 className="mb-2 text-center text-[10px] font-bold uppercase tracking-wider text-muted">Abilities</h4>
-                                <div className="flex flex-wrap justify-center gap-1.5">
-                                    {selectedPokemonDetails.abilities?.map((ability, idx) => (
-                                        <AbilityChip key={idx} ability={ability} />
-                                    ))}
-                                </div>
-                            </div>
                         </div>
 
                         {/* Base Stats Card */}
@@ -600,26 +989,7 @@ export function PokedexView({
                         </div>
                     </div>
 
-                    {/* Weaknesses Card */}
-                    <div className="rounded-xl bg-surface p-4 border border-border">
-                        <div className="mb-3 flex items-center justify-between gap-2">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted">Weaknesses</h4>
-                            <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted border border-border">
-                                {pokemonWeaknesses.length}
-                            </span>
-                        </div>
-                        {pokemonWeaknesses.length > 0 ? (
-                            <div className="flex flex-wrap justify-center sm:justify-start gap-1.5">
-                                {pokemonWeaknesses.map(({ type, multiplier }) => (
-                                    <WeaknessBadge key={type} type={type} multiplier={multiplier} colors={colors} />
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-center text-xs text-muted sm:text-left">No major weaknesses.</p>
-                        )}
-                    </div>
-
-                    {/* Evolution Line Card */}
+                    {/* Evolution Line — shown early for quick context */}
                     {evolutionDetails.length > 1 && (
                         <div className="rounded-xl bg-surface p-4 border border-border">
                             <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">Evolution Line</h4>
@@ -648,152 +1018,573 @@ export function PokedexView({
                             </div>
                         </div>
                     )}
+
+                    {/* Two-column data grid: Left = Pokédex Data + Training | Right = Type Defenses + Breeding */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
+
+                        {/* ── LEFT COLUMN ── */}
+                        <div className="flex flex-col gap-4">
+
+                            {/* Pokédex Data card */}
+                            <div className="rounded-xl bg-surface p-4 border border-border">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
+                                    <Database className="w-3.5 h-3.5 text-primary" />
+                                    <span>Pokédex Data</span>
+                                </h4>
+                                <table className="w-full text-xs text-fg">
+                                    <tbody>
+                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                            <td className="text-muted">National ID</td>
+                                            <td className="font-mono font-bold">#{formattedId || '----'}</td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                            <td className="text-muted">Type</td>
+                                            <td className="flex gap-1">
+                                                {selectedPokemonDetails.types?.map((type) => (
+                                                    <TypeBadge key={type} type={type} colors={colors} />
+                                                ))}
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                            <td className="text-muted">Species</td>
+                                            <td className="font-bold capitalize">{pokemonGenus || 'Loading...'}</td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                            <td className="text-muted">Height</td>
+                                            <td className="font-bold">
+                                                {heightInM ? `${heightInM} m` : 'Loading...'} {heightInFt && <span className="text-muted font-normal text-[11px]">({heightInFt})</span>}
+                                            </td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                            <td className="text-muted">Weight</td>
+                                            <td className="font-bold">
+                                                {weightInKg ? `${weightInKg} kg` : 'Loading...'} {weightInLbs && <span className="text-muted font-normal text-[11px]">({weightInLbs} lbs)</span>}
+                                            </td>
+                                        </tr>
+                                        <tr className="py-2.5 flex justify-between items-start">
+                                            <td className="text-muted py-1">Abilities</td>
+                                            <td className="font-bold text-right flex flex-col items-end space-y-1">
+                                                {selectedPokemonDetails.abilities?.map((ab, idx) => {
+                                                    const isHidden = ab.is_hidden;
+                                                    return (
+                                                        <div key={idx} className="capitalize text-xs">
+                                                            {isHidden ? (
+                                                                <span className="text-muted font-normal text-[11px] inline-flex items-center gap-1">
+                                                                    <AbilityChip ability={ab} /> <span className="text-[10px] text-muted-foreground">(hidden)</span>
+                                                                </span>
+                                                            ) : (
+                                                                <span className="inline-block">
+                                                                    <AbilityChip ability={ab} />
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {/* Training card */}
+                            <div className="rounded-xl bg-surface p-4 border border-border">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
+                                    <Zap className="w-3.5 h-3.5 text-primary" />
+                                    <span>Training</span>
+                                </h4>
+                                <table className="w-full text-xs text-fg">
+                                    <tbody>
+                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                            <td className="text-muted">EV Yield</td>
+                                            <td className="font-bold text-right truncate max-w-[200px]">{evYield}</td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                            <td className="text-muted">Catch Rate</td>
+                                            <td className="font-bold text-right">{catchRateText || 'Loading...'}</td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                            <td className="text-muted">Base Friendship</td>
+                                            <td className="font-bold text-right">{baseFriendshipText || 'Loading...'}</td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                            <td className="text-muted">Base Exp.</td>
+                                            <td className="font-mono font-bold text-right">{fullApiData?.base_experience ?? 'Loading...'}</td>
+                                        </tr>
+                                        <tr className="py-2 flex justify-between items-center">
+                                            <td className="text-muted">Growth Rate</td>
+                                            <td className="font-bold text-right">{growthRateText || 'Loading...'}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {/* ── RIGHT COLUMN ── */}
+                        <div className="flex flex-col gap-4">
+
+                            {/* Type Defenses card */}
+                            <div className="rounded-xl bg-surface p-4 border border-border">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
+                                    <HandFist className="w-3.5 h-3.5 text-primary" />
+                                    <span>Type Defenses</span>
+                                </h4>
+                                <p className="text-[11px] text-muted mb-4">Damage multipliers received by {selectedPokemonDetails.name}.</p>
+                                {(() => {
+                                    const tiers = [
+                                        { label: '4×  Super Weak', mult: 4, bg: 'bg-red-500/15', border: 'border-red-500/40', text: 'text-red-400', badge: 'bg-red-500/20 border-red-500/50 text-red-300' },
+                                        { label: '2×  Weak', mult: 2, bg: 'bg-orange-500/10', border: 'border-orange-500/35', text: 'text-orange-400', badge: 'bg-orange-500/20 border-orange-500/50 text-orange-300' },
+                                        { label: '½×  Resistant', mult: 0.5, bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', badge: 'bg-blue-500/15 border-blue-500/40 text-blue-300' },
+                                        { label: '¼×  Very Resistant', mult: 0.25, bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', badge: 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300' },
+                                        { label: '0×  Immune', mult: 0, bg: 'bg-surface-raised/60', border: 'border-border', text: 'text-muted', badge: 'bg-surface-raised border-border text-muted' },
+                                    ];
+                                    const groups = tiers.map(tier => ({
+                                        ...tier,
+                                        types: Object.entries(typeDefenses).filter(([, m]) => m === tier.mult).map(([t]) => t),
+                                    })).filter(g => g.types.length > 0);
+                                    const neutralTypes = Object.entries(typeDefenses).filter(([, m]) => m === 1).map(([t]) => t);
+                                    return (
+                                        <div className="space-y-2.5">
+                                            {groups.map(g => (
+                                                <div key={g.mult} className={`rounded-lg border ${g.border} ${g.bg} px-3 py-2.5`}>
+                                                    <span className={`text-[10px] font-extrabold uppercase tracking-widest ${g.text} block mb-2`}>{g.label}</span>
+                                                    <div className="flex flex-wrap gap-1.5">
+                                                        {g.types.map(tName => (
+                                                            <span key={tName} className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-semibold capitalize ${g.badge}`}>
+                                                                <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0" />
+                                                                {tName}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {neutralTypes.length > 0 && (
+                                                <details className="group">
+                                                    <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-muted/60 hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
+                                                        <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
+                                                        {neutralTypes.length} neutral types (1×)
+                                                    </summary>
+                                                    <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
+                                                        {neutralTypes.map(tName => (
+                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
+                                                                <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0 opacity-60" />
+                                                                {tName}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </details>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
+
+                            {/* Breeding card */}
+                            <div className="rounded-xl bg-surface p-4 border border-border">
+                                <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
+                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                    <span>Breeding</span>
+                                </h4>
+                                <table className="w-full text-xs text-fg">
+                                    <tbody>
+                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                            <td className="text-muted">Egg Groups</td>
+                                            <td className="font-bold text-right capitalize">{eggGroups}</td>
+                                        </tr>
+                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                            <td className="text-muted">Gender Ratio</td>
+                                            <td className="font-bold text-right">{genderText || 'Loading...'}</td>
+                                        </tr>
+                                        <tr className="py-2 flex justify-between items-center">
+                                            <td className="text-muted">Egg Cycles</td>
+                                            <td className="font-bold text-right">{eggCyclesText || 'Loading...'}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             );
         }
 
-        // Locations Tab
-        return (
-            <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
-                {/* Header Title */}
-                <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    <h4 className="text-base font-bold text-fg">Where to Catch</h4>
-                </div>
+        // Catch Locations Tab
+        if (activeTab === 'locations') {
+            return (
+                <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
+                    <div className="flex items-center gap-2">
+                        <MapPin className="w-5 h-5 text-primary" />
+                        <h4 className="text-base font-bold text-fg">Where to Catch</h4>
+                    </div>
 
-                {/* Game Version Filter Selector */}
-                {availableVersions.length > 0 && (
-                    <div className="flex items-center justify-between gap-4 bg-surface p-3 rounded-xl border border-border">
-                        <label htmlFor="locations-version-filter" className="text-xs font-bold text-muted uppercase tracking-wider">
-                            Filter by Game:
-                        </label>
-                        <div className="relative min-w-[150px]">
-                            <select
-                                id="locations-version-filter"
-                                value={locationsVersionFilter}
-                                onChange={(e) => setLocationsVersionFilter(e.target.value)}
-                                className="team-builder-field team-builder-field--compact team-builder-select w-full"
-                            >
-                                <option value="all">All Games</option>
-                                {availableVersions.map((vName) => {
-                                    const conf = VERSION_CONFIG[vName] || { label: vName.replace('-', ' ') };
-                                    return (
-                                        <option key={vName} value={vName}>
-                                            {conf.label}
-                                        </option>
-                                    );
-                                })}
-                            </select>
+                    {availableVersions.length > 0 && (
+                        <div className="flex items-center justify-between gap-4 bg-surface p-3 rounded-xl border border-border">
+                            <label htmlFor="locations-version-filter" className="text-xs font-bold text-muted uppercase tracking-wider">
+                                Filter by Game:
+                            </label>
+                            <div className="relative min-w-[150px]">
+                                <select
+                                    id="locations-version-filter"
+                                    value={locationsVersionFilter}
+                                    onChange={(e) => setLocationsVersionFilter(e.target.value)}
+                                    className="team-builder-field team-builder-field--compact team-builder-select w-full"
+                                >
+                                    <option value="all">All Games</option>
+                                    {availableVersions.map((vName) => {
+                                        const conf = VERSION_CONFIG[vName] || { label: vName.replace('-', ' ') };
+                                        return (
+                                            <option key={vName} value={vName}>
+                                                {conf.label}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                {isEncountersLoading ? (
-                    <div className="flex-1 flex items-center justify-center py-16">
-                        <div className="team-builder-spinner" aria-hidden="true"></div>
+                    {isEncountersLoading ? (
+                        <div className="flex-1 flex items-center justify-center py-16">
+                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                        </div>
+                    ) : filteredGroupedEncounters.length > 0 ? (
+                        <div className="custom-scrollbar overflow-y-auto pr-1 flex-1 max-h-[60vh] space-y-3">
+                            {filteredGroupedEncounters.map((group) => (
+                                <div key={group.id} className="locations-version-group border border-border bg-surface p-4 rounded-2xl">
+                                    <h5 className="locations-version-group__title text-xs font-extrabold uppercase tracking-wider text-muted flex items-center gap-1.5 mb-3">
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        <span>{group.name}</span>
+                                    </h5>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                                        {group.locations.map((loc, idx) => (
+                                            <div key={idx} className="locations-item border border-border p-3.5 rounded-xl bg-bg">
+                                                <div className="flex items-center gap-2 border-b border-border pb-2 mb-3">
+                                                    <MapPin className="w-4 h-4 text-primary shrink-0" />
+                                                    <span className="font-extrabold text-fg text-sm truncate">{loc.location}</span>
+                                                </div>
+
+                                                <div className="space-y-2">
+                                                    {loc.versions.map((ver) => {
+                                                        const conf = VERSION_CONFIG[ver.name] || { label: ver.name.replace('-', ' '), color: '#7f8c8d' };
+                                                        const borderVal = `${conf.color}55`;
+                                                        const bgVal = `${conf.color}18`;
+                                                        const textVal = conf.color;
+
+                                                        const distinctDetails = ver.details.reduce((acc, current) => {
+                                                            const key = `${current.methodKey}-${current.minLevel}-${current.maxLevel}`;
+                                                            if (!acc.has(key)) {
+                                                                acc.set(key, current);
+                                                            }
+                                                            return acc;
+                                                        }, new Map()).values();
+
+                                                        return Array.from(distinctDetails).map((detail, dIdx) => {
+                                                            const IconComp = METHOD_ICON_MAP[detail.methodKey] || Compass;
+                                                            return (
+                                                                <div key={`${ver.name}-${dIdx}`} className="flex flex-wrap items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-surface border border-border transition-colors">
+                                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                                        <span
+                                                                            className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider border shrink-0 text-center"
+                                                                            style={{
+                                                                                borderColor: borderVal,
+                                                                                backgroundColor: bgVal,
+                                                                                color: textVal
+                                                                            }}
+                                                                        >
+                                                                            {conf.label}
+                                                                        </span>
+                                                                        <span className="flex items-center gap-1.5 text-xs text-muted truncate">
+                                                                            <IconComp className="w-3.5 h-3.5 text-muted shrink-0" />
+                                                                            <span className="capitalize">{detail.method}</span>
+                                                                        </span>
+                                                                    </div>
+
+                                                                    <div className="flex items-center gap-2 shrink-0">
+                                                                        <span className="text-[10px] font-semibold bg-bg px-2 py-0.5 rounded border border-border text-muted">
+                                                                            {detail.minLevel === detail.maxLevel ? `Lv. ${detail.minLevel}` : `Lv. ${detail.minLevel}-${detail.maxLevel}`}
+                                                                        </span>
+                                                                        <span className="text-xs font-bold text-primary">{detail.chance}%</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        });
+                                                    })}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
+                            <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
+                            <h5 className="font-bold text-fg mb-1">Not Found in the Wild</h5>
+                            <p className="text-xs text-muted max-w-sm mx-auto">
+                                This Pokémon cannot be encountered in the wild. It may be a starter, a gift, an evolution-only form, a legendary, or a transfer-only Pokémon.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Moves learned Tab (inspired by 2nd image)
+        if (activeTab === 'moves') {
+            return (
+                <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-surface p-3 rounded-xl border border-border">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
+                            <Swords className="w-4 h-4 text-primary" />
+                            <span>Learnt Moves</span>
+                        </h4>
+
+                        {/* Game Version Selector for Moves */}
+                        {availableMoveVersions.length > 0 && (
+                            <div className="relative min-w-[170px]">
+                                <select
+                                    value={selectedMoveVersion}
+                                    onChange={(e) => setSelectedMoveVersion(e.target.value)}
+                                    className="team-builder-field team-builder-field--compact team-builder-select w-full"
+                                >
+                                    {availableMoveVersions.map((vName) => {
+                                        const label = vName.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+                                        return (
+                                            <option key={vName} value={vName}>
+                                                {label}
+                                            </option>
+                                        );
+                                    })}
+                                </select>
+                            </div>
+                        )}
                     </div>
-                ) : filteredGroupedEncounters.length > 0 ? (
-                    <div className="custom-scrollbar overflow-y-auto pr-1 flex-1 max-h-[60vh] space-y-3">
-                        {filteredGroupedEncounters.map((group) => (
-                            <div key={group.id} className="locations-version-group border border-border bg-surface p-4 rounded-2xl">
-                                <h5 className="locations-version-group__title text-xs font-extrabold uppercase tracking-wider text-muted flex items-center gap-1.5 mb-3">
-                                    <MapPin className="w-3.5 h-3.5" />
-                                    <span>{group.name}</span>
+
+                    {isMovesLoading ? (
+                        <div className="flex-1 flex items-center justify-center py-20">
+                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                        </div>
+                    ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0) ? (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+                            {/* Level Up Moves */}
+                            <div className="rounded-xl bg-surface p-4 border border-border">
+                                <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border">
+                                    <ChevronRight className="w-3.5 h-3.5 text-primary" />
+                                    <span>Moves Learnt by Level Up</span>
                                 </h5>
-                                
-                                {/* 2-COLUMN GRID FOR LOCATIONS */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                                    {group.locations.map((loc, idx) => (
-                                        <div key={idx} className="locations-item border border-border p-3.5 rounded-xl bg-bg">
-                                            {/* Location header */}
-                                            <div className="flex items-center gap-2 border-b border-border pb-2 mb-3">
-                                                <MapPin className="w-4 h-4 text-primary shrink-0" />
-                                                <span className="font-extrabold text-fg text-sm truncate">{loc.location}</span>
-                                            </div>
-
-                                            {/* Version row list */}
-                                            <div className="space-y-2">
-                                                {loc.versions.map((ver) => {
-                                                    const conf = VERSION_CONFIG[ver.name] || { label: ver.name.replace('-', ' '), color: '#7f8c8d' };
-                                                    const borderVal = `${conf.color}55`; // ~33% opacity
-                                                    const bgVal = `${conf.color}18`; // ~10% opacity
-                                                    const textVal = conf.color;
-
-                                                    const distinctDetails = ver.details.reduce((acc, current) => {
-                                                        const key = `${current.methodKey}-${current.minLevel}-${current.maxLevel}`;
-                                                        if (!acc.has(key)) {
-                                                            acc.set(key, current);
-                                                        }
-                                                        return acc;
-                                                    }, new Map()).values();
-
-                                                    return Array.from(distinctDetails).map((detail, dIdx) => {
-                                                        const IconComp = METHOD_ICON_MAP[detail.methodKey] || Compass;
-                                                        return (
-                                                            <div key={`${ver.name}-${dIdx}`} className="flex flex-wrap items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-surface border border-border transition-colors">
-                                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                                    <span
-                                                                        className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider border shrink-0 text-center"
-                                                                        style={{
-                                                                            borderColor: borderVal,
-                                                                            backgroundColor: bgVal,
-                                                                            color: textVal
-                                                                        }}
-                                                                    >
-                                                                        {conf.label}
-                                                                    </span>
-                                                                    <span className="flex items-center gap-1.5 text-xs text-muted truncate">
-                                                                        <IconComp className="w-3.5 h-3.5 text-muted shrink-0" />
-                                                                        <span className="capitalize">{detail.method}</span>
-                                                                    </span>
-                                                                </div>
-                                                                
-                                                                <div className="flex items-center gap-2 shrink-0">
-                                                                    <span className="text-[10px] font-semibold bg-bg px-2 py-0.5 rounded border border-border text-muted">
-                                                                        {detail.minLevel === detail.maxLevel ? `Lv. ${detail.minLevel}` : `Lv. ${detail.minLevel}-${detail.maxLevel}`}
-                                                                    </span>
-                                                                    <span className="text-xs font-bold text-primary">{detail.chance}%</span>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    });
-                                                })}
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-border/80 text-muted">
+                                                <th className="pb-2 font-bold w-12">Lv.</th>
+                                                <th className="pb-2 font-bold">Move</th>
+                                                <th className="pb-2 font-bold text-center">Type</th>
+                                                <th className="pb-2 font-bold text-center">Cat.</th>
+                                                <th className="pb-2 font-bold text-center">Power</th>
+                                                <th className="pb-2 font-bold text-center">Acc.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {resolvedMoves.levelUp.map((m, idx) => {
+                                                return (
+                                                    <tr key={idx} className="border-b border-border/40 hover:bg-bg/10">
+                                                        <td className="py-2.5 font-bold font-mono text-muted">{m.level}</td>
+                                                        <td className="py-2.5 font-bold capitalize text-fg">{m.name.replace('-', ' ')}</td>
+                                                        <td className="py-2.5 text-center">
+                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider text-white" style={{ backgroundColor: typeColors[m.type] }}>
+                                                                {m.type.slice(0, 3)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2 text-center">
+                                                            <span title={m.damageClass} className="inline-flex items-center justify-center">
+                                                                {m.damageClass === 'physical' ? (
+                                                                    <PhysicalIcon />
+                                                                ) : m.damageClass === 'special' ? (
+                                                                    <SpecialIcon />
+                                                                ) : (
+                                                                    <StatusIcon />
+                                                                )}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.power ?? '—'}</td>
+                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.accuracy ? `${m.accuracy}%` : '—'}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
-                        <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
-                        <h5 className="font-bold text-fg mb-1">Not Found in the Wild</h5>
-                        <p className="text-xs text-muted max-w-sm mx-auto">
-                            This Pokémon cannot be encountered in the wild. It may be a starter, a gift, an evolution-only form, a legendary, or a transfer-only Pokémon.
+
+                            {/* TM Moves */}
+                            <div className="rounded-xl bg-surface p-4 border border-border">
+                                <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border">
+                                    <ChevronRight className="w-3.5 h-3.5 text-primary" />
+                                    <span>Moves Learnt by Machine (TM)</span>
+                                </h5>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-border/80 text-muted">
+                                                <th className="pb-2 font-bold w-12">TM</th>
+                                                <th className="pb-2 font-bold">Move</th>
+                                                <th className="pb-2 font-bold text-center">Type</th>
+                                                <th className="pb-2 font-bold text-center">Cat.</th>
+                                                <th className="pb-2 font-bold text-center">Power</th>
+                                                <th className="pb-2 font-bold text-center">Acc.</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {resolvedMoves.machine.map((m, idx) => {
+                                                return (
+                                                    <tr key={idx} className="border-b border-border/40 hover:bg-bg/10">
+                                                        <td className="py-2.5 font-mono text-primary font-bold">
+                                                            {m.tmName ? formatTmName(m.tmName) : '—'}
+                                                        </td>
+                                                        <td className="py-2.5 font-bold capitalize text-fg">{m.name.replace('-', ' ')}</td>
+                                                        <td className="py-2.5 text-center">
+                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider text-white" style={{ backgroundColor: typeColors[m.type] }}>
+                                                                {m.type.slice(0, 3)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2 text-center">
+                                                            <span title={m.damageClass} className="inline-flex items-center justify-center">
+                                                                {m.damageClass === 'physical' ? (
+                                                                    <PhysicalIcon />
+                                                                ) : m.damageClass === 'special' ? (
+                                                                    <SpecialIcon />
+                                                                ) : (
+                                                                    <StatusIcon />
+                                                                )}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.power ?? '—'}</td>
+                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.accuracy ? `${m.accuracy}%` : '—'}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
+                            <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
+                            <h5 className="font-bold text-fg mb-1">No Moves Found</h5>
+                            <p className="text-xs text-muted max-w-sm mx-auto">
+                                No moves are recorded for this Pokémon in the selected game version. Try changing the game version filter.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Historical Sprites Tab (inspired by 1st image)
+        if (activeTab === 'sprites') {
+            return (
+                <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
+                    <div className="bg-surface p-3 rounded-xl border border-border">
+                        <h4 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4 text-primary" />
+                            <span>Sprites across generations</span>
+                        </h4>
+                        <p className="text-[10px] text-muted mt-1.5">
+                            Click any sprite to preview it as the active artwork on the Pokémon profile card.
                         </p>
                     </div>
-                )}
-            </div>
-        );
-    };
 
+                    {pokemonGenerationSprites.length > 0 ? (
+                        <div className="rounded-xl border border-border bg-surface overflow-hidden">
+                            <div className="overflow-x-auto custom-scrollbar pb-1">
+                                <table className="w-full text-center border-collapse text-xs">
+                                    <thead>
+                                        <tr className="border-b border-border bg-surface-raised">
+                                            <th className="p-3 font-bold text-muted text-left">Type</th>
+                                            {pokemonGenerationSprites.map((g) => (
+                                                <th key={g.name} className="p-3 font-bold text-muted min-w-[90px]">
+                                                    {g.name}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border/60">
+                                        {/* Normal Sprites */}
+                                        <tr>
+                                            <td className="p-3 font-bold text-muted text-left border-r border-border">Normal</td>
+                                            {pokemonGenerationSprites.map((g) => (
+                                                <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                    {g.normal ? (
+                                                        <img
+                                                            src={g.normal}
+                                                            alt={`${selectedPokemonDetails.name} ${g.name} normal`}
+                                                            onClick={() => setCustomSelectedSprite(g.normal)}
+                                                            className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
+                                                            title="Preview Normal Sprite"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-muted text-[10px]">➔</span>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+
+                                        {/* Shiny Sprites */}
+                                        <tr>
+                                            <td className="p-3 font-bold text-muted text-left border-r border-border">Shiny</td>
+                                            {pokemonGenerationSprites.map((g) => (
+                                                <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                    {g.shiny ? (
+                                                        <img
+                                                            src={g.shiny}
+                                                            alt={`${selectedPokemonDetails.name} ${g.name} shiny`}
+                                                            onClick={() => setCustomSelectedSprite(g.shiny)}
+                                                            className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
+                                                            title="Preview Shiny Sprite"
+                                                        />
+                                                    ) : (
+                                                        <span className="text-muted text-[10px]">—</span>
+                                                    )}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
+                            <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
+                            <h5 className="font-bold text-fg mb-1">No Sprites Recorded</h5>
+                            <p className="text-xs text-muted max-w-sm mx-auto">
+                                Generation-specific sprites are not available for this Pokémon.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+    };
     // --- MOBILE VIEW TEMPLATE ---
     if (isMobile && selectedPokemon) {
         return (
-            <main className="team-builder bg-surface min-h-screen flex flex-col relative pb-10">
+            <div
+                className="fixed inset-0 z-50 flex flex-col bg-bg"
+                style={{ width: '100vw', height: '100dvh', maxWidth: '100vw', overflowX: 'hidden' }}
+            >
                 {/* Mobile Navigation Header */}
-                <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border bg-surface sticky top-0 z-10 shadow-sm">
+                <div className="flex items-center justify-between gap-3 px-3 py-3 border-b border-border bg-surface shadow-sm shrink-0">
                     <button
                         type="button"
                         onClick={handleCloseDetails}
-                        className="flex items-center gap-1.5 text-xs font-bold text-muted hover:text-fg transition-colors px-3 py-2 rounded-xl bg-surface-raised border border-border"
+                        className="flex items-center gap-1.5 text-xs font-bold text-muted hover:text-fg transition-colors px-3 py-2 rounded-xl bg-surface-raised border border-border shrink-0"
                     >
                         <ChevronLeft className="w-4 h-4 text-muted" />
                         <span>Exit</span>
                     </button>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                         <button
                             type="button"
                             onClick={handlePrevPokemon}
@@ -818,39 +1609,38 @@ export function PokedexView({
                     </div>
                 </div>
 
-                {/* Sub-tabs system */}
-                <div className="px-4 pt-4 flex-1 flex flex-col">
-                    <div className="flex border-b border-border mb-4">
+                {/* Sub-tabs nav */}
+                <div className="flex border-b border-border overflow-x-auto whitespace-nowrap scrollbar-none shrink-0 bg-surface px-2">
+                    {[
+                        { key: 'data', icon: <Activity className="w-4 h-4" />, label: 'Stats & Data' },
+                        { key: 'locations', icon: <MapPin className="w-4 h-4" />, label: 'Locations' },
+                        { key: 'moves', icon: <Swords className="w-4 h-4" />, label: 'Moves' },
+                        { key: 'sprites', icon: <ImageIcon className="w-4 h-4" />, label: 'Sprites' },
+                    ].map((tab) => (
                         <button
+                            key={tab.key}
                             type="button"
-                            onClick={() => setActiveTab('data')}
-                            className={`flex-1 pb-2.5 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'data' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-fg'}`}
+                            onClick={() => setActiveTab(tab.key)}
+                            className={`pb-2.5 pt-2 px-3 text-center font-bold text-xs border-b-2 transition-all flex items-center gap-1.5 shrink-0 ${activeTab === tab.key ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-fg'}`}
                         >
-                            <Activity className="w-4 h-4" />
-                            <span>Stats & Data</span>
+                            {tab.icon}
+                            <span>{tab.label}</span>
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('locations')}
-                            className={`flex-1 pb-2.5 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'locations' ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-fg'}`}
-                        >
-                            <MapPin className="w-4 h-4" />
-                            <span>Catch Locations</span>
-                        </button>
-                    </div>
-
-                    <div className="flex-1 pb-6 overflow-y-auto">
-                        {renderDetailsContent()}
-                    </div>
+                    ))}
                 </div>
-            </main>
+
+                {/* Scrollable content area */}
+                <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pt-4 pb-8 w-full box-border">
+                    {renderDetailsContent()}
+                </div>
+            </div>
         );
     }
 
     // --- DESKTOP VIEW TEMPLATE (Width >= 1024px, or Mobile with NO selection) ---
     return (
         <main className="team-builder grid grid-cols-1 relative">
-            <div className={`grid gap-5 ${selectedPokemon ? 'grid-cols-1 lg:grid-cols-[1.35fr_1.65fr]' : 'grid-cols-1'}`}>
+            <div className={`grid gap-5 ${selectedPokemon ? 'grid-cols-1 lg:grid-cols-[0.9fr_2.1fr]' : 'grid-cols-1'}`}>
                 {/* Left Side: Standard Pokédex Picker Grid */}
                 <section className="team-builder-panel team-builder-panel--picker p-4">
                     <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
@@ -985,11 +1775,11 @@ export function PokedexView({
                             <X className="w-5 h-5" />
                         </button>
 
-                        <div className="flex border-b border-border mb-4">
+                        <div className="flex border-b border-border mb-4 overflow-x-auto whitespace-nowrap scrollbar-none gap-2">
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('data')}
-                                className={`flex-1 pb-2.5 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'data' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
+                                className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'data' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
                             >
                                 <Activity className="w-4 h-4" />
                                 <span>Stats & Data</span>
@@ -997,10 +1787,26 @@ export function PokedexView({
                             <button
                                 type="button"
                                 onClick={() => setActiveTab('locations')}
-                                className={`flex-1 pb-2.5 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 ${activeTab === 'locations' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
+                                className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'locations' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
                             >
                                 <MapPin className="w-4 h-4" />
                                 <span>Catch Locations</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('moves')}
+                                className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'moves' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
+                            >
+                                <Swords className="w-4 h-4" />
+                                <span>Learnt Moves</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('sprites')}
+                                className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'sprites' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
+                            >
+                                <ImageIcon className="w-4 h-4" />
+                                <span>Sprites</span>
                             </button>
                         </div>
 
