@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
@@ -102,7 +103,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
     const pokemonName = pokemon ? pokemon.displayName : 'Pokémon';
     const artworkUrl = pokemon ? getPokemonArtworkSpriteUrl(pokemon.id) : '';
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md p-4 animate-fade-in"
             onClick={onClose}
@@ -200,6 +201,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
