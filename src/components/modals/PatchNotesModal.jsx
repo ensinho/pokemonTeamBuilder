@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { ChartColumnIcon, CloseIcon, FlowerIcon, HeartIcon, MapPinIcon, PokeballIcon } from '../icons';
+import { ChartColumnIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MapPinIcon, PokeballIcon } from '../icons';
 
 const SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
 
@@ -161,7 +161,7 @@ const MoreInfoVisual = ({ colors }) => {
     );
 };
 
-export function PatchNotesModal({ onClose, colors }) {
+export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {
     const dialogRef = useModalA11y(onClose);
     const navigate = useNavigate();
     const goTo = useCallback((path) => {
@@ -263,16 +263,49 @@ export function PatchNotesModal({ onClose, colors }) {
                     })}
                 </div>
 
-                <div className="shrink-0 border-t border-surface-raised px-5 pb-5 pt-4 text-center">
-                    <button
-                        onClick={onClose}
-                        className="rounded-lg bg-primary px-8 py-3 font-bold text-white transition-colors hover:opacity-90"
-                    >
-                        Got it, let's go!
-                    </button>
-                    <p className="mt-3 text-xs text-muted">
-                        Made by Enzo Esmeraldo -- hope you like it!
-                    </p>
+                <div className="shrink-0 border-t border-surface-raised px-5 pb-5 pt-4">
+                    {(isInstallable || isIOS) && (
+                        <div
+                            className="mb-4 flex items-center gap-3 rounded-xl p-3"
+                            style={{ backgroundColor: colors.primary + '18', border: `1px solid ${colors.primary}35` }}
+                        >
+                            <div
+                                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white"
+                                style={{ backgroundColor: colors.primary }}
+                            >
+                                <DownloadIcon className="w-4 h-4" />
+                            </div>
+                            <div className="flex-1 min-w-0 text-left">
+                                <p className="text-sm font-bold text-fg">Add to Home Screen</p>
+                                <p className="text-xs text-muted">
+                                    {isIOS
+                                        ? 'Tap Share → "Add to Home Screen"'
+                                        : 'One tap — install for quick access!'}
+                                </p>
+                            </div>
+                            {isInstallable && (
+                                <button
+                                    type="button"
+                                    onClick={onInstall}
+                                    className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-bold text-white transition-opacity hover:opacity-90 active:opacity-75"
+                                    style={{ backgroundColor: colors.primary }}
+                                >
+                                    Install
+                                </button>
+                            )}
+                        </div>
+                    )}
+                    <div className="text-center">
+                        <button
+                            onClick={onClose}
+                            className="rounded-lg bg-primary px-8 py-3 font-bold text-white transition-colors hover:opacity-90"
+                        >
+                            Got it, let's go!
+                        </button>
+                        <p className="mt-3 text-xs text-muted">
+                            Made by Enzo Esmeraldo -- hope you like it!
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

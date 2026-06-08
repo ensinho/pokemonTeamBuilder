@@ -17,6 +17,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { usePokedex } from '../hooks/usePokedex';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 import {
     AuthModal,
@@ -31,7 +32,7 @@ import {
 
 import {
     GithubIcon, LinkedinIcon, CloseIcon, CollapseLeftIcon, CollapseRightIcon,
-    MenuIcon, PokeballIcon, SavedTeamsIcon, StarsIcon, SwordsIcon, DiceIcon,
+    DownloadIcon, MenuIcon, PokeballIcon, SavedTeamsIcon, StarsIcon, SwordsIcon, DiceIcon,
     HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
     ErrorToastIcon, WarningToastIcon, MapPinIcon
 } from './icons';
@@ -144,9 +145,15 @@ export default function AppLayout() {
     // Pokedex logic hook
     const pokedex = usePokedex();
 
+    // PWA install prompt
+    const { isInstallable, isIOS, handleInstall } = usePWAInstall();
+
     // UI Local States
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
+    // Start collapsed only on desktop; mobile always shows full labels
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
+        typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
+    );
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [modalPokemon, setModalPokemon] = useState(null);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
@@ -161,6 +168,11 @@ export default function AppLayout() {
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    // Ensure sidebar is always expanded when on mobile
+    useEffect(() => {
+        if (isMobile) setIsSidebarCollapsed(false);
+    }, [isMobile]);
 
     const [searchParams] = useSearchParams();
     const isMobileDetailsOpen = useMemo(() => {
@@ -554,7 +566,15 @@ export default function AppLayout() {
                     setMoveDetailsCache={setMoveDetailsCache}
                 />
             )}
-            {showPatchNotes && <PatchNotesModal onClose={handleClosePatchNotes} colors={colors} />}
+            {showPatchNotes && (
+                <PatchNotesModal
+                    onClose={handleClosePatchNotes}
+                    colors={colors}
+                    isInstallable={isInstallable}
+                    isIOS={isIOS}
+                    onInstall={handleInstall}
+                />
+            )}
             {showGreetingPokemonSelector && (
                 <GreetingPokemonSelectorModal
                     onClose={() => setShowGreetingPokemonSelector(false)}
@@ -712,6 +732,23 @@ export default function AppLayout() {
 
                             {/* Bottom: Theme button, collapse button, account menu */}
                             <div className="app-shell__sidebar-bottom">
+                                {/* Install App — pinned at bottom, mobile only */}
+                                {(isInstallable || isIOS) && (
+                                    <div className="px-3 lg:hidden">
+                                        <button
+                                            type="button"
+                                            onClick={isIOS
+                                                ? () => showToast('Tap the Share button, then "Add to Home Screen"', 'info')
+                                                : handleInstall
+                                            }
+                                            className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-sm font-bold text-white transition-opacity active:opacity-75"
+                                            style={{ backgroundColor: colors.primary }}
+                                        >
+                                            <DownloadIcon className="w-4 h-4 shrink-0" />
+                                            <span>{isIOS ? 'Add to Home Screen' : 'Install App'}</span>
+                                        </button>
+                                    </div>
+                                )}
                                 <div className={`app-shell__sidebar-controls ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
                                     <button
                                         onClick={toggleTheme}
