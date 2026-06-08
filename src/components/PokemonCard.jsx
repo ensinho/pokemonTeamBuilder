@@ -13,6 +13,7 @@ export const PokemonCard = React.memo(function PokemonCard({
     isSuggested,
     isFavorite,
     onToggleFavorite,
+    isSelected,
 }) {
     if (!details) return <SkeletonCard />;
 
@@ -46,7 +47,7 @@ export const PokemonCard = React.memo(function PokemonCard({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${details.name}`}
-            className={`pokemon-card group ${isSuggested ? 'pokemon-card--suggested' : ''}`}
+            className={`pokemon-card group ${isSuggested ? 'pokemon-card--suggested' : ''} ${isSelected ? 'pokemon-card--selected' : ''}`}
         >
             <div className="pokemon-card__topbar">
                 <div className="pokemon-card__types">

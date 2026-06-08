@@ -886,19 +886,35 @@
    ============================================================ */
 .team-builder-unified-toolbar {
     display: flex;
-    align-items: center;
+    gap: 0.5rem;
     width: 100%;
-    background: var(--color-surface-raised);
-    border-radius: 0.6rem;
-    padding: 2px;
-    box-sizing: border-box;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+    flex-wrap: wrap;
 }
 
 .team-builder-search-wrap {
     position: relative;
     flex: 2;
-    min-width: 0;
+    min-width: 160px;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    transition: border-color var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth),
+                box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.team-builder-search-wrap:hover {
+    border-color: var(--color-border-hover);
+}
+
+.team-builder-search-wrap:focus-within {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .team-builder-search-icon {
@@ -921,16 +937,15 @@
     padding-left: 2.1rem !important;
     padding-right: 2.1rem !important;
     background: transparent !important;
-    border-color: transparent !important;
+    border: none !important;
     box-shadow: none !important;
 }
 
 .team-builder-search-input:focus-visible,
 .team-builder-search-input:focus {
-    background: var(--color-surface) !important;
-    border-color: var(--color-primary) !important;
-    box-shadow: 0 0 0 3px var(--color-primary-soft) !important;
-    border-radius: 0.5rem;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .team-builder-search-clear {
@@ -956,40 +971,65 @@
 
 .team-builder-select-wrap {
     flex: 1.2;
-    min-width: 0;
-    border-left: 1px solid var(--color-border);
+    min-width: 130px;
+    border-left: none;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    transition: border-color var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth),
+                box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.team-builder-select-wrap:hover {
+    border-color: var(--color-border-hover);
+}
+
+.team-builder-select-wrap:focus-within {
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 3px var(--color-primary-soft);
 }
 
 .team-builder-unified-toolbar .team-builder-select {
     background-color: transparent !important;
-    border-color: transparent !important;
+    border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
 }
 
 .team-builder-unified-toolbar .team-builder-select:focus {
-    background-color: var(--color-surface) !important;
-    border-color: var(--color-primary) !important;
-    box-shadow: 0 0 0 3px var(--color-primary-soft) !important;
-    border-radius: 0.5rem !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 }
 
 .team-builder-unified-toolbar .team-builder-toggle--compact {
     flex: 1;
-    min-width: 0;
-    border-left: 1px solid var(--color-border);
-    border-radius: 0;
-    background: transparent !important;
-    border-color: transparent !important;
+    min-width: 100px;
+    border-left: none;
+    border-radius: 0.6rem;
+    background: var(--color-surface-raised) !important;
+    border: 1px solid var(--color-border) !important;
     box-shadow: none !important;
+    transition: border-color var(--duration-normal) var(--ease-smooth),
+                background-color var(--duration-normal) var(--ease-smooth),
+                color var(--duration-normal) var(--ease-smooth);
+}
+
+.team-builder-unified-toolbar .team-builder-toggle--compact:hover {
+    background: var(--color-surface) !important;
+    border-color: var(--color-border-hover) !important;
 }
 
 .team-builder-unified-toolbar .team-builder-toggle--compact.is-active {
-    background: var(--color-surface) !important;
+    border-color: var(--color-accent) !important;
+    background: var(--color-accent-soft) !important;
     color: var(--color-accent) !important;
-    border-radius: 0.5rem;
 }
 
 .team-builder-unified-toolbar .team-builder-toggle--compact:focus-visible {
-    border-radius: 0.5rem;
+    border-radius: 0.6rem;
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }

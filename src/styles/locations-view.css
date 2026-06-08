@@ -1,0 +1,260 @@
+/* ============================================================
+   POKEMON LOCATIONS VIEW STYLESHEET
+   Supports the search layout, split grids, and version badge colors.
+   ============================================================ */
+
+.locations-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.locations-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+}
+
+@media (min-w: 1024px) {
+    .locations-grid {
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr);
+    }
+}
+
+/* Pokemon selection grid */
+.locations-picker {
+    display: flex;
+    flex-direction: column;
+    max-height: 70vh;
+}
+
+.locations-picker__results {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+    max-height: 550px;
+    padding-right: var(--space-2);
+}
+
+.locations-picker__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2.5);
+    padding: var(--space-1);
+}
+
+@media (min-w: 640px) {
+    .locations-picker__grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-w: 1024px) {
+    .locations-picker__grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.locations-card-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-border);
+    border-radius: var(--space-3);
+    background: var(--color-surface-raised);
+    padding: var(--space-3);
+    cursor: pointer;
+    transition: transform var(--duration-normal) var(--ease-smooth),
+        border-color var(--duration-normal) var(--ease-smooth),
+        background-color var(--duration-normal) var(--ease-smooth),
+        box-shadow var(--duration-normal) var(--ease-smooth);
+}
+
+.locations-card-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-border-hover);
+    box-shadow: var(--elevation-1);
+    background: var(--color-surface);
+}
+
+.locations-card-btn.is-active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+.locations-card-btn__sprite {
+    width: 3.5rem;
+    height: 3.5rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.locations-card-btn__name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--color-fg);
+    margin-top: var(--space-1);
+    text-transform: capitalize;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 100%;
+}
+
+/* Detail panel */
+.locations-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    animation: scale-in var(--duration-slow) var(--ease-out-expo) both;
+}
+
+.locations-details__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-4);
+}
+
+.locations-details__sprite {
+    width: 5.5rem;
+    height: 5.5rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+    background: var(--color-bg);
+    border-radius: var(--space-3);
+    border: 1px solid var(--color-border);
+    padding: var(--space-2);
+}
+
+.locations-details__title-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.locations-details__name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    text-transform: capitalize;
+    color: var(--color-fg);
+    margin: 0;
+}
+
+.locations-details__number {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-muted);
+}
+
+/* Version group containers */
+.locations-version-group {
+    border: 1px solid var(--color-border);
+    border-radius: var(--space-3.5);
+    background: var(--color-surface-raised);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+    box-shadow: var(--elevation-1);
+}
+
+.locations-version-group__title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    margin-bottom: var(--space-3.5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.locations-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.locations-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    border-bottom: 1px solid color-mix(in srgb, var(--color-border) 40%, transparent);
+    padding-bottom: var(--space-2.5);
+}
+
+.locations-item:last-child {
+    border-bottom: none;
+    padding-bottom: 1.25rem;
+}
+
+@media (min-w: 640px) {
+    .locations-item {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+}
+
+.locations-item__main {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.locations-item__name {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.locations-item__details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    font-size: 0.76rem;
+    color: var(--color-muted);
+}
+
+.locations-item__detail {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.locations-item__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1.5);
+    margin-top: var(--space-1.5);
+}
+
+@media (min-w: 640px) {
+    .locations-item__badges {
+        margin-top: 0;
+        justify-content: flex-end;
+    }
+}
+
+/* Beautiful custom colored badges for game versions */
+.version-badge {
+    font-size: 0.64rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--space-2);
+    color: #ffffff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.version-badge--text-dark {
+    color: #111827;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+}

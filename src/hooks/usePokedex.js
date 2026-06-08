@@ -6,7 +6,7 @@ import { useAuthStore } from '../store/useAuthStore';
 
 export function usePokedex() {
     const location = useLocation();
-    const isPokedex = location.pathname.includes('/pokedex');
+    const isPokedex = location.pathname.includes('/pokedex') || location.pathname.includes('/locations');
     const isAuthReady = useAuthStore(state => state.isAuthReady);
 
     // Retrieve state slices granularly to avoid subscribing to the entire store

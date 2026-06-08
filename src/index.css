@@ -44,8 +44,8 @@
 
 :root,
 :root[data-theme='dark'] {
-    --color-primary: #5865f2;
-    --color-primary-soft: rgba(88, 101, 242, 0.18);
+    --color-primary: #7d65e1;
+    --color-primary-soft: rgba(125, 101, 225, 0.18);
     --color-accent: #FBBF24;          /* brand gold — favorites, shiny, achievements */
     --color-accent-soft: rgba(251, 191, 36, 0.18);
     --color-bg: #313338;
@@ -54,7 +54,7 @@
     --color-fg: #f2f3f5;
     --color-muted: #949ba4;
     --color-border: #1f2023;
-    --color-border-hover: color-mix(in srgb, #5865f2 35%, #1f2023);
+    --color-border-hover: color-mix(in srgb, #7d65e1 35%, #1f2023);
     --color-success: #34D399;
     --color-danger: #F87171;
     --color-warning: #FBBF24;

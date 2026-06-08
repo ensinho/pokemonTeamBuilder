@@ -305,3 +305,12 @@ export const getPokemonSpeciesData = (pokemonIdOrUrl) => fetchPokeApiJson(
         storage: 'local',
     }
 );
+
+export const getPokemonEncountersData = (pokemonId) => fetchPokeApiJson(
+    `/pokemon/${pokemonId}/encounters`,
+    {
+        cacheKey: `pokemon-encounters:${pokemonId}`,
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    }
+);

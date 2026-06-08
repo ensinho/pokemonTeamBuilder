@@ -33,7 +33,7 @@ import {
     GithubIcon, LinkedinIcon, CloseIcon, CollapseLeftIcon, CollapseRightIcon,
     MenuIcon, PokeballIcon, SavedTeamsIcon, StarsIcon, SwordsIcon, DiceIcon,
     HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
-    ErrorToastIcon, WarningToastIcon
+    ErrorToastIcon, WarningToastIcon, MapPinIcon
 } from './icons';
 
 import {
@@ -226,7 +226,7 @@ export default function AppLayout() {
         const pages = {
             'home': { title: 'Home', subtitle: 'Overview and next actions' },
             'builder': { title: 'Team Builder', subtitle: 'Build and tune your current roster' },
-            'pokedex': { title: 'Pokédex', subtitle: 'Search and compare Pokémon' },
+            'pokedex': { title: 'Pokédex', subtitle: 'Search, compare, and locate Pokémon' },
             'allTeams': { title: 'Saved Teams', subtitle: 'Revisit and manage your collection' },
             'generationQuiz': { title: 'Generation Quiz', subtitle: 'Guess every Pokémon from your selected generations' },
             'randomGenerator': { title: 'Random Generator', subtitle: 'Generate a fresh starting point' },
@@ -483,7 +483,7 @@ export default function AppLayout() {
                             className="block h-full rounded-full"
                             style={{
                                 width: `${authSplashProgress}%`,
-                                backgroundColor: '#7c3aed',
+                                backgroundColor: colors.primary,
                                 transition: 'width 0.9s ease-out',
                             }}
                         />
@@ -907,8 +907,12 @@ export default function AppLayout() {
                                             onToggleFavoritePokemon={handleToggleFavoritePokemon}
                                             showOnlyFavorites={pokedex.pokedexShowOnlyFavorites}
                                             setShowOnlyFavorites={pokedex.setPokedexShowOnlyFavorites}
+                                            db={db}
+                                            pokemonDetailsCache={pokemonDetailsCache}
+                                            setPokemonDetailsCache={setPokemonDetailsCache}
                                         />
                                     } />
+
                                     <Route path="/favorites" element={
                                         <FavoritePokemonsView
                                             allPokemons={pokedex.pokemons}

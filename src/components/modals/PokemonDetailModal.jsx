@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
@@ -24,6 +25,7 @@ export function PokemonDetailModal({
     onToggleFavorite,
 }) {
     const dialogRef = useModalA11y(onClose);
+    const navigate = useNavigate();
     const [showShiny, setShowShiny] = useState(false);
     const [evolutionDetails, setEvolutionDetails] = useState([]);
     const pokemonWeaknesses = useMemo(() => getPokemonWeaknessEntries(pokemon?.types || []), [pokemon]);
@@ -151,6 +153,16 @@ export function PokemonDetailModal({
                         <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                             {pokemon.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                         </div>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose();
+                                navigate(`/pokedex?pokemon=${pokemon.id}`);
+                            }}
+                            className="mt-3.5 text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface-raised hover:border-primary hover:text-primary transition-all mx-auto text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
+                            📍 View Locations
+                        </button>
                     </div>
 
                     <div className="mt-4 sm:hidden">

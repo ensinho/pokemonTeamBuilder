@@ -110,7 +110,6 @@ export function HomeView({
     savedTeams,
     favoritePokemons,
     allPokemons,
-    recentTeams,
     showDetails,
     onToggleFavoritePokemon,
     handleEditTeam,
