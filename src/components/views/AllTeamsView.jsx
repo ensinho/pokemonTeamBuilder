@@ -286,7 +286,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                          onClick={() => onEdit(team)}
                                                          className="team-builder-button team-builder-button--primary team-builder-button--grow team-builder-button--small"
                                                      >
-                                                         Edit lineup
+                                                         Edit
                                                      </button>
                                                      <button
                                                          type="button"
