@@ -7,6 +7,7 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDis
 import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
 import { usePokedexStore } from './usePokedexStore';
+import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 
 const serializeTeamPokemon = (pokemon) => ({
     id: pokemon.id,
@@ -45,6 +46,7 @@ export const useActiveTeamStore = create((set, get) => ({
     shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' },
 
     setTeamName: (name) => set({ teamName: name }),
+    setEditingTeamId: (id) => set({ editingTeamId: id }),
     setEditingTeamMember: (member) => set({ editingTeamMember: member }),
     closeShareModal: () => set({ shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' } }),
 
@@ -212,6 +214,7 @@ export const useActiveTeamStore = create((set, get) => ({
         try {
             await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
             useToastStore.getState().showToast(`Team "${teamName}" saved!`, 'success');
+            useFirestoreTeamsStore.getState().setActiveTeamId(teamId);
             get().handleClearTeam();
         } catch (e) {
             useToastStore.getState().showToast("Error saving team.", 'error');

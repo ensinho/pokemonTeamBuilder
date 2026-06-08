@@ -12,6 +12,7 @@ export function useActiveTeam() {
         shareModal: store.shareModal,
 
         setTeamName: store.setTeamName,
+        setEditingTeamId: store.setEditingTeamId,
         setEditingTeamMember: store.setEditingTeamMember,
         closeShareModal: store.closeShareModal,
         setCurrentTeam: store.setCurrentTeam,

@@ -13,8 +13,27 @@ export const useFirestoreTeamsStore = create((set, get) => {
         savedTeams: [],
         favoritePokemons: new Set(),
         deleteConfirmation: { isOpen: false, teamId: null, teamName: '' },
+        activeTeamId: (() => {
+            try {
+                return localStorage.getItem('ptbActiveTeamId') || null;
+            } catch {
+                return null;
+            }
+        })(),
 
         setDeleteConfirmation: (confirm) => set({ deleteConfirmation: confirm }),
+        setActiveTeamId: (activeTeamId) => {
+            try {
+                if (activeTeamId) {
+                    localStorage.setItem('ptbActiveTeamId', activeTeamId);
+                } else {
+                    localStorage.removeItem('ptbActiveTeamId');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+            set({ activeTeamId });
+        },
 
         initFirestoreListeners: () => {
             const userId = useAuthStore.getState().userId;

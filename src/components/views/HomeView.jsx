@@ -120,6 +120,8 @@ export function HomeView({
     onChangeHeroBackground,
     onOpenPokemonSelector,
     db,
+    activeTeamId,
+    setActiveTeamId,
 }) {
     const [greetingPokemonData, setGreetingPokemonData] = useState(null);
     const [isDailyPokemonLoading, setIsDailyPokemonLoading] = useState(true);
@@ -242,7 +244,7 @@ export function HomeView({
     }, []);
 
     const stats = useMemo(() => {
-        const allPokemonsInTeams = savedTeams.flatMap((team) => team.pokemons);
+        const allPokemonsInTeams = savedTeams.flatMap((team) => team.pokemons || []);
         const typeCounts = {};
 
         allPokemonsInTeams.forEach((teamPokemon) => {
@@ -268,7 +270,10 @@ export function HomeView({
         [allPokemons, favoritePokemons],
     );
 
-    const lastEditedTeam = recentTeams[0];
+    const activeTeam = useMemo(() => {
+        if (!savedTeams || savedTeams.length === 0) return null;
+        return savedTeams.find(t => t.id === activeTeamId) || savedTeams[0];
+    }, [savedTeams, activeTeamId]);
 
     const motivationalMessages = useMemo(
         () => [
@@ -333,10 +338,10 @@ export function HomeView({
         },
     ];
 
-    const latestTeamMeta = lastEditedTeam
+    const activeTeamMeta = activeTeam
         ? [
-            { label: 'Slots', value: `${lastEditedTeam.pokemons.length}/6` },
-            { label: 'Favorite', value: lastEditedTeam.isFavorite ? 'Yes' : 'No' },
+            { label: 'Slots', value: `${(activeTeam.pokemons || []).length}/6` },
+            { label: 'Favorite', value: activeTeam.isFavorite ? 'Yes' : 'No' },
         ]
         : [];
 
@@ -426,36 +431,57 @@ export function HomeView({
                     </div>
                 </section>
 
-                {lastEditedTeam ? (
+                {activeTeam ? (
                     <section
                         className="home-panel home-panel--feature home-panel--interactive flex min-h-[195px] cursor-pointer flex-col justify-between p-4"
-                        onClick={() => handleEditTeam(lastEditedTeam)}
+                        onClick={() => handleEditTeam(activeTeam)}
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
                                 e.preventDefault();
-                                handleEditTeam(lastEditedTeam);
+                                handleEditTeam(activeTeam);
                             }
                         }}
-                        aria-label={`Continue editing team ${lastEditedTeam.name}`}
+                        aria-label={`Continue editing team ${activeTeam.name}`}
                     >
-                        <div className="space-y-3.5 min-w-0">
-                            <div>
-                                <p className="home-panel__eyebrow">
-                                    Continue building
-                                </p>
-                                <h2 className="home-panel__title home-panel__title--feature truncate">
-                                    {lastEditedTeam.name}
-                                </h2>
-                                <p className="home-panel__description max-w-lg">
-                                    Jump back into your latest team and keep tuning the details.
-                                </p>
+                        <div className="space-y-3.5 min-w-0 w-full">
+                            <div className="flex items-start justify-between gap-4 w-full">
+                                <div className="min-w-0 flex-1">
+                                    <p className="home-panel__eyebrow">
+                                        Active Team
+                                    </p>
+                                    {savedTeams.length > 1 ? (
+                                        <div className="relative inline-block w-full mt-1.5" onClick={(e) => e.stopPropagation()}>
+                                            <select
+                                                value={activeTeam.id}
+                                                onChange={(e) => setActiveTeamId(e.target.value)}
+                                                className="home-active-team-select text-lg font-bold bg-transparent border-0 border-b border-dashed border-muted hover:border-fg focus:outline-none pr-6 cursor-pointer max-w-[280px] truncate"
+                                            >
+                                                {savedTeams.map((team) => (
+                                                    <option key={team.id} value={team.id} className="bg-surface text-fg">
+                                                        {team.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : (
+                                        <h2 className="home-panel__title home-panel__title--feature truncate">
+                                            {activeTeam.name}
+                                        </h2>
+                                    )}
+                                    <p className="home-panel__description max-w-lg mt-1.5">
+                                        This is your selected active team shown in the sidebar rail. Keep tuning the details!
+                                    </p>
+                                </div>
+                                <div className="home-active-badge flex items-center gap-1 text-xs font-bold text-primary px-2.5 py-1 rounded-full bg-primary-soft border border-primary-border shrink-0 self-start" onClick={(e) => e.stopPropagation()}>
+                                    ★ Active
+                                </div>
                             </div>
 
                             <div className="home-team-slots">
                                 {Array.from({ length: 6 }).map((_, index) => {
-                                    const pokemon = lastEditedTeam.pokemons[index];
+                                    const pokemon = activeTeam.pokemons?.[index];
                                     return (
                                         <div key={index} className="home-team-slot">
                                             {pokemon ? (
@@ -477,7 +503,7 @@ export function HomeView({
                             </div>
 
                             <dl className="home-inline-meta">
-                                {latestTeamMeta.map(({ label, value }) => (
+                                {activeTeamMeta.map(({ label, value }) => (
                                     <div key={label}>
                                         <dt>{label}</dt>
                                         <dd>{value}</dd>
@@ -486,15 +512,15 @@ export function HomeView({
                             </dl>
                         </div>
 
-                        <div className="home-action-row">
+                        <div className="home-action-row mt-4">
                             <button
                                 type="button"
-                                onClick={(e) => { e.stopPropagation(); handleEditTeam(lastEditedTeam); }}
+                                onClick={(e) => { e.stopPropagation(); handleEditTeam(activeTeam); }}
                                 className="home-button home-button--primary"
-                                aria-label={`Continue editing ${lastEditedTeam.name}`}
+                                aria-label={`Continue editing ${activeTeam.name}`}
                             >
                                 <EditIcon />
-                                Continue editing
+                                Edit Active Team
                             </button>
                             <button
                                 type="button"

@@ -14,6 +14,8 @@ export function useFirestoreTeams() {
     const handleDeleteTeam = useFirestoreTeamsStore(state => state.handleDeleteTeam);
     const handleToggleFavorite = useFirestoreTeamsStore(state => state.handleToggleFavorite);
     const handleToggleFavoritePokemon = useFirestoreTeamsStore(state => state.handleToggleFavoritePokemon);
+    const activeTeamId = useFirestoreTeamsStore(state => state.activeTeamId);
+    const setActiveTeamId = useFirestoreTeamsStore(state => state.setActiveTeamId);
 
     useEffect(() => {
         if (userId) {
@@ -32,5 +34,7 @@ export function useFirestoreTeams() {
         handleDeleteTeam,
         handleToggleFavorite,
         handleToggleFavoritePokemon,
+        activeTeamId,
+        setActiveTeamId,
     };
 }

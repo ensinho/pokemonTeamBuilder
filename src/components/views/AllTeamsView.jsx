@@ -137,7 +137,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
     );
 };
 
-export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, onToggleFavorite, searchTerm, setSearchTerm }) {
+export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, activeTeamId, setActiveTeamId }) {
     const [layoutMode, setLayoutMode] = React.useState('grid'); // 'grid' | 'list'
 
     const filteredTeams = React.useMemo(() => {
@@ -276,14 +276,29 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                         </div>
                                     </div>
 
-                                    <div className="team-builder-recent-card__actions all-teams-view__actions">
-                                        <button
-                                            type="button"
-                                            onClick={() => onEdit(team)}
-                                            className="team-builder-button team-builder-button--primary team-builder-button--grow team-builder-button--small"
-                                        >
-                                            Edit lineup
-                                        </button>
+                                     <div className="team-builder-recent-card__actions all-teams-view__actions">
+                                         {(() => {
+                                             const isActive = team.id === activeTeamId || (activeTeamId === null && teams[0]?.id === team.id);
+                                             return (
+                                                 <>
+                                                     <button
+                                                         type="button"
+                                                         onClick={() => onEdit(team)}
+                                                         className="team-builder-button team-builder-button--primary team-builder-button--grow team-builder-button--small"
+                                                     >
+                                                         Edit lineup
+                                                     </button>
+                                                     <button
+                                                         type="button"
+                                                         onClick={() => setActiveTeamId(isActive ? null : team.id)}
+                                                         className={`team-builder-button team-builder-button--small ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'}`}
+                                                         style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
+                                                     >
+                                                         {isActive ? '★ Active' : 'Set Active'}
+                                                     </button>
+                                                 </>
+                                             );
+                                         })()}
                                         <button
                                             type="button"
                                             onClick={() => onExport(team)}
@@ -363,14 +378,29 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                             </div>
                                         </div>
 
-                                        <div className="all-teams-view__list-item-actions">
-                                            <button
-                                                type="button"
-                                                onClick={() => onEdit(team)}
-                                                className="btn btn-primary"
-                                            >
-                                                Edit
-                                            </button>
+                                         <div className="all-teams-view__list-item-actions">
+                                             {(() => {
+                                                 const isActive = team.id === activeTeamId || (activeTeamId === null && teams[0]?.id === team.id);
+                                                 return (
+                                                     <>
+                                                         <button
+                                                             type="button"
+                                                             onClick={() => onEdit(team)}
+                                                             className="btn btn-primary"
+                                                         >
+                                                             Edit
+                                                         </button>
+                                                         <button
+                                                             type="button"
+                                                             onClick={() => setActiveTeamId(isActive ? null : team.id)}
+                                                             className={`btn ${isActive ? 'btn-primary' : 'btn-outline'}`}
+                                                             style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
+                                                         >
+                                                             {isActive ? '★ Active' : 'Set Active'}
+                                                         </button>
+                                                     </>
+                                                 );
+                                             })()}
                                             <button
                                                 type="button"
                                                 onClick={() => onToggleFavorite(team)}

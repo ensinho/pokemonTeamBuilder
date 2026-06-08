@@ -27,6 +27,8 @@ export function TeamBuilderView({
     handleReorderTeam,
     handleSaveTeam,
     editingTeamId,
+    activeTeamId,
+    setActiveTeamId,
     handleClearTeam,
     recentTeams,
     onNavigateToTeams,
@@ -105,6 +107,8 @@ export function TeamBuilderView({
                     handleRemoveFromTeam={handleRemoveFromTeam}
                     handleSaveTeam={handleSaveTeam}
                     editingTeamId={editingTeamId}
+                    activeTeamId={activeTeamId}
+                    setActiveTeamId={setActiveTeamId}
                     handleClearTeam={handleClearTeam}
                     recentTeams={recentTeams}
                     onNavigateToTeams={onNavigateToTeams}
@@ -141,8 +145,24 @@ export function TeamBuilderView({
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <section className="team-builder-panel p-4">
                         <div className="team-builder-current-head">
-                            <div className="team-builder-panel__header team-builder-panel__header--compact">
-                                <h2 className="team-builder-panel__title team-builder-panel__title--compact">Current team</h2>
+                            <div className="team-builder-panel__header team-builder-panel__header--compact flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <h2 className="team-builder-panel__title team-builder-panel__title--compact">Current team</h2>
+                                    {editingTeamId && (
+                                        editingTeamId === activeTeamId ? (
+                                            <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ Active</span>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                onClick={() => setActiveTeamId(editingTeamId)}
+                                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider"
+                                                style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
+                                            >
+                                                Set Active
+                                            </button>
+                                        )
+                                    )}
+                                </div>
                                 <span className="team-builder-panel__meta team-builder-panel__meta--compact">{currentTeam.length}/6</span>
                             </div>
 
@@ -437,10 +457,23 @@ export function TeamBuilderView({
                                         </button>
                                     </div>
 
-                                    <div className="team-builder-recent-card__actions">
-                                        <button type="button" onClick={() => handleEditTeam(team)} className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-button--small">Edit</button>
-                                        <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="team-builder-icon-button team-builder-icon-button--danger team-builder-icon-button--small" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
-                                    </div>
+                                     <div className="team-builder-recent-card__actions">
+                                         {(() => {
+                                             const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
+                                             return (
+                                                 <button
+                                                     type="button"
+                                                     onClick={() => setActiveTeamId(isActive ? null : team.id)}
+                                                     className={`team-builder-button team-builder-button--small ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'}`}
+                                                     style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
+                                                 >
+                                                     {isActive ? '★ Active' : 'Set Active'}
+                                                 </button>
+                                             );
+                                         })()}
+                                         <button type="button" onClick={() => handleEditTeam(team)} className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-button--small">Edit</button>
+                                         <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="team-builder-icon-button team-builder-icon-button--danger team-builder-icon-button--small" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
+                                     </div>
                                 </article>
                             )) : <div className="team-builder-empty-note">No recent teams yet.</div>}
                         </div>

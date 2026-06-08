@@ -111,13 +111,19 @@ export default function AppLayout() {
         handleReorderTeam, handleSaveTeam, handleClearTeam, handleExportToShowdown,
         handleShareTeam, editingTeamMember, setEditingTeamMember, shareModal,
         closeShareModal, handleUpdateTeamMember, suggestedPokemonIds, teamAnalysis,
-        setCurrentTeam, shareTeamByData, handleAddPokemon
+        setCurrentTeam, shareTeamByData, handleAddPokemon, setEditingTeamId
     } = useActiveTeam();
 
     const {
         favoritePokemons, handleToggleFavoritePokemon, deleteConfirmation,
-        setDeleteConfirmation, handleDeleteTeam, handleToggleFavorite, savedTeams
+        setDeleteConfirmation, handleDeleteTeam, handleToggleFavorite, savedTeams,
+        activeTeamId, setActiveTeamId
     } = useFirestoreTeams();
+
+    const activeTeam = useMemo(() => {
+        if (!savedTeams || savedTeams.length === 0) return null;
+        return savedTeams.find(t => t.id === activeTeamId) || savedTeams[0];
+    }, [savedTeams, activeTeamId]);
 
     const { generations, items, natures } = useReferenceStore();
 
@@ -417,11 +423,26 @@ export default function AppLayout() {
 
         setCurrentTeam(customizedTeam);
         setTeamName(team.name);
-        useActiveTeam.getState?.()?.setEditingTeamId?.(team.id); // Set id directly if store hook wraps it
+        setEditingTeamId(team.id);
         navigate('/builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName]);
+    }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId]);
+
+    const showDetails = useCallback((pokemon) => {
+        setModalPokemon(pokemon);
+    }, []);
+
+    const handleRailSlotClick = useCallback(async (pokemon) => {
+        if (!pokemon) return;
+        const detail = await fetchPokemonDetails(pokemon.id);
+        if (detail) {
+            showDetails({
+                ...detail,
+                customization: pokemon.customization
+            });
+        }
+    }, [fetchPokemonDetails, showDetails]);
 
     const handleShareSavedTeam = useCallback(async (team) => {
         await shareTeamByData(team?.pokemons || [], team?.name || 'Unnamed Team');
@@ -433,10 +454,6 @@ export default function AppLayout() {
         const exportText = useActiveTeam.getState?.()?.buildShowdownExportText?.(teamMembers) || '';
         await useActiveTeam.getState?.()?.copyTextToClipboard?.(exportText, 'Copied for Pokémon Showdown!');
     }, [showToast]);
-
-    const showDetails = useCallback((pokemon) => {
-        setModalPokemon(pokemon);
-    }, []);
 
     const handleEditTeamMember = useCallback((pokemon) => {
         setEditingTeamMember(pokemon);
@@ -608,49 +625,36 @@ export default function AppLayout() {
                         aria-label="Close sidebar"
                     />
                 )}
-                <aside className={`app-shell__sidebar custom-scrollbar ${isSidebarCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}>
+                <aside className={`app-shell__sidebar ${isSidebarCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}>
                     <div className="app-shell__sidebar-inner">
+                        {/* Top: Gengar Logo + Title */}
                         <div className={`app-shell__brand ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
                             <div className="app-shell__brand-main">
                                 <img
                                     src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'}
                                     alt="Pokémon Team Builder Logo"
-                                    className="app-shell__brand-logo"
+                                    className="app-shell__brand-logo cursor-pointer"
+                                    onClick={() => navigate('/')}
+                                    title="Go Home"
                                 />
                                 <div className={`app-shell__brand-copy ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
-                                    <p className="app-shell__brand-label">Pokemon Team Builder</p>
+                                    <p className="app-shell__brand-label">Gengar</p>
+                                    <h2 className="app-shell__brand-title">Team Builder</h2>
                                 </div>
                             </div>
-                            {!isSidebarCollapsed && (
-                                <button
-                                    onClick={() => setIsSidebarCollapsed(true)}
-                                    type="button"
-                                    aria-label="Collapse sidebar"
-                                    aria-expanded="true"
-                                    className="app-shell__icon-button app-shell__collapse-toggle hidden lg:inline-flex"
-                                >
-                                    <CollapseLeftIcon />
-                                </button>
-                            )}
-                            <button onClick={() => setIsSidebarOpen(false)} type="button" aria-label="Close sidebar" className="app-shell__icon-button lg:hidden">
+                            <button
+                                onClick={() => setIsSidebarOpen(false)}
+                                type="button"
+                                aria-label="Close sidebar"
+                                className="app-shell__icon-button lg:hidden"
+                            >
                                 <CloseIcon />
                             </button>
                         </div>
+
+                        {/* Middle: Navigation menu */}
                         <nav className="app-shell__nav" aria-label="Primary">
                             <ul className="app-shell__nav-list">
-                                {isSidebarCollapsed && (
-                                    <li className="app-shell__nav-control hidden lg:block">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsSidebarCollapsed(false)}
-                                            aria-label="Expand sidebar"
-                                            aria-expanded="false"
-                                            className="app-shell__nav-link app-shell__nav-link--control is-collapsed"
-                                        >
-                                            <span className="app-shell__nav-icon" aria-hidden="true"><CollapseRightIcon /></span>
-                                        </button>
-                                    </li>
-                                )}
                                 {navigationGroups.map((group) => (
                                     <li key={group.title} className="app-shell__nav-group">
                                         <p className={`app-shell__nav-group-label ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
@@ -676,36 +680,60 @@ export default function AppLayout() {
                                 ))}
                             </ul>
                         </nav>
-                        <div className="app-shell__account">
-                            {isAnonymous ? (
+
+                        {/* Bottom: Theme button, collapse button, account menu */}
+                        <div className="app-shell__sidebar-bottom">
+                            <div className={`app-shell__sidebar-controls ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
                                 <button
+                                    onClick={toggleTheme}
                                     type="button"
-                                    onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
-                                    aria-label="Sign in or create an account"
-                                    title="Sign in"
-                                    className={`app-shell__account-button ${isSidebarCollapsed ? 'is-collapsed' : ''}`}
+                                    aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+                                    title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+                                    className="app-shell__icon-button"
                                 >
-                                    <span className="app-shell__nav-icon"><AccountIcon className="w-5 h-5 shrink-0" /></span>
-                                    <span className={`app-shell__nav-text ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
-                                        Sign in
-                                    </span>
+                                    {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
                                 </button>
-                            ) : (
-                                <SidebarAccountMenu
-                                    collapsed={isSidebarCollapsed}
-                                    avatar={<TrainerAvatar pokemonId={greetingPokemonId} isShiny={greetingPokemonIsShiny} color={colors.primary} />}
-                                    displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
-                                    email={userEmail || ''}
-                                    currentTheme={theme}
-                                    themes={THEME_META}
-                                    onOpenProfile={() => {
-                                        navigate('/profile');
-                                        setIsSidebarOpen(false);
-                                    }}
-                                    onChangeTheme={changeTheme}
-                                    onSignOut={handleSignOut}
-                                />
-                            )}
+
+                                <button
+                                    onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                                    type="button"
+                                    aria-label={isSidebarCollapsed ? "Expand sidebar menu" : "Collapse sidebar menu"}
+                                    title={isSidebarCollapsed ? "Expand sidebar menu" : "Collapse sidebar menu"}
+                                    className="app-shell__icon-button hidden lg:inline-flex"
+                                >
+                                    {isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}
+                                </button>
+                            </div>
+
+                            <div className={`app-shell__account ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+                                {isAnonymous ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
+                                        aria-label="Sign in"
+                                        title="Sign in"
+                                        className={`app-shell__nav-link ${isSidebarCollapsed ? 'is-collapsed' : ''}`}
+                                    >
+                                        <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
+                                        <span className={`app-shell__nav-text ${isSidebarCollapsed ? 'is-hidden' : ''}`}>Sign In</span>
+                                    </button>
+                                ) : (
+                                    <SidebarAccountMenu
+                                        collapsed={isSidebarCollapsed}
+                                        avatar={<TrainerAvatar pokemonId={greetingPokemonId} isShiny={greetingPokemonIsShiny} color={colors.primary} />}
+                                        displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
+                                        email={userEmail || ''}
+                                        currentTheme={theme}
+                                        themes={THEME_META}
+                                        onOpenProfile={() => {
+                                            navigate('/profile');
+                                            setIsSidebarOpen(false);
+                                        }}
+                                        onChangeTheme={changeTheme}
+                                        onSignOut={handleSignOut}
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
                 </aside>
@@ -742,6 +770,48 @@ export default function AppLayout() {
                             </div>
                         </div>
 
+                        {/* Horizontal Active Team Slots */}
+                        <div className="app-shell__header-team">
+                            {Array.from({ length: 6 }).map((_, index) => {
+                                const pokemon = activeTeam?.pokemons?.[index];
+                                if (pokemon) {
+                                    return (
+                                        <button
+                                            key={pokemon.instanceId || pokemon.id}
+                                            type="button"
+                                            onClick={() => handleRailSlotClick(pokemon)}
+                                            className="app-shell__header-team-slot"
+                                            title={`View ${pokemon.name}`}
+                                        >
+                                            <img
+                                                src={getPokemonFrontSpriteUrl(pokemon.id, { shiny: pokemon.customization?.isShiny })}
+                                                alt={pokemon.name}
+                                                className="app-shell__header-team-sprite"
+                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                            />
+                                            <span className="app-shell__header-team-slot-badge">{index + 1}</span>
+                                        </button>
+                                    );
+                                }
+                                return (
+                                    <div
+                                        key={`empty-${index}`}
+                                        className="app-shell__header-team-slot is-empty"
+                                        title="Empty Slot - Go to Team Builder"
+                                        onClick={() => {
+                                            if (activeTeam && editingTeamId !== activeTeam.id) {
+                                                handleEditTeam(activeTeam);
+                                            } else {
+                                                navigate('/builder');
+                                            }
+                                        }}
+                                    >
+                                        <PokeballIcon className="w-5 h-5 opacity-40" />
+                                    </div>
+                                );
+                            })}
+                        </div>
+
                         <div className="app-shell__header-actions">
                             <button onClick={toggleTheme} type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} className="app-shell__icon-button">
                                 {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
@@ -772,6 +842,8 @@ export default function AppLayout() {
                                             db={db}
                                             theme={theme}
                                             onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
+                                            activeTeamId={activeTeamId}
+                                            setActiveTeamId={setActiveTeamId}
                                         />
                                     } />
                                     <Route path="/builder" element={
@@ -783,6 +855,8 @@ export default function AppLayout() {
                                             handleReorderTeam={handleReorderTeam}
                                             handleSaveTeam={() => handleSaveTeam(savedTeams)}
                                             editingTeamId={editingTeamId}
+                                            activeTeamId={activeTeamId}
+                                            setActiveTeamId={setActiveTeamId}
                                             handleClearTeam={handleClearTeam}
                                             recentTeams={recentTeams}
                                             onNavigateToTeams={() => navigate('/teams')}
@@ -863,6 +937,8 @@ export default function AppLayout() {
                                             searchTerm={teamSearchTerm}
                                             setSearchTerm={setTeamSearchTerm}
                                             colors={colors}
+                                            activeTeamId={activeTeamId}
+                                            setActiveTeamId={setActiveTeamId}
                                         />
                                     } />
                                     <Route path="/generator" element={
@@ -932,6 +1008,8 @@ export default function AppLayout() {
                                         db={db}
                                         theme={theme}
                                         onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
+                                        activeTeamId={activeTeamId}
+                                        setActiveTeamId={setActiveTeamId}
                                     />
                                 } />
                                 <Route path="*" element={<Navigate to="/" replace />} />

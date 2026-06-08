@@ -977,3 +977,41 @@
         gap: 0.4rem;
     }
 }
+
+/* ==========================================================================
+   Home Active Team Selector & Badge Custom Styles
+   ========================================================================== */
+.home-active-team-select {
+    font-family: inherit; /* Preserves JetBrains Mono */
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: 1.5rem !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(156, 163, 175, 0.8)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 4px center;
+    background-size: 0.95rem;
+    color: var(--color-fg);
+    border-bottom: 1px dashed var(--color-border);
+    transition: border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+.home-active-team-select:hover,
+.home-active-team-select:focus {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.home-active-badge {
+    animation: ptb-active-badge-pulse 2s infinite ease-in-out;
+}
+
+@keyframes ptb-active-badge-pulse {
+    0%, 100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0px var(--color-primary-soft);
+    }
+    50% {
+        opacity: 0.85;
+        box-shadow: 0 0 0 4px var(--color-primary-soft);
+    }
+}

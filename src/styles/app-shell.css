@@ -1,6 +1,6 @@
 .app-shell {
-    --app-shell-sidebar-width: 15rem;
-    --app-shell-sidebar-collapsed-width: 4.625rem;
+    --app-shell-sidebar-width: 13.5rem;
+    --app-shell-sidebar-collapsed-width: 4.5rem;
     --app-shell-gutter: 0.9rem;
     --app-shell-rail-button-size: 3rem;
     --app-shell-top-band-height: 5.35rem;
@@ -23,9 +23,10 @@
     inset: 0 auto 0 0;
     z-index: 40;
     display: flex;
-    width: min(var(--app-shell-sidebar-width), calc(100vw - 1rem));
+    flex-direction: column;
+    width: var(--app-shell-sidebar-width);
     transform: translateX(-100%);
-    overflow-y: auto;
+    overflow: hidden;
     border-right: 1px solid var(--color-border);
     background: var(--color-surface);
     box-shadow: var(--elevation-3);
@@ -38,10 +39,130 @@
 
 .app-shell__sidebar-inner {
     display: flex;
-    min-height: 100%;
-    width: 100%;
     flex-direction: column;
+    height: 100%;
+    width: 100%;
 }
+
+/* Collapse navigation panel (show icons only) when collapsed */
+.app-shell__sidebar.is-collapsed {
+    width: var(--app-shell-sidebar-collapsed-width);
+}
+
+/* Hide brand label and group labels when collapsed */
+.app-shell__sidebar.is-collapsed .app-shell__brand-label,
+.app-shell__sidebar.is-collapsed .app-shell__nav-group-label,
+.app-shell__sidebar.is-collapsed .app-shell__nav-text {
+    opacity: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+    display: none !important;
+}
+
+/* Header Active Team Slots (Discord Style) */
+.app-shell__header-team {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.app-shell__header-team-slot {
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: border-radius var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth);
+    overflow: visible;
+    box-shadow: var(--elevation-1);
+}
+
+.app-shell__header-team-slot:hover {
+    border-color: var(--color-primary);
+    background-color: var(--color-surface-raised);
+    border-radius: 28%;
+    transform: scale(1.04);
+    box-shadow: 0 0 0 3px var(--color-primary-soft), var(--elevation-2);
+}
+
+.app-shell__header-team-slot.is-empty {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+    background-color: transparent;
+    opacity: 0.35;
+    box-shadow: none;
+}
+
+.app-shell__header-team-slot.is-empty:hover {
+    border-color: var(--color-primary);
+    border-radius: 28%;
+    opacity: 0.7;
+    background-color: var(--color-surface-raised);
+    transform: scale(1.03);
+}
+
+.app-shell__header-team-sprite {
+    width: 86%;
+    height: 86%;
+    object-fit: contain;
+    image-rendering: pixelated;
+    transition: transform var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__header-team-slot:hover .app-shell__header-team-sprite {
+    transform: scale(1.08);
+}
+
+.app-shell__header-team-slot-badge {
+    position: absolute;
+    bottom: -1px;
+    right: -1px;
+    font-size: 0.55rem;
+    font-weight: 800;
+    background: var(--color-primary);
+    color: #ffffff;
+    width: 0.95rem;
+    height: 0.95rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-surface);
+    box-shadow: var(--elevation-1);
+}
+
+.app-shell__sidebar-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    margin-top: auto;
+    padding: var(--app-shell-gutter) 0;
+    border-top: 1px solid var(--color-border);
+}
+
+.app-shell__sidebar-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    padding: 0 0.5rem;
+}
+
+.app-shell__sidebar-controls.is-collapsed {
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
 
 .app-shell__brand,
 .app-shell__account {
@@ -240,22 +361,26 @@
 
 .app-shell__nav-link.is-active {
     position: relative;
-    border-color: var(--color-primary);
+    border-color: transparent;
     background: var(--color-primary-soft);
     color: var(--color-primary);
-    box-shadow: var(--elevation-1);
 }
 
 /* Active indicator bar — left accent strip (Ref 4 pattern) */
 .app-shell__nav-link.is-active::before {
     content: '';
     position: absolute;
-    left: -1px;
-    top: 25%;
-    bottom: 25%;
-    width: 3px;
-    border-radius: 0 2px 2px 0;
+    left: 0;
+    top: 0.55rem;
+    bottom: 0.55rem;
+    width: 4px;
+    border-radius: 0 4px 4px 0;
     background: var(--color-primary);
+    transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.app-shell__nav-link:hover .app-shell__nav-icon {
+    transform: translateY(-0.5px) scale(1.04);
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav,
@@ -775,8 +900,6 @@
 
 @media (min-width: 1024px) {
     .app-shell {
-        --app-shell-sidebar-width: 13.8rem;
-        --app-shell-sidebar-collapsed-width: 4.5rem;
         --app-shell-gutter: 0.95rem;
         --app-shell-top-band-height: 5.15rem;
     }
@@ -806,5 +929,11 @@
     .app-shell__footer-row {
         flex-direction: column;
         align-items: flex-start;
+    }
+}
+
+@media (max-width: 1023px) {
+    .app-shell__header-team {
+        display: none;
     }
 }

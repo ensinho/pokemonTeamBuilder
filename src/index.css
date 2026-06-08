@@ -44,17 +44,17 @@
 
 :root,
 :root[data-theme='dark'] {
-    --color-primary: #7d65e1;
-    --color-primary-soft: rgba(125, 101, 225, 0.18);
+    --color-primary: #5865f2;
+    --color-primary-soft: rgba(88, 101, 242, 0.18);
     --color-accent: #FBBF24;          /* brand gold — favorites, shiny, achievements */
     --color-accent-soft: rgba(251, 191, 36, 0.18);
-    --color-bg: #111827;
-    --color-surface: #1F2937;
-    --color-surface-raised: #374151;
-    --color-fg: #FFFFFF;
-    --color-muted: #9CA3AF;
-    --color-border: #374151;
-    --color-border-hover: color-mix(in srgb, #7d65e1 35%, #374151);
+    --color-bg: #313338;
+    --color-surface: #2b2d31;
+    --color-surface-raised: #1e1f22;
+    --color-fg: #f2f3f5;
+    --color-muted: #949ba4;
+    --color-border: #1f2023;
+    --color-border-hover: color-mix(in srgb, #5865f2 35%, #1f2023);
     --color-success: #34D399;
     --color-danger: #F87171;
     --color-warning: #FBBF24;
@@ -258,9 +258,29 @@ input[type='checkbox']:checked + div + div {
 
 /* Glass card effect (HomeView hero) */
 .glass-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+:root[data-theme='light'] .glass-card,
+:root[data-theme='daybreak'] .glass-card,
+:root[data-theme='solar'] .glass-card {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 100%);
+    border-color: rgba(0, 0, 0, 0.06);
+}
+
+.glass-card-premium {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+:root[data-theme='light'] .glass-card-premium,
+:root[data-theme='daybreak'] .glass-card-premium,
+:root[data-theme='solar'] .glass-card-premium {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
+    border-color: rgba(0, 0, 0, 0.05);
+    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 /* Elevation utilities — replace ad-hoc inline ternary shadows.

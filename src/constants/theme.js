@@ -15,15 +15,15 @@ export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b
 // new code so theme switching is purely CSS-driven.
 export const THEMES = {
     dark: {
-        primary: '#7d65e1',
-        primarySoft: 'rgba(125, 101, 225, 0.18)',
+        primary: '#5865f2',
+        primarySoft: 'rgba(88, 101, 242, 0.18)',
         accent: '#FBBF24',
-        background: '#111827',
-        card: '#1F2937',
-        cardLight: '#374151',
-        text: '#FFFFFF',
-        textMuted: '#9CA3AF',
-        border: '#374151',
+        background: '#313338',
+        card: '#2b2d31',
+        cardLight: '#1e1f22',
+        text: '#f2f3f5',
+        textMuted: '#949ba4',
+        border: '#1f2023',
         success: '#34D399', // green-400 — readable on dark
         danger: '#F87171',  // red-400
         warning: '#FBBF24',

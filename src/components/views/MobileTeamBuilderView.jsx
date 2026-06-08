@@ -278,6 +278,8 @@ export const MobileTeamBuilderView = ({
     handleRemoveFromTeam,
     handleSaveTeam,
     editingTeamId,
+    activeTeamId,
+    setActiveTeamId,
     handleClearTeam,
     recentTeams,
     onNavigateToTeams,
@@ -333,10 +335,26 @@ export const MobileTeamBuilderView = ({
         <div className="team-builder-mobile space-y-4">
             <div className="team-builder-mobile__sticky">
                 <section className="team-builder-panel team-builder-mobile__composer p-4">
-                    <div className="team-builder-panel__header">
-                        <div>
-                            <p className="team-builder-panel__eyebrow">Current roster</p>
-                            <h2 className="team-builder-panel__title team-builder-panel__title--small">Team builder</h2>
+                    <div className="team-builder-panel__header flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <div>
+                                <p className="team-builder-panel__eyebrow">Current roster</p>
+                                <h2 className="team-builder-panel__title team-builder-panel__title--small">Team builder</h2>
+                            </div>
+                            {editingTeamId && (
+                                editingTeamId === activeTeamId ? (
+                                    <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ Active</span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTeamId(editingTeamId)}
+                                        className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider"
+                                        style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
+                                    >
+                                        Set Active
+                                    </button>
+                                )
+                            )}
                         </div>
                         <span className="team-builder-panel__meta">{currentTeam.length}/6</span>
                     </div>
@@ -626,10 +644,23 @@ export const MobileTeamBuilderView = ({
                             </div>
 
                             <div className="mt-4 flex gap-2">
+                                {(() => {
+                                    const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
+                                    return (
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveTeamId(isActive ? null : team.id)}
+                                            className={`team-builder-button team-builder-button--grow ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'} text-xs`}
+                                            style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
+                                        >
+                                            {isActive ? '★ Active' : 'Set Active'}
+                                        </button>
+                                    );
+                                })()}
                                 <button
                                     type="button"
                                     onClick={() => handleEditTeam(team)}
-                                    className="team-builder-button team-builder-button--primary team-builder-button--grow"
+                                    className="team-builder-button team-builder-button--secondary team-builder-button--grow"
                                 >
                                     Edit
                                 </button>
