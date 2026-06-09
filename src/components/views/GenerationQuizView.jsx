@@ -17,12 +17,14 @@ import { PokemonGenerationQuizAutocomplete } from '../PokemonGenerationQuizAutoc
 import { PokemonGenerationQuizCard } from '../PokemonGenerationQuizCard';
 import {
     ChartColumnIcon,
+    CloseIcon,
     PokeballIcon,
     RefreshIcon,
     SparklesIcon,
     SuccessToastIcon,
 } from '../icons';
 import { QuizCelebrationModal } from '../modals';
+import { useQuizRuns } from '../../hooks/useQuizRuns';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
@@ -89,21 +91,36 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [celebrationPokemon, setCelebrationPokemon] = useState(null);
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
     const [selectedGenerationKeys, setSelectedGenerationKeys] = useState(() => new Set(['generation-i']));
-    const [activeGenerationKeys, setActiveGenerationKeys] = useState([]);
-    const [quizStarted, setQuizStarted] = useState(false);
     const [answerInput, setAnswerInput] = useState('');
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
-    const [foundIds, setFoundIds] = useState(new Set());
-    const [foundOrder, setFoundOrder] = useState([]);
-    const [invalidGuesses, setInvalidGuesses] = useState(0);
-    const [consecutiveMisses, setConsecutiveMisses] = useState(0);
     const [currentTip, setCurrentTip] = useState('');
     const [feedback, setFeedback] = useState({ tone: 'muted', message: 'Choose generations.' });
     const [announcement, setAnnouncement] = useState('');
     const [newlyFoundId, setNewlyFoundId] = useState(null);
     const [loadingDetailId, setLoadingDetailId] = useState(null);
-    const [bestRun, setBestRun] = useState(null);
     const [gridFilter, setGridFilter] = useState('all'); // 'all', 'guessed', 'missing'
+
+    const {
+        quizRuns,
+        activeRun,
+        startNewRun,
+        resumeRun,
+        rerunRun,
+        updateActiveRunProgress,
+        deleteRun,
+        setActiveRunId
+    } = useQuizRuns();
+
+    const quizStarted = activeRun !== null;
+    const activeGenerationKeys = activeRun ? activeRun.generationKeys : [];
+    
+    const foundIds = useMemo(() => {
+        return new Set(activeRun ? activeRun.foundIds : []);
+    }, [activeRun?.foundIds]);
+
+    const foundOrder = activeRun ? activeRun.foundOrder : [];
+    const invalidGuesses = activeRun ? activeRun.invalidGuesses : 0;
+    const consecutiveMisses = activeRun ? activeRun.consecutiveMisses : 0;
 
     const deferredAnswerInput = useDeferredValue(answerInput);
 
@@ -258,47 +275,20 @@ export function GenerationQuizView({ showDetails, showToast }) {
         [quizStarted, activeGenerationList, selectedGenerationList]
     );
 
-    useEffect(() => {
-        if (selectionSignature === 'empty' || typeof window === 'undefined') {
-            setBestRun(null);
-            return;
+    const bestRun = useMemo(() => {
+        const run = quizRuns.find((r) => r.id === selectionSignature);
+        if (run && run.bestFound > 0) {
+            return {
+                bestFound: run.bestFound,
+                totalCount: run.totalCount,
+                accuracyPercent: run.bestAccuracy,
+            };
         }
-
-        try {
-            const rawValue = window.localStorage.getItem(`${BEST_RUN_STORAGE_PREFIX}:${selectionSignature}`);
-            setBestRun(rawValue ? JSON.parse(rawValue) : null);
-        } catch (_) {
-            setBestRun(null);
-        }
-    }, [selectionSignature]);
+        return null;
+    }, [quizRuns, selectionSignature]);
 
     useEffect(() => {
-        if (!quizStarted || selectionSignature === 'empty' || totalCount === 0 || typeof window === 'undefined') {
-            return;
-        }
-
-        const nextBestRun = !bestRun || foundCount > (bestRun.bestFound || 0)
-            ? {
-                bestFound: foundCount,
-                totalCount,
-                accuracyPercent,
-                updatedAt: Date.now(),
-            }
-            : bestRun;
-
-        if (nextBestRun !== bestRun) {
-            setBestRun(nextBestRun);
-        }
-
-        try {
-            window.localStorage.setItem(`${BEST_RUN_STORAGE_PREFIX}:${selectionSignature}`, JSON.stringify(nextBestRun));
-        } catch (_) {
-            // Ignore storage failures.
-        }
-    }, [accuracyPercent, bestRun, foundCount, quizStarted, selectionSignature, totalCount]);
-
-    useEffect(() => {
-        if (!quizStarted || !normalizedAnswerInput) return;
+        if (!quizStarted || !normalizedAnswerInput || !activeRun) return;
 
         const matchedPokemonId = answerLookup.get(normalizedAnswerInput);
         if (!matchedPokemonId || foundIds.has(matchedPokemonId)) return;
@@ -306,20 +296,20 @@ export function GenerationQuizView({ showDetails, showToast }) {
         const matchedPokemon = pokemonById.get(matchedPokemonId);
         if (!matchedPokemon) return;
 
-        const nextFoundIds = new Set(foundIds);
-        nextFoundIds.add(matchedPokemonId);
-        setFoundIds(nextFoundIds);
-        setFoundOrder((current) => [...current, matchedPokemonId]);
+        const nextFoundIdsArray = [...activeRun.foundIds, matchedPokemonId];
+        const nextFoundOrder = [...activeRun.foundOrder, matchedPokemonId];
         setNewlyFoundId(matchedPokemonId);
-        setConsecutiveMisses(0);
-        setAnnouncement(`${matchedPokemon.displayName} found. ${nextFoundIds.size} of ${totalCount}.`);
+        
+        updateActiveRunProgress(nextFoundIdsArray, nextFoundOrder, activeRun.invalidGuesses, 0);
+
+        setAnnouncement(`${matchedPokemon.displayName} found. ${nextFoundIdsArray.length} of ${totalCount}.`);
         setFeedback({
             tone: 'success',
-            message: `${matchedPokemon.displayName} registered. ${Math.max(0, totalCount - nextFoundIds.size)} remaining.`,
+            message: `${matchedPokemon.displayName} registered. ${Math.max(0, totalCount - nextFoundIdsArray.length)} remaining.`,
         });
         setAnswerInput('');
         setActiveSuggestionIndex(0);
-    }, [answerLookup, foundIds, normalizedAnswerInput, pokemonById, quizStarted, totalCount]);
+    }, [answerLookup, foundIds, normalizedAnswerInput, pokemonById, quizStarted, totalCount, activeRun, updateActiveRunProgress]);
 
     useEffect(() => {
         if (!quizStarted) return;
@@ -403,37 +393,32 @@ export function GenerationQuizView({ showDetails, showToast }) {
             return;
         }
 
-        setQuizStarted(true);
-        setActiveGenerationKeys(selectedGenerationList);
-        setFoundIds(new Set());
-        setFoundOrder([]);
-        setInvalidGuesses(0);
-        setConsecutiveMisses(0);
+        startNewRun(selectedGenerationList, previewEntries.length);
         setAnswerInput('');
         setGridFilter('all');
         setActiveSuggestionIndex(0);
         setAnnouncement('New Generation Quiz started.');
         setFeedback({ tone: 'info', message: `${previewEntries.length} Pokémon ready.` });
-    }, [previewEntries.length, selectedGenerationList]);
+    }, [previewEntries.length, selectedGenerationList, startNewRun]);
 
     const commitFoundPokemon = useCallback((pokemonId) => {
         const pokemon = pokemonById.get(pokemonId);
-        if (!pokemon || foundIds.has(pokemonId)) return;
+        if (!pokemon || !activeRun || foundIds.has(pokemonId)) return;
 
-        const nextFoundIds = new Set(foundIds);
-        nextFoundIds.add(pokemonId);
-        setFoundIds(nextFoundIds);
-        setFoundOrder((current) => [...current, pokemonId]);
+        const nextFoundIdsArray = [...activeRun.foundIds, pokemonId];
+        const nextFoundOrder = [...activeRun.foundOrder, pokemonId];
         setNewlyFoundId(pokemonId);
-        setConsecutiveMisses(0);
-        setAnnouncement(`${pokemon.displayName} found. ${nextFoundIds.size} of ${totalCount}.`);
+
+        updateActiveRunProgress(nextFoundIdsArray, nextFoundOrder, activeRun.invalidGuesses, 0);
+
+        setAnnouncement(`${pokemon.displayName} found. ${nextFoundIdsArray.length} of ${totalCount}.`);
         setFeedback({
             tone: 'success',
-            message: `${pokemon.displayName} registered. ${Math.max(0, totalCount - nextFoundIds.size)} remaining.`,
+            message: `${pokemon.displayName} registered. ${Math.max(0, totalCount - nextFoundIdsArray.length)} remaining.`,
         });
         setAnswerInput('');
         setActiveSuggestionIndex(0);
-    }, [foundIds, pokemonById, totalCount]);
+    }, [activeRun, foundIds, pokemonById, totalCount, updateActiveRunProgress]);
 
     const handleSelectSuggestion = useCallback((pokemonId) => {
         commitFoundPokemon(pokemonId);
@@ -472,12 +457,18 @@ export function GenerationQuizView({ showDetails, showToast }) {
             }
 
             if (!matchedPokemonId) {
-                setInvalidGuesses((current) => current + 1);
-                setConsecutiveMisses((current) => current + 1);
+                if (activeRun) {
+                    updateActiveRunProgress(
+                        activeRun.foundIds,
+                        activeRun.foundOrder,
+                        activeRun.invalidGuesses + 1,
+                        activeRun.consecutiveMisses + 1
+                    );
+                }
                 setFeedback({ tone: 'danger', message: 'No Pokémon match that guess yet.' });
             }
         }
-    }, [activeSuggestionIndex, answerInput, answerLookup, foundIds, handleSelectSuggestion, suggestions]);
+    }, [activeSuggestionIndex, answerInput, answerLookup, foundIds, handleSelectSuggestion, suggestions, activeRun, updateActiveRunProgress]);
 
     const inspectPokemon = useCallback(async (pokemon) => {
         if (!pokemon || loadingDetailId) return;
@@ -717,20 +708,92 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         <div className="team-builder-spinner" aria-hidden="true"></div>
                     </div>
                 ) : !quizStarted ? (
-                    <EmptyState
-                        compact
-                        title="Let's start a quiz!"
-                        spriteSrc="/LogoCuteGengarRounded.png"
-                        message={
-                            bestRun
-                                ? `Select a generation and try to guess all pokémons from that! Your current best run is ${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy).`
-                                : "Select a generation and try to guess all pokémons from that!"
-                        }
-                        action={{
-                            label: `Start Quiz (${previewEntries.length} Pokémon)`,
-                            onClick: startQuiz
-                        }}
-                    />
+                    <div className="flex flex-col gap-6">
+                        <EmptyState
+                            compact
+                            title="Let's start a quiz!"
+                            spriteSrc="/LogoCuteGengarRounded.png"
+                            message={
+                                bestRun
+                                    ? `Select a generation and try to guess all pokémons from that! Your current best run is ${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy).`
+                                    : "Select a generation and try to guess all pokémons from that!"
+                            }
+                            action={{
+                                label: `Start Quiz (${previewEntries.length} Pokémon)`,
+                                onClick: startQuiz
+                            }}
+                        />
+                        {quizRuns.length > 0 && (
+                            <div className="generation-quiz-history">
+                                <h3 className="generation-quiz-history__title">
+                                    <SuccessToastIcon /> Your Quiz Runs
+                                </h3>
+                                <div className="generation-quiz-history__list">
+                                    {quizRuns.map((run) => {
+                                        const runGens = run.generationKeys.map((k) => GENERATION_LABELS[k] || k).join(', ');
+                                        const isRunComplete = run.isComplete || run.foundIds.length === run.totalCount;
+                                        const runAccuracy = run.foundIds.length + run.invalidGuesses > 0
+                                            ? Math.round((run.foundIds.length / (run.foundIds.length + run.invalidGuesses)) * 100)
+                                            : 100;
+                                        
+                                        return (
+                                            <div key={run.id} className="generation-quiz-history__item">
+                                                <div className="generation-quiz-history__info">
+                                                    <span className="generation-quiz-history__gens">{runGens}</span>
+                                                    <div className="generation-quiz-history__stats">
+                                                        <span>Progress: <strong>{run.foundIds.length}/{run.totalCount}</strong></span>
+                                                        <span>Accuracy: <strong>{runAccuracy}%</strong></span>
+                                                        {run.bestFound > 0 && (
+                                                            <span>Best: <strong>{run.bestFound}/{run.totalCount}</strong></span>
+                                                        )}
+                                                        <span className={`generation-quiz-history__badge ${isRunComplete ? 'generation-quiz-history__badge--complete' : 'generation-quiz-history__badge--progress'}`}>
+                                                            {isRunComplete ? 'Completed' : 'In Progress'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="generation-quiz-history__actions">
+                                                    {!isRunComplete && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setSelectedGenerationKeys(new Set(run.generationKeys));
+                                                                resumeRun(run.id);
+                                                            }}
+                                                            className="generation-quiz-history__btn generation-quiz-history__btn--continue"
+                                                        >
+                                                            Continue
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedGenerationKeys(new Set(run.generationKeys));
+                                                            rerunRun(run.id);
+                                                        }}
+                                                        className="generation-quiz-history__btn generation-quiz-history__btn--rerun"
+                                                    >
+                                                        {isRunComplete ? 'Play Again' : 'Restart'}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (window.confirm("Are you sure you want to delete this run's progress?")) {
+                                                                deleteRun(run.id);
+                                                            }
+                                                        }}
+                                                        className="generation-quiz-history__btn generation-quiz-history__btn--delete"
+                                                        title="Delete Run"
+                                                    >
+                                                        <CloseIcon />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 ) : (
                     <div className="generation-quiz__grid" role="list" aria-label="Pokémon quiz grid">
                         {visibleEntries.map((pokemon) => (
@@ -756,10 +819,12 @@ export function GenerationQuizView({ showDetails, showToast }) {
                     isOpen={isCelebrationOpen}
                     onClose={() => setIsCelebrationOpen(false)}
                     onTryAnother={() => {
-                        setQuizStarted(false);
+                        setActiveRunId(null);
+                        setIsCelebrationOpen(false);
                     }}
                     onCloseQuiz={() => {
-                        setQuizStarted(false);
+                        setActiveRunId(null);
+                        setIsCelebrationOpen(false);
                         navigate('/');
                     }}
                     pokemon={celebrationPokemon}
