@@ -8,6 +8,7 @@ import {
     getBackgroundById,
 } from '../../assets/backgrounds';
 import { CloseIcon, ShareIcon } from '../icons';
+import { useTranslation } from '../../hooks/useTranslation';
 
 // Author/brand link baked into every shared snippet.
 const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
@@ -242,9 +243,10 @@ export const ShareSnippetModal = ({
     shareUrl = '',
     showToast,
 }) => {
+    const { t } = useTranslation();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const canvasRef = useRef(null);
-    const [title, setTitle] = useState(defaultTitle || 'My Pokémon Team');
+    const [title, setTitle] = useState(defaultTitle || '');
     const [subtitle, setSubtitle] = useState('');
     const [backgroundId, setBackgroundId] = useState(DEFAULT_BACKGROUND_ID);
     const [isRendering, setIsRendering] = useState(false);
@@ -255,12 +257,12 @@ export const ShareSnippetModal = ({
     // Reset state whenever the modal opens
     useEffect(() => {
         if (isOpen) {
-            setTitle(defaultTitle || 'My Pokémon Team');
-            setSubtitle(`${pokemons.length} Pokémon · built with care`);
+            setTitle(defaultTitle || t('modals.shareModalDefaultTitle'));
+            setSubtitle(t('modals.shareModalDefaultSubtitle', { count: pokemons.length }));
             setBackgroundId(DEFAULT_BACKGROUND_ID);
             setPreviewUrl(null);
         }
-    }, [isOpen, defaultTitle, pokemons.length]);
+    }, [isOpen, defaultTitle, pokemons.length, t]);
 
     // Re-render canvas whenever inputs change
     useEffect(() => {
@@ -362,7 +364,7 @@ export const ShareSnippetModal = ({
         try {
             if (prefersNativeSave) {
                 const openedShareSheet = await shareImageFile({
-                    title: title || 'My Pokémon Team',
+                    title: title || t('modals.shareModalDefaultTitle'),
                 });
 
                 if (openedShareSheet) {
@@ -378,18 +380,18 @@ export const ShareSnippetModal = ({
             a.click();
             a.remove();
             setTimeout(() => URL.revokeObjectURL(url), 1000);
-            showToast?.('Snippet downloaded!', 'success');
+            showToast?.(t('modals.shareModalDownloaded'), 'success');
         } catch (err) {
             if (err && err.name === 'AbortError') return;
-            showToast?.('Could not generate image.', 'error');
+            showToast?.(t('modals.shareModalErrGenerate'), 'error');
         }
-    }, [prefersNativeSave, shareImageFile, title, exportBlob, fileName, showToast]);
+    }, [prefersNativeSave, shareImageFile, title, exportBlob, fileName, showToast, t]);
 
     const handleCopyLink = useCallback(async () => {
         if (!shareUrl) return;
         try {
             await navigator.clipboard.writeText(shareUrl);
-            showToast?.('Share link copied!', 'success');
+            showToast?.(t('modals.shareModalSuccess'), 'success');
         } catch {
             // Last-resort fallback for browsers without async clipboard
             try {
@@ -401,20 +403,20 @@ export const ShareSnippetModal = ({
                 ta.select();
                 document.execCommand('copy');
                 ta.remove();
-                showToast?.('Share link copied!', 'success');
+                showToast?.(t('modals.shareModalSuccess'), 'success');
             } catch {
-                showToast?.('Could not copy link.', 'error');
+                showToast?.(t('modals.shareModalErrCopy'), 'error');
             }
         }
-    }, [shareUrl, showToast]);
+    }, [shareUrl, showToast, t]);
 
     const handleNativeShare = useCallback(async () => {
         try {
             const sharePayload = {
-                title: title || 'My Pokémon Team',
+                title: title || t('modals.shareModalDefaultTitle'),
                 text: shareUrl
-                    ? `${title || 'My Pokémon Team'} — ${shareUrl}`
-                    : title || 'My Pokémon Team',
+                    ? `${title || t('modals.shareModalDefaultTitle')} — ${shareUrl}`
+                    : title || t('modals.shareModalDefaultTitle'),
             };
 
             const didShareFile = await shareImageFile(sharePayload);
@@ -430,9 +432,9 @@ export const ShareSnippetModal = ({
             await handleCopyLink();
         } catch (err) {
             if (err && err.name === 'AbortError') return; // user cancelled
-            showToast?.('Sharing failed. Try downloading instead.', 'error');
+            showToast?.(t('modals.shareModalErrShare'), 'error');
         }
-    }, [shareImageFile, title, shareUrl, handleCopyLink, showToast]);
+    }, [shareImageFile, title, shareUrl, handleCopyLink, showToast, t]);
 
     if (!isOpen) return null;
 
@@ -459,18 +461,18 @@ export const ShareSnippetModal = ({
                 <div className="flex items-start justify-between mb-4">
                     <div>
                         <h3 id="share-snippet-title" className="text-xl font-bold text-fg">
-                            Share your team
+                            {t('modals.shareModalTitle')}
                         </h3>
                         <p className="mt-0.5 text-xs text-muted">
                             {prefersNativeSave
-                                ? 'On mobile, Save image opens your phone share sheet so you can save it to Photos.'
-                                : 'Generate a snippet image, then share or copy the link.'}
+                                ? t('modals.shareModalDescMobile')
+                                : t('modals.shareModalDescDesktop')}
                         </p>
                     </div>
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Close share dialog"
+                        aria-label={t('modals.shareModalCloseAria')}
                         className="rounded-lg bg-surface-raised p-2 text-fg transition-all duration-200 hover:scale-105 active:scale-95"
                     >
                         <CloseIcon />
@@ -489,7 +491,7 @@ export const ShareSnippetModal = ({
                         <div
                             className="flex h-full w-full items-center justify-center text-xs text-muted"
                         >
-                            {isRendering ? 'Rendering preview…' : 'Preview unavailable'}
+                            {isRendering ? t('modals.shareModalRendering') : t('modals.shareModalPreviewUnavailable')}
                         </div>
                     )}
                     {/* Hidden canvas used for rendering */}
@@ -498,34 +500,34 @@ export const ShareSnippetModal = ({
 
                 {/* Title input */}
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
-                    Title
+                    {t('modals.shareModalTitleLabel')}
                 </label>
                 <input
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value.slice(0, 60))}
-                    placeholder="My Pokémon Team"
+                    placeholder={t('modals.shareModalDefaultTitle')}
                     maxLength={60}
                     className="mb-3 w-full rounded-lg border-2 border-transparent bg-surface-raised p-2.5 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
 
                 <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-muted">
-                    Subtitle
+                    {t('modals.shareModalSubtitleLabel')}
                 </label>
                 <input
                     type="text"
                     value={subtitle}
                     onChange={(e) => setSubtitle(e.target.value.slice(0, 80))}
-                    placeholder="Optional"
+                    placeholder={t('modals.shareModalOptional')}
                     maxLength={80}
                     className="mb-4 w-full rounded-lg border-2 border-transparent bg-surface-raised p-2.5 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 />
 
                 {/* Background picker */}
                 <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted">
-                    Background
+                    {t('modals.shareModalBackgroundLabel')}
                 </label>
-                <div className="grid grid-cols-4 gap-2 mb-5" role="radiogroup" aria-label="Background">
+                <div className="grid grid-cols-4 gap-2 mb-5" role="radiogroup" aria-label={t('modals.shareModalBackgroundLabel')}>
                     {SHARE_BACKGROUNDS.map((bg) => {
                         const selected = bg.id === backgroundId;
                         return (
@@ -568,7 +570,7 @@ export const ShareSnippetModal = ({
                             onClick={handleCopyLink}
                             className="rounded-md bg-primary px-3 py-1.5 text-xs font-bold text-white"
                         >
-                            Copy
+                            {t('modals.shareModalCopyBtn')}
                         </button>
                     </div>
                 )}
@@ -581,7 +583,7 @@ export const ShareSnippetModal = ({
                         disabled={isRendering}
                         className="rounded-xl bg-surface-raised px-4 py-2.5 text-sm font-semibold text-fg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                     >
-                        {prefersNativeSave ? 'Save image' : 'Download image'}
+                        {prefersNativeSave ? t('modals.shareModalSaveImage') : t('modals.shareModalDownloadImage')}
                     </button>
                     <button
                         type="button"
@@ -590,12 +592,12 @@ export const ShareSnippetModal = ({
                         className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                     >
                         <ShareIcon />
-                        {canNativeShare ? 'Share…' : 'Copy link'}
+                        {canNativeShare ? t('modals.shareModalShareBtn') : t('modals.shareModalCopyLinkBtn')}
                     </button>
                 </div>
                 {prefersNativeSave && (
                     <p className="mt-2 text-[11px] text-muted">
-                        Tip: on iPhone, choose Save Image or Save to Photos in the native sheet.
+                        {t('modals.shareModalIosTip')}
                     </p>
                 )}
             </div>

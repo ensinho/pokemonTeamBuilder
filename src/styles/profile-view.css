@@ -256,8 +256,13 @@
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
-.profile-overview-stat:nth-child(1) { animation-delay: 40ms; }
-.profile-overview-stat:nth-child(2) { animation-delay: 100ms; }
+.profile-overview-stat:nth-child(1) {
+    animation-delay: 40ms;
+}
+
+.profile-overview-stat:nth-child(2) {
+    animation-delay: 100ms;
+}
 
 .profile-overview-stat__top {
     display: flex;
@@ -300,6 +305,12 @@
     display: grid;
     gap: 1rem;
     margin-top: 1rem;
+}
+
+.profile-layout__column {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
 .profile-card {
@@ -373,12 +384,29 @@
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
-.profile-theme-card:nth-child(1) { animation-delay: 0ms; }
-.profile-theme-card:nth-child(2) { animation-delay: 40ms; }
-.profile-theme-card:nth-child(3) { animation-delay: 80ms; }
-.profile-theme-card:nth-child(4) { animation-delay: 120ms; }
-.profile-theme-card:nth-child(5) { animation-delay: 160ms; }
-.profile-theme-card:nth-child(6) { animation-delay: 200ms; }
+.profile-theme-card:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.profile-theme-card:nth-child(2) {
+    animation-delay: 40ms;
+}
+
+.profile-theme-card:nth-child(3) {
+    animation-delay: 80ms;
+}
+
+.profile-theme-card:nth-child(4) {
+    animation-delay: 120ms;
+}
+
+.profile-theme-card:nth-child(5) {
+    animation-delay: 160ms;
+}
+
+.profile-theme-card:nth-child(6) {
+    animation-delay: 200ms;
+}
 
 .profile-theme-card.is-selected {
     border-style: dashed;
@@ -429,6 +457,7 @@
 .profile-sync-list,
 .profile-avatar-actions {
     display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 0.75rem;
 }
 
@@ -576,18 +605,8 @@
     }
 
     .profile-layout {
-        grid-template-columns: repeat(12, minmax(0, 1fr));
+        grid-template-columns: 7fr 5fr;
         align-items: start;
-    }
-
-    .profile-card--appearance,
-    .profile-card--sync {
-        grid-column: span 7;
-    }
-
-    .profile-card--account,
-    .profile-card--avatar {
-        grid-column: span 5;
     }
 }
 

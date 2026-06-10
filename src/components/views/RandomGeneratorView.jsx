@@ -5,6 +5,7 @@ import { appId } from '../../constants/firebase';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { GENERATION_RANGES, LEGENDARY_IDS, NATURES_LIST } from '../../constants/pokemon';
 import { typeColors } from '../../constants/types';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     getEvolutionChainData,
     getPokemonApiData,
@@ -37,23 +38,29 @@ const RANDOM_GENERATOR_STAT_LABELS = Object.freeze({
 
 const RandomGeneratorIntroModal = ({ onClose, colors }) => {
     const dialogRef = useModalA11y(onClose);
+    const { t, language } = useTranslation();
 
     const steps = [
         {
-            title: '1. Roll',
-            description: 'Set filters, choose count, and generate.',
+            title: language === 'pt' ? '1. Rolar' : '1. Roll',
+            description: language === 'pt' ? 'Defina os filtros, escolha a quantidade e gere.' : 'Set filters, choose count, and generate.',
         },
         {
-            title: '2. Host',
-            description: 'One player views the secret results.',
+            title: language === 'pt' ? '2. Narrar' : '2. Host',
+            description: language === 'pt' ? 'Um jogador visualiza os resultados secretos.' : 'One player views the secret results.',
         },
         {
-            title: '3. Reveal',
-            description: 'Show the card once they guess right.',
+            title: language === 'pt' ? '3. Revelar' : '3. Reveal',
+            description: language === 'pt' ? 'Revele o cartão quando adivinharem corretamente.' : 'Show the card once they guess right.',
         },
     ];
 
-    const questionIdeas = [
+    const questionIdeas = language === 'pt' ? [
+        'É lendário?',
+        'É da 1ª Geração?',
+        'Evolui?',
+        'É do tipo Água?',
+    ] : [
         'Is it legendary?',
         'Is it Gen I?',
         'Does it evolve?',
@@ -82,7 +89,7 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Close random generator guide"
+                        aria-label={language === 'pt' ? 'Fechar guia do gerador aleatório' : 'Close random generator guide'}
                         className="absolute top-3 right-3 rounded-xl bg-surface-raised p-2 text-muted transition-colors hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         <CloseIcon />
@@ -90,14 +97,16 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
 
                     <div className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-primary sm:text-xs">
                         <DiceIcon />
-                        Guessing game mode
+                        {language === 'pt' ? 'Modo jogo de adivinhação' : 'Guessing game mode'}
                     </div>
 
                     <h2 id="random-generator-intro-title" className="mt-3 pr-10 text-xl font-extrabold tracking-tight text-fg sm:text-2xl">
-                        Pokémon Guessing Game
+                        {language === 'pt' ? 'Jogo de Adivinhação Pokémon' : 'Pokémon Guessing Game'}
                     </h2>
                     <p className="mt-2 max-w-2xl text-xs leading-relaxed text-muted sm:text-sm">
-                        Keep the screen hidden, let friends ask yes/no questions, and reveal when they guess right!
+                        {language === 'pt' 
+                            ? 'Mantenha a tela oculta, deixe os amigos fazerem perguntas de sim/não e revele quando eles adivinharem corretamente!'
+                            : 'Keep the screen hidden, let friends ask yes/no questions, and reveal when they guess right!'}
                     </p>
                 </div>
 
@@ -123,7 +132,7 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
 
                     <div className="rounded-2xl bg-bg p-3">
                         <p className="text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                            Good first questions
+                            {language === 'pt' ? 'Boas perguntas iniciais' : 'Good first questions'}
                         </p>
                         <div className="mt-2.5 flex flex-wrap gap-1.5">
                             {questionIdeas.map((idea) => (
@@ -139,7 +148,7 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
 
                     <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3">
                         <p className="text-[11px] leading-relaxed text-muted sm:text-xs">
-                            Guide shows on your first visit.
+                            {language === 'pt' ? 'O guia é exibido na sua primeira visita.' : 'Guide shows on your first visit.'}
                         </p>
                         <button
                             type="button"
@@ -147,7 +156,7 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
                             className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition-transform hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                         >
                             <DiceIcon />
-                            Start playing
+                            {language === 'pt' ? 'Começar a jogar' : 'Start playing'}
                         </button>
                     </div>
                 </div>
@@ -156,34 +165,55 @@ const RandomGeneratorIntroModal = ({ onClose, colors }) => {
     );
 };
 
-const formatPokemonStatLabel = (statName = '') => RANDOM_GENERATOR_STAT_LABELS[statName] || statName.replace(/-/g, ' ');
+const formatPokemonStatLabel = (statName = '', language) => {
+    if (language === 'pt') {
+        const labelsPt = {
+            hp: 'PS',
+            attack: 'Ataque',
+            defense: 'Defesa',
+            'special-attack': 'At. Sp.',
+            'special-defense': 'Def. Sp.',
+            speed: 'Velocidade',
+        };
+        return labelsPt[statName] || statName.replace(/-/g, ' ');
+    }
+    const labelsEn = {
+        hp: 'HP',
+        attack: 'Attack',
+        defense: 'Defense',
+        'special-attack': 'Sp. Atk',
+        'special-defense': 'Sp. Def',
+        speed: 'Speed',
+    };
+    return labelsEn[statName] || statName.replace(/-/g, ' ');
+};
 
 const getStrongestStat = (stats = []) => {
     if (!Array.isArray(stats) || stats.length === 0) return null;
     return stats.reduce((best, stat) => (!best || stat.base_stat > best.base_stat ? stat : best), null);
 };
 
-const getPokemonStatusMeta = (pokemon, colors) => {
+const getPokemonStatusMeta = (pokemon, colors, language) => {
     if (pokemon.isLegendary) {
         return {
-            label: 'Legendary',
+            label: language === 'pt' ? 'Lendário' : 'Legendary',
             tone: colors.warning,
-            hint: 'Rare, high-impact roster pull.',
+            hint: language === 'pt' ? 'Raro, uma grande adição à equipe.' : 'Rare, high-impact roster pull.',
         };
     }
 
     if (pokemon.isMythical) {
         return {
-            label: 'Mythical',
+            label: language === 'pt' ? 'Mítico' : 'Mythical',
             tone: colors.primary,
-            hint: 'Event-tier and unusually rare.',
+            hint: language === 'pt' ? 'Nível de evento e extraordinariamente raro.' : 'Event-tier and unusually rare.',
         };
     }
 
     return {
-        label: 'Regular',
+        label: language === 'pt' ? 'Comum' : 'Regular',
         tone: colors.text,
-        hint: 'Standard encounter pool.',
+        hint: language === 'pt' ? 'Encontro padrão.' : 'Standard encounter pool.',
     };
 };
 
@@ -192,8 +222,9 @@ const StatusInfoCard = ({ pokemon, colors }) => {
     const anchorRef = useRef(null);
     const popoverRef = useRef(null);
     const closeTimerRef = useRef(null);
+    const { t, language } = useTranslation();
 
-    const statusMeta = useMemo(() => getPokemonStatusMeta(pokemon, colors), [pokemon, colors]);
+    const statusMeta = useMemo(() => getPokemonStatusMeta(pokemon, colors, language), [pokemon, colors, language]);
     const strongestStat = useMemo(() => getStrongestStat(pokemon.stats), [pokemon.stats]);
 
     const clearCloseTimer = useCallback(() => {
@@ -255,7 +286,7 @@ const StatusInfoCard = ({ pokemon, colors }) => {
                 className="random-generator-compact-meta__button"
                 style={{ '--random-generator-status-tone': statusMeta.tone }}
                 aria-expanded={isOpen}
-                aria-label={`Status details for ${pokemon.name}`}
+                aria-label={language === 'pt' ? `Detalhes de status de ${pokemon.name}` : `Status details for ${pokemon.name}`}
                 onClick={() => {
                     clearCloseTimer();
                     setIsOpen((prev) => !prev);
@@ -288,24 +319,24 @@ const StatusInfoCard = ({ pokemon, colors }) => {
                 }}
                 placement="top"
                 role="tooltip"
-                ariaLabel={`${pokemon.name} status details`}
+                ariaLabel={language === 'pt' ? `Detalhes de status de ${pokemon.name}` : `${pokemon.name} status details`}
             >
                 <div
                     className="random-generator-status-popover__body"
                     onMouseEnter={openPopover}
                     onMouseLeave={scheduleClose}
                 >
-                    <p className="random-generator-status-popover__eyebrow">Card info</p>
+                    <p className="random-generator-status-popover__eyebrow">{language === 'pt' ? 'Info do card' : 'Card info'}</p>
                     <div className="random-generator-status-popover__row">
                         <span>Status</span>
                         <strong style={{ color: statusMeta.tone }}>{statusMeta.label}</strong>
                     </div>
                     <div className="random-generator-status-popover__row">
-                        <span>Strongest stat</span>
+                        <span>{language === 'pt' ? 'Melhor atributo' : 'Strongest stat'}</span>
                         <strong>
                             {strongestStat
-                                ? `${formatPokemonStatLabel(strongestStat.name)} ${strongestStat.base_stat}`
-                                : 'Unknown'}
+                                ? `${formatPokemonStatLabel(strongestStat.name, language)} ${strongestStat.base_stat}`
+                                : (language === 'pt' ? 'Desconhecido' : 'Unknown')}
                         </strong>
                     </div>
                     <p className="random-generator-status-popover__hint">{statusMeta.hint}</p>
@@ -316,6 +347,7 @@ const StatusInfoCard = ({ pokemon, colors }) => {
 };
 
 export function RandomGeneratorView({ colors, generations, db, userId }) {
+    const { t, language } = useTranslation();
     const [generatedPokemon, setGeneratedPokemon] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingAllIds, setIsLoadingAllIds] = useState(false);
@@ -341,12 +373,12 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
     );
     const filterSummaryChips = useMemo(() => {
         const chips = [
-            { key: 'count', label: 'Count', value: String(pokemonCount) },
+            { key: 'count', label: language === 'pt' ? 'Quantidade' : 'Count', value: String(pokemonCount) },
             {
                 key: 'region',
-                label: 'Region',
+                label: language === 'pt' ? 'Região' : 'Region',
                 value: selectedRegion === 'all'
-                    ? 'All regions'
+                    ? (language === 'pt' ? 'Todas as regiões' : 'All regions')
                     : selectedRegion.replace('generation-', 'Gen ').replace('-', ' '),
             },
         ];
@@ -354,31 +386,31 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
         if (selectedType !== 'all') {
             chips.push({
                 key: 'type',
-                label: 'Type',
-                value: selectedType.charAt(0).toUpperCase() + selectedType.slice(1),
+                label: language === 'pt' ? 'Tipo' : 'Type',
+                value: t(`types.${selectedType}`),
             });
         }
 
         if (legendaryFilter === 'legendary') {
-            chips.push({ key: 'legendary', label: 'Rarity', value: 'Legendary' });
+            chips.push({ key: 'legendary', label: language === 'pt' ? 'Raridade' : 'Rarity', value: language === 'pt' ? 'Lendário' : 'Legendary' });
         } else if (legendaryFilter === 'non-legendary') {
-            chips.push({ key: 'legendary', label: 'Rarity', value: 'No legends' });
+            chips.push({ key: 'legendary', label: language === 'pt' ? 'Raridade' : 'Rarity', value: language === 'pt' ? 'Sem lendários' : 'No legends' });
         }
 
         if (fullyEvolvedFilter === 'fully-evolved') {
-            chips.push({ key: 'evolution', label: 'Stage', value: 'Final stage' });
+            chips.push({ key: 'evolution', label: language === 'pt' ? 'Estágio' : 'Stage', value: language === 'pt' ? 'Estágio final' : 'Final stage' });
         } else if (fullyEvolvedFilter === 'not-fully-evolved') {
-            chips.push({ key: 'evolution', label: 'Stage', value: 'Can evolve' });
+            chips.push({ key: 'evolution', label: language === 'pt' ? 'Estágio' : 'Stage', value: language === 'pt' ? 'Pode evoluir' : 'Can evolve' });
         }
 
         if (formsFilter === 'with-forms') {
-            chips.push({ key: 'forms', label: 'Forms', value: 'Alt forms' });
+            chips.push({ key: 'forms', label: language === 'pt' ? 'Formas' : 'Forms', value: language === 'pt' ? 'Formas alt' : 'Alt forms' });
         } else if (formsFilter === 'no-forms') {
-            chips.push({ key: 'forms', label: 'Forms', value: 'No forms' });
+            chips.push({ key: 'forms', label: language === 'pt' ? 'Formas' : 'Forms', value: language === 'pt' ? 'Sem formas' : 'No forms' });
         }
 
         return chips;
-    }, [pokemonCount, selectedRegion, selectedType, legendaryFilter, fullyEvolvedFilter, formsFilter]);
+    }, [pokemonCount, selectedRegion, selectedType, legendaryFilter, fullyEvolvedFilter, formsFilter, language, t]);
 
     useEffect(() => {
         try {
@@ -857,7 +889,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                     <div className="random-generator-card__top">
                         <div className="random-generator-card__chip-row">
                             <span className="random-generator-card__chip" style={{ color: colors.primary }}>
-                                Round {roundNumber}
+                                {language === 'pt' ? 'Rodada' : 'Round'} {roundNumber}
                             </span>
                             <span className="random-generator-card__chip" style={{ color: colors.textMuted }}>
                                 #{String(pokemon.id).padStart(3, '0')}
@@ -895,13 +927,13 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                                             className="random-generator-card__type-pill"
                                             style={{ backgroundColor: typeColors[type] }}
                                         >
-                                            {type}
+                                            {t(`types.${type}`)}
                                         </span>
                                     ))}
                                 </div>
                                 {pokemon.abilities?.length > 0 && (
                                     <div className="random-generator-card__ability-group">
-                                        <span className="random-generator-card__ability-label">Abilities</span>
+                                        <span className="random-generator-card__ability-label">{language === 'pt' ? 'Habilidades' : 'Abilities'}</span>
                                         <div className="random-generator-card__ability-list">
                                             {pokemon.abilities.map((ability, index) => (
                                                 <span
@@ -922,17 +954,17 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                 <div className="random-generator-card__body">
                     <div className="random-generator-compact-meta">
                         <div className="random-generator-compact-meta__item">
-                            <span className="random-generator-compact-meta__label">Height</span>
+                            <span className="random-generator-compact-meta__label">{language === 'pt' ? 'Altura' : 'Height'}</span>
                             <strong className="random-generator-compact-meta__value">{pokemon.height}m</strong>
                         </div>
                         <div className="random-generator-compact-meta__item">
-                            <span className="random-generator-compact-meta__label">Weight</span>
+                            <span className="random-generator-compact-meta__label">{language === 'pt' ? 'Peso' : 'Weight'}</span>
                             <strong className="random-generator-compact-meta__value">{pokemon.weight}kg</strong>
                         </div>
                         <div className="random-generator-compact-meta__item">
                             <span className="random-generator-compact-meta__label">Habitat</span>
                             <strong className="random-generator-compact-meta__value capitalize">
-                                {pokemon.habitat?.replace(/-/g, ' ') || 'Unknown'}
+                                {pokemon.habitat?.replace(/-/g, ' ') || (language === 'pt' ? 'Desconhecido' : 'Unknown')}
                             </strong>
                         </div>
                         <div className="random-generator-compact-meta__item">
@@ -944,10 +976,12 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         <div className="random-generator-section random-generator-section--compact random-generator-section--centered">
                             <div className="random-generator-section__header random-generator-section__header--centered">
                                 <p className="random-generator-section__label" style={{ color: colors.primary }}>
-                                    Evolution line
+                                    {language === 'pt' ? 'Linha evolutiva' : 'Evolution line'}
                                 </p>
                                 <span className="random-generator-section__meta" style={{ color: colors.textMuted }}>
-                                    {pokemon.isFullyEvolved ? 'Final stage' : `Stage ${pokemon.evolutionStage}`}
+                                    {pokemon.isFullyEvolved 
+                                        ? (language === 'pt' ? 'Estágio final' : 'Final stage') 
+                                        : (language === 'pt' ? `Estágio ${pokemon.evolutionStage}` : `Stage ${pokemon.evolutionStage}`)}
                                 </span>
                             </div>
                             <div
@@ -975,7 +1009,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         <div className="random-generator-section random-generator-section--compact">
                             <div className="random-generator-section__header">
                                 <p className="random-generator-section__label">
-                                    Alternate forms
+                                    {language === 'pt' ? 'Formas alternativas' : 'Alternate forms'}
                                 </p>
                                 <span className="random-generator-section__meta">
                                     {pokemon.forms.length}
@@ -1018,9 +1052,9 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             <span className="flex items-center justify-between gap-3">
                                 <span className="min-w-0 flex items-center gap-2 text-sm font-bold text-fg">
                                     <ChartColumnIcon className="w-4 h-4 text-primary" />
-                                    Filters
+                                    {language === 'pt' ? 'Filtros' : 'Filters'}
                                     <span className="random-generator-filters__count-badge text-muted text-xs font-normal ml-1">
-                                        ({filterSummaryChips.length} active)
+                                        ({filterSummaryChips.length} {language === 'pt' ? 'ativos' : 'active'})
                                     </span>
                                 </span>
                                 <span className={`random-generator-filters__toggle-icon ${isFiltersExpanded ? 'is-expanded' : ''}`} aria-hidden="true">
@@ -1037,7 +1071,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             className="random-generator-action random-generator-action--ghost"
                         >
                             <InfoIcon />
-                            How to Play
+                            {language === 'pt' ? 'Como Jogar' : 'How to Play'}
                         </button>
                         <button
                             type="button"
@@ -1046,7 +1080,11 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             className="random-generator-action random-generator-action--primary"
                         >
                             <RefreshIcon />
-                            {isLoading ? 'Generating...' : isLoadingAllIds ? 'Preparing pool...' : 'Generate'}
+                            {isLoading 
+                                ? (language === 'pt' ? 'Gerando...' : 'Generating...') 
+                                : isLoadingAllIds 
+                                    ? (language === 'pt' ? 'Preparando...' : 'Preparing pool...') 
+                                    : (language === 'pt' ? 'Gerar' : 'Generate')}
                         </button>
                     </div>
                 </div>
@@ -1065,7 +1103,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                 >
                     <div className="random-generator-filters__grid pb-3 mb-3 border-b border-border">
                         <label className="random-generator-field">
-                            <span className="random-generator-field__label">Count</span>
+                            <span className="random-generator-field__label">{language === 'pt' ? 'Quantidade' : 'Count'}</span>
                             <select
                                 value={pokemonCount}
                                 onChange={(e) => setPokemonCount(parseInt(e.target.value, 10))}
@@ -1078,13 +1116,13 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         </label>
 
                         <label className="random-generator-field">
-                            <span className="random-generator-field__label">Region</span>
+                            <span className="random-generator-field__label">{language === 'pt' ? 'Região' : 'Region'}</span>
                             <select
                                 value={selectedRegion}
                                 onChange={(e) => setSelectedRegion(e.target.value)}
                                 className="random-generator-select capitalize"
                             >
-                                <option value="all">All regions</option>
+                                <option value="all">{language === 'pt' ? 'Todas as regiões' : 'All regions'}</option>
                                 {regionOptions.map((generation) => (
                                     <option key={generation} value={generation} className="capitalize">
                                         {generation.replace('generation-', 'Gen ').replace('-', ' ')}
@@ -1094,55 +1132,55 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         </label>
 
                         <label className="random-generator-field">
-                            <span className="random-generator-field__label">Type</span>
+                            <span className="random-generator-field__label">{language === 'pt' ? 'Tipo' : 'Type'}</span>
                             <select
                                 value={selectedType}
                                 onChange={(e) => setSelectedType(e.target.value)}
                                 className="random-generator-select capitalize"
                             >
-                                <option value="all">All types</option>
+                                <option value="all">{language === 'pt' ? 'Todos os tipos' : 'All types'}</option>
                                 {Object.keys(typeColors).map((type) => (
-                                    <option key={type} value={type} className="capitalize">{type}</option>
+                                    <option key={type} value={type} className="capitalize">{t(`types.${type}`)}</option>
                                 ))}
                             </select>
                         </label>
 
                         <label className="random-generator-field">
-                            <span className="random-generator-field__label">Rarity</span>
+                            <span className="random-generator-field__label">{language === 'pt' ? 'Raridade' : 'Rarity'}</span>
                             <select
                                 value={legendaryFilter}
                                 onChange={(e) => setLegendaryFilter(e.target.value)}
                                 className="random-generator-select"
                             >
-                                <option value="all">Any rarity</option>
-                                <option value="legendary">Legendary only</option>
-                                <option value="non-legendary">Exclude legendaries</option>
+                                <option value="all">{language === 'pt' ? 'Qualquer raridade' : 'Any rarity'}</option>
+                                <option value="legendary">{language === 'pt' ? 'Apenas lendários' : 'Legendary only'}</option>
+                                <option value="non-legendary">{language === 'pt' ? 'Excluir lendários' : 'Exclude legendaries'}</option>
                             </select>
                         </label>
 
                         <label className="random-generator-field">
-                            <span className="random-generator-field__label">Stage</span>
+                            <span className="random-generator-field__label">{language === 'pt' ? 'Estágio' : 'Stage'}</span>
                             <select
                                 value={fullyEvolvedFilter}
                                 onChange={(e) => setFullyEvolvedFilter(e.target.value)}
                                 className="random-generator-select"
                             >
-                                <option value="all">Any stage</option>
-                                <option value="fully-evolved">Fully evolved only</option>
-                                <option value="not-fully-evolved">Not fully evolved</option>
+                                <option value="all">{language === 'pt' ? 'Qualquer estágio' : 'Any stage'}</option>
+                                <option value="fully-evolved">{language === 'pt' ? 'Apenas último estágio' : 'Fully evolved only'}</option>
+                                <option value="not-fully-evolved">{language === 'pt' ? 'Pode evoluir' : 'Not fully evolved'}</option>
                             </select>
                         </label>
 
                         <label className="random-generator-field">
-                            <span className="random-generator-field__label">Forms</span>
+                            <span className="random-generator-field__label">{language === 'pt' ? 'Formas' : 'Forms'}</span>
                             <select
                                 value={formsFilter}
                                 onChange={(e) => setFormsFilter(e.target.value)}
                                 className="random-generator-select"
                             >
-                                <option value="all">Any form pool</option>
-                                <option value="with-forms">Only Pokemon with alt forms</option>
-                                <option value="no-forms">Only Pokemon without alt forms</option>
+                                <option value="all">{language === 'pt' ? 'Qualquer pool de formas' : 'Any form pool'}</option>
+                                <option value="with-forms">{language === 'pt' ? 'Apenas com formas alternativas' : 'Only Pokemon with alt forms'}</option>
+                                <option value="no-forms">{language === 'pt' ? 'Apenas sem formas alternativas' : 'Only Pokemon without alt forms'}</option>
                             </select>
                         </label>
                     </div>
@@ -1163,13 +1201,17 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
 
                 <div className="random-generator-results__header">
                     <div>
-                        <h3 className="random-generator-results__title">Current Roll</h3>
+                        <h3 className="random-generator-results__title">{language === 'pt' ? 'Giro Atual' : 'Current Roll'}</h3>
                         <p className="random-generator-results__copy">
-                            {generationSummary.generated}/{generationSummary.requested} Pokémon generated.
+                            {language === 'pt' 
+                                ? `${generationSummary.generated}/${generationSummary.requested} Pokémon gerados.` 
+                                : `${generationSummary.generated}/${generationSummary.requested} Pokémon generated.`}
                         </p>
                         {generationSummary.exhausted && generationSummary.generated < generationSummary.requested && (
                             <p className="random-generator-results__hint">
-                                Only {generationSummary.generated} matched. Loosen filters to generate all requested Pokémon.
+                                {language === 'pt' 
+                                    ? `Apenas ${generationSummary.generated} corresponderam. Afrouxe os filtros para gerar todos.` 
+                                    : `Only ${generationSummary.generated} matched. Loosen filters to generate all requested Pokémon.`}
                             </p>
                         )}
                     </div>
@@ -1181,7 +1223,7 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                         className="random-generator-action random-generator-action--ghost"
                     >
                         <RefreshIcon />
-                        Reroll
+                        {language === 'pt' ? 'Girar de novo' : 'Reroll'}
                     </button>
                 </div>
 
@@ -1212,8 +1254,8 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                 ) : (
                     <EmptyState
                         compact
-                        title="Nothing rolled"
-                        message="No Pokemon match the selected filters. Try loosening them."
+                        title={language === 'pt' ? 'Nenhum resultado' : 'Nothing rolled'}
+                        message={language === 'pt' ? 'Nenhum Pokémon corresponde aos filtros selecionados. Tente afrouxá-los.' : 'No Pokemon match the selected filters. Try loosening them.'}
                     />
                 )}
             </section>

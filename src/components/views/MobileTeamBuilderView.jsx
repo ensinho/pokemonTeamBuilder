@@ -6,6 +6,7 @@ import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     ClearIcon,
     InfoIcon,
@@ -24,6 +25,7 @@ const MobilePokemonPickerCard = ({
     onToggleFavorite,
     lastRef,
 }) => {
+    const { t, language } = useTranslation();
     const handleCardClick = () => {
         onAddToTeam?.(pokemon);
     };
@@ -45,7 +47,7 @@ const MobilePokemonPickerCard = ({
             ref={lastRef}
             role="button"
             tabIndex={0}
-            aria-label={`Add ${pokemon.name} to team`}
+            aria-label={`${language === 'pt' ? 'Adicionar' : 'Add'} ${pokemon.name} ${language === 'pt' ? 'ao time' : 'to team'}`}
             onClick={handleCardClick}
             onKeyDown={handleKeyDown}
             className={`team-builder-mobile-card ${
@@ -55,7 +57,7 @@ const MobilePokemonPickerCard = ({
             <div className="flex items-start justify-between gap-1">
                 {isSuggested ? (
                     <div className="team-builder-mobile-card__badge">
-                        New
+                        {language === 'pt' ? 'Novo' : 'New'}
                     </div>
                 ) : (
                     <span />
@@ -65,7 +67,7 @@ const MobilePokemonPickerCard = ({
                     onClick={handleFavoriteClick}
                     className={`team-builder-mobile-card__favorite ${isFavorite ? 'is-active' : ''}`}
                     aria-label={isFavorite ? `Remove ${pokemon.name} from favorites` : `Add ${pokemon.name} to favorites`}
-                    title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                    title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
                 >
                     <StarIcon className="w-3.5 h-3.5" isFavorite={isFavorite} color="currentColor" />
                 </button>
@@ -105,6 +107,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
     const [isOpen, setIsOpen] = useState(false);
     const triggerRef = useRef(null);
     const popoverRef = useRef(null);
+    const { t, language } = useTranslation();
 
     const { rating, ratingColor, strengthCount, weaknessCount, topStrengths, topWeaknesses } = useMemo(() => {
         const sCount = teamAnalysis?.strengths?.size || 0;
@@ -113,13 +116,13 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
         // Score ranges roughly -12..+18; coarse bucketing keeps the chip
         // language honest without pretending to be a deep tier list.
         const score = sCount * 2 - wEntries.reduce((sum, [, v]) => sum + Math.max(0, v), 0);
-        let label = 'Building';
+        let label = language === 'pt' ? 'Montando' : 'Building';
         let color = colors.textMuted;
         if (teamSize >= 1) {
-            if (score >= 8) { label = 'Excellent'; color = colors.success; }
-            else if (score >= 3) { label = 'Strong'; color = colors.success; }
-            else if (score >= -2) { label = 'Balanced'; color = colors.info || colors.primary; }
-            else { label = 'Risky'; color = colors.danger; }
+            if (score >= 8) { label = language === 'pt' ? 'Excelente' : 'Excellent'; color = colors.success; }
+            else if (score >= 3) { label = language === 'pt' ? 'Forte' : 'Strong'; color = colors.success; }
+            else if (score >= -2) { label = language === 'pt' ? 'Equilibrado' : 'Balanced'; color = colors.info || colors.primary; }
+            else { label = language === 'pt' ? 'Arriscado' : 'Risky'; color = colors.danger; }
         }
         return {
             rating: label,
@@ -129,7 +132,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
             topStrengths: Array.from(teamAnalysis?.strengths || []).sort().slice(0, 6),
             topWeaknesses: wEntries.sort(([, a], [, b]) => b - a).slice(0, 6),
         };
-    }, [teamAnalysis, teamSize, colors]);
+    }, [teamAnalysis, teamSize, colors, language]);
 
     useEffect(() => {
         if (!isOpen) return undefined;
@@ -161,7 +164,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                 type="button"
                 onClick={() => setIsOpen((v) => !v)}
                 aria-expanded={isOpen}
-                aria-label="Show team analysis"
+                aria-label={t('builder.analysisTitle')}
                 className="inline-flex items-center gap-2 rounded-full bg-surface-raised px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 style={{
                     border: `1px solid ${ratingColor}55`,
@@ -180,7 +183,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                 anchorRef={triggerRef}
                 popoverRef={popoverRef}
                 role="dialog"
-                ariaLabel="Team analysis summary"
+                ariaLabel={t('builder.analysisTitle')}
                 className="w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-surface-raised bg-surface p-3 shadow-2xl"
                 arrowStyle={{
                     backgroundColor: colors.card,
@@ -190,7 +193,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
             >
                     <div className="mb-2 flex items-center justify-between gap-2">
                         <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-                            Team Snapshot
+                            {language === 'pt' ? 'Resumo do Time' : 'Team Snapshot'}
                         </p>
                         <span
                             className="rounded-full px-2 py-0.5 text-[10px] font-bold"
@@ -202,20 +205,20 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
 
                     <div className="mb-2">
                         <p className="mb-1 text-[10px] font-semibold text-success">
-                            Offensive Coverage ({strengthCount})
+                            {language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive Coverage'} ({strengthCount})
                         </p>
                         <div className="flex flex-wrap gap-1">
                             {topStrengths.length > 0 ? topStrengths.map((type) => (
                                 <TypeBadge key={type} type={type} colors={colors} />
                             )) : (
-                                <span className="text-[11px] text-muted">No advantages yet.</span>
+                                <span className="text-[11px] text-muted">{language === 'pt' ? 'Sem vantagens ainda.' : 'No advantages yet.'}</span>
                             )}
                         </div>
                     </div>
 
                     <div>
                         <p className="mb-1 text-[10px] font-semibold text-danger">
-                            Defensive Weaknesses ({weaknessCount})
+                            {language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive Weaknesses'} ({weaknessCount})
                         </p>
                         <div className="flex flex-wrap items-center gap-1">
                             {topWeaknesses.length > 0 ? topWeaknesses.map(([type, score]) => (
@@ -224,7 +227,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                                     <span className="text-[10px] font-bold text-danger">×{score}</span>
                                 </span>
                             )) : (
-                                <span className="text-[11px] text-muted">Rock solid defence.</span>
+                                <span className="text-[11px] text-muted">{language === 'pt' ? 'Defesa sólida.' : 'Rock solid defence.'}</span>
                             )}
                         </div>
                     </div>
@@ -233,43 +236,46 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
     );
 };
 
-const MobileTeamSlot = ({ pokemon, index, onEdit, onRemove }) => (
-    <div className="relative min-w-0">
-        <button
-            type="button"
-            onClick={() => pokemon && onEdit?.(pokemon)}
-            className={`team-builder-mobile-slot ${pokemon ? 'is-filled' : 'is-empty'}`}
-            aria-label={pokemon ? `Edit ${pokemon.name}` : `Empty team slot ${index + 1}`}
-            title={pokemon ? pokemon.name : `Empty slot ${index + 1}`}
-        >
-            {pokemon ? (
-                <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} alt={pokemon.name} className="h-9 w-9" />
-            ) : (
-                <img
-                    src={POKEBALL_PLACEHOLDER_URL}
-                    alt=""
-                    className="h-8 w-8 opacity-35"
-                    aria-hidden="true"
-                />
-            )}
-        </button>
-
-        {pokemon && (
+const MobileTeamSlot = ({ pokemon, index, onEdit, onRemove }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="relative min-w-0">
             <button
                 type="button"
-                onClick={(event) => {
-                    event.stopPropagation();
-                    onRemove?.(pokemon.instanceId);
-                }}
-                className="team-builder-mobile-slot__remove"
-                aria-label={`Remove ${pokemon.name} from team`}
-                title="Remove from team"
+                onClick={() => pokemon && onEdit?.(pokemon)}
+                className={`team-builder-mobile-slot ${pokemon ? 'is-filled' : 'is-empty'}`}
+                aria-label={pokemon ? `${t('common.edit')} ${pokemon.name}` : `Empty team slot ${index + 1}`}
+                title={pokemon ? pokemon.name : `Empty slot ${index + 1}`}
             >
-                <TrashIcon />
+                {pokemon ? (
+                    <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} alt={pokemon.name} className="h-9 w-9" />
+                ) : (
+                    <img
+                        src={POKEBALL_PLACEHOLDER_URL}
+                        alt=""
+                        className="h-8 w-8 opacity-35"
+                        aria-hidden="true"
+                    />
+                )}
             </button>
-        )}
-    </div>
-);
+
+            {pokemon && (
+                <button
+                    type="button"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onRemove?.(pokemon.instanceId);
+                    }}
+                    className="team-builder-mobile-slot__remove"
+                    aria-label={`${t('common.remove')} ${pokemon.name}`}
+                    title="Remove from team"
+                >
+                    <TrashIcon />
+                </button>
+            )}
+        </div>
+    );
+};
 
 export const MobileTeamBuilderView = ({
     currentTeam,
@@ -338,12 +344,12 @@ export const MobileTeamBuilderView = ({
                     <div className="team-builder-panel__header flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div>
-                                <p className="team-builder-panel__eyebrow">Current roster</p>
-                                <h2 className="team-builder-panel__title team-builder-panel__title--small">Team builder</h2>
+                                <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Escalação atual' : 'Current roster'}</p>
+                                <h2 className="team-builder-panel__title team-builder-panel__title--small">{t('builder.title')}</h2>
                             </div>
                             {editingTeamId && (
                                 editingTeamId === activeTeamId ? (
-                                    <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ Active</span>
+                                    <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ {t('common.active')}</span>
                                 ) : (
                                     <button
                                         type="button"
@@ -351,7 +357,7 @@ export const MobileTeamBuilderView = ({
                                         className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider"
                                         style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
                                     >
-                                        Set Active
+                                        {language === 'pt' ? 'Ativar' : 'Set Active'}
                                     </button>
                                 )
                             )}
@@ -364,16 +370,16 @@ export const MobileTeamBuilderView = ({
                             type="text"
                             value={teamName}
                             onChange={(event) => setTeamName(event.target.value)}
-                            placeholder="Team name"
+                            placeholder={language === 'pt' ? 'Nome do time' : 'Team name'}
                             className="team-builder-field min-w-0 flex-1"
-                            aria-label="Team name"
+                            aria-label={language === 'pt' ? 'Nome do time' : 'Team name'}
                         />
                         <button
                             type="button"
                             onClick={handleSaveTeam}
                             className="team-builder-icon-button team-builder-icon-button--primary"
-                            aria-label={editingTeamId ? 'Update team' : 'Save team'}
-                            title={editingTeamId ? 'Update team' : 'Save team'}
+                            aria-label={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
+                            title={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
                         >
                             <SaveIcon className="h-4 w-4" />
                         </button>
@@ -381,8 +387,8 @@ export const MobileTeamBuilderView = ({
                             type="button"
                             onClick={handleShareTeam}
                             className="team-builder-icon-button"
-                            aria-label="Share team"
-                            title="Share team"
+                            aria-label={t('builder.shareTeam')}
+                            title={t('builder.shareTeam')}
                         >
                             <ShareIcon />
                         </button>
@@ -390,8 +396,8 @@ export const MobileTeamBuilderView = ({
                             type="button"
                             onClick={handleExportToShowdown}
                             className="team-builder-icon-button"
-                            aria-label="Export team"
-                            title="Export team"
+                            aria-label={t('builder.exportShowdown')}
+                            title={t('builder.exportShowdown')}
                         >
                             <ShowdownIcon />
                         </button>
@@ -399,8 +405,8 @@ export const MobileTeamBuilderView = ({
                             type="button"
                             onClick={handleClearTeam}
                             className="team-builder-icon-button team-builder-icon-button--danger"
-                            aria-label="Clear team"
-                            title="Clear team"
+                            aria-label={t('builder.clearTeam')}
+                            title={t('builder.clearTeam')}
                         >
                             <ClearIcon />
                         </button>
@@ -430,10 +436,10 @@ export const MobileTeamBuilderView = ({
             <section className="team-builder-panel p-4">
                 <div className="team-builder-mobile__filters">
                     <label className="team-builder-control team-builder-mobile__filter-control team-builder-mobile__filter-control--full">
-                        <span className="team-builder-control__label">Search</span>
+                        <span className="team-builder-control__label">{language === 'pt' ? 'Pesquisa' : 'Search'}</span>
                         <input
                             type="text"
-                            placeholder="Search Pokemon"
+                            placeholder={t('pokedex.searchPlaceholder')}
                             value={searchInput}
                             onChange={(event) => setSearchInput(event.target.value)}
                             className="team-builder-field"
@@ -441,13 +447,13 @@ export const MobileTeamBuilderView = ({
                     </label>
 
                     <label className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">Generation</span>
+                        <span className="team-builder-control__label">{t('pokedex.genFilterLabel')}</span>
                         <select
                             value={selectedGeneration}
                             onChange={(event) => setSelectedGeneration(event.target.value)}
                             className="team-builder-field team-builder-select"
                         >
-                            <option value="all">All Generations</option>
+                            <option value="all">{t('pokedex.allGens')}</option>
                             {generations.map((generation) => (
                                 <option key={generation} value={generation} className="capitalize">
                                     {generation.replace('-', ' ')}
@@ -457,33 +463,33 @@ export const MobileTeamBuilderView = ({
                     </label>
 
                     <label className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">Type</span>
+                        <span className="team-builder-control__label">{language === 'pt' ? 'Tipo' : 'Type'}</span>
                         <select
                             value={selectedTypeValue}
                             onChange={(event) => handleTypeSelectChange(event.target.value)}
                             className="team-builder-field team-builder-select"
                         >
-                            <option value="all">All Types</option>
+                            <option value="all">{t('pokedex.allTypes')}</option>
                             {Object.keys(typeIcons).map((type) => (
                                 <option key={type} value={type} className="capitalize">
-                                    {type}
+                                    {t(`types.${type}`)}
                                 </option>
                             ))}
                         </select>
                     </label>
 
                     <label className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">Pinned only</span>
+                        <span className="team-builder-control__label">{language === 'pt' ? 'Apenas fixados' : 'Pinned only'}</span>
                         <button
                             type="button"
                             onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
                             className={`team-builder-toggle ${showOnlyFavorites ? 'is-active' : ''}`}
-                            aria-label={showOnlyFavorites ? 'Show all Pokemon' : 'Show favorites only'}
+                            aria-label={showOnlyFavorites ? (language === 'pt' ? 'Mostrar todos os Pokémon' : 'Show all Pokemon') : (language === 'pt' ? 'Mostrar apenas favoritos' : 'Show favorites only')}
                             aria-pressed={showOnlyFavorites}
-                            title={showOnlyFavorites ? 'Show all Pokemon' : 'Show favorites only'}
+                            title={showOnlyFavorites ? (language === 'pt' ? 'Mostrar todos os Pokémon' : 'Show all Pokemon') : (language === 'pt' ? 'Mostrar apenas favoritos' : 'Show favorites only')}
                         >
                             <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
-                            {showOnlyFavorites ? 'Favorites' : 'All'}
+                            {showOnlyFavorites ? (language === 'pt' ? 'Favoritos' : 'Favorites') : (language === 'pt' ? 'Todos' : 'All')}
                         </button>
                     </label>
                 </div>
@@ -492,8 +498,8 @@ export const MobileTeamBuilderView = ({
             <section className="team-builder-panel p-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                     <div>
-                        <p className="team-builder-panel__eyebrow">Pokédex feed</p>
-                        <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">Available Pokémon</h3>
+                        <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Feed da Pokédex' : 'Pokédex feed'}</p>
+                        <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">{language === 'pt' ? 'Pokémon Disponíveis' : 'Available Pokémon'}</h3>
                     </div>
                     <span className="team-builder-panel__meta">
                         {displayedPokemons.length}
@@ -533,8 +539,8 @@ export const MobileTeamBuilderView = ({
                                     <div className="pt-6">
                                         <EmptyState
                                             compact
-                                            title={showOnlyFavorites ? 'No favorites match' : 'No Pokemon found'}
-                                            message={showOnlyFavorites ? 'Try clearing filters or favoriting more Pokemon.' : 'Try a different search, generation, or type.'}
+                                            title={showOnlyFavorites ? (language === 'pt' ? 'Nenhum favorito correspondente' : 'No favorites match') : (language === 'pt' ? 'Nenhum Pokémon encontrado' : 'No Pokemon found')}
+                                            message={showOnlyFavorites ? (language === 'pt' ? 'Tente limpar os filtros ou favoritar mais Pokémon.' : 'Try clearing filters or favoriting more Pokemon.') : (language === 'pt' ? 'Tente uma busca, geração ou tipo diferente.' : 'Try a different search, generation, or type.')}
                                         />
                                     </div>
                                 )}
@@ -548,31 +554,31 @@ export const MobileTeamBuilderView = ({
                 <section className="team-builder-panel p-4 animate-fade-in" aria-label="Team analysis">
                     <div className="flex items-center justify-between gap-2 mb-3">
                         <div>
-                            <p className="team-builder-panel__eyebrow">Analysis</p>
-                            <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">Team analysis</h3>
+                            <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Análise' : 'Analysis'}</p>
+                            <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">{t('builder.analysisTitle')}</h3>
                         </div>
                         <span className="text-[10px] text-muted">
-                            tap chip above for details
+                            {language === 'pt' ? 'toque no botão acima para detalhes' : 'tap chip above for details'}
                         </span>
                     </div>
 
                     <div className="team-builder-analysis-grid">
                         <div className="team-builder-analysis-card">
                             <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-success">
-                                Strengths · {teamAnalysis.strengths.size}
+                                {language === 'pt' ? 'Vantagens' : 'Strengths'} · {teamAnalysis.strengths.size}
                             </p>
                             <div className="flex flex-wrap gap-1">
                                 {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().slice(0, 8).map((type) => (
                                     <TypeBadge key={type} type={type} colors={colors} />
                                 )) : (
-                                    <span className="text-[11px] text-muted">None yet.</span>
+                                    <span className="text-[11px] text-muted">{language === 'pt' ? 'Nenhuma ainda.' : 'None yet.'}</span>
                                 )}
                             </div>
                         </div>
 
                         <div className="team-builder-analysis-card">
                             <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-danger">
-                                Weaknesses · {Object.keys(teamAnalysis.weaknesses).length}
+                                {language === 'pt' ? 'Fraquezas' : 'Weaknesses'} · {Object.keys(teamAnalysis.weaknesses).length}
                             </p>
                             <div className="flex flex-wrap items-center gap-1">
                                 {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses)
@@ -584,7 +590,7 @@ export const MobileTeamBuilderView = ({
                                             <span className="text-[10px] font-bold text-danger">×{score}</span>
                                         </span>
                                     )) : (
-                                    <span className="text-[11px] text-muted">Rock solid.</span>
+                                    <span className="text-[11px] text-muted">{language === 'pt' ? 'Sólido como rocha.' : 'Rock solid.'}</span>
                                 )}
                             </div>
                         </div>
@@ -595,9 +601,9 @@ export const MobileTeamBuilderView = ({
             <section className="team-builder-panel p-5">
                 <div className="flex items-center justify-between gap-3">
                     <div>
-                        <p className="team-builder-panel__eyebrow">Saved work</p>
+                        <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Trabalho salvo' : 'Saved work'}</p>
                         <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">
-                            Resume a saved lineup
+                            {language === 'pt' ? 'Retomar equipe salva' : 'Resume a saved lineup'}
                         </h3>
                     </div>
                     <button
@@ -605,7 +611,7 @@ export const MobileTeamBuilderView = ({
                         onClick={onNavigateToTeams}
                         className="text-sm font-semibold text-primary"
                     >
-                        View all
+                        {t('home.seeAll')}
                     </button>
                 </div>
 
@@ -637,7 +643,7 @@ export const MobileTeamBuilderView = ({
                                     type="button"
                                     onClick={() => handleToggleFavorite(team)}
                                     className={`team-builder-icon-button ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
-                                    aria-label={team.isFavorite ? `Remove ${team.name} from favorites` : `Favorite ${team.name}`}
+                                    aria-label={team.isFavorite ? (language === 'pt' ? `Remover ${team.name} dos favoritos` : `Remove ${team.name} from favorites`) : (language === 'pt' ? `Favoritar ${team.name}` : `Favorite ${team.name}`)}
                                 >
                                     <StarIcon isFavorite={team.isFavorite} color="currentColor" />
                                 </button>
@@ -653,7 +659,7 @@ export const MobileTeamBuilderView = ({
                                             className={`team-builder-button team-builder-button--grow ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'} text-xs`}
                                             style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
                                         >
-                                            {isActive ? '★ Active' : 'Set Active'}
+                                            {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
                                         </button>
                                     );
                                 })()}
@@ -662,20 +668,20 @@ export const MobileTeamBuilderView = ({
                                     onClick={() => handleEditTeam(team)}
                                     className="team-builder-button team-builder-button--secondary team-builder-button--grow"
                                 >
-                                    Edit
+                                    {t('common.edit')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => requestDeleteTeam(team.id, team.name)}
                                     className="team-builder-button team-builder-button--secondary !text-danger"
                                 >
-                                    Delete
+                                    {t('common.delete')}
                                 </button>
                             </div>
                         </div>
                     )) : (
                         <p className="team-builder-empty-note text-sm">
-                            No recent teams yet.
+                            {language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}
                         </p>
                     )}
                 </div>

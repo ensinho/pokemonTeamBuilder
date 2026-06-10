@@ -3,8 +3,10 @@ import { createPortal } from 'react-dom';
 
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQuiz, pokemon, accuracy, totalCount }) {
+    const { t } = useTranslation();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const canvasRef = useRef(null);
 
@@ -131,15 +133,15 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                 <div className="relative z-10 space-y-6">
                     {/* Badge */}
                     <div className="mx-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent-soft text-accent text-xs font-bold uppercase tracking-wider animate-pulse">
-                        🏆 Champion Trainer! 🏆
+                        {t('quiz.celebrationBadge')}
                     </div>
 
                     <div className="space-y-2">
                         <h2 id="celebration-title" className="text-3xl font-extrabold text-fg tracking-tight">
-                            Congratulations!
+                            {t('quiz.celebrationTitle')}
                         </h2>
                         <p className="text-sm text-muted max-w-sm mx-auto leading-relaxed">
-                            You successfully registered every single Pokémon from your selected roster!
+                            {t('quiz.celebrationDesc')}
                         </p>
                     </div>
 
@@ -161,17 +163,17 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                     )}
 
                     <div className="text-sm font-semibold text-fg">
-                        Celebrated with <span className="text-primary font-bold capitalize">{pokemonName}</span>! 🎉
+                        {t('quiz.celebratedWith', { name: pokemonName })}
                     </div>
 
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto bg-surface-raised/30 rounded-2xl p-4 border border-border/40">
                         <div className="text-center">
-                            <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">Total Guessed</span>
+                            <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">{t('quiz.totalGuessed')}</span>
                             <span className="text-lg font-black text-fg">{totalCount}</span>
                         </div>
                         <div className="text-center border-l border-border/40">
-                            <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">Accuracy</span>
+                            <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">{t('quiz.accuracy')}</span>
                             <span className="text-lg font-black text-success">{accuracy}%</span>
                         </div>
                     </div>
@@ -186,7 +188,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                             }}
                             className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-elevation-1 transition-all hover:scale-102 hover:shadow-lg hover:shadow-primary-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                            Try Another Gen
+                            {t('quiz.tryAnotherGen')}
                         </button>
                         <button
                             type="button"
@@ -196,7 +198,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                             }}
                             className="inline-flex items-center justify-center rounded-xl border border-border bg-surface-raised px-5 py-3 text-sm font-semibold text-fg transition-all hover:scale-102 hover:bg-surface-raised/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                            Close Quiz
+                            {t('quiz.closeQuiz')}
                         </button>
                     </div>
                 </div>

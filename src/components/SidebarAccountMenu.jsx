@@ -1,14 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnchoredPopover } from './AnchoredPopover';
-import { MoonIcon, PokeballIcon, SunIcon } from './icons';
-
-const ThemeMenuIcon = ({ themeId }) => {
-    if (themeId === 'dark' || themeId === 'midnight' || themeId === 'eclipse') {
-        return <MoonIcon />;
-    }
-
-    return <SunIcon />;
-};
+import { MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
+import { useTranslation } from '../hooks/useTranslation';
+import { useAuthStore } from '../store/useAuthStore';
 
 export function SidebarAccountMenu({
     collapsed = false,
@@ -21,10 +15,11 @@ export function SidebarAccountMenu({
     onChangeTheme,
     onSignOut,
 }) {
+    const { t, language, setLanguage } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const anchorRef = useRef(null);
     const popoverRef = useRef(null);
-    const accountName = displayName || email || 'Trainer';
+    const accountName = displayName || email?.split('@')[0] || 'Trainer';
 
     useEffect(() => {
         if (!isOpen) return undefined;
@@ -61,6 +56,14 @@ export function SidebarAccountMenu({
 
     const handleThemeChange = (themeId) => {
         onChangeTheme?.(themeId);
+        // Also save preference to Firestore
+        useAuthStore.getState().savePreferences({ theme: themeId });
+        setIsOpen(false);
+    };
+
+    const handleLanguageChange = (lang) => {
+        setLanguage(lang);
+        useAuthStore.getState().savePreferences({ language: lang });
         setIsOpen(false);
     };
 
@@ -91,13 +94,12 @@ export function SidebarAccountMenu({
                             aria-label={`Open account menu for ${accountName}`}
                             aria-expanded={isOpen}
                             className={`app-shell__account-summary-block ${isOpen ? 'is-open' : ''}`}
-                            title="Open account menu"
+                            title={accountName}
                         >
                             <span className="app-shell__account-avatar">{avatar}</span>
                             <div className="app-shell__account-copy">
-                                <p className="app-shell__account-label">Signed in</p>
-                                <p className="app-shell__account-email" title={email || accountName}>
-                                    {email || accountName}
+                                <p className="app-shell__account-name" title={accountName}>
+                                    {accountName}
                                 </p>
                             </div>
                         </button>
@@ -108,11 +110,9 @@ export function SidebarAccountMenu({
                             aria-label={`Open account menu for ${accountName}`}
                             aria-expanded={isOpen}
                             className={`app-shell__account-menu-trigger ${isOpen ? 'is-open' : ''}`}
-                            title="Open account menu"
+                            title="Account settings"
                         >
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                <path d="m5 8 5 5 5-5" />
-                            </svg>
+                            <SettingsIcon className="w-4.5 h-4.5" />
                         </button>
                     </>
                 )}
@@ -163,15 +163,15 @@ export function SidebarAccountMenu({
                                 <PokeballIcon />
                             </span>
                             <span className="app-shell__account-menu-item-copy">
-                                <span className="app-shell__account-menu-item-label">Profile</span>
-                                <span className="app-shell__account-menu-item-note">Open trainer settings and preferences</span>
+                                <span className="app-shell__account-menu-item-label">{t('accountMenu.profileLabel')}</span>
+                                <span className="app-shell__account-menu-item-note">{t('accountMenu.profileNote')}</span>
                             </span>
                         </button>
                     </div>
 
                     <div className="app-shell__account-popover-section">
-                        <p className="app-shell__account-popover-label">Theme preferences</p>
-                        <div className="app-shell__account-theme-grid">
+                        <p className="app-shell__account-popover-label">{t('accountMenu.themeLabel')}</p>
+                        <div className="app-shell__account-theme-row">
                             {themes.map((theme) => {
                                 const isActive = currentTheme === theme.id;
 
@@ -181,29 +181,40 @@ export function SidebarAccountMenu({
                                         type="button"
                                         onClick={() => handleThemeChange(theme.id)}
                                         aria-pressed={isActive}
-                                        className={`app-shell__account-theme-option ${isActive ? 'is-active' : ''}`}
-                                        style={{ '--app-shell-theme-swatch': theme.swatch }}
+                                        className={`app-shell__account-theme-dot ${isActive ? 'is-active' : ''}`}
+                                        style={{ backgroundColor: theme.swatch }}
                                         title={theme.label}
-                                    >
-                                        <span className="app-shell__account-theme-swatch" aria-hidden="true"></span>
-                                        <span className="app-shell__account-theme-copy">
-                                            <span className="app-shell__account-theme-name">{theme.label}</span>
-                                            <span className="app-shell__account-theme-hint">{theme.hint}</span>
-                                        </span>
-                                        <span className="app-shell__account-theme-icon">
-                                            <ThemeMenuIcon themeId={theme.id} />
-                                        </span>
-                                    </button>
+                                    />
                                 );
                             })}
                         </div>
                     </div>
 
                     <div className="app-shell__account-popover-section">
+                        <p className="app-shell__account-popover-label">{t('accountMenu.languageLabel')}</p>
+                        <div className="app-shell__account-language-row">
+                            <button
+                                type="button"
+                                onClick={() => handleLanguageChange('en')}
+                                className={`app-shell__account-lang-btn ${language === 'en' ? 'is-active' : ''}`}
+                            >
+                                English
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleLanguageChange('pt')}
+                                className={`app-shell__account-lang-btn ${language === 'pt' ? 'is-active' : ''}`}
+                            >
+                                Português
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="app-shell__account-popover-section">
                         <button type="button" onClick={handleSignOut} className="app-shell__account-menu-item app-shell__account-menu-item--danger">
                             <span className="app-shell__account-menu-item-copy">
-                                <span className="app-shell__account-menu-item-label">Sign out</span>
-                                <span className="app-shell__account-menu-item-note">Keep using the app with a fresh guest session</span>
+                                <span className="app-shell__account-menu-item-label">{t('accountMenu.signOutLabel')}</span>
+                                <span className="app-shell__account-menu-item-note">{t('accountMenu.signOutNote')}</span>
                             </span>
                         </button>
                     </div>

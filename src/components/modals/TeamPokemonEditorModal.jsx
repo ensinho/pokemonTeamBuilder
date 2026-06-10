@@ -7,8 +7,10 @@ import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => {} }) {
+    const { t } = useTranslation();
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
@@ -96,9 +98,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     if (!pokemon) return null;
 
     const tabs = [
-        { id: 'loadout', label: 'Loadout' },
-        { id: 'stats', label: 'Stats & EVs' },
-        { id: 'moves', label: `Moves (${customization.moves.length}/4)` },
+        { id: 'loadout', label: t('modals.editorModalTabLoadout') },
+        { id: 'stats', label: t('modals.editorModalTabStats') },
+        { id: 'moves', label: t('modals.editorModalTabMoves', { count: customization.moves.length }) },
     ];
 
     const controlClassName = 'w-full rounded-lg border-2 border-transparent bg-surface-raised text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
@@ -129,12 +131,12 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 </div>
                                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                                     <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-                                        Weak vs
+                                        {t('modals.editorModalWeakVs')}
                                     </span>
                                     {pokemonWeaknesses.length > 0 ? pokemonWeaknesses.slice(0, 4).map(({ type, multiplier }) => (
                                         <WeaknessBadge key={type} type={type} multiplier={multiplier} colors={colors} />
                                     )) : (
-                                        <span className="text-xs text-muted">None</span>
+                                        <span className="text-xs text-muted">{t('common.none')}</span>
                                     )}
                                     {pokemonWeaknesses.length > 4 && (
                                         <span className="rounded-full bg-surface-raised px-2 py-1 text-[10px] font-bold text-muted">
@@ -148,7 +150,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             onClick={onClose}
                             type="button"
                             className="p-2 rounded-lg text-muted hover:text-fg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            aria-label="Close editor"
+                            aria-label={t('modals.editorModalCloseAria')}
                         >
                             <CloseIcon />
                         </button>
@@ -184,22 +186,22 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                         <div role="tabpanel" id="panel-loadout" aria-labelledby="tab-loadout" className="space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label htmlFor="editor-item" className="mb-1 block text-sm font-bold text-fg">Item</label>
+                                    <label htmlFor="editor-item" className="mb-1 block text-sm font-bold text-fg">{t('modals.editorModalItemLabel')}</label>
                                     <select id="editor-item" value={customization.item} onChange={(event) => handleCustomizationChange('item', event.target.value)} className={`${controlClassName} p-2 capitalize`}>
-                                        <option value="">None</option>
+                                        <option value="">{t('common.none')}</option>
                                         {items.map((item) => <option key={item.name} value={item.name} className="capitalize">{item.name.replace(/-/g, ' ')}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label htmlFor="editor-nature" className="mb-1 block text-sm font-bold text-fg">Nature</label>
+                                    <label htmlFor="editor-nature" className="mb-1 block text-sm font-bold text-fg">{t('modals.editorModalNatureLabel')}</label>
                                     <select id="editor-nature" value={customization.nature} onChange={(event) => handleCustomizationChange('nature', event.target.value)} className={`${controlClassName} p-2 capitalize`}>
                                         {natures.map((nature) => <option key={nature.name} value={nature.name} className="capitalize">{nature.name.replace(/-/g, ' ')}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label htmlFor="editor-tera" className="mb-1 block text-sm font-bold text-fg">Tera Type</label>
+                                    <label htmlFor="editor-tera" className="mb-1 block text-sm font-bold text-fg">{t('modals.editorModalTeraLabel')}</label>
                                     <select id="editor-tera" value={customization.teraType} onChange={(event) => handleCustomizationChange('teraType', event.target.value)} className={`${controlClassName} p-2 capitalize`}>
-                                        {Object.keys(typeColors).map((type) => <option key={type} value={type} className="capitalize">{type}</option>)}
+                                        {Object.keys(typeColors).map((type) => <option key={type} value={type} className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</option>)}
                                     </select>
                                 </div>
                                 <div className="flex items-end">
@@ -210,13 +212,13 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         >
                                             <span className={`absolute top-0.5 left-0.5 inline-block w-5 h-5 bg-white rounded-full shadow transition-transform ${customization.isShiny ? 'translate-x-5' : 'translate-x-0'}`} />
                                         </span>
-                                        <span className="text-sm font-bold text-fg">Shiny ✨</span>
+                                        <span className="text-sm font-bold text-fg">{t('modals.editorModalShinyLabel')}</span>
                                     </button>
                                 </div>
                             </div>
 
                             <div>
-                                <label htmlFor="editor-ability" className="mb-2 block text-base font-bold text-fg">Ability</label>
+                                <label htmlFor="editor-ability" className="mb-2 block text-base font-bold text-fg">{t('modals.editorModalAbilityLabel')}</label>
                                 <select id="editor-ability" value={customization.ability} onChange={(event) => handleCustomizationChange('ability', event.target.value)} className={`${controlClassName} p-3 capitalize`}>
                                     {pokemon.abilities.map((ability) => (
                                         <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
@@ -225,7 +227,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             </div>
 
                             <div>
-                                <h3 className="mb-2 text-base font-bold text-fg">Base Stats</h3>
+                                <h3 className="mb-2 text-base font-bold text-fg">{t('modals.editorModalBaseStats')}</h3>
                                 <div className="space-y-1.5">
                                     {pokemon.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
                                 </div>
@@ -236,9 +238,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                     {activeTab === 'stats' && (
                         <div role="tabpanel" id="panel-stats" aria-labelledby="tab-stats">
                             <div className="flex items-baseline justify-between mb-3">
-                                <h3 className="text-lg font-bold text-fg">Effort Values</h3>
+                                <h3 className="text-lg font-bold text-fg">{t('modals.editorModalEffortValues')}</h3>
                                 <p className="text-sm text-muted">
-                                    Remaining: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}>{remainingEVs}</span> / 510
+                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}>{remainingEVs}</span> / 510
                                 </p>
                             </div>
                             <div className="mb-5 h-2 w-full overflow-hidden rounded-full bg-surface-raised">
@@ -255,7 +257,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         <div key={statName}>
                                             <div className="flex justify-between items-center capitalize text-sm">
                                                 <span className="text-fg">{statName.replace(/-/g, ' ')}</span>
-                                                <span className="text-muted">EV {ev} · stat {totalStat}</span>
+                                                <span className="text-muted">{t('modals.editorModalEvStatShort', { ev, total: totalStat })}</span>
                                             </div>
                                             <input
                                                 type="range"
@@ -293,11 +295,11 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             </div>
                             <input
                                 type="text"
-                                placeholder="Search moves..."
+                                placeholder={t('modals.editorModalSearchMoves')}
                                 value={moveSearch}
                                 onChange={(event) => setMoveSearch(event.target.value)}
                                 className="mb-2 w-full rounded-lg bg-surface-raised p-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                aria-label="Search moves"
+                                aria-label={t('modals.editorModalSearchMoves')}
                             />
                             <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto custom-scrollbar pr-2" style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}>
                                 {filteredMoves.map((move) => {
@@ -331,7 +333,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                         onClick={onClose}
                         className="rounded-lg bg-surface-raised px-4 py-2 font-semibold text-fg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </button>
                     <button
                         type="button"
@@ -341,7 +343,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                         }}
                         className="bg-primary hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                     >
-                        <SaveIcon /> Save changes
+                        <SaveIcon /> {t('modals.editorModalSave')}
                     </button>
                 </footer>
             </div>

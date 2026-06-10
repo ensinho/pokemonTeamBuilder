@@ -4,6 +4,7 @@ import { typeColors } from '../../constants/types';
 import { PokemonCard } from '../PokemonCard';
 import { ClearIcon, StarIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function FavoritePokemonsView({
     allPokemons,
@@ -13,6 +14,7 @@ export function FavoritePokemonsView({
     colors,
     isLoading,
 }) {
+    const { t } = useTranslation();
     const [searchInput, setSearchInput] = useState('');
     const [selectedType, setSelectedType] = useState('all');
 
@@ -41,7 +43,7 @@ export function FavoritePokemonsView({
             <section className="team-builder-panel team-builder-panel--picker p-4">
                 <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
                     <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
-                        <h2 className="team-builder-panel__title team-builder-panel__title--compact">Favorite Pokémon</h2>
+                        <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('favorites.title')}</h2>
                         <span className="team-builder-panel__meta team-builder-panel__meta--compact">{filteredFavorites.length}</span>
                     </div>
                 </div>
@@ -55,7 +57,7 @@ export function FavoritePokemonsView({
                         </span>
                         <input
                             type="text"
-                            placeholder="Search favorites..."
+                            placeholder={t('favorites.searchPlaceholder')}
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                             className="team-builder-field team-builder-field--compact team-builder-search-input"
@@ -65,7 +67,7 @@ export function FavoritePokemonsView({
                                 type="button"
                                 onClick={() => setSearchInput('')}
                                 className="team-builder-search-clear"
-                                aria-label="Clear search"
+                                aria-label={t('common.clear')}
                             >
                                 <ClearIcon className="w-4 h-4" />
                             </button>
@@ -77,11 +79,11 @@ export function FavoritePokemonsView({
                             value={selectedType}
                             onChange={(e) => setSelectedType(e.target.value)}
                             className="team-builder-field team-builder-field--compact team-builder-select appearance-none capitalize"
-                            aria-label="Type filter"
+                            aria-label={t('pokedex.typesFilterLabel')}
                         >
-                            <option value="all">All Types</option>
+                            <option value="all">{t('favorites.typeFilterPlaceholder')}</option>
                             {Object.keys(typeColors).map((type) => (
-                                <option key={type} value={type} className="capitalize">{type}</option>
+                                <option key={type} value={type}>{t(`types.${type}`)}</option>
                             ))}
                         </select>
                     </div>
@@ -111,10 +113,10 @@ export function FavoritePokemonsView({
                                 <div className="px-2 pb-4">
                                     <EmptyState
                                         compact
-                                        title={favoritePokemons.size === 0 ? 'No favorites yet!' : 'No matches found'}
+                                        title={favoritePokemons.size === 0 ? t('favorites.emptyTitle') : t('favorites.noMatchesTitle')}
                                         message={favoritePokemons.size === 0
-                                            ? 'Start adding Pokémon to your favorites by clicking the star icon on any Pokémon card.'
-                                            : 'Try adjusting your search or filter criteria.'}
+                                            ? t('favorites.emptyDesc')
+                                            : t('favorites.noMatchesDesc')}
                                     />
                                 </div>
                             )}

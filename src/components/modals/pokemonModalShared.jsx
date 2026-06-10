@@ -2,6 +2,7 @@
 import React from 'react';
 
 import { typeChart, typeColors, typeIcons } from '../../constants/types';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const ALL_POKEMON_TYPES = Object.keys(typeIcons);
 
@@ -45,6 +46,7 @@ export function CompactStatBar({ stat, value }) {
 }
 
 export function WeaknessBadge({ type, multiplier }) {
+    const { t } = useTranslation();
     return (
         <span
             className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs font-semibold text-fg"
@@ -54,7 +56,7 @@ export function WeaknessBadge({ type, multiplier }) {
             }}
         >
             <img src={typeIcons[type]} alt={type} className="h-4 w-4" />
-            <span className="capitalize">{type}</span>
+            <span className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</span>
             <span className="text-danger">x{multiplier}</span>
         </span>
     );

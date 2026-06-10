@@ -1,19 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CloseIcon } from '../icons';
+import { useTranslation } from '../../hooks/useTranslation';
 
-/**
- * AuthModal — minimal email + password sign in / sign up modal.
- *
- * Props:
- *  - mode: 'signIn' | 'signUp' (initial mode; user can toggle)
- *  - canLink: when true, sign-up will LINK the current anonymous account
- *             so existing teams/favorites are preserved.
- *  - onSignIn(email, password): Promise<void>
- *  - onSignUp(email, password): Promise<void>
- *  - onClose(): void
- *  - colors: theme colors object
- */
 export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onClose }) {
+    const { t } = useTranslation();
     const randomLoginPokemons = ['pikachu', 'eevee', 'charmander', 'gengar', 'squirtle', 'togepi', 'piplup', 'snivy'];
     const randomSelected = randomLoginPokemons[Math.floor(Math.random() * randomLoginPokemons.length)];
     const AUTH_GIF_URL = `https://play.pokemonshowdown.com/sprites/ani/${randomSelected}.gif`;
@@ -27,8 +17,8 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     const isSignUp = mode === 'signUp';
 
     const validate = () => {
-        if (!/^\S+@\S+\.\S+$/.test(email.trim())) return 'Please enter a valid email.';
-        if (password.length < 6) return 'Password must be at least 6 characters.';
+        if (!/^\S+@\S+\.\S+$/.test(email.trim())) return t('modals.authValidationErrorEmail');
+        if (password.length < 6) return t('modals.authValidationErrorPassword');
         return '';
     };
 
@@ -46,7 +36,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
             }
             onClose?.();
         } catch (err) {
-            setError(prettifyAuthError(err));
+            setError(prettifyAuthError(err, t));
         } finally {
             setBusy(false);
         }
@@ -67,12 +57,12 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
             >
                 <header className="flex items-center justify-between border-b border-surface-raised px-5 py-4">
                     <h2 id="auth-modal-title" className="text-lg font-bold text-primary">
-                        {isSignUp ? 'Create your account' : 'Welcome back'}
+                        {isSignUp ? t('modals.authCreateAccountTitle') : t('modals.authWelcomeBackTitle')}
                     </h2>
                     <button
                         type="button"
                         onClick={onClose}
-                        aria-label="Close"
+                        aria-label={t('common.close')}
                         className="rounded-md p-1 text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         <CloseIcon />
@@ -83,9 +73,9 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                     <p className="text-xs text-muted">
                         {isSignUp
                             ? (canLink
-                                ? 'We will keep your current teams and favorites linked to this email so you can sign in from any device.'
-                                : 'Your account lets you sync teams, favorites and preferences across devices.')
-                            : 'Sign in to load your teams, favorites and preferences on this device.'}
+                                ? t('modals.authDescLinkGuest')
+                                : t('modals.authDescSyncAcross'))
+                            : t('modals.authDescLoadExisting')}
                     </p>
 
                     <div className="flex flex-col items-center rounded-lg border border-border bg-bg p-3">
@@ -96,13 +86,13 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             className="w-24 h-24 image-pixelated"
                         />
                         <p className="mt-2 text-center text-[11px] text-muted">
-                            {isSignUp ? 'Start your journey!' : 'Your team is waiting for you!'}
+                            {isSignUp ? t('modals.authSubStartJourney') : t('modals.authSubTeamWaiting')}
                         </p>
                     </div>
 
                     <label className="block">
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-                            Email
+                            {t('modals.authEmailLabel')}
                         </span>
                         <input
                             type="email"
@@ -117,7 +107,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
 
                     <label className="block">
                         <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-                            Password
+                            {t('modals.authPasswordLabel')}
                         </span>
                         <input
                             type="password"
@@ -142,7 +132,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                         disabled={busy}
                         className="w-full rounded-md bg-primary py-2 font-bold text-white transition-opacity disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                        {busy ? 'Please wait…' : isSignUp ? 'Create account' : 'Sign in'}
+                        {busy ? t('modals.authPleaseWait') : isSignUp ? t('modals.authSignUpBtn') : t('modals.authSignInBtn')}
                     </button>
 
                     <div className="text-center pt-1">
@@ -151,7 +141,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             onClick={() => { setError(''); setMode(isSignUp ? 'signIn' : 'signUp'); }}
                             className="text-xs text-muted underline hover:opacity-80"
                         >
-                            {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Create one"}
+                            {isSignUp ? t('modals.authAlreadyHaveAccount') : t('modals.authDontHaveAccount')}
                         </button>
                     </div>
                 </form>
@@ -188,19 +178,19 @@ function useModalA11yLocal(onClose) {
     return { dialogRef };
 }
 
-function prettifyAuthError(err) {
+function prettifyAuthError(err, t) {
     const code = err?.code || '';
     switch (code) {
-        case 'auth/invalid-email': return 'That email looks invalid.';
-        case 'auth/email-already-in-use': return 'That email is already registered. Try signing in instead.';
-        case 'auth/weak-password': return 'Password must be at least 6 characters.';
+        case 'auth/invalid-email': return t('modals.authErrorInvalidEmail');
+        case 'auth/email-already-in-use': return t('modals.authErrorEmailInUse');
+        case 'auth/weak-password': return t('modals.authValidationErrorPassword');
         case 'auth/wrong-password':
         case 'auth/invalid-credential':
-        case 'auth/invalid-login-credentials': return 'Email or password is incorrect.';
-        case 'auth/user-not-found': return 'No account found for that email.';
-        case 'auth/network-request-failed': return 'Network error. Check your connection and try again.';
-        case 'auth/too-many-requests': return 'Too many attempts. Try again in a moment.';
-        case 'auth/credential-already-in-use': return 'That email is linked to another account. Sign in instead.';
-        default: return err?.message || 'Something went wrong. Please try again.';
+        case 'auth/invalid-login-credentials': return t('modals.authErrorWrongPassword');
+        case 'auth/user-not-found': return t('modals.authErrorUserNotFound');
+        case 'auth/network-request-failed': return t('modals.authErrorNetwork');
+        case 'auth/too-many-requests': return t('modals.authErrorTooManyRequests');
+        case 'auth/credential-already-in-use': return t('modals.authErrorCredentialInUse');
+        default: return err?.message || t('modals.authErrorDefault');
     }
 }

@@ -4,28 +4,29 @@ import { useNavigate } from 'react-router-dom';
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { ChartColumnIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MapPinIcon, PokeballIcon } from '../icons';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
 
-const LikeFeedbackVisual = () => (
+const LikeFeedbackVisual = ({ t }) => (
     <div
         className="flex items-center justify-center gap-2 rounded-md bg-bg p-3"
         aria-hidden="true"
     >
         <span className="text-[10px] text-muted">
-            Developed by Enzo Esmeraldo
+            {t('patchNotes.developedBy')}
         </span>
         <span className="inline-flex items-center gap-1 rounded-full border border-primary bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
             <HeartIcon className="w-3 h-3 shrink-0" />
             <span>1</span>
         </span>
         <span className="text-[9px] text-muted underline">
-            Have a suggestion?
+            {t('patchNotes.haveSuggestion')}
         </span>
     </div>
 );
 
-const ActiveTeamVisual = ({ colors }) => {
+const ActiveTeamVisual = ({ colors, t }) => {
     const slots = [
         { id: 1 },
         { id: 4 },
@@ -37,7 +38,7 @@ const ActiveTeamVisual = ({ colors }) => {
 
     return (
         <div className="rounded-md bg-bg p-3" aria-hidden="true">
-            <p className="text-[8px] uppercase tracking-wider text-muted font-semibold mb-2.5">App Header</p>
+            <p className="text-[8px] uppercase tracking-wider text-muted font-semibold mb-2.5">{t('patchNotes.appHeader')}</p>
             <div className="flex items-center gap-2">
                 {slots.map((slot, index) => (
                     <div key={index} className="relative">
@@ -68,12 +69,12 @@ const ActiveTeamVisual = ({ colors }) => {
                     </div>
                 ))}
             </div>
-            <p className="text-[8px] text-muted mt-2.5">Tap a slot to inspect your active team</p>
+            <p className="text-[8px] text-muted mt-2.5">{t('patchNotes.inspectTeamHint')}</p>
         </div>
     );
 };
 
-const LocationsVisual = ({ colors }) => {
+const LocationsVisual = ({ colors, t }) => {
     const locations = [
         { name: 'Viridian Forest', version: 'Red', method: 'Walk', level: '3–5', chance: '45%' },
         { name: 'Mt. Moon', version: 'Blue', method: 'Walk', level: '7–10', chance: '20%' },
@@ -87,7 +88,7 @@ const LocationsVisual = ({ colors }) => {
                     style={{ backgroundColor: colors.primary }}
                 >
                     <MapPinIcon className="w-3 h-3" />
-                    Catch Locations
+                    {t('patchNotes.catchLocations')}
                 </span>
                 <span className="text-[8px] text-muted">Gen I</span>
             </div>
@@ -116,8 +117,13 @@ const LocationsVisual = ({ colors }) => {
     );
 };
 
-const MoreInfoVisual = ({ colors }) => {
-    const tabs = ['Stats & Data', 'Locations', 'Moves', 'Sprites'];
+const MoreInfoVisual = ({ colors, t }) => {
+    const tabs = [
+        t('patchNotes.statsData'),
+        t('patchNotes.locations'),
+        t('patchNotes.moves'),
+        t('patchNotes.sprites')
+    ];
     const stats = [
         { name: 'HP', value: 45, max: 255 },
         { name: 'ATK', value: 49, max: 255 },
@@ -162,6 +168,7 @@ const MoreInfoVisual = ({ colors }) => {
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {
+    const { t } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     const navigate = useNavigate();
     const goTo = useCallback((path) => {
@@ -173,27 +180,27 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
         {
             key: 'active-team',
             Icon: PokeballIcon,
-            title: 'Active Team on the Header',
-            description: 'You can now have an active team always visible in the app header — Tap any slot to inspect or swap.',
-            cta: 'Set your active team in My Teams',
+            title: t('patchNotes.activeTeamTitle'),
+            description: t('patchNotes.activeTeamDesc'),
+            cta: t('patchNotes.activeTeamCta'),
             path: '/teams',
             Visual: ActiveTeamVisual,
         },
         {
             key: 'locations',
             Icon: MapPinIcon,
-            title: 'Catch Locations in the Pokédex',
-            description: 'New "Catch Locations" tab in the Pokédex showing every place you can find a Pokémon.',
-            cta: 'Open the Pokédex',
+            title: t('patchNotes.locationsTitle'),
+            description: t('patchNotes.locationsDesc'),
+            cta: t('patchNotes.locationsCta'),
             path: '/pokedex',
             Visual: LocationsVisual,
         },
         {
             key: 'like',
             Icon: HeartIcon,
-            title: 'Like the App + Send Suggestions',
-            description: 'Found a bug or have an idea? Tap the heart in the footer to show some love or send a suggestion straight to me.',
-            cta: 'Scroll to the footer',
+            title: t('patchNotes.likeTitle'),
+            description: t('patchNotes.likeDesc'),
+            cta: t('patchNotes.likeCta'),
             path: '/',
             Visual: LikeFeedbackVisual,
         },
@@ -211,7 +218,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                 style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >
-                <button onClick={onClose} type="button" aria-label="Close patch notes" className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
+                <button onClick={onClose} type="button" aria-label={t('patchNotes.closeLabel')} className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
                     <CloseIcon />
                 </button>
 
@@ -221,7 +228,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                             <FlowerIcon />
                         </div>
                         <h2 id="patch-notes-title" className="text-2xl font-extrabold tracking-tight text-fg md:text-3xl">
-                            What's New!
+                            {t('patchNotes.whatsNew')}
                         </h2>
                     </div>
                     <p className="mt-1 text-sm text-muted">
@@ -243,7 +250,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                                 aria-label={`${title} – ${cta}`}
                             >
                                 <div className="mb-3 overflow-hidden rounded-lg bg-surface">
-                                    <NoteVisual colors={colors} />
+                                    <NoteVisual colors={colors} t={t} />
                                 </div>
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
@@ -276,11 +283,11 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                                 <DownloadIcon className="w-4 h-4" />
                             </div>
                             <div className="flex-1 min-w-0 text-left">
-                                <p className="text-sm font-bold text-fg">Add to Home Screen</p>
+                                <p className="text-sm font-bold text-fg">{t('patchNotes.addToHome')}</p>
                                 <p className="text-xs text-muted">
                                     {isIOS
-                                        ? 'Tap Share → "Add to Home Screen"'
-                                        : 'One tap — install for quick access!'}
+                                        ? t('patchNotes.iosInstallHint')
+                                        : t('patchNotes.installHint')}
                                 </p>
                             </div>
                             {isInstallable && (
@@ -290,7 +297,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                                     className="shrink-0 rounded-lg px-3 py-1.5 text-sm font-bold text-white transition-opacity hover:opacity-90 active:opacity-75"
                                     style={{ backgroundColor: colors.primary }}
                                 >
-                                    Install
+                                    {t('patchNotes.installBtn')}
                                 </button>
                             )}
                         </div>
@@ -300,10 +307,10 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                             onClick={onClose}
                             className="rounded-lg bg-primary px-8 py-3 font-bold text-white transition-colors hover:opacity-90"
                         >
-                            Got it, let's go!
+                            {t('patchNotes.gotIt')}
                         </button>
                         <p className="mt-3 text-xs text-muted">
-                            Made by Enzo Esmeraldo -- hope you like it!
+                            {t('patchNotes.madeBy')}
                         </p>
                     </div>
                 </div>

@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
+import { useTranslation } from '../../hooks/useTranslation';
+import { TRANSLATIONS } from '../../constants/translations';
 
 import '../../styles/home-view.css';
 
@@ -54,10 +56,11 @@ const toGreetingPokemonData = (pokemonData) => {
 };
 
 const TrainerStatsEmptyState = ({ onBrowsePokedex }) => {
+    const { t, language } = useTranslation();
     const previewStats = [
-        { label: 'Teams', value: '0' },
-        { label: 'Pinned', value: '0' },
-        { label: 'Type', value: '--' },
+        { label: t('home.statTeams'), value: '0' },
+        { label: t('home.statPinned'), value: '0' },
+        { label: language === 'pt' ? 'Tipo' : 'Type', value: '--' },
     ];
 
     return (
@@ -68,10 +71,10 @@ const TrainerStatsEmptyState = ({ onBrowsePokedex }) => {
                 </div>
                 <div className="min-w-0">
                     <p className="home-empty-state__title">
-                        Your trainer card starts here
+                        {t('home.emptyStatsTitle')}
                     </p>
                     <p className="home-empty-state__copy">
-                        Save 1 team to unlock your stats.
+                        {t('home.emptyStatsDesc')}
                     </p>
                 </div>
             </div>
@@ -97,7 +100,7 @@ const TrainerStatsEmptyState = ({ onBrowsePokedex }) => {
                     className="home-button home-button--secondary home-button--full"
                 >
                     <PokeballIcon />
-                    Browse Pokédex
+                    {t('home.shortcutPokedexTitle')}
                 </button>
             </div>
         </div>
@@ -122,6 +125,7 @@ export function HomeView({
     activeTeamId,
     setActiveTeamId,
 }) {
+    const { t, language } = useTranslation();
     const [greetingPokemonData, setGreetingPokemonData] = useState(null);
     const [isDailyPokemonLoading, setIsDailyPokemonLoading] = useState(true);
     const [isTipDismissed, setIsTipDismissed] = useState(() => {
@@ -135,12 +139,12 @@ export function HomeView({
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour >= 5 && hour < 12) {
-            return { text: 'Good morning', emoji: '☀️', pokemon: 'espeon', period: 'morning' };
+            return { text: t('home.greetingMorning'), emoji: '☀️', pokemon: 'espeon', period: 'morning' };
         }
         if (hour >= 12 && hour < 18) {
-            return { text: 'Good afternoon', emoji: '🌤️', pokemon: 'pikachu', period: 'afternoon' };
+            return { text: t('home.greetingAfternoon'), emoji: '🌤️', pokemon: 'pikachu', period: 'afternoon' };
         }
-        return { text: 'Good evening', emoji: '🌙', pokemon: 'umbreon', period: 'night' };
+        return { text: t('home.greetingEvening'), emoji: '🌙', pokemon: 'umbreon', period: 'night' };
     };
 
     const greeting = getGreeting();
@@ -274,24 +278,14 @@ export function HomeView({
         return savedTeams.find(t => t.id === activeTeamId) || savedTeams[0];
     }, [savedTeams, activeTeamId]);
 
-    const motivationalMessages = useMemo(
-        () => [
-            'Ready to be the very best!',
-            'Your journey awaits, Trainer!',
-            "Let's catch 'em all today!",
-            'Adventure is out there!',
-            'Time to build your dream team!',
-            'Every Pokémon is unique!',
-            "Gotta catch 'em all!",
-            'Explore new possibilities!',
-        ],
-        [],
-    );
+    const motivationalMessages = useMemo(() => {
+        return TRANSLATIONS[language]?.home?.motos || TRANSLATIONS['en']?.home?.motos || [];
+    }, [language]);
 
     const randomMessage = useMemo(() => {
         const today = new Date();
         const seed = today.getDate() + today.getMonth();
-        return motivationalMessages[seed % motivationalMessages.length];
+        return motivationalMessages[seed % motivationalMessages.length] || '';
     }, [motivationalMessages]);
 
     const resolvedHeroBackgroundId = heroBackgroundId || getDefaultHeroBackgroundId();
@@ -312,26 +306,26 @@ export function HomeView({
 
     const quickActions = [
         {
-            label: 'Team Builder',
-            description: 'Create or refine a roster.',
+            label: t('home.shortcutBuilderTitle'),
+            description: t('home.shortcutBuilderDesc'),
             path: '/builder',
             icon: <SwordsIcon />,
         },
         {
-            label: 'Browse Pokédex',
-            description: 'Compare picks before locking a slot.',
+            label: t('home.shortcutPokedexTitle'),
+            description: t('home.shortcutPokedexDesc'),
             path: '/pokedex',
             icon: <PokeballIcon />,
         },
         {
-            label: 'Quiz',
-            description: 'Challenge your Pokemon knowledge.',
+            label: t('home.shortcutQuizTitle'),
+            description: t('home.shortcutQuizDesc'),
             path: '/quiz',
             icon: <SuccessToastIcon className="w-5 h-5" color="currentColor" />,
         },
         {
-            label: 'Guesser',
-            description: 'Try a guessing game between friends.',
+            label: t('home.shortcutGuesserTitle'),
+            description: t('home.shortcutGuesserDesc'),
             path: '/generator',
             icon: <DiceIcon />,
         },
@@ -339,8 +333,8 @@ export function HomeView({
 
     const activeTeamMeta = activeTeam
         ? [
-            { label: 'Slots', value: `${(activeTeam.pokemons || []).length}/6` },
-            { label: 'Favorite', value: activeTeam.isFavorite ? 'Yes' : 'No' },
+            { label: language === 'pt' ? 'Integrantes' : 'Slots', value: `${(activeTeam.pokemons || []).length}/6` },
+            { label: language === 'pt' ? 'Favorito' : 'Favorite', value: activeTeam.isFavorite ? t('common.yes') : t('common.no') },
         ]
         : [];
 
@@ -362,7 +356,7 @@ export function HomeView({
                     <div className="home-hero__content">
                         <div className="home-hero__lead">
                             <h1 className="home-panel__title home-panel__title--hero">
-                                {greeting.text}, Trainer.
+                                {greeting.text}, {language === 'pt' ? 'Treinador' : 'Trainer'}.
                             </h1>
                             <p className="home-panel__description">
                                 {randomMessage}
@@ -385,9 +379,9 @@ export function HomeView({
                                     <button
                                         onClick={onOpenPokemonSelector}
                                         type="button"
-                                        aria-label="Change partner Pokémon"
+                                        aria-label={t('profile.changeAvatarBtn')}
                                         className="home-partner-card__action-btn"
-                                        title="Change partner Pokémon"
+                                        title={t('profile.changeAvatarBtn')}
                                     >
                                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -406,7 +400,7 @@ export function HomeView({
 
                                 <div className="home-partner-card__info">
                                     <div className="home-partner-card__meta">
-                                        <span className="home-partner-card__badge">Partner</span>
+                                        <span className="home-partner-card__badge">{t('home.partner')}</span>
                                         {greetingPokemonData.types && (
                                             <div className="home-partner-card__types">
                                                 {greetingPokemonData.types.map((type) => (
@@ -448,7 +442,7 @@ export function HomeView({
                             <div className="flex items-start justify-between gap-4 w-full">
                                 <div className="min-w-0 flex-1">
                                     <p className="home-panel__eyebrow">
-                                        Active Team
+                                        {t('home.activeTeam')}
                                     </p>
                                     {savedTeams.length > 1 ? (
                                         <div className="relative inline-block w-full mt-1.5" onClick={(e) => e.stopPropagation()}>
@@ -470,11 +464,11 @@ export function HomeView({
                                         </h2>
                                     )}
                                     <p className="home-panel__description max-w-lg mt-1.5">
-                                        This is your selected active team shown in the sidebar rail. Keep tuning the details!
+                                        {t('home.activeTeamDesc')}
                                     </p>
                                 </div>
                                 <div className="home-active-badge flex items-center gap-1 text-xs font-bold text-primary px-2.5 py-1 rounded-full bg-primary-soft border border-primary-border shrink-0 self-start" onClick={(e) => e.stopPropagation()}>
-                                    ★ Active
+                                    ★ {t('common.active')}
                                 </div>
                             </div>
 
@@ -519,7 +513,7 @@ export function HomeView({
                                 aria-label={`Continue editing ${activeTeam.name}`}
                             >
                                 <EditIcon />
-                                Edit Active Team
+                                {t('home.editActiveTeam')}
                             </button>
                             <button
                                 type="button"
@@ -527,7 +521,7 @@ export function HomeView({
                                 className="home-button home-button--secondary"
                             >
                                 <SwordsIcon />
-                                Start new
+                                {t('home.startNewTeam')}
                             </button>
                         </div>
                     </section>
@@ -536,14 +530,14 @@ export function HomeView({
                         <div className="space-y-3">
                             <div>
                                 <p className="home-panel__eyebrow">
-                                    First steps
+                                    {t('home.firstSteps')}
                                 </p>
                                 <h2 className="home-panel__title home-panel__title--feature">
-                                    Build your first team
+                                    {t('home.buildFirstTeam')}
                                 </h2>
                             </div>
                             <p className="home-panel__description max-w-lg">
-                                Pick six Pokémon, shape their movesets, and save a lineup worth revisiting.
+                                {t('home.buildFirstTeamDesc')}
                             </p>
                         </div>
                         <div className="home-action-row mt-8">
@@ -553,7 +547,7 @@ export function HomeView({
                                 className="home-button home-button--primary w-full"
                             >
                                 <SwordsIcon />
-                                Create your first team
+                                {t('home.createFirstTeam')}
                             </button>
                         </div>
                     </section>
@@ -589,7 +583,7 @@ export function HomeView({
                             >
                                 <div className="home-daily__header">
                                     <div>
-                                        <p className="home-panel__eyebrow">Daily Pokémon</p>
+                                        <p className="home-panel__eyebrow">{t('home.dailyPokemon')}</p>
                                         <h3 className="home-panel__title home-panel__title--daily capitalize">
                                             {pokemonOfTheDay.name}
                                         </h3>
@@ -633,7 +627,7 @@ export function HomeView({
                                             }}
                                             className="home-daily__fav-btn"
                                             type="button"
-                                            aria-label={favoritePokemons.has(pokemonOfTheDay.id) ? 'Remove from favorites' : 'Add to favorites'}
+                                            aria-label={favoritePokemons.has(pokemonOfTheDay.id) ? (language === 'pt' ? 'Remover dos favoritos' : 'Remove from favorites') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
                                             style={favoritePokemons.has(pokemonOfTheDay.id)
                                                 ? {
                                                     backgroundColor: `${colors.accent}18`,
@@ -670,8 +664,8 @@ export function HomeView({
                                 >
                                     <CloseIcon className="w-4.5 h-4.5" />
                                 </button>
-                                <p className="home-panel__eyebrow">Today&apos;s note</p>
-                                <h3 className="home-panel__section-title">Did you know?</h3>
+                                <p className="home-panel__eyebrow">{t('home.todaysNote')}</p>
+                                <h3 className="home-panel__section-title">{t('home.didYouKnow')}</h3>
                                 <p className="home-panel__description mt-3">{tipOfTheDay}</p>
                             </section>
                         )}
@@ -680,7 +674,7 @@ export function HomeView({
                     <section className="home-panel p-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
-                                <p className="home-panel__eyebrow">Shortcuts</p>
+                                <p className="home-panel__eyebrow">{t('home.shortcuts')}</p>
                             </div>
                         </div>
 
@@ -709,8 +703,8 @@ export function HomeView({
                     <section className="home-panel home-panel--stats p-4">
                         <div className="home-trainer-card__header">
                             <div>
-                                <p className="home-panel__eyebrow">TRAINER CARD</p>
-                                <h3 className="home-panel__section-title">Stats & Identity</h3>
+                                <p className="home-panel__eyebrow">{t('home.trainerCard')}</p>
+                                <h3 className="home-panel__section-title">{t('home.statsTitle')}</h3>
                             </div>
                             <div className="home-trainer-card__barcode" aria-hidden="true" />
                         </div>
@@ -721,14 +715,14 @@ export function HomeView({
                                     <span className="home-stat-card__icon">
                                         <SwordsIcon />
                                     </span>
-                                    <span className="home-stat-card__label">Teams</span>
+                                    <span className="home-stat-card__label">{t('home.statTeams')}</span>
                                     <strong className="home-stat-card__value">{stats.totalTeams}</strong>
                                 </div>
                                 <div className="home-stat-card">
                                     <span className="home-stat-card__icon">
                                         <StarIcon isFavorite={true} color="currentColor" />
                                     </span>
-                                    <span className="home-stat-card__label">Pinned</span>
+                                    <span className="home-stat-card__label">{t('home.statPinned')}</span>
                                     <strong className="home-stat-card__value">{stats.totalFavoritePokemons}</strong>
                                 </div>
                                 <div className="home-stat-card home-stat-card--type">
@@ -747,7 +741,7 @@ export function HomeView({
                                                     className="w-5 h-5 object-contain"
                                                 />
                                             </span>
-                                            <span className="home-stat-card__label">Favorite Type</span>
+                                            <span className="home-stat-card__label">{t('home.statFavType')}</span>
                                             <span
                                                 className="home-type-pill capitalize mt-1.5 justify-center"
                                                 style={{
@@ -765,7 +759,7 @@ export function HomeView({
                                             <span className="home-stat-card__icon">
                                                 <PokeballIcon />
                                             </span>
-                                            <span className="home-stat-card__label">Favorite Type</span>
+                                            <span className="home-stat-card__label">{t('home.statFavType')}</span>
                                             <strong className="home-stat-card__value mt-1.5">--</strong>
                                         </>
                                     )}
@@ -785,8 +779,8 @@ export function HomeView({
                         <section className="home-panel p-4">
                             <div className="flex flex-wrap items-center justify-between gap-3">
                                 <div>
-                                    <p className="home-panel__eyebrow">Pinned roster</p>
-                                    <h3 className="home-panel__section-title">Your favorites</h3>
+                                    <p className="home-panel__eyebrow">{t('home.pinnedRoster')}</p>
+                                    <h3 className="home-panel__section-title">{t('home.yourFavorites')}</h3>
                                 </div>
                                 {featuredFavorites.length > 0 && (
                                     <button
@@ -794,7 +788,7 @@ export function HomeView({
                                         onClick={() => navigate('/favorites')}
                                         className="home-button home-button--inline"
                                     >
-                                        See all
+                                        {t('home.seeAll')}
                                     </button>
                                 )}
                             </div>
@@ -832,9 +826,9 @@ export function HomeView({
                                 <div className="mt-4">
                                     <EmptyState
                                         compact
-                                        title="No favorites yet!"
-                                        message="Tap the star on any Pokémon card to pin it here."
-                                        action={{ label: 'Browse Pokédex', onClick: () => navigate('/pokedex') }}
+                                        title={t('favorites.emptyTitle')}
+                                        message={t('favorites.emptyDesc')}
+                                        action={{ label: t('home.shortcutPokedexTitle'), onClick: () => navigate('/pokedex') }}
                                     />
                                 </div>
                             )}

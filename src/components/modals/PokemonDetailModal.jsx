@@ -10,6 +10,7 @@ import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, PlusIcon, SparklesIcon, StarIcon } from '../icons';
 import { CompactStatBar, getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function PokemonDetailModal({
     pokemon,
@@ -24,6 +25,7 @@ export function PokemonDetailModal({
     isFavorite,
     onToggleFavorite,
 }) {
+    const { t } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     const navigate = useNavigate();
     const [showShiny, setShowShiny] = useState(false);
@@ -118,7 +120,7 @@ export function PokemonDetailModal({
                 <button
                     onClick={onClose}
                     type="button"
-                    aria-label={`Close ${pokemon.name} details`}
+                    aria-label={t('modals.pokedexCloseDetailsAria', { name: pokemon.name })}
                     className="absolute top-4 right-4 text-muted hover:text-fg hover:rotate-90 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1"
                 >
                     <CloseIcon />
@@ -132,7 +134,7 @@ export function PokemonDetailModal({
                                 type="button"
                                 onClick={() => setShowShiny((value) => !value)}
                                 className={`absolute -bottom-2 -right-5 rounded-full p-1 transition-all duration-200 hover:scale-110 active:scale-95 ${showShiny ? 'bg-accent text-bg' : 'bg-surface-raised text-fg'}`}
-                                title="Toggle Shiny"
+                                title={t('modals.pokedexToggleShinyAria')}
                             >
                                 <SparklesIcon className="w-4 h-4" />
                             </button>
@@ -141,7 +143,7 @@ export function PokemonDetailModal({
                                     type="button"
                                     onClick={() => onToggleFavorite(pokemon.id)}
                                     className={`absolute -bottom-2 -left-5 rounded-full p-1 transition-all duration-200 hover:scale-110 active:scale-95 ${isFavorite ? 'bg-accent-soft text-accent' : 'bg-surface-raised text-muted'}`}
-                                    title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                                    title={isFavorite ? t('modals.pokedexRemoveFromFavoritesAria') : t('modals.pokedexAddToFavoritesAria')}
                                 >
                                     <StarIcon className="w-5 h-5" isFavorite={isFavorite} color="currentColor" />
                                 </button>
@@ -161,12 +163,12 @@ export function PokemonDetailModal({
                             }}
                             className="mt-3.5 text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface-raised hover:border-primary hover:text-primary transition-all mx-auto text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                            📍 View Locations
+                            {t('modals.pokedexViewLocations')}
                         </button>
                     </div>
 
                     <div className="mt-4 sm:hidden">
-                        <h3 className="mb-2 text-center text-lg font-bold text-fg">Base Stats</h3>
+                        <h3 className="mb-2 text-center text-lg font-bold text-fg">{t('pokedex.baseStats')}</h3>
                         <div className="space-y-1.5 rounded-xl bg-bg p-3">
                             {pokemon.stats?.map((stat) => (
                                 <CompactStatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />
@@ -175,7 +177,7 @@ export function PokemonDetailModal({
                     </div>
 
                     <div className="mt-5 hidden sm:block">
-                        <h3 className="mb-3 text-center text-xl font-bold text-fg">Base Stats</h3>
+                        <h3 className="mb-3 text-center text-xl font-bold text-fg">{t('pokedex.baseStats')}</h3>
                         <div className="space-y-2">
                             {pokemon.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
                         </div>
@@ -183,7 +185,7 @@ export function PokemonDetailModal({
 
                     <div className="mt-4 rounded-xl bg-bg p-3 sm:p-4">
                         <div className="mb-2 flex items-center justify-between gap-2">
-                            <h3 className="text-base font-bold text-fg sm:text-lg">Weaknesses</h3>
+                            <h3 className="text-base font-bold text-fg sm:text-lg">{t('modals.pokedexWeaknesses')}</h3>
                             <span className="rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.14em] text-muted">
                                 {pokemonWeaknesses.length}
                             </span>
@@ -196,14 +198,14 @@ export function PokemonDetailModal({
                             </div>
                         ) : (
                             <p className="text-center text-xs text-muted sm:text-left sm:text-sm">
-                                No major weaknesses.
+                                {t('modals.pokedexNoWeaknesses')}
                             </p>
                         )}
                     </div>
 
                     {evolutionDetails.length > 1 && (
                         <div className="mt-4">
-                            <h3 className="mb-2 text-center text-lg font-bold text-fg sm:text-xl">Evolution Line</h3>
+                            <h3 className="mb-2 text-center text-lg font-bold text-fg sm:text-xl">{t('modals.pokedexEvolutionLine')}</h3>
                             <div className="overflow-x-auto custom-scrollbar pb-1">
                                 <div className="flex min-w-max items-center gap-1 sm:gap-2 px-1 sm:justify-center">
                                     {evolutionDetails.map((evo, index) => (
@@ -221,7 +223,7 @@ export function PokemonDetailModal({
                     )}
 
                     <div className="mt-4 sm:mt-5">
-                        <h3 className="mb-2 text-center text-lg font-bold text-fg sm:mb-3 sm:text-xl">Abilities</h3>
+                        <h3 className="mb-2 text-center text-lg font-bold text-fg sm:mb-3 sm:text-xl">{t('pokedex.abilities')}</h3>
                         <div className="flex flex-wrap justify-center gap-2">
                             {pokemon.abilities?.map((ability, index) => <AbilityChip key={index} ability={ability} />)}
                         </div>
@@ -232,7 +234,7 @@ export function PokemonDetailModal({
                     <div className="shrink-0 border-t border-surface-raised px-4 py-3 sm:px-5">
                         <div className="flex justify-center">
                             <button onClick={() => { onAdd(pokemon); onClose(); }} className="w-full sm:w-auto bg-primary hover:opacity-90 text-white font-bold py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-opacity active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg">
-                                <PlusIcon /> Add to Team
+                                <PlusIcon /> {t('modals.detailModalAddTeam')}
                             </button>
                         </div>
                     </div>

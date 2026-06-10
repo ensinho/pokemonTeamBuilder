@@ -8,8 +8,10 @@ import { useModalA11y } from '../../hooks/useModalA11y';
 import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { CloseIcon } from '../icons';
+import { useTranslation } from '../../hooks/useTranslation';
 
 export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, currentPokemonId, currentPokemonIsShiny, colors, db }) {
+    const { t } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 350);
@@ -110,7 +112,9 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
         () => browseList.reduce((max, pokemon) => Math.max(max, Number(pokemon?.id) || 0), 0),
         [browseList],
     );
-    const selectedTypeLabel = selectedType ? `${selectedType.charAt(0).toUpperCase()}${selectedType.slice(1)}` : 'All types';
+    const selectedTypeLabel = selectedType
+        ? t(`types.${selectedType.toLowerCase()}`, { defaultValue: selectedType })
+        : t('modals.greetingSelectorAllTypes');
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={onClose} role="presentation">
@@ -124,32 +128,36 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                 style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >
-                <button onClick={onClose} type="button" aria-label="Close partner selector" className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
+                <button onClick={onClose} type="button" aria-label={t('modals.greetingSelectorCloseAria')} className="absolute top-4 right-4 text-muted hover:text-fg transition-colors z-10 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1">
                     <CloseIcon />
                 </button>
 
                 <div className="mb-6">
                     <h2 id="greeting-selector-title" className="mb-2 text-2xl font-bold text-fg">
-                        Choose Your Partner Pokémon
+                        {t('modals.greetingSelectorTitle')}
                     </h2>
                     <p className="text-sm text-muted">
-                        Select a Pokémon to display on your greeting card and trainer icon.
+                        {t('modals.greetingSelectorSubtitle')}
                     </p>
                 </div>
 
                 <div className="mb-4 space-y-3">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="team-builder-panel__eyebrow">Partner filters</p>
+                            <p className="team-builder-panel__eyebrow">{t('modals.greetingSelectorFilters')}</p>
                             {isSearchActive ? (
                                 <p className="mt-1 text-xs text-muted">
                                     {isSearching
-                                        ? 'Searching...'
-                                        : `${searchResults.length} result${searchResults.length !== 1 ? 's' : ''} for "${debouncedSearch}"`}
+                                        ? t('modals.greetingSelectorSearching')
+                                        : t('modals.greetingSelectorSearchResults', {
+                                              count: searchResults.length,
+                                              plural: searchResults.length !== 1 ? 's' : '',
+                                              term: debouncedSearch
+                                          })}
                                 </p>
                             ) : (
                                 <p className="mt-1 text-xs text-muted">
-                                    Browsing {browseList.length} loaded Pokemon — or type to search all of them.
+                                    {t('modals.greetingSelectorBrowsing', { count: browseList.length })}
                                 </p>
                             )}
                         </div>
@@ -159,15 +167,15 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                             onClick={() => setIsShinySelection((previous) => !previous)}
                             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-all ${isShinySelection ? 'border-accent bg-accent-soft text-accent' : 'border-border bg-surface-raised text-fg'}`}
                         >
-                            <span>Shiny partner</span>
-                            <span>{isShinySelection ? 'On' : 'Off'}</span>
+                            <span>{t('modals.greetingSelectorShinyLabel')}</span>
+                            <span>{isShinySelection ? t('common.yes') : t('common.no')}</span>
                         </button>
                     </div>
 
                     <div className="relative">
                         <input
                             type="text"
-                            placeholder="Search Pokémon by name…"
+                            placeholder={t('modals.greetingSelectorSearchPlaceholder')}
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                             className={`w-full rounded-lg border-2 px-4 py-2 pr-10 text-fg transition-all focus:outline-none ${isSearchActive ? 'border-primary bg-surface-raised' : 'border-surface-raised bg-surface-raised'}`}
@@ -190,10 +198,10 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                                 type="button"
                                 onClick={() => setSelectedType(null)}
                                 className={`team-builder-type-button team-builder-type-button--compact ${!selectedType ? 'is-active' : ''}`}
-                                title="All types"
+                                title={t('modals.greetingSelectorAllTypes')}
                                 aria-pressed={!selectedType}
                             >
-                                <span className="text-[0.6rem] font-bold uppercase tracking-[0.08em]">All</span>
+                                <span className="text-[0.6rem] font-bold uppercase tracking-[0.08em]">{t('common.all')}</span>
                             </button>
                             <div className="team-builder-type-grid team-builder-type-grid--compact">
                                 {Object.keys(typeIcons).map((type) => (
@@ -202,7 +210,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                                         type="button"
                                         onClick={() => setSelectedType(type)}
                                         className={`team-builder-type-button team-builder-type-button--compact ${selectedType === type ? 'is-active' : ''}`}
-                                        title={type}
+                                        title={t(`types.${type.toLowerCase()}`, { defaultValue: type })}
                                         aria-pressed={selectedType === type}
                                     >
                                         <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
@@ -220,7 +228,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                             onClick={() => setSelectedType(null)}
                             className={`team-builder-button team-builder-button--inline team-builder-button--inline-compact ${!selectedType ? 'border-primary bg-primary-soft text-primary' : 'border-border bg-surface-raised text-muted'}`}
                         >
-                            Clear type filter
+                            {t('modals.greetingSelectorClearTypeFilter')}
                         </button>
                     </div>
                 </div>
@@ -231,7 +239,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         className="mb-4 w-full rounded-lg border-2 border-dashed border-muted p-3 text-muted transition-all hover:scale-[1.02]"
                     >
                         <span className="text-2xl mb-1 block">✨</span>
-                        Remove custom Pokémon (use default)
+                        {t('modals.greetingSelectorRemoveCustom')}
                     </button>
                 )}
 
@@ -278,10 +286,10 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                             {isLoadingMore ? (
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    Loading more…
+                                    {t('modals.greetingSelectorLoadingMore')}
                                 </div>
                             ) : (
-                                `Load more Pokémon (${browseList.length} loaded · up to #${highestLoadedId})`
+                                `${t('modals.greetingSelectorLoadMore')} ${t('modals.greetingSelectorStatsLoaded', { count: browseList.length, highestId: highestLoadedId })}`
                             )}
                         </button>
                     </div>
@@ -290,8 +298,8 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                 {!isSearching && displayedPokemons.length === 0 && (
                     <EmptyState
                         compact
-                        title={isSearchActive || selectedType ? 'No matches' : 'No Pokémon available'}
-                        message={isSearchActive ? `Nothing found for "${debouncedSearch}". Try a different name.` : selectedType ? 'Try clearing the type filter.' : 'Pokémon data is loading.'}
+                        title={isSearchActive || selectedType ? t('modals.greetingSelectorNoMatches') : t('modals.greetingSelectorNoPokemonAvailable')}
+                        message={isSearchActive ? t('modals.greetingSelectorNothingFound', { term: debouncedSearch }) : selectedType ? t('modals.greetingSelectorClearFilterHint') : t('modals.greetingSelectorLoadingHint')}
                     />
                 )}
             </div>

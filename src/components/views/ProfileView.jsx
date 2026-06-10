@@ -3,9 +3,10 @@ import '../../styles/profile-view.css';
 import { THEME_META } from '../../constants/theme';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { Sprite } from '../Sprite';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
-    SunIcon, MoonIcon, SaveIcon, RefreshIcon,
+    SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon,
 } from '../icons';
 
 /**
@@ -60,6 +61,8 @@ export function ProfileView({
     // preferences (already-hydrated)
     theme,
     onChangeTheme,
+    language,
+    onChangeLanguage,
     displayName,
     onChangeDisplayName,
     greetingPokemonId,
@@ -78,6 +81,7 @@ export function ProfileView({
     onClearLocalGreeting,
     db,
 }) {
+    const { t } = useTranslation();
     const [nameDraft, setNameDraft] = useState(displayName || '');
     const [editingName, setEditingName] = useState(false);
 
@@ -92,20 +96,21 @@ export function ProfileView({
         setEditingName(false);
     };
 
-    const trainerLabel = displayName?.trim() || (isAnonymous ? 'Anonymous Trainer' : (userEmail?.split('@')[0] || 'Trainer'));
+    const trainerLabel = displayName?.trim() || (isAnonymous ? t('profile.guestPill') : (userEmail?.split('@')[0] || 'Trainer'));
     const initials = (trainerLabel.match(/\b\w/g) || ['T']).slice(0, 2).join('').toUpperCase();
 
     const streakCount = streak?.count || 0;
     const streakLongest = Math.max(streak?.longest || 0, streakCount);
     const activeTheme = THEME_META.find((entry) => entry.id === theme) || THEME_META[0];
-    const syncLabel = isAnonymous ? 'Local only' : 'Synced';
+    const syncLabel = isAnonymous ? t('profile.sectionAccountGuestDesc') : t('profile.syncedPill');
+
     const streakHint = useMemo(() => {
-        if (streakCount === 0) return 'Visit tomorrow to start a streak!';
-        if (streakCount === 1) return 'Nice start — come back tomorrow!';
-        if (streakCount < 7) return 'Keep it going!';
-        if (streakCount < 30) return 'On fire!';
-        return 'Legendary trainer.';
-    }, [streakCount]);
+        if (streakCount === 0) return t('profile.streakHint0');
+        if (streakCount === 1) return t('profile.streakHint1');
+        if (streakCount < 7) return t('profile.streakHint2');
+        if (streakCount < 30) return t('profile.streakHint3');
+        return t('profile.streakHint4');
+    }, [streakCount, t]);
 
     return (
         <div className="profile-view">
@@ -115,8 +120,8 @@ export function ProfileView({
                         type="button"
                         onClick={onOpenPokemonSelector}
                         className="profile-avatar-button"
-                        aria-label="Change trainer avatar Pokémon"
-                        title="Change avatar Pokémon"
+                        aria-label={t('profile.sectionAvatarDesc')}
+                        title={t('profile.sectionAvatarDesc')}
                     >
                         {greetingPokemonId ? (
                             <Sprite
@@ -133,7 +138,7 @@ export function ProfileView({
                     </button>
 
                     <div className="profile-hero__identity">
-                        <p className="profile-hero__eyebrow">Trainer profile</p>
+                        <p className="profile-hero__eyebrow">{t('profile.trainerProfile')}</p>
                         {editingName ? (
                             <div className="profile-name-editor">
                                 <input
@@ -145,7 +150,7 @@ export function ProfileView({
                                         if (e.key === 'Escape') { setEditingName(false); setNameDraft(displayName || ''); }
                                     }}
                                     maxLength={24}
-                                    placeholder="Your trainer name"
+                                    placeholder={t('profile.nameDraftPlaceholder')}
                                     className="profile-name-input"
                                 />
                                 <button
@@ -153,7 +158,7 @@ export function ProfileView({
                                     onClick={handleSaveName}
                                     className="profile-button profile-button--primary"
                                 >
-                                    Save
+                                    {t('profile.saveNameBtn')}
                                 </button>
                             </div>
                         ) : (
@@ -168,7 +173,7 @@ export function ProfileView({
                             </button>
                         )}
                         <div className="profile-hero__meta">
-                            <span className="profile-pill profile-pill--accent">{isAnonymous ? 'Guest' : 'Synced'}</span>
+                            <span className="profile-pill profile-pill--accent">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
                             {!isAnonymous && userEmail && (
                                 <span className="profile-hero__email" title={userEmail}>{userEmail}</span>
                             )}
@@ -184,196 +189,224 @@ export function ProfileView({
 
                 <div className="profile-hero__side">
                     <div className="profile-streak-card" aria-label={`Current streak: ${streakCount} days`}>
-                        <p className="profile-streak-card__label">Current streak</p>
+                        <p className="profile-streak-card__label">{t('profile.currentStreak')}</p>
                         <div className="profile-streak-card__value-row">
                             <p className="profile-streak-card__value">
                                 {streakCount}
                                 <span>d</span>
                             </p>
-                            <span className="profile-pill">best {streakLongest}d</span>
+                            <span className="profile-pill">{t('profile.bestStreak', { count: streakLongest })}</span>
                         </div>
                     </div>
 
                     <div className="profile-overview-grid">
                         <OverviewStat
                             icon={<SavedTeamsIcon className="w-4 h-4" />}
-                            label="Teams"
+                            label={t('profile.statsTeams')}
                             value={savedTeamsCount}
-                            hint="saved"
+                            hint={t('profile.statsTeamsSaved')}
                         />
                         <OverviewStat
                             icon={<StarsIcon className="w-4 h-4" />}
-                            label="Favorites"
+                            label={t('profile.statsFavorites')}
                             value={favoritePokemonsCount}
-                            hint="Pokemon"
+                            hint={t('profile.statsFavoritesPokemon')}
                         />
                     </div>
                 </div>
             </section>
 
             <div className="profile-layout">
-                <SectionCard
-                    className="profile-card--appearance"
-                    meta={<span className="profile-pill profile-pill--accent">{activeTheme.label}</span>}
-                    title="Appearance"
-                    subtitle="Pick the theme that follows you across devices."
-                    icon={<SunIcon className="w-5 h-5" />}
-                >
-                    <div className="profile-theme-grid">
-                        {THEME_META.map((t) => {
-                            const selected = theme === t.id;
-                            return (
-                                <button
-                                    key={t.id}
-                                    type="button"
-                                    onClick={() => onChangeTheme(t.id)}
-                                    aria-pressed={selected}
-                                    className={`profile-theme-card ${selected ? 'is-selected' : ''}`}
-                                    style={{ '--profile-theme-swatch': t.swatch }}
-                                >
-                                    <div className="profile-theme-card__header">
-                                        <span className="profile-theme-card__swatch" aria-hidden="true"></span>
-                                        <span className="profile-theme-card__label">{t.label}</span>
-                                        <span className="profile-theme-card__icon">
-                                            <ThemeSwatchIcon id={t.id} color="currentColor" />
-                                        </span>
-                                    </div>
-                                    <p className="profile-theme-card__hint">{t.hint}</p>
-                                </button>
-                            );
-                        })}
-                    </div>
-                </SectionCard>
+                <div className="profile-layout__column">
+                    <SectionCard
+                        className="profile-card--appearance"
+                        meta={<span className="profile-pill profile-pill--accent">{activeTheme.label}</span>}
+                        title={t('profile.sectionAppearance')}
+                        subtitle={t('profile.sectionAppearanceDesc')}
+                        icon={<SunIcon className="w-5 h-5" />}
+                    >
+                        <div className="profile-theme-grid">
+                            {THEME_META.map((t) => {
+                                const selected = theme === t.id;
+                                return (
+                                    <button
+                                        key={t.id}
+                                        type="button"
+                                        onClick={() => onChangeTheme(t.id)}
+                                        aria-pressed={selected}
+                                        className={`profile-theme-card ${selected ? 'is-selected' : ''}`}
+                                        style={{ '--profile-theme-swatch': t.swatch }}
+                                    >
+                                        <div className="profile-theme-card__header">
+                                            <span className="profile-theme-card__swatch" aria-hidden="true"></span>
+                                            <span className="profile-theme-card__label">{t.label}</span>
+                                            <span className="profile-theme-card__icon">
+                                                <ThemeSwatchIcon id={t.id} color="currentColor" />
+                                            </span>
+                                        </div>
+                                        <p className="profile-theme-card__hint">{t.hint}</p>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </SectionCard>
 
-                <SectionCard
-                    className="profile-card--account"
-                    meta={<span className="profile-pill">{syncLabel}</span>}
-                    title="Account"
-                    subtitle={isAnonymous ? 'Save your progress to sync everywhere.' : 'Your data is synced across devices.'}
-                    icon={<AccountIcon className="w-5 h-5" />}
-                >
-                    {isAnonymous ? (
-                        <div className="profile-account-block">
-                            <p className="profile-support-copy">
-                                You are using the app as a guest. Create an account to keep your teams,
-                                favorites, and preferences across browsers and devices.
-                            </p>
-                            <div className="profile-button-row">
+                    <SectionCard
+                        className="profile-card--language"
+                        meta={<span className="profile-pill profile-pill--accent">{language === 'pt' ? 'Português' : 'English'}</span>}
+                        title={t('profile.sectionLanguage')}
+                        subtitle={t('profile.sectionLanguageDesc')}
+                        icon={<GlobeIcon className="w-5 h-5" />}
+                    >
+                        <div className="profile-button-row">
+                            <button
+                                type="button"
+                                onClick={() => onChangeLanguage('en')}
+                                className={`profile-button ${language === 'en' ? 'profile-button--primary' : ''}`}
+                            >
+                                English
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => onChangeLanguage('pt')}
+                                className={`profile-button ${language === 'pt' ? 'profile-button--primary' : ''}`}
+                            >
+                                Português (pt-BR)
+                            </button>
+                        </div>
+                    </SectionCard>
+
+                    <SectionCard
+                        className="profile-card--sync"
+                        meta={<span className="profile-pill">{db ? 'Cloud' : 'Offline'}</span>}
+                        title={t('profile.sectionSync')}
+                        subtitle={db ? t('profile.sectionSyncConnected') : t('profile.sectionSyncOffline')}
+                        icon={<SaveIcon className="w-5 h-5" />}
+                    >
+                        <div className="profile-sync-list">
+                            <div className="profile-sync-row">
+                                <span className="profile-sync-row__label">{t('profile.syncItemTheme')}</span>
+                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                            </div>
+                            <div className="profile-sync-row">
+                                <span className="profile-sync-row__label">{t('profile.syncItemWallpaper')}</span>
+                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                            </div>
+                            <div className="profile-sync-row">
+                                <span className="profile-sync-row__label">{t('profile.syncItemTrainer')}</span>
+                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                            </div>
+                            <div className="profile-sync-row">
+                                <span className="profile-sync-row__label">{t('profile.syncItemStreak')}</span>
+                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                            </div>
+                        </div>
+
+                        <div className="profile-button-row profile-button-row--tight">
+                            <button
+                                type="button"
+                                onClick={onResetSyncPrompt}
+                                className="profile-button"
+                                title="Allow the 'Save your progress' nudge to appear again"
+                            >
+                                <RefreshIcon className="w-3.5 h-3.5" />
+                                {t('profile.resetRemindersBtn')}
+                            </button>
+                        </div>
+                    </SectionCard>
+                </div>
+
+                <div className="profile-layout__column">
+                    <SectionCard
+                        className="profile-card--avatar"
+                        title={t('profile.sectionAvatar')}
+                        subtitle={t('profile.sectionAvatarDesc')}
+                        icon={<StarsIcon className="w-5 h-5" />}
+                    >
+                        <div className="profile-avatar-card">
+                            <div className="profile-avatar-preview">
+                                {greetingPokemonId ? (
+                                    <Sprite
+                                        src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
+                                        alt="Greeting Pokémon"
+                                        className="profile-avatar-preview__sprite"
+                                    />
+                                ) : (
+                                    <span className="profile-avatar-preview__fallback">?</span>
+                                )}
+                            </div>
+                            <div className="profile-avatar-actions">
                                 <button
                                     type="button"
-                                    onClick={onOpenSignUp}
+                                    onClick={onOpenPokemonSelector}
                                     className="profile-button profile-button--primary"
                                 >
-                                    Create account
+                                    {greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={onOpenSignIn}
-                                    className="profile-button"
-                                >
-                                    Sign in
-                                </button>
+                                {greetingPokemonId && (
+                                    <button
+                                        type="button"
+                                        onClick={onClearLocalGreeting}
+                                        className="profile-button"
+                                    >
+                                        {t('profile.removeAvatarBtn')}
+                                    </button>
+                                )}
                             </div>
                         </div>
-                    ) : (
-                        <div className="profile-account-block">
-                            <div className="profile-account-row">
-                                <div className="min-w-0">
-                                    <p className="profile-account-row__label">Email</p>
-                                    <p className="profile-account-row__value" title={userEmail || ''}>
-                                        {userEmail || '—'}
-                                    </p>
+                    </SectionCard>
+
+                    <SectionCard
+                        className="profile-card--account"
+                        meta={<span className="profile-pill">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>}
+                        title={t('profile.sectionAccount')}
+                        subtitle={isAnonymous ? t('profile.sectionAccountGuestDesc') : t('profile.sectionAccountSyncedDesc')}
+                        icon={<AccountIcon className="w-5 h-5" />}
+                    >
+                        {isAnonymous ? (
+                            <div className="profile-account-block">
+                                <p className="profile-support-copy">
+                                    {t('profile.accountSupportCopy')}
+                                </p>
+                                <div className="profile-button-row">
+                                    <button
+                                        type="button"
+                                        onClick={onOpenSignUp}
+                                        className="profile-button profile-button--primary"
+                                    >
+                                        {t('profile.createAccountBtn')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={onOpenSignIn}
+                                        className="profile-button"
+                                    >
+                                        {t('profile.signInBtn')}
+                                    </button>
                                 </div>
-                                <span className="profile-pill profile-pill--accent">Synced</span>
                             </div>
-                            <button
-                                type="button"
-                                onClick={onSignOut}
-                                className="profile-button profile-button--danger profile-button--block"
-                            >
-                                Sign out
-                            </button>
-                        </div>
-                    )}
-                </SectionCard>
-
-                <SectionCard
-                    className="profile-card--sync"
-                    meta={<span className="profile-pill">{db ? 'Cloud' : 'Offline'}</span>}
-                    title="Data & Sync"
-                    subtitle={db ? 'Connected to cloud storage.' : 'Working offline.'}
-                    icon={<SaveIcon className="w-5 h-5" />}
-                >
-                    <div className="profile-sync-list">
-                        <div className="profile-sync-row">
-                            <span className="profile-sync-row__label">Theme preference</span>
-                            <span className="profile-sync-row__value">{syncLabel}</span>
-                        </div>
-                        <div className="profile-sync-row">
-                            <span className="profile-sync-row__label">Home wallpaper</span>
-                            <span className="profile-sync-row__value">{syncLabel}</span>
-                        </div>
-                        <div className="profile-sync-row">
-                            <span className="profile-sync-row__label">Trainer name & avatar</span>
-                            <span className="profile-sync-row__value">{syncLabel}</span>
-                        </div>
-                        <div className="profile-sync-row">
-                            <span className="profile-sync-row__label">Login streak</span>
-                            <span className="profile-sync-row__value">{syncLabel}</span>
-                        </div>
-                    </div>
-
-                    <div className="profile-button-row profile-button-row--tight">
-                        <button
-                            type="button"
-                            onClick={onResetSyncPrompt}
-                            className="profile-button"
-                            title="Allow the 'Save your progress' nudge to appear again"
-                        >
-                            <RefreshIcon className="w-3.5 h-3.5" />
-                            Reset reminders
-                        </button>
-                    </div>
-                </SectionCard>
-
-                <SectionCard
-                    className="profile-card--avatar"
-                    title="Trainer Avatar"
-                    subtitle="Your greeting Pokemon also appears on Home."
-                    icon={<StarsIcon className="w-5 h-5" />}
-                >
-                    <div className="profile-avatar-card">
-                        <div className="profile-avatar-preview">
-                            {greetingPokemonId ? (
-                                <Sprite
-                                    src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
-                                    alt="Greeting Pokémon"
-                                    className="profile-avatar-preview__sprite"
-                                />
-                            ) : (
-                                <span className="profile-avatar-preview__fallback">?</span>
-                            )}
-                        </div>
-                        <div className="profile-avatar-actions">
-                            <button
-                                type="button"
-                                onClick={onOpenPokemonSelector}
-                                className="profile-button profile-button--primary"
-                            >
-                                {greetingPokemonId ? 'Change Pokemon' : 'Pick a Pokemon'}
-                            </button>
-                            {greetingPokemonId && (
+                        ) : (
+                            <div className="profile-account-block">
+                                <div className="profile-account-row">
+                                    <div className="min-w-0">
+                                        <p className="profile-account-row__label">Email</p>
+                                        <p className="profile-account-row__value" title={userEmail || ''}>
+                                            {userEmail || '—'}
+                                        </p>
+                                    </div>
+                                    <span className="profile-pill profile-pill--accent">{t('profile.syncedPill')}</span>
+                                </div>
                                 <button
                                     type="button"
-                                    onClick={onClearLocalGreeting}
-                                    className="profile-button"
+                                    onClick={onSignOut}
+                                    className="profile-button profile-button--danger profile-button--block"
                                 >
-                                    Remove
+                                    {t('profile.signOutBtn')}
                                 </button>
-                            )}
-                        </div>
-                    </div>
-                </SectionCard>
+                            </div>
+                        )}
+                    </SectionCard>
+                </div>
             </div>
         </div>
     );

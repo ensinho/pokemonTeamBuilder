@@ -1,8 +1,10 @@
 import React from 'react';
 
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { useTranslation } from '../../hooks/useTranslation';
 
-export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm' }) {
+export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmText }) {
+    const { t } = useTranslation();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
 
     if (!isOpen) return null;
@@ -37,7 +39,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, conf
                         onClick={onClose}
                         className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-semibold text-fg transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                        Cancel
+                        {t('common.cancel')}
                     </button>
                     <button
                         type="button"
@@ -47,7 +49,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, conf
                         }}
                         className="inline-flex items-center justify-center rounded-lg bg-danger px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                     >
-                        {confirmText}
+                        {confirmText || t('common.confirm')}
                     </button>
                 </div>
             </div>

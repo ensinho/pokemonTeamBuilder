@@ -21,6 +21,7 @@ import {
     ShareIcon,
     SparklesIcon,
 } from '../icons';
+import { useTranslation } from '../../hooks/useTranslation';
 
 const DEFAULT_REPLY_SUBJECT = 'Thanks for your Pokemon Team Builder suggestion';
 const DEFAULT_REPLY_MESSAGE = 'I really appreciate you taking the time to help improve Pokemon Team Builder. Your feedback helps me decide what to polish next.';
@@ -60,10 +61,11 @@ const timestampToDate = (value) => {
     return null;
 };
 
-const formatDate = (value) => {
+const formatDate = (value, language) => {
     const date = timestampToDate(value);
-    if (!date) return 'Unknown date';
-    return new Intl.DateTimeFormat(undefined, {
+    if (!date) return language === 'pt' ? 'Data desconhecida' : 'Unknown date';
+    const locale = language === 'pt' ? 'pt-BR' : 'en-US';
+    return new Intl.DateTimeFormat(locale, {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -94,11 +96,11 @@ const normalizeSuggestion = (snapshotDoc) => {
     };
 };
 
-const getAuthorInfo = (suggestion, profileMap) => {
+const getAuthorInfo = (suggestion, profileMap, language) => {
     const profile = suggestion?.userId ? (profileMap[suggestion.userId] || {}) : {};
     const email = suggestion?.userEmail || profile.email || '';
     const displayName = suggestion?.displayName || profile.displayName || '';
-    const fallbackName = email ? email.split('@')[0] : 'Anonymous trainer';
+    const fallbackName = email ? email.split('@')[0] : (language === 'pt' ? 'Treinador anônimo' : 'Anonymous trainer');
 
     return {
         name: displayName || fallbackName,
@@ -107,26 +109,26 @@ const getAuthorInfo = (suggestion, profileMap) => {
     };
 };
 
-const buildReplyTemplate = ({ suggestion, author, subject, message, background }) => {
+const buildReplyTemplate = ({ suggestion, author, subject, message, background, t }) => {
     const logoUrl = brandLogoUrl();
     const backgroundUrl = makeAssetUrl(background?.url || SHARE_BACKGROUNDS[0]?.url || '');
     const authorName = author.name || 'Trainer';
     const suggestionText = suggestion?.text || '';
     const pageLabel = suggestion?.pageTitle || suggestion?.page || 'Pokemon Team Builder';
-    const replyMessage = message.trim() || DEFAULT_REPLY_MESSAGE;
+    const defaultMsg = t ? t('admin.defaultMessage') : DEFAULT_REPLY_MESSAGE;
+    const replyMessage = message.trim() || defaultMsg;
 
     const plainText = [
-        `Hi ${authorName},`,
+        t ? t('admin.emailGreeting', { name: authorName }) : `Hi ${authorName},`,
         '',
-        'Thank you for sending this suggestion to Pokemon Team Builder:',
+        t ? t('admin.emailThankYou') : 'Thank you for sending this suggestion to Pokemon Team Builder:',
         `"${suggestionText}"`,
         '',
         replyMessage,
         '',
-        `Suggestion context: ${pageLabel}`,
+        `${t ? t('admin.suggestionLabel') : 'Suggestion'} context: ${pageLabel}`,
         '',
-        'Thanks again,',
-        'Enzo',
+        t ? t('admin.emailThanksAgain').replace('\\n', '\n') : 'Thanks again,\nEnzo',
     ].join('\n');
 
     const html = `<!doctype html>
@@ -140,24 +142,24 @@ const buildReplyTemplate = ({ suggestion, author, subject, message, background }
               <td style="background-image:linear-gradient(135deg,rgba(17,24,39,0.38),rgba(17,24,39,0.78)),url('${escapeHtml(backgroundUrl)}');background-size:cover;background-position:center;padding:32px 28px;color:#ffffff;">
                 <img src="${escapeHtml(logoUrl)}" width="76" alt="Pokemon Team Builder" style="display:block;border:0;margin-bottom:18px;" />
                 <div style="font-size:12px;letter-spacing:0.16em;text-transform:uppercase;font-weight:700;opacity:0.86;">Pokemon Team Builder</div>
-                <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2;font-weight:800;">Thanks for the suggestion</h1>
+                <h1 style="margin:8px 0 0;font-size:28px;line-height:1.2;font-weight:800;">${t ? t('admin.emailThankYou') : 'Thanks for the suggestion'}</h1>
               </td>
             </tr>
             <tr>
               <td style="padding:28px;">
-                <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Hi ${escapeHtml(authorName)},</p>
-                <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">Thank you for sending this suggestion:</p>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">${t ? t('admin.emailGreeting', { name: authorName }) : `Hi ${authorName},`}</p>
+                <p style="margin:0 0 16px;font-size:16px;line-height:1.6;">${t ? t('admin.emailThankYou') : 'Thank you for sending this suggestion:'}</p>
                 <div style="margin:0 0 20px;padding:16px 18px;border-left:4px solid #7d65e1;background:#f3f4f6;border-radius:10px;font-size:15px;line-height:1.6;color:#111827;">
                   ${escapeHtml(suggestionText)}
                 </div>
                 <p style="margin:0 0 18px;font-size:16px;line-height:1.6;white-space:pre-line;">${escapeHtml(replyMessage)}</p>
-                <p style="margin:0 0 24px;font-size:13px;line-height:1.5;color:#6b7280;">Suggestion context: ${escapeHtml(pageLabel)}</p>
-                <p style="margin:0;font-size:16px;line-height:1.6;">Thanks again,<br />Enzo</p>
+                <p style="margin:0 0 24px;font-size:13px;line-height:1.5;color:#6b7280;">${t ? t('admin.suggestionLabel') : 'Suggestion'} context: ${escapeHtml(pageLabel)}</p>
+                <p style="margin:0;font-size:16px;line-height:1.6;">${t ? t('admin.emailThanksAgain').replace(/\n/g, '<br />').replace('\\n', '<br />') : 'Thanks again,<br />Enzo'}</p>
               </td>
             </tr>
             <tr>
               <td style="padding:18px 28px;background:#f9fafb;color:#6b7280;font-size:12px;line-height:1.5;">
-                You are receiving this because you sent feedback through Pokemon Team Builder.
+                ${t ? t('admin.emailFooter') : 'You are receiving this because you sent feedback through Pokemon Team Builder.'}
               </td>
             </tr>
           </table>
@@ -178,6 +180,7 @@ const pickRandomBackgroundId = () => {
 const getBackgroundById = (id) => SHARE_BACKGROUNDS.find(background => background.id === id) || SHARE_BACKGROUNDS[0];
 
 export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
+    const { t, language } = useTranslation();
     const [suggestions, setSuggestions] = useState([]);
     const [profileMap, setProfileMap] = useState({});
     const [selectedId, setSelectedId] = useState(null);
@@ -185,8 +188,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [subject, setSubject] = useState(DEFAULT_REPLY_SUBJECT);
-    const [customMessage, setCustomMessage] = useState(DEFAULT_REPLY_MESSAGE);
+    const [subject, setSubject] = useState('');
+    const [customMessage, setCustomMessage] = useState('');
     const [emailBackgroundId, setEmailBackgroundId] = useState(() => pickRandomBackgroundId());
     const [isSendingEmail, setIsSendingEmail] = useState(false);
     const [isMarkingResponded, setIsMarkingResponded] = useState(false);
@@ -210,13 +213,13 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             },
             (err) => {
                 console.error('Error loading suggestions:', err);
-                setError('Could not load suggestions. Check Firestore permissions for the admin account.');
+                setError(t('admin.loadingError'));
                 setIsLoading(false);
             }
         );
 
         return () => unsubscribe();
-    }, [db, isAdmin]);
+    }, [db, isAdmin, t]);
 
     useEffect(() => {
         if (!db || suggestions.length === 0) return undefined;
@@ -250,7 +253,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             if (statusFilter === 'answered' && !isAnswered) return false;
             if (!queryText) return true;
 
-            const author = getAuthorInfo(suggestion, profileMap);
+            const author = getAuthorInfo(suggestion, profileMap, language);
             return [
                 suggestion.text,
                 suggestion.pageTitle,
@@ -260,7 +263,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                 author.userId,
             ].some(value => String(value || '').toLowerCase().includes(queryText));
         });
-    }, [profileMap, searchTerm, statusFilter, suggestions]);
+    }, [profileMap, searchTerm, statusFilter, suggestions, language]);
 
     useEffect(() => {
         const firstId = filteredSuggestions[0]?.id || null;
@@ -271,10 +274,10 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
     useEffect(() => {
         if (!selectedId) return;
-        setSubject(DEFAULT_REPLY_SUBJECT);
-        setCustomMessage(DEFAULT_REPLY_MESSAGE);
+        setSubject(t('admin.defaultSubject'));
+        setCustomMessage(t('admin.defaultMessage'));
         setEmailBackgroundId(pickRandomBackgroundId());
-    }, [selectedId]);
+    }, [selectedId, language, t]);
 
     const selectedSuggestion = useMemo(
         () => suggestions.find(suggestion => suggestion.id === selectedId) || null,
@@ -282,8 +285,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
     );
 
     const selectedAuthor = useMemo(
-        () => getAuthorInfo(selectedSuggestion, profileMap),
-        [profileMap, selectedSuggestion]
+        () => getAuthorInfo(selectedSuggestion, profileMap, language),
+        [profileMap, selectedSuggestion, language]
     );
 
     const selectedBackground = useMemo(
@@ -299,8 +302,9 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             subject,
             message: customMessage,
             background: selectedBackground,
+            t,
         });
-    }, [customMessage, selectedAuthor, selectedBackground, selectedSuggestion, subject]);
+    }, [customMessage, selectedAuthor, selectedBackground, selectedSuggestion, subject, t]);
 
     const plainTextEmail = emailTemplate?.plainText || '';
     const htmlEmail = emailTemplate?.html || '';
@@ -308,14 +312,14 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
     const stats = useMemo(() => {
         const answered = suggestions.filter(suggestion => suggestion.respondedAt).length;
-        const withEmail = suggestions.filter(suggestion => getAuthorInfo(suggestion, profileMap).email).length;
+        const withEmail = suggestions.filter(suggestion => getAuthorInfo(suggestion, profileMap, language).email).length;
         return {
             total: suggestions.length,
             open: suggestions.length - answered,
             answered,
             withEmail,
         };
-    }, [profileMap, suggestions]);
+    }, [profileMap, suggestions, language]);
 
     const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
     const secondaryButtonClassName = 'inline-flex items-center gap-2 rounded-lg bg-surface-raised px-4 py-2 text-sm font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
@@ -327,39 +331,41 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             await navigator.clipboard.writeText(value);
             showToast?.(successMessage, 'success');
         } catch (_) {
-            showToast?.('Could not copy to clipboard.', 'error');
+            showToast?.(t('admin.copiedError'), 'error');
         }
-    }, [showToast]);
+    }, [showToast, t]);
 
     const markSuggestionResponded = useCallback(async (channel = 'manual') => {
         if (!db || !selectedSuggestion || isMarkingResponded) return;
         setIsMarkingResponded(true);
         try {
+            const defaultSub = t('admin.defaultSubject');
             await updateDoc(doc(db, `artifacts/${appId}/suggestions`, selectedSuggestion.id), {
                 respondedAt: serverTimestamp(),
-                responseSubject: subject.trim() || DEFAULT_REPLY_SUBJECT,
+                responseSubject: subject.trim() || defaultSub,
                 responseMessage: customMessage.trim(),
                 responseRecipientEmail: selectedAuthor.email || null,
                 responseBackgroundId: selectedBackground?.id || null,
                 responseChannel: channel,
             });
-            showToast?.('Suggestion marked as answered.', 'success');
+            showToast?.(t('admin.markAnsweredSuccess'), 'success');
         } catch (err) {
             console.error('Failed to mark suggestion as answered:', err);
-            showToast?.('Could not update suggestion status.', 'error');
+            showToast?.(t('admin.markAnsweredError'), 'error');
         } finally {
             setIsMarkingResponded(false);
         }
-    }, [customMessage, db, isMarkingResponded, selectedAuthor.email, selectedBackground?.id, selectedSuggestion, showToast, subject]);
+    }, [customMessage, db, isMarkingResponded, selectedAuthor.email, selectedBackground?.id, selectedSuggestion, showToast, subject, t]);
 
     const handleOpenMailDraft = useCallback(() => {
         if (!selectedSuggestion || !selectedAuthor.email) {
-            showToast?.('No email address captured for this suggestion.', 'warning');
+            showToast?.(t('admin.noEmailToast'), 'warning');
             return;
         }
-        const mailtoUrl = `mailto:${encodeURIComponent(selectedAuthor.email)}?subject=${encodeURIComponent(subject.trim() || DEFAULT_REPLY_SUBJECT)}&body=${encodeURIComponent(plainTextEmail)}`;
+        const defaultSub = t('admin.defaultSubject');
+        const mailtoUrl = `mailto:${encodeURIComponent(selectedAuthor.email)}?subject=${encodeURIComponent(subject.trim() || defaultSub)}&body=${encodeURIComponent(plainTextEmail)}`;
         window.location.href = mailtoUrl;
-    }, [plainTextEmail, selectedAuthor.email, selectedSuggestion, showToast, subject]);
+    }, [plainTextEmail, selectedAuthor.email, selectedSuggestion, showToast, subject, t]);
 
     const handleSendEmail = useCallback(async () => {
         if (!ADMIN_EMAIL_ENDPOINT) {
@@ -367,13 +373,14 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             return;
         }
         if (!selectedSuggestion || !selectedAuthor.email || !emailTemplate || isSendingEmail) {
-            showToast?.('Pick a suggestion with an email before sending.', 'warning');
+            showToast?.(t('admin.pickSuggestionToast'), 'warning');
             return;
         }
 
         setIsSendingEmail(true);
         try {
             const token = await auth?.currentUser?.getIdToken?.();
+            const defaultSub = t('admin.defaultSubject');
             const response = await fetch(ADMIN_EMAIL_ENDPOINT, {
                 method: 'POST',
                 headers: {
@@ -383,7 +390,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                 body: JSON.stringify({
                     appId,
                     to: selectedAuthor.email,
-                    subject: subject.trim() || DEFAULT_REPLY_SUBJECT,
+                    subject: subject.trim() || defaultSub,
                     text: emailTemplate.plainText,
                     html: emailTemplate.html,
                     suggestionId: selectedSuggestion.id,
@@ -401,19 +408,19 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
             if (!result.suggestionUpdated) {
                 await markSuggestionResponded('email-endpoint');
             }
-            showToast?.('Email sent.', 'success');
+            showToast?.(t('admin.emailSentSuccess'), 'success');
         } catch (err) {
             console.error('Failed to send email:', err);
-            showToast?.(err.message || 'Could not send email from the endpoint.', 'error');
+            showToast?.(err.message || t('admin.emailSentError'), 'error');
         } finally {
             setIsSendingEmail(false);
         }
-    }, [auth, customMessage, emailTemplate, handleOpenMailDraft, isSendingEmail, markSuggestionResponded, selectedAuthor.email, selectedBackground?.id, selectedSuggestion, showToast, subject]);
+    }, [auth, customMessage, emailTemplate, handleOpenMailDraft, isSendingEmail, markSuggestionResponded, selectedAuthor.email, selectedBackground?.id, selectedSuggestion, showToast, subject, t]);
 
     if (!isAdmin) {
         return (
             <div className="rounded-xl border border-border bg-surface p-6 text-center">
-                <p className="font-bold text-fg">Admin access unavailable.</p>
+                <p className="font-bold text-fg">{t('admin.accessUnavailable')}</p>
             </div>
         );
     }
@@ -430,17 +437,17 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                             <ChartColumnIcon className="w-7 h-7" />
                         </div>
                         <div className="min-w-0">
-                            <p className="text-[11px] uppercase tracking-[0.18em] opacity-80 font-semibold">Owner Panel</p>
-                            <h2 className="text-2xl md:text-3xl font-extrabold leading-tight">Suggestion Inbox</h2>
-                            <p className="text-xs md:text-sm opacity-85 mt-1">Live feedback, user identity, reply draft, and response tracking.</p>
+                            <p className="text-[11px] uppercase tracking-[0.18em] opacity-80 font-semibold">{t('admin.ownerPanel')}</p>
+                            <h2 className="text-2xl md:text-3xl font-extrabold leading-tight">{t('admin.suggestionInbox')}</h2>
+                            <p className="text-xs md:text-sm opacity-85 mt-1">{t('admin.subtitle')}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 min-w-[min(100%,32rem)]">
                         {[
-                            ['Total', stats.total],
-                            ['Open', stats.open],
-                            ['Answered', stats.answered],
-                            ['Email', stats.withEmail],
+                            [t('admin.total'), stats.total],
+                            [t('admin.open'), stats.open],
+                            [t('admin.answered'), stats.answered],
+                            [t('admin.email'), stats.withEmail],
                         ].map(([label, value]) => (
                             <div key={label} className="rounded-lg bg-black/20 px-3 py-2 text-center">
                                 <p className="text-[10px] uppercase tracking-wider opacity-75 font-semibold">{label}</p>
@@ -455,23 +462,23 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                 <section className="overflow-hidden rounded-xl border border-border bg-surface">
                     <div className="border-b border-border p-4">
                         <div className="flex items-center justify-between gap-3 mb-3">
-                            <h3 className="font-bold text-fg">Suggestions</h3>
+                            <h3 className="font-bold text-fg">{t('admin.suggestions')}</h3>
                             <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-muted">
                                 <RefreshIcon className="w-3.5 h-3.5" />
-                                Live
+                                {t('admin.live')}
                             </span>
                         </div>
                         <input
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
-                            placeholder="Search feedback, user, page..."
+                            placeholder={t('admin.searchPlaceholder')}
                             className={controlClassName}
                         />
                         <div className="grid grid-cols-3 gap-2 mt-3">
                             {[
-                                ['open', 'Open'],
-                                ['answered', 'Answered'],
-                                ['all', 'All'],
+                                ['open', t('admin.open')],
+                                ['answered', t('admin.answered')],
+                                ['all', t('common.all')],
                             ].map(([value, label]) => {
                                 const active = statusFilter === value;
                                 return (
@@ -491,7 +498,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                     <div className="max-h-[42rem] overflow-y-auto custom-scrollbar p-3 space-y-2">
                         {isLoading && (
                             <div className="rounded-lg bg-surface-raised p-4 text-sm text-muted">
-                                Loading suggestions...
+                                {t('admin.loading')}
                             </div>
                         )}
                         {error && (
@@ -501,11 +508,11 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                         )}
                         {!isLoading && !error && filteredSuggestions.length === 0 && (
                             <div className="rounded-lg bg-surface-raised p-5 text-center text-sm text-muted">
-                                No suggestions found.
+                                {t('admin.noSuggestions')}
                             </div>
                         )}
                         {filteredSuggestions.map((suggestion) => {
-                            const author = getAuthorInfo(suggestion, profileMap);
+                            const author = getAuthorInfo(suggestion, profileMap, language);
                             const active = selectedId === suggestion.id;
                             const answered = Boolean(suggestion.respondedAt);
                             return (
@@ -518,21 +525,21 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="min-w-0">
                                             <p className="truncate text-sm font-bold text-fg">{author.name}</p>
-                                            <p className="truncate text-[11px] text-muted">{author.email || 'No email captured'}</p>
+                                            <p className="truncate text-[11px] text-muted">{author.email || t('admin.noEmailCaptured')}</p>
                                         </div>
                                         <span
                                             className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold"
                                             style={{ backgroundColor: answered ? colors.success + '22' : colors.warning + '22', color: answered ? colors.success : colors.warning }}
                                         >
-                                            {answered ? 'Answered' : 'Open'}
+                                            {answered ? t('admin.answered') : t('admin.open')}
                                         </span>
                                     </div>
                                     <p className="mt-2 line-clamp-2 text-xs text-fg">
-                                        {suggestion.text || 'Empty suggestion'}
+                                        {suggestion.text || t('admin.emptySuggestion')}
                                     </p>
                                     <div className="mt-2 flex items-center justify-between gap-2 text-[10px] text-muted">
                                         <span className="truncate">{suggestion.pageTitle || suggestion.page}</span>
-                                        <span className="shrink-0">{formatDate(suggestion.createdAt)}</span>
+                                        <span className="shrink-0">{formatDate(suggestion.createdAt, language)}</span>
                                     </div>
                                 </button>
                             );
@@ -552,7 +559,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             </span>
                                             <div className="min-w-0">
                                                 <h3 className="truncate text-xl font-extrabold text-fg">{selectedAuthor.name}</h3>
-                                                <p className="truncate text-xs text-muted">{selectedAuthor.email || 'No email available'}</p>
+                                                <p className="truncate text-xs text-muted">{selectedAuthor.email || t('admin.noEmailAvailable')}</p>
                                             </div>
                                         </div>
                                         {selectedAuthor.userId && (
@@ -561,24 +568,24 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                     </div>
                                     <div className="text-left text-xs text-muted md:text-right">
                                         <p className="font-semibold text-fg">{selectedSuggestion.pageTitle || selectedSuggestion.page}</p>
-                                        <p>{formatDate(selectedSuggestion.createdAt)}</p>
-                                        {selectedSuggestion.respondedAt && <p>Answered {formatDate(selectedSuggestion.respondedAt)}</p>}
+                                        <p>{formatDate(selectedSuggestion.createdAt, language)}</p>
+                                        {selectedSuggestion.respondedAt && <p>{t('admin.answeredAt', { date: formatDate(selectedSuggestion.respondedAt, language) })}</p>}
                                     </div>
                                 </div>
 
                                 <div className="mb-5 rounded-xl bg-surface-raised p-4">
                                     <div className="mb-2 flex items-center gap-2 text-primary">
                                         <InfoIcon />
-                                        <p className="text-xs uppercase tracking-wider font-bold">Suggestion</p>
+                                        <p className="text-xs uppercase tracking-wider font-bold">{t('admin.suggestionLabel')}</p>
                                     </div>
                                     <p className="whitespace-pre-wrap text-sm leading-relaxed text-fg md:text-base">
-                                        {selectedSuggestion.text || 'Empty suggestion'}
+                                        {selectedSuggestion.text || t('admin.emptySuggestion')}
                                     </p>
                                 </div>
 
                                 <div className="space-y-3">
                                     <label className="block">
-                                        <span className="mb-1 block text-xs font-bold text-muted">Subject</span>
+                                        <span className="mb-1 block text-xs font-bold text-muted">{t('admin.subjectLabel')}</span>
                                         <input
                                             value={subject}
                                             onChange={(event) => setSubject(event.target.value.slice(0, 120))}
@@ -586,7 +593,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                         />
                                     </label>
                                     <label className="block">
-                                        <span className="mb-1 block text-xs font-bold text-muted">Message</span>
+                                        <span className="mb-1 block text-xs font-bold text-muted">{t('admin.messageLabel')}</span>
                                         <textarea
                                             value={customMessage}
                                             onChange={(event) => setCustomMessage(event.target.value.slice(0, 1500))}
@@ -602,22 +609,22 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             <ShareIcon />
-                                            {ADMIN_EMAIL_ENDPOINT ? (isSendingEmail ? 'Sending...' : 'Send Email') : 'Open Draft'}
+                                            {ADMIN_EMAIL_ENDPOINT ? (isSendingEmail ? t('admin.sending') : t('admin.sendEmail')) : t('admin.openDraft')}
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => copyToClipboard(htmlEmail, 'HTML email copied.')}
+                                            onClick={() => copyToClipboard(htmlEmail, t('admin.copyHtmlSuccess'))}
                                             className={secondaryButtonClassName}
                                         >
                                             <SparklesIcon />
-                                            Copy HTML
+                                            {t('admin.copyHtml')}
                                         </button>
                                         <button
                                             type="button"
-                                            onClick={() => copyToClipboard(plainTextEmail, 'Plain email copied.')}
+                                            onClick={() => copyToClipboard(plainTextEmail, t('admin.copyTextSuccess'))}
                                             className="rounded-lg bg-surface-raised px-4 py-2 text-sm font-bold text-fg transition-all hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
-                                            Copy Text
+                                            {t('admin.copyText')}
                                         </button>
                                         <button
                                             type="button"
@@ -626,7 +633,7 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                             className="inline-flex items-center gap-2 rounded-lg bg-success px-4 py-2 text-sm font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                         >
                                             <SaveIcon />
-                                            {isMarkingResponded ? 'Saving...' : 'Mark Answered'}
+                                            {isMarkingResponded ? t('admin.saving') : t('admin.markAnswered')}
                                         </button>
                                     </div>
                                 </div>
@@ -634,14 +641,14 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
 
                             <aside className="p-5 md:p-6">
                                 <div className="flex items-center justify-between gap-3 mb-3">
-                                    <h4 className="font-bold text-fg">Email Preview</h4>
+                                    <h4 className="font-bold text-fg">{t('admin.emailPreview')}</h4>
                                     <button
                                         type="button"
                                         onClick={() => setEmailBackgroundId(pickRandomBackgroundId())}
                                         className={tertiaryButtonClassName}
                                     >
                                         <RefreshIcon className="w-3.5 h-3.5" />
-                                        Shuffle
+                                        {t('admin.shuffle')}
                                     </button>
                                 </div>
                                 <div className="rounded-xl overflow-hidden border" style={{ borderColor: colors.border, backgroundColor: '#fff' }}>
@@ -655,27 +662,34 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                     >
                                         <img src={brandLogoUrl()} alt="Pokemon Team Builder" className="w-16 h-auto mb-4" />
                                         <p className="text-[10px] uppercase tracking-[0.18em] font-bold opacity-80">Pokemon Team Builder</p>
-                                        <p className="text-2xl font-extrabold leading-tight">Thanks for the suggestion</p>
+                                        <p className="text-2xl font-extrabold leading-tight">{t('admin.emailThankYou')}</p>
                                     </div>
                                     <div className="p-5 space-y-3 text-sm leading-relaxed" style={{ color: '#111827' }}>
-                                        <p>Hi {selectedAuthor.name},</p>
-                                        <p>Thank you for sending this suggestion:</p>
+                                        <p>{t('admin.emailGreeting', { name: selectedAuthor.name })}</p>
+                                        <p>{t('admin.emailThankYou')}</p>
                                         <div className="rounded-lg p-3 border-l-4" style={{ backgroundColor: '#F3F4F6', borderColor: colors.primary }}>
-                                            {selectedSuggestion.text || 'Empty suggestion'}
+                                            {selectedSuggestion.text || t('admin.emptySuggestion')}
                                         </div>
-                                        <p className="whitespace-pre-wrap">{customMessage.trim() || DEFAULT_REPLY_MESSAGE}</p>
-                                        <p className="text-xs" style={{ color: '#6B7280' }}>Suggestion context: {selectedSuggestion.pageTitle || selectedSuggestion.page}</p>
-                                        <p>Thanks again,<br />Enzo</p>
+                                        <p className="whitespace-pre-wrap">{customMessage.trim() || t('admin.defaultMessage')}</p>
+                                        <p className="text-xs" style={{ color: '#6B7280' }}>{t('admin.suggestionLabel')} context: {selectedSuggestion.pageTitle || selectedSuggestion.page}</p>
+                                        <p>
+                                            {t('admin.emailThanksAgain').split('\n').map((line, idx) => (
+                                                <React.Fragment key={idx}>
+                                                    {line}
+                                                    {idx < t('admin.emailThanksAgain').split('\n').length - 1 ? <br /> : null}
+                                                </React.Fragment>
+                                            ))}
+                                        </p>
                                     </div>
                                 </div>
                                 {!hasRecipientEmail && (
                                     <p className="mt-3 text-xs text-warning">
-                                        This suggestion has no captured email, so only copy actions are available.
+                                        {t('admin.noCapturedEmailWarning')}
                                     </p>
                                 )}
                                 {!ADMIN_EMAIL_ENDPOINT && hasRecipientEmail && (
                                     <p className="mt-3 text-xs text-muted">
-                                        Direct sending needs an email backend endpoint. Draft mode opens your email app with the reply text.
+                                        {t('admin.directSendingNote')}
                                     </p>
                                 )}
                             </aside>
@@ -686,8 +700,8 @@ export function AdminDashboardView({ db, auth, isAdmin, colors, showToast }) {
                                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-soft text-primary">
                                     <ChartColumnIcon className="w-6 h-6" />
                                 </div>
-                                <p className="font-bold text-fg">No suggestion selected</p>
-                                <p className="mt-1 text-sm text-muted">Choose a suggestion from the inbox.</p>
+                                <p className="font-bold text-fg">{t('admin.noSuggestionSelected')}</p>
+                                <p className="mt-1 text-sm text-muted">{t('admin.chooseSuggestion')}</p>
                             </div>
                         </div>
                     )}

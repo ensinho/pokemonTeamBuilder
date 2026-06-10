@@ -14,6 +14,7 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { appId, ADMIN_EMAILS } from '../constants/firebase';
 import { useThemeStore } from './useThemeStore';
 import { useToastStore } from './useToastStore';
+import { useLanguageStore } from './useLanguageStore';
 
 const getInitialStreak = () => {
     if (typeof window === 'undefined') return { count: 0, longest: 0, lastVisit: null };
@@ -119,7 +120,7 @@ export const useAuthStore = create((set, get) => {
                         isAnonymous: !!user.isAnonymous,
                         userEmail: user.email || null,
                         isAdmin: isAdminUser,
-                        isAuthReady: true,
+                        // DO NOT set isAuthReady: true yet. We will set it in the finally block after firestore hydration.
                     });
 
                     // Start sync nudge nudge if anonymous
@@ -139,6 +140,11 @@ export const useAuthStore = create((set, get) => {
                             // 1. Theme sync
                             if (data.theme) {
                                 useThemeStore.getState().changeTheme(data.theme);
+                            }
+
+                            // 1.1 Language sync
+                            if (data.language) {
+                                useLanguageStore.getState().setLanguage(data.language);
                             }
                             
                             // 2. Display Name
@@ -200,7 +206,10 @@ export const useAuthStore = create((set, get) => {
                         profileHydratedFromFirestore = true;
                         
                         // Push preferences state to Firestore to ensure sync
-                        get().syncPreferencesToFirestore();
+                        await get().syncPreferencesToFirestore();
+                        
+                        // Set isAuthReady: true now that hydration is complete!
+                        set({ isAuthReady: true });
                     }
                 } else {
                     // Sign in anonymously if no user
@@ -251,9 +260,11 @@ export const useAuthStore = create((set, get) => {
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
             const theme = useThemeStore.getState().theme;
+            const language = useLanguageStore.getState().language;
 
             const updates = {
                 theme,
+                language,
                 displayName,
                 greetingPokemonId,
                 greetingPokemon: greetingPokemonId ? { id: greetingPokemonId, isShiny: greetingPokemonIsShiny } : null,
@@ -267,6 +278,7 @@ export const useAuthStore = create((set, get) => {
 
             await get().savePreferences(updates);
         },
+
 
         setDisplayName: (name) => {
             set({ displayName: name });

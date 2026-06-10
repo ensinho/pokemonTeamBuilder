@@ -3,6 +3,7 @@ import '../../styles/team-builder-view.css';
 import '../../styles/all-teams-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { useTranslation } from '../../hooks/useTranslation';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
 
 const timestampToDate = (value) => {
@@ -17,10 +18,10 @@ const timestampToDate = (value) => {
     return null;
 };
 
-const formatTeamDate = (value) => {
+const formatTeamDate = (value, language) => {
     const date = timestampToDate(value);
-    if (!date) return 'Unknown date';
-    return new Intl.DateTimeFormat(undefined, {
+    if (!date) return language === 'pt' ? 'Data desconhecida' : 'Unknown date';
+    return new Intl.DateTimeFormat(language === 'pt' ? 'pt-BR' : 'en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
@@ -31,6 +32,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
     const [isOpen, setIsOpen] = React.useState(false);
     const anchorRef = React.useRef(null);
     const popoverRef = React.useRef(null);
+    const { t, language } = useTranslation();
 
     React.useEffect(() => {
         if (!isOpen) return undefined;
@@ -64,15 +66,15 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
                 onClick={() => onEdit(team)}
                 className="btn btn-primary"
             >
-                Edit
+                {t('common.edit')}
             </button>
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className={`btn btn-outline !p-2 ${isOpen ? 'is-active' : ''}`}
-                aria-label="More actions"
+                aria-label={language === 'pt' ? 'Mais ações' : 'More actions'}
                 aria-expanded={isOpen}
-                title="Actions"
+                title={language === 'pt' ? 'Ações' : 'Actions'}
             >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.3}>
                     <circle cx="12" cy="12" r="1.5" />
@@ -95,7 +97,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
                         className="all-teams-view__menu-item"
                     >
                         <StarIcon className="h-4 w-4" isFavorite={team.isFavorite} color="currentColor" />
-                        <span>{team.isFavorite ? 'Unpin Team' : 'Pin Team'}</span>
+                        <span>{team.isFavorite ? (language === 'pt' ? 'Desafixar Time' : 'Unpin Team') : (language === 'pt' ? 'Fixar Time' : 'Pin Team')}</span>
                     </button>
                     <button
                         type="button"
@@ -106,7 +108,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
                         className="all-teams-view__menu-item"
                     >
                         <ShowdownIcon className="h-4 w-4" />
-                        <span>Export Showdown</span>
+                        <span>{language === 'pt' ? 'Exportar Showdown' : 'Export Showdown'}</span>
                     </button>
                     <button
                         type="button"
@@ -117,7 +119,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
                         className="all-teams-view__menu-item"
                     >
                         <ShareIcon className="h-4 w-4" />
-                        <span>Share Link</span>
+                        <span>{language === 'pt' ? 'Compartilhar Link' : 'Share Link'}</span>
                     </button>
                     <div className="all-teams-view__menu-divider" />
                     <button
@@ -129,7 +131,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
                         className="all-teams-view__menu-item all-teams-view__menu-item--danger"
                     >
                         <TrashIcon className="h-4 w-4" />
-                        <span>Delete Team</span>
+                        <span>{language === 'pt' ? 'Deletar Time' : 'Delete Team'}</span>
                     </button>
                 </div>
             )}
@@ -139,6 +141,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
 
 export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, activeTeamId, setActiveTeamId }) {
     const [layoutMode, setLayoutMode] = React.useState('grid'); // 'grid' | 'list'
+    const { t, language } = useTranslation();
 
     const filteredTeams = React.useMemo(() => {
         const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -158,29 +161,29 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
             <section className="team-builder-panel all-teams-view__panel p-5 md:p-6">
                 <div className="all-teams-view__header">
                     <div>
-                        <p className="team-builder-panel__eyebrow">Saved work</p>
+                        <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Trabalho salvo' : 'Saved work'}</p>
                         <div className="all-teams-view__heading-row">
-                            <h2 className="team-builder-panel__title all-teams-view__title">Saved teams</h2>
+                            <h2 className="team-builder-panel__title all-teams-view__title">{t('savedTeams.title')}</h2>
                             <span className="team-builder-panel__meta">{filteredTeams.length}</span>
                         </div>
                         <p className="team-builder-panel__copy all-teams-view__copy">
-                            Reopen, export, share, or prune the lineups you have already refined.
+                            {t('savedTeams.subtitle')}
                         </p>
                     </div>
 
-                    <div className="all-teams-view__summary" aria-label="Saved team summary">
-                        <span className="team-builder-picker-summary">{teams.length} total</span>
-                        <span className="team-builder-picker-summary">{favoriteCount} favorites</span>
+                    <div className="all-teams-view__summary" aria-label={language === 'pt' ? 'Resumo de times salvos' : 'Saved team summary'}>
+                        <span className="team-builder-picker-summary">{language === 'pt' ? `${teams.length} total` : `${teams.length} total`}</span>
+                        <span className="team-builder-picker-summary">{language === 'pt' ? `${favoriteCount} favoritos` : `${favoriteCount} favorites`}</span>
                     </div>
                 </div>
 
                 <div className="all-teams-view__toolbar">
                     <label className="team-builder-control all-teams-view__search-control" htmlFor="saved-teams-search">
-                        <span className="team-builder-control__label">Search lineups</span>
+                        <span className="team-builder-control__label">{language === 'pt' ? 'Pesquisar times' : 'Search lineups'}</span>
                         <input
                             id="saved-teams-search"
                             type="text"
-                            placeholder="Search teams by name..."
+                            placeholder={t('savedTeams.searchPlaceholder')}
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
                             className="team-builder-field"
@@ -194,7 +197,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                 onClick={() => setSearchTerm('')}
                                 className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
                             >
-                                Clear search
+                                {language === 'pt' ? 'Limpar busca' : 'Clear search'}
                             </button>
                         ) : null}
 
@@ -209,7 +212,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                 }`}
                                 aria-pressed={layoutMode === 'grid'}
                             >
-                                Grid
+                                {language === 'pt' ? 'Grade' : 'Grid'}
                             </button>
                             <button
                                 type="button"
@@ -221,11 +224,11 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                 }`}
                                 aria-pressed={layoutMode === 'list'}
                             >
-                                List
+                                {language === 'pt' ? 'Lista' : 'List'}
                             </button>
                         </div>
 
-                        <span className="team-builder-picker-summary">{filteredTeams.length} visible</span>
+                        <span className="team-builder-picker-summary">{language === 'pt' ? `${filteredTeams.length} visíveis` : `${filteredTeams.length} visible`}</span>
                     </div>
                 </div>
 
@@ -238,13 +241,13 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                         <div className="min-w-0 flex-1">
                                             <div className="all-teams-view__card-heading">
                                                 <p className="team-builder-recent-card__title all-teams-view__card-title">{team.name}</p>
-                                                {team.isFavorite ? <span className="all-teams-view__status">Pinned</span> : null}
+                                                {team.isFavorite ? <span className="all-teams-view__status">{language === 'pt' ? 'Fixado' : 'Pinned'}</span> : null}
                                             </div>
 
                                             <div className="all-teams-view__meta-list">
-                                                <span className="all-teams-view__meta-pill">Updated {formatTeamDate(team.updatedAt || team.createdAt)}</span>
+                                                <span className="all-teams-view__meta-pill">{t('savedTeams.lastUpdated', { date: formatTeamDate(team.updatedAt || team.createdAt, language) })}</span>
                                                 <span className="all-teams-view__meta-pill">
-                                                    {team.pokemons.length} {team.pokemons.length === 1 ? 'member' : 'members'}
+                                                    {language === 'pt' ? `${team.pokemons.length} ${team.pokemons.length === 1 ? 'membro' : 'membros'}` : `${team.pokemons.length} ${team.pokemons.length === 1 ? 'member' : 'members'}`}
                                                 </span>
                                             </div>
                                         </div>
@@ -252,8 +255,8 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                         <button
                                             type="button"
                                             onClick={() => onToggleFavorite(team)}
-                                            title={team.isFavorite ? 'Unfavorite team' : 'Favorite team'}
-                                            aria-label={team.isFavorite ? `Unfavorite ${team.name}` : `Favorite ${team.name}`}
+                                            title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
+                                            aria-label={team.isFavorite ? (language === 'pt' ? `Desfavoritar ${team.name}` : `Unfavorite ${team.name}`) : (language === 'pt' ? `Favoritar ${team.name}` : `Favorite ${team.name}`)}
                                             className={`${iconButtonClassName} ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
                                         >
                                             <StarIcon className="h-4 w-4" isFavorite={team.isFavorite} color="currentColor" />
@@ -261,7 +264,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                     </div>
 
                                     <div className="all-teams-view__preview">
-                                        <div className="team-builder-sprite-stack all-teams-view__sprite-stack" aria-label={`${team.name} team preview`}>
+                                        <div className="team-builder-sprite-stack all-teams-view__sprite-stack" aria-label={language === 'pt' ? `Pré-visualização do time ${team.name}` : `${team.name} team preview`}>
                                             {team.pokemons.length > 0 ? team.pokemons.map((pokemon) => (
                                                 <img
                                                     key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
@@ -271,7 +274,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                     className="team-builder-sprite-stack__item all-teams-view__sprite-item"
                                                 />
                                             )) : (
-                                                <span className="all-teams-view__empty-stack">No Pokémon saved in this lineup yet.</span>
+                                                <span className="all-teams-view__empty-stack">{language === 'pt' ? 'Nenhum Pokémon salvo neste time ainda.' : 'No Pokémon saved in this lineup yet.'}</span>
                                             )}
                                         </div>
                                     </div>
@@ -286,7 +289,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                          onClick={() => onEdit(team)}
                                                          className="team-builder-button team-builder-button--primary team-builder-button--grow team-builder-button--small"
                                                      >
-                                                         Edit
+                                                         {t('common.edit')}
                                                      </button>
                                                      <button
                                                          type="button"
@@ -294,7 +297,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                          className={`team-builder-button team-builder-button--small ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'}`}
                                                          style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
                                                      >
-                                                         {isActive ? '★ Active' : 'Set Active'}
+                                                         {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
                                                      </button>
                                                  </>
                                              );
@@ -302,8 +305,8 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                         <button
                                             type="button"
                                             onClick={() => onExport(team)}
-                                            aria-label={`Export ${team.name} to Pokémon Showdown`}
-                                            title="Export to Showdown"
+                                            aria-label={language === 'pt' ? `Exportar ${team.name} para o Pokémon Showdown` : `Export ${team.name} to Pokémon Showdown`}
+                                            title={language === 'pt' ? 'Exportar para o Showdown' : 'Export to Showdown'}
                                             className={iconButtonClassName}
                                         >
                                             <ShowdownIcon />
@@ -311,8 +314,8 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                         <button
                                             type="button"
                                             onClick={() => onShare(team)}
-                                            aria-label={`Share ${team.name}`}
-                                            title="Share team"
+                                            aria-label={language === 'pt' ? `Compartilhar ${team.name}` : `Share ${team.name}`}
+                                            title={language === 'pt' ? 'Compartilhar time' : 'Share team'}
                                             className={iconButtonClassName}
                                         >
                                             <ShareIcon />
@@ -320,13 +323,13 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                         <button
                                             type="button"
                                             onClick={() => requestDelete(team.id, team.name)}
-                                            aria-label={`Delete ${team.name}`}
-                                            title="Delete team"
+                                            aria-label={language === 'pt' ? `Deletar ${team.name}` : `Delete ${team.name}`}
+                                            title={language === 'pt' ? 'Deletar time' : 'Delete team'}
                                             className={`${iconButtonClassName} team-builder-icon-button--danger`}
                                         >
                                             <TrashIcon />
                                         </button>
-                                    </div>
+                                     </div>
                                 </article>
                             ))}
                         </div>
@@ -334,7 +337,10 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                         <div className="all-teams-view__list">
                             {filteredTeams.map((team, idx) => {
                                 const pokemonCount = team.pokemons.length;
-                                const statusText = pokemonCount === 6 ? 'Complete' : pokemonCount === 0 ? 'Empty' : 'Draft';
+                                let statusText = pokemonCount === 6 ? 'Complete' : pokemonCount === 0 ? 'Empty' : 'Draft';
+                                if (language === 'pt') {
+                                    statusText = pokemonCount === 6 ? 'Completo' : pokemonCount === 0 ? 'Vazio' : 'Rascunho';
+                                }
                                 const statusType = pokemonCount === 6 ? 'success' : pokemonCount === 0 ? 'outline' : 'accent';
                                 
                                 return (
@@ -351,12 +357,12 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <p className="all-teams-view__list-item-title">{team.name}</p>
                                                     <span className={`badge badge-${statusType}`}>{statusText}</span>
-                                                    {team.isFavorite && <span className="badge badge-accent">Pinned</span>}
+                                                    {team.isFavorite && <span className="badge badge-accent">{language === 'pt' ? 'Fixado' : 'Pinned'}</span>}
                                                 </div>
                                                 <div className="all-teams-view__list-item-meta mt-1">
-                                                    <span>Updated {formatTeamDate(team.updatedAt || team.createdAt)}</span>
+                                                    <span>{t('savedTeams.lastUpdated', { date: formatTeamDate(team.updatedAt || team.createdAt, language) })}</span>
                                                     <span className="mx-1">•</span>
-                                                    <span>{pokemonCount} {pokemonCount === 1 ? 'member' : 'members'}</span>
+                                                    <span>{language === 'pt' ? `${pokemonCount} ${pokemonCount === 1 ? 'membro' : 'membros'}` : `${pokemonCount} ${pokemonCount === 1 ? 'member' : 'members'}`}</span>
                                                 </div>
                                             </div>
                                             
@@ -373,7 +379,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                             <span className="all-teams-view__list-item-sprite-name">{pokemon.name}</span>
                                                         </div>
                                                     ))}
-                                                    {pokemonCount === 0 && <span className="text-xs text-muted italic">No team members yet.</span>}
+                                                    {pokemonCount === 0 && <span className="text-xs text-muted italic">{language === 'pt' ? 'Sem integrantes no time ainda.' : 'No team members yet.'}</span>}
                                                 </div>
                                             </div>
                                         </div>
@@ -388,7 +394,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                              onClick={() => onEdit(team)}
                                                              className="btn btn-primary"
                                                          >
-                                                             Edit
+                                                             {t('common.edit')}
                                                          </button>
                                                          <button
                                                              type="button"
@@ -396,7 +402,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                              className={`btn ${isActive ? 'btn-primary' : 'btn-outline'}`}
                                                              style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
                                                          >
-                                                             {isActive ? '★ Active' : 'Set Active'}
+                                                             {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
                                                          </button>
                                                      </>
                                                  );
@@ -405,7 +411,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                 type="button"
                                                 onClick={() => onToggleFavorite(team)}
                                                 className={`btn btn-outline !p-2 ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
-                                                title={team.isFavorite ? 'Unfavorite team' : 'Favorite team'}
+                                                title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
                                             >
                                                 <StarIcon className="h-4 w-4" isFavorite={team.isFavorite} color="currentColor" />
                                             </button>
@@ -413,7 +419,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                 type="button"
                                                 onClick={() => onExport(team)}
                                                 className="btn btn-outline !p-2"
-                                                title="Export to Showdown"
+                                                title={language === 'pt' ? 'Exportar para o Showdown' : 'Export to Showdown'}
                                             >
                                                 <ShowdownIcon />
                                             </button>
@@ -421,7 +427,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                 type="button"
                                                 onClick={() => onShare(team)}
                                                 className="btn btn-outline !p-2"
-                                                title="Share team"
+                                                title={language === 'pt' ? 'Compartilhar time' : 'Share team'}
                                             >
                                                 <ShareIcon />
                                             </button>
@@ -429,12 +435,12 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                 type="button"
                                                 onClick={() => requestDelete(team.id, team.name)}
                                                 className="btn btn-outline !p-2 team-builder-icon-button--danger"
-                                                title="Delete team"
+                                                title={language === 'pt' ? 'Deletar time' : 'Delete team'}
                                             >
                                                 <TrashIcon />
                                             </button>
-                                        </div>
-                                    </article>
+                                         </div>
+                                     </article>
                                 );
                             })}
                         </div>
@@ -443,8 +449,8 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                     <div className="team-builder-empty-note all-teams-view__empty">
                         <p className="all-teams-view__empty-copy">
                             {teams.length === 0
-                                ? 'Save a lineup from Builder to start your archive.'
-                                : 'No teams match the current search.'}
+                                ? t('savedTeams.emptyDesc')
+                                : t('savedTeams.noMatchesDesc')}
                         </p>
                         {teams.length > 0 && searchTerm ? (
                             <button
@@ -452,7 +458,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                 onClick={() => setSearchTerm('')}
                                 className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
                             >
-                                Clear search
+                                {language === 'pt' ? 'Limpar busca' : 'Clear search'}
                             </button>
                         ) : null}
                     </div>

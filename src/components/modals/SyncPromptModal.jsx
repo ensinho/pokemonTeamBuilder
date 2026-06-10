@@ -1,18 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import { CloseIcon, PokeballIcon } from '../icons';
+import { useTranslation } from '../../hooks/useTranslation';
 
-/**
- * SyncPromptModal — friendly nudge shown after the user has spent
- * a little time on the page anonymously, suggesting they sync their
- * progress to an account so it survives across devices.
- *
- * Props:
- *  - onSignUp(): open the sign-up flow
- *  - onSignIn(): open the sign-in flow
- *  - onDismiss(): close and don't show again this session
- *  - colors: theme colors object
- */
 export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
+    const { t } = useTranslation();
     const dialogRef = useRef(null);
     const previouslyFocusedRef = useRef(null);
 
@@ -53,13 +44,13 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
                     <div className="flex items-center gap-2">
                         <span className="text-primary"><PokeballIcon /></span>
                         <h2 id="sync-prompt-title" className="text-lg font-bold text-primary">
-                            Save your progress?
+                            {t('modals.syncPromptTitle')}
                         </h2>
                     </div>
                     <button
                         type="button"
                         onClick={onDismiss}
-                        aria-label="Dismiss"
+                        aria-label={t('common.close')}
                         className="rounded-md p-1 text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                         <CloseIcon />
@@ -68,11 +59,7 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
 
                 <div className="px-5 py-4 space-y-3">
                     <p className="text-sm text-fg">
-                        Looks like you're enjoying the team builder! Want to sync your teams,
-                        favorites and theme so you can pick up where you left off on any device?
-                    </p>
-                    <p className="text-xs text-muted">
-                        It's optional and takes 10 seconds. Your current data will be linked to the new account.
+                        {t('modals.syncPromptDesc')}
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-2 pt-1">
@@ -81,14 +68,14 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
                             onClick={onSignUp}
                             className="flex-1 rounded-md bg-primary py-2 font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                            Create account
+                            {t('modals.syncPromptRegister')}
                         </button>
                         <button
                             type="button"
                             onClick={onSignIn}
                             className="flex-1 rounded-md border border-border bg-surface-raised py-2 font-semibold text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                            I already have one
+                            {t('modals.syncPromptHasAccount')}
                         </button>
                     </div>
 
@@ -97,7 +84,7 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
                         onClick={onDismiss}
                         className="mt-1 w-full rounded text-xs text-muted underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
-                        Maybe later
+                        {t('modals.syncPromptDismiss')}
                     </button>
                 </div>
             </div>

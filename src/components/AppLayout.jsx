@@ -18,6 +18,8 @@ import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { useTranslation } from '../hooks/useTranslation';
+import { useLanguageStore } from '../store/useLanguageStore';
 
 import {
     AuthModal,
@@ -94,6 +96,7 @@ const AUTH_SPLASH_MESSAGES = [
 ];
 
 export default function AppLayout() {
+    const { t, language } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -195,8 +198,16 @@ export default function AppLayout() {
     // Auth Splash Loader
     const [showInitialAuthSplash, setShowInitialAuthSplash] = useState(true);
     const [authSplashProgress, setAuthSplashProgress] = useState(0);
-    const [authSplashMessage, setAuthSplashMessage] = useState(AUTH_SPLASH_MESSAGES[0]);
+    const [authSplashMessage, setAuthSplashMessage] = useState(() => t('splash.msg1'));
     const initialBootTimeRef = useRef(Date.now());
+
+    const splashMessages = useMemo(() => [
+        t('splash.msg1'),
+        t('splash.msg2'),
+        t('splash.msg3'),
+        t('splash.msg4'),
+        t('splash.msg5'),
+    ], [language, t]);
 
     // Caches for dynamic fetches
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
@@ -226,10 +237,10 @@ export default function AppLayout() {
         if (!showInitialAuthSplash) return;
 
         const pickMessage = (current) => {
-            if (AUTH_SPLASH_MESSAGES.length <= 1) return AUTH_SPLASH_MESSAGES[0] || '';
+            if (splashMessages.length <= 1) return splashMessages[0] || '';
             let next = current;
             while (next === current) {
-                next = AUTH_SPLASH_MESSAGES[Math.floor(Math.random() * AUTH_SPLASH_MESSAGES.length)];
+                next = splashMessages[Math.floor(Math.random() * splashMessages.length)];
             }
             return next;
         };
@@ -238,7 +249,7 @@ export default function AppLayout() {
 
         let timerId;
         const scheduleNext = () => {
-            const randomDelay = 700 + Math.floor(Math.random() * 1100);
+            const randomDelay = 2500 + Math.floor(Math.random() * 1500);
             timerId = setTimeout(() => {
                 setAuthSplashMessage(prev => pickMessage(prev));
                 scheduleNext();
@@ -247,7 +258,7 @@ export default function AppLayout() {
 
         scheduleNext();
         return () => clearTimeout(timerId);
-    }, [showInitialAuthSplash]);
+    }, [showInitialAuthSplash, splashMessages]);
 
     // Check patch notes version
     useEffect(() => {
@@ -264,18 +275,18 @@ export default function AppLayout() {
 
     const pageInfo = useMemo(() => {
         const pages = {
-            'home': { title: 'Home', subtitle: 'Overview and next actions' },
-            'builder': { title: 'Team Builder', subtitle: 'Build and tune your current roster' },
-            'pokedex': { title: 'Pokédex', subtitle: 'Search, compare, and locate Pokémon' },
-            'allTeams': { title: 'Saved Teams', subtitle: 'Revisit and manage your collection' },
-            'generationQuiz': { title: 'Generation Quiz', subtitle: 'Guess every Pokémon from your selected generations' },
-            'randomGenerator': { title: 'Random Generator', subtitle: 'Generate a fresh starting point' },
-            'favorites': { title: 'Favorite Pokémon', subtitle: 'Quick access to your pinned roster' },
-            'admin': { title: 'Admin Dashboard', subtitle: 'Suggestions and replies' },
-            'profile': { title: 'Profile', subtitle: 'Trainer card and preferences' },
+            'home': { title: t('nav.home'), subtitle: t('home.defaultSubtitle') },
+            'builder': { title: t('builder.title'), subtitle: t('builder.subtitle') },
+            'pokedex': { title: t('nav.pokedex'), subtitle: t('home.shortcutPokedexDesc') },
+            'allTeams': { title: t('savedTeams.title'), subtitle: t('savedTeams.subtitle') },
+            'generationQuiz': { title: t('quiz.title'), subtitle: t('quiz.subtitle') },
+            'randomGenerator': { title: t('generator.title'), subtitle: t('generator.subtitle') },
+            'favorites': { title: t('favorites.title'), subtitle: t('home.pinnedRoster') },
+            'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
+            'profile': { title: t('profile.title'), subtitle: t('profile.trainerProfile') },
         };
         return pages[currentPage] || pages['home'];
-    }, [currentPage]);
+    }, [currentPage, t]);
 
     const pageFrameClassName = useMemo(() => {
         if (currentPage === 'home') return '';
@@ -285,46 +296,46 @@ export default function AppLayout() {
     const navigationGroups = useMemo(() => {
         const groups = [
             {
-                title: 'Dashboard',
+                title: t('nav.dashboard'),
                 items: [
-                    { key: 'home', label: 'Home', path: '/', icon: <HomeIcon /> },
+                    { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
                 ]
             },
             {
-                title: 'Team Building',
+                title: t('nav.teamBuilding'),
                 items: [
-                    { key: 'builder', label: 'Builder', path: '/builder', icon: <SwordsIcon /> },
-                    { key: 'pokedex', label: 'Pokédex', path: '/pokedex', icon: <PokeballIcon /> },
-                    { key: 'favorites', label: 'Favorites', path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
-                    { key: 'allTeams', label: 'Saved Teams', path: '/teams', icon: <SavedTeamsIcon /> },
+                    { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
+                    { key: 'pokedex', label: t('nav.pokedex'), path: '/pokedex', icon: <PokeballIcon /> },
+                    { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'allTeams', label: t('nav.savedTeams'), path: '/teams', icon: <SavedTeamsIcon /> },
                 ]
             },
             {
-                title: 'Guessing',
+                title: t('nav.guessing'),
                 items: [
-                    { key: 'generationQuiz', label: 'Quiz', path: '/quiz', icon: <SuccessToastIcon /> },
-                    { key: 'randomGenerator', label: 'Generator', path: '/generator', icon: <DiceIcon /> },
+                    { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
+                    { key: 'randomGenerator', label: t('nav.generator'), path: '/generator', icon: <DiceIcon /> },
                 ]
             },
             {
-                title: 'Trainer Profile',
+                title: t('nav.trainerProfile'),
                 items: [
-                    { key: 'profile', label: 'Profile', path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'profile', label: t('nav.profile'), path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
                 ]
             }
         ];
 
         if (isAdmin) {
             groups.push({
-                title: 'Management',
+                title: t('nav.management'),
                 items: [
-                    { key: 'admin', label: 'Admin', path: '/admin', icon: <ChartColumnIcon className="w-5 h-5 shrink-0" /> }
+                    { key: 'admin', label: t('nav.admin'), path: '/admin', icon: <ChartColumnIcon className="w-5 h-5 shrink-0" /> }
                 ]
             });
         }
 
         return groups;
-    }, [isAdmin]);
+    }, [isAdmin, t]);
 
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {
@@ -371,7 +382,7 @@ export default function AppLayout() {
             return null;
         } catch (error) {
             console.error("Failed to fetch Pokémon details:", error);
-            showToast(`Could not load details for Pokémon ID: ${pokemonId}`, "error");
+            showToast(t('layout.loadDetailsError', { id: pokemonId }), "error");
             return null;
         }
     }, [pokemonDetailsCache, showToast]);
@@ -380,7 +391,7 @@ export default function AppLayout() {
     const fetchAndSetSharedTeam = useCallback(async (teamId) => {
         if (!db || sharedTeamLoaded) return;
         setSharedTeamLoaded(true);
-        showToast("Loading shared team...", "info");
+        showToast(t('layout.loadingSharedTeam'), "info");
         const teamDocRef = doc(db, `artifacts/${appId}/public/data/teams`, teamId);
         try {
             const teamDoc = await getDoc(teamDocRef);
@@ -411,7 +422,7 @@ export default function AppLayout() {
 
                 setCurrentTeam(customizedTeam.filter(Boolean));
                 setTeamName(teamData.name);
-                showToast(`Loaded team: ${teamData.name}`, "success");
+                showToast(t('layout.loadedSharedTeam', { name: teamData.name }), "success");
 
                 navigate('/builder');
                 try {
@@ -420,10 +431,10 @@ export default function AppLayout() {
                     window.history.replaceState({}, '', url.pathname + url.search + url.hash);
                 } catch { /* ignore history failures */ }
             } else {
-                showToast("Shared team not found.", "error");
+                showToast(t('layout.sharedTeamNotFound'), "error");
             }
         } catch (error) {
-            showToast("Failed to load shared team.", "error");
+            showToast(t('layout.failedLoadSharedTeam'), "error");
         }
     }, [showToast, sharedTeamLoaded, navigate, fetchPokemonDetails, setCurrentTeam, setTeamName]);
 
@@ -438,7 +449,7 @@ export default function AppLayout() {
 
     // Saved team handlers
     const handleEditTeam = useCallback(async (team) => {
-        showToast(`Loading team: ${team.name}...`, 'info');
+        showToast(t('layout.loadingTeamName', { name: team.name }), 'info');
 
         const teamPokemonDetailsPromises = team.pokemons.map(p => fetchPokemonDetails(p.id));
         const teamPokemonDetails = await Promise.all(teamPokemonDetailsPromises);
@@ -490,7 +501,7 @@ export default function AppLayout() {
 
     const handleExportSavedTeamToShowdown = useCallback(async (team) => {
         const teamMembers = team?.pokemons || [];
-        if (teamMembers.length === 0) return showToast('This saved team is empty!', 'warning');
+        if (teamMembers.length === 0) return showToast(t('layout.emptySavedTeamWarning'), 'warning');
         const exportText = useActiveTeam.getState?.()?.buildShowdownExportText?.(teamMembers) || '';
         await useActiveTeam.getState?.()?.copyTextToClipboard?.(exportText, 'Copied for Pokémon Showdown!');
     }, [showToast]);
@@ -624,9 +635,9 @@ export default function AppLayout() {
                     handleDeleteTeam(deleteConfirmation.teamId);
                     setDeleteConfirmation({ isOpen: false, teamId: null, teamName: '' });
                 }}
-                title="Erase the Team? 😢"
-                message={`Are you sure you want to delete "${deleteConfirmation.teamName}"? They could be so great...`}
-                confirmText="Yeah don't care"
+                title={t('dialogs.deleteTeamTitle')}
+                message={t('dialogs.deleteTeamMsg', { teamName: deleteConfirmation.teamName })}
+                confirmText={t('dialogs.deleteTeamConfirm')}
                 colors={colors}
             />
 
@@ -670,7 +681,7 @@ export default function AppLayout() {
                         className="app-shell__overlay lg:hidden"
                         onClick={() => setIsSidebarOpen(false)}
                         role="presentation"
-                        aria-label="Close sidebar"
+                        aria-label={t('layout.closeSidebar')}
                     />
                 )}
                 {!isMobileDetailsOpen && (
@@ -684,7 +695,7 @@ export default function AppLayout() {
                                         alt="Pokémon Team Builder Logo"
                                         className="app-shell__brand-logo cursor-pointer"
                                         onClick={() => navigate('/')}
-                                        title="Go Home"
+                                        title={t('layout.goHome')}
                                     />
                                     <div className={`app-shell__brand-copy ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
                                         <p className="app-shell__brand-label">Gengar</p>
@@ -738,14 +749,14 @@ export default function AppLayout() {
                                         <button
                                             type="button"
                                             onClick={isIOS
-                                                ? () => showToast('Share button -> "Add to Home Screen"', 'info')
+                                                ? () => showToast(t('layout.developedBy').startsWith('Desenvolvido') ? 'Botão de Compartilhar -> "Adicionar à Tela Inicial"' : 'Share button -> "Add to Home Screen"', 'info')
                                                 : handleInstall
                                             }
                                             className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-sm font-bold text-white transition-opacity active:opacity-75"
                                             style={{ backgroundColor: colors.primary }}
                                         >
                                             <DownloadIcon className="w-4 h-4 shrink-0" />
-                                            <span>{isIOS ? 'Add to Home Screen' : 'Install App'}</span>
+                                            <span>{isIOS ? t('nav.addToHome') : t('nav.installApp')}</span>
                                         </button>
                                     </div>
                                 )}
@@ -753,8 +764,8 @@ export default function AppLayout() {
                                     <button
                                         onClick={toggleTheme}
                                         type="button"
-                                        aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-                                        title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+                                        aria-label={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })}
+                                        title={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })}
                                         className="app-shell__icon-button"
                                     >
                                         {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
@@ -763,8 +774,8 @@ export default function AppLayout() {
                                     <button
                                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
                                         type="button"
-                                        aria-label={isSidebarCollapsed ? "Expand sidebar menu" : "Collapse sidebar menu"}
-                                        title={isSidebarCollapsed ? "Expand sidebar menu" : "Collapse sidebar menu"}
+                                        aria-label={isSidebarCollapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
+                                        title={isSidebarCollapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
                                         className="app-shell__icon-button hidden lg:inline-flex"
                                     >
                                         {isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}
@@ -776,12 +787,12 @@ export default function AppLayout() {
                                         <button
                                             type="button"
                                             onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
-                                            aria-label="Sign in"
-                                            title="Sign in"
+                                            aria-label={t('nav.signIn')}
+                                            title={t('nav.signIn')}
                                             className={`app-shell__nav-link ${isSidebarCollapsed ? 'is-collapsed' : ''}`}
                                         >
                                             <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
-                                            <span className={`app-shell__nav-text ${isSidebarCollapsed ? 'is-hidden' : ''}`}>Sign In</span>
+                                            <span className={`app-shell__nav-text ${isSidebarCollapsed ? 'is-hidden' : ''}`}>{t('nav.signIn')}</span>
                                         </button>
                                     ) : (
                                         <SidebarAccountMenu
@@ -812,7 +823,7 @@ export default function AppLayout() {
                                 <button
                                     onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                                     type="button"
-                                    aria-label={isSidebarOpen ? 'Close navigation menu' : 'Open navigation menu'}
+                                    aria-label={isSidebarOpen ? t('layout.closeSidebar') : t('layout.expandSidebar')}
                                     aria-expanded={isSidebarOpen}
                                     className="app-shell__icon-button app-shell__mobile-menu lg:hidden"
                                 >
@@ -849,7 +860,7 @@ export default function AppLayout() {
                                                 type="button"
                                                 onClick={() => handleRailSlotClick(pokemon)}
                                                 className="app-shell__header-team-slot"
-                                                title={`View ${pokemon.name}`}
+                                                title={t('layout.viewPokemonTitle', { name: pokemon.name })}
                                             >
                                                 <img
                                                     src={getPokemonFrontSpriteUrl(pokemon.id, { shiny: pokemon.customization?.isShiny })}
@@ -865,7 +876,7 @@ export default function AppLayout() {
                                         <div
                                             key={`empty-${index}`}
                                             className="app-shell__header-team-slot is-empty"
-                                            title="Empty Slot - Go to Team Builder"
+                                            title={t('layout.emptySlotTitle')}
                                             onClick={() => {
                                                 if (activeTeam && editingTeamId !== activeTeam.id) {
                                                     handleEditTeam(activeTeam);
@@ -881,7 +892,7 @@ export default function AppLayout() {
                             </div>
 
                             <div className="app-shell__header-actions">
-                                <button onClick={toggleTheme} type="button" aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} className="app-shell__icon-button">
+                                <button onClick={toggleTheme} type="button" aria-label={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })} className="app-shell__icon-button">
                                     {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
                                 </button>
                             </div>
@@ -1029,6 +1040,11 @@ export default function AppLayout() {
                                             isAnonymous={isAnonymous}
                                             theme={theme}
                                             onChangeTheme={changeTheme}
+                                            language={language}
+                                            onChangeLanguage={(lang) => {
+                                                useLanguageStore.getState().setLanguage(lang);
+                                                useAuthStore.getState().savePreferences({ language: lang });
+                                            }}
                                             displayName={displayName}
                                             onChangeDisplayName={setDisplayName}
                                             greetingPokemonId={greetingPokemonId}
@@ -1094,7 +1110,7 @@ export default function AppLayout() {
                         <div className="app-shell__footer-row">
                             <div className="app-shell__footer-credit">
                                 <span>
-                                    Developed and built by <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
+                                    {t('layout.developedBy')} <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
                                 </span>
                                 <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} showToast={showToast} />
                             </div>
@@ -1104,7 +1120,9 @@ export default function AppLayout() {
                                 <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
                             </div>
                         </div>
-                        <p className="app-shell__footer-copy">Using the <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">PokéAPI</a>. Pokémon and their names are trademarks of Nintendo.</p>
+                        <p className="app-shell__footer-copy">
+                            {t('layout.pokemonCopyright')}
+                        </p>
                     </footer>
                 </div>
             </div>

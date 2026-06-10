@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     MapPin,
     Search,
@@ -225,6 +226,7 @@ export function PokedexView({
     pokemonDetailsCache = {},
     setPokemonDetailsCache,
 }) {
+    const { t, language } = useTranslation();
     const [searchParams, setSearchParams] = useSearchParams();
     const pokemonQueryParam = searchParams.get('pokemon');
 
@@ -952,7 +954,7 @@ export function PokedexView({
                                         type="button"
                                         onClick={() => setShowShiny((value) => !value)}
                                         className={`absolute -bottom-2 -right-4 rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 border ${showShiny ? 'bg-accent text-bg border-accent' : 'bg-surface-raised text-fg border-border'}`}
-                                        title="Toggle Shiny"
+                                        title={language === 'pt' ? 'Alternar Brilhante' : 'Toggle Shiny'}
                                     >
                                         <Sparkles className="w-4 h-4" />
                                     </button>
@@ -961,7 +963,7 @@ export function PokedexView({
                                             type="button"
                                             onClick={() => onToggleFavoritePokemon(selectedPokemonDetails.id)}
                                             className={`absolute -bottom-2 -left-4 rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 border ${favoritePokemons.has(selectedPokemonDetails.id) ? 'bg-accent-soft text-accent border-accent-soft' : 'bg-surface-raised text-muted border-border'}`}
-                                            title={favoritePokemons.has(selectedPokemonDetails.id) ? 'Remove from favorites' : 'Add to favorites'}
+                                            title={favoritePokemons.has(selectedPokemonDetails.id) ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
                                         >
                                             <Star className={`w-4.5 h-4.5 ${favoritePokemons.has(selectedPokemonDetails.id) ? 'fill-[#FBBF24] text-[#FBBF24]' : 'text-muted'}`} />
                                         </button>
@@ -980,7 +982,7 @@ export function PokedexView({
 
                         {/* Base Stats Card */}
                         <div className="rounded-xl bg-surface p-4 border border-border flex flex-col justify-between">
-                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">Base Stats</h4>
+                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{t('pokedex.baseStats')}</h4>
                             <div className="space-y-2 flex-1 flex flex-col justify-center">
                                 {selectedPokemonDetails.stats?.map((stat) => (
                                     <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />
@@ -992,7 +994,7 @@ export function PokedexView({
                     {/* Evolution Line — shown early for quick context */}
                     {evolutionDetails.length > 1 && (
                         <div className="rounded-xl bg-surface p-4 border border-border">
-                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">Evolution Line</h4>
+                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Linha Evolutiva' : 'Evolution Line'}</h4>
                             <div className="overflow-x-auto custom-scrollbar pb-1">
                                 <div className="flex min-w-max items-center gap-2 px-1 justify-center">
                                     {evolutionDetails.map((evo, index) => (
@@ -1029,16 +1031,16 @@ export function PokedexView({
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
                                     <Database className="w-3.5 h-3.5 text-primary" />
-                                    <span>Pokédex Data</span>
+                                    <span>{language === 'pt' ? 'Dados da Pokédex' : 'Pokédex Data'}</span>
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
                                         <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">National ID</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Nº Nacional' : 'National ID'}</td>
                                             <td className="font-mono font-bold">#{formattedId || '----'}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">Type</td>
+                                            <td className="text-muted">{t('pokedex.typesFilterLabel')}</td>
                                             <td className="flex gap-1">
                                                 {selectedPokemonDetails.types?.map((type) => (
                                                     <TypeBadge key={type} type={type} colors={colors} />
@@ -1046,23 +1048,23 @@ export function PokedexView({
                                             </td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">Species</td>
-                                            <td className="font-bold capitalize">{pokemonGenus || 'Loading...'}</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Espécie' : 'Species'}</td>
+                                            <td className="font-bold capitalize">{pokemonGenus || t('common.loading')}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">Height</td>
+                                            <td className="text-muted">{t('pokedex.height')}</td>
                                             <td className="font-bold">
-                                                {heightInM ? `${heightInM} m` : 'Loading...'} {heightInFt && <span className="text-muted font-normal text-[11px]">({heightInFt})</span>}
+                                                {heightInM ? `${heightInM} m` : t('common.loading')} {heightInFt && <span className="text-muted font-normal text-[11px]">({heightInFt})</span>}
                                             </td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
-                                            <td className="text-muted">Weight</td>
+                                            <td className="text-muted">{t('pokedex.weight')}</td>
                                             <td className="font-bold">
-                                                {weightInKg ? `${weightInKg} kg` : 'Loading...'} {weightInLbs && <span className="text-muted font-normal text-[11px]">({weightInLbs} lbs)</span>}
+                                                {weightInKg ? `${weightInKg} kg` : t('common.loading')} {weightInLbs && <span className="text-muted font-normal text-[11px]">({weightInLbs} lbs)</span>}
                                             </td>
                                         </tr>
                                         <tr className="py-2.5 flex justify-between items-start">
-                                            <td className="text-muted py-1">Abilities</td>
+                                            <td className="text-muted py-1">{t('pokedex.abilities')}</td>
                                             <td className="font-bold text-right flex flex-col items-end space-y-1">
                                                 {selectedPokemonDetails.abilities?.map((ab, idx) => {
                                                     const isHidden = ab.is_hidden;
@@ -1070,7 +1072,7 @@ export function PokedexView({
                                                         <div key={idx} className="capitalize text-xs">
                                                             {isHidden ? (
                                                                 <span className="text-muted font-normal text-[11px] inline-flex items-center gap-1">
-                                                                    <AbilityChip ability={ab} /> <span className="text-[10px] text-muted-foreground">(hidden)</span>
+                                                                    <AbilityChip ability={ab} /> <span className="text-[10px] text-muted-foreground">{language === 'pt' ? '(oculta)' : '(hidden)'}</span>
                                                                 </span>
                                                             ) : (
                                                                 <span className="inline-block">
@@ -1090,29 +1092,29 @@ export function PokedexView({
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
                                     <Zap className="w-3.5 h-3.5 text-primary" />
-                                    <span>Training</span>
+                                    <span>{language === 'pt' ? 'Treinamento' : 'Training'}</span>
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
-                                            <td className="text-muted">EV Yield</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Pontos de EV' : 'EV Yield'}</td>
                                             <td className="font-bold text-right truncate max-w-[200px]">{evYield}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
-                                            <td className="text-muted">Catch Rate</td>
-                                            <td className="font-bold text-right">{catchRateText || 'Loading...'}</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Taxa de Captura' : 'Catch Rate'}</td>
+                                            <td className="font-bold text-right">{catchRateText || t('common.loading')}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
-                                            <td className="text-muted">Base Friendship</td>
-                                            <td className="font-bold text-right">{baseFriendshipText || 'Loading...'}</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Amizade Base' : 'Base Friendship'}</td>
+                                            <td className="font-bold text-right">{baseFriendshipText || t('common.loading')}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
-                                            <td className="text-muted">Base Exp.</td>
-                                            <td className="font-mono font-bold text-right">{fullApiData?.base_experience ?? 'Loading...'}</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Exp. Base' : 'Base Exp.'}</td>
+                                            <td className="font-mono font-bold text-right">{fullApiData?.base_experience ?? t('common.loading')}</td>
                                         </tr>
                                         <tr className="py-2 flex justify-between items-center">
-                                            <td className="text-muted">Growth Rate</td>
-                                            <td className="font-bold text-right">{growthRateText || 'Loading...'}</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Crescimento' : 'Growth Rate'}</td>
+                                            <td className="font-bold text-right">{growthRateText || t('common.loading')}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1126,16 +1128,16 @@ export function PokedexView({
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
                                     <HandFist className="w-3.5 h-3.5 text-primary" />
-                                    <span>Type Defenses</span>
+                                    <span>{t('pokedex.typeEffectivenessTitle')}</span>
                                 </h4>
-                                <p className="text-[11px] text-muted mb-4">Damage multipliers received by {selectedPokemonDetails.name}.</p>
+                                <p className="text-[11px] text-muted mb-4">{t('pokedex.typeEffectivenessSubtitle')}</p>
                                 {(() => {
                                     const tiers = [
-                                        { label: '4×  Super Weak', mult: 4, bg: 'bg-red-500/15', border: 'border-red-500/40', text: 'text-red-400', badge: 'bg-red-500/20 border-red-500/50 text-red-300' },
-                                        { label: '2×  Weak', mult: 2, bg: 'bg-orange-500/10', border: 'border-orange-500/35', text: 'text-orange-400', badge: 'bg-orange-500/20 border-orange-500/50 text-orange-300' },
-                                        { label: '½×  Resistant', mult: 0.5, bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', badge: 'bg-blue-500/15 border-blue-500/40 text-blue-300' },
-                                        { label: '¼×  Very Resistant', mult: 0.25, bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', badge: 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300' },
-                                        { label: '0×  Immune', mult: 0, bg: 'bg-surface-raised/60', border: 'border-border', text: 'text-muted', badge: 'bg-surface-raised border-border text-muted' },
+                                        { label: language === 'pt' ? '4×  Muito Fraco' : '4×  Super Weak', mult: 4, bg: 'bg-red-500/15', border: 'border-red-500/40', text: 'text-red-400', badge: 'bg-red-500/20 border-red-500/50 text-red-300' },
+                                        { label: language === 'pt' ? '2×  Fraco' : '2×  Weak', mult: 2, bg: 'bg-orange-500/10', border: 'border-orange-500/35', text: 'text-orange-400', badge: 'bg-orange-500/20 border-orange-500/50 text-orange-300' },
+                                        { label: language === 'pt' ? '½×  Resistente' : '½×  Resistant', mult: 0.5, bg: 'bg-blue-500/10', border: 'border-blue-500/30', text: 'text-blue-400', badge: 'bg-blue-500/15 border-blue-500/40 text-blue-300' },
+                                        { label: language === 'pt' ? '¼×  Muito Resistente' : '¼×  Very Resistant', mult: 0.25, bg: 'bg-cyan-500/10', border: 'border-cyan-500/30', text: 'text-cyan-400', badge: 'bg-cyan-500/15 border-cyan-500/40 text-cyan-300' },
+                                        { label: language === 'pt' ? '0×  Imune' : '0×  Immune', mult: 0, bg: 'bg-surface-raised/60', border: 'border-border', text: 'text-muted', badge: 'bg-surface-raised border-border text-muted' },
                                     ];
                                     const groups = tiers.map(tier => ({
                                         ...tier,
@@ -1161,7 +1163,7 @@ export function PokedexView({
                                                 <details className="group">
                                                     <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-muted/60 hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
                                                         <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
-                                                        {neutralTypes.length} neutral types (1×)
+                                                        {neutralTypes.length} {language === 'pt' ? 'tipos neutros' : 'neutral types'} (1×)
                                                     </summary>
                                                     <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                                         {neutralTypes.map(tName => (
@@ -1182,21 +1184,21 @@ export function PokedexView({
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
                                     <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                    <span>Breeding</span>
+                                    <span>{language === 'pt' ? 'Cruzamento' : 'Breeding'}</span>
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
-                                            <td className="text-muted">Egg Groups</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Grupos de Ovos' : 'Egg Groups'}</td>
                                             <td className="font-bold text-right capitalize">{eggGroups}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
-                                            <td className="text-muted">Gender Ratio</td>
-                                            <td className="font-bold text-right">{genderText || 'Loading...'}</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Gênero' : 'Gender Ratio'}</td>
+                                            <td className="font-bold text-right">{genderText || t('common.loading')}</td>
                                         </tr>
                                         <tr className="py-2 flex justify-between items-center">
-                                            <td className="text-muted">Egg Cycles</td>
-                                            <td className="font-bold text-right">{eggCyclesText || 'Loading...'}</td>
+                                            <td className="text-muted">{language === 'pt' ? 'Ciclos de Ovo' : 'Egg Cycles'}</td>
+                                            <td className="font-bold text-right">{eggCyclesText || t('common.loading')}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1213,13 +1215,13 @@ export function PokedexView({
                 <div className="flex-1 flex flex-col space-y-4 animate-scale-in">
                     <div className="flex items-center gap-2">
                         <MapPin className="w-5 h-5 text-primary" />
-                        <h4 className="text-base font-bold text-fg">Where to Catch</h4>
+                        <h4 className="text-base font-bold text-fg">{t('pokedex.locationsTitle')}</h4>
                     </div>
 
                     {availableVersions.length > 0 && (
                         <div className="flex items-center justify-between gap-4 bg-surface p-3 rounded-xl border border-border">
                             <label htmlFor="locations-version-filter" className="text-xs font-bold text-muted uppercase tracking-wider">
-                                Filter by Game:
+                                {t('pokedex.locationsVersionFilter')}:
                             </label>
                             <div className="relative min-w-[150px]">
                                 <select
@@ -1228,7 +1230,7 @@ export function PokedexView({
                                     onChange={(e) => setLocationsVersionFilter(e.target.value)}
                                     className="team-builder-field team-builder-field--compact team-builder-select w-full"
                                 >
-                                    <option value="all">All Games</option>
+                                    <option value="all">{language === 'pt' ? 'Todos os Jogos' : 'All Games'}</option>
                                     {availableVersions.map((vName) => {
                                         const conf = VERSION_CONFIG[vName] || { label: vName.replace('-', ' ') };
                                         return (
@@ -1319,9 +1321,9 @@ export function PokedexView({
                     ) : (
                         <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
                             <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
-                            <h5 className="font-bold text-fg mb-1">Not Found in the Wild</h5>
+                            <h5 className="font-bold text-fg mb-1">{language === 'pt' ? 'Não Encontrado na Natureza' : 'Not Found in the Wild'}</h5>
                             <p className="text-xs text-muted max-w-sm mx-auto">
-                                This Pokémon cannot be encountered in the wild. It may be a starter, a gift, an evolution-only form, a legendary, or a transfer-only Pokémon.
+                                {t('pokedex.locationsEmpty')}
                             </p>
                         </div>
                     )}
@@ -1336,7 +1338,7 @@ export function PokedexView({
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-surface p-3 rounded-xl border border-border">
                         <h4 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
                             <Swords className="w-4 h-4 text-primary" />
-                            <span>Learnt Moves</span>
+                            <span>{t('pokedex.movesTitle')}</span>
                         </h4>
 
                         {/* Game Version Selector for Moves */}
@@ -1370,18 +1372,18 @@ export function PokedexView({
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border">
                                     <ChevronRight className="w-3.5 h-3.5 text-primary" />
-                                    <span>Moves Learnt by Level Up</span>
+                                    <span>{t('pokedex.movesLevelUp')}</span>
                                 </h5>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs border-collapse">
                                         <thead>
                                             <tr className="border-b border-border/80 text-muted">
-                                                <th className="pb-2 font-bold w-12">Lv.</th>
-                                                <th className="pb-2 font-bold">Move</th>
-                                                <th className="pb-2 font-bold text-center">Type</th>
-                                                <th className="pb-2 font-bold text-center">Cat.</th>
-                                                <th className="pb-2 font-bold text-center">Power</th>
-                                                <th className="pb-2 font-bold text-center">Acc.</th>
+                                                <th className="pb-2 font-bold w-12">{t('pokedex.movesHeaderLevel')}</th>
+                                                <th className="pb-2 font-bold">{t('pokedex.movesHeaderName')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderType')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderClass')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderPower')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderAcc')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1420,18 +1422,18 @@ export function PokedexView({
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border">
                                     <ChevronRight className="w-3.5 h-3.5 text-primary" />
-                                    <span>Moves Learnt by Machine (TM)</span>
+                                    <span>{t('pokedex.movesMachine')}</span>
                                 </h5>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs border-collapse">
                                         <thead>
                                             <tr className="border-b border-border/80 text-muted">
-                                                <th className="pb-2 font-bold w-12">TM</th>
-                                                <th className="pb-2 font-bold">Move</th>
-                                                <th className="pb-2 font-bold text-center">Type</th>
-                                                <th className="pb-2 font-bold text-center">Cat.</th>
-                                                <th className="pb-2 font-bold text-center">Power</th>
-                                                <th className="pb-2 font-bold text-center">Acc.</th>
+                                                <th className="pb-2 font-bold w-12">{t('pokedex.movesHeaderTm')}</th>
+                                                <th className="pb-2 font-bold">{t('pokedex.movesHeaderName')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderType')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderClass')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderPower')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderAcc')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -1471,9 +1473,9 @@ export function PokedexView({
                     ) : (
                         <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
                             <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
-                            <h5 className="font-bold text-fg mb-1">No Moves Found</h5>
+                            <h5 className="font-bold text-fg mb-1">{language === 'pt' ? 'Nenhum movimento encontrado' : 'No Moves Found'}</h5>
                             <p className="text-xs text-muted max-w-sm mx-auto">
-                                No moves are recorded for this Pokémon in the selected game version. Try changing the game version filter.
+                                {t('pokedex.movesEmpty')}
                             </p>
                         </div>
                     )}
@@ -1488,10 +1490,10 @@ export function PokedexView({
                     <div className="bg-surface p-3 rounded-xl border border-border">
                         <h4 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
                             <ImageIcon className="w-4 h-4 text-primary" />
-                            <span>Sprites across generations</span>
+                            <span>{t('pokedex.spritesTitle')}</span>
                         </h4>
                         <p className="text-[10px] text-muted mt-1.5">
-                            Click any sprite to preview it as the active artwork on the Pokémon profile card.
+                            {t('pokedex.spritesPreviewTitle')}
                         </p>
                     </div>
 
@@ -1501,7 +1503,7 @@ export function PokedexView({
                                 <table className="w-full text-center border-collapse text-xs">
                                     <thead>
                                         <tr className="border-b border-border bg-surface-raised">
-                                            <th className="p-3 font-bold text-muted text-left">Type</th>
+                                            <th className="p-3 font-bold text-muted text-left">{t('pokedex.typesFilterLabel')}</th>
                                             {pokemonGenerationSprites.map((g) => (
                                                 <th key={g.name} className="p-3 font-bold text-muted min-w-[90px]">
                                                     {g.name}
@@ -1521,7 +1523,7 @@ export function PokedexView({
                                                             alt={`${selectedPokemonDetails.name} ${g.name} normal`}
                                                             onClick={() => setCustomSelectedSprite(g.normal)}
                                                             className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
-                                                            title="Preview Normal Sprite"
+                                                            title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'}
                                                         />
                                                     ) : (
                                                         <span className="text-muted text-[10px]">➔</span>
@@ -1532,7 +1534,7 @@ export function PokedexView({
 
                                         {/* Shiny Sprites */}
                                         <tr>
-                                            <td className="p-3 font-bold text-muted text-left border-r border-border">Shiny</td>
+                                            <td className="p-3 font-bold text-muted text-left border-r border-border">{language === 'pt' ? 'Brilhante' : 'Shiny'}</td>
                                             {pokemonGenerationSprites.map((g) => (
                                                 <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
                                                     {g.shiny ? (
@@ -1541,7 +1543,7 @@ export function PokedexView({
                                                             alt={`${selectedPokemonDetails.name} ${g.name} shiny`}
                                                             onClick={() => setCustomSelectedSprite(g.shiny)}
                                                             className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
-                                                            title="Preview Shiny Sprite"
+                                                            title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'}
                                                         />
                                                     ) : (
                                                         <span className="text-muted text-[10px]">—</span>
@@ -1556,9 +1558,9 @@ export function PokedexView({
                     ) : (
                         <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
                             <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
-                            <h5 className="font-bold text-fg mb-1">No Sprites Recorded</h5>
+                            <h5 className="font-bold text-fg mb-1">{language === 'pt' ? 'Nenhum Sprite Registrado' : 'No Sprites Recorded'}</h5>
                             <p className="text-xs text-muted max-w-sm mx-auto">
-                                Generation-specific sprites are not available for this Pokémon.
+                                {language === 'pt' ? 'Sprites específicos de geração não estão disponíveis para este Pokémon.' : 'Generation-specific sprites are not available for this Pokémon.'}
                             </p>
                         </div>
                     )}
@@ -1581,7 +1583,7 @@ export function PokedexView({
                         className="flex items-center gap-1.5 text-xs font-bold text-muted hover:text-fg transition-colors px-3 py-2 rounded-xl bg-surface-raised border border-border shrink-0"
                     >
                         <ChevronLeft className="w-4 h-4 text-muted" />
-                        <span>Exit</span>
+                        <span>{t('common.close')}</span>
                     </button>
 
                     <div className="flex items-center gap-2 shrink-0">
@@ -1590,7 +1592,7 @@ export function PokedexView({
                             onClick={handlePrevPokemon}
                             className="p-2.5 rounded-xl bg-surface-raised border border-border hover:bg-surface-raised/85 hover:text-fg text-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             disabled={activeIndex <= 0 && selectedPokemonDetails?.id <= 1}
-                            title="Previous Pokémon"
+                            title={t('common.previous')}
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -1602,7 +1604,7 @@ export function PokedexView({
                             onClick={handleNextPokemon}
                             className="p-2.5 rounded-xl bg-surface-raised border border-border hover:bg-surface-raised/85 hover:text-fg text-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             disabled={activeIndex !== -1 && activeIndex >= displayedPokemons.length - 1}
-                            title="Next Pokémon"
+                            title={t('common.next')}
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -1612,10 +1614,10 @@ export function PokedexView({
                 {/* Sub-tabs nav */}
                 <div className="flex border-b border-border overflow-x-auto whitespace-nowrap scrollbar-none shrink-0 bg-surface px-2">
                     {[
-                        { key: 'data', icon: <Activity className="w-4 h-4" />, label: 'Stats & Data' },
-                        { key: 'locations', icon: <MapPin className="w-4 h-4" />, label: 'Locations' },
-                        { key: 'moves', icon: <Swords className="w-4 h-4" />, label: 'Moves' },
-                        { key: 'sprites', icon: <ImageIcon className="w-4 h-4" />, label: 'Sprites' },
+                        { key: 'data', icon: <Activity className="w-4 h-4" />, label: t('pokedex.dataTab') },
+                        { key: 'locations', icon: <MapPin className="w-4 h-4" />, label: t('pokedex.locationsTab') },
+                        { key: 'moves', icon: <Swords className="w-4 h-4" />, label: t('pokedex.movesTab') },
+                        { key: 'sprites', icon: <ImageIcon className="w-4 h-4" />, label: t('pokedex.spritesTab') },
                     ].map((tab) => (
                         <button
                             key={tab.key}
@@ -1645,7 +1647,7 @@ export function PokedexView({
                 <section className="team-builder-panel team-builder-panel--picker p-4">
                     <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
                         <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
-                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">Pokédex</h2>
+                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('nav.pokedex')}</h2>
                             <span className="team-builder-panel__meta team-builder-panel__meta--compact">{displayedPokemons.length}</span>
                         </div>
                     </div>
@@ -1667,7 +1669,7 @@ export function PokedexView({
                                 ))}
                             </div>
                         </div>
-                        <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? 'All types' : `${selectedTypeCount} active`}</span>
+                        <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
                     </div>
 
                     <div className="team-builder-unified-toolbar mt-3">
@@ -1677,7 +1679,7 @@ export function PokedexView({
                             </span>
                             <input
                                 type="text"
-                                placeholder="Search by name..."
+                                placeholder={t('pokedex.searchPlaceholder')}
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 className="team-builder-field team-builder-field--compact team-builder-search-input"
@@ -1687,7 +1689,7 @@ export function PokedexView({
                                     type="button"
                                     onClick={() => setSearchInput('')}
                                     className="team-builder-search-clear"
-                                    aria-label="Clear search"
+                                    aria-label={t('common.clear')}
                                 >
                                     <X className="w-4 h-4" />
                                 </button>
@@ -1699,9 +1701,9 @@ export function PokedexView({
                                 value={selectedGeneration}
                                 onChange={(e) => setSelectedGeneration(e.target.value)}
                                 className="team-builder-field team-builder-field--compact team-builder-select"
-                                aria-label="Generation filter"
+                                aria-label={t('pokedex.genFilterLabel')}
                             >
-                                <option value="all">All generations</option>
+                                <option value="all">{t('pokedex.allGens')}</option>
                                 {generations.map((generation) => (
                                     <option key={generation} value={generation} className="capitalize">
                                         {generation.replace('-', ' ')}
@@ -1717,7 +1719,7 @@ export function PokedexView({
                             aria-pressed={showOnlyFavorites}
                         >
                             <Star className={`w-4 h-4 ${showOnlyFavorites ? 'fill-[#FBBF24] text-[#FBBF24]' : 'text-muted'}`} />
-                            <span>{showOnlyFavorites ? 'Favorites' : 'All'}</span>
+                            <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
                         </button>
                     </div>
 
@@ -1753,8 +1755,8 @@ export function PokedexView({
                                     <div className="px-2 pb-4">
                                         <EmptyState
                                             compact
-                                            title={showOnlyFavorites ? 'No favorites match' : 'No Pokémon found'}
-                                            message={showOnlyFavorites ? 'Try clearing filters or favoriting more Pokémon.' : 'Try a different search, generation, or type.'}
+                                            title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
+                                            message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
                                         />
                                     </div>
                                 )}
@@ -1769,7 +1771,7 @@ export function PokedexView({
                         <button
                             onClick={handleCloseDetails}
                             type="button"
-                            aria-label="Close details panel"
+                            aria-label={t('common.close')}
                             className="absolute top-4 right-4 text-muted hover:text-fg hover:rotate-90 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1"
                         >
                             <X className="w-5 h-5" />
@@ -1782,7 +1784,7 @@ export function PokedexView({
                                 className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'data' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
                             >
                                 <Activity className="w-4 h-4" />
-                                <span>Stats & Data</span>
+                                <span>{t('pokedex.dataTab')}</span>
                             </button>
                             <button
                                 type="button"
@@ -1790,7 +1792,7 @@ export function PokedexView({
                                 className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'locations' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
                             >
                                 <MapPin className="w-4 h-4" />
-                                <span>Catch Locations</span>
+                                <span>{t('pokedex.locationsTab')}</span>
                             </button>
                             <button
                                 type="button"
@@ -1798,7 +1800,7 @@ export function PokedexView({
                                 className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'moves' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
                             >
                                 <Swords className="w-4 h-4" />
-                                <span>Learnt Moves</span>
+                                <span>{t('pokedex.movesTab')}</span>
                             </button>
                             <button
                                 type="button"
@@ -1806,7 +1808,7 @@ export function PokedexView({
                                 className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'sprites' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
                             >
                                 <ImageIcon className="w-4 h-4" />
-                                <span>Sprites</span>
+                                <span>{t('pokedex.spritesTab')}</span>
                             </button>
                         </div>
 

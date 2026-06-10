@@ -9,6 +9,7 @@ import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
 import { TypeBadge } from '../TypeBadge';
+import { useTranslation } from '../../hooks/useTranslation';
 import {
     ClearIcon,
     EditIcon,
@@ -59,6 +60,7 @@ export function TeamBuilderView({
     showOnlyFavorites,
     setShowOnlyFavorites,
 }) {
+    const { t, language } = useTranslation();
     const [dragIndex, setDragIndex] = React.useState(null);
     const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
@@ -147,10 +149,10 @@ export function TeamBuilderView({
                         <div className="team-builder-current-head">
                             <div className="team-builder-panel__header team-builder-panel__header--compact flex items-center justify-between">
                                 <div className="flex items-center gap-2">
-                                    <h2 className="team-builder-panel__title team-builder-panel__title--compact">Current team</h2>
+                                    <h2 className="team-builder-panel__title team-builder-panel__title--compact">{language === 'pt' ? 'Time atual' : 'Current team'}</h2>
                                     {editingTeamId && (
                                         editingTeamId === activeTeamId ? (
-                                            <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ Active</span>
+                                            <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ {t('common.active')}</span>
                                         ) : (
                                             <button
                                                 type="button"
@@ -158,7 +160,7 @@ export function TeamBuilderView({
                                                 className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider"
                                                 style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
                                             >
-                                                Set Active
+                                                {language === 'pt' ? 'Ativar' : 'Set Active'}
                                             </button>
                                         )
                                     )}
@@ -167,13 +169,13 @@ export function TeamBuilderView({
                             </div>
 
                             <label className="team-builder-control team-builder-control--compact" htmlFor="team-builder-name">
-                                <span className="team-builder-control__label team-builder-control__label--compact">Team name</span>
+                                <span className="team-builder-control__label team-builder-control__label--compact">{language === 'pt' ? 'Nome do time' : 'Team name'}</span>
                                 <input
                                     id="team-builder-name"
                                     type="text"
                                     value={teamName}
                                     onChange={(e) => setTeamName(e.target.value)}
-                                    placeholder="Name this lineup"
+                                    placeholder={language === 'pt' ? 'Dê um nome a este time' : 'Name this lineup'}
                                     className="team-builder-field team-builder-field--compact"
                                 />
                             </label>
@@ -241,7 +243,7 @@ export function TeamBuilderView({
                                             e.stopPropagation();
                                             handleRemoveFromTeam(pokemon.instanceId);
                                         }}
-                                        aria-label={`Remove ${pokemon.name} from team`}
+                                        aria-label={`${t('common.remove')} ${pokemon.name}`}
                                         className="team-builder-slot__control team-builder-slot__control--remove"
                                     >
                                         <TrashIcon />
@@ -261,32 +263,32 @@ export function TeamBuilderView({
                         <div className="team-builder-action-row">
                             <button type="button" onClick={handleSaveTeam} className="team-builder-button team-builder-button--primary team-builder-button--grow">
                                 <SaveIcon />
-                                {editingTeamId ? 'Update team' : 'Save team'}
+                                {editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
                             </button>
-                            <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="team-builder-icon-button" title="Export to Showdown"><ShowdownIcon /></button>
-                            <button onClick={handleShareTeam} type="button" aria-label="Share team" className="team-builder-icon-button" title="Share team"><ShareIcon /></button>
-                            <button onClick={handleClearTeam} type="button" aria-label="Clear team" className="team-builder-icon-button team-builder-icon-button--danger" title="Clear team"><ClearIcon /></button>
+                            <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="team-builder-icon-button" title={t('builder.exportShowdown')}><ShowdownIcon /></button>
+                            <button onClick={handleShareTeam} type="button" aria-label="Share team" className="team-builder-icon-button" title={t('builder.shareTeam')}><ShareIcon /></button>
+                            <button onClick={handleClearTeam} type="button" aria-label="Clear team" className="team-builder-icon-button team-builder-icon-button--danger" title={t('builder.clearTeam')}><ClearIcon /></button>
                         </div>
                     </section>
 
                     <section className="team-builder-panel p-4">
                         <div className="team-builder-panel__header team-builder-panel__header--compact">
-                            <h3 className="team-builder-panel__title team-builder-panel__title--compact">Team analysis</h3>
+                            <h3 className="team-builder-panel__title team-builder-panel__title--compact">{t('builder.analysisTitle')}</h3>
                         </div>
 
                         <div className="team-builder-analysis-grid mt-4">
                             <div className="team-builder-analysis-card">
-                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">Offensive coverage</h4>
+                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive coverage'}</h4>
                                 <div className="flex flex-wrap gap-1">
                                     {currentTeam.length > 0
                                         ? (teamAnalysis.strengths.size > 0
                                             ? Array.from(teamAnalysis.strengths).sort().map((type) => <TypeBadge key={type} type={type} colors={colors} />)
-                                            : <p className="team-builder-empty-note !p-0">No type advantages found.</p>)
-                                        : <p className="team-builder-empty-note !p-0">Add Pokemon to preview your coverage.</p>}
+                                            : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
+                                        : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
                                 </div>
                             </div>
                             <div className="team-builder-analysis-card">
-                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--danger">Defensive weaknesses</h4>
+                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--danger">{language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive weaknesses'}</h4>
                                 <div className="flex flex-wrap gap-1">
                                     {currentTeam.length > 0
                                         ? (Object.keys(teamAnalysis.weaknesses).length > 0
@@ -296,8 +298,8 @@ export function TeamBuilderView({
                                                     <span className="team-builder-analysis-score">({score}x)</span>
                                                 </div>
                                             ))
-                                            : <p className="team-builder-empty-note !p-0">Your team is rock solid.</p>)
-                                        : <p className="team-builder-empty-note !p-0">Weaknesses appear after the first pick.</p>}
+                                            : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
+                                        : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
                                 </div>
                             </div>
                         </div>
@@ -308,7 +310,7 @@ export function TeamBuilderView({
                     <section className="team-builder-panel team-builder-panel--picker p-4">
                         <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
                             <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
-                                <h2 className="team-builder-panel__title team-builder-panel__title--compact">Pokédex</h2>
+                                <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('nav.pokedex')}</h2>
                                 <span className="team-builder-panel__meta team-builder-panel__meta--compact">{displayedPokemons.length}</span>
                             </div>
                         </div>
@@ -330,7 +332,7 @@ export function TeamBuilderView({
                                     ))}
                                 </div>
                             </div>
-                            <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? 'All types' : `${selectedTypeCount} active`}</span>
+                            <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
                         </div>
 
                         <div className="team-builder-unified-toolbar mt-3">
@@ -342,7 +344,7 @@ export function TeamBuilderView({
                                 </span>
                                 <input
                                     type="text"
-                                    placeholder="Search by name..."
+                                    placeholder={t('pokedex.searchPlaceholder')}
                                     value={searchInput}
                                     onChange={(e) => setSearchInput(e.target.value)}
                                     className="team-builder-field team-builder-field--compact team-builder-search-input"
@@ -352,7 +354,7 @@ export function TeamBuilderView({
                                         type="button"
                                         onClick={() => setSearchInput('')}
                                         className="team-builder-search-clear"
-                                        aria-label="Clear search"
+                                        aria-label={t('common.clear')}
                                     >
                                         <ClearIcon className="w-4 h-4" />
                                     </button>
@@ -364,9 +366,9 @@ export function TeamBuilderView({
                                     value={selectedGeneration}
                                     onChange={(e) => setSelectedGeneration(e.target.value)}
                                     className="team-builder-field team-builder-field--compact team-builder-select"
-                                    aria-label="Generation filter"
+                                    aria-label={t('pokedex.genFilterLabel')}
                                 >
-                                    <option value="all">All generations</option>
+                                    <option value="all">{t('pokedex.allGens')}</option>
                                     {generations.map((generation) => (
                                         <option key={generation} value={generation} className="capitalize">
                                             {generation.replace('-', ' ')}
@@ -382,7 +384,7 @@ export function TeamBuilderView({
                                 aria-pressed={showOnlyFavorites}
                             >
                                 <StarIcon className="w-4 h-4" isFavorite={showOnlyFavorites} color="currentColor" />
-                                <span>{showOnlyFavorites ? 'Favorites' : 'All'}</span>
+                                <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
                             </button>
                         </div>
 
@@ -413,8 +415,8 @@ export function TeamBuilderView({
                                         <div className="px-2 pb-4">
                                             <EmptyState
                                                 compact
-                                                title={showOnlyFavorites ? 'No favorites match' : 'No Pokémon found'}
-                                                message={showOnlyFavorites ? 'Try clearing filters or favoriting more Pokémon.' : 'Try a different search, generation, or type.'}
+                                                title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
+                                                message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
                                             />
                                         </div>
                                     )}
@@ -425,8 +427,8 @@ export function TeamBuilderView({
 
                     <section className="team-builder-panel p-4">
                         <div className="team-builder-panel__header team-builder-panel__header--compact">
-                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">Recent teams</h2>
-                            <button type="button" onClick={onNavigateToTeams} className="team-builder-button team-builder-button--inline team-builder-button--inline-compact">View all</button>
+                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">{language === 'pt' ? 'Times recentes' : 'Recent teams'}</h2>
+                            <button type="button" onClick={onNavigateToTeams} className="team-builder-button team-builder-button--inline team-builder-button--inline-compact">{language === 'pt' ? 'Ver todos' : 'View all'}</button>
                         </div>
 
                         <div className="team-builder-recent-list team-builder-recent-list--wide custom-scrollbar mt-4">
@@ -450,7 +452,7 @@ export function TeamBuilderView({
                                         <button
                                             type="button"
                                             onClick={() => handleToggleFavorite(team)}
-                                            title={team.isFavorite ? 'Unfavorite team' : 'Favorite team'}
+                                            title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
                                             className={`team-builder-icon-button team-builder-icon-button--small ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
                                         >
                                             <StarIcon isFavorite={team.isFavorite} color="currentColor" />
@@ -467,15 +469,15 @@ export function TeamBuilderView({
                                                      className={`team-builder-button team-builder-button--small ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'}`}
                                                      style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
                                                  >
-                                                     {isActive ? '★ Active' : 'Set Active'}
+                                                     {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
                                                  </button>
                                              );
                                          })()}
-                                         <button type="button" onClick={() => handleEditTeam(team)} className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-button--small">Edit</button>
+                                         <button type="button" onClick={() => handleEditTeam(team)} className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-button--small">{t('common.edit')}</button>
                                          <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="team-builder-icon-button team-builder-icon-button--danger team-builder-icon-button--small" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
                                      </div>
                                 </article>
-                            )) : <div className="team-builder-empty-note">No recent teams yet.</div>}
+                            )) : <div className="team-builder-empty-note">{language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}</div>}
                         </div>
                     </section>
                 </div>

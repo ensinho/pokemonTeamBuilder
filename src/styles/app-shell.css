@@ -702,47 +702,83 @@
     color: var(--color-danger);
 }
 
-.app-shell__account-theme-grid {
-    display: grid;
-    gap: 0.55rem;
-}
-
-.app-shell__account-theme-option {
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 0.6rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.85rem;
-    background: var(--color-surface-raised);
-    padding: 0.62rem 0.68rem;
-    text-align: left;
+.app-shell__account-name {
+    margin: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
     color: var(--color-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.app-shell__account-theme-option.is-active {
+.app-shell__account-menu-trigger svg {
+    transition: transform var(--duration-normal) var(--ease-smooth);
+}
+
+.app-shell__account-menu-trigger:hover svg {
+    transform: rotate(45deg);
+}
+
+.app-shell__account-theme-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+}
+
+.app-shell__account-theme-dot {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+    transition: transform var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__account-theme-dot:hover {
+    transform: scale(1.15);
+}
+
+.app-shell__account-theme-dot.is-active {
+    border-color: var(--color-fg);
+    box-shadow: 0 0 0 2px var(--color-primary), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
+}
+
+.app-shell__account-language-row {
+    display: flex;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.app-shell__account-lang-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.45rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid var(--color-border);
+    border-radius: 0.65rem;
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: all var(--duration-normal) var(--ease-smooth);
+}
+
+.app-shell__account-lang-btn:hover {
+    border-color: var(--color-border-hover);
+    transform: translateY(-0.5px);
+}
+
+.app-shell__account-lang-btn.is-active {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-}
-
-.app-shell__account-theme-swatch {
-    width: 0.92rem;
-    height: 0.92rem;
-    flex-shrink: 0;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    background: var(--app-shell-theme-swatch);
-}
-
-.app-shell__account-theme-icon {
-    display: inline-flex;
-    margin-left: auto;
-    color: var(--color-muted);
-}
-
-.app-shell__account-theme-icon svg {
-    width: 0.95rem;
-    height: 0.95rem;
+    color: var(--color-primary);
 }
 
 .app-shell__account-signout {
