@@ -5,6 +5,8 @@ import { PokemonCard } from '../PokemonCard';
 import { ClearIcon, StarIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useNavigate } from 'react-router-dom';
+import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 
 export function FavoritePokemonsView({
     allPokemons,
@@ -15,6 +17,7 @@ export function FavoritePokemonsView({
     isLoading,
 }) {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [searchInput, setSearchInput] = useState('');
     const [selectedType, setSelectedType] = useState('all');
 
@@ -112,11 +115,16 @@ export function FavoritePokemonsView({
                             {filteredFavorites.length === 0 && !isLoading && (
                                 <div className="px-2 pb-4">
                                     <EmptyState
-                                        compact
+                                        compact={favoritePokemons.size !== 0}
                                         title={favoritePokemons.size === 0 ? t('favorites.emptyTitle') : t('favorites.noMatchesTitle')}
                                         message={favoritePokemons.size === 0
                                             ? t('favorites.emptyDesc')
                                             : t('favorites.noMatchesDesc')}
+                                        spriteSrc={favoritePokemons.size === 0 ? getPokemonArtworkSpriteUrl(385) : undefined}
+                                        action={favoritePokemons.size === 0 ? {
+                                            label: t('nav.pokedex'),
+                                            onClick: () => navigate('/pokedex')
+                                        } : undefined}
                                     />
                                 </div>
                             )}

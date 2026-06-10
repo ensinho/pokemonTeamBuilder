@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 /**
  * TeamIdentitySummary — three at-a-glance badges describing the
@@ -8,6 +9,8 @@ import React, { useMemo } from 'react';
  * Renders nothing for an empty team. Pure presentation; no side effects.
  */
 export function TeamIdentitySummary({ team }) {
+    const { language } = useTranslation();
+    
     const stats = useMemo(() => {
         if (!team || team.length === 0) return null;
 
@@ -80,21 +83,62 @@ export function TeamIdentitySummary({ team }) {
 
     if (!stats) return null;
 
+    const getBstHint = (label, lang) => {
+        if (lang === 'pt') {
+            if (label === 'Strong') return 'Forte';
+            if (label === 'Balanced') return 'Equilibrado';
+            if (label === 'Light') return 'Leve';
+            return label;
+        }
+        return label;
+    };
+
+    const getTypesHint = (label, lang) => {
+        if (lang === 'pt') {
+            if (label === 'Diverse') return 'Diverso';
+            if (label === 'Narrow') return 'Limitado';
+            return label;
+        }
+        return label;
+    };
+
+    const getLeanHint = (label, lang) => {
+        if (lang === 'pt') {
+            if (label === 'Physical') return 'Físico';
+            if (label === 'Special') return 'Especial';
+            if (label === 'Mixed') return 'Misto';
+            return label;
+        }
+        return label;
+    };
+
     return (
-        <div className="grid grid-cols-3 gap-1.5 mt-3" aria-label="Team identity summary">
-            <Badge label="BST" value={stats.avgBst ?? '—'} hint={stats.bstLabel} />
-            <Badge label="Types" value={stats.typeCount} hint={stats.typeCount >= 5 ? 'Diverse' : stats.typeCount >= 3 ? 'OK' : 'Narrow'} />
-            <Badge label="Lean" value={stats.leanLabel} hint={`${stats.physical}/${stats.special}/${stats.mixed}`} />
+        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3" aria-label="Team identity summary">
+            <Badge
+                label="BST"
+                value={stats.avgBst ?? '—'}
+                hint={stats.avgBst !== null ? getBstHint(stats.bstLabel, language) : undefined}
+            />
+            <Badge
+                label={language === 'pt' ? 'Tipos' : 'Types'}
+                value={stats.typeCount}
+                hint={getTypesHint(stats.typeCount >= 5 ? 'Diverse' : stats.typeCount >= 3 ? 'OK' : 'Narrow', language)}
+            />
+            <Badge
+                label={language === 'pt' ? 'Foco' : 'Lean'}
+                value={getLeanHint(stats.leanLabel, language)}
+                hint={`${stats.physical}/${stats.special}/${stats.mixed}`}
+            />
         </div>
     );
 }
 
 function Badge({ label, value, hint }) {
     return (
-        <div className="rounded-xl p-1.5 text-center bg-surface-raised">
-            <p className="text-[9px] uppercase tracking-wider text-muted font-semibold leading-none">{label}</p>
-            <p className="mt-1 text-sm font-bold text-fg leading-none">{value}</p>
-            {hint && <p className="mt-1 truncate text-[9px] text-muted leading-none">{hint}</p>}
+        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-raised border border-border">
+            <span className="text-[9px] uppercase tracking-wider text-muted font-bold">{label}</span>
+            <span className="font-bold text-fg">{value}</span>
+            {hint && <span className="text-[9px] text-muted font-normal">({hint})</span>}
         </div>
     );
 }

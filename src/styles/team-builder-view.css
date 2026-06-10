@@ -199,8 +199,8 @@
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.6rem;
-    min-height: 11.3rem;
-    margin-top: 0.85rem;
+    min-height: 11rem;
+    margin-top: 0.5rem;
     border: 1px dashed var(--color-border);
     border-radius: 1rem;
     background: var(--color-bg);
@@ -701,6 +701,33 @@
 .team-builder-analysis-score {
     font-size: 0.72rem;
     font-weight: 700;
+}
+
+.team-builder-analysis-score--success {
+    color: var(--color-success);
+}
+
+.team-builder-header-input {
+    border: 2px solid var(--color-border);
+    background: var(--color-surface-raised);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--color-fg);
+    border-radius: 0.8rem;
+    outline: none;
+    transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth);
+    width: 100%;
+}
+
+.team-builder-header-input:hover {
+    border-color: var(--color-border-hover);
+}
+
+.team-builder-header-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-soft);
+    background: var(--color-surface);
 }
 
 .team-builder-empty-note {

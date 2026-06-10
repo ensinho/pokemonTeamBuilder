@@ -38,7 +38,7 @@ export const useActiveTeamStore = create((set, get) => ({
     currentTeam: [],
     teamName: '',
     editingTeamId: null,
-    teamAnalysis: { strengths: new Set(), weaknesses: {} },
+    teamAnalysis: { strengths: new Set(), weaknesses: {}, defensiveCoverage: {} },
     suggestedPokemonIds: new Set(),
     editingTeamMember: null,
 
@@ -61,13 +61,14 @@ export const useActiveTeamStore = create((set, get) => ({
 
         if (currentTeam.length === 0) {
             set({
-                teamAnalysis: { strengths: new Set(), weaknesses: {} },
+                teamAnalysis: { strengths: new Set(), weaknesses: {}, defensiveCoverage: {} },
                 suggestedPokemonIds: new Set()
             });
             return;
         }
 
         const teamWeaknessCounts = {};
+        const teamResistanceCounts = {};
         const offensiveCoverage = new Set();
 
         currentTeam.flatMap(d => d.types || []).forEach(type => {
@@ -96,6 +97,10 @@ export const useActiveTeamStore = create((set, get) => ({
             if (weakCount > 0 && weakCount >= currentTeam.length / 2 && weakCount > resistanceCount) {
                 teamWeaknessCounts[attackingType] = weakCount;
             }
+
+            if (resistanceCount > 0) {
+                teamResistanceCounts[attackingType] = resistanceCount;
+            }
         });
 
         const weaknessTypes = Object.keys(teamWeaknessCounts);
@@ -115,7 +120,7 @@ export const useActiveTeamStore = create((set, get) => ({
         }
 
         set({
-            teamAnalysis: { strengths: offensiveCoverage, weaknesses: teamWeaknessCounts },
+            teamAnalysis: { strengths: offensiveCoverage, weaknesses: teamWeaknessCounts, defensiveCoverage: teamResistanceCounts },
             suggestedPokemonIds: suggestions
         });
     },

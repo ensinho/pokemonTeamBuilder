@@ -18,22 +18,23 @@ export function EmptyState({ title, message, action, spriteSrc, compact = false 
     const sizePad = compact ? 'py-6' : 'py-12';
 
     return (
-        <div className={`flex flex-col mt-12 items-center justify-center text-center ${sizePad}`}>
-            <img
-                src={sprite}
-                alt=""
-                aria-hidden="true"
-                className={`${sizeImg} object-contain opacity-60 mb-3 select-none`}
-                style={{ filter: 'grayscale(0.4)' }}
-                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-            />
-            <h3 className="text-base md:text-lg font-bold text-fg mb-1">{title}</h3>
-            {message && <p className="text-sm text-muted max-w-xs">{message}</p>}
+        <div className={`empty-state flex flex-col mt-12 items-center justify-center text-center ${sizePad} ${compact ? 'is-compact' : ''}`}>
+            <div className="empty-state__illustration-container relative mb-3">
+                <img
+                    src={sprite}
+                    alt=""
+                    aria-hidden="true"
+                    className={`empty-state__illustration ${sizeImg} object-contain opacity-80 select-none`}
+                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                />
+            </div>
+            <h3 className="empty-state__title text-base md:text-lg font-bold text-fg mb-1">{title}</h3>
+            {message && <p className="empty-state__message text-sm text-muted max-w-xs">{message}</p>}
             {action && (
                 <button
                     type="button"
                     onClick={action.onClick}
-                    className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-primary hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                    className="empty-state__action mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-primary hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                 >
                     {action.label}
                 </button>

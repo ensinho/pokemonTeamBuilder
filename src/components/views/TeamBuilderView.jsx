@@ -20,6 +20,23 @@ import {
     TrashIcon,
 } from '../icons';
 
+function AnalysisTypeBadge({ type, colors }) {
+    const { t } = useTranslation();
+    const typeLower = type.toLowerCase();
+    const color = typeColors[typeLower] || '#777';
+    const icon = typeIcons[typeLower];
+
+    return (
+        <span
+            className="inline-flex items-center gap-1.5 text-[10px] text-white font-bold px-3 py-1 rounded-md shadow-sm"
+            style={{ backgroundColor: color }}
+        >
+            {icon && <img src={icon} alt="" className="w-3 h-3 object-contain shrink-0" aria-hidden="true" />}
+            <span className="leading-none">{t(`types.${typeLower}`, { defaultValue: type }).toUpperCase()}</span>
+        </span>
+    );
+}
+
 export function TeamBuilderView({
     currentTeam,
     teamName,
@@ -147,38 +164,34 @@ export function TeamBuilderView({
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <section className="team-builder-panel p-4">
                         <div className="team-builder-current-head">
-                            <div className="team-builder-panel__header team-builder-panel__header--compact flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <h2 className="team-builder-panel__title team-builder-panel__title--compact">{language === 'pt' ? 'Time atual' : 'Current team'}</h2>
+                            <div className="team-builder-panel__header team-builder-panel__header--compact flex items-center justify-between gap-3 mb-4">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <input
+                                        id="team-builder-name"
+                                        type="text"
+                                        value={teamName}
+                                        onChange={(e) => setTeamName(e.target.value)}
+                                        placeholder={t('builder.teamNamePlaceholder')}
+                                        className="team-builder-header-input font-bold text-base text-fg focus:outline-none focus:ring-0 m-0 w-full truncate"
+                                        aria-label={language === 'pt' ? 'Nome do time' : 'Team name'}
+                                    />
                                     {editingTeamId && (
                                         editingTeamId === activeTeamId ? (
-                                            <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ {t('common.active')}</span>
+                                            <span className="home-active-badge flex items-center gap-1 text-[11px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ {t('common.active')}</span>
                                         ) : (
                                             <button
                                                 type="button"
                                                 onClick={() => setActiveTeamId(editingTeamId)}
-                                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider"
-                                                style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
+                                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[11px] rounded-xl uppercase font-bold tracking-wider shrink-0"
+                                                style={{ padding: '0.25rem 0.5rem', minHeight: 'auto', borderRadius: '12px  ' }}
                                             >
                                                 {language === 'pt' ? 'Ativar' : 'Set Active'}
                                             </button>
                                         )
                                     )}
                                 </div>
-                                <span className="team-builder-panel__meta team-builder-panel__meta--compact">{currentTeam.length}/6</span>
+                                <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0">{currentTeam.length}/6</span>
                             </div>
-
-                            <label className="team-builder-control team-builder-control--compact" htmlFor="team-builder-name">
-                                <span className="team-builder-control__label team-builder-control__label--compact">{language === 'pt' ? 'Nome do time' : 'Team name'}</span>
-                                <input
-                                    id="team-builder-name"
-                                    type="text"
-                                    value={teamName}
-                                    onChange={(e) => setTeamName(e.target.value)}
-                                    placeholder={language === 'pt' ? 'Dê um nome a este time' : 'Name this lineup'}
-                                    className="team-builder-field team-builder-field--compact"
-                                />
-                            </label>
                         </div>
 
                         <div className="team-builder-slots" aria-label="Current team slots">
@@ -279,27 +292,46 @@ export function TeamBuilderView({
                         <div className="team-builder-analysis-grid mt-4">
                             <div className="team-builder-analysis-card">
                                 <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive coverage'}</h4>
-                                <div className="flex flex-wrap gap-1">
+                                <div className="flex flex-wrap gap-1.5">
                                     {currentTeam.length > 0
                                         ? (teamAnalysis.strengths.size > 0
-                                            ? Array.from(teamAnalysis.strengths).sort().map((type) => <TypeBadge key={type} type={type} colors={colors} />)
-                                            : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
-                                        : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
+                                            ? Array.from(teamAnalysis.strengths).sort().map((type) => <AnalysisTypeBadge key={type} type={type} colors={colors} />)
+                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
+                                        : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
                                 </div>
                             </div>
+
+                            <div className="team-builder-analysis-card">
+                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Defensiva' : 'Defensive coverage'}</h4>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {currentTeam.length > 0
+                                        ? (teamAnalysis.defensiveCoverage && Object.keys(teamAnalysis.defensiveCoverage).length > 0
+                                            ? Object.entries(teamAnalysis.defensiveCoverage).sort(([, a], [, b]) => b - a).map(([type, count]) => (
+                                                <div key={type} className="flex items-center gap-1">
+                                                    <AnalysisTypeBadge type={type} colors={colors} />
+                                                    {count > 1 && (
+                                                        <span className="team-builder-analysis-score team-builder-analysis-score--success">({count}x)</span>
+                                                    )}
+                                                </div>
+                                            ))
+                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma cobertura defensiva.' : 'No defensive coverage.'}</p>)
+                                        : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Cobertura defensiva aparece após a primeira escolha.' : 'Defensive coverage appears after the first pick.'}</p>}
+                                </div>
+                            </div>
+
                             <div className="team-builder-analysis-card">
                                 <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--danger">{language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive weaknesses'}</h4>
-                                <div className="flex flex-wrap gap-1">
+                                <div className="flex flex-wrap gap-1.5">
                                     {currentTeam.length > 0
                                         ? (Object.keys(teamAnalysis.weaknesses).length > 0
                                             ? Object.entries(teamAnalysis.weaknesses).sort(([, a], [, b]) => b - a).map(([type, score]) => (
                                                 <div key={type} className="flex items-center gap-1">
-                                                    <TypeBadge type={type} colors={colors} />
+                                                    <AnalysisTypeBadge type={type} colors={colors} />
                                                     <span className="team-builder-analysis-score">({score}x)</span>
                                                 </div>
                                             ))
-                                            : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
-                                        : <p className="team-builder-empty-note !p-0">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
+                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
+                                        : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
                                 </div>
                             </div>
                         </div>
@@ -459,23 +491,23 @@ export function TeamBuilderView({
                                         </button>
                                     </div>
 
-                                     <div className="team-builder-recent-card__actions">
-                                         {(() => {
-                                             const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
-                                             return (
-                                                 <button
-                                                     type="button"
-                                                     onClick={() => setActiveTeamId(isActive ? null : team.id)}
-                                                     className={`team-builder-button team-builder-button--small ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'}`}
-                                                     style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
-                                                 >
-                                                     {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
-                                                 </button>
-                                             );
-                                         })()}
-                                         <button type="button" onClick={() => handleEditTeam(team)} className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-button--small">{t('common.edit')}</button>
-                                         <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="team-builder-icon-button team-builder-icon-button--danger team-builder-icon-button--small" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
-                                     </div>
+                                    <div className="team-builder-recent-card__actions">
+                                        {(() => {
+                                            const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
+                                            return (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setActiveTeamId(isActive ? null : team.id)}
+                                                    className={`team-builder-button team-builder-button--small ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'}`}
+                                                    style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
+                                                >
+                                                    {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
+                                                </button>
+                                            );
+                                        })()}
+                                        <button type="button" onClick={() => handleEditTeam(team)} className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-button--small">{t('common.edit')}</button>
+                                        <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="team-builder-icon-button team-builder-icon-button--danger team-builder-icon-button--small" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
+                                    </div>
                                 </article>
                             )) : <div className="team-builder-empty-note">{language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}</div>}
                         </div>
