@@ -55,6 +55,13 @@ const DISPLAY_NAME_OVERRIDES = Object.freeze({
     flabebe: 'Flabebe',
 });
 
+const HistoryIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1em', height: '1em' }}>
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+    </svg>
+);
+
 const sortGenerationKeys = (keys) => QUIZ_GENERATION_KEYS.filter((key) => keys.includes(key));
 
 const formatPokemonDisplayName = (name = '') => {
@@ -100,6 +107,10 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [loadingDetailId, setLoadingDetailId] = useState(null);
     const [gridFilter, setGridFilter] = useState('all'); // 'all', 'guessed', 'missing'
 
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(5);
+    const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
+
     const {
         quizRuns,
         activeRun,
@@ -111,9 +122,28 @@ export function GenerationQuizView({ showDetails, showToast }) {
         setActiveRunId
     } = useQuizRuns();
 
+    const handleHistoryScroll = useCallback((e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop - clientHeight < 20) {
+            if (!isHistoryLoadingMore && visibleHistoryLimit < quizRuns.length) {
+                setIsHistoryLoadingMore(true);
+                setTimeout(() => {
+                    setVisibleHistoryLimit((prev) => Math.min(prev + 5, quizRuns.length));
+                    setIsHistoryLoadingMore(false);
+                }, 400);
+            }
+        }
+    }, [isHistoryLoadingMore, visibleHistoryLimit, quizRuns.length]);
+
+    useEffect(() => {
+        if (!isHistoryOpen) {
+            setVisibleHistoryLimit(5);
+        }
+    }, [isHistoryOpen]);
+
     const quizStarted = activeRun !== null;
     const activeGenerationKeys = activeRun ? activeRun.generationKeys : [];
-    
+
     const foundIds = useMemo(() => {
         return new Set(activeRun ? activeRun.foundIds : []);
     }, [activeRun?.foundIds]);
@@ -299,7 +329,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
         const nextFoundIdsArray = [...activeRun.foundIds, matchedPokemonId];
         const nextFoundOrder = [...activeRun.foundOrder, matchedPokemonId];
         setNewlyFoundId(matchedPokemonId);
-        
+
         updateActiveRunProgress(nextFoundIdsArray, nextFoundOrder, activeRun.invalidGuesses, 0);
 
         setAnnouncement(`${matchedPokemon.displayName} found. ${nextFoundIdsArray.length} of ${totalCount}.`);
@@ -367,21 +397,13 @@ export function GenerationQuizView({ showDetails, showToast }) {
     );
 
     const toggleGeneration = useCallback((generationKey) => {
-        setSelectedGenerationKeys((current) => {
-            const next = new Set(current);
-            if (next.has(generationKey)) {
-                next.delete(generationKey);
-            } else {
-                next.add(generationKey);
-            }
-            return next;
-        });
+        setSelectedGenerationKeys(new Set([generationKey]));
     }, []);
 
     const toggleAllGenerations = useCallback(() => {
         setSelectedGenerationKeys((current) => {
             if (current.size === QUIZ_GENERATION_KEYS.length) {
-                return new Set();
+                return new Set(['generation-i']);
             }
             return new Set(QUIZ_GENERATION_KEYS);
         });
@@ -534,79 +556,48 @@ export function GenerationQuizView({ showDetails, showToast }) {
                             </span>
                         )}
                     </div>
-                    {quizStarted && (
-                        <div className="generation-quiz__grid-filters">
-                            <button
-                                type="button"
-                                onClick={() => setGridFilter('all')}
-                                className={`generation-quiz__filter-btn ${gridFilter === 'all' ? 'is-active' : ''}`}
-                            >
-                                All ({totalCount})
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setGridFilter('guessed')}
-                                className={`generation-quiz__filter-btn ${gridFilter === 'guessed' ? 'is-active' : ''}`}
-                            >
-                                Guessed ({foundCount})
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setGridFilter('missing')}
-                                className={`generation-quiz__filter-btn ${gridFilter === 'missing' ? 'is-active' : ''}`}
-                            >
-                                Missing ({remainingCount})
-                            </button>
-                        </div>
-                    )}
-                    {quizStarted && (
-                        <span className="generation-quiz__grid-meta">{visibleEntries.length} shown</span>
-                    )}
-                </div>
-
-                {/* Generation Selector Row */}
-                <div className="generation-quiz__selector-bar mt-3">
-                    <div className="generation-quiz__selector-header">
-                        <span className="generation-quiz__selector-label">Generations</span>
-                        {hasPendingSelectionChanges && (
-                            <span className="generation-quiz__pending-note">
-                                (Restart to apply selection)
-                            </span>
-                        )}
-                    </div>
-                    <div className="generation-quiz__selector-body mt-2">
-                        <div className="generation-quiz__selector-pills" role="group" aria-label="Select generations">
-                            <button
-                                type="button"
-                                onClick={toggleAllGenerations}
-                                className={`generation-quiz__selector-pill generation-quiz__selector-pill--all ${allGenerationsSelected ? 'is-active' : ''}`}
-                                aria-pressed={allGenerationsSelected}
-                            >
-                                All Gens
-                            </button>
-                            {QUIZ_GENERATION_KEYS.map((generationKey) => (
+                    <div className="flex items-center gap-3 ml-auto">
+                        {quizStarted && (
+                            <div className="generation-quiz__grid-filters">
                                 <button
-                                    key={generationKey}
                                     type="button"
-                                    onClick={() => toggleGeneration(generationKey)}
-                                    className={`generation-quiz__selector-pill ${selectedGenerationKeys.has(generationKey) ? 'is-active' : ''}`}
-                                    aria-pressed={selectedGenerationKeys.has(generationKey)}
+                                    onClick={() => setGridFilter('all')}
+                                    className={`generation-quiz__filter-btn ${gridFilter === 'all' ? 'is-active' : ''}`}
                                 >
-                                    <span>{GENERATION_LABELS[generationKey]}</span>
-                                    <span className="generation-quiz__selector-pill-count">
-                                        {generationCounts.get(generationKey) || 0}
-                                    </span>
+                                    All ({totalCount})
                                 </button>
-                            ))}
-                        </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setGridFilter('guessed')}
+                                    className={`generation-quiz__filter-btn ${gridFilter === 'guessed' ? 'is-active' : ''}`}
+                                >
+                                    Guessed ({foundCount})
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setGridFilter('missing')}
+                                    className={`generation-quiz__filter-btn ${gridFilter === 'missing' ? 'is-active' : ''}`}
+                                >
+                                    Missing ({remainingCount})
+                                </button>
+                            </div>
+                        )}
+                        {quizStarted && (
+                            <span className="generation-quiz__grid-meta hidden md:inline">{visibleEntries.length} shown</span>
+                        )}
                         <button
                             type="button"
-                            onClick={startQuiz}
-                            disabled={isLoadingIndex || previewEntries.length === 0}
-                            className="generation-quiz__selector-start-btn"
+                            onClick={() => setIsHistoryOpen(true)}
+                            className="generation-quiz__history-toggle"
+                            title="View Quiz Run History"
                         >
-                            <PokeballIcon />
-                            {quizStarted ? 'Restart' : `Start (${previewEntries.length})`}
+                            <HistoryIcon />
+                            <span>History</span>
+                            {quizRuns.length > 0 && (
+                                <span className="generation-quiz__history-toggle-badge">
+                                    {quizRuns.length}
+                                </span>
+                            )}
                         </button>
                     </div>
                 </div>
@@ -676,9 +667,19 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         </div>
                                     )}
 
-                                    <button type="button" onClick={startQuiz} className="generation-quiz__compact-reset-btn">
-                                        <RefreshIcon /> Restart
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button type="button" onClick={startQuiz} className="generation-quiz__compact-reset-btn">
+                                            <RefreshIcon /> Restart
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveRunId(null)}
+                                            className="generation-quiz__compact-reset-btn"
+                                            title="Return to start screen to change generations"
+                                        >
+                                            Change Gens
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {isComplete && (
@@ -708,91 +709,64 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         <div className="team-builder-spinner" aria-hidden="true"></div>
                     </div>
                 ) : !quizStarted ? (
-                    <div className="flex flex-col gap-6">
-                        <EmptyState
-                            compact
-                            title="Let's start a quiz!"
-                            spriteSrc="/LogoCuteGengarRounded.png"
-                            message={
-                                bestRun
-                                    ? `Select a generation and try to guess all pokémons from that! Your current best run is ${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% accuracy).`
-                                    : "Select a generation and try to guess all pokémons from that!"
-                            }
-                            action={{
-                                label: `Start Quiz (${previewEntries.length} Pokémon)`,
-                                onClick: startQuiz
-                            }}
-                        />
-                        {quizRuns.length > 0 && (
-                            <div className="generation-quiz-history">
-                                <h3 className="generation-quiz-history__title">
-                                    <SuccessToastIcon /> Your Quiz Runs
-                                </h3>
-                                <div className="generation-quiz-history__list">
-                                    {quizRuns.map((run) => {
-                                        const runGens = run.generationKeys.map((k) => GENERATION_LABELS[k] || k).join(', ');
-                                        const isRunComplete = run.isComplete || run.foundIds.length === run.totalCount;
-                                        const runAccuracy = run.foundIds.length + run.invalidGuesses > 0
-                                            ? Math.round((run.foundIds.length / (run.foundIds.length + run.invalidGuesses)) * 100)
-                                            : 100;
-                                        
-                                        return (
-                                            <div key={run.id} className="generation-quiz-history__item">
-                                                <div className="generation-quiz-history__info">
-                                                    <span className="generation-quiz-history__gens">{runGens}</span>
-                                                    <div className="generation-quiz-history__stats">
-                                                        <span>Progress: <strong>{run.foundIds.length}/{run.totalCount}</strong></span>
-                                                        <span>Accuracy: <strong>{runAccuracy}%</strong></span>
-                                                        {run.bestFound > 0 && (
-                                                            <span>Best: <strong>{run.bestFound}/{run.totalCount}</strong></span>
-                                                        )}
-                                                        <span className={`generation-quiz-history__badge ${isRunComplete ? 'generation-quiz-history__badge--complete' : 'generation-quiz-history__badge--progress'}`}>
-                                                            {isRunComplete ? 'Completed' : 'In Progress'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="generation-quiz-history__actions">
-                                                    {!isRunComplete && (
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setSelectedGenerationKeys(new Set(run.generationKeys));
-                                                                resumeRun(run.id);
-                                                            }}
-                                                            className="generation-quiz-history__btn generation-quiz-history__btn--continue"
-                                                        >
-                                                            Continue
-                                                        </button>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            setSelectedGenerationKeys(new Set(run.generationKeys));
-                                                            rerunRun(run.id);
-                                                        }}
-                                                        className="generation-quiz-history__btn generation-quiz-history__btn--rerun"
-                                                    >
-                                                        {isRunComplete ? 'Play Again' : 'Restart'}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => {
-                                                            if (window.confirm("Are you sure you want to delete this run's progress?")) {
-                                                                deleteRun(run.id);
-                                                            }
-                                                        }}
-                                                        className="generation-quiz-history__btn generation-quiz-history__btn--delete"
-                                                        title="Delete Run"
-                                                    >
-                                                        <CloseIcon />
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                    <div className="generation-quiz__start-card">
+                        <div className="generation-quiz__start-icon-wrap">
+                            <img
+                                src={import.meta.env.BASE_URL + "LogoCuteGengarRounded.png"}
+                                alt=""
+                                aria-hidden="true"
+                                className="generation-quiz__start-icon select-none"
+                            />
+                        </div>
+                        <h3 className="generation-quiz__start-title">Generation Quiz</h3>
+                        <p className="generation-quiz__start-subtitle">
+                            Select a generation below to test your memory. Your goal is to name all Pokémon in that region!
+                        </p>
+
+                        {bestRun && (
+                            <div className="generation-quiz__start-best-run-pill">
+                                <span>Best Run:</span>
+                                <strong>{bestRun.bestFound}/{bestRun.totalCount} ({bestRun.bestAccuracy}% accuracy)</strong>
                             </div>
                         )}
+
+                        <div className="generation-quiz__start-selector mt-4">
+                            <span className="generation-quiz__start-selector-label">SELECT GENERATION</span>
+                            <div className="generation-quiz__start-selector-pills mt-3" role="group" aria-label="Select generation">
+                                <button
+                                    type="button"
+                                    onClick={toggleAllGenerations}
+                                    className={`generation-quiz__selector-pill generation-quiz__selector-pill--all ${allGenerationsSelected ? 'is-active' : ''}`}
+                                    aria-pressed={allGenerationsSelected}
+                                >
+                                    All Gens
+                                </button>
+                                {QUIZ_GENERATION_KEYS.map((generationKey) => (
+                                    <button
+                                        key={generationKey}
+                                        type="button"
+                                        onClick={() => toggleGeneration(generationKey)}
+                                        className={`generation-quiz__selector-pill ${selectedGenerationKeys.has(generationKey) ? 'is-active' : ''}`}
+                                        aria-pressed={selectedGenerationKeys.has(generationKey)}
+                                    >
+                                        <span>{GENERATION_LABELS[generationKey]}</span>
+                                        <span className="generation-quiz__selector-pill-count">
+                                            {generationCounts.get(generationKey) || 0}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={startQuiz}
+                            disabled={isLoadingIndex || previewEntries.length === 0}
+                            className="generation-quiz__start-card-btn mt-6"
+                        >
+                            <PokeballIcon />
+                            Start Quiz ({previewEntries.length} Pokémon)
+                        </button>
                     </div>
                 ) : (
                     <div className="generation-quiz__grid" role="list" aria-label="Pokémon quiz grid">
@@ -832,6 +806,122 @@ export function GenerationQuizView({ showDetails, showToast }) {
                     totalCount={totalCount}
                 />
             )}
+            {/* History Drawer Overlay */}
+            <div
+                className={`generation-quiz__history-overlay ${isHistoryOpen ? 'is-open' : ''}`}
+                onClick={() => setIsHistoryOpen(false)}
+            />
+
+            {/* History Drawer Sidebar */}
+            <div className={`generation-quiz__history-sidebar ${isHistoryOpen ? 'is-open' : ''}`}>
+                <div className="generation-quiz__history-sidebar-header">
+                    <h3 className="generation-quiz__history-sidebar-title">
+                        <HistoryIcon /> Quiz History
+                    </h3>
+                    <button
+                        type="button"
+                        className="generation-quiz__history-sidebar-close"
+                        onClick={() => setIsHistoryOpen(false)}
+                        title="Close History"
+                    >
+                        <CloseIcon />
+                    </button>
+                </div>
+
+                <div
+                    className="generation-quiz__history-sidebar-scroll"
+                    onScroll={handleHistoryScroll}
+                >
+                    {quizRuns.length === 0 ? (
+                        <div className="generation-quiz__history-sidebar-empty">
+                            <div className="generation-quiz__history-sidebar-empty-icon">
+                                <HistoryIcon />
+                            </div>
+                            <p className="generation-quiz__history-sidebar-empty-text">
+                                No quiz runs recorded yet.<br />
+                                Select a generation above and start playing!
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {quizRuns
+                                .slice()
+                                .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+                                .slice(0, visibleHistoryLimit)
+                                .map((run) => {
+                                    const runGens = run.generationKeys.map((k) => GENERATION_LABELS[k] || k).join(', ');
+                                    const isRunComplete = run.isComplete || run.foundIds.length === run.totalCount;
+                                    const runAccuracy = run.foundIds.length + run.invalidGuesses > 0
+                                        ? Math.round((run.foundIds.length / (run.foundIds.length + run.invalidGuesses)) * 100)
+                                        : 100;
+
+                                    return (
+                                        <div key={run.id} className="generation-quiz-history__item">
+                                            <div className="generation-quiz-history__info">
+                                                <span className="generation-quiz-history__gens">{runGens}</span>
+                                                <div className="generation-quiz-history__stats">
+                                                    <span>Progress: <strong>{run.foundIds.length}/{run.totalCount}</strong></span>
+                                                    <span>Accuracy: <strong>{runAccuracy}%</strong></span>
+                                                    {run.bestFound > 0 && (
+                                                        <span>Best: <strong>{run.bestFound}/{run.totalCount}</strong></span>
+                                                    )}
+                                                    <span className={`generation-quiz-history__badge ${isRunComplete ? 'generation-quiz-history__badge--complete' : 'generation-quiz-history__badge--progress'}`}>
+                                                        {isRunComplete ? 'Completed' : 'In Progress'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="generation-quiz-history__actions">
+                                                {!isRunComplete && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setSelectedGenerationKeys(new Set(run.generationKeys));
+                                                            resumeRun(run.id);
+                                                            setIsHistoryOpen(false);
+                                                        }}
+                                                        className="generation-quiz-history__btn generation-quiz-history__btn--continue"
+                                                    >
+                                                        Continue
+                                                    </button>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setSelectedGenerationKeys(new Set(run.generationKeys));
+                                                        rerunRun(run.id);
+                                                        setIsHistoryOpen(false);
+                                                    }}
+                                                    className="generation-quiz-history__btn generation-quiz-history__btn--rerun"
+                                                >
+                                                    {isRunComplete ? 'Play Again' : 'Restart'}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (window.confirm("Are you sure you want to delete this run's progress?")) {
+                                                            deleteRun(run.id);
+                                                        }
+                                                    }}
+                                                    className="generation-quiz-history__btn generation-quiz-history__btn--delete"
+                                                    title="Delete Run"
+                                                >
+                                                    <CloseIcon />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+
+                            {isHistoryLoadingMore && (
+                                <div className="generation-quiz__history-loading">
+                                    <div className="generation-quiz__history-loading-spinner" />
+                                    <span>Loading older runs...</span>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
         </main>
     );
 }
