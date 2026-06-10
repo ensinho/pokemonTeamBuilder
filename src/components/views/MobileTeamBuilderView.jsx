@@ -315,6 +315,8 @@ export const MobileTeamBuilderView = ({
     showOnlyFavorites,
     setShowOnlyFavorites,
 }) => {
+    const { t, language } = useTranslation();
+
     React.useEffect(() => {
         if (selectedTypes.size <= 1) return;
         const [, ...extraTypes] = Array.from(selectedTypes);
@@ -370,9 +372,9 @@ export const MobileTeamBuilderView = ({
                             type="text"
                             value={teamName}
                             onChange={(event) => setTeamName(event.target.value)}
-                            placeholder={language === 'pt' ? 'Nome do time' : 'Team name'}
+                            placeholder={t('builder.teamNamePlaceholder')}
                             className="team-builder-field min-w-0 flex-1"
-                            aria-label={language === 'pt' ? 'Nome do time' : 'Team name'}
+                            aria-label={t('builder.teamNamePlaceholder')}
                         />
                         <button
                             type="button"
@@ -436,7 +438,7 @@ export const MobileTeamBuilderView = ({
             <section className="team-builder-panel p-4">
                 <div className="team-builder-mobile__filters">
                     <label className="team-builder-control team-builder-mobile__filter-control team-builder-mobile__filter-control--full">
-                        <span className="team-builder-control__label">{language === 'pt' ? 'Pesquisa' : 'Search'}</span>
+                        <span className="team-builder-control__label">{t('common.search')}</span>
                         <input
                             type="text"
                             placeholder={t('pokedex.searchPlaceholder')}
@@ -463,7 +465,7 @@ export const MobileTeamBuilderView = ({
                     </label>
 
                     <label className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">{language === 'pt' ? 'Tipo' : 'Type'}</span>
+                        <span className="team-builder-control__label">{t('pokedex.typesFilterLabel')}</span>
                         <select
                             value={selectedTypeValue}
                             onChange={(event) => handleTypeSelectChange(event.target.value)}
@@ -479,17 +481,15 @@ export const MobileTeamBuilderView = ({
                     </label>
 
                     <label className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">{language === 'pt' ? 'Apenas fixados' : 'Pinned only'}</span>
+                        <span className="team-builder-control__label">{t('pokedex.favoritesOnly')}</span>
                         <button
                             type="button"
                             onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
                             className={`team-builder-toggle ${showOnlyFavorites ? 'is-active' : ''}`}
-                            aria-label={showOnlyFavorites ? (language === 'pt' ? 'Mostrar todos os Pokémon' : 'Show all Pokemon') : (language === 'pt' ? 'Mostrar apenas favoritos' : 'Show favorites only')}
                             aria-pressed={showOnlyFavorites}
-                            title={showOnlyFavorites ? (language === 'pt' ? 'Mostrar todos os Pokémon' : 'Show all Pokemon') : (language === 'pt' ? 'Mostrar apenas favoritos' : 'Show favorites only')}
                         >
                             <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
-                            {showOnlyFavorites ? (language === 'pt' ? 'Favoritos' : 'Favorites') : (language === 'pt' ? 'Todos' : 'All')}
+                            <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
                         </button>
                     </label>
                 </div>
@@ -539,8 +539,8 @@ export const MobileTeamBuilderView = ({
                                     <div className="pt-6">
                                         <EmptyState
                                             compact
-                                            title={showOnlyFavorites ? (language === 'pt' ? 'Nenhum favorito correspondente' : 'No favorites match') : (language === 'pt' ? 'Nenhum Pokémon encontrado' : 'No Pokemon found')}
-                                            message={showOnlyFavorites ? (language === 'pt' ? 'Tente limpar os filtros ou favoritar mais Pokémon.' : 'Try clearing filters or favoriting more Pokemon.') : (language === 'pt' ? 'Tente uma busca, geração ou tipo diferente.' : 'Try a different search, generation, or type.')}
+                                            title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
+                                            message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
                                         />
                                     </div>
                                 )}
@@ -609,7 +609,7 @@ export const MobileTeamBuilderView = ({
                     <button
                         type="button"
                         onClick={onNavigateToTeams}
-                        className="text-sm font-semibold text-primary"
+                        className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
                     >
                         {t('home.seeAll')}
                     </button>
