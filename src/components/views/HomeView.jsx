@@ -204,12 +204,36 @@ export function HomeView({
     const [selectedProfile, setSelectedProfile] = useState(null);
 
     const popoverRef = useRef(null);
+    const messageListRef = useRef(null);
     const messageListEndRef = useRef(null);
+    const prevMessagesLengthRef = useRef(messages.length);
 
     useEffect(() => {
         initTopicsListener();
         setCurrentTopicId('general');
     }, [initTopicsListener, setCurrentTopicId]);
+
+    // Auto-scroll messages container to bottom conditionally (WITHOUT scrolling the screen)
+    useEffect(() => {
+        const container = messageListRef.current;
+        if (container && messages.length > 0) {
+            const hasNewMessage = messages.length > prevMessagesLengthRef.current;
+            const isInitialLoad = prevMessagesLengthRef.current === 0;
+
+            const lastMessage = messages[messages.length - 1];
+            const sentByMe = lastMessage && lastMessage.createdBy === userId;
+
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+
+            if (isInitialLoad || sentByMe || (hasNewMessage && isAtBottom)) {
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        prevMessagesLengthRef.current = messages.length;
+    }, [messages, currentTopicId, userId]);
 
     const handleSendMessageSubmit = async (e) => {
         e.preventDefault();
@@ -685,7 +709,7 @@ export function HomeView({
                         </button>
                     </div>
 
-                    <div className="home-forum-chat-messages custom-scrollbar">
+                    <div ref={messageListRef} className="home-forum-chat-messages custom-scrollbar">
                         {messages.length === 0 ? (
                             <div className="text-center py-12 text-muted text-xs">
                                 {language === 'pt' ? 'Nenhuma mensagem escrita no chat geral.' : 'No messages posted in general chat.'}

@@ -83,7 +83,10 @@ export function FeedView({ colors, showToast, navigate }) {
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const popoverRef = useRef(null);
 
+    const messageListRef = useRef(null);
     const messageListEndRef = useRef(null);
+    const prevTopicIdRef = useRef(currentTopicId);
+    const prevMessagesLengthRef = useRef(messages.length);
 
     // Initialize listeners
     useEffect(() => {
@@ -104,6 +107,30 @@ export function FeedView({ colors, showToast, navigate }) {
             }
         }
     }, [topics, currentTopicId, setCurrentTopicId]);
+
+    // Auto-scroll messages container to bottom conditionally (WITHOUT scrolling the screen)
+    useEffect(() => {
+        const container = messageListRef.current;
+        if (container && messages.length > 0) {
+            const isTopicChange = prevTopicIdRef.current !== currentTopicId;
+            const hasNewMessage = messages.length > prevMessagesLengthRef.current;
+            const isInitialLoad = prevMessagesLengthRef.current === 0;
+
+            const lastMessage = messages[messages.length - 1];
+            const sentByMe = lastMessage && lastMessage.createdBy === userId;
+
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+
+            if (isTopicChange || isInitialLoad || sentByMe || (hasNewMessage && isAtBottom)) {
+                container.scrollTo({
+                    top: container.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+        }
+        prevTopicIdRef.current = currentTopicId;
+        prevMessagesLengthRef.current = messages.length;
+    }, [messages, currentTopicId, userId]);
 
     // Filter topics by category
     const filteredTopics = useMemo(() => {
@@ -437,7 +464,7 @@ export function FeedView({ colors, showToast, navigate }) {
                         </div>
 
                         {/* Messages Thread list */}
-                        <div className="forum-message-list custom-scrollbar">
+                        <div ref={messageListRef} className="forum-message-list custom-scrollbar">
                             {isInitialLoadingMessages ? (
                                 <div className="text-center py-6 text-muted text-sm">{t('common.loading')}</div>
                             ) : messages.length === 0 ? (
