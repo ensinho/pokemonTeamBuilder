@@ -471,6 +471,9 @@ export const TRANSLATIONS = {
             shareModalShareBtn: 'Share…',
             shareModalCopyLinkBtn: 'Copy link',
             shareModalIosTip: 'Tip: on iPhone, choose Save Image or Save to Photos in the native sheet.',
+            shareModalForumBtn: 'Share on Forum',
+            shareModalForumSuccess: 'Team posted to forum successfully!',
+            shareModalForumError: 'You must be logged in to share on the forum.',
 
             // TeamPokemonEditorModal
             editorModalWeakVs: 'Weak vs',
@@ -1130,6 +1133,9 @@ export const TRANSLATIONS = {
             shareModalShareBtn: 'Compartilhar...',
             shareModalCopyLinkBtn: 'Copiar link',
             shareModalIosTip: 'Dica: no iPhone, escolha Salvar Imagem ou Salvar em Fotos na folha nativa.',
+            shareModalForumBtn: 'Compartilhar no Fórum',
+            shareModalForumSuccess: 'Time postado no fórum com sucesso!',
+            shareModalForumError: 'Você precisa estar logado para compartilhar no fórum.',
 
             // TeamPokemonEditorModal
             editorModalWeakVs: 'Fraco contra',

@@ -9,6 +9,21 @@ import {
 } from '../../assets/backgrounds';
 import { CloseIcon, ShareIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useForumStore } from '../../store/useForumStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useActiveTeamStore } from '../../store/useActiveTeamStore';
+import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
+
+const serializeTeamPokemon = (pokemon) => ({
+    id: pokemon.id,
+    name: pokemon.name,
+    sprite: pokemon.sprite || getPokemonArtworkSpriteUrl(pokemon.id),
+    shinySprite: pokemon.shinySprite || getPokemonArtworkSpriteUrl(pokemon.id, { shiny: true }),
+    animatedSprite: pokemon.animatedSprite || getPokemonFrontSpriteUrl(pokemon.id),
+    animatedShinySprite: pokemon.animatedShinySprite || getPokemonFrontSpriteUrl(pokemon.id, { shiny: true }),
+    instanceId: pokemon.instanceId,
+    customization: pokemon.customization || {},
+});
 
 // Author/brand link baked into every shared snippet.
 const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
@@ -243,7 +258,7 @@ export const ShareSnippetModal = ({
     shareUrl = '',
     showToast,
 }) => {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const canvasRef = useRef(null);
     const [title, setTitle] = useState(defaultTitle || '');
@@ -251,6 +266,7 @@ export const ShareSnippetModal = ({
     const [backgroundId, setBackgroundId] = useState(DEFAULT_BACKGROUND_ID);
     const [isRendering, setIsRendering] = useState(false);
     const [previewUrl, setPreviewUrl] = useState(null);
+    const [isPosting, setIsPosting] = useState(false);
 
     const background = useMemo(() => getBackgroundById(backgroundId), [backgroundId]);
 
@@ -261,6 +277,7 @@ export const ShareSnippetModal = ({
             setSubtitle(t('modals.shareModalDefaultSubtitle', { count: pokemons.length }));
             setBackgroundId(DEFAULT_BACKGROUND_ID);
             setPreviewUrl(null);
+            useForumStore.getState().initTopicsListener();
         }
     }, [isOpen, defaultTitle, pokemons.length, t]);
 
@@ -436,6 +453,57 @@ export const ShareSnippetModal = ({
         }
     }, [shareImageFile, title, shareUrl, handleCopyLink, showToast, t]);
 
+    const handleShareToForum = useCallback(async () => {
+        const userId = useAuthStore.getState().userId;
+        if (!userId) {
+            showToast?.(t('modals.shareModalForumError'), 'error');
+            return;
+        }
+
+        const currentTeam = useActiveTeamStore.getState().currentTeam;
+        if (!currentTeam || currentTeam.length === 0) {
+            showToast?.(t('modals.shareModalErrGenerate'), 'error');
+            return;
+        }
+
+        setIsPosting(true);
+        try {
+            const serializedPokemons = currentTeam.map(serializeTeamPokemon);
+            const forumTeamData = {
+                name: title || t('modals.shareModalDefaultTitle'),
+                pokemons: serializedPokemons
+            };
+
+            const postText = subtitle
+                ? `${title || t('modals.shareModalDefaultTitle')} — ${subtitle}`
+                : `${title || t('modals.shareModalDefaultTitle')}`;
+
+            // Resolve target topic id: find exact "Teams", case-insensitive "teams", or category "teams"
+            const topics = useForumStore.getState().topics;
+            let targetTopic = topics.find(t => t.title === 'Teams');
+            if (!targetTopic) {
+                targetTopic = topics.find(t => t.title?.toLowerCase() === 'teams');
+            }
+            if (!targetTopic) {
+                targetTopic = topics.find(t => t.category === 'teams');
+            }
+            const targetTopicId = targetTopic ? targetTopic.id : 'general';
+
+            const success = await useForumStore.getState().sendMessage(targetTopicId, postText, forumTeamData);
+            if (success) {
+                showToast?.(t('modals.shareModalForumSuccess'), 'success');
+                onClose();
+            } else {
+                showToast?.(t('modals.shareModalErrShare'), 'error');
+            }
+        } catch (err) {
+            console.error("Error sharing team to forum:", err);
+            showToast?.(t('modals.shareModalErrShare'), 'error');
+        } finally {
+            setIsPosting(false);
+        }
+    }, [title, subtitle, onClose, showToast, t]);
+
     if (!isOpen) return null;
 
     const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
@@ -575,12 +643,29 @@ export const ShareSnippetModal = ({
                     </div>
                 )}
 
+                {/* Share on Forum */}
+                <button
+                    type="button"
+                    onClick={handleShareToForum}
+                    disabled={isRendering || isPosting}
+                    className="mb-4 w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-white py-2.5 text-sm font-bold transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60"
+                >
+                    {isPosting ? (
+                        <span>{language === 'pt' ? 'Postando...' : 'Posting...'}</span>
+                    ) : (
+                        <>
+                            <ShareIcon className="w-4 h-4 text-white" />
+                            {t('modals.shareModalForumBtn')}
+                        </>
+                    )}
+                </button>
+
                 {/* Actions */}
                 <div className="grid grid-cols-2 gap-2">
                     <button
                         type="button"
                         onClick={handleDownload}
-                        disabled={isRendering}
+                        disabled={isRendering || isPosting}
                         className="rounded-xl bg-surface-raised px-4 py-2.5 text-sm font-semibold text-fg transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                     >
                         {prefersNativeSave ? t('modals.shareModalSaveImage') : t('modals.shareModalDownloadImage')}
@@ -588,7 +673,7 @@ export const ShareSnippetModal = ({
                     <button
                         type="button"
                         onClick={handleNativeShare}
-                        disabled={isRendering}
+                        disabled={isRendering || isPosting}
                         className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
                     >
                         <ShareIcon />
