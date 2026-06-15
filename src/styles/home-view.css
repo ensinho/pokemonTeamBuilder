@@ -811,7 +811,7 @@
 
 @media (min-width: 1280px) {
     .home-dashboard {
-        grid-template-columns: minmax(0, 1.76fr) minmax(240px, 0.8fr);
+        grid-template-columns: minmax(0, 1.62fr) minmax(280px, 0.84fr);
     }
 
     .home-story-grid {

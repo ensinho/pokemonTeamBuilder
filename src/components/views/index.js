@@ -8,3 +8,4 @@ export { PokedexView } from './PokedexView';
 export { ProfileView } from './ProfileView';
 export { RandomGeneratorView } from './RandomGeneratorView';
 export { TeamBuilderView } from './TeamBuilderView';
+export { FeedView } from './FeedView';

@@ -36,7 +36,7 @@ import {
     GithubIcon, LinkedinIcon, CloseIcon, CollapseLeftIcon, CollapseRightIcon,
     DownloadIcon, MenuIcon, PokeballIcon, SavedTeamsIcon, StarsIcon, SwordsIcon, DiceIcon,
     HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
-    ErrorToastIcon, WarningToastIcon, MapPinIcon
+    ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon
 } from './icons';
 
 import {
@@ -49,6 +49,7 @@ import {
     ProfileView,
     RandomGeneratorView,
     TeamBuilderView,
+    FeedView,
 } from './views';
 
 import '../styles/app-shell.css';
@@ -103,6 +104,7 @@ export default function AppLayout() {
     // Derive current page routing
     const currentPage = useMemo(() => {
         const path = location.pathname;
+        if (path.includes('/feed')) return 'feed';
         if (path.includes('/pokedex')) return 'pokedex';
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/quiz')) return 'generationQuiz';
@@ -276,6 +278,7 @@ export default function AppLayout() {
     const pageInfo = useMemo(() => {
         const pages = {
             'home': { title: t('nav.home'), subtitle: t('home.defaultSubtitle') },
+            'feed': { title: t('nav.feed'), subtitle: language === 'pt' ? 'Fórum público e feed de compartilhamento' : 'Public forum and sharing feed' },
             'builder': { title: t('builder.title'), subtitle: t('builder.subtitle') },
             'pokedex': { title: t('nav.pokedex'), subtitle: t('home.shortcutPokedexDesc') },
             'allTeams': { title: t('savedTeams.title'), subtitle: t('savedTeams.subtitle') },
@@ -299,6 +302,7 @@ export default function AppLayout() {
                 title: t('nav.dashboard'),
                 items: [
                     { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
+                    { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
                 ]
             },
             {
@@ -924,6 +928,13 @@ export default function AppLayout() {
                                             onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
                                             activeTeamId={activeTeamId}
                                             setActiveTeamId={setActiveTeamId}
+                                        />
+                                    } />
+                                    <Route path="/feed" element={
+                                        <FeedView
+                                            colors={colors}
+                                            showToast={showToast}
+                                            navigate={navigate}
                                         />
                                     } />
                                     <Route path="/builder" element={

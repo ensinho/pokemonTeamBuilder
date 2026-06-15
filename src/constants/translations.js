@@ -63,7 +63,8 @@ export const TRANSLATIONS = {
             installApp: 'Install App',
             addToHome: 'Add to Home Screen',
             signIn: 'Sign In',
-            signOut: 'Sign Out'
+            signOut: 'Sign Out',
+            feed: 'Forum Feed'
         },
         splash: {
             msg1: 'Checking if you are who you say you are',
@@ -721,7 +722,8 @@ export const TRANSLATIONS = {
             installApp: 'Instalar App',
             addToHome: 'Adicionar à Tela Inicial',
             signIn: 'Entrar',
-            signOut: 'Sair'
+            signOut: 'Sair',
+            feed: 'Feed e Fórum'
         },
         splash: {
             msg1: 'Verificando se você é quem diz ser',
