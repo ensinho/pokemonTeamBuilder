@@ -15,7 +15,7 @@
     gap: var(--space-4);
 }
 
-@media (min-w: 1024px) {
+@media (min-width: 1024px) {
     .locations-grid {
         grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.8fr);
     }
@@ -43,13 +43,13 @@
     padding: var(--space-1);
 }
 
-@media (min-w: 640px) {
+@media (min-width: 640px) {
     .locations-picker__grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
-@media (min-w: 1024px) {
+@media (min-width: 1024px) {
     .locations-picker__grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
@@ -72,7 +72,7 @@
 }
 
 .locations-card-btn:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     border-color: var(--color-border-hover);
     box-shadow: var(--elevation-1);
     background: var(--color-surface);
@@ -93,7 +93,7 @@
 
 .locations-card-btn__name {
     font-size: 0.72rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-fg);
     margin-top: var(--space-1);
     text-transform: capitalize;
@@ -139,7 +139,7 @@
 
 .locations-details__name {
     font-size: 1.5rem;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: capitalize;
     color: var(--color-fg);
     margin: 0;
@@ -147,7 +147,7 @@
 
 .locations-details__number {
     font-size: 1rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-muted);
 }
 
@@ -163,7 +163,7 @@
 
 .locations-version-group__title {
     font-size: 0.8rem;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--color-muted);
@@ -192,7 +192,7 @@
     padding-bottom: 1.25rem;
 }
 
-@media (min-w: 640px) {
+@media (min-width: 640px) {
     .locations-item {
         flex-direction: row;
         align-items: center;
@@ -208,7 +208,7 @@
 
 .locations-item__name {
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-fg);
 }
 
@@ -234,7 +234,7 @@
     margin-top: var(--space-1.5);
 }
 
-@media (min-w: 640px) {
+@media (min-width: 640px) {
     .locations-item__badges {
         margin-top: 0;
         justify-content: flex-end;
@@ -244,7 +244,7 @@
 /* Beautiful custom colored badges for game versions */
 .version-badge {
     font-size: 0.64rem;
-    font-weight: 800;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     padding: 0.2rem 0.55rem;

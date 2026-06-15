@@ -100,7 +100,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="mt-1 input-clean"
                             placeholder="trainer@pokemail.com"
                         />
                     </label>
@@ -116,7 +116,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             minLength={6}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="mt-1 input-clean"
                             placeholder="••••••••"
                         />
                     </label>
@@ -130,7 +130,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                     <button
                         type="submit"
                         disabled={busy}
-                        className="w-full rounded-md bg-primary py-2 font-bold text-white transition-opacity disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="btn btn-primary w-full"
                     >
                         {busy ? t('modals.authPleaseWait') : isSignUp ? t('modals.authSignUpBtn') : t('modals.authSignInBtn')}
                     </button>
@@ -139,7 +139,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                         <button
                             type="button"
                             onClick={() => { setError(''); setMode(isSignUp ? 'signIn' : 'signUp'); }}
-                            className="text-xs text-muted underline hover:opacity-80"
+                            className="text-xs text-muted underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             {isSignUp ? t('modals.authAlreadyHaveAccount') : t('modals.authDontHaveAccount')}
                         </button>

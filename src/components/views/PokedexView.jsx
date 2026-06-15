@@ -1053,14 +1053,14 @@ export function PokedexView({
                                         </tr>
                                         <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.height')}</td>
-                                            <td className="font-bold">
-                                                {heightInM ? `${heightInM} m` : t('common.loading')} {heightInFt && <span className="text-muted font-normal text-[11px]">({heightInFt})</span>}
+                                            <td className="font-bold font-mono">
+                                                {heightInM ? `${heightInM} m` : t('common.loading')} {heightInFt && <span className="text-muted font-normal text-[11px] font-sans">({heightInFt})</span>}
                                             </td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.weight')}</td>
-                                            <td className="font-bold">
-                                                {weightInKg ? `${weightInKg} kg` : t('common.loading')} {weightInLbs && <span className="text-muted font-normal text-[11px]">({weightInLbs} lbs)</span>}
+                                            <td className="font-bold font-mono">
+                                                {weightInKg ? `${weightInKg} kg` : t('common.loading')} {weightInLbs && <span className="text-muted font-normal text-[11px] font-sans">({weightInLbs} lbs)</span>}
                                             </td>
                                         </tr>
                                         <tr className="py-2.5 flex justify-between items-start">
@@ -1098,15 +1098,15 @@ export function PokedexView({
                                     <tbody>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Pontos de EV' : 'EV Yield'}</td>
-                                            <td className="font-bold text-right truncate max-w-[200px]">{evYield}</td>
+                                            <td className="font-bold font-mono text-right truncate max-w-[200px]">{evYield}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Taxa de Captura' : 'Catch Rate'}</td>
-                                            <td className="font-bold text-right">{catchRateText || t('common.loading')}</td>
+                                            <td className="font-bold font-mono text-right">{catchRateText || t('common.loading')}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Amizade Base' : 'Base Friendship'}</td>
-                                            <td className="font-bold text-right">{baseFriendshipText || t('common.loading')}</td>
+                                            <td className="font-bold font-mono text-right">{baseFriendshipText || t('common.loading')}</td>
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Exp. Base' : 'Base Exp.'}</td>
@@ -1194,11 +1194,11 @@ export function PokedexView({
                                         </tr>
                                         <tr className="border-b border-border/40 py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Gênero' : 'Gender Ratio'}</td>
-                                            <td className="font-bold text-right">{genderText || t('common.loading')}</td>
+                                            <td className="font-bold font-mono text-right">{genderText || t('common.loading')}</td>
                                         </tr>
                                         <tr className="py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Ciclos de Ovo' : 'Egg Cycles'}</td>
-                                            <td className="font-bold text-right">{eggCyclesText || t('common.loading')}</td>
+                                            <td className="font-bold font-mono text-right">{eggCyclesText || t('common.loading')}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -1302,10 +1302,10 @@ export function PokedexView({
                                                                     </div>
 
                                                                     <div className="flex items-center gap-2 shrink-0">
-                                                                        <span className="text-[10px] font-semibold bg-bg px-2 py-0.5 rounded border border-border text-muted">
+                                                                        <span className="text-[10px] font-mono font-semibold bg-bg px-2 py-0.5 rounded border border-border text-muted">
                                                                             {detail.minLevel === detail.maxLevel ? `Lv. ${detail.minLevel}` : `Lv. ${detail.minLevel}-${detail.maxLevel}`}
                                                                         </span>
-                                                                        <span className="text-xs font-bold text-primary">{detail.chance}%</span>
+                                                                        <span className="text-xs font-bold font-mono text-primary">{detail.chance}%</span>
                                                                     </div>
                                                                 </div>
                                                             );
@@ -1572,7 +1572,7 @@ export function PokedexView({
     if (isMobile && selectedPokemon) {
         return (
             <div
-                className="fixed inset-0 z-50 flex flex-col bg-bg"
+                className="fixed inset-0 z-50 flex flex-col bg-bg font-mono"
                 style={{ width: '100vw', height: '100dvh', maxWidth: '100vw', overflowX: 'hidden' }}
             >
                 {/* Mobile Navigation Header */}
@@ -1767,7 +1767,7 @@ export function PokedexView({
 
                 {/* Right Side: Split details view (Desktop only, displayed when selectedPokemon is set) */}
                 {selectedPokemon && (
-                    <section className="team-builder-panel p-5 md:p-6 relative flex flex-col min-h-[400px]">
+                    <section className="team-builder-panel p-5 md:p-6 relative flex flex-col min-h-[400px] font-mono">
                         <button
                             onClick={handleCloseDetails}
                             type="button"

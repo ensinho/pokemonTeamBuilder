@@ -109,7 +109,7 @@ export function PokemonDetailModal({
                 aria-modal="true"
                 aria-labelledby="pokemon-detail-title"
                 tabIndex={-1}
-                className="relative flex w-full max-w-lg max-h-[85vh] flex-col overflow-hidden rounded-2xl border border-surface-raised bg-surface shadow-2xl animate-scale-in focus:outline-none sm:max-h-[90vh]"
+                className="relative flex w-full max-w-lg max-h-[85vh] flex-col overflow-hidden rounded-2xl border border-surface-raised bg-surface shadow-2xl animate-scale-in focus:outline-none sm:max-h-[90vh] font-mono"
                 style={{
                     '--scrollbar-track-color': colors.card,
                     '--scrollbar-thumb-color': colors.primary,
@@ -150,7 +150,7 @@ export function PokemonDetailModal({
                             )}
                         </div>
                         <h2 id="pokemon-detail-title" className="mt-2 text-2xl font-bold capitalize text-fg sm:text-3xl">
-                            {pokemon.name} <span className="text-muted">#{pokemon.id}</span>
+                            {pokemon.name} <span className="text-muted font-mono font-normal">#{pokemon.id}</span>
                         </h2>
                         <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                             {pokemon.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}

@@ -1,40 +1,36 @@
 .pokemon-card {
     position: relative;
     display: flex;
-    min-height: 11.5rem;
+    min-height: 10rem;
     height: 100%;
     flex-direction: column;
     align-items: center;
     overflow: hidden;
-    border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
-    border-radius: 0.95rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 0.7rem 0.68rem 0.68rem;
+    padding: 0.6rem 0.55rem 0.55rem;
     text-align: center;
-    box-shadow: var(--card-shadow, var(--elevation-1));
     cursor: pointer;
-    transition: transform var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth);
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
 
-    /* Staggered entrance */
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .pokemon-card--suggested {
-    border-color: color-mix(in srgb, var(--color-success) 28%, var(--color-border));
-    background: color-mix(in srgb, var(--color-success) 5%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-success) 24%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 4%, var(--color-surface));
 }
 
 .pokemon-card--selected {
     border-color: var(--color-primary);
     background: var(--color-primary-soft);
-    box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .pokemon-card:hover {
-    transform: translateY(-2px);
     border-color: var(--color-border-hover);
     background: var(--color-surface-raised);
-    box-shadow: var(--elevation-2);
 }
 
 .pokemon-card:focus-visible {
@@ -47,14 +43,14 @@
     width: 100%;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: 0.35rem;
 }
 
 .pokemon-card__meta {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.35rem;
+    gap: 0.3rem;
     min-width: 0;
 }
 
@@ -62,13 +58,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--color-success) 24%, var(--color-border));
-    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
-    padding: 0.22rem 0.46rem;
-    font-size: 0.58rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    border-radius: var(--radius-sm);
+    border: 1px solid color-mix(in srgb, var(--color-success) 20%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+    padding: 0.15rem 0.4rem;
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--color-success);
 }
@@ -77,13 +73,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.8rem;
-    height: 1.8rem;
+    width: 1.6rem;
+    height: 1.6rem;
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: 50%;
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    transition: transform var(--duration-normal) var(--ease-smooth), opacity var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth), color var(--duration-normal) var(--ease-smooth), border-color var(--duration-normal) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
 
 .pokemon-card__favorite.is-active {
@@ -94,20 +90,19 @@
 
 .pokemon-card__media {
     width: 100%;
-    max-width: 6.25rem;
+    max-width: 5.5rem;
     aspect-ratio: 1 / 1;
-    margin: 0.1rem auto 0;
-    transition: transform var(--duration-normal) var(--ease-bounce);
+    margin: 0.15rem auto 0;
+    transition: transform var(--duration-fast) var(--ease-smooth);
 }
 
-/* Sprite lifts and scales on card hover — bounce easing for playfulness */
 .pokemon-card:hover .pokemon-card__media {
-    transform: translateY(-2px) scale(1.06);
+    transform: scale(1.04);
 }
 
 .pokemon-card__name {
-    margin: 0.5rem;
-    font-size: 0.88rem;
+    margin: 0.35rem 0.25rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     text-transform: capitalize;
     color: var(--color-fg);
@@ -117,13 +112,13 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 0.22rem;
-    min-height: 1.15rem;
+    gap: 0.2rem;
+    min-height: 1rem;
 }
 
 .pokemon-card__type-icon {
-    width: 1rem;
-    height: 1rem;
+    width: 0.9rem;
+    height: 0.9rem;
 }
 
 .pokemon-card__action {
@@ -131,22 +126,22 @@
     width: 100%;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0.3rem;
     margin-top: auto;
-    border: 1px solid var(--color-primary);
-    border-radius: 0.8rem;
-    background: var(--color-primary-soft);
-    padding: 0.2rem 0.5rem;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--color-primary);
-    transition: transform var(--duration-normal) var(--ease-smooth), box-shadow var(--duration-normal) var(--ease-smooth), background-color var(--duration-normal) var(--ease-smooth);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: transparent;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.675rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
 
-/* Colored glow on action button hover */
 .pokemon-card__action:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px -4px var(--color-primary-soft);
+    background: var(--color-surface-raised);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -157,4 +152,4 @@
         transition-duration: 0.001ms !important;
         animation: none !important;
     }
-}
+}

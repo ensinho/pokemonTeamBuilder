@@ -4,12 +4,12 @@
 
 /* ============================================================
    DESIGN SYSTEM FOUNDATION
-   Named easing curves, duration tokens, and spacing scale.
+   Named easing curves, duration tokens, spacing, and radius.
    Consumed by every view CSS file for consistent motion.
    ============================================================ */
 
 :root {
-    /* Easing curves — semantic names replace inline `ease` */
+    /* Easing curves */
     --ease-default: ease;
     --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -18,9 +18,9 @@
 
     /* Duration tokens */
     --duration-fast: 150ms;
-    --duration-normal: 200ms;
-    --duration-slow: 300ms;
-    --duration-entrance: 420ms;
+    --duration-normal: 150ms;
+    --duration-slow: 250ms;
+    --duration-entrance: 350ms;
 
     /* Spacing scale — 4px base unit */
     --space-1: 0.25rem;  /* 4px  */
@@ -31,188 +31,192 @@
     --space-6: 1.5rem;   /* 24px */
     --space-8: 2rem;     /* 32px */
     --space-10: 2.5rem;  /* 40px */
+    --space-12: 3rem;    /* 48px */
+    --space-16: 4rem;    /* 64px */
+
+    /* Border radius scale (Ref 2 — shadcn/ui) */
+    --radius-sm: 0.375rem;  /* 6px  — badges, chips */
+    --radius-md: 0.5rem;    /* 8px  — buttons, inputs */
+    --radius-lg: 0.75rem;   /* 12px — cards */
+    --radius-xl: 1rem;      /* 16px — panels, modals */
 }
 
 /* ============================================================
    THEME TOKENS
-   Single source of truth for runtime colors. Mirrored in
-   src/constants/theme.js (THEMES) so legacy components that
-   still receive a `colors` prop keep working.
-
-    Switch theme by calling applyTheme(themeId).
+   Single source of truth for runtime colors.
    ============================================================ */
 
 :root,
 :root[data-theme='dark'] {
-    --color-primary: #7d65e1;
-    --color-primary-soft: rgba(125, 101, 225, 0.18);
-    --color-accent: #FBBF24;          /* brand gold — favorites, shiny, achievements */
-    --color-accent-soft: rgba(251, 191, 36, 0.18);
-    --color-bg: #313338;
-    --color-surface: #2b2d31;
-    --color-surface-raised: #1e1f22;
-    --color-fg: #f2f3f5;
-    --color-muted: #949ba4;
-    --color-border: #1f2023;
-    --color-border-hover: color-mix(in srgb, #7d65e1 35%, #1f2023);
+    --color-primary: #7c6ae8;
+    --color-primary-soft: rgba(124, 106, 232, 0.12);
+    --color-accent: #FBBF24;
+    --color-accent-soft: rgba(251, 191, 36, 0.12);
+    --color-bg: #09090b;
+    --color-surface: #111113;
+    --color-surface-raised: #1a1a1e;
+    --color-fg: #fafafa;
+    --color-muted: #a1a1aa;
+    --color-border: #27272a;
+    --color-border-hover: color-mix(in srgb, #7c6ae8 25%, #3f3f46);
     --color-success: #34D399;
     --color-danger: #F87171;
     --color-warning: #FBBF24;
     --color-info: #60A5FA;
 
-    /* Elevation — single source for shadows. Light/dark each set their own. */
-    --elevation-1: 0 1px 2px rgba(0,0,0,0.35);
-    --elevation-2: 0 8px 24px -8px rgba(0,0,0,0.55), 0 2px 6px rgba(0,0,0,0.3);
-    --elevation-3: 0 20px 40px -12px rgba(0,0,0,0.65);
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.4);
+    --elevation-2: 0 4px 16px -4px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.25);
+    --elevation-3: 0 12px 32px -8px rgba(0,0,0,0.65);
 
-    /* Light-mode card strategy: dark themes keep borders */
     --card-border-style: solid;
     --card-border-color: var(--color-border);
+    --card-shadow: none;
 }
 
 :root[data-theme='light'] {
     --color-primary: #6353b3;
-    --color-primary-soft: rgba(99, 83, 179, 0.14);
+    --color-primary-soft: rgba(99, 83, 179, 0.1);
     --color-accent: #B45309;
-    --color-accent-soft: rgba(180, 83, 9, 0.12);
-    --color-bg: #E8EAF0;
-    --color-surface: #FFFFFF;
-    --color-surface-raised: #F3F4F6;
-    --color-fg: #111827;
-    --color-muted: #4B5563;
-    --color-border: #E5E7EB;
-    --color-border-hover: color-mix(in srgb, #6353b3 30%, #E5E7EB);
+    --color-accent-soft: rgba(180, 83, 9, 0.08);
+    --color-bg: #f4f4f5;
+    --color-surface: #ffffff;
+    --color-surface-raised: #f4f4f5;
+    --color-fg: #09090b;
+    --color-muted: #71717a;
+    --color-border: #e4e4e7;
+    --color-border-hover: color-mix(in srgb, #6353b3 20%, #d4d4d8);
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
     --color-info: #1D4ED8;
 
-    --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
-    --elevation-2: 0 4px 12px -4px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
-    --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
+    --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
 
-    /* Light-mode card strategy: shadow separation, transparent borders */
     --card-border-style: solid;
-    --card-border-color: transparent;
-    --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --card-border-color: var(--color-border);
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
 :root[data-theme='daybreak'] {
     --color-primary: #2563EB;
-    --color-primary-soft: rgba(37, 99, 235, 0.14);
+    --color-primary-soft: rgba(37, 99, 235, 0.1);
     --color-accent: #0EA5E9;
-    --color-accent-soft: rgba(14, 165, 233, 0.12);
-    --color-bg: #EEF5FF;
-    --color-surface: #FFFFFF;
-    --color-surface-raised: #E4EEFB;
-    --color-fg: #0F172A;
-    --color-muted: #5B6B84;
-    --color-border: #CBD9EE;
-    --color-border-hover: color-mix(in srgb, #2563EB 30%, #CBD9EE);
+    --color-accent-soft: rgba(14, 165, 233, 0.08);
+    --color-bg: #f0f4ff;
+    --color-surface: #ffffff;
+    --color-surface-raised: #eef2fb;
+    --color-fg: #0f172a;
+    --color-muted: #64748b;
+    --color-border: #cbd5e1;
+    --color-border-hover: color-mix(in srgb, #2563EB 20%, #cbd5e1);
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
     --color-info: #1D4ED8;
 
-    --elevation-1: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
-    --elevation-2: 0 4px 12px -4px rgba(15, 23, 42, 0.12), 0 2px 4px rgba(15, 23, 42, 0.06);
-    --elevation-3: 0 20px 40px -16px rgba(15, 23, 42, 0.18);
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
+    --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
 
     --card-border-style: solid;
-    --card-border-color: transparent;
-    --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --card-border-color: var(--color-border);
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
 :root[data-theme='eclipse'] {
     --color-primary: #a78bfa;
-    --color-primary-soft: rgba(167, 139, 250, 0.18);
+    --color-primary-soft: rgba(167, 139, 250, 0.12);
     --color-accent: #c084fc;
-    --color-accent-soft: rgba(192, 132, 252, 0.18);
-    --color-bg: #0d0d0d;
-    --color-surface: #161616;
-    --color-surface-raised: #262626;
-    --color-fg: #F5F3FF;
-    --color-muted: #909090;
-    --color-border: #333333;
-    --color-border-hover: color-mix(in srgb, #a78bfa 35%, #333333);
+    --color-accent-soft: rgba(192, 132, 252, 0.12);
+    --color-bg: #050505;
+    --color-surface: #0a0a0a;
+    --color-surface-raised: #171717;
+    --color-fg: #fafafa;
+    --color-muted: #737373;
+    --color-border: #262626;
+    --color-border-hover: color-mix(in srgb, #a78bfa 25%, #3f3f46);
     --color-success: #34D399;
     --color-danger: #FB7185;
     --color-warning: #FBBF24;
     --color-info: #60A5FA;
 
     --elevation-1: 0 1px 2px rgba(0,0,0,0.5);
-    --elevation-2: 0 12px 28px -10px rgba(0,0,0,0.72), 0 2px 6px rgba(0,0,0,0.45);
-    --elevation-3: 0 22px 48px -14px rgba(0,0,0,0.82);
+    --elevation-2: 0 6px 20px -6px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.35);
+    --elevation-3: 0 14px 36px -10px rgba(0,0,0,0.7);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
+    --card-shadow: none;
 }
 
 :root[data-theme='midnight'] {
     --color-primary: #38BDF8;
-    --color-primary-soft: rgba(56, 189, 248, 0.16);
+    --color-primary-soft: rgba(56, 189, 248, 0.1);
     --color-accent: #22D3EE;
-    --color-accent-soft: rgba(34, 211, 238, 0.16);
-    --color-bg: #0B1220;
-    --color-surface: #111B2E;
-    --color-surface-raised: #1B2742;
-    --color-fg: #E2E8F0;
-    --color-muted: #94A3B8;
-    --color-border: #1E2A44;
-    --color-border-hover: color-mix(in srgb, #38BDF8 30%, #1E2A44);
+    --color-accent-soft: rgba(34, 211, 238, 0.1);
+    --color-bg: #0a0f1a;
+    --color-surface: #0f1629;
+    --color-surface-raised: #172036;
+    --color-fg: #e2e8f0;
+    --color-muted: #94a3b8;
+    --color-border: #1e293b;
+    --color-border-hover: color-mix(in srgb, #38BDF8 20%, #334155);
     --color-success: #34D399;
     --color-danger: #FB7185;
     --color-warning: #FBBF24;
     --color-info: #60A5FA;
 
     --elevation-1: 0 1px 2px rgba(0,0,0,0.45);
-    --elevation-2: 0 8px 24px -8px rgba(0,0,0,0.65), 0 2px 6px rgba(0,0,0,0.4);
-    --elevation-3: 0 20px 40px -12px rgba(0,0,0,0.75);
+    --elevation-2: 0 6px 20px -6px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.3);
+    --elevation-3: 0 14px 36px -10px rgba(0,0,0,0.65);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
+    --card-shadow: none;
 }
 
 :root[data-theme='solar'] {
-    --color-primary: #EAB308;
-    --color-primary-soft: rgba(234, 179, 8, 0.16);
-    --color-accent: #F59E0B;
-    --color-accent-soft: rgba(245, 158, 11, 0.14);
-    --color-bg: #FFFDF2;
-    --color-surface: #FFFFFF;
-    --color-surface-raised: #FEF9C3;
-    --color-fg: #3B2F09;
-    --color-muted: #7C6A2A;
-    --color-border: #FEF08A;
-    --color-border-hover: color-mix(in srgb, #EAB308 30%, #FEF08A);
+    --color-primary: #ca8a04;
+    --color-primary-soft: rgba(202, 138, 4, 0.1);
+    --color-accent: #d97706;
+    --color-accent-soft: rgba(217, 119, 6, 0.1);
+    --color-bg: #fefdf5;
+    --color-surface: #ffffff;
+    --color-surface-raised: #fef9e7;
+    --color-fg: #1c1917;
+    --color-muted: #78716c;
+    --color-border: #e7e5e4;
+    --color-border-hover: color-mix(in srgb, #ca8a04 20%, #d6d3d1);
     --color-success: #047857;
     --color-danger: #B91C1C;
     --color-warning: #B45309;
     --color-info: #1D4ED8;
 
-    --elevation-1: 0 1px 2px rgba(120, 90, 15, 0.06), 0 1px 1px rgba(120, 90, 15, 0.04);
-    --elevation-2: 0 4px 12px -4px rgba(120, 90, 15, 0.12), 0 2px 4px rgba(120, 90, 15, 0.06);
-    --elevation-3: 0 20px 40px -16px rgba(120, 90, 15, 0.18);
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
+    --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
 
     --card-border-style: solid;
-    --card-border-color: transparent;
-    --card-shadow: 0 1px 3px rgba(120, 90, 15, 0.06), 0 1px 2px rgba(120, 90, 15, 0.04);
+    --card-border-color: var(--color-border);
+    --card-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
-/* Typography stack — JetBrains Mono across the whole app. */
+/* Typography — Inter (Ref 2: shadcn/ui standard) */
 :root {
-    --font-display: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
-    --font-body: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+    --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
 }
 
 html, body {
     font-family: var(--font-body);
-    font-feature-settings: 'ss01', 'cv11';
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.011em;
 }
 
 html,
@@ -221,101 +225,72 @@ body {
     color: var(--color-fg);
 }
 
-/* Global focus-visible ring — keyboard users always get a clear focus state.
-   Mouse users keep clean visuals via :focus-visible (WCAG 2.4.7). */
+/* Global focus-visible ring (WCAG 2.4.7) */
 *:focus {
     outline: none;
 }
 *:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
 }
 
-/* Theme-aware scrollbar — replaces the per-element CSS variable
-   plumbing that used to live on every scrollable container. */
+/* Theme-aware scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 12px;
+    width: 8px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: var(--scrollbar-track-color, var(--color-surface));
+    background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: var(--scrollbar-thumb-color, var(--color-primary));
+    background-color: var(--color-border);
     border-radius: 20px;
-    border: 3px solid var(--scrollbar-thumb-border-color, var(--color-surface));
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted);
 }
 
 .image-pixelated {
     image-rendering: pixelated;
 }
 
-/* Editor modal shiny toggle — moved out of the inline App.jsx style block. */
+/* Editor modal shiny toggle */
 input[type='checkbox']:checked + div + div {
     transform: translateX(100%);
     background-color: var(--color-primary);
 }
 
-/* Glass card effect (HomeView hero) */
-.glass-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
-    backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-}
-:root[data-theme='light'] .glass-card,
-:root[data-theme='daybreak'] .glass-card,
-:root[data-theme='solar'] .glass-card {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.25) 100%);
-    border-color: rgba(0, 0, 0, 0.06);
-}
-
-.glass-card-premium {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.02) 100%);
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-:root[data-theme='light'] .glass-card-premium,
-:root[data-theme='daybreak'] .glass-card-premium,
-:root[data-theme='solar'] .glass-card-premium {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.3) 100%);
-    border-color: rgba(0, 0, 0, 0.05);
-    box-shadow: var(--elevation-2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-/* Elevation utilities — replace ad-hoc inline ternary shadows.
-   Use class="elevation-1" instead of inline style={{ boxShadow: theme === 'light' ? ... }}. */
+/* Elevation utilities */
 .elevation-1 { box-shadow: var(--elevation-1); }
 .elevation-2 { box-shadow: var(--elevation-2); }
 .elevation-3 { box-shadow: var(--elevation-3); }
 
-/* Sprite fade-in — wraps Pokémon sprite <img>s so they don't pop in
-   unstyled. Enhanced with blur-to-sharp for a premium feel. */
+/* Sprite fade-in */
 @keyframes sprite-fade-in {
-    from { opacity: 0; transform: scale(0.85) translateY(4px); filter: blur(2px); }
-    to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+    from { opacity: 0; transform: scale(0.92); filter: blur(2px); }
+    to   { opacity: 1; transform: scale(1); filter: blur(0); }
 }
 .sprite-fade {
     animation: sprite-fade-in var(--duration-slow) var(--ease-out-expo);
 }
 .sprite-img {
-    /* prevent CLS — caller still provides width/height utilities */
     object-fit: contain;
     image-rendering: auto;
 }
 
 /* ============================================================
-   SHARED KEYFRAMES — entrance animations & loading states.
-   Used by all view CSS files for staggered content reveals.
+   SHARED KEYFRAMES
    ============================================================ */
 
 @keyframes fade-in-up {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.92); }
+    from { opacity: 0; transform: scale(0.95); }
     to   { opacity: 1; transform: scale(1); }
 }
 
@@ -324,7 +299,7 @@ input[type='checkbox']:checked + div + div {
     100% { background-position: 200% 0; }
 }
 
-/* Skeleton loading utility — apply to placeholder blocks */
+/* Skeleton loading */
 .skeleton {
     background: linear-gradient(
         90deg,
@@ -334,16 +309,15 @@ input[type='checkbox']:checked + div + div {
     );
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-md);
 }
 
-/* Brand utility — gold accent for shiny / favorite / achievement chips. */
+/* Brand accent utilities */
 .text-accent { color: var(--color-accent); }
 .bg-accent { background-color: var(--color-accent); }
 .bg-accent-soft { background-color: var(--color-accent-soft); }
 
-/* iOS Safari zooms focused fields when their font-size is under 16px.
-   Keep edit controls at a safe size on smaller screens instead of disabling zoom. */
+/* iOS Safari zoom fix */
 @media (max-width: 768px) {
     input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
     select,
@@ -353,8 +327,7 @@ input[type='checkbox']:checked + div + div {
 }
 
 /* ============================================================
-   GLOBAL COMPONENT UTILITIES (Reference 2 & shadcn/ui Inspired)
-   Button variants, badges, and inputs with systematic styling.
+   GLOBAL COMPONENT UTILITIES (Ref 2 — shadcn/ui inspired)
    ============================================================ */
 
 /* Base Button */
@@ -363,11 +336,11 @@ input[type='checkbox']:checked + div + div {
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    min-height: 2.35rem;
-    padding: var(--space-2) var(--space-4);
-    border-radius: 0.6rem;
-    font-size: var(--text-base, 0.92rem);
-    font-weight: 600;
+    height: 2.25rem;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
     text-align: center;
     white-space: nowrap;
@@ -375,27 +348,26 @@ input[type='checkbox']:checked + div + div {
     border: 1px solid transparent;
     background: transparent;
     color: var(--color-fg);
-    transition: transform var(--duration-normal) var(--ease-smooth),
-                background-color var(--duration-normal) var(--ease-smooth),
-                border-color var(--duration-normal) var(--ease-smooth),
-                color var(--duration-normal) var(--ease-smooth),
-                box-shadow var(--duration-normal) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth);
 }
 
 .btn:disabled {
     cursor: not-allowed;
     opacity: 0.5;
-    transform: none !important;
-    box-shadow: none !important;
+    pointer-events: none;
 }
 
 .btn:active:not(:disabled) {
-    transform: translateY(0) scale(0.98);
+    transform: scale(0.98);
 }
 
 .btn svg {
-    width: 0.95rem;
-    height: 0.95rem;
+    width: 0.875rem;
+    height: 0.875rem;
     flex-shrink: 0;
 }
 
@@ -407,8 +379,8 @@ input[type='checkbox']:checked + div + div {
 }
 
 .btn-primary:hover:not(:disabled) {
-    transform: translateY(-1.5px);
-    box-shadow: 0 6px 16px -4px var(--color-primary-soft), var(--elevation-1);
+    opacity: 0.9;
+    box-shadow: 0 2px 8px -2px var(--color-primary-soft);
 }
 
 .btn-secondary {
@@ -418,10 +390,8 @@ input[type='checkbox']:checked + div + div {
 }
 
 .btn-secondary:hover:not(:disabled) {
-    transform: translateY(-1.5px);
     background: var(--color-surface);
     border-color: var(--color-border-hover);
-    box-shadow: var(--elevation-1);
 }
 
 .btn-outline {
@@ -431,10 +401,8 @@ input[type='checkbox']:checked + div + div {
 }
 
 .btn-outline:hover:not(:disabled) {
-    transform: translateY(-1.5px);
     background: var(--color-surface-raised);
     border-color: var(--color-border-hover);
-    box-shadow: var(--elevation-1);
 }
 
 .btn-ghost {
@@ -444,8 +412,18 @@ input[type='checkbox']:checked + div + div {
 }
 
 .btn-ghost:hover:not(:disabled) {
-    transform: translateY(-1px);
     background: var(--color-surface-raised);
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: #ffffff;
+    border-color: var(--color-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+    opacity: 0.9;
+    box-shadow: 0 2px 8px -2px rgba(248, 113, 113, 0.4);
 }
 
 /* Badge Base & Variants */
@@ -453,24 +431,24 @@ input[type='checkbox']:checked + div + div {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 999px;
-    padding: 0.2rem 0.55rem;
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    border-radius: var(--radius-sm);
+    padding: 0.15rem 0.45rem;
+    font-size: 0.675rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    line-height: 1;
+    line-height: 1.2;
     border: 1px solid transparent;
 }
 
 .badge-success {
-    border-color: color-mix(in srgb, var(--color-success) 24%, var(--color-border));
-    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
+    border-color: color-mix(in srgb, var(--color-success) 20%, var(--color-border));
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
     color: var(--color-success);
 }
 
 .badge-accent {
-    border-color: var(--color-accent);
+    border-color: color-mix(in srgb, var(--color-accent) 20%, var(--color-border));
     background: var(--color-accent-soft);
     color: var(--color-accent);
 }
@@ -481,26 +459,27 @@ input[type='checkbox']:checked + div + div {
     color: var(--color-muted);
 }
 
-/* Clean Inputs Rest State (Reference 1 & 6) */
+/* Clean Inputs (Ref 2 style) */
 .input-clean {
     width: 100%;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
     color: var(--color-fg);
-    padding: 0.65rem 0.85rem;
-    font-size: 0.88rem;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
-    transition: border-color var(--duration-normal) var(--ease-smooth),
-                box-shadow var(--duration-normal) var(--ease-smooth),
-                background-color var(--duration-normal) var(--ease-smooth);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.input-clean::placeholder {
+    color: var(--color-muted);
 }
 
 .input-clean:focus-visible,
 .input-clean:focus {
     border-color: var(--color-primary);
-    background: var(--color-surface);
-    box-shadow: 0 0 0 3px var(--color-primary-soft), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    box-shadow: 0 0 0 2px var(--color-primary-soft);
     outline: none;
 }
 

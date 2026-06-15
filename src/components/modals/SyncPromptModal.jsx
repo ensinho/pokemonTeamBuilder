@@ -66,14 +66,14 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
                         <button
                             type="button"
                             onClick={onSignUp}
-                            className="flex-1 rounded-md bg-primary py-2 font-bold text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="btn btn-primary flex-1 font-bold"
                         >
                             {t('modals.syncPromptRegister')}
                         </button>
                         <button
                             type="button"
                             onClick={onSignIn}
-                            className="flex-1 rounded-md border border-border bg-surface-raised py-2 font-semibold text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="btn btn-outline flex-1 font-semibold"
                         >
                             {t('modals.syncPromptHasAccount')}
                         </button>

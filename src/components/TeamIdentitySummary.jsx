@@ -137,8 +137,8 @@ function Badge({ label, value, hint }) {
     return (
         <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-raised border border-border">
             <span className="text-[9px] uppercase tracking-wider text-muted font-bold">{label}</span>
-            <span className="font-bold text-fg">{value}</span>
-            {hint && <span className="text-[9px] text-muted font-normal">({hint})</span>}
+            <span className="font-bold text-fg font-mono">{value}</span>
+            {hint && <span className="text-[9px] text-muted font-mono font-normal">({hint})</span>}
         </div>
     );
 }

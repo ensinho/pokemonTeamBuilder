@@ -38,7 +38,7 @@ export function CompactStatBar({ stat, value }) {
             <div className="h-2 rounded-full bg-surface-raised">
                 <div className="h-full rounded-full bg-primary" style={{ width }} />
             </div>
-            <span className="text-right font-semibold text-fg">
+            <span className="text-right font-bold font-mono text-fg">
                 {value}
             </span>
         </div>
@@ -57,7 +57,7 @@ export function WeaknessBadge({ type, multiplier }) {
         >
             <img src={typeIcons[type]} alt={type} className="h-4 w-4" />
             <span className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</span>
-            <span className="text-danger">x{multiplier}</span>
+            <span className="text-danger font-mono font-bold">x{multiplier}</span>
         </span>
     );
 }

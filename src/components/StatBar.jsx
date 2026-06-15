@@ -17,7 +17,7 @@ export const StatBar = ({ stat, value }) => {
             </p>
             <div className="w-2/3 rounded-full h-4 bg-surface-raised">
                 <div
-                    className={`${STAT_COLORS[stat]} h-4 rounded-full text-xs text-white flex items-center justify-end pr-2`}
+                    className={`${STAT_COLORS[stat]} h-4 rounded-full text-xs font-mono font-bold text-white flex items-center justify-end pr-2`}
                     style={{ width: `${width}%` }}
                 >
                     {value}

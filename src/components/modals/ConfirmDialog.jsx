@@ -37,7 +37,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, conf
                     <button
                         type="button"
                         onClick={onClose}
-                        className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-sm font-semibold text-fg transition-colors hover:bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="btn btn-outline"
                     >
                         {t('common.cancel')}
                     </button>
@@ -47,7 +47,7 @@ export function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, conf
                             onConfirm?.();
                             onClose?.();
                         }}
-                        className="inline-flex items-center justify-center rounded-lg bg-danger px-4 py-2 text-sm font-bold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                        className="btn btn-danger font-bold"
                     >
                         {confirmText || t('common.confirm')}
                     </button>
