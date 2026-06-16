@@ -91,14 +91,14 @@ const formatRelativeTime = (isoString, language = 'en') => {
     return language === 'pt' ? `há ${diffDays} dias` : `${diffDays}d ago`;
 };
 
-const CollapsiblePanel = ({ title, eyebrow, children, defaultExpanded = false }) => {
+const CollapsiblePanel = ({ title, eyebrow, children, defaultExpanded = false, className = "home-panel p-4" }) => {
     const [isExpanded, setIsExpanded] = useState(defaultExpanded);
     return (
-        <section className="home-panel p-4">
+        <section className={className}>
             <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-full text-left flex justify-between items-center focus:outline-none"
+                className="home-collapsible-trigger w-full text-left flex justify-between items-center focus:outline-none"
             >
                 <div>
                     {eyebrow && <p className="home-panel__eyebrow">{eyebrow}</p>}
@@ -491,6 +491,16 @@ export function HomeView({
                     }}
                     aria-label="Trainer overview"
                 >
+                    {/* Wallpaper button — top-right of the hero card */}
+                    <button
+                        onClick={handleCycleHeroBackground}
+                        type="button"
+                        aria-label={`Change hero wallpaper. Current wallpaper: ${heroBackground?.name ?? 'default'}`}
+                        className="home-hero__wallpaper-btn"
+                        title={`Change wallpaper${heroBackground ? ` (${heroBackground.name})` : ''}`}
+                    >
+                        <DiceIcon />
+                    </button>
                     <div className="home-hero__content">
                         <div className="home-hero__lead">
                             <h1 className="home-panel__title home-panel__title--hero">
@@ -504,16 +514,6 @@ export function HomeView({
                         {greetingPokemonData && (
                             <div className="home-partner-card glass-card">
                                 <div className="home-partner-card__actions">
-                                    <button
-                                        onClick={handleCycleHeroBackground}
-                                        type="button"
-                                        aria-label={`Change hero wallpaper. Current wallpaper: ${heroBackground?.name ?? 'default'}`}
-                                        className="home-partner-card__action-btn"
-                                        title={`Change wallpaper${heroBackground ? ` (${heroBackground.name})` : ''}`}
-                                    >
-                                        <DiceIcon />
-                                    </button>
-
                                     <button
                                         onClick={onOpenPokemonSelector}
                                         type="button"
@@ -912,15 +912,15 @@ export function HomeView({
 
                 {/* Right Column: Compacted Sidebar */}
                 <aside className="home-sidebar">
-                    {/* 1. Daily Pokémon card (always visible, slightly compacted) */}
+                    {/* 1. Daily Pokémon section (always visible, GitHub-like compact) */}
                     {isDailyPokemonLoading ? (
-                        <section className="home-panel p-3 animate-pulse">
+                        <section className="home-sidebar-section py-3 px-1 animate-pulse">
                             <div className="home-skeleton home-skeleton--short"></div>
                             <div className="mt-2 home-skeleton home-skeleton--title"></div>
                         </section>
                     ) : pokemonOfTheDay ? (
                         <section
-                            className="home-panel home-panel--daily home-panel--interactive cursor-pointer p-3.5"
+                            className="home-sidebar-section home-sidebar-section--daily cursor-pointer py-3.5 px-1 flex items-center gap-3 hover:text-primary transition-colors"
                             onClick={() => showDetails(pokemonOfTheDay)}
                             role="button"
                             tabIndex={0}
@@ -932,37 +932,37 @@ export function HomeView({
                             }}
                             aria-label={`Open details for ${pokemonOfTheDay.name}`}
                         >
-                            <div className="home-daily__header">
-                                <div>
-                                    <p className="home-panel__eyebrow text-[10px]">{t('home.dailyPokemon')}</p>
-                                    <h3 className="home-panel__title home-panel__title--daily capitalize text-sm">
-                                        {pokemonOfTheDay.name}
-                                    </h3>
-                                </div>
-                                <span className="home-daily__number text-[10px]">
-                                    #{String(pokemonOfTheDay.id).padStart(3, '0')}
-                                </span>
+                            <div className="home-daily__sprite-container h-14 w-14 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center">
+                                <img
+                                    src={pokemonOfTheDay.animatedSprite || pokemonOfTheDay.sprite || POKEBALL_PLACEHOLDER_URL}
+                                    alt={pokemonOfTheDay.name}
+                                    className="home-daily__sprite h-13 w-13 object-contain"
+                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                />
                             </div>
 
-                            <div className="home-daily__content mt-1">
-                                <div className="home-daily__sprite-container h-20 w-20">
-                                    <img
-                                        src={pokemonOfTheDay.animatedSprite || pokemonOfTheDay.sprite || POKEBALL_PLACEHOLDER_URL}
-                                        alt={pokemonOfTheDay.name}
-                                        className="home-daily__sprite h-20 w-20"
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                    />
+                            <div className="min-w-0 flex-1 flex flex-col justify-between h-14">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="home-panel__eyebrow text-[9px] leading-none">{t('home.dailyPokemon')}</p>
+                                        <h3 className="home-panel__title home-panel__title--daily capitalize text-xs font-semibold truncate mt-1">
+                                            {pokemonOfTheDay.name}
+                                        </h3>
+                                    </div>
+                                    <span className="home-daily__number text-[9px] font-semibold text-muted">
+                                        #{String(pokemonOfTheDay.id).padStart(3, '0')}
+                                    </span>
                                 </div>
 
-                                <div className="home-daily__footer mt-1.5">
+                                <div className="flex justify-between items-center">
                                     <div className="flex flex-wrap gap-1">
                                         {pokemonOfTheDay.types?.map((type) => (
                                             <span
                                                 key={type}
-                                                className="home-type-pill capitalize text-[10px] py-0.5 px-1.5"
+                                                className="home-type-pill capitalize text-[9px] py-0 px-1.5 leading-none border rounded"
                                                 style={{
-                                                    backgroundColor: `${typeColors[type]}18`,
-                                                    borderColor: `${typeColors[type]}33`,
+                                                    backgroundColor: `${typeColors[type]}12`,
+                                                    borderColor: `${typeColors[type]}24`,
                                                     color: typeColors[type],
                                                 }}
                                             >
@@ -976,7 +976,7 @@ export function HomeView({
                                             e.stopPropagation();
                                             onToggleFavoritePokemon(pokemonOfTheDay.id);
                                         }}
-                                        className="home-daily__fav-btn w-6 h-6 animate-none"
+                                        className="home-daily__fav-btn w-6 h-6 flex items-center justify-center rounded border border-border bg-surface-raised text-muted hover:text-accent"
                                         type="button"
                                     >
                                         <StarIcon
@@ -990,40 +990,30 @@ export function HomeView({
                         </section>
                     ) : null}
 
-                    {/* 2. Trainer Stats Accordion Card */}
+                    {/* 2. Trainer Stats Section */}
                     <CollapsiblePanel
                         title={t('home.statsTitle')}
                         eyebrow={t('home.trainerCard')}
+                        className="home-sidebar-section py-3 px-1"
                     >
                         {stats.totalTeams > 0 ? (
-                            <div className="home-stat-grid gap-1.5">
-                                <div className="home-stat-card p-2">
-                                    <span className="home-stat-card__icon w-6 h-6 mb-1"><SwordsIcon /></span>
+                            <div className="home-stat-grid gap-1">
+                                <div className="home-stat-card p-1">
                                     <span className="home-stat-card__label text-[9px]">{t('home.statTeams')}</span>
-                                    <strong className="home-stat-card__value text-xs">{stats.totalTeams}</strong>
+                                    <strong className="home-stat-card__value text-xs font-bold">{stats.totalTeams}</strong>
                                 </div>
-                                <div className="home-stat-card p-2">
-                                    <span className="home-stat-card__icon w-6 h-6 mb-1"><StarIcon isFavorite={true} color="currentColor" /></span>
+                                <div className="home-stat-card p-1">
                                     <span className="home-stat-card__label text-[9px]">{t('home.statPinned')}</span>
-                                    <strong className="home-stat-card__value text-xs">{stats.totalFavoritePokemons}</strong>
+                                    <strong className="home-stat-card__value text-xs font-bold">{stats.totalFavoritePokemons}</strong>
                                 </div>
-                                <div className="home-stat-card home-stat-card--type p-2">
+                                <div className="home-stat-card home-stat-card--type p-1">
+                                    <span className="home-stat-card__label text-[9px]">{t('home.statFavType')}</span>
                                     {stats.favoriteType ? (
-                                        <>
-                                            <span className="home-stat-card__icon w-6 h-6 mb-1" style={{ backgroundColor: `${typeColors[stats.favoriteType]}18`, color: typeColors[stats.favoriteType] }}>
-                                                <img src={typeIcons[stats.favoriteType]} alt={stats.favoriteType} className="w-3.5 h-3.5 object-contain" />
-                                            </span>
-                                            <span className="home-stat-card__label text-[9px]">{t('home.statFavType')}</span>
-                                            <span className="home-type-pill capitalize text-[9px] py-0 px-1 mt-1 justify-center w-full" style={{ backgroundColor: `${typeColors[stats.favoriteType]}18`, borderColor: `${typeColors[stats.favoriteType]}33`, color: typeColors[stats.favoriteType] }}>
-                                                {stats.favoriteType}
-                                            </span>
-                                        </>
+                                        <span className="home-type-pill capitalize text-[9px] py-0 px-1 mt-1 justify-center w-full" style={{ backgroundColor: `${typeColors[stats.favoriteType]}12`, borderColor: `${typeColors[stats.favoriteType]}24`, color: typeColors[stats.favoriteType] }}>
+                                            {stats.favoriteType}
+                                        </span>
                                     ) : (
-                                        <>
-                                            <span className="home-stat-card__icon w-6 h-6 mb-1"><PokeballIcon /></span>
-                                            <span className="home-stat-card__label text-[9px]">{t('home.statFavType')}</span>
-                                            <strong className="home-stat-card__value text-xs mt-1">--</strong>
-                                        </>
+                                        <strong className="home-stat-card__value text-xs font-bold mt-1">--</strong>
                                     )}
                                 </div>
                             </div>
@@ -1034,33 +1024,35 @@ export function HomeView({
                         )}
                     </CollapsiblePanel>
 
-                    {/* 3. Shortcuts Accordion Card */}
+                    {/* 3. Shortcuts Section */}
                     <CollapsiblePanel
                         title={t('home.shortcuts')}
                         eyebrow={language === 'pt' ? 'Navegação' : 'Navigation'}
+                        className="home-sidebar-section py-3 px-1"
                     >
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="flex flex-col gap-1.5">
                             {quickActions.map((shortcut) => (
                                 <button
                                     key={shortcut.path}
                                     type="button"
                                     onClick={() => navigate(shortcut.path)}
-                                    className="home-list-button p-2 text-left flex items-center gap-2"
+                                    className="home-list-button p-1 text-left flex items-center gap-2 w-full border-0 bg-transparent cursor-pointer"
                                 >
-                                    <span className="home-list-button__icon w-7 h-7 flex-shrink-0" aria-hidden="true">
+                                    <span className="home-list-button__icon w-4 h-4 flex-shrink-0 flex items-center justify-center text-muted" aria-hidden="true">
                                         {shortcut.icon}
                                     </span>
-                                    <span className="home-list-button__title text-xs truncate">{shortcut.label}</span>
+                                    <span className="home-list-button__title text-xs truncate font-medium text-fg">{shortcut.label}</span>
                                 </button>
                             ))}
                         </div>
                     </CollapsiblePanel>
 
-                    {/* 4. Did You Know? Accordion Card */}
+                    {/* 4. Did You Know? Section */}
                     {!isTipDismissed && (
                         <CollapsiblePanel
                             title={t('home.didYouKnow')}
                             eyebrow={t('home.todaysNote')}
+                            className="home-sidebar-section py-3 px-1"
                         >
                             <p className="text-xs text-muted leading-relaxed">{tipOfTheDay}</p>
                         </CollapsiblePanel>
@@ -1068,10 +1060,10 @@ export function HomeView({
 
                     {/* 5. Pinned Favorites */}
                     {featuredFavorites.length > 0 && (
-                        <section className="home-panel p-3.5">
+                        <section className="home-sidebar-section py-3 px-1">
                             <div className="flex items-center justify-between gap-3">
                                 <div>
-                                    <p className="home-panel__eyebrow text-[10px]">{t('home.pinnedRoster')}</p>
+                                    <p className="home-panel__eyebrow text-[9px]">{t('home.pinnedRoster')}</p>
                                     <h3 className="home-panel__section-title mt-0.5">{t('home.yourFavorites')}</h3>
                                 </div>
                                 <button
@@ -1083,7 +1075,7 @@ export function HomeView({
                                 </button>
                             </div>
 
-                            <div className="home-favorite-grid home-favorite-grid--sidebar mt-3">
+                            <div className="home-favorite-grid home-favorite-grid--sidebar mt-2.5">
                                 {featuredFavorites.map((pokemon) => (
                                     <div
                                         key={pokemon.id}
@@ -1094,7 +1086,7 @@ export function HomeView({
                                                 showDetails(pokemon);
                                             }
                                         }}
-                                        className="home-favorite-card home-favorite-card--compact p-1.5"
+                                        className="home-favorite-card home-favorite-card--compact p-1"
                                         role="button"
                                         tabIndex={0}
                                         aria-label={`Open details for ${pokemon.name}`}

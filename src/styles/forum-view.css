@@ -166,15 +166,19 @@
     display: inline-block;
     flex-shrink: 0;
 }
+
 .forum-category-dot--general {
     background-color: var(--color-info);
 }
+
 .forum-category-dot--teams {
     background-color: var(--color-success);
 }
+
 .forum-category-dot--strategy {
     background-color: var(--color-warning);
 }
+
 .forum-category-dot--announcements {
     background-color: var(--color-danger);
 }
@@ -228,7 +232,7 @@
 .forum-message-list {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem 0;
+    padding: 1rem 1rem 1rem 0;
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -496,7 +500,7 @@
 .home-forum-chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 0.75rem 0;
+    padding: 0.75rem 0.75rem 0.75rem 0;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
@@ -722,7 +726,7 @@
         height: calc(100vh - 8rem);
         align-items: stretch;
     }
-    
+
     .forum-right-sidebar {
         display: flex;
     }
@@ -731,5 +735,75 @@
 @media (max-width: 1199px) {
     .forum-right-sidebar {
         display: none;
+    }
+}
+
+/* ==========================================================================
+   MOBILE & TABLET VIEWS (FIXED HEIGHT & INTERNAL SCROLLING)
+   ========================================================================== */
+@media (max-width: 1023px) {
+
+    /* Prevent the outer page wrapper from scrolling on feed page */
+    .app-shell__content:has(.forum-view) {
+        overflow-y: hidden;
+    }
+
+    .forum-view {
+        height: calc(100dvh - 5.75rem);
+        overflow: hidden;
+        gap: 0.5rem;
+    }
+}
+
+/* Tablet: Side-by-side view (640px to 1023px) */
+@media (min-width: 640px) and (max-width: 1023px) {
+    .forum-view {
+        grid-template-columns: 220px 1fr;
+        align-items: stretch;
+    }
+
+    .forum-sidebar {
+        height: 100%;
+    }
+
+    .forum-main {
+        height: 100%;
+        min-height: 0;
+    }
+}
+
+/* True Mobile: Stacked view (< 640px) */
+@media (max-width: 639px) {
+    .forum-view {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .forum-sidebar {
+        height: 175px;
+        flex-shrink: 0;
+        border-bottom: 1px solid var(--color-border);
+        padding-bottom: 0.4rem;
+    }
+
+    .forum-categories {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .forum-category-btn {
+        flex-shrink: 0;
+    }
+
+    .forum-topics-list {
+        max-height: 85px;
+    }
+
+    .forum-main {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
     }
 }

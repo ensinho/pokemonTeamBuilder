@@ -1117,24 +1117,26 @@ export default function AppLayout() {
                         )}
                     </main>
 
-                    <footer className="app-shell__footer">
-                        <div className="app-shell__footer-row">
-                            <div className="app-shell__footer-credit">
-                                <span>
-                                    {t('layout.developedBy')} <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
-                                </span>
-                                <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} showToast={showToast} />
-                            </div>
+                    {currentPage !== 'feed' && (
+                        <footer className="app-shell__footer">
+                            <div className="app-shell__footer-row">
+                                <div className="app-shell__footer-credit">
+                                    <span>
+                                        {t('layout.developedBy')} <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
+                                    </span>
+                                    <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} showToast={showToast} />
+                                </div>
 
-                            <div className="app-shell__footer-links">
-                                <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
-                                <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
+                                <div className="app-shell__footer-links">
+                                    <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
+                                    <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
+                                </div>
                             </div>
-                        </div>
-                        <p className="app-shell__footer-copy">
-                            {t('layout.pokemonCopyright')}
-                        </p>
-                    </footer>
+                            <p className="app-shell__footer-copy">
+                                {t('layout.pokemonCopyright')}
+                            </p>
+                        </footer>
+                    )}
                 </div>
             </div>
         </div>

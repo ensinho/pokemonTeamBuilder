@@ -79,7 +79,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
-    opacity: 0.15;
+    opacity: 0.6;
     transition: opacity 0.25s ease;
 }
 
@@ -93,6 +93,47 @@
 
 .home-panel--interactive:hover {
     border-color: var(--color-primary);
+}
+
+/* Wallpaper shuffle button — top-right corner of the hero card */
+.home-hero__wallpaper-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-md);
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+        background var(--duration-fast) var(--ease-smooth),
+        border-color var(--duration-fast) var(--ease-smooth),
+        color var(--duration-fast) var(--ease-smooth);
+}
+
+.home-hero__wallpaper-btn:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.55);
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+}
+
+.home-hero__wallpaper-btn svg {
+    width: 1rem;
+    height: 1rem;
+    transition: transform 0.4s var(--ease-bounce);
+}
+
+.home-hero__wallpaper-btn:hover svg {
+    transform: rotate(180deg);
 }
 
 /* Typography Hierarchy */
@@ -822,6 +863,9 @@
         position: sticky;
         top: 1rem;
         align-self: start;
+        border-left: 1px solid var(--color-border);
+        padding-left: 1.5rem;
+        gap: 0;
     }
 }
 
@@ -951,4 +995,247 @@
         opacity: 0.85;
         box-shadow: 0 0 0 3px var(--color-primary-soft);
     }
+}
+
+/* ==========================================================================
+   GitHub-like Compact Sidebar Styling
+   ========================================================================== */
+.home-sidebar-section {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid var(--color-border) !important;
+    border-radius: 0 !important;
+    padding: 0.9rem 0.4rem !important;
+    box-shadow: none !important;
+}
+
+.home-sidebar-section:last-of-type {
+    border-bottom: none !important;
+}
+
+/* Collapsible trigger buttons inside sidebar section */
+.home-sidebar-section .home-collapsible-trigger {
+    padding: 0.35rem 0.5rem !important;
+    margin-left: -0.5rem !important;
+    width: calc(100% + 1rem) !important;
+    border-radius: var(--radius-md) !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section .home-collapsible-trigger:hover {
+    background: var(--color-surface-raised) !important;
+}
+
+.home-sidebar-section .home-collapsible-trigger:active {
+    transform: scale(0.98);
+}
+
+.home-sidebar-section .home-collapsible-trigger:hover .home-panel__section-title {
+    color: var(--color-primary) !important;
+}
+
+.home-sidebar-section .home-collapsible-trigger span {
+    transition: transform var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth) !important;
+    color: var(--color-muted) !important;
+    display: inline-block;
+}
+
+.home-sidebar-section .home-collapsible-trigger:hover span {
+    color: var(--color-primary) !important;
+    transform: scale(1.15) rotate(var(--rotate-val, 0deg));
+}
+
+/* Stat blocks: clean modern small cards with micro-hover */
+.home-sidebar-section .home-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.home-sidebar-section .home-stat-card {
+    background: var(--color-surface-raised) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.45rem 0.5rem !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    box-shadow: none !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section .home-stat-card:hover {
+    border-color: var(--color-primary) !important;
+    background: var(--color-surface) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--elevation-1) !important;
+}
+
+.home-sidebar-section .home-stat-card__icon {
+    display: none !important;
+}
+
+.home-sidebar-section .home-stat-card__label {
+    font-size: 0.65rem !important;
+    font-weight: 600 !important;
+    color: var(--color-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.03em !important;
+}
+
+.home-sidebar-section .home-stat-card__value {
+    margin-top: 0.2rem !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    color: var(--color-fg) !important;
+}
+
+/* Shortcuts links list */
+.home-sidebar-section .home-list-button {
+    background: var(--color-surface-raised) !important;
+    border: 1px solid var(--color-border) !important;
+    padding: 0.5rem 0.75rem !important;
+    gap: 0.6rem !important;
+    border-radius: var(--radius-md) !important;
+    align-items: center !important;
+    box-shadow: none !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section .home-list-button:hover {
+    background: var(--color-surface) !important;
+    border-color: var(--color-primary) !important;
+    transform: translateX(4px);
+    box-shadow: var(--elevation-1) !important;
+}
+
+.home-sidebar-section .home-list-button__icon {
+    width: 1.2rem !important;
+    height: 1.2rem !important;
+    background: transparent !important;
+    color: var(--color-muted) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section .home-list-button:hover .home-list-button__icon {
+    background: transparent !important;
+    color: var(--color-primary) !important;
+    transform: scale(1.1);
+}
+
+.home-sidebar-section .home-list-button__title {
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    color: var(--color-fg) !important;
+}
+
+.home-sidebar-section .home-list-button:hover .home-list-button__title {
+    color: var(--color-primary) !important;
+    text-decoration: none !important;
+}
+
+/* See All Inline Button */
+.home-sidebar-section .home-button--inline {
+    background: var(--color-surface-raised) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    padding: 0.25rem 0.65rem !important;
+    font-size: 10px !important;
+    color: var(--color-muted) !important;
+    font-weight: 600 !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section .home-button--inline:hover {
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+    background: var(--color-surface) !important;
+    transform: translateY(-1.5px);
+    box-shadow: var(--elevation-1) !important;
+}
+
+.home-sidebar-section .home-button--inline:active {
+    transform: translateY(0) scale(0.96);
+}
+
+/* Pinned favorites in sidebar */
+.home-sidebar-section .home-favorite-card {
+    background: var(--color-surface-raised) !important;
+    border: 1px solid var(--color-border) !important;
+    padding: 0.5rem 0.35rem !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: none !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section .home-favorite-card:hover {
+    background: var(--color-surface) !important;
+    border-color: var(--color-primary) !important;
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: var(--elevation-1) !important;
+}
+
+.home-sidebar-section .home-favorite-card__sprite {
+    width: 2.35rem !important;
+    height: 2.35rem !important;
+}
+
+.home-sidebar-section .home-favorite-card__name {
+    font-size: 0.725rem !important;
+    font-weight: 600 !important;
+    color: var(--color-fg) !important;
+}
+
+/* Daily Pokemon Section */
+.home-sidebar-section--daily {
+    min-height: 76px !important;
+    padding: 0.6rem !important;
+    margin-left: -0.6rem !important;
+    width: calc(100% + 1.2rem) !important;
+    border-radius: var(--radius-md) !important;
+    border: 1px solid transparent !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section--daily:hover {
+    background: var(--color-surface-raised) !important;
+    border-color: var(--color-border) !important;
+    box-shadow: var(--elevation-1) !important;
+}
+
+.home-sidebar-section--daily .home-daily__sprite-container {
+    border: 1px solid var(--color-border) !important;
+    background: var(--color-surface) !important;
+    border-radius: var(--radius-md) !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section--daily:hover .home-daily__sprite-container {
+    border-color: var(--color-primary) !important;
+    transform: scale(1.05);
+}
+
+.home-sidebar-section--daily .home-daily__fav-btn {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+    background: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: var(--color-muted) !important;
+    cursor: pointer !important;
+    transition: all var(--duration-fast) var(--ease-smooth) !important;
+}
+
+.home-sidebar-section--daily .home-daily__fav-btn:hover {
+    border-color: var(--color-accent) !important;
+    color: var(--color-accent) !important;
+    background: var(--color-accent-soft) !important;
+    transform: scale(1.1);
+    box-shadow: 0 0 8px var(--color-accent-soft) !important;
 }
