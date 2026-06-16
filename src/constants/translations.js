@@ -374,7 +374,9 @@ export const TRANSLATIONS = {
             homeTeaserTitle: 'Daily Pokémon Guess',
             homeTeaserSubtitle: 'Who\'s That Pokémon?',
             homeTeaserPlay: 'Play Challenge',
-            homeTeaserSolved: 'Solved today in {{attempts}} tries!'
+            homeTeaserSolved: 'Solved today in {{attempts}} tries!',
+            notificationTitle: 'New Daily Pokedle!',
+            notificationBody: 'A new mystery Pokémon is available! Can you guess who it is?'
         },
         savedTeams: {
             title: 'Saved Teams',
@@ -1072,7 +1074,9 @@ export const TRANSLATIONS = {
             homeTeaserTitle: 'Pokémon do Dia',
             homeTeaserSubtitle: 'Quem é esse Pokémon? Teste seus conhecimentos!',
             homeTeaserPlay: 'Jogar Desafio',
-            homeTeaserSolved: 'Resolvido hoje em {{attempts}} tentativas!'
+            homeTeaserSolved: 'Resolvido hoje em {{attempts}} tentativas!',
+            notificationTitle: 'Novo Pokedle Diário!',
+            notificationBody: 'Um novo Pokémon misterioso está disponível! Consegue adivinhar quem é?'
         },
         savedTeams: {
             title: 'Times Salvos',

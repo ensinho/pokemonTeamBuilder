@@ -148,6 +148,7 @@ export default function PokedleView() {
 
     // Countdown state for next daily
     const [nextDailyCountdown, setNextDailyCountdown] = useState('');
+    const [loadedDailyDate, setLoadedDailyDate] = useState('');
 
     // Fetch Pokémon Index on Mount
     useEffect(() => {
@@ -176,6 +177,7 @@ export default function PokedleView() {
         if (mode === 'daily') {
             const now = new Date();
             const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+            setLoadedDailyDate(dateString);
             const dailyIdx = getDailyPokemonIndex(allowedPool.length);
             const dailyPokemon = allowedPool[dailyIdx];
 
@@ -301,10 +303,113 @@ export default function PokedleView() {
         fetchTargetDetails();
     }, [targetPokemon, language]);
 
+    // Initializer for a clean game
+    const initNewGame = (pokemon) => {
+        setTargetPokemon(pokemon);
+        setGuesses([]);
+        setGameStatus('IN_PROGRESS');
+        setInputValue('');
+    };
+
+    // Ongoing mode: Pick random Pokémon and start
+    const startRandomOngoingGame = () => {
+        if (allowedPool.length === 0) return;
+        const randomIdx = Math.floor(Math.random() * allowedPool.length);
+        initNewGame(allowedPool[randomIdx]);
+    };
+
+    // Trigger local push notification when Daily challenge resets
+    const triggerResetNotification = useCallback(() => {
+        if (typeof window === 'undefined' || !("Notification" in window)) return;
+
+        const showNotif = () => {
+            const title = t('pokedle.notificationTitle');
+            const body = t('pokedle.notificationBody');
+
+            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                navigator.serviceWorker.ready.then(reg => {
+                    reg.showNotification(title, {
+                        body: body,
+                        icon: '/pwa-192x192.png',
+                        vibrate: [200, 100, 200],
+                        tag: 'pokedle-daily-reset'
+                    });
+                });
+            } else {
+                new Notification(title, {
+                    body: body,
+                    icon: '/pwa-192x192.png'
+                });
+            }
+        };
+
+        if (Notification.permission === "granted") {
+            showNotif();
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    showNotif();
+                }
+            });
+        }
+    }, [t]);
+
+    // Handle Daily challenge transition when timer resets
+    const handleDailyReset = useCallback(() => {
+        if (allowedPool.length === 0) return;
+        const now = new Date();
+        const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+        setLoadedDailyDate(dateString);
+        const dailyIdx = getDailyPokemonIndex(allowedPool.length);
+        const dailyPokemon = allowedPool[dailyIdx];
+
+        // Load new daily state
+        const savedState = localStorage.getItem(`ptb:pokedle:daily:${dateString}`);
+        if (savedState) {
+            try {
+                const parsed = JSON.parse(savedState);
+                setTargetPokemon(dailyPokemon);
+                setGuesses(parsed.guesses || []);
+                setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
+                setInputValue('');
+            } catch (e) {
+                initNewGame(dailyPokemon);
+            }
+        } else {
+            initNewGame(dailyPokemon);
+        }
+
+        // Trigger notification
+        triggerResetNotification();
+    }, [allowedPool, triggerResetNotification]);
+
+    // Request notification permission on mount for daily mode
+    useEffect(() => {
+        if (mode === 'daily' && typeof window !== 'undefined' && "Notification" in window) {
+            if (Notification.permission === "default") {
+                // Politeness delay
+                const permTimer = setTimeout(() => {
+                    Notification.requestPermission();
+                }, 3000);
+                return () => clearTimeout(permTimer);
+            }
+        }
+    }, [mode]);
+
     // Daily countdown updater
     useEffect(() => {
+        if (mode !== 'daily') return;
+
         const updateCountdown = () => {
             const now = new Date();
+            const currentDailyDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+
+            // Check if day rolled over
+            if (loadedDailyDate && currentDailyDate !== loadedDailyDate) {
+                handleDailyReset();
+                return;
+            }
+
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
             const diffMs = tomorrow - now;
 
@@ -320,22 +425,7 @@ export default function PokedleView() {
         updateCountdown();
         const timer = setInterval(updateCountdown, 1000);
         return () => clearInterval(timer);
-    }, []);
-
-    // Initializer for a clean game
-    const initNewGame = (pokemon) => {
-        setTargetPokemon(pokemon);
-        setGuesses([]);
-        setGameStatus('IN_PROGRESS');
-        setInputValue('');
-    };
-
-    // Ongoing mode: Pick random Pokémon and start
-    const startRandomOngoingGame = () => {
-        if (allowedPool.length === 0) return;
-        const randomIdx = Math.floor(Math.random() * allowedPool.length);
-        initNewGame(allowedPool[randomIdx]);
-    };
+    }, [mode, loadedDailyDate, handleDailyReset]);
 
     // Target name normalized & its length
     const targetNormalized = useMemo(() => {
