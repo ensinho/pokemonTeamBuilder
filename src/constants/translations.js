@@ -111,7 +111,7 @@ export const TRANSLATIONS = {
             shortcuts: 'Shortcuts',
             shortcutBuilderTitle: 'Team Builder',
             shortcutBuilderDesc: 'Create or refine a roster.',
-            shortcutPokedexTitle: 'Browse Pokédex',
+            shortcutPokedexTitle: 'Pokédex',
             shortcutPokedexDesc: 'Compare picks before locking a slot.',
             shortcutQuizTitle: 'Quiz',
             shortcutQuizDesc: 'Challenge your Pokemon knowledge.',

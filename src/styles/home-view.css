@@ -922,6 +922,7 @@
         justify-content: flex-start;
         align-items: center;
         padding: 0.7rem;
+        opacity: 0.85;
     }
 
     .home-partner-card__sprite-container {
@@ -1135,11 +1136,13 @@
         font-size: clamp(1rem, 4vw, 1.35rem);
     }
 
-    /* ---- Shortcuts grid 2x2 ---- */
+    /* ---- Shortcuts single row of big circular icons ---- */
     .home-shortcuts-container {
         display: grid !important;
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.5rem !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.35rem !important;
+        width: 100% !important;
+        margin: 0.25rem 0 0.5rem 0 !important;
     }
 
     .home-shortcuts-container .home-list-button {
@@ -1147,51 +1150,67 @@
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        padding: 0.75rem 0.5rem !important;
-        gap: 0.4rem !important;
-        height: 100% !important;
+        padding: 0.4rem 0.15rem !important;
+        gap: 0.35rem !important;
+        height: auto !important;
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
         border-radius: var(--radius-lg) !important;
-        background: var(--color-surface-raised) !important;
-        border: 1px solid var(--color-border) !important;
-        transition: all var(--duration-fast) var(--ease-smooth) !important;
+        transition: transform var(--duration-fast) var(--ease-smooth) !important;
     }
 
     .home-shortcuts-container .home-list-button:hover {
-        border-color: var(--color-primary) !important;
-        background: var(--color-surface) !important;
-        transform: translateY(-2px) !important;
-        box-shadow: var(--elevation-1) !important;
+        border-color: transparent !important;
+        background: transparent !important;
+        transform: translateY(-3px) !important;
+        box-shadow: none !important;
     }
 
     .home-shortcuts-container .home-list-button:active {
-        transform: scale(0.96) !important;
+        transform: scale(0.92) !important;
     }
 
     .home-shortcuts-container .home-list-button__icon {
-        width: 2.2rem !important;
-        height: 2.2rem !important;
-        background: var(--color-primary-soft) !important;
+        width: 3.2rem !important;
+        height: 3.2rem !important;
+        background: var(--color-surface-raised) !important;
+        border: 1px solid var(--color-border) !important;
         color: var(--color-primary) !important;
         border-radius: 50% !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        margin: 0 0 0.15rem 0 !important;
+        margin: 0 !important;
+        box-shadow: var(--elevation-1) !important;
         transition: all var(--duration-fast) var(--ease-smooth) !important;
+    }
+
+    .home-shortcuts-container .home-list-button__icon svg {
+        width: 1.4rem !important;
+        height: 1.4rem !important;
     }
 
     .home-shortcuts-container .home-list-button:hover .home-list-button__icon {
         background: var(--color-primary) !important;
         color: #ffffff !important;
+        border-color: transparent !important;
+        box-shadow: 0 4px 12px var(--color-primary-soft) !important;
     }
 
     .home-shortcuts-container .home-list-button__title {
-        font-size: 0.725rem !important;
+        font-size: 0.65rem !important;
         font-weight: 600 !important;
-        color: var(--color-fg) !important;
+        color: var(--color-muted) !important;
         white-space: normal !important;
         word-break: break-word !important;
         text-align: center !important;
+        line-height: 1.2 !important;
+        transition: color var(--duration-fast) var(--ease-smooth) !important;
+    }
+
+    .home-shortcuts-container .home-list-button:hover .home-list-button__title {
+        color: var(--color-fg) !important;
     }
 
     /* ---- Forum editor compact on mobile ---- */
@@ -1216,7 +1235,7 @@
     .home-mobile-shortcuts-section {
         display: block !important;
         margin-top: 0.25rem;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0;
         width: 100%;
     }
 
@@ -1324,7 +1343,7 @@
 
     /* Chat more compact on small screens */
     .home-forum-chat-messages {
-        max-height: 260px;
+        max-height: 380px;
     }
 
     .home-forum-chat-card-wrapper {

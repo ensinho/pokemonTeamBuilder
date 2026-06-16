@@ -641,9 +641,6 @@ export function HomeView({
                                     >
                                         <PlusIcon className="w-3.5 h-3.5" />
                                     </button>
-                                    <div className="home-active-badge flex items-center justify-center rounded-full bg-primary-soft border border-primary-border w-7 h-7 font-bold text-primary">
-                                        ★
-                                    </div>
                                 </div>
                             </div>
 
