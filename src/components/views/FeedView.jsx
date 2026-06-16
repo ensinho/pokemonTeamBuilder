@@ -590,7 +590,7 @@ export function FeedView({ colors, showToast, navigate }) {
                         {/* Editor reply input at bottom */}
                         <form onSubmit={handleSendMessageSubmit} className="forum-editor">
                             {attachedTeam && (
-                                <div className="forum-attached-team-preview flex items-center">
+                                <div className="forum-attached-team-preview flex items-center mb-2">
                                     <ClipIcon className="w-3.5 h-3.5 text-success shrink-0" />
                                     <span className="truncate">{attachedTeam.name} (Slots: {attachedTeam.pokemons.length}/6)</span>
                                     <button type="button" onClick={() => setAttachedTeam(null)}>
@@ -599,32 +599,15 @@ export function FeedView({ colors, showToast, navigate }) {
                                 </div>
                             )}
 
-                            <div className="forum-editor-input-row">
-                                <textarea
-                                    value={replyText}
-                                    onChange={(e) => setReplyText(e.target.value)}
-                                    placeholder={language === 'pt' ? "Envie uma mensagem pública..." : "Send a public reply..."}
-                                    className="forum-editor-textarea custom-scrollbar"
-                                />
-
-                                <button
-                                    type="submit"
-                                    disabled={!replyText.trim() && !attachedTeam}
-                                    className="btn btn-primary font-bold px-6 shrink-0 h-10"
-                                >
-                                    {language === 'pt' ? 'Enviar' : 'Send'}
-                                </button>
-                            </div>
-
-                            <div className="forum-editor-actions">
-                                <div className="relative">
+                            <div className="forum-chat-input-wrapper">
+                                <div className="relative shrink-0">
                                     <button
                                         type="button"
                                         onClick={() => setIsAttachDropdownOpen(!isAttachDropdownOpen)}
-                                        className="btn btn-secondary text-xs flex items-center gap-1 py-1 h-7"
+                                        className="forum-chat-attach-btn"
+                                        title={language === 'pt' ? 'Anexar Time' : 'Attach Team'}
                                     >
-                                        <ClipIcon className="w-3.5 h-3.5 shrink-0" />
-                                        {language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                                        <PlusIcon className="w-4 h-4" />
                                     </button>
                                     {isAttachDropdownOpen && (
                                         <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
@@ -660,9 +643,24 @@ export function FeedView({ colors, showToast, navigate }) {
                                         </div>
                                     )}
                                 </div>
-                                <span className="text-[10px] text-muted uppercase font-bold tracking-wider">
-                                    {language === 'pt' ? 'Tópico Público' : 'Public Topic Thread'}
-                                </span>
+
+                                <textarea
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder={language === 'pt' ? "Envie uma resposta pública..." : "Send a public reply..."}
+                                    className="forum-chat-input-field forum-chat-textarea custom-scrollbar"
+                                />
+
+                                <button
+                                    type="submit"
+                                    disabled={!replyText.trim() && !attachedTeam}
+                                    className="forum-chat-send-btn"
+                                    title={language === 'pt' ? 'Enviar' : 'Send'}
+                                >
+                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                    </svg>
+                                </button>
                             </div>
                         </form>
                     </div>

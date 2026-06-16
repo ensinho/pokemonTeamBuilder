@@ -460,6 +460,14 @@
     width: 100%;
 }
 
+.home-btn-text-desktop {
+    display: inline;
+}
+
+.home-btn-text-mobile {
+    display: none;
+}
+
 /* Daily Showcase */
 .home-panel--daily {
     display: flex;
@@ -560,6 +568,20 @@
     opacity: 0.06;
     pointer-events: none;
     user-select: none;
+}
+
+.home-shortcuts-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+}
+
+.home-mobile-shortcuts-section {
+    display: none;
+}
+
+.home-favorite-name-desktop {
+    display: block;
 }
 
 /* Shortcuts */
@@ -870,6 +892,21 @@
     }
 }
 
+@media (max-width: 1279px) {
+    .home-dashboard {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .home-forum-chat-card-wrapper {
+        order: 2;
+    }
+
+    .home-sidebar {
+        order: 1;
+    }
+}
+
 @media (max-width: 1024px) {
     .home-hero__content {
         flex-direction: column;
@@ -1041,20 +1078,120 @@
     /* ---- Active team panel compact ---- */
     .home-panel--feature {
         min-height: auto !important;
-        padding: 0.85rem !important;
+        padding: 0.65rem !important;
+    }
+
+    .home-panel--feature .home-panel__description {
+        display: none !important;
+    }
+
+    .home-inline-meta {
+        display: none !important;
+    }
+
+    .home-active-badge {
+        font-size: 0.65rem !important;
+        padding: 0.15rem 0.35rem !important;
+    }
+
+    .home-action-row {
+        gap: 0.35rem;
+        margin-top: 0.5rem !important;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .home-button {
+        padding: 0.3rem 0.45rem !important;
+        font-size: 0.7rem !important;
+        justify-content: center !important;
+        width: 100% !important;
+    }
+
+    .home-button svg {
+        width: 0.7rem !important;
+        height: 0.7rem !important;
+    }
+
+    .home-panel--feature .home-team-slot {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid transparent !important;
+        border-radius: var(--radius-md) !important;
+    }
+
+    .home-panel--feature .home-team-slots {
+        gap: 0.2rem !important;
+    }
+
+    .home-btn-text-desktop {
+        display: none !important;
+    }
+
+    .home-btn-text-mobile {
+        display: inline !important;
     }
 
     .home-panel__title--feature {
         font-size: clamp(1rem, 4vw, 1.35rem);
     }
 
-    .home-action-row {
-        gap: 0.35rem;
+    /* ---- Shortcuts grid 2x2 ---- */
+    .home-shortcuts-container {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem !important;
     }
 
-    .home-button {
-        padding: 0.4rem 0.6rem;
-        font-size: 0.75rem;
+    .home-shortcuts-container .home-list-button {
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        padding: 0.75rem 0.5rem !important;
+        gap: 0.4rem !important;
+        height: 100% !important;
+        border-radius: var(--radius-lg) !important;
+        background: var(--color-surface-raised) !important;
+        border: 1px solid var(--color-border) !important;
+        transition: all var(--duration-fast) var(--ease-smooth) !important;
+    }
+
+    .home-shortcuts-container .home-list-button:hover {
+        border-color: var(--color-primary) !important;
+        background: var(--color-surface) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: var(--elevation-1) !important;
+    }
+
+    .home-shortcuts-container .home-list-button:active {
+        transform: scale(0.96) !important;
+    }
+
+    .home-shortcuts-container .home-list-button__icon {
+        width: 2.2rem !important;
+        height: 2.2rem !important;
+        background: var(--color-primary-soft) !important;
+        color: var(--color-primary) !important;
+        border-radius: 50% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 0 0.15rem 0 !important;
+        transition: all var(--duration-fast) var(--ease-smooth) !important;
+    }
+
+    .home-shortcuts-container .home-list-button:hover .home-list-button__icon {
+        background: var(--color-primary) !important;
+        color: #ffffff !important;
+    }
+
+    .home-shortcuts-container .home-list-button__title {
+        font-size: 0.725rem !important;
+        font-weight: 600 !important;
+        color: var(--color-fg) !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        text-align: center !important;
     }
 
     /* ---- Forum editor compact on mobile ---- */
@@ -1067,6 +1204,58 @@
         font-size: 0.8rem;
         min-height: 34px;
         padding: 0.4rem 0.6rem;
+    }
+
+    /* Hide Trainer Card and Sidebar Shortcuts on mobile */
+    .home-trainer-stats-section,
+    .home-shortcuts-sidebar-section {
+        display: none !important;
+    }
+
+    /* Show Mobile-only Shortcuts Section at the top */
+    .home-mobile-shortcuts-section {
+        display: block !important;
+        margin-top: 0.25rem;
+        margin-bottom: 0.5rem;
+        width: 100%;
+    }
+
+    /* Favorites layout compact */
+    .home-favorite-name-desktop {
+        display: none !important;
+    }
+
+    .home-sidebar-section .home-favorite-grid--sidebar {
+        display: flex !important;
+        justify-content: flex-start !important;
+        gap: 0.4rem !important;
+        margin-top: 0.4rem !important;
+    }
+
+    .home-sidebar-section .home-favorite-card {
+        background: rgba(255, 255, 255, 0.04) !important;
+        border: 1px solid transparent !important;
+        padding: 0.25rem !important;
+        border-radius: 50% !important;
+        width: 2.2rem !important;
+        height: 2.2rem !important;
+        min-width: 2.2rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: none !important;
+        transition: all var(--duration-fast) var(--ease-smooth) !important;
+    }
+
+    .home-sidebar-section .home-favorite-card:hover {
+        background: var(--color-surface-raised) !important;
+        border-color: var(--color-primary) !important;
+        transform: scale(1.1) !important;
+    }
+
+    .home-sidebar-section .home-favorite-card__sprite {
+        width: 1.8rem !important;
+        height: 1.8rem !important;
     }
 }
 
@@ -1086,8 +1275,8 @@
     }
 
     .home-team-slots {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.3rem;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 0.25rem;
     }
 
     .home-panel--hero {
@@ -1193,6 +1382,43 @@
         opacity: 0.85;
         box-shadow: 0 0 0 3px var(--color-primary-soft);
     }
+}
+
+.home-active-header-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.home-active-header-btn:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-fg);
+    background: var(--color-surface);
+    transform: scale(1.05);
+}
+
+.home-active-header-btn:active {
+    transform: scale(0.95);
+}
+
+.home-active-header-btn--primary {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary-border, var(--color-primary));
+    color: var(--color-primary);
+}
+
+.home-active-header-btn--primary:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: transparent;
 }
 
 /* ==========================================================================

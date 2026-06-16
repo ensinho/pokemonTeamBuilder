@@ -32,7 +32,7 @@ import {
     SuccessToastIcon,
     SwordsIcon,
 } from '../icons';
-import { Download } from 'lucide-react';
+import { Download, Edit } from 'lucide-react';
 
 const DEFAULT_GREETING_POKEMON = {
     morning: { id: 196, name: 'espeon' },
@@ -562,6 +562,25 @@ export function HomeView({
                     </div>
                 </section>
 
+                {/* Mobile Shortcuts (only visible on mobile via CSS) */}
+                <div className="home-mobile-shortcuts-section">
+                    <div className="home-shortcuts-container">
+                        {quickActions.map((shortcut) => (
+                            <button
+                                key={shortcut.path}
+                                type="button"
+                                onClick={() => navigate(shortcut.path)}
+                                className="home-list-button p-1 text-left flex items-center gap-2 w-full border-0 bg-transparent cursor-pointer"
+                            >
+                                <span className="home-list-button__icon w-4 h-4 flex-shrink-0 flex items-center justify-center text-muted" aria-hidden="true">
+                                    {shortcut.icon}
+                                </span>
+                                <span className="home-list-button__title text-xs truncate font-medium text-fg">{shortcut.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
                 {activeTeam ? (
                     <section
                         className="home-panel home-panel--feature home-panel--interactive flex min-h-[195px] cursor-pointer flex-col justify-between p-4"
@@ -605,8 +624,26 @@ export function HomeView({
                                         {t('home.activeTeamDesc')}
                                     </p>
                                 </div>
-                                <div className="home-active-badge flex items-center gap-1 text-xs font-bold text-primary px-2.5 py-1 rounded-full bg-primary-soft border border-primary-border shrink-0 self-start" onClick={(e) => e.stopPropagation()}>
-                                    ★ {t('common.active')}
+                                <div className="flex items-center gap-1.5 shrink-0 self-start" onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleEditTeam(activeTeam)}
+                                        className="home-active-header-btn home-active-header-btn--primary"
+                                        title={t('home.editActiveTeam')}
+                                    >
+                                        <Edit className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/builder')}
+                                        className="home-active-header-btn"
+                                        title={t('home.startNewTeam')}
+                                    >
+                                        <PlusIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                    <div className="home-active-badge flex items-center justify-center rounded-full bg-primary-soft border border-primary-border w-7 h-7 font-bold text-primary">
+                                        ★
+                                    </div>
                                 </div>
                             </div>
 
@@ -643,25 +680,7 @@ export function HomeView({
                             </dl>
                         </div>
 
-                        <div className="home-action-row mt-4">
-                            <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); handleEditTeam(activeTeam); }}
-                                className="home-button home-button--primary"
-                                aria-label={`Continue editing ${activeTeam.name}`}
-                            >
-                                <EditIcon />
-                                {t('home.editActiveTeam')}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={(e) => { e.stopPropagation(); navigate('/builder'); }}
-                                className="home-button home-button--secondary"
-                            >
-                                <SwordsIcon />
-                                {t('home.startNewTeam')}
-                            </button>
-                        </div>
+
                     </section>
                 ) : (
                     <section className="home-panel home-panel--feature flex min-h-[200px] flex-col justify-between p-4">
@@ -696,9 +715,9 @@ export function HomeView({
                 {/* Left Column: Compact General Chat Feed */}
                 <div className="home-forum-chat-card-wrapper home-forum-chat-card">
                     <div className="home-forum-chat-header border-b border-border">
-                        <h3 className="home-forum-chat-title">
+                        <h3 className="home-forum-chat-title w-full">
                             <MessageIcon className="w-5 h-5 text-primary shrink-0" />
-                            {language === 'pt' ? 'Chat Geral e Partilha' : 'General Chat & Sharing'}
+                            {language === 'pt' ? 'Chat e Times' : 'Chat & Teams'}
                         </h3>
                         <button
                             type="button"
@@ -834,9 +853,9 @@ export function HomeView({
                         <div ref={messageListEndRef} />
                     </div>
 
-                    <form onSubmit={handleSendMessageSubmit} className="forum-editor p-2 gap-1.5">
+                    <form onSubmit={handleSendMessageSubmit} className="forum-editor p-2">
                         {attachedTeam && (
-                            <div className="forum-attached-team-preview py-1 px-2 text-[11px] gap-1 flex items-center mb-1">
+                            <div className="forum-attached-team-preview py-1 px-2 text-[11px] gap-1 flex items-center mb-2">
                                 <ClipIcon className="w-3 h-3 text-success shrink-0" />
                                 <span className="truncate">{attachedTeam.name}</span>
                                 <button type="button" onClick={() => setAttachedTeam(null)}>
@@ -845,72 +864,69 @@ export function HomeView({
                             </div>
                         )}
 
-                        <input
-                            type="text"
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder={language === 'pt' ? "Conversar no chat geral..." : "Chat in general..."}
-                            className="forum-editor-textarea w-full h-9 min-h-[36px]"
-                        />
-
-                        <div className="flex items-center justify-between w-full mt-1.5">
-                            <div className="text-[10px] text-muted font-semibold">
-                                {/* Bottom Row: Left Info / Status */}
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                                <div className="relative">
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAttachDropdownOpen(!isAttachDropdownOpen)}
-                                        className="btn btn-secondary text-[10px] flex items-center gap-1 py-1 px-2.5 h-7"
-                                    >
-                                        <ClipIcon className="w-3 h-3 shrink-0" />
-                                        {language === 'pt' ? 'Anexar Time' : 'Attach Team'}
-                                    </button>
-                                    {isAttachDropdownOpen && (
-                                        <div className="absolute right-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
-                                            <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
-                                                {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
-                                            </p>
-                                            {activeRoster.length > 0 && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setAttachedTeam({ name: activeRosterName || 'Active Team', pokemons: activeRoster });
-                                                        setIsAttachDropdownOpen(false);
-                                                    }}
-                                                    className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-primary font-bold truncate flex items-center gap-1.5"
-                                                >
-                                                    <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
-                                                    {language === 'pt' ? 'Time Ativo Construtor' : 'Active Team in Builder'}
-                                                </button>
-                                            )}
-                                            {savedTeams.map(team => (
-                                                <button
-                                                    type="button"
-                                                    key={team.id}
-                                                    onClick={() => {
-                                                        setAttachedTeam(team);
-                                                        setIsAttachDropdownOpen(false);
-                                                    }}
-                                                    className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate block"
-                                                >
-                                                    {team.name}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
+                        <div className="forum-chat-input-wrapper">
+                            <div className="relative shrink-0">
                                 <button
-                                    type="submit"
-                                    disabled={!replyText.trim() && !attachedTeam}
-                                    className="btn btn-primary text-xs font-bold px-4 h-7"
+                                    type="button"
+                                    onClick={() => setIsAttachDropdownOpen(!isAttachDropdownOpen)}
+                                    className="forum-chat-attach-btn"
+                                    title={language === 'pt' ? 'Anexar Time' : 'Attach Team'}
                                 >
-                                    {language === 'pt' ? 'Enviar' : 'Send'}
+                                    <PlusIcon className="w-4 h-4" />
                                 </button>
+                                {isAttachDropdownOpen && (
+                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
+                                        <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
+                                            {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
+                                        </p>
+                                        {activeRoster.length > 0 && (
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setAttachedTeam({ name: activeRosterName || 'Active Team', pokemons: activeRoster });
+                                                    setIsAttachDropdownOpen(false);
+                                                }}
+                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-primary font-bold truncate flex items-center gap-1.5"
+                                            >
+                                                <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
+                                                {language === 'pt' ? 'Time Ativo Construtor' : 'Active Team in Builder'}
+                                            </button>
+                                        )}
+                                        {savedTeams.map(team => (
+                                            <button
+                                                type="button"
+                                                key={team.id}
+                                                onClick={() => {
+                                                    setAttachedTeam(team);
+                                                    setIsAttachDropdownOpen(false);
+                                                }}
+                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate block"
+                                            >
+                                                {team.name}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
+
+                            <input
+                                type="text"
+                                value={replyText}
+                                onChange={(e) => setReplyText(e.target.value)}
+                                placeholder={language === 'pt' ? "Conversar..." : "Chat..."}
+                                className="forum-chat-input-field"
+                            />
+
+                            <button
+                                type="submit"
+                                disabled={!replyText.trim() && !attachedTeam}
+                                className="forum-chat-send-btn"
+                                title={language === 'pt' ? 'Enviar' : 'Send'}
+                            >
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                </svg>
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -999,7 +1015,7 @@ export function HomeView({
                     <CollapsiblePanel
                         title={t('home.statsTitle')}
                         eyebrow={t('home.trainerCard')}
-                        className="home-sidebar-section py-3 px-1"
+                        className="home-sidebar-section home-trainer-stats-section py-3 px-1"
                     >
                         {stats.totalTeams > 0 ? (
                             <div className="home-stat-grid gap-1">
@@ -1033,9 +1049,9 @@ export function HomeView({
                     <CollapsiblePanel
                         title={t('home.shortcuts')}
                         eyebrow={language === 'pt' ? 'Navegação' : 'Navigation'}
-                        className="home-sidebar-section py-3 px-1"
+                        className="home-sidebar-section home-shortcuts-sidebar-section py-3 px-1"
                     >
-                        <div className="flex flex-col gap-1.5">
+                        <div className="home-shortcuts-container">
                             {quickActions.map((shortcut) => (
                                 <button
                                     key={shortcut.path}
@@ -1067,7 +1083,7 @@ export function HomeView({
                     {featuredFavorites.length > 0 && (
                         <section className="home-sidebar-section py-3 px-1">
                             <div className="flex items-center justify-between gap-3">
-                                <div>
+                                <div className="w-full">
                                     <p className="home-panel__eyebrow text-[9px]">{t('home.pinnedRoster')}</p>
                                     <h3 className="home-panel__section-title mt-0.5">{t('home.yourFavorites')}</h3>
                                 </div>
@@ -1102,7 +1118,7 @@ export function HomeView({
                                             className="home-favorite-card__sprite h-6 w-6"
                                             onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                         />
-                                        <p className="home-favorite-card__name capitalize text-[9px]">
+                                        <p className="home-favorite-card__name home-favorite-name-desktop capitalize text-[9px]">
                                             {pokemon.name}
                                         </p>
                                     </div>

@@ -66,7 +66,7 @@ export const useForumStore = create((set, get) => ({
             const snap = await getDoc(docRef);
             if (!snap.exists()) {
                 await setDoc(docRef, {
-                    title: 'General Chat',
+                    title: 'Chat',
                     category: 'general',
                     createdAt: new Date().toISOString(),
                     createdBy: 'system',
@@ -135,7 +135,7 @@ export const useForumStore = create((set, get) => ({
             const topicId = newTopicRef.id;
 
             const creatorName = authState.displayName || (authState.userEmail ? authState.userEmail.split('@')[0] : 'Guest Trainer');
-            
+
             const topicData = {
                 title: cleanTitle,
                 category: category || 'general',
@@ -188,7 +188,7 @@ export const useForumStore = create((set, get) => ({
         try {
             const creatorName = authState.displayName || (authState.userEmail ? authState.userEmail.split('@')[0] : 'Guest Trainer');
             const messageRef = doc(collection(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`));
-            
+
             const messageData = {
                 text: cleanText,
                 createdAt: new Date().toISOString(),

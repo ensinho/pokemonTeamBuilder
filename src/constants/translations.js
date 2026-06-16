@@ -537,7 +537,7 @@ export const TRANSLATIONS = {
             likeTitle: 'Like the App + Send Suggestions',
             likeDesc: 'Found a bug or have an idea? Tap the heart in the footer to show some love or send a suggestion straight to me.',
             likeCta: 'Scroll to the footer',
-            chatFeedTitle: 'General Chat & Team Sharing',
+            chatFeedTitle: 'Chat & Sharing',
             chatFeedDesc: 'You can now chat with other trainers directly on the home page and share your saved teams with beautiful Pokémon previews and one-click import!',
             chatFeedCta: 'Scroll down to see the chat',
             addToHome: 'Add to Home Screen',

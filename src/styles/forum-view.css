@@ -851,3 +851,96 @@
         height: 18px !important;
     }
 }
+
+/* ==========================================================================
+   MODERN UNIFIED MESSAGING INPUT BAR
+   ========================================================================== */
+.forum-chat-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full, 9999px);
+    padding: 0.25rem;
+    gap: 0.25rem;
+    width: 100%;
+    transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-chat-input-wrapper:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-soft);
+}
+
+.forum-chat-attach-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-chat-attach-btn:hover {
+    background: var(--color-surface);
+    color: var(--color-primary);
+}
+
+.forum-chat-input-field {
+    flex: 1;
+    background: transparent;
+    border: none !important;
+    outline: none !important;
+    color: var(--color-fg);
+    font-size: 0.8125rem;
+    padding: 0.35rem 0.5rem;
+    height: 1.85rem;
+    width: 100%;
+}
+
+.forum-chat-input-field::placeholder {
+    color: var(--color-muted);
+    opacity: 0.8;
+}
+
+.forum-chat-textarea {
+    resize: none;
+    height: auto;
+    min-height: 1.85rem;
+    max-height: 6rem;
+    padding-top: 0.35rem;
+    padding-bottom: 0.35rem;
+    line-height: 1.25;
+}
+
+.forum-chat-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-chat-send-btn:hover {
+    background: color-mix(in srgb, var(--color-primary) 85%, #ffffff);
+    transform: scale(1.04);
+}
+
+.forum-chat-send-btn:disabled {
+    background: transparent;
+    color: var(--color-muted);
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+}
