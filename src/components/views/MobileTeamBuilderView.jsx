@@ -344,8 +344,7 @@ export const MobileTeamBuilderView = ({
                     <div className="team-builder-panel__header flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div>
-                                <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Escalação atual' : 'Current roster'}</p>
-                                <h2 className="team-builder-panel__title team-builder-panel__title--small">{t('builder.title')}</h2>
+                                <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Escalação atual' : 'Current team'}</p>
                             </div>
                             {editingTeamId && (
                                 editingTeamId === activeTeamId ? (
