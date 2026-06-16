@@ -32,6 +32,8 @@ import '../../styles/locations-view.css';
 import { typeColors, typeIcons } from '../../constants/types';
 import { EmptyState } from '../EmptyState';
 import { PokemonCard } from '../PokemonCard';
+import { Sprite } from '../Sprite';
+import { StarIcon } from '../icons';
 import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
@@ -203,6 +205,76 @@ const POKEDEX_NAME_MAP = {
     'paldea': 'Scarlet/Violet',
     'kitakami': 'The Teal Mask',
     'blueberry': 'The Indigo Disk'
+};
+
+const MobilePokedexPokemonCard = ({
+    pokemon,
+    onCardClick,
+    isFavorite,
+    onToggleFavorite,
+    lastRef,
+}) => {
+    const { t, language } = useTranslation();
+    const handleCardClick = () => {
+        onCardClick?.(pokemon);
+    };
+
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onCardClick?.(pokemon);
+        }
+    };
+
+    const handleFavoriteClick = (event) => {
+        event.stopPropagation();
+        onToggleFavorite?.(pokemon.id);
+    };
+
+    return (
+        <article
+            ref={lastRef}
+            role="button"
+            tabIndex={0}
+            aria-label={`View details for ${pokemon.name}`}
+            onClick={handleCardClick}
+            onKeyDown={handleKeyDown}
+            className="team-builder-mobile-card"
+        >
+            <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1">
+                    {pokemon.types.map((type) => (
+                        <img
+                            key={type}
+                            src={typeIcons[type]}
+                            alt={type}
+                            className="h-4 w-4 rounded-full"
+                        />
+                    ))}
+                </div>
+                <button
+                    onClick={handleFavoriteClick}
+                    className={`team-builder-mobile-card__favorite ${isFavorite ? 'is-active' : ''}`}
+                    aria-label={isFavorite ? `Remove ${pokemon.name} from favorites` : `Add ${pokemon.name} to favorites`}
+                    title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
+                >
+                    <StarIcon className="w-3.5 h-3.5" isFavorite={isFavorite} color="currentColor" />
+                </button>
+            </div>
+
+            <div className="team-builder-mobile-card__media">
+                <div className="mx-auto aspect-square w-full max-w-[84px]">
+                    <Sprite src={pokemon.sprite} alt={pokemon.name} className="h-full w-full" />
+                </div>
+            </div>
+
+            <div className="mt-0">
+                <p className="team-builder-mobile-card__name font-bold capitalize">
+                    {pokemon.name}
+                </p>
+            </div>
+        </article>
+    );
 };
 
 export function PokedexView({
@@ -1375,7 +1447,7 @@ export function PokedexView({
                                     <span>{t('pokedex.movesLevelUp')}</span>
                                 </h5>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-xs border-collapse">
+                                    <table className="w-full text-left text-xs border-collapse pokedex-moves-table">
                                         <thead>
                                             <tr className="border-b border-border/80 text-muted">
                                                 <th className="pb-2 font-bold w-12">{t('pokedex.movesHeaderLevel')}</th>
@@ -1425,7 +1497,7 @@ export function PokedexView({
                                     <span>{t('pokedex.movesMachine')}</span>
                                 </h5>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full text-left text-xs border-collapse">
+                                    <table className="w-full text-left text-xs border-collapse pokedex-moves-table">
                                         <thead>
                                             <tr className="border-b border-border/80 text-muted">
                                                 <th className="pb-2 font-bold w-12">{t('pokedex.movesHeaderTm')}</th>
@@ -1498,63 +1570,103 @@ export function PokedexView({
                     </div>
 
                     {pokemonGenerationSprites.length > 0 ? (
-                        <div className="rounded-xl border border-border bg-surface overflow-hidden">
-                            <div className="overflow-x-auto custom-scrollbar pb-1">
-                                <table className="w-full text-center border-collapse text-xs">
-                                    <thead>
-                                        <tr className="border-b border-border bg-surface-raised">
-                                            <th className="p-3 font-bold text-muted text-left">{t('pokedex.typesFilterLabel')}</th>
-                                            {pokemonGenerationSprites.map((g) => (
-                                                <th key={g.name} className="p-3 font-bold text-muted min-w-[90px]">
-                                                    {g.name}
-                                                </th>
-                                            ))}
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border/60">
-                                        {/* Normal Sprites */}
-                                        <tr>
-                                            <td className="p-3 font-bold text-muted text-left border-r border-border">Normal</td>
-                                            {pokemonGenerationSprites.map((g) => (
-                                                <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
-                                                    {g.normal ? (
-                                                        <img
-                                                            src={g.normal}
-                                                            alt={`${selectedPokemonDetails.name} ${g.name} normal`}
-                                                            onClick={() => setCustomSelectedSprite(g.normal)}
-                                                            className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
-                                                            title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'}
-                                                        />
-                                                    ) : (
-                                                        <span className="text-muted text-[10px]">➔</span>
-                                                    )}
-                                                </td>
-                                            ))}
-                                        </tr>
-
-                                        {/* Shiny Sprites */}
-                                        <tr>
-                                            <td className="p-3 font-bold text-muted text-left border-r border-border">{language === 'pt' ? 'Brilhante' : 'Shiny'}</td>
-                                            {pokemonGenerationSprites.map((g) => (
-                                                <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
-                                                    {g.shiny ? (
-                                                        <img
-                                                            src={g.shiny}
-                                                            alt={`${selectedPokemonDetails.name} ${g.name} shiny`}
-                                                            onClick={() => setCustomSelectedSprite(g.shiny)}
-                                                            className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
-                                                            title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'}
-                                                        />
-                                                    ) : (
-                                                        <span className="text-muted text-[10px]">—</span>
-                                                    )}
-                                                </td>
-                                            ))}
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        isMobile ? (
+                            <div className="pokedex-sprites-grid">
+                                {pokemonGenerationSprites.map((g) => (
+                                    <div key={g.name} className="pokedex-sprite-gen-card">
+                                        <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted mb-2.5 block">{g.name}</span>
+                                        <div className="flex items-center justify-center gap-3">
+                                            {g.normal ? (
+                                                <div className="flex flex-col items-center">
+                                                    <img
+                                                        src={g.normal}
+                                                        alt={`${selectedPokemonDetails.name} ${g.name} normal`}
+                                                        onClick={() => setCustomSelectedSprite(g.normal)}
+                                                        className={`h-11 w-11 image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
+                                                        title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'}
+                                                    />
+                                                    <span className="text-[9px] text-muted font-bold mt-1">Normal</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted text-[10px]">—</span>
+                                            )}
+                                            {g.shiny ? (
+                                                <div className="flex flex-col items-center">
+                                                    <img
+                                                        src={g.shiny}
+                                                        alt={`${selectedPokemonDetails.name} ${g.name} shiny`}
+                                                        onClick={() => setCustomSelectedSprite(g.shiny)}
+                                                        className={`h-11 w-11 image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
+                                                        title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'}
+                                                    />
+                                                    <span className="text-[9px] text-muted font-bold mt-1">Shiny</span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-muted text-[10px]">—</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        </div>
+                        ) : (
+                            <div className="rounded-xl border border-border bg-surface overflow-hidden">
+                                <div className="overflow-x-auto custom-scrollbar pb-1">
+                                    <table className="w-full text-center border-collapse text-xs">
+                                        <thead>
+                                            <tr className="border-b border-border bg-surface-raised">
+                                                <th className="p-3 font-bold text-muted text-left">{t('pokedex.typesFilterLabel')}</th>
+                                                {pokemonGenerationSprites.map((g) => (
+                                                    <th key={g.name} className="p-3 font-bold text-muted min-w-[90px]">
+                                                        {g.name}
+                                                    </th>
+                                                ))}
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/60">
+                                            {/* Normal Sprites */}
+                                            <tr>
+                                                <td className="p-3 font-bold text-muted text-left border-r border-border">Normal</td>
+                                                {pokemonGenerationSprites.map((g) => (
+                                                    <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                        {g.normal ? (
+                                                            <img
+                                                                src={g.normal}
+                                                                alt={`${selectedPokemonDetails.name} ${g.name} normal`}
+                                                                onClick={() => setCustomSelectedSprite(g.normal)}
+                                                                className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
+                                                                title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'}
+                                                            />
+                                                        ) : (
+                                                            <span className="text-muted text-[10px]">➔</span>
+                                                        )}
+                                                    </td>
+                                                ))}
+                                            </tr>
+
+                                            {/* Shiny Sprites */}
+                                            <tr>
+                                                <td className="p-3 font-bold text-muted text-left border-r border-border">{language === 'pt' ? 'Brilhante' : 'Shiny'}</td>
+                                                {pokemonGenerationSprites.map((g) => (
+                                                    <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                        {g.shiny ? (
+                                                            <img
+                                                                src={g.shiny}
+                                                                alt={`${selectedPokemonDetails.name} ${g.name} shiny`}
+                                                                onClick={() => setCustomSelectedSprite(g.shiny)}
+                                                                className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`}
+                                                                title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'}
+                                                            />
+                                                        ) : (
+                                                            <span className="text-muted text-[10px]">—</span>
+                                                        )}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )
                     ) : (
                         <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">
                             <AlertCircle className="w-10 h-10 text-muted mx-auto mb-3" />
@@ -1576,33 +1688,39 @@ export function PokedexView({
                 style={{ width: '100vw', height: '100dvh', maxWidth: '100vw', overflowX: 'hidden' }}
             >
                 {/* Mobile Navigation Header */}
-                <div className="flex items-center justify-between gap-3 px-3 py-3 border-b border-border bg-surface shadow-sm shrink-0">
+                <div className="flex items-center justify-between gap-2 px-3 py-2.5 border-b border-border bg-surface shadow-sm shrink-0">
                     <button
                         type="button"
                         onClick={handleCloseDetails}
-                        className="flex items-center gap-1.5 text-xs font-bold text-muted hover:text-fg transition-colors px-3 py-2 rounded-xl bg-surface-raised border border-border shrink-0"
+                        className="flex items-center justify-center p-2 rounded-xl bg-surface-raised border border-border hover:bg-surface-raised/85 text-muted hover:text-fg transition-colors shrink-0"
+                        title={t('common.close')}
                     >
-                        <ChevronLeft className="w-4 h-4 text-muted" />
-                        <span>{t('common.close')}</span>
+                        <ChevronLeft className="w-5 h-5" />
                     </button>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex-1 text-center min-w-0">
+                        <h2 className="text-sm font-extrabold capitalize text-fg truncate">
+                            {selectedPokemonDetails?.name || selectedPokemon?.name || ''}
+                            <span className="text-muted font-normal text-xs ml-1.5">
+                                #{String(selectedPokemonDetails?.id || selectedPokemon?.id || '').padStart(4, '0')}
+                            </span>
+                        </h2>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
                         <button
                             type="button"
                             onClick={handlePrevPokemon}
-                            className="p-2.5 rounded-xl bg-surface-raised border border-border hover:bg-surface-raised/85 hover:text-fg text-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-2 rounded-xl bg-surface-raised border border-border hover:bg-surface-raised/85 hover:text-fg text-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             disabled={activeIndex <= 0 && selectedPokemonDetails?.id <= 1}
                             title={t('common.previous')}
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <span className="text-xs font-bold text-muted bg-surface-raised border border-border px-3 py-2 rounded-xl min-w-[70px] text-center">
-                            {activeIndex !== -1 ? `${activeIndex + 1}/${displayedPokemons.length}` : `#${selectedPokemonDetails?.id || ''}`}
-                        </span>
                         <button
                             type="button"
                             onClick={handleNextPokemon}
-                            className="p-2.5 rounded-xl bg-surface-raised border border-border hover:bg-surface-raised/85 hover:text-fg text-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            className="p-2 rounded-xl bg-surface-raised border border-border hover:bg-surface-raised/85 hover:text-fg text-muted transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                             disabled={activeIndex !== -1 && activeIndex >= displayedPokemons.length - 1}
                             title={t('common.next')}
                         >
@@ -1635,6 +1753,140 @@ export function PokedexView({
                 <div className="flex-1 overflow-y-auto overflow-x-hidden px-3 pt-4 pb-8 w-full box-border">
                     {renderDetailsContent()}
                 </div>
+            </div>
+        );
+    }
+
+    // --- MOBILE PICKER VIEW TEMPLATE (Mobile with NO selected Pokémon) ---
+    if (isMobile && !selectedPokemon) {
+        return (
+            <div className="team-builder-mobile space-y-4 font-mono">
+                <section className="team-builder-panel p-4">
+                    <div className="pokedex-mobile-filters">
+                        {/* Search row */}
+                        <div className="pokedex-mobile-filter-full">
+                            <div className="relative w-full">
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none flex items-center">
+                                    <Search className="w-4 h-4" />
+                                </span>
+                                <input
+                                    type="text"
+                                    placeholder={t('pokedex.searchPlaceholder')}
+                                    value={searchInput}
+                                    onChange={(e) => setSearchInput(e.target.value)}
+                                    className="team-builder-field w-full pl-9 pr-8"
+                                    style={{ boxShadow: 'none' }}
+                                />
+                                {searchInput && (
+                                    <button
+                                        type="button"
+                                        onClick={() => setSearchInput('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-fg"
+                                        aria-label={t('common.clear')}
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Gen Dropdown */}
+                        <div className="relative w-full">
+                            <select
+                                value={selectedGeneration}
+                                onChange={(e) => setSelectedGeneration(e.target.value)}
+                                className="team-builder-field team-builder-select w-full pr-8 appearance-none capitalize"
+                                aria-label={t('pokedex.genFilterLabel')}
+                                style={{ background: 'none' }}
+                            >
+                                <option value="all">Gen: {language === 'pt' ? 'Todas' : 'All'}</option>
+                                {generations.map((generation) => (
+                                    <option key={generation} value={generation} className="capitalize">
+                                        {generation.replace('generation-', '').replace('-', ' ').toUpperCase()}
+                                    </option>
+                                ))}
+                            </select>
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-[10px]">▼</span>
+                        </div>
+
+                        {/* Favorites Toggle Button */}
+                        <button
+                            type="button"
+                            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                            className={`w-full rounded-md border transition-all flex items-center justify-center ${showOnlyFavorites ? 'border-accent bg-accent-soft text-accent' : 'border-border bg-surface-raised text-muted'}`}
+                            aria-pressed={showOnlyFavorites}
+                            title={showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}
+                        >
+                            <Star className={`w-4 h-4 ${showOnlyFavorites ? 'fill-[#FBBF24] text-[#FBBF24]' : ''}`} />
+                        </button>
+                    </div>
+
+                    {/* Horizontally scrolling type badges */}
+                    <div className="pokedex-mobile-types-container pt-2 mt-2">
+                        <div className="pokedex-mobile-types">
+                            {Object.keys(typeColors).map((type) => {
+                                const isActive = selectedTypes.has(type);
+                                return (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => handleTypeSelection(type)}
+                                        className={`pokedex-mobile-type-badge ${isActive ? 'is-active' : ''}`}
+                                        style={{
+                                            '--type-color': typeColors[type],
+                                            backgroundColor: isActive ? typeColors[type] : 'var(--color-surface-raised)',
+                                            borderColor: isActive ? typeColors[type] : 'var(--color-border)',
+                                            color: isActive ? '#fff' : 'var(--color-fg)'
+                                        }}
+                                        title={type}
+                                    >
+                                        <img src={typeIcons[type]} alt={type} className="w-3.5 h-3.5 object-contain" />
+                                        <span className="text-[10px] font-bold capitalize select-none">{type}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="team-builder-panel p-4">
+                    {isInitialLoading ? (
+                        <div className="flex items-center justify-center py-20">
+                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                        </div>
+                    ) : (
+                        <>
+                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                                {displayedPokemons.map((pokemon, index) => (
+                                    <MobilePokedexPokemonCard
+                                        key={pokemon.id}
+                                        pokemon={pokemon}
+                                        onCardClick={handleSelectPokemon}
+                                        lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
+                                        isFavorite={favoritePokemons.has(pokemon.id)}
+                                        onToggleFavorite={onToggleFavoritePokemon}
+                                    />
+                                ))}
+                            </div>
+
+                            {isFetchingMore && (
+                                <div className="flex items-center justify-center py-4">
+                                    <div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div>
+                                </div>
+                            )}
+
+                            {displayedPokemons.length === 0 && (
+                                <div className="py-12 text-center">
+                                    <EmptyState
+                                        compact
+                                        title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
+                                        message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
+                                    />
+                                </div>
+                            )}
+                        </>
+                    )}
+                </section>
             </div>
         );
     }

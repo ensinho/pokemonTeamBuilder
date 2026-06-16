@@ -772,6 +772,7 @@
     min-width: 0;
     height: 100vh;
     overflow-y: auto;
+    overflow-x: hidden;
     background: var(--color-bg);
 }
 
@@ -820,6 +821,9 @@
     letter-spacing: -0.02em;
     line-height: 1.1;
     color: var(--color-fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .app-shell__header-subtitle,
@@ -833,6 +837,12 @@
     margin-top: 0.1rem;
     font-size: 0.75rem;
     line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+    .app-shell__header-subtitle {
+        display: none;
+    }
 }
 
 .app-shell__header-actions {

@@ -54,14 +54,22 @@ const MobilePokemonPickerCard = ({
             className={`team-builder-mobile-card ${isSuggested ? 'is-suggested' : ''
                 }`}
         >
-            <div className="flex items-start justify-between gap-1">
-                {isSuggested ? (
-                    <div className="team-builder-mobile-card__badge">
-                        {language === 'pt' ? 'Novo' : 'New'}
-                    </div>
-                ) : (
-                    <span />
-                )}
+            <div className="flex items-center justify-between gap-1">
+                <div className="flex items-center gap-1">
+                    {pokemon.types.map((type) => (
+                        <img
+                            key={type}
+                            src={typeIcons[type]}
+                            alt={type}
+                            className="h-4 w-4 rounded-full"
+                        />
+                    ))}
+                    {isSuggested && (
+                        <div className="team-builder-mobile-card__badge ml-1">
+                            {language === 'pt' ? 'Novo' : 'New'}
+                        </div>
+                    )}
+                </div>
 
                 <button
                     onClick={handleFavoriteClick}
@@ -80,19 +88,9 @@ const MobilePokemonPickerCard = ({
             </div>
 
             <div className="mt-2">
-                <p className="team-builder-mobile-card__name">
+                <p className="team-builder-mobile-card__name font-bold capitalize">
                     {pokemon.name}
                 </p>
-                <div className="mt-1 flex items-center gap-1">
-                    {pokemon.types.map((type) => (
-                        <img
-                            key={type}
-                            src={typeIcons[type]}
-                            alt={type}
-                            className="h-4 w-4 rounded-full"
-                        />
-                    ))}
-                </div>
             </div>
         </article>
     );
