@@ -464,34 +464,32 @@ export const MobileTeamBuilderView = ({
                         </select>
                     </label>
 
-                    <label className="team-builder-control team-builder-mobile__filter-control">
+                    <div className="team-builder-control team-builder-mobile__filter-control">
                         <span className="team-builder-control__label">{t('pokedex.typesFilterLabel')}</span>
-                        <select
-                            value={selectedTypeValue}
-                            onChange={(event) => handleTypeSelectChange(event.target.value)}
-                            className="team-builder-field team-builder-select"
-                        >
-                            <option value="all">{t('pokedex.allTypes')}</option>
-                            {Object.keys(typeIcons).map((type) => (
-                                <option key={type} value={type} className="capitalize">
-                                    {t(`types.${type}`)}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-
-                    <label className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">{t('pokedex.favoritesOnly')}</span>
-                        <button
-                            type="button"
-                            onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                            className={`team-builder-toggle ${showOnlyFavorites ? 'is-active' : ''}`}
-                            aria-pressed={showOnlyFavorites}
-                        >
-                            <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
-                            <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
-                        </button>
-                    </label>
+                        <div className="team-builder-mobile__filter-group">
+                            <select
+                                value={selectedTypeValue}
+                                onChange={(event) => handleTypeSelectChange(event.target.value)}
+                                className="team-builder-field team-builder-select"
+                            >
+                                <option value="all">{t('pokedex.allTypes')}</option>
+                                {Object.keys(typeIcons).map((type) => (
+                                    <option key={type} value={type} className="capitalize">
+                                        {t(`types.${type}`)}
+                                    </option>
+                                ))}
+                            </select>
+                            <button
+                                type="button"
+                                onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                                className={`team-builder-toggle team-builder-mobile__toggle-favorite ${showOnlyFavorites ? 'is-active' : ''}`}
+                                aria-pressed={showOnlyFavorites}
+                                title={t('pokedex.favoritesOnly')}
+                            >
+                                <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </section>
 

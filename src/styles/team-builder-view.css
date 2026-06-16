@@ -748,6 +748,28 @@
     grid-column: 1 / -1;
 }
 
+.team-builder-mobile__filter-group {
+    display: flex;
+    align-items: stretch;
+    gap: 0.35rem;
+    width: 100%;
+}
+
+.team-builder-mobile__filter-group .team-builder-select {
+    flex: 1;
+    min-width: 0;
+}
+
+.team-builder-mobile__toggle-favorite {
+    width: auto;
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .team-builder-mobile-card {
     position: relative;
     overflow: hidden;
@@ -885,7 +907,6 @@
 @media (max-width: 767px) {
 
     .team-builder-analysis-grid,
-    .team-builder-mobile__filters,
     .team-builder-recent-list--wide {
         grid-template-columns: 1fr;
     }
