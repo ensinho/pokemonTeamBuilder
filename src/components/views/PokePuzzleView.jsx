@@ -12,7 +12,7 @@ import {
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { PokeballIcon, StarsIcon, SparklesIcon, RefreshIcon } from '../icons';
 import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2 } from 'lucide-react';
-import '../../styles/pokedle-view.css';
+import '../../styles/pokepuzzle-view.css';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -114,7 +114,7 @@ const checkLetters = (guess, target) => {
     return result;
 };
 
-export default function PokedleView() {
+export default function PokePuzzleView() {
     const { t, language } = useTranslation();
     const showToast = useToastStore(state => state.showToast);
     const { colors } = useThemeStore();
@@ -161,7 +161,7 @@ export default function PokedleView() {
                 const filtered = index.filter(p => p.id <= ALLOWED_MAX_ID);
                 setAllowedPool(filtered);
             } catch (err) {
-                console.error("Failed to load Pokedle Pokémon list:", err);
+                console.error("Failed to load PokePuzzle Pokémon list:", err);
                 showToast("Failed to load Pokémon list", "error");
             } finally {
                 setIsLoadingIndex(false);
@@ -182,7 +182,7 @@ export default function PokedleView() {
             const dailyPokemon = allowedPool[dailyIdx];
 
             // Load Daily state from localStorage
-            const savedState = localStorage.getItem(`ptb:pokedle:daily:${dateString}`);
+            const savedState = localStorage.getItem(`ptb:pokepuzzle:daily:${dateString}`);
             if (savedState) {
                 try {
                     const parsed = JSON.parse(savedState);
@@ -199,7 +199,7 @@ export default function PokedleView() {
             }
         } else {
             // Ongoing mode load from localStorage
-            const savedState = localStorage.getItem('ptb:pokedle:ongoing');
+            const savedState = localStorage.getItem('ptb:pokepuzzle:ongoing');
             if (savedState) {
                 try {
                     const parsed = JSON.parse(savedState);
@@ -232,10 +232,10 @@ export default function PokedleView() {
                 gameStatus,
                 targetId: targetPokemon.id
             };
-            localStorage.setItem(`ptb:pokedle:daily:${dateString}`, JSON.stringify(stateToSave));
+            localStorage.setItem(`ptb:pokepuzzle:daily:${dateString}`, JSON.stringify(stateToSave));
 
             // Also broadcast state back to HomeView so it stays in sync
-            localStorage.setItem(`ptb:pokedle:daily:summary`, JSON.stringify({
+            localStorage.setItem(`ptb:pokepuzzle:daily:summary`, JSON.stringify({
                 solved: gameStatus === 'WON',
                 attempts: guesses.length,
                 date: dateString
@@ -246,7 +246,7 @@ export default function PokedleView() {
                 gameStatus,
                 targetId: targetPokemon.id
             };
-            localStorage.setItem('ptb:pokedle:ongoing', JSON.stringify(stateToSave));
+            localStorage.setItem('ptb:pokepuzzle:ongoing', JSON.stringify(stateToSave));
         }
     }, [guesses, gameStatus, targetPokemon, mode]);
 
@@ -323,8 +323,8 @@ export default function PokedleView() {
         if (typeof window === 'undefined' || !("Notification" in window)) return;
 
         const showNotif = () => {
-            const title = t('pokedle.notificationTitle');
-            const body = t('pokedle.notificationBody');
+            const title = t('pokepuzzle.notificationTitle');
+            const body = t('pokepuzzle.notificationBody');
 
             if (navigator.serviceWorker && navigator.serviceWorker.controller) {
                 navigator.serviceWorker.ready.then(reg => {
@@ -332,7 +332,7 @@ export default function PokedleView() {
                         body: body,
                         icon: '/pwa-192x192.png',
                         vibrate: [200, 100, 200],
-                        tag: 'pokedle-daily-reset'
+                        tag: 'pokepuzzle-daily-reset'
                     });
                 });
             } else {
@@ -364,7 +364,7 @@ export default function PokedleView() {
         const dailyPokemon = allowedPool[dailyIdx];
 
         // Load new daily state
-        const savedState = localStorage.getItem(`ptb:pokedle:daily:${dateString}`);
+        const savedState = localStorage.getItem(`ptb:pokepuzzle:daily:${dateString}`);
         if (savedState) {
             try {
                 const parsed = JSON.parse(savedState);
@@ -519,7 +519,7 @@ export default function PokedleView() {
 
         const guessStr = inputValue;
         if (guessStr.length !== targetLength) {
-            showToast(t('pokedle.guessNotValidLength', { length: targetLength }), 'warning');
+            showToast(t('pokepuzzle.guessNotValidLength', { length: targetLength }), 'warning');
             return;
         }
 
@@ -530,7 +530,7 @@ export default function PokedleView() {
         });
 
         if (!matched) {
-            showToast(t('pokedle.guessNotValidPokemon'), 'warning');
+            showToast(t('pokepuzzle.guessNotValidPokemon'), 'warning');
             return;
         }
 
@@ -541,14 +541,14 @@ export default function PokedleView() {
         // Check Win
         if (guessStr === targetNormalized) {
             setGameStatus('WON');
-            showToast(t('pokedle.winTitle'), 'success');
+            showToast(t('pokepuzzle.winTitle'), 'success');
             return;
         }
 
         // Check Lose
         if (nextGuesses.length >= MAX_ATTEMPTS) {
             setGameStatus('LOST');
-            showToast(t('pokedle.loseTitle'), 'error');
+            showToast(t('pokepuzzle.loseTitle'), 'error');
         }
     };
 
@@ -600,10 +600,10 @@ export default function PokedleView() {
                             setInputValue('');
                             if (norm === targetNormalized) {
                                 setGameStatus('WON');
-                                showToast(t('pokedle.winTitle'), 'success');
+                                showToast(t('pokepuzzle.winTitle'), 'success');
                             } else if (nextGuesses.length >= MAX_ATTEMPTS) {
                                 setGameStatus('LOST');
-                                showToast(t('pokedle.loseTitle'), 'error');
+                                showToast(t('pokepuzzle.loseTitle'), 'error');
                             }
                         }, 50);
                     }
@@ -641,15 +641,15 @@ export default function PokedleView() {
 
             if (norm === targetNormalized) {
                 setGameStatus('WON');
-                showToast(t('pokedle.winTitle'), 'success');
+                showToast(t('pokepuzzle.winTitle'), 'success');
             } else if (nextGuesses.length >= MAX_ATTEMPTS) {
                 setGameStatus('LOST');
-                showToast(t('pokedle.loseTitle'), 'error');
+                showToast(t('pokepuzzle.loseTitle'), 'error');
             }
         }, 50);
     };
 
-    // Calculate dynamic rows on Pokedle grid
+    // Calculate dynamic rows on PokePuzzle grid
     const gridRows = useMemo(() => {
         const rows = [];
         // Add already submitted guesses
@@ -715,8 +715,8 @@ export default function PokedleView() {
 
     const generateShareText = () => {
         const modeTitle = mode === 'daily' 
-            ? `${language === 'pt' ? 'Pokedle Diário' : 'Daily Pokedle'}` 
-            : `${language === 'pt' ? 'Pokedle Livre' : 'Ongoing Pokedle'}`;
+            ? `${language === 'pt' ? 'PokePuzzle Diário' : 'Daily PokePuzzle'}` 
+            : `${language === 'pt' ? 'PokePuzzle Livre' : 'Ongoing PokePuzzle'}`;
         
         const emojiGrid = guesses.map(guess => {
             const norm = normalizeNameForGame(guess);
@@ -728,9 +728,9 @@ export default function PokedleView() {
             }).join('');
         }).join('\n');
 
-        const shareUrl = typeof window !== 'undefined' ? window.location.origin + '/pokedle' : 'https://poketeambuilder.com/pokedle';
+        const shareUrl = typeof window !== 'undefined' ? window.location.origin + '/pokepuzzle' : 'https://poketeambuilder.com/pokepuzzle';
         
-        return `Pokedle - ${modeTitle} ${guesses.length}/${MAX_ATTEMPTS}\n\n${emojiGrid}\n\nPlay here: ${shareUrl}`;
+        return `PokePuzzle - ${modeTitle} ${guesses.length}/${MAX_ATTEMPTS}\n\n${emojiGrid}\n\nPlay here: ${shareUrl}`;
     };
 
     const handleShare = () => {
@@ -788,7 +788,7 @@ export default function PokedleView() {
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 24px sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('POKEDLE', 200, 50);
+            ctx.fillText('POKÉPUZZLE', 200, 50);
             
             ctx.fillStyle = '#c084fc'; // Light purple subtitle
             ctx.font = '14px sans-serif';
@@ -877,7 +877,7 @@ export default function PokedleView() {
             ctx.lineTo(370, footerY);
             ctx.stroke();
             
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + import.meta.env.BASE_URL + 'pokedle')}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + import.meta.env.BASE_URL + 'pokepuzzle')}`;
             let qrImg;
             try {
                 qrImg = await loadImg(qrUrl);
@@ -900,19 +900,19 @@ export default function PokedleView() {
             
             ctx.fillStyle = '#a78bfa';
             ctx.font = 'bold 14px sans-serif';
-            const displayUrl = (host + import.meta.env.BASE_URL + 'pokedle').replace(/\/{2,}/g, '/');
+            const displayUrl = (host + import.meta.env.BASE_URL + 'pokepuzzle').replace(/\/{2,}/g, '/');
             ctx.fillText(displayUrl, 150, footerY + 65);
             
             canvas.toBlob(async (blob) => {
                 if (!blob) throw new Error('Canvas toBlob failed');
-                const file = new File([blob], 'pokedle-result.png', { type: 'image/png' });
+                const file = new File([blob], 'pokepuzzle-result.png', { type: 'image/png' });
                 
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
                             files: [file],
-                            title: 'Pokedle Results',
-                            text: language === 'pt' ? 'Confira meu resultado no Pokedle!' : 'Check out my Pokedle result!',
+                            title: 'PokePuzzle Results',
+                            text: language === 'pt' ? 'Confira meu resultado no PokePuzzle!' : 'Check out my PokePuzzle result!',
                         });
                         showToast(language === 'pt' ? 'Compartilhado com sucesso!' : 'Shared successfully!', 'success');
                         return;
@@ -924,7 +924,7 @@ export default function PokedleView() {
                 
                 const dataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.download = `pokedle-result-${guesses.length}.png`;
+                link.download = `pokepuzzle-result-${guesses.length}.png`;
                 link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
@@ -939,30 +939,30 @@ export default function PokedleView() {
     };
 
     return (
-        <main className={`pokedle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
+        <main className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
             {/* Mode Switcher Tabs */}
-            <div className="pokedle-tabs">
+            <div className="pokepuzzle-tabs">
                 <button
                     onClick={() => setMode('daily')}
-                    className={`pokedle-tab-btn ${mode === 'daily' ? 'is-active' : ''}`}
+                    className={`pokepuzzle-tab-btn ${mode === 'daily' ? 'is-active' : ''}`}
                 >
-                    {t('pokedle.dailyTab')}
+                    {t('pokepuzzle.dailyTab')}
                 </button>
                 <button
                     onClick={() => setMode('ongoing')}
-                    className={`pokedle-tab-btn ${mode === 'ongoing' ? 'is-active' : ''}`}
+                    className={`pokepuzzle-tab-btn ${mode === 'ongoing' ? 'is-active' : ''}`}
                 >
-                    {t('pokedle.ongoingTab')}
+                    {t('pokepuzzle.ongoingTab')}
                 </button>
             </div>
 
             {/* Header countdown timer for Daily challenge */}
             {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
-                <div className="pokedle-header-countdown animate-fade-in">
+                <div className="pokepuzzle-header-countdown animate-fade-in">
                     <span className="text-[10px] text-muted uppercase font-bold tracking-wider">
                         {language === 'pt' ? 'PRÓXIMO POKÉMON EM' : 'NEXT DAILY POKÉMON IN'}
                     </span>
-                    <span className="pokedle-header-countdown-time">{nextDailyCountdown}</span>
+                    <span className="pokepuzzle-header-countdown-time">{nextDailyCountdown}</span>
                 </div>
             )}
 
@@ -975,12 +975,12 @@ export default function PokedleView() {
             )}
 
             {!isLoadingIndex && targetPokemon && (
-                <div className={`pokedle-game-container ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
-                    <div className="pokedle-game-main">
+                <div className={`pokepuzzle-game-container ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
+                    <div className="pokepuzzle-game-main">
                         {/* Tips / Clues Section */}
-                        <section className="pokedle-tips-container">
-                            <div className="pokedle-tips-header">
-                                <h3 className="pokedle-tips-title">
+                        <section className="pokepuzzle-tips-container">
+                            <div className="pokepuzzle-tips-header">
+                                <h3 className="pokepuzzle-tips-title">
                                     <SparklesIcon className="w-4 h-4 text-accent" />
                                     <span>{language === 'pt' ? 'Serviço de Dicas' : 'Tips Service'}</span>
                                 </h3>
@@ -989,11 +989,11 @@ export default function PokedleView() {
                                 </span>
                             </div>
                             {/* Horizontal tabs for tips */}
-                            <div className="pokedle-tip-tabs">
+                            <div className="pokepuzzle-tip-tabs">
                                 <button
                                     type="button"
                                     onClick={() => showPokedexEntry && setActiveTipTab('description')}
-                                    className={`pokedle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''} ${!showPokedexEntry ? 'is-locked' : ''}`}
+                                    className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''} ${!showPokedexEntry ? 'is-locked' : ''}`}
                                     disabled={!showPokedexEntry}
                                 >
                                     <FileText className="w-3.5 h-3.5" />
@@ -1003,7 +1003,7 @@ export default function PokedleView() {
                                 <button
                                     type="button"
                                     onClick={() => showTypes && setActiveTipTab('types')}
-                                    className={`pokedle-tip-tab-trigger ${activeTipTab === 'types' ? 'is-active' : ''} ${!showTypes ? 'is-locked' : ''}`}
+                                    className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'types' ? 'is-active' : ''} ${!showTypes ? 'is-locked' : ''}`}
                                     disabled={!showTypes}
                                 >
                                     <Layers className="w-3.5 h-3.5" />
@@ -1013,7 +1013,7 @@ export default function PokedleView() {
                                 <button
                                     type="button"
                                     onClick={() => showSilhouette && setActiveTipTab('silhouette')}
-                                    className={`pokedle-tip-tab-trigger ${activeTipTab === 'silhouette' ? 'is-active' : ''} ${!showSilhouette ? 'is-locked' : ''}`}
+                                    className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'silhouette' ? 'is-active' : ''} ${!showSilhouette ? 'is-locked' : ''}`}
                                     disabled={!showSilhouette}
                                 >
                                     <Image className="w-3.5 h-3.5" />
@@ -1023,27 +1023,27 @@ export default function PokedleView() {
                             </div>
 
                             {/* Active tip card content */}
-                            <div className="pokedle-tip-card-wrapper w-full">
+                            <div className="pokepuzzle-tip-card-wrapper w-full">
                                 {activeTipTab === 'description' && (
-                                    <div className={`pokedle-tip-card ${!showPokedexEntry ? 'is-locked' : ''}`}>
-                                        <span className="pokedle-tip-label">{t('pokedle.tipEntry')}</span>
+                                    <div className={`pokepuzzle-tip-card ${!showPokedexEntry ? 'is-locked' : ''}`}>
+                                        <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipEntry')}</span>
                                         {showPokedexEntry ? (
-                                            <div className="pokedle-tip-content pokedle-tip-description-text custom-scrollbar">
+                                            <div className="pokepuzzle-tip-content pokepuzzle-tip-description-text custom-scrollbar">
                                                 {isLoadingDetails ? '...' : targetDetails.description || 'No description found.'}
                                             </div>
                                         ) : (
                                             <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                <Lock className="w-3.5 h-3.5" /> {t('pokedle.tipLocked')}
+                                                <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
                                             </span>
                                         )}
                                     </div>
                                 )}
 
                                 {activeTipTab === 'types' && (
-                                    <div className={`pokedle-tip-card ${!showTypes ? 'is-locked' : ''}`}>
-                                        <span className="pokedle-tip-label">{t('pokedle.tipTypes')}</span>
+                                    <div className={`pokepuzzle-tip-card ${!showTypes ? 'is-locked' : ''}`}>
+                                        <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipTypes')}</span>
                                         {showTypes ? (
-                                            <div className="pokedle-tip-content pokedle-clue-types">
+                                            <div className="pokepuzzle-tip-content pokepuzzle-clue-types">
                                                 {isLoadingDetails ? '...' : targetDetails.types.map(type => (
                                                     <span
                                                         key={type}
@@ -1060,28 +1060,28 @@ export default function PokedleView() {
                                             </div>
                                         ) : (
                                             <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                <Lock className="w-3.5 h-3.5" /> {t('pokedle.tipLocked')}
+                                                <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
                                             </span>
                                         )}
                                     </div>
                                 )}
 
                                 {activeTipTab === 'silhouette' && (
-                                    <div className={`pokedle-tip-card ${!showSilhouette ? 'is-locked' : ''}`}>
-                                        <span className="pokedle-tip-label">{t('pokedle.tipSilhouette')}</span>
+                                    <div className={`pokepuzzle-tip-card ${!showSilhouette ? 'is-locked' : ''}`}>
+                                        <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipSilhouette')}</span>
                                         {showSilhouette ? (
-                                            <div className="pokedle-tip-content flex justify-center">
+                                            <div className="pokepuzzle-tip-content flex justify-center">
                                                 {isLoadingDetails ? '...' : (
                                                     <img
                                                         src={targetDetails.image || getPokemonArtworkSpriteUrl(targetDetails.id)}
                                                         alt="Silhouette tip"
-                                                        className="w-12 h-12 object-contain pokedle-silhouette animate-pulse"
+                                                        className="w-12 h-12 object-contain pokepuzzle-silhouette animate-pulse"
                                                     />
                                                 )}
                                             </div>
                                         ) : (
                                             <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                <Lock className="w-3.5 h-3.5" /> {t('pokedle.tipLocked')}
+                                                <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
                                             </span>
                                         )}
                                     </div>
@@ -1091,7 +1091,7 @@ export default function PokedleView() {
 
                         {/* Game Letter Board Grid */}
                         <section
-                            className="pokedle-grid"
+                            className="pokepuzzle-grid"
                             style={{ '--length': targetLength }}
                             role="grid"
                             aria-label="Wordle guess board"
@@ -1099,7 +1099,7 @@ export default function PokedleView() {
                             {gridRows.map((row, rowIdx) => (
                                 <div
                                     key={rowIdx}
-                                    className="pokedle-row"
+                                    className="pokepuzzle-row"
                                     style={{ gridTemplateColumns: `repeat(${targetLength}, minmax(0, 1fr))` }}
                                     role="row"
                                 >
@@ -1110,7 +1110,7 @@ export default function PokedleView() {
                                         return (
                                             <div
                                                 key={letterIdx}
-                                                className={`pokedle-tile ${hasLtr ? 'has-letter' : ''} ${
+                                                className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''} ${
                                                     row.submitted && status === 'correct' ? 'is-correct' :
                                                     row.submitted && status === 'present' ? 'is-present' :
                                                     row.submitted && status === 'absent' ? 'is-absent' : ''
@@ -1127,25 +1127,25 @@ export default function PokedleView() {
 
                         {/* Color Status Guide */}
                         {gameStatus === 'IN_PROGRESS' && (
-                            <div className="pokedle-guide-box">
-                                <div className="pokedle-guide-item">
-                                    <span className="pokedle-guide-dot correct" />
-                                    <span>{t('pokedle.letterCorrect')}</span>
+                            <div className="pokepuzzle-guide-box">
+                                <div className="pokepuzzle-guide-item">
+                                    <span className="pokepuzzle-guide-dot correct" />
+                                    <span>{t('pokepuzzle.letterCorrect')}</span>
                                 </div>
-                                <div className="pokedle-guide-item">
-                                    <span className="pokedle-guide-dot present" />
-                                    <span>{t('pokedle.letterPresent')}</span>
+                                <div className="pokepuzzle-guide-item">
+                                    <span className="pokepuzzle-guide-dot present" />
+                                    <span>{t('pokepuzzle.letterPresent')}</span>
                                 </div>
-                                <div className="pokedle-guide-item">
-                                    <span className="pokedle-guide-dot absent" />
-                                    <span>{t('pokedle.letterAbsent')}</span>
+                                <div className="pokepuzzle-guide-item">
+                                    <span className="pokepuzzle-guide-dot absent" />
+                                    <span>{t('pokepuzzle.letterAbsent')}</span>
                                 </div>
                             </div>
                         )}
 
                         {/* Autocomplete Input Panel */}
                         {gameStatus === 'IN_PROGRESS' && (
-                            <div className="pokedle-input-container mt-4">
+                            <div className="pokepuzzle-input-container mt-4">
                                 <input
                                     type="text"
                                     value={inputValue}
@@ -1155,19 +1155,19 @@ export default function PokedleView() {
                                             setInputValue(clean);
                                         }
                                     }}
-                                    placeholder={t('pokedle.guessPlaceholder')}
+                                    placeholder={t('pokepuzzle.guessPlaceholder')}
                                     className="input-clean"
                                     aria-label="Type Pokémon name"
                                 />
 
                                 {/* Dropdown list */}
                                 {inputValue.trim() && suggestions.length > 0 && (
-                                    <div className="pokedle-autocomplete-list custom-scrollbar" ref={autocompleteContainerRef}>
+                                    <div className="pokepuzzle-autocomplete-list custom-scrollbar" ref={autocompleteContainerRef}>
                                         {suggestions.map((p, idx) => (
                                             <div
                                                 key={p.id}
                                                 onClick={() => handleSelectSuggestion(p)}
-                                                className={`pokedle-autocomplete-item ${idx === activeSuggestionIdx ? 'is-active' : ''}`}
+                                                className={`pokepuzzle-autocomplete-item ${idx === activeSuggestionIdx ? 'is-active' : ''}`}
                                             >
                                                 <span className="capitalize">{p.displayName}</span>
                                                 <span className="text-[10px] text-muted uppercase font-bold">
@@ -1182,9 +1182,9 @@ export default function PokedleView() {
 
                         {/* Virtual QWERTY Keyboard */}
                         {gameStatus === 'IN_PROGRESS' && (
-                            <section className="pokedle-keyboard" aria-label="Virtual keyboard">
+                            <section className="pokepuzzle-keyboard" aria-label="Virtual keyboard">
                                 {KEYBOARD_ROWS.map((row, rowIdx) => (
-                                    <div key={rowIdx} className="pokedle-keyboard-row">
+                                    <div key={rowIdx} className="pokepuzzle-keyboard-row">
                                         {row.map(key => {
                                             const status = keyboardStatusMap[key];
                                             const isWide = key === 'enter' || key === 'backspace';
@@ -1199,7 +1199,7 @@ export default function PokedleView() {
                                                     type="button"
                                                     key={key}
                                                     onClick={() => handleKeyClick(key)}
-                                                    className={`pokedle-key ${isWide ? 'is-wide' : ''} ${
+                                                    className={`pokepuzzle-key ${isWide ? 'is-wide' : ''} ${
                                                         status === 'correct' ? 'is-correct' :
                                                         status === 'present' ? 'is-present' :
                                                         status === 'absent' ? 'is-absent' : ''
@@ -1217,42 +1217,42 @@ export default function PokedleView() {
 
                     {/* Sidebar congrats panel */}
                     {gameStatus !== 'IN_PROGRESS' && (
-                        <div className="pokedle-game-sidebar">
+                        <div className="pokepuzzle-game-sidebar">
                             <section
-                                className="pokedle-result-card"
+                                className="pokepuzzle-result-card"
                                 style={{
                                     '--type-color': typeColor,
                                     '--type-glow-color': typeGlowColor
                                 }}
                             >
-                                <div className="pokedle-result-badge-wrapper">
+                                <div className="pokepuzzle-result-badge-wrapper">
                                     {gameStatus === 'WON' ? (
-                                        <div className="pokedle-badge-success-glow">
+                                        <div className="pokepuzzle-badge-success-glow">
                                             <Award className="w-6 h-6 text-success" />
                                         </div>
                                     ) : (
-                                        <div className="pokedle-badge-danger-glow">
+                                        <div className="pokepuzzle-badge-danger-glow">
                                             <Frown className="w-6 h-6 text-danger" />
                                         </div>
                                     )}
                                 </div>
 
-                                <h2 className={`pokedle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
-                                    {gameStatus === 'WON' ? t('pokedle.winTitle') : t('pokedle.loseTitle')}
+                                <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
+                                    {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
                                 </h2>
 
-                                <div className="pokedle-result-sprite-box">
+                                <div className="pokepuzzle-result-sprite-box">
                                     <img
                                         src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
                                         alt={targetPokemon.name}
-                                        className="pokedle-result-sprite pokedle-revealed sprite-fade"
+                                        className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
                                         onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
                                     />
                                 </div>
 
-                                <h3 className="pokedle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
+                                <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
 
-                                <div className="pokedle-result-types mt-0.5">
+                                <div className="pokepuzzle-result-types mt-0.5">
                                     {isLoadingDetails ? '...' : targetDetails.types.map(type => (
                                         <span
                                             key={type}
@@ -1268,15 +1268,15 @@ export default function PokedleView() {
                                     ))}
                                 </div>
 
-                                <p className="pokedle-result-text mt-1">
+                                <p className="pokepuzzle-result-text mt-1">
                                     {gameStatus === 'WON'
-                                        ? t('pokedle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
-                                        : t('pokedle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
+                                        ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
+                                        : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
                                     }
                                 </p>
 
                                 {/* Mini attempt preview grid */}
-                                <div className="pokedle-share-preview mt-2 w-full">
+                                <div className="pokepuzzle-share-preview mt-2 w-full">
                                     <span className="text-[10px] text-muted uppercase font-bold tracking-wider mb-2 block">
                                         {language === 'pt' ? 'Resumo das Tentativas' : 'Attempts Summary'}
                                     </span>
@@ -1285,11 +1285,11 @@ export default function PokedleView() {
                                             const norm = normalizeNameForGame(guess);
                                             const letterStatuses = checkLetters(norm, targetNormalized);
                                             return (
-                                                <div key={idx} className="pokedle-share-preview-row">
+                                                <div key={idx} className="pokepuzzle-share-preview-row">
                                                     {letterStatuses.map((status, sIdx) => (
                                                         <span
                                                             key={sIdx}
-                                                            className={`pokedle-share-preview-tile is-${status}`}
+                                                            className={`pokepuzzle-share-preview-tile is-${status}`}
                                                         />
                                                     ))}
                                                 </div>
@@ -1299,7 +1299,7 @@ export default function PokedleView() {
                                 </div>
 
                                 {/* Share Actions Row */}
-                                <div className="pokedle-share-actions-container w-full mt-2 flex flex-col gap-2">
+                                <div className="pokepuzzle-share-actions-container w-full mt-2 flex flex-col gap-2">
                                     <button
                                         onClick={handleShare}
                                         className="btn btn-accent px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
@@ -1323,7 +1323,7 @@ export default function PokedleView() {
                                         className="btn btn-primary px-6 mt-1.5 flex items-center justify-center gap-2 w-full text-xs"
                                     >
                                         <RefreshIcon className="w-3.5 h-3.5" />
-                                        <span>{t('pokedle.playAgain')}</span>
+                                        <span>{t('pokepuzzle.playAgain')}</span>
                                     </button>
                                 )}
                             </section>

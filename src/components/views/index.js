@@ -9,4 +9,4 @@ export { ProfileView } from './ProfileView';
 export { RandomGeneratorView } from './RandomGeneratorView';
 export { TeamBuilderView } from './TeamBuilderView';
 export { FeedView } from './FeedView';
-export { default as PokedleView } from './PokedleView';
+export { default as PokePuzzleView } from './PokePuzzleView';

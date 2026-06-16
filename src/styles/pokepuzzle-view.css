@@ -1,8 +1,8 @@
 /* ============================================================
-   POKEDLE VIEW STYLES
+   POKEPUZZLE VIEW STYLES
    ============================================================ */
 
-.pokedle-view {
+.pokepuzzle-view {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -15,7 +15,7 @@
 }
 
 /* Tabs */
-.pokedle-tabs {
+.pokepuzzle-tabs {
     display: flex;
     background: var(--color-surface-raised);
     border: 1px solid var(--color-border);
@@ -25,7 +25,7 @@
     max-width: 320px;
 }
 
-.pokedle-tab-btn {
+.pokepuzzle-tab-btn {
     flex: 1;
     background: transparent;
     border: none;
@@ -38,14 +38,14 @@
     transition: all var(--duration-fast) var(--ease-smooth);
 }
 
-.pokedle-tab-btn.is-active {
+.pokepuzzle-tab-btn.is-active {
     background: var(--color-surface);
     color: var(--color-primary);
     box-shadow: var(--elevation-1);
 }
 
 /* Clues / Tips Service Banner */
-.pokedle-tips-container {
+.pokepuzzle-tips-container {
     width: 100%;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -54,7 +54,7 @@
     box-shadow: var(--elevation-2);
 }
 
-.pokedle-tips-header {
+.pokepuzzle-tips-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -63,7 +63,7 @@
     margin-bottom: var(--space-3);
 }
 
-.pokedle-tips-title {
+.pokepuzzle-tips-title {
     font-size: 0.9rem;
     font-weight: 700;
     color: var(--color-fg);
@@ -72,14 +72,14 @@
     gap: var(--space-2);
 }
 
-.pokedle-tip-tabs {
+.pokepuzzle-tip-tabs {
     display: flex;
     border-bottom: 1px solid var(--color-border);
     width: 100%;
     margin-bottom: var(--space-3);
 }
 
-.pokedle-tip-tab-trigger {
+.pokepuzzle-tip-tab-trigger {
     flex: 1;
     justify-content: center;
     background: transparent;
@@ -97,21 +97,21 @@
     transition: all var(--duration-fast) var(--ease-smooth);
 }
 
-.pokedle-tip-tab-trigger:hover:not(.is-locked) {
+.pokepuzzle-tip-tab-trigger:hover:not(.is-locked) {
     color: var(--color-fg);
 }
 
-.pokedle-tip-tab-trigger.is-active {
+.pokepuzzle-tip-tab-trigger.is-active {
     color: var(--color-primary);
     border-bottom-color: var(--color-primary);
 }
 
-.pokedle-tip-tab-trigger.is-locked {
+.pokepuzzle-tip-tab-trigger.is-locked {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
-.pokedle-tip-card {
+.pokepuzzle-tip-card {
     background: var(--color-surface-raised);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -127,13 +127,13 @@
     transition: all var(--duration-normal) var(--ease-smooth);
 }
 
-.pokedle-tip-card.is-locked {
+.pokepuzzle-tip-card.is-locked {
     opacity: 0.65;
     background: rgba(26, 26, 30, 0.4);
     border-style: dashed;
 }
 
-.pokedle-tip-label {
+.pokepuzzle-tip-label {
     font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -141,13 +141,13 @@
     color: var(--color-muted);
 }
 
-.pokedle-tip-content {
+.pokepuzzle-tip-content {
     font-size: 0.8rem;
     color: var(--color-fg);
     width: 100%;
 }
 
-.pokedle-tip-description-text {
+.pokepuzzle-tip-description-text {
     font-style: italic;
     line-height: 1.4;
     text-align: left;
@@ -156,7 +156,7 @@
 }
 
 /* Wordle Grid */
-.pokedle-grid {
+.pokepuzzle-grid {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -164,12 +164,12 @@
     margin: var(--space-2) 0;
 }
 
-.pokedle-row {
+.pokepuzzle-row {
     display: grid;
     gap: 6px;
 }
 
-.pokedle-tile {
+.pokepuzzle-tile {
     aspect-ratio: 1;
     border: 2px solid var(--color-border);
     border-radius: var(--radius-sm);
@@ -185,26 +185,26 @@
     transition: border-color 0.1s ease;
 }
 
-.pokedle-tile.has-letter {
+.pokepuzzle-tile.has-letter {
     border-color: var(--color-muted);
 }
 
 /* Flip Animations for Tile Checks */
-.pokedle-tile.is-correct {
+.pokepuzzle-tile.is-correct {
     background: var(--color-success);
     border-color: var(--color-success);
     color: #ffffff;
     animation: tile-flip var(--duration-slow) var(--ease-smooth) forwards;
 }
 
-.pokedle-tile.is-present {
+.pokepuzzle-tile.is-present {
     background: var(--color-warning);
     border-color: var(--color-warning);
     color: #ffffff;
     animation: tile-flip var(--duration-slow) var(--ease-smooth) forwards;
 }
 
-.pokedle-tile.is-absent {
+.pokepuzzle-tile.is-absent {
     background: var(--color-border);
     border-color: var(--color-border);
     color: var(--color-muted);
@@ -227,24 +227,24 @@
 }
 
 /* Delay for Row Tile Flips */
-.pokedle-row .pokedle-tile:nth-child(1) { animation-delay: 0ms; }
-.pokedle-row .pokedle-tile:nth-child(2) { animation-delay: 150ms; }
-.pokedle-row .pokedle-tile:nth-child(3) { animation-delay: 300ms; }
-.pokedle-row .pokedle-tile:nth-child(4) { animation-delay: 450ms; }
-.pokedle-row .pokedle-tile:nth-child(5) { animation-delay: 600ms; }
-.pokedle-row .pokedle-tile:nth-child(6) { animation-delay: 750ms; }
-.pokedle-row .pokedle-tile:nth-child(7) { animation-delay: 900ms; }
-.pokedle-row .pokedle-tile:nth-child(8) { animation-delay: 1050ms; }
-.pokedle-row .pokedle-tile:nth-child(9) { animation-delay: 1200ms; }
-.pokedle-row .pokedle-tile:nth-child(10) { animation-delay: 1350ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(1) { animation-delay: 0ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(2) { animation-delay: 150ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(3) { animation-delay: 300ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(4) { animation-delay: 450ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(5) { animation-delay: 600ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(6) { animation-delay: 750ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(7) { animation-delay: 900ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(8) { animation-delay: 1050ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(9) { animation-delay: 1200ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(10) { animation-delay: 1350ms; }
 
 /* Input and Autocomplete */
-.pokedle-input-container {
+.pokepuzzle-input-container {
     position: relative;
     width: 100%;
 }
 
-.pokedle-autocomplete-list {
+.pokepuzzle-autocomplete-list {
     position: absolute;
     bottom: 100%;
     left: 0;
@@ -259,7 +259,7 @@
     overflow-y: auto;
 }
 
-.pokedle-autocomplete-item {
+.pokepuzzle-autocomplete-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -269,14 +269,14 @@
     transition: background var(--duration-fast) var(--ease-smooth);
 }
 
-.pokedle-autocomplete-item:hover,
-.pokedle-autocomplete-item.is-active {
+.pokepuzzle-autocomplete-item:hover,
+.pokepuzzle-autocomplete-item.is-active {
     background: var(--color-surface-raised);
     color: var(--color-primary);
 }
 
 /* Virtual Keyboard */
-.pokedle-keyboard {
+.pokepuzzle-keyboard {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -284,14 +284,14 @@
     margin-top: var(--space-2);
 }
 
-.pokedle-keyboard-row {
+.pokepuzzle-keyboard-row {
     display: flex;
     justify-content: center;
     gap: 4px;
     width: 100%;
 }
 
-.pokedle-key {
+.pokepuzzle-key {
     flex: 1;
     max-width: 48px;
     height: 44px;
@@ -310,29 +310,29 @@
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.pokedle-key:active {
+.pokepuzzle-key:active {
     transform: scale(0.96);
 }
 
-.pokedle-key.is-wide {
+.pokepuzzle-key.is-wide {
     max-width: 72px;
     font-size: 0.75rem;
     flex: 1.5;
 }
 
-.pokedle-key.is-correct {
+.pokepuzzle-key.is-correct {
     background: var(--color-success);
     border-color: var(--color-success);
     color: #ffffff;
 }
 
-.pokedle-key.is-present {
+.pokepuzzle-key.is-present {
     background: var(--color-warning);
     border-color: var(--color-warning);
     color: #ffffff;
 }
 
-.pokedle-key.is-absent {
+.pokepuzzle-key.is-absent {
     background: var(--color-border);
     border-color: var(--color-border);
     color: var(--color-muted);
@@ -340,7 +340,7 @@
 }
 
 /* Results panel & Congrats details */
-.pokedle-result-card {
+.pokepuzzle-result-card {
     width: 100%;
     background: var(--color-surface);
     border: 2px solid var(--type-color, var(--color-border));
@@ -357,13 +357,13 @@
     overflow: hidden;
 }
 
-.pokedle-result-badge-wrapper {
+.pokepuzzle-result-badge-wrapper {
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-.pokedle-badge-success-glow {
+.pokepuzzle-badge-success-glow {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -387,7 +387,7 @@
     }
 }
 
-.pokedle-badge-danger-glow {
+.pokepuzzle-badge-danger-glow {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -411,24 +411,24 @@
     }
 }
 
-.pokedle-result-title {
+.pokepuzzle-result-title {
     font-size: 1.35rem;
     font-weight: 800;
     letter-spacing: -0.02em;
     margin: 0;
 }
 
-.pokedle-result-title.is-win {
+.pokepuzzle-result-title.is-win {
     color: var(--color-success);
     text-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
 }
 
-.pokedle-result-title.is-lose {
+.pokepuzzle-result-title.is-lose {
     color: var(--color-danger);
     text-shadow: 0 0 12px rgba(239, 68, 68, 0.2);
 }
 
-.pokedle-result-sprite-box {
+.pokepuzzle-result-sprite-box {
     position: relative;
     height: 110px;
     width: 110px;
@@ -443,11 +443,11 @@
     box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.15);
 }
 
-.pokedle-result-sprite-box:hover {
+.pokepuzzle-result-sprite-box:hover {
     transform: scale(1.05);
 }
 
-.pokedle-result-sprite {
+.pokepuzzle-result-sprite {
     height: 85px;
     width: 85px;
     object-fit: contain;
@@ -455,16 +455,16 @@
 }
 
 /* Silhouette overlay */
-.pokedle-silhouette {
+.pokepuzzle-silhouette {
     filter: brightness(0) drop-shadow(0 0 8px rgba(124, 106, 232, 0.45));
 }
 
-.pokedle-revealed {
+.pokepuzzle-revealed {
     filter: none;
     transition: filter 1.2s ease-in-out;
 }
 
-.pokedle-result-pokemon-name {
+.pokepuzzle-result-pokemon-name {
     font-size: 1.2rem;
     font-weight: 800;
     text-transform: capitalize;
@@ -472,7 +472,7 @@
     margin: 0;
 }
 
-.pokedle-result-text {
+.pokepuzzle-result-text {
     font-size: 0.8rem;
     color: var(--color-muted);
     line-height: 1.4;
@@ -481,7 +481,7 @@
 }
 
 /* Attempts visual summary */
-.pokedle-share-preview {
+.pokepuzzle-share-preview {
     background: var(--color-surface-raised);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -489,33 +489,33 @@
     width: 100%;
 }
 
-.pokedle-share-preview-row {
+.pokepuzzle-share-preview-row {
     display: flex;
     gap: 4px;
 }
 
-.pokedle-share-preview-tile {
+.pokepuzzle-share-preview-tile {
     width: 10px;
     height: 10px;
     border-radius: 2px;
 }
 
-.pokedle-share-preview-tile.is-correct {
+.pokepuzzle-share-preview-tile.is-correct {
     background: var(--color-success);
     box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
 }
 
-.pokedle-share-preview-tile.is-present {
+.pokepuzzle-share-preview-tile.is-present {
     background: var(--color-warning);
     box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
 }
 
-.pokedle-share-preview-tile.is-absent {
+.pokepuzzle-share-preview-tile.is-absent {
     background: var(--color-border);
 }
 
 /* Share action buttons container */
-.pokedle-share-actions-container {
+.pokepuzzle-share-actions-container {
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -523,14 +523,14 @@
 }
 
 /* Type badge custom spacing in clue */
-.pokedle-clue-types {
+.pokepuzzle-clue-types {
     display: flex;
     gap: var(--space-2);
     justify-content: center;
 }
 
 /* Help text overlay / visual guidelines */
-.pokedle-guide-box {
+.pokepuzzle-guide-box {
     display: flex;
     gap: 6px;
     font-size: 0.75rem;
@@ -538,22 +538,22 @@
     justify-content: center;
     margin-top: var(--space-2);
 }
-.pokedle-guide-item {
+.pokepuzzle-guide-item {
     display: flex;
     align-items: center;
     gap: 4px;
 }
-.pokedle-guide-dot {
+.pokepuzzle-guide-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
 }
-.pokedle-guide-dot.correct { background: var(--color-success); }
-.pokedle-guide-dot.present { background: var(--color-warning); }
-.pokedle-guide-dot.absent { background: var(--color-border); }
+.pokepuzzle-guide-dot.correct { background: var(--color-success); }
+.pokepuzzle-guide-dot.present { background: var(--color-warning); }
+.pokepuzzle-guide-dot.absent { background: var(--color-border); }
 
 /* Game side-by-side flex layout containers */
-.pokedle-game-container {
+.pokepuzzle-game-container {
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -561,7 +561,7 @@
     margin-top: var(--space-2);
 }
 
-.pokedle-game-main {
+.pokepuzzle-game-main {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -569,13 +569,13 @@
     width: 100%;
 }
 
-.pokedle-game-sidebar {
+.pokepuzzle-game-sidebar {
     width: 100%;
     animation: fade-in-up var(--duration-normal) var(--ease-out-expo);
 }
 
 /* Header Countdown timer under Tabs */
-.pokedle-header-countdown {
+.pokepuzzle-header-countdown {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -588,7 +588,7 @@
     animation: fade-in var(--duration-normal) var(--ease-smooth);
 }
 
-.pokedle-header-countdown-time {
+.pokepuzzle-header-countdown-time {
     font-family: var(--font-mono);
     font-size: 1.15rem;
     font-weight: 800;
@@ -598,24 +598,24 @@
 
 /* Desktop layout overrides */
 @media (min-width: 1024px) {
-    .pokedle-view.has-ended {
+    .pokepuzzle-view.has-ended {
         max-width: 900px;
         transition: max-width var(--duration-slow) var(--ease-smooth);
     }
 
-    .pokedle-game-container.has-ended {
+    .pokepuzzle-game-container.has-ended {
         flex-direction: row;
         align-items: flex-start;
         justify-content: space-between;
         gap: var(--space-8);
     }
 
-    .pokedle-game-main {
+    .pokepuzzle-game-main {
         flex: 1.25;
         max-width: 520px;
     }
 
-    .pokedle-game-sidebar {
+    .pokepuzzle-game-sidebar {
         flex: 0.75;
         max-width: 320px;
         position: sticky;
@@ -637,41 +637,41 @@
 
 /* Mobile compactness overrides */
 @media (max-width: 480px) {
-    .pokedle-view {
+    .pokepuzzle-view {
         gap: var(--space-2);
         padding-bottom: var(--space-4);
     }
-    .pokedle-tips-container {
+    .pokepuzzle-tips-container {
         padding: var(--space-3);
     }
-    .pokedle-tips-header {
+    .pokepuzzle-tips-header {
         margin-bottom: var(--space-2);
         padding-bottom: var(--space-1.5);
     }
-    .pokedle-tip-tabs {
+    .pokepuzzle-tip-tabs {
         margin-bottom: var(--space-2);
     }
-    .pokedle-tip-tab-trigger {
+    .pokepuzzle-tip-tab-trigger {
         font-size: 0.72rem;
         padding: 0.4rem 0.2rem;
         gap: 4px;
     }
-    .pokedle-tip-tab-trigger svg {
+    .pokepuzzle-tip-tab-trigger svg {
         width: 12px;
         height: 12px;
     }
-    .pokedle-tip-card {
+    .pokepuzzle-tip-card {
         padding: var(--space-3);
         min-height: 80px;
         gap: var(--space-1);
     }
-    .pokedle-tip-label {
+    .pokepuzzle-tip-label {
         font-size: 0.6rem;
     }
-    .pokedle-tip-content {
+    .pokepuzzle-tip-content {
         font-size: 0.75rem;
     }
-    .pokedle-tip-description-text {
+    .pokepuzzle-tip-description-text {
         max-height: 60px;
     }
 }

@@ -66,7 +66,7 @@ export const TRANSLATIONS = {
             signIn: 'Sign In',
             signOut: 'Sign Out',
             feed: 'Forum Feed',
-            pokedle: 'Pokedle'
+            pokepuzzle: 'PokéPuzzle'
         },
         splash: {
             msg1: 'Checking if you are who you say you are',
@@ -345,8 +345,8 @@ export const TRANSLATIONS = {
             tryAnotherGen: 'Try Another Gen',
             closeQuiz: 'Close Quiz'
         },
-        pokedle: {
-            title: 'Pokedle',
+        pokepuzzle: {
+            title: 'PokéPuzzle',
             subtitle: 'Guess the mystery Pokémon of the day or play on the go!',
             dailyTab: 'Daily Challenge',
             ongoingTab: 'Ongoing Mode',
@@ -375,7 +375,7 @@ export const TRANSLATIONS = {
             homeTeaserSubtitle: 'Who\'s That Pokémon?',
             homeTeaserPlay: 'Play Challenge',
             homeTeaserSolved: 'Solved today in {{attempts}} tries!',
-            notificationTitle: 'New Daily Pokedle!',
+            notificationTitle: 'New Daily PokéPuzzle!',
             notificationBody: 'A new mystery Pokémon is available! Can you guess who it is?'
         },
         savedTeams: {
@@ -766,7 +766,7 @@ export const TRANSLATIONS = {
             signIn: 'Entrar',
             signOut: 'Sair',
             feed: 'Feed e Fórum',
-            pokedle: 'Pokedle'
+            pokepuzzle: 'PokéPuzzle'
         },
         splash: {
             msg1: 'Verificando se você é quem diz ser',
@@ -1045,8 +1045,8 @@ export const TRANSLATIONS = {
             tryAnotherGen: 'Tentar Outra Geração',
             closeQuiz: 'Fechar Quiz'
         },
-        pokedle: {
-            title: 'Pokedle',
+        pokepuzzle: {
+            title: 'PokéPuzzle',
             subtitle: 'Adivinhe o Pokémon misterioso do dia ou jogue sem limites!',
             dailyTab: 'Desafio Diário',
             ongoingTab: 'Modo Livre',
@@ -1075,7 +1075,7 @@ export const TRANSLATIONS = {
             homeTeaserSubtitle: 'Quem é esse Pokémon? Teste seus conhecimentos!',
             homeTeaserPlay: 'Jogar Desafio',
             homeTeaserSolved: 'Resolvido hoje em {{attempts}} tentativas!',
-            notificationTitle: 'Novo Pokedle Diário!',
+            notificationTitle: 'Novo PokéPuzzle Diário!',
             notificationBody: 'Um novo Pokémon misterioso está disponível! Consegue adivinhar quem é?'
         },
         savedTeams: {
