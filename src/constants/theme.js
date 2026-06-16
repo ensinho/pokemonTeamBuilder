@@ -6,7 +6,7 @@
 // ============================================================
 
 // Bump this when the patch-notes screen has new content to surface.
-export const PATCH_NOTES_VERSION = '1.6.1';
+export const PATCH_NOTES_VERSION = '1.7';
 export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 
 // JS-side mirror of the CSS variables. Components that still
@@ -106,12 +106,12 @@ export const THEMES = {
 
 // Display metadata for the theme picker UI. Order here drives render order.
 export const THEME_META = [
-    { id: 'dark',     label: 'Dark',     hint: 'Default night mode',         swatch: '#7c6ae8' },
-    { id: 'eclipse',  label: 'Eclipse',  hint: 'Ultra-dark violet neon',     swatch: '#8B5CF6' },
-    { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights',    swatch: '#38BDF8' },
-    { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight',         swatch: '#2563EB' },
-    { id: 'light',    label: 'Light',    hint: 'Daylight, high contrast',    swatch: '#6353b3' },
-    { id: 'solar',    label: 'Solar',    hint: 'Soft yellow daylight',       swatch: '#ca8a04' },
+    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#7c6ae8' },
+    { id: 'eclipse', label: 'Eclipse', hint: 'Ultra-dark violet neon', swatch: '#8B5CF6' },
+    { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights', swatch: '#38BDF8' },
+    { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB' },
+    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6353b3' },
+    { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04' },
 ];
 
 // Apply a theme to the document.

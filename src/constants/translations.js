@@ -23,7 +23,8 @@ export const TRANSLATIONS = {
             error: 'Error',
             success: 'Success',
             warning: 'Warning',
-            info: 'Info'
+            info: 'Info',
+            import: 'Import'
         },
         types: {
             normal: 'Normal',
@@ -536,6 +537,9 @@ export const TRANSLATIONS = {
             likeTitle: 'Like the App + Send Suggestions',
             likeDesc: 'Found a bug or have an idea? Tap the heart in the footer to show some love or send a suggestion straight to me.',
             likeCta: 'Scroll to the footer',
+            chatFeedTitle: 'General Chat & Team Sharing',
+            chatFeedDesc: 'You can now chat with other trainers directly on the home page and share your saved teams with beautiful Pokémon previews and one-click import!',
+            chatFeedCta: 'Scroll down to see the chat',
             addToHome: 'Add to Home Screen',
             iosInstallHint: 'Tap Share → "Add to Home Screen"',
             installHint: 'One tap — install for quick access!',
@@ -685,7 +689,8 @@ export const TRANSLATIONS = {
             error: 'Erro',
             success: 'Sucesso',
             warning: 'Aviso',
-            info: 'Informação'
+            info: 'Informação',
+            import: 'Importar'
         },
         types: {
             normal: 'Normal',
@@ -1198,6 +1203,9 @@ export const TRANSLATIONS = {
             likeTitle: 'Gostou do App? Envie Sugestões',
             likeDesc: 'Encontrou um bug ou tem uma ideia? Toque no coração no rodapé para enviar uma sugestão diretamente para mim.',
             likeCta: 'Ir para o rodapé',
+            chatFeedTitle: 'Chat Geral e Compartilhamento de Times',
+            chatFeedDesc: 'Agora você pode conversar com outros treinadores direto na página inicial e compartilhar seus times com visualizações incríveis e importação em um clique!',
+            chatFeedCta: 'Role a página para ver o chat',
             addToHome: 'Adicionar à Tela Inicial',
             iosInstallHint: 'Toque em Compartilhar → "Adicionar à Tela Inicial"',
             installHint: 'Um toque — instale para acesso rápido!',
