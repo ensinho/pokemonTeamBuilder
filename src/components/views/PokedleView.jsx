@@ -768,19 +768,19 @@ export default function PokedleView() {
             canvas.height = 640;
             const ctx = canvas.getContext('2d');
             
-            // 1. Background
-            ctx.fillStyle = '#121214';
+            // 1. Background (sleek deep purple)
+            ctx.fillStyle = '#0f0b21'; // Deep midnight purple
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Draw a subtle radial glow in the center matching target type
-            const grad = ctx.createRadialGradient(200, 240, 20, 200, 240, 200);
-            grad.addColorStop(0, typeGlowColor);
+            const grad = ctx.createRadialGradient(200, 240, 20, 200, 240, 250);
+            grad.addColorStop(0, '#7c3aed40'); // violet-600 with 25% opacity
             grad.addColorStop(1, 'transparent');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Draw border
-            ctx.strokeStyle = typeColor;
+            // Draw purple border
+            ctx.strokeStyle = '#7c3aed';
             ctx.lineWidth = 4;
             ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
             
@@ -790,15 +790,15 @@ export default function PokedleView() {
             ctx.textAlign = 'center';
             ctx.fillText('POKEDLE', 200, 50);
             
-            ctx.fillStyle = '#8f93a2';
+            ctx.fillStyle = '#c084fc'; // Light purple subtitle
             ctx.font = '14px sans-serif';
             const modeText = mode === 'daily' 
                 ? (language === 'pt' ? 'Desafio Diário' : 'Daily Challenge')
                 : (language === 'pt' ? 'Modo Livre' : 'Ongoing Mode');
             ctx.fillText(`${modeText} • ${guesses.length}/${MAX_ATTEMPTS} ${language === 'pt' ? 'tentativas' : 'tries'}`, 200, 75);
             
-            // Load and draw target Pokémon artwork
-            const artworkUrl = targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id);
+            // Load brand logo (Gengar) instead of target Pokémon artwork to not reveal it
+            const logoUrl = new URL((import.meta.env.BASE_URL || '/') + 'LogoCuteGengarRounded.png', window.location.origin).href;
             const loadImg = (url) => new Promise((resolve, reject) => {
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
@@ -807,55 +807,46 @@ export default function PokedleView() {
                 img.src = url;
             });
             
-            let artworkImg;
+            let logoImg;
             try {
-                artworkImg = await loadImg(artworkUrl);
+                logoImg = await loadImg(logoUrl);
             } catch (err) {
-                try {
-                    artworkImg = await loadImg(getPokemonFrontSpriteUrl(targetPokemon.id));
-                } catch (e) {
-                    console.error("Could not load artwork for canvas share", e);
-                }
+                console.error("Could not load logo for canvas share", err);
             }
             
-            if (artworkImg) {
-                // Draw a nice container box background for artwork
-                ctx.fillStyle = '#1e1e24';
+            if (logoImg) {
+                // Draw a nice container box background for logo (sleek indigo/purple theme)
+                ctx.fillStyle = '#1e1b4b'; // Deep indigo/purple
                 ctx.beginPath();
                 ctx.roundRect(125, 100, 150, 150, 20);
                 ctx.fill();
-                ctx.strokeStyle = '#2d2d34';
-                ctx.lineWidth = 1;
+                ctx.strokeStyle = '#4c1d95'; // Dark violet border
+                ctx.lineWidth = 2;
                 ctx.stroke();
                 
-                // Draw artwork
-                ctx.drawImage(artworkImg, 135, 110, 130, 130);
+                // Draw logo
+                ctx.drawImage(logoImg, 135, 110, 130, 130);
             }
             
-            // 3. Pokémon Name
+            // 3. Riddle Title (Who's That Pokémon?)
             ctx.fillStyle = '#ffffff';
-            ctx.font = 'bold 22px sans-serif';
-            ctx.fillText(formatPokemonDisplayName(targetPokemon.name), 200, 285);
-            
-            // Target Type caps text
-            ctx.fillStyle = typeColor;
-            ctx.font = 'bold 12px sans-serif';
-            ctx.fillText(targetDetails.types.join(' / ').toUpperCase(), 200, 310);
+            ctx.font = 'bold 20px sans-serif';
+            ctx.fillText(language === 'pt' ? 'Quem é esse Pokémon?' : "Who's That Pokémon?", 200, 290);
             
             // Result Message
-            ctx.fillStyle = '#a6accd';
-            ctx.font = '13px sans-serif';
+            ctx.fillStyle = '#c084fc';
+            ctx.font = '14px sans-serif';
             const msg = gameStatus === 'WON' 
                 ? (language === 'pt' ? `Acertou em ${guesses.length} tentativas!` : `Guessed correctly in ${guesses.length} attempts!`)
                 : (language === 'pt' ? `Não foi dessa vez!` : `Could not solve this time!`);
-            ctx.fillText(msg, 200, 335);
+            ctx.fillText(msg, 200, 320);
             
             // 4. Attempts Grid
             const squareSize = 16;
             const gap = 5;
             const rowWidth = targetLength * squareSize + (targetLength - 1) * gap;
             const startX = (canvas.width - rowWidth) / 2;
-            let startY = 365;
+            let startY = 350;
             
             guesses.forEach((guess) => {
                 const norm = normalizeNameForGame(guess);
@@ -867,7 +858,7 @@ export default function PokedleView() {
                     } else if (status === 'present') {
                         ctx.fillStyle = '#f59e0b';
                     } else {
-                        ctx.fillStyle = '#2d2d34';
+                        ctx.fillStyle = '#3b3954'; // Sleek dark purple/gray
                     }
                     
                     ctx.beginPath();
@@ -879,14 +870,14 @@ export default function PokedleView() {
             
             // 5. QR Code and Link footer
             const footerY = 520;
-            ctx.strokeStyle = '#2d2d34';
+            ctx.strokeStyle = '#3b3954';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(30, footerY);
             ctx.lineTo(370, footerY);
             ctx.stroke();
             
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + '/pokedle')}`;
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + import.meta.env.BASE_URL + 'pokedle')}`;
             let qrImg;
             try {
                 qrImg = await loadImg(qrUrl);
@@ -903,13 +894,14 @@ export default function PokedleView() {
             }
             
             ctx.textAlign = 'left';
-            ctx.fillStyle = '#8f93a2';
+            ctx.fillStyle = '#94a3b8';
             ctx.font = 'bold 11px sans-serif';
             ctx.fillText(language === 'pt' ? 'ESCANEIE PARA JOGAR' : 'SCAN TO PLAY', 150, footerY + 45);
             
-            ctx.fillStyle = '#7c3aed';
+            ctx.fillStyle = '#a78bfa';
             ctx.font = 'bold 14px sans-serif';
-            ctx.fillText(host + '/pokedle', 150, footerY + 65);
+            const displayUrl = (host + import.meta.env.BASE_URL + 'pokedle').replace(/\/{2,}/g, '/');
+            ctx.fillText(displayUrl, 150, footerY + 65);
             
             canvas.toBlob(async (blob) => {
                 if (!blob) throw new Error('Canvas toBlob failed');
@@ -932,7 +924,7 @@ export default function PokedleView() {
                 
                 const dataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
-                link.download = `pokedle-${targetPokemon.name}-${guesses.length}.png`;
+                link.download = `pokedle-result-${guesses.length}.png`;
                 link.href = dataUrl;
                 document.body.appendChild(link);
                 link.click();
