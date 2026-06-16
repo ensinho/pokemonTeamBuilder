@@ -256,14 +256,14 @@ export function HomeView({
                         setDailyPokePuzzleSummary(parsed);
                     }
                 }
- 
+
                 // Compute daily target
                 const index = await loadPokemonIndex();
                 const filtered = index.filter(p => p.id <= ALLOWED_MAX_ID);
                 if (filtered.length > 0) {
                     const dailyIdx = getDailyPokemonIndex(filtered.length);
                     setDailyPokePuzzleTarget(filtered[dailyIdx]);
- 
+
                     // Pick a random pokemon ID from the pool for the silhouette (to confuse the user)
                     const randomSilhouetteIdx = Math.floor(Math.random() * filtered.length);
                     setTeaserSilhouetteId(filtered[randomSilhouetteIdx].id);
@@ -274,7 +274,7 @@ export function HomeView({
                 setIsDailyPokePuzzleLoading(false);
             }
         };
- 
+
         loadDailyPokePuzzleData();
     }, []);
 
@@ -781,7 +781,7 @@ export function HomeView({
                             className="home-button home-button--inline"
                         >
                             <span className="home-forum-chat-header-btn-desktop">
-                                {language === 'pt' ? 'Ver Fórum Completo →' : 'View Full Forum →'}
+                                {language === 'pt' ? 'Fórum Completo →' : 'Full Forum →'}
                             </span>
                             <span className="home-forum-chat-header-btn-mobile">
                                 {language === 'pt' ? 'Fórum →' : 'Forum →'}
@@ -1014,13 +1014,12 @@ export function HomeView({
                                 <img
                                     src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
                                     alt="Mystery daily Pokemon"
-                                    className={`home-daily__sprite h-12 w-12 object-contain ${
-                                        dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'
-                                    }`}
+                                    className={`home-daily__sprite h-12 w-12 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'
+                                        }`}
                                     onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                 />
                             </div>
- 
+
                             <div className="min-w-0 flex-1 flex flex-col justify-between h-14">
                                 <div className="flex justify-between items-start">
                                     <div>
@@ -1040,7 +1039,7 @@ export function HomeView({
                                         </span>
                                     )}
                                 </div>
- 
+
                                 <div className="flex justify-between items-center text-[10px]">
                                     <span className="text-muted truncate mr-2">
                                         {dailyPokePuzzleSummary?.solved
