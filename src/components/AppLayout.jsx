@@ -38,6 +38,7 @@ import {
     HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
     ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon
 } from './icons';
+import { Puzzle } from 'lucide-react';
 
 import {
     AdminDashboardView,
@@ -50,6 +51,7 @@ import {
     RandomGeneratorView,
     TeamBuilderView,
     FeedView,
+    PokedleView,
 } from './views';
 
 import '../styles/app-shell.css';
@@ -109,6 +111,7 @@ export default function AppLayout() {
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/quiz')) return 'generationQuiz';
         if (path.includes('/generator')) return 'randomGenerator';
+        if (path.includes('/pokedle')) return 'pokedle';
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
         if (path.includes('/profile')) return 'profile';
@@ -284,6 +287,7 @@ export default function AppLayout() {
             'allTeams': { title: t('savedTeams.title'), subtitle: t('savedTeams.subtitle') },
             'generationQuiz': { title: t('quiz.title'), subtitle: t('quiz.subtitle') },
             'randomGenerator': { title: t('generator.title'), subtitle: t('generator.subtitle') },
+            'pokedle': { title: t('pokedle.title'), subtitle: t('pokedle.subtitle') },
             'favorites': { title: t('favorites.title'), subtitle: t('home.pinnedRoster') },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             'profile': { title: t('profile.title'), subtitle: t('profile.trainerProfile') },
@@ -317,6 +321,7 @@ export default function AppLayout() {
             {
                 title: t('nav.guessing'),
                 items: [
+                    { key: 'pokedle', label: t('nav.pokedle'), path: '/pokedle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
                     { key: 'randomGenerator', label: t('nav.generator'), path: '/generator', icon: <DiceIcon /> },
                 ]
@@ -1020,6 +1025,9 @@ export default function AppLayout() {
                                             showDetails={showDetails}
                                             showToast={showToast}
                                         />
+                                    } />
+                                    <Route path="/pokedle" element={
+                                        <PokedleView />
                                     } />
                                     <Route path="/teams" element={
                                         <AllTeamsView

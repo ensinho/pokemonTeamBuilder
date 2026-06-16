@@ -18,8 +18,8 @@ import { DEFAULT_BACKGROUND_ID, SHARE_BACKGROUNDS, getBackgroundById } from '../
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 import { POKEMON_TIPS } from '../../constants/pokemon';
-import { getPokemonApiData, getStaticPokemonDetail } from '../../services/pokemonDataCache';
-import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { getPokemonApiData, getStaticPokemonDetail, loadPokemonIndex } from '../../services/pokemonDataCache';
+import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { UserProfileModal } from '../modals/UserProfileModal';
 import {
@@ -32,7 +32,7 @@ import {
     SuccessToastIcon,
     SwordsIcon,
 } from '../icons';
-import { Download, Edit } from 'lucide-react';
+import { Download, Edit, Award, Puzzle } from 'lucide-react';
 
 const DEFAULT_GREETING_POKEMON = {
     morning: { id: 196, name: 'espeon' },
@@ -165,6 +165,39 @@ const TrainerStatsEmptyState = ({ onBrowsePokedex }) => {
     );
 };
 
+const ALLOWED_MAX_ID = 1025;
+const getDailyPokemonIndex = (poolLength) => {
+    if (poolLength <= 0) return 0;
+    const now = new Date();
+    const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+        hash = dateString.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return Math.abs(hash) % poolLength;
+};
+
+// Helper to format Pokémon name nicely for display
+const formatPokemonDisplayName = (name = '') => {
+    const overrides = {
+        farfetchd: "Farfetch'd",
+        sirfetchd: "Sirfetch'd",
+        'mr-mime': 'Mr. Mime',
+        'mime-jr': 'Mime Jr.',
+        'mr-rime': 'Mr. Rime',
+        'type-null': 'Type: Null',
+        'porygon-z': 'Porygon-Z',
+        'ho-oh': 'Ho-Oh',
+        flabebe: 'Flabebe',
+    };
+    if (overrides[name]) return overrides[name];
+    return name
+        .split('-')
+        .filter(Boolean)
+        .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
+        .join(' ');
+};
+
 export function HomeView({
     colors,
     navigate,
@@ -202,6 +235,48 @@ export function HomeView({
     const [isAttachDropdownOpen, setIsAttachDropdownOpen] = useState(false);
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const [selectedProfile, setSelectedProfile] = useState(null);
+
+    // Setup Daily Pokedle states for HomeView
+    const [dailyPokedleSummary, setDailyPokedleSummary] = useState(null);
+    const [dailyPokedleTarget, setDailyPokedleTarget] = useState(null);
+    const [teaserSilhouetteId, setTeaserSilhouetteId] = useState(1);
+    const [isDailyPokedleLoading, setIsDailyPokedleLoading] = useState(true);
+
+    useEffect(() => {
+        const loadDailyPokedleData = async () => {
+            setIsDailyPokedleLoading(true);
+            try {
+                // Get summary
+                const now = new Date();
+                const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+                const savedSummary = localStorage.getItem('ptb:pokedle:daily:summary');
+                if (savedSummary) {
+                    const parsed = JSON.parse(savedSummary);
+                    if (parsed.date === dateString) {
+                        setDailyPokedleSummary(parsed);
+                    }
+                }
+
+                // Compute daily target
+                const index = await loadPokemonIndex();
+                const filtered = index.filter(p => p.id <= ALLOWED_MAX_ID);
+                if (filtered.length > 0) {
+                    const dailyIdx = getDailyPokemonIndex(filtered.length);
+                    setDailyPokedleTarget(filtered[dailyIdx]);
+
+                    // Pick a random pokemon ID from the pool for the silhouette (to confuse the user)
+                    const randomSilhouetteIdx = Math.floor(Math.random() * filtered.length);
+                    setTeaserSilhouetteId(filtered[randomSilhouetteIdx].id);
+                }
+            } catch (err) {
+                console.error("Failed to load daily pokedle data on home:", err);
+            } finally {
+                setIsDailyPokedleLoading(false);
+            }
+        };
+
+        loadDailyPokedleData();
+    }, []);
 
     const popoverRef = useRef(null);
     const messageListRef = useRef(null);
@@ -265,7 +340,6 @@ export function HomeView({
     }, [hoveredSlot]);
 
     const [greetingPokemonData, setGreetingPokemonData] = useState(null);
-    const [isDailyPokemonLoading, setIsDailyPokemonLoading] = useState(true);
     const [isTipDismissed, setIsTipDismissed] = useState(() => {
         try {
             return localStorage.getItem('homeTipDismissed') === 'true';
@@ -362,22 +436,7 @@ export function HomeView({
         };
     }, [db, greetingPokemonId, allPokemons, greeting.period]);
 
-    const pokemonOfTheDay = useMemo(() => {
-        if (!allPokemons || allPokemons.length === 0) {
-            return null;
-        }
 
-        const dayOfYear = getDayOfYear();
-        const seed = dayOfYear;
-        const random = ((seed * 9301 + 49297) % 233280) / 233280;
-        const index = Math.floor(random * allPokemons.length);
-
-        return allPokemons[index] || allPokemons[0];
-    }, [allPokemons]);
-
-    useEffect(() => {
-        setIsDailyPokemonLoading(!(allPokemons && allPokemons.length > 0));
-    }, [allPokemons]);
 
     const tipOfTheDay = useMemo(() => {
         const dayOfYear = getDayOfYear();
@@ -462,10 +521,10 @@ export function HomeView({
             icon: <SuccessToastIcon className="w-5 h-5" color="currentColor" />,
         },
         {
-            label: t('home.shortcutGuesserTitle'),
-            description: t('home.shortcutGuesserDesc'),
-            path: '/generator',
-            icon: <DiceIcon />,
+            label: t('pokedle.title'),
+            description: t('pokedle.subtitle'),
+            path: '/pokedle',
+            icon: <Puzzle className="w-5 h-5 shrink-0" />,
         },
     ];
 
@@ -931,30 +990,33 @@ export function HomeView({
                 {/* Right Column: Compacted Sidebar */}
                 <aside className="home-sidebar">
                     {/* 1. Daily Pokémon section (always visible, GitHub-like compact) */}
-                    {isDailyPokemonLoading ? (
+                    {/* Daily Pokedle widget */}
+                    {isDailyPokedleLoading ? (
                         <section className="home-sidebar-section py-3 px-1 animate-pulse">
                             <div className="home-skeleton home-skeleton--short"></div>
                             <div className="mt-2 home-skeleton home-skeleton--title"></div>
                         </section>
-                    ) : pokemonOfTheDay ? (
+                    ) : dailyPokedleTarget ? (
                         <section
                             className="home-sidebar-section home-sidebar-section--daily cursor-pointer py-3.5 px-1 flex items-center gap-3 hover:text-primary transition-colors"
-                            onClick={() => showDetails(pokemonOfTheDay)}
+                            onClick={() => navigate('/pokedle')}
                             role="button"
                             tabIndex={0}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' || e.key === ' ') {
                                     e.preventDefault();
-                                    showDetails(pokemonOfTheDay);
+                                    navigate('/pokedle');
                                 }
                             }}
-                            aria-label={`Open details for ${pokemonOfTheDay.name}`}
+                            aria-label="Play daily Pokemon guess challenge"
                         >
-                            <div className="home-daily__sprite-container h-14 w-14 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center">
+                            <div className="home-daily__sprite-container h-14 w-14 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center overflow-hidden">
                                 <img
-                                    src={pokemonOfTheDay.animatedSprite || pokemonOfTheDay.sprite || POKEBALL_PLACEHOLDER_URL}
-                                    alt={pokemonOfTheDay.name}
-                                    className="home-daily__sprite h-13 w-13 object-contain"
+                                    src={getPokemonArtworkSpriteUrl(dailyPokedleSummary?.solved ? dailyPokedleTarget.id : teaserSilhouetteId)}
+                                    alt="Mystery daily Pokemon"
+                                    className={`home-daily__sprite h-12 w-12 object-contain ${
+                                        dailyPokedleSummary?.solved ? '' : 'pokedle-silhouette'
+                                    }`}
                                     onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                 />
                             </div>
@@ -962,47 +1024,33 @@ export function HomeView({
                             <div className="min-w-0 flex-1 flex flex-col justify-between h-14">
                                 <div className="flex justify-between items-start">
                                     <div>
-                                        <p className="home-panel__eyebrow text-[9px] leading-none">{t('home.dailyPokemon')}</p>
+                                        <p className="home-panel__eyebrow text-[9px] leading-none">{t('pokedle.homeTeaserTitle')}</p>
                                         <h3 className="home-panel__title home-panel__title--daily capitalize text-xs font-semibold truncate mt-1">
-                                            {pokemonOfTheDay.name}
+                                            {dailyPokedleSummary?.solved ? formatPokemonDisplayName(dailyPokedleTarget.name) : '??????'}
                                         </h3>
                                     </div>
-                                    <span className="home-daily__number text-[9px] font-semibold text-muted">
-                                        #{String(pokemonOfTheDay.id).padStart(3, '0')}
-                                    </span>
+                                    {dailyPokedleSummary?.solved ? (
+                                        <span className="badge badge-success text-[8px] py-0.5 px-1.5 shrink-0 flex items-center gap-0.5">
+                                            <Award className="w-3 h-3 text-white" />
+                                            {t('pokedle.dailySolvedBadge')}
+                                        </span>
+                                    ) : (
+                                        <span className="home-daily__number text-[9px] font-semibold text-muted">
+                                            #{String(dailyPokedleTarget.id).padStart(3, '0')}
+                                        </span>
+                                    )}
                                 </div>
 
-                                <div className="flex justify-between items-center">
-                                    <div className="flex flex-wrap gap-1">
-                                        {pokemonOfTheDay.types?.map((type) => (
-                                            <span
-                                                key={type}
-                                                className="home-type-pill capitalize text-[9px] py-0 px-1.5 leading-none border rounded"
-                                                style={{
-                                                    backgroundColor: `${typeColors[type]}12`,
-                                                    borderColor: `${typeColors[type]}24`,
-                                                    color: typeColors[type],
-                                                }}
-                                            >
-                                                {type}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onToggleFavoritePokemon(pokemonOfTheDay.id);
-                                        }}
-                                        className="home-daily__fav-btn w-6 h-6 flex items-center justify-center rounded border border-border bg-surface-raised text-muted hover:text-accent"
-                                        type="button"
-                                    >
-                                        <StarIcon
-                                            className="w-3.5 h-3.5"
-                                            isFavorite={favoritePokemons.has(pokemonOfTheDay.id)}
-                                            color="currentColor"
-                                        />
-                                    </button>
+                                <div className="flex justify-between items-center text-[10px]">
+                                    <span className="text-muted truncate mr-2">
+                                        {dailyPokedleSummary?.solved
+                                            ? t('pokedle.homeTeaserSolved', { attempts: dailyPokedleSummary.attempts })
+                                            : t('pokedle.homeTeaserSubtitle')
+                                        }
+                                    </span>
+                                    <span className="text-primary font-bold hover:underline shrink-0">
+                                        {dailyPokedleSummary?.solved ? t('common.yes') : t('pokedle.homeTeaserPlay')} →
+                                    </span>
                                 </div>
                             </div>
                         </section>
