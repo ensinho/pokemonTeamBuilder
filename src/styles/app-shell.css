@@ -79,7 +79,7 @@
     position: relative;
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth);
+        background-color var(--duration-fast) var(--ease-smooth);
     overflow: visible;
 }
 
@@ -924,7 +924,7 @@
     }
 
     .app-shell__header {
-        padding: 0 1.15rem;
+        padding: 1.85rem 1.15rem;
     }
 
     .app-shell__body,
