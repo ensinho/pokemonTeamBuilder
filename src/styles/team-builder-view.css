@@ -552,7 +552,6 @@
 .team-builder-results,
 .team-builder-mobile__available {
     flex: 1;
-    overflow: hidden;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-bg);
@@ -560,10 +559,13 @@
 
 .team-builder-results {
     min-height: 0;
+    overflow: hidden;
 }
 
 .team-builder-mobile__available {
-    min-height: 60vh;
+    max-height: 60vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .team-builder-results__scroll {

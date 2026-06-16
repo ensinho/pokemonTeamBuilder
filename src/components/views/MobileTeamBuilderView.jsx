@@ -16,6 +16,7 @@ import {
     StarIcon,
     TrashIcon,
 } from '../icons';
+import { Save, SaveAll } from 'lucide-react';
 
 const MobilePokemonPickerCard = ({
     pokemon,
@@ -50,9 +51,8 @@ const MobilePokemonPickerCard = ({
             aria-label={`${language === 'pt' ? 'Adicionar' : 'Add'} ${pokemon.name} ${language === 'pt' ? 'ao time' : 'to team'}`}
             onClick={handleCardClick}
             onKeyDown={handleKeyDown}
-            className={`team-builder-mobile-card ${
-                isSuggested ? 'is-suggested' : ''
-            }`}
+            className={`team-builder-mobile-card ${isSuggested ? 'is-suggested' : ''
+                }`}
         >
             <div className="flex items-start justify-between gap-1">
                 {isSuggested ? (
@@ -191,46 +191,46 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                     borderLeft: `1px solid ${colors.cardLight}`,
                 }}
             >
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                        <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
-                            {language === 'pt' ? 'Resumo do Time' : 'Team Snapshot'}
-                        </p>
-                        <span
-                            className="rounded-full px-2 py-0.5 text-[10px] font-bold"
-                            style={{ backgroundColor: `${ratingColor}22`, color: ratingColor }}
-                        >
-                            {rating}
-                        </span>
-                    </div>
+                <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
+                        {language === 'pt' ? 'Resumo do Time' : 'Team Snapshot'}
+                    </p>
+                    <span
+                        className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        style={{ backgroundColor: `${ratingColor}22`, color: ratingColor }}
+                    >
+                        {rating}
+                    </span>
+                </div>
 
-                    <div className="mb-2">
-                        <p className="mb-1 text-[10px] font-semibold text-success">
-                            {language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive Coverage'} ({strengthCount})
-                        </p>
-                        <div className="flex flex-wrap gap-1">
-                            {topStrengths.length > 0 ? topStrengths.map((type) => (
-                                <TypeBadge key={type} type={type} colors={colors} />
-                            )) : (
-                                <span className="text-[11px] text-muted">{language === 'pt' ? 'Sem vantagens ainda.' : 'No advantages yet.'}</span>
-                            )}
-                        </div>
+                <div className="mb-2">
+                    <p className="mb-1 text-[10px] font-semibold text-success">
+                        {language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive Coverage'} ({strengthCount})
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                        {topStrengths.length > 0 ? topStrengths.map((type) => (
+                            <TypeBadge key={type} type={type} colors={colors} />
+                        )) : (
+                            <span className="text-[11px] text-muted">{language === 'pt' ? 'Sem vantagens ainda.' : 'No advantages yet.'}</span>
+                        )}
                     </div>
+                </div>
 
-                    <div>
-                        <p className="mb-1 text-[10px] font-semibold text-danger">
-                            {language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive Weaknesses'} ({weaknessCount})
-                        </p>
-                        <div className="flex flex-wrap items-center gap-1">
-                            {topWeaknesses.length > 0 ? topWeaknesses.map(([type, score]) => (
-                                <span key={type} className="inline-flex items-center gap-1">
-                                    <TypeBadge type={type} colors={colors} />
-                                    <span className="text-[10px] font-bold text-danger">×{score}</span>
-                                </span>
-                            )) : (
-                                <span className="text-[11px] text-muted">{language === 'pt' ? 'Defesa sólida.' : 'Rock solid defence.'}</span>
-                            )}
-                        </div>
+                <div>
+                    <p className="mb-1 text-[10px] font-semibold text-danger">
+                        {language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive Weaknesses'} ({weaknessCount})
+                    </p>
+                    <div className="flex flex-wrap items-center gap-1">
+                        {topWeaknesses.length > 0 ? topWeaknesses.map(([type, score]) => (
+                            <span key={type} className="inline-flex items-center gap-1">
+                                <TypeBadge type={type} colors={colors} />
+                                <span className="text-[10px] font-bold text-danger">×{score}</span>
+                            </span>
+                        )) : (
+                            <span className="text-[11px] text-muted">{language === 'pt' ? 'Defesa sólida.' : 'Rock solid defence.'}</span>
+                        )}
                     </div>
+                </div>
             </AnchoredPopover>
         </div>
     );
@@ -383,7 +383,7 @@ export const MobileTeamBuilderView = ({
                             aria-label={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
                             title={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
                         >
-                            <SaveIcon className="h-4 w-4" />
+                            <Save className="h-4 w-4" />
                         </button>
                         <button
                             type="button"
@@ -513,7 +513,7 @@ export const MobileTeamBuilderView = ({
                         </div>
                     ) : (
                         <>
-                            <div className="h-full overflow-y-auto p-2 custom-scrollbar">
+                            <div className="p-2 custom-scrollbar">
                                 <div className="team-builder-mobile__grid grid grid-cols-3 gap-2">
                                     {displayedPokemons.map((pokemon, index) => (
                                         <MobilePokemonPickerCard

@@ -807,3 +807,47 @@
         overflow: hidden;
     }
 }
+
+/* Home general chat mobile layout adaptations */
+@media (max-width: 768px) {
+    .home-forum-chat-messages {
+        overflow-x: hidden !important;
+    }
+
+    .forum-message-bubble {
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Stack title and slots on compact shared team card to fit bubble */
+    .home-forum-chat-messages .forum-team-share-left {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.25rem !important;
+        width: 100% !important;
+    }
+
+    .home-forum-chat-messages .forum-team-share-card.compact-row {
+        align-items: center !important;
+        padding: 0.4rem 0.5rem !important;
+        gap: 0.35rem !important;
+    }
+
+    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-title {
+        max-width: 100% !important;
+    }
+
+    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-slots {
+        gap: 0.1rem !important;
+    }
+
+    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-slot {
+        width: 20px !important;
+        height: 20px !important;
+    }
+
+    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-sprite {
+        width: 18px !important;
+        height: 18px !important;
+    }
+}

@@ -705,7 +705,12 @@ export function HomeView({
                             onClick={() => navigate('/feed')}
                             className="home-button home-button--inline"
                         >
-                            {language === 'pt' ? 'Ver Fórum Completo →' : 'View Full Forum →'}
+                            <span className="home-forum-chat-header-btn-desktop">
+                                {language === 'pt' ? 'Ver Fórum Completo →' : 'View Full Forum →'}
+                            </span>
+                            <span className="home-forum-chat-header-btn-mobile">
+                                {language === 'pt' ? 'Fórum →' : 'Forum →'}
+                            </span>
                         </button>
                     </div>
 
@@ -1009,7 +1014,7 @@ export function HomeView({
                                 <div className="home-stat-card home-stat-card--type p-1">
                                     <span className="home-stat-card__label text-[9px]">{t('home.statFavType')}</span>
                                     {stats.favoriteType ? (
-                                        <span className="home-type-pill capitalize text-[9px] py-0 px-1 mt-1 justify-center w-full" style={{ backgroundColor: `${typeColors[stats.favoriteType]}12`, borderColor: `${typeColors[stats.favoriteType]}24`, color: typeColors[stats.favoriteType] }}>
+                                        <span className="home-type-pill capitalize text-[9px] py-1 px-1 mt-1 justify-center w-full" style={{ backgroundColor: `${typeColors[stats.favoriteType]}12`, borderColor: `${typeColors[stats.favoriteType]}24`, color: typeColors[stats.favoriteType] }}>
                                             {stats.favoriteType}
                                         </span>
                                     ) : (
