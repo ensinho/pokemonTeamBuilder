@@ -235,19 +235,18 @@ const renderSnippet = async ({ canvas, background, title, subtitle, pokemons, sh
     const qrSize = 64;
     const qrX = W - qrSize - 24;
     const qrY = footerY + (FOOTER_H - qrSize) / 2;
-    let qrImg;
+    let qrCanvas;
     try {
-        const qrDataUrl = await QRCode.toDataURL(qrTarget, {
+        qrCanvas = await QRCode.toCanvas(qrTarget, {
             margin: 1,
             width: qrSize,
             color: { dark: '#111111', light: '#ffffff' },
         });
-        qrImg = await loadImage(qrDataUrl);
     } catch (err) {
         console.error("Failed to generate QR code for canvas", err);
     }
 
-    if (qrImg) {
+    if (qrCanvas) {
         // White rounded plate behind the QR for contrast on busy backgrounds
         const pad = 6;
         ctx.fillStyle = '#ffffff';
@@ -265,7 +264,7 @@ const renderSnippet = async ({ canvas, background, title, subtitle, pokemons, sh
         ctx.closePath();
         ctx.fill();
 
-        ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+        ctx.drawImage(qrCanvas, qrX, qrY, qrSize, qrSize);
     }
 };
 

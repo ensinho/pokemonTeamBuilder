@@ -1016,24 +1016,23 @@ export default function PokePuzzleView() {
             ctx.stroke();
             
             const qrTarget = `${window.location.origin}${getRuntimeBaseURL()}pokepuzzle`.replace(/([^:]\/)\/+/g, "$1");
-            let qrImg;
+            let qrCanvas;
             try {
-                const qrDataUrl = await QRCode.toDataURL(qrTarget, {
+                qrCanvas = await QRCode.toCanvas(qrTarget, {
                     margin: 1,
                     width: 70,
                     color: { dark: '#000000', light: '#ffffff' }
                 });
-                qrImg = await loadImg(qrDataUrl);
             } catch (err) {
                 console.error("Failed to generate QR code for canvas", err);
             }
             
-            if (qrImg) {
+            if (qrCanvas) {
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
                 ctx.roundRect(50, footerY + 15, 80, 80, 8);
                 ctx.fill();
-                ctx.drawImage(qrImg, 55, footerY + 20, 70, 70);
+                ctx.drawImage(qrCanvas, 55, footerY + 20, 70, 70);
             }
             
             ctx.textAlign = 'left';
