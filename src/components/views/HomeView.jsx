@@ -250,15 +250,43 @@ export function HomeView({
         const loadDailyPokePuzzleData = async () => {
             setIsDailyPokePuzzleLoading(true);
             try {
-                // Get summary
                 const now = new Date();
                 const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-                const savedSummary = localStorage.getItem('ptb:pokepuzzle:daily:summary');
-                if (savedSummary) {
-                    const parsed = JSON.parse(savedSummary);
-                    if (parsed.date === dateString) {
-                        setDailyPokePuzzleSummary(parsed);
+                let summary = null;
+
+                // 1. Try Firestore if logged in
+                if (db && userId) {
+                    try {
+                        const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, `daily_${dateString}`);
+                        const snap = await getDoc(docRef);
+                        if (snap.exists()) {
+                            const data = snap.data();
+                            summary = {
+                                solved: data.gameStatus === 'WON',
+                                attempts: data.guesses?.length || 0,
+                                date: dateString
+                            };
+                        }
+                    } catch (e) {
+                        console.error("Failed to load daily pokepuzzle summary from Firestore:", e);
                     }
+                }
+
+                // 2. Fall back to LocalStorage
+                if (!summary) {
+                    const savedSummary = localStorage.getItem('ptb:pokepuzzle:daily:summary');
+                    if (savedSummary) {
+                        const parsed = JSON.parse(savedSummary);
+                        if (parsed.date === dateString) {
+                            summary = parsed;
+                        }
+                    }
+                }
+
+                if (summary) {
+                    setDailyPokePuzzleSummary(summary);
+                } else {
+                    setDailyPokePuzzleSummary(null);
                 }
 
                 // Compute daily target
@@ -280,7 +308,7 @@ export function HomeView({
         };
 
         loadDailyPokePuzzleData();
-    }, []);
+    }, [userId]);
 
     const popoverRef = useRef(null);
     const messageListRef = useRef(null);

@@ -13,6 +13,9 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../util
 import { PokeballIcon, StarsIcon, SparklesIcon, RefreshIcon } from '../icons';
 import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2 } from 'lucide-react';
 import QRCode from 'qrcode';
+import { useAuthStore } from '../../store/useAuthStore';
+import { db } from '../../services/firebase';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import '../../styles/pokepuzzle-view.css';
 
 // Constants
@@ -120,6 +123,7 @@ export default function PokePuzzleView() {
     const showToast = useToastStore(state => state.showToast);
     const { colors } = useThemeStore();
     const navigate = useNavigate();
+    const { userId } = useAuthStore();
 
     // Mode: 'daily' or 'ongoing'
     const [mode, setMode] = useState('daily');
@@ -187,71 +191,119 @@ export default function PokePuzzleView() {
     useEffect(() => {
         if (allowedPool.length === 0) return;
 
-        if (mode === 'daily') {
-            const now = new Date();
-            const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-            setLoadedDailyDate(dateString);
-            const dailyIdx = getDailyPokemonIndex(allowedPool.length);
-            const dailyPokemon = allowedPool[dailyIdx];
-            const targetLen = normalizeNameForGame(dailyPokemon.name).length;
+        const loadGame = async () => {
+            if (mode === 'daily') {
+                const now = new Date();
+                const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+                setLoadedDailyDate(dateString);
+                const dailyIdx = getDailyPokemonIndex(allowedPool.length);
+                const dailyPokemon = allowedPool[dailyIdx];
+                const targetLen = normalizeNameForGame(dailyPokemon.name).length;
 
-            // Load Daily state from localStorage
-            const savedState = localStorage.getItem(`ptb:pokepuzzle:daily:${dateString}`);
-            if (savedState) {
-                try {
-                    const parsed = JSON.parse(savedState);
+                let state = null;
+
+                // 1. Try Firestore if logged in
+                if (db && userId) {
+                    try {
+                        const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, `daily_${dateString}`);
+                        const snap = await getDoc(docRef);
+                        if (snap.exists()) {
+                            state = snap.data();
+                        }
+                    } catch (e) {
+                        console.error("Failed to load daily from Firestore:", e);
+                    }
+                }
+
+                // 2. Fall back to LocalStorage
+                if (!state) {
+                    const savedState = localStorage.getItem(`ptb:pokepuzzle:daily:${dateString}`);
+                    if (savedState) {
+                        try {
+                            state = JSON.parse(savedState);
+                        } catch (e) {
+                            console.error("Failed to parse daily state from localStorage:", e);
+                        }
+                    }
+                }
+
+                if (state) {
                     setTargetPokemon(dailyPokemon);
-                    setGuesses(parsed.guesses || []);
-                    setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
+                    setGuesses(state.guesses || []);
+                    setGameStatus(state.gameStatus || 'IN_PROGRESS');
                     setInputValue(' '.repeat(targetLen));
                     setSelectedCharIdx(0);
-                    setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
-                } catch (e) {
-                    console.error("Failed to parse daily state:", e);
+                    setUnlockedTips(state.unlockedTips || { description: false, types: false, silhouette: false });
+                } else {
                     initNewGame(dailyPokemon);
                 }
             } else {
-                initNewGame(dailyPokemon);
-            }
-        } else {
-            // Ongoing mode load from localStorage
-            const savedState = localStorage.getItem('ptb:pokepuzzle:ongoing');
-            if (savedState) {
-                try {
-                    const parsed = JSON.parse(savedState);
-                    const foundTarget = allowedPool.find(p => p.id === parsed.targetId);
+                let state = null;
+
+                // 1. Try Firestore if logged in
+                if (db && userId) {
+                    try {
+                        const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, 'ongoing');
+                        const snap = await getDoc(docRef);
+                        if (snap.exists()) {
+                            state = snap.data();
+                        }
+                    } catch (e) {
+                        console.error("Failed to load ongoing from Firestore:", e);
+                    }
+                }
+
+                // 2. Fall back to LocalStorage
+                if (!state) {
+                    const savedState = localStorage.getItem('ptb:pokepuzzle:ongoing');
+                    if (savedState) {
+                        try {
+                            state = JSON.parse(savedState);
+                        } catch (e) {
+                            console.error("Failed to parse ongoing state from localStorage:", e);
+                        }
+                    }
+                }
+
+                if (state) {
+                    const foundTarget = allowedPool.find(p => p.id === state.targetId);
                     if (foundTarget) {
                         const targetLen = normalizeNameForGame(foundTarget.name).length;
                         setTargetPokemon(foundTarget);
-                        setGuesses(parsed.guesses || []);
-                        setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
+                        setGuesses(state.guesses || []);
+                        setGameStatus(state.gameStatus || 'IN_PROGRESS');
                         setInputValue(' '.repeat(targetLen));
                         setSelectedCharIdx(0);
-                        setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
+                        setUnlockedTips(state.unlockedTips || { description: false, types: false, silhouette: false });
                         return;
                     }
-                } catch (e) {
-                    console.error("Failed to parse ongoing state:", e);
                 }
+                
+                // If no saved state, start random
+                startRandomOngoingGame();
             }
-            // If no saved state, start random
-            startRandomOngoingGame();
-        }
-    }, [mode, allowedPool]);
+        };
 
-    // Save state changes to LocalStorage
+        loadGame();
+    }, [mode, allowedPool, userId]);
+
+    // Save state changes to LocalStorage & Firestore
     useEffect(() => {
         if (!targetPokemon) return;
+
+        const stateToSave = {
+            guesses,
+            gameStatus,
+            targetId: targetPokemon.id,
+            unlockedTips,
+            updatedAt: new Date().toISOString()
+        };
 
         if (mode === 'daily') {
             const now = new Date();
             const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-            const stateToSave = {
-                guesses,
-                gameStatus,
-                targetId: targetPokemon.id,
-                unlockedTips
-            };
+            
+            // Save to LocalStorage
             localStorage.setItem(`ptb:pokepuzzle:daily:${dateString}`, JSON.stringify(stateToSave));
 
             // Also broadcast state back to HomeView so it stays in sync
@@ -260,16 +312,23 @@ export default function PokePuzzleView() {
                 attempts: guesses.length,
                 date: dateString
             }));
+
+            // Sync with Firestore if logged in
+            if (db && userId) {
+                const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, `daily_${dateString}`);
+                setDoc(docRef, stateToSave).catch(e => console.error("Failed to save daily to Firestore:", e));
+            }
         } else {
-            const stateToSave = {
-                guesses,
-                gameStatus,
-                targetId: targetPokemon.id,
-                unlockedTips
-            };
+            // Save to LocalStorage
             localStorage.setItem('ptb:pokepuzzle:ongoing', JSON.stringify(stateToSave));
+
+            // Sync with Firestore if logged in
+            if (db && userId) {
+                const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, 'ongoing');
+                setDoc(docRef, stateToSave).catch(e => console.error("Failed to save ongoing to Firestore:", e));
+            }
         }
-    }, [guesses, gameStatus, targetPokemon, mode, unlockedTips]);
+    }, [guesses, gameStatus, targetPokemon, mode, unlockedTips, userId]);
 
     // Auto-select unlocked tip tab
     useEffect(() => {
@@ -861,12 +920,15 @@ export default function PokePuzzleView() {
             // Load brand logo (Gengar) instead of target Pokémon artwork to not reveal it
             const logoUrl = `${import.meta.env.BASE_URL || '/'}LogoCuteGengarRounded.png`.replace(/\/{2,}/g, '/');
             const loadImg = (url) => new Promise((resolve, reject) => {
+                if (!url) return reject(new Error('URL is empty'));
                 const img = new Image();
-                if (!url.startsWith('data:')) {
+                // Only enable CORS for external cross-origin URLs
+                const isExternal = url.startsWith('http') && !url.startsWith(window.location.origin);
+                if (isExternal) {
                     img.crossOrigin = 'anonymous';
                 }
                 img.onload = () => resolve(img);
-                img.onerror = () => reject(new Error('Failed to load image: ' + url));
+                img.onerror = (e) => reject(new Error('Failed to load image: ' + url));
                 img.src = url;
             });
             
