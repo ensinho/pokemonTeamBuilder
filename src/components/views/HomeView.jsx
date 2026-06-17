@@ -806,7 +806,255 @@ export function HomeView({
                         </section>
                     )}
 
-                    {/* 3. General Chat & Teams Feed (GitHub Timeline Style) */}
+                    {/* Desktop widgets grid */}
+                    <div className="home-desktop-widgets-grid">
+                        {/* 1. Trainer Profile Sidebar Card (GitHub Style) */}
+                        <section className="home-profile-sidebar-card">
+                            <div className="home-profile-card-header flex items-center gap-3 w-full">
+                                <div className="home-profile-avatar-container shrink-0">
+                                    <img
+                                        src={greetingPokemonData ? getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true }) : POKEBALL_PLACEHOLDER_URL}
+                                        alt="Trainer Avatar"
+                                        className="home-profile-avatar"
+                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        style={{ imageRendering: 'pixelated' }}
+                                    />
+                                    <button
+                                        onClick={onOpenPokemonSelector}
+                                        className="home-profile-avatar-edit-btn"
+                                        title={t('profile.changeAvatarBtn')}
+                                    >
+                                        <Edit className="w-3 h-3" />
+                                    </button>
+                                </div>
+
+                                <div className="home-profile-names min-w-0 flex-1 text-left">
+                                    <h2 className="home-profile-fullname truncate text-fg font-bold leading-tight">{userId ? resolvedDisplayName : 'Guest Trainer'}</h2>
+                                    <p className="home-profile-username truncate text-muted text-xs font-mono">@{userId ? resolvedUsername : 'guest'}</p>
+                                </div>
+
+                                <button
+                                    onClick={() => navigate('/profile')}
+                                    className="home-profile-edit-btn shrink-0 flex items-center justify-center p-1.5 border border-border bg-surface-raised rounded hover:bg-surface transition-colors"
+                                    title={t('profile.trainerProfile')}
+                                    style={{ width: 'auto', height: 'auto', display: 'inline-flex' }}
+                                >
+                                    <Edit className="w-3.5 h-3.5 text-muted hover:text-fg" />
+                                </button>
+                            </div>
+
+                            <div className="home-profile-meta-list mt-3 pt-3 border-t border-border w-full">
+                                <div className="home-profile-meta-grid">
+                                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                                        <Folder className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                        <span className="truncate">{stats.totalTeams} {t('home.statTeamsMuted')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                                        <StarIcon className="w-3.5 h-3.5 shrink-0 opacity-70" isFavorite={true} />
+                                        <span className="truncate">{stats.totalFavoritePokemons} {t('home.statPinnedMuted')}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                                        <Flame className="w-3.5 h-3.5 shrink-0 text-warning opacity-90" />
+                                        <span className="truncate">{streak?.count || 0} {language === 'pt' ? 'dias' : 'days'}</span>
+                                    </div>
+                                    {stats.favoriteType && (
+                                        <div className="flex items-center gap-1.5 text-xs text-muted">
+                                            <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0" aria-hidden="true">
+                                                <span className="home-type-dot border border-border" style={{ backgroundColor: typeColors[stats.favoriteType] || '#A8A77A', width: '0.45rem', height: '0.45rem', shrink: 0 }} />
+                                            </div>
+                                            <span className="capitalize truncate">{t(`types.${stats.favoriteType}`)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* 2. Daily Challenge Card */}
+                        {isDailyPokePuzzleLoading ? (
+                            <div className="home-sidebar-section home-sidebar-section--daily p-4 animate-pulse space-y-2">
+                                <div className="home-skeleton home-skeleton--short"></div>
+                                <div className="home-skeleton home-skeleton--title"></div>
+                            </div>
+                        ) : dailyPokePuzzleTarget ? (
+                            <div
+                                className="home-sidebar-section--daily cursor-pointer flex items-center gap-3 p-4"
+                                onClick={() => navigate('/pokepuzzle')}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        e.preventDefault();
+                                        navigate('/pokepuzzle');
+                                    }
+                                }}
+                                aria-label="Play daily Pokemon guess challenge"
+                            >
+                                <div className="home-daily__sprite-container h-12 w-12 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center overflow-hidden">
+                                    <img
+                                        src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
+                                        alt="Mystery daily Pokemon"
+                                        className={`home-daily__sprite h-10 w-10 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'}`}
+                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    />
+                                </div>
+
+                                <div className="min-w-0 flex-1 flex flex-col justify-between h-12">
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <p className="home-panel__eyebrow text-[9px] leading-none">{t('pokepuzzle.homeTeaserTitle')}</p>
+                                            <h3 className="home-panel__title home-panel__title--daily capitalize text-xs font-semibold truncate mt-1">
+                                                {dailyPokePuzzleSummary?.solved ? formatPokemonDisplayName(dailyPokePuzzleTarget.name) : '??????'}
+                                            </h3>
+                                        </div>
+                                        {dailyPokePuzzleSummary?.solved ? (
+                                            <span className="badge badge-success text-[8px] py-0.5 px-1.5 shrink-0 flex items-center gap-0.5">
+                                                <Award className="w-3.5 h-3.5 text-white" />
+                                                {t('pokepuzzle.dailySolvedBadge')}
+                                            </span>
+                                        ) : (
+                                            <span className="home-daily__number text-[9px] font-semibold text-muted">
+                                                #{String(dailyPokePuzzleTarget.id).padStart(3, '0')}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    <div className="flex justify-between items-center text-[10px]">
+                                        <span className="text-muted truncate mr-2">
+                                            {dailyPokePuzzleSummary?.solved
+                                                ? t('pokepuzzle.homeTeaserSolved', { attempts: dailyPokePuzzleSummary.attempts })
+                                                : t('pokepuzzle.homeTeaserSubtitle')
+                                            }
+                                        </span>
+                                        <span className="text-primary font-bold hover:underline shrink-0">
+                                            {dailyPokePuzzleSummary?.solved ? t('common.yes') : t('pokepuzzle.homeTeaserPlay')} →
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null}
+
+                        {/* 3. Pinned Shortcuts (GitHub Repos Style Grid) */}
+                        <section className="home-shortcuts-sidebar-card p-4">
+                            <h3 className="text-xs uppercase tracking-wider font-bold text-muted mb-3 flex items-center gap-1.5">
+                                <Folder className="w-3.5 h-3.5 text-primary" />
+                                <span>{t('home.shortcuts')}</span>
+                            </h3>
+                            <div className="home-pinned-repos-grid grid grid-cols-2 gap-2">
+                                {quickActions.map((shortcut) => {
+                                    const repoMap = {
+                                        '/builder': { name: 'Builder', dotColor: '#7AC74C' }, // grass
+                                        '/pokedex': { name: 'Pokedex', dotColor: '#EE8130' }, // fire
+                                        '/quiz': { name: 'Quiz', dotColor: '#F7D02C' }, // electric
+                                        '/pokepuzzle': { name: 'Pokepuzzle', dotColor: '#6F35FC' } // dragon
+                                    };
+                                    const repo = repoMap[shortcut.path] || { name: 'widget', dotColor: '#A8A77A' };
+
+                                    return (
+                                        <button
+                                            key={shortcut.path}
+                                            type="button"
+                                            onClick={() => navigate(shortcut.path)}
+                                            className="github-repo-card text-left"
+                                        >
+                                            <div className="github-repo-title flex items-center gap-1.5 text-primary text-xs font-bold font-mono">
+                                                <span className="github-repo-icon-wrap w-4 h-4 flex items-center justify-center shrink-0 text-primary">
+                                                    {shortcut.icon}
+                                                </span>
+                                                <span className="hover:underline">{repo.name}</span>
+                                            </div>
+                                            <p className="github-repo-desc text-[10px] text-muted text-left leading-normal mt-1 mb-2 line-clamp-2">
+                                                {shortcut.description}
+                                            </p>
+                                            <div className="github-repo-meta flex items-center gap-3 text-[9px] text-muted font-semibold font-mono">
+                                                <div className="flex items-center gap-1">
+                                                    <span className="github-repo-dot" style={{ backgroundColor: repo.dotColor }} />
+                                                    <span>PokeModule</span>
+                                                </div>
+                                                <div className="flex items-center gap-0.5">
+                                                    <StarIcon className="w-2.5 h-2.5 text-muted opacity-60" isFavorite={false} />
+                                                    <span>1</span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </section>
+
+                        {/* 5. Pinned Favorites Widget */}
+                        {featuredFavorites.length > 0 && (
+                            <section className="home-sidebar-section-favorites p-4">
+                                <div className="flex items-center justify-between gap-3 border-b border-border pb-2 mb-2">
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-fg">
+                                        <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
+                                        <span>{t('home.yourFavorites')}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/favorites')}
+                                        className="home-button--inline text-[9px] font-semibold py-0.5 px-1.5 border border-border rounded text-muted hover:text-fg"
+                                    >
+                                        {t('home.seeAll')}
+                                    </button>
+                                </div>
+
+                                <div className="home-favorite-grid home-favorite-grid--sidebar mt-2">
+                                    {featuredFavorites.map((pokemon) => (
+                                        <div
+                                            key={pokemon.id}
+                                            onClick={() => showDetails(pokemon)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' || e.key === ' ') {
+                                                    e.preventDefault();
+                                                    showDetails(pokemon);
+                                                }
+                                            }}
+                                            className="home-favorite-card home-favorite-card--compact cursor-pointer"
+                                            role="button"
+                                            tabIndex={0}
+                                            aria-label={`Open details for ${pokemon.name}`}
+                                        >
+                                            <img
+                                                src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                                alt={pokemon.name}
+                                                className="home-favorite-card__sprite h-7 w-7"
+                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            />
+                                            <p className="home-favorite-card__name capitalize text-[9px] mt-1 font-semibold font-mono truncate w-full">
+                                                {pokemon.name}
+                                            </p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* 4. Today's Tip Block (GitHub styled Alert box) */}
+                        {!isTipDismissed && (
+                            <section className="github-tip-banner p-4">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[10px] uppercase font-bold text-muted tracking-wider flex items-center gap-1 font-mono">
+                                        <FileText className="w-3 h-3 text-primary" />
+                                        {t('home.todaysNote')}
+                                    </span>
+                                    <button
+                                        onClick={() => {
+                                            setIsTipDismissed(true);
+                                            try { localStorage.setItem('homeTipDismissed', 'true'); } catch (_) { }
+                                        }}
+                                        className="text-muted hover:text-fg text-xs"
+                                    >
+                                        <CloseIcon className="w-3 h-3" />
+                                    </button>
+                                </div>
+                                <p className="text-xs text-fg leading-relaxed">{tipOfTheDay}</p>
+                            </section>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Column: General Chat & Teams Feed (GitHub Timeline Style) */}
+                <aside className="home-sidebar flex flex-col gap-4 md:gap-7">
                     <div className="home-forum-chat-card-wrapper home-forum-chat-card p-0">
                         <div className="home-forum-chat-header px-4 py-3 border-b border-border flex items-center justify-between">
                             <h3 className="home-forum-chat-title text-sm font-bold text-fg flex items-center gap-2 w-full">
@@ -868,20 +1116,20 @@ export function HomeView({
                                                     <div className="github-pr-card">
                                                         <div className="github-pr-header flex items-center justify-between">
                                                             <div className="flex items-center gap-1.5 text-xs text-muted flex-wrap">
-                                                                <GitBranch className="w-3.5 h-3.5 text-success shrink-0" />
-                                                                <span
-                                                                    className="font-bold text-fg cursor-pointer hover:underline"
-                                                                    onClick={() => setSelectedProfile({
-                                                                        userId: message.createdBy,
-                                                                        name: message.creatorName,
-                                                                        avatar: message.creatorAvatar,
-                                                                        isShiny: message.creatorAvatarIsShiny
-                                                                    })}
-                                                                >
-                                                                    @{message.creatorName}
-                                                                </span>
-                                                                <span>merged team:</span>
-                                                                <span className="font-mono bg-surface px-1.5 py-0.5 rounded border border-border text-primary font-bold">{message.sharedTeam.name}</span>
+                                                                 <GitBranch className="w-3.5 h-3.5 text-success shrink-0" />
+                                                                 <span
+                                                                     className="font-bold text-fg cursor-pointer hover:underline"
+                                                                     onClick={() => setSelectedProfile({
+                                                                         userId: message.createdBy,
+                                                                         name: message.creatorName,
+                                                                         avatar: message.creatorAvatar,
+                                                                         isShiny: message.creatorAvatarIsShiny
+                                                                     })}
+                                                                 >
+                                                                     @{message.creatorName}
+                                                                 </span>
+                                                                 <span>merged team:</span>
+                                                                 <span className="font-mono bg-surface px-1.5 py-0.5 rounded border border-border text-primary font-bold">{message.sharedTeam.name}</span>
                                                             </div>
                                                             <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
                                                         </div>
@@ -1041,253 +1289,6 @@ export function HomeView({
                             </div>
                         </form>
                     </div>
-                </div>
-
-                {/* Right Column: Profile Sidebar Card & Repos Grid */}
-                <aside className="home-sidebar flex flex-col gap-4 md:gap-7">
-
-                    {/* 1. Trainer Profile Sidebar Card (GitHub Style) */}
-                    <section className="home-profile-sidebar-card">
-                        <div className="home-profile-card-header flex items-center gap-3 w-full">
-                            <div className="home-profile-avatar-container shrink-0">
-                                <img
-                                    src={greetingPokemonData ? getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true }) : POKEBALL_PLACEHOLDER_URL}
-                                    alt="Trainer Avatar"
-                                    className="home-profile-avatar"
-                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                    style={{ imageRendering: 'pixelated' }}
-                                />
-                                <button
-                                    onClick={onOpenPokemonSelector}
-                                    className="home-profile-avatar-edit-btn"
-                                    title={t('profile.changeAvatarBtn')}
-                                >
-                                    <Edit className="w-3 h-3" />
-                                </button>
-                            </div>
-
-                            <div className="home-profile-names min-w-0 flex-1 text-left">
-                                <h2 className="home-profile-fullname truncate text-fg font-bold leading-tight">{userId ? resolvedDisplayName : 'Guest Trainer'}</h2>
-                                <p className="home-profile-username truncate text-muted text-xs font-mono">@{userId ? resolvedUsername : 'guest'}</p>
-                            </div>
-
-                            <button
-                                onClick={() => navigate('/profile')}
-                                className="home-profile-edit-btn shrink-0 flex items-center justify-center p-1.5 border border-border bg-surface-raised rounded hover:bg-surface transition-colors"
-                                title={t('profile.trainerProfile')}
-                                style={{ width: 'auto', height: 'auto', display: 'inline-flex' }}
-                            >
-                                <Edit className="w-3.5 h-3.5 text-muted hover:text-fg" />
-                            </button>
-                        </div>
-
-                        <div className="home-profile-meta-list mt-3 pt-3 border-t border-border w-full">
-                            <div className="home-profile-meta-grid">
-                                <div className="flex items-center gap-1.5 text-xs text-muted">
-                                    <Folder className="w-3.5 h-3.5 shrink-0 opacity-70" />
-                                    <span className="truncate">{stats.totalTeams} {t('home.statTeamsMuted')}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-xs text-muted">
-                                    <StarIcon className="w-3.5 h-3.5 shrink-0 opacity-70" isFavorite={true} />
-                                    <span className="truncate">{stats.totalFavoritePokemons} {t('home.statPinnedMuted')}</span>
-                                </div>
-                                <div className="flex items-center gap-1.5 text-xs text-muted">
-                                    <Flame className="w-3.5 h-3.5 shrink-0 text-warning opacity-90" />
-                                    <span className="truncate">{streak?.count || 0} {language === 'pt' ? 'dias' : 'days'}</span>
-                                </div>
-                                {stats.favoriteType && (
-                                    <div className="flex items-center gap-1.5 text-xs text-muted">
-                                        <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0" aria-hidden="true">
-                                            <span className="home-type-dot border border-border" style={{ backgroundColor: typeColors[stats.favoriteType] || '#A8A77A', width: '0.45rem', height: '0.45rem', shrink: 0 }} />
-                                        </div>
-                                        <span className="capitalize truncate">{t(`types.${stats.favoriteType}`)}</span>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* 2. Daily Challenge Card */}
-                    {isDailyPokePuzzleLoading ? (
-                        <div className="home-sidebar-section p-4 animate-pulse space-y-2">
-                            <div className="home-skeleton home-skeleton--short"></div>
-                            <div className="home-skeleton home-skeleton--title"></div>
-                        </div>
-                    ) : dailyPokePuzzleTarget ? (
-                        <div
-                            className="home-sidebar-section--daily cursor-pointer flex items-center gap-3 p-4"
-                            onClick={() => navigate('/pokepuzzle')}
-                            role="button"
-                            tabIndex={0}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' || e.key === ' ') {
-                                    e.preventDefault();
-                                    navigate('/pokepuzzle');
-                                }
-                            }}
-                            aria-label="Play daily Pokemon guess challenge"
-                        >
-                            <div className="home-daily__sprite-container h-12 w-12 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center overflow-hidden">
-                                <img
-                                    src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
-                                    alt="Mystery daily Pokemon"
-                                    className={`home-daily__sprite h-10 w-10 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'}`}
-                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                />
-                            </div>
-
-                            <div className="min-w-0 flex-1 flex flex-col justify-between h-12">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="home-panel__eyebrow text-[9px] leading-none">{t('pokepuzzle.homeTeaserTitle')}</p>
-                                        <h3 className="home-panel__title home-panel__title--daily capitalize text-xs font-semibold truncate mt-1">
-                                            {dailyPokePuzzleSummary?.solved ? formatPokemonDisplayName(dailyPokePuzzleTarget.name) : '??????'}
-                                        </h3>
-                                    </div>
-                                    {dailyPokePuzzleSummary?.solved ? (
-                                        <span className="badge badge-success text-[8px] py-0.5 px-1.5 shrink-0 flex items-center gap-0.5">
-                                            <Award className="w-3 h-3 text-white" />
-                                            {t('pokepuzzle.dailySolvedBadge')}
-                                        </span>
-                                    ) : (
-                                        <span className="home-daily__number text-[9px] font-semibold text-muted">
-                                            #{String(dailyPokePuzzleTarget.id).padStart(3, '0')}
-                                        </span>
-                                    )}
-                                </div>
-
-                                <div className="flex justify-between items-center text-[10px]">
-                                    <span className="text-muted truncate mr-2">
-                                        {dailyPokePuzzleSummary?.solved
-                                            ? t('pokepuzzle.homeTeaserSolved', { attempts: dailyPokePuzzleSummary.attempts })
-                                            : t('pokepuzzle.homeTeaserSubtitle')
-                                        }
-                                    </span>
-                                    <span className="text-primary font-bold hover:underline shrink-0">
-                                        {dailyPokePuzzleSummary?.solved ? t('common.yes') : t('pokepuzzle.homeTeaserPlay')} →
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    ) : null}
-
-                    {/* 3. Pinned Shortcuts (GitHub Repos Style Grid) */}
-                    <section className="home-shortcuts-sidebar-card p-4">
-                        <h3 className="text-xs uppercase tracking-wider font-bold text-muted mb-3 flex items-center gap-1.5">
-                            <Folder className="w-3.5 h-3.5 text-primary" />
-                            <span>{t('home.shortcuts')}</span>
-                        </h3>
-                        <div className="home-pinned-repos-grid grid grid-cols-2 gap-2">
-                            {quickActions.map((shortcut) => {
-                                const repoMap = {
-                                    '/builder': { name: 'Builder', dotColor: '#7AC74C' }, // grass
-                                    '/pokedex': { name: 'Pokedex', dotColor: '#EE8130' }, // fire
-                                    '/quiz': { name: 'Quiz', dotColor: '#F7D02C' }, // electric
-                                    '/pokepuzzle': { name: 'Pokepuzzle', dotColor: '#6F35FC' } // dragon
-                                };
-                                const repo = repoMap[shortcut.path] || { name: 'widget', dotColor: '#A8A77A' };
-
-                                return (
-                                    <button
-                                        key={shortcut.path}
-                                        type="button"
-                                        onClick={() => navigate(shortcut.path)}
-                                        className="github-repo-card text-left"
-                                    >
-                                        <div className="github-repo-title flex items-center gap-1.5 text-primary text-xs font-bold font-mono">
-                                            <span className="github-repo-icon-wrap w-4 h-4 flex items-center justify-center shrink-0 text-primary">
-                                                {shortcut.icon}
-                                            </span>
-                                            <span className="hover:underline">{repo.name}</span>
-                                        </div>
-                                        <p className="github-repo-desc text-[10px] text-muted text-left leading-normal mt-1 mb-2 line-clamp-2">
-                                            {shortcut.description}
-                                        </p>
-                                        <div className="github-repo-meta flex items-center gap-3 text-[9px] text-muted font-semibold font-mono">
-                                            <div className="flex items-center gap-1">
-                                                <span className="github-repo-dot" style={{ backgroundColor: repo.dotColor }} />
-                                                <span>PokeModule</span>
-                                            </div>
-                                            <div className="flex items-center gap-0.5">
-                                                <StarIcon className="w-2.5 h-2.5 text-muted opacity-60" isFavorite={false} />
-                                                <span>1</span>
-                                            </div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </section>
-
-                    {/* 4. Today's Tip Block (GitHub styled Alert box) */}
-                    {!isTipDismissed && (
-                        <section className="github-tip-banner p-4">
-                            <div className="flex items-center justify-between mb-1">
-                                <span className="text-[10px] uppercase font-bold text-muted tracking-wider flex items-center gap-1 font-mono">
-                                    <FileText className="w-3 h-3 text-primary" />
-                                    {t('home.todaysNote')}
-                                </span>
-                                <button
-                                    onClick={() => {
-                                        setIsTipDismissed(true);
-                                        try { localStorage.setItem('homeTipDismissed', 'true'); } catch (_) { }
-                                    }}
-                                    className="text-muted hover:text-fg text-xs"
-                                >
-                                    <CloseIcon className="w-3 h-3" />
-                                </button>
-                            </div>
-                            <p className="text-xs text-fg leading-relaxed">{tipOfTheDay}</p>
-                        </section>
-                    )}
-
-                    {/* 5. Pinned Favorites Widget */}
-                    {featuredFavorites.length > 0 && (
-                        <section className="home-sidebar-section-favorites p-4">
-                            <div className="flex items-center justify-between gap-3 border-b border-border pb-2 mb-2">
-                                <div className="flex items-center gap-1.5 text-xs font-bold text-fg">
-                                    <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
-                                    <span>{t('home.yourFavorites')}</span>
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/favorites')}
-                                    className="home-button--inline text-[9px] font-semibold py-0.5 px-1.5 border border-border rounded text-muted hover:text-fg"
-                                >
-                                    {t('home.seeAll')}
-                                </button>
-                            </div>
-
-                            <div className="home-favorite-grid home-favorite-grid--sidebar mt-2">
-                                {featuredFavorites.map((pokemon) => (
-                                    <div
-                                        key={pokemon.id}
-                                        onClick={() => showDetails(pokemon)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter' || e.key === ' ') {
-                                                e.preventDefault();
-                                                showDetails(pokemon);
-                                            }
-                                        }}
-                                        className="home-favorite-card home-favorite-card--compact cursor-pointer"
-                                        role="button"
-                                        tabIndex={0}
-                                        aria-label={`Open details for ${pokemon.name}`}
-                                    >
-                                        <img
-                                            src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
-                                            alt={pokemon.name}
-                                            className="home-favorite-card__sprite h-7 w-7"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                        />
-                                        <p className="home-favorite-card__name capitalize text-[9px] mt-1 font-semibold font-mono truncate w-full">
-                                            {pokemon.name}
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
                 </aside>
             </div>
 

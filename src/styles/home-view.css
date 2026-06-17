@@ -2298,6 +2298,137 @@
     padding-top: 0.55rem;
 }
 
+.home-desktop-widgets-grid {
+    display: contents;
+}
+
+@media (min-width: 1280px) {
+    /* Tighten overall layout gaps */
+    .home-github-layout {
+        gap: 1rem !important;
+    }
+    
+    .home-main-col {
+        gap: 1rem !important;
+    }
+
+    .home-desktop-widgets-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 1rem !important;
+        align-items: stretch !important;
+        width: 100% !important;
+    }
+
+    /* Make banner and active team cards more compact */
+    .home-readme-panel .p-4 {
+        padding: 0.85rem 1rem !important;
+    }
+
+    .home-panel--pinned-repo .p-4 {
+        padding: 0.85rem 1rem !important;
+    }
+
+    /* Shortcuts Card spans full width (2 columns) */
+    .home-shortcuts-sidebar-card {
+        grid-column: span 2 !important;
+        padding: 0.75rem 1rem !important;
+    }
+
+    /* Shortcuts grid uses 4 columns side-by-side on desktop */
+    .home-shortcuts-sidebar-card .home-pinned-repos-grid {
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 0.5rem !important;
+        margin-top: 0.4rem !important;
+    }
+
+    .github-repo-card {
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    .github-repo-desc {
+        margin: 0.25rem 0 0.45rem 0 !important;
+    }
+
+    /* Profile Card adjustments */
+    .home-profile-sidebar-card {
+        padding: 0.75rem 1rem !important;
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+
+    .home-profile-sidebar-card .home-profile-meta-list {
+        margin-top: 0.5rem !important;
+        padding-top: 0.5rem !important;
+    }
+
+    .home-profile-sidebar-card .home-profile-meta-grid {
+        grid-template-columns: repeat(4, auto) !important;
+        justify-content: space-between !important;
+        gap: 0.5rem !important;
+    }
+
+    /* Daily Guess Card adjustments */
+    .home-sidebar-section--daily {
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        padding: 0.75rem 1rem !important;
+    }
+
+    /* Favorites and Tip Box adjustments */
+    .home-sidebar-section-favorites,
+    .github-tip-banner {
+        padding: 0.65rem 0.85rem !important;
+        height: 100% !important;
+    }
+
+    .github-tip-banner {
+        background: transparent !important;
+        border: 1px dashed var(--color-border) !important;
+        box-shadow: none !important;
+    }
+
+    .github-tip-banner p {
+        font-size: 0.725rem !important;
+        line-height: 1.35 !important;
+        color: var(--color-muted) !important;
+    }
+
+    /* Minimal Favorites styling */
+    .home-sidebar-section-favorites .border-b {
+        border-bottom: none !important;
+        padding-bottom: 0 !important;
+        margin-bottom: 0.15rem !important;
+    }
+
+    .home-sidebar-section-favorites .home-favorite-card--compact {
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        box-shadow: none !important;
+        padding: 0.25rem !important;
+    }
+
+    .home-sidebar-section-favorites .home-favorite-card--compact:hover {
+        border-color: var(--color-border) !important;
+        background: var(--color-surface-raised) !important;
+    }
+
+    /* Chat card should fill the entire vertical space on desktop */
+    .home-view .home-forum-chat-card {
+        height: 100% !important;
+        min-height: 520px;
+    }
+
+    .home-sidebar {
+        height: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+}
+
 /* ==========================================================================
    RESPONSIVE OVERRIDES
    ========================================================================== */
@@ -2311,6 +2442,10 @@
 
     .home-main-col,
     .home-sidebar {
+        display: contents !important;
+    }
+
+    .home-desktop-widgets-grid {
         display: contents !important;
     }
 
