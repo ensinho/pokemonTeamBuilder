@@ -918,7 +918,15 @@ export default function PokePuzzleView() {
             ctx.fillText(`${modeText} • ${guesses.length}/${MAX_ATTEMPTS} ${language === 'pt' ? 'tentativas' : 'tries'}`, 200, 75);
             
             // Load brand logo (Gengar) instead of target Pokémon artwork to not reveal it
-            const logoUrl = `${import.meta.env.BASE_URL || '/'}LogoCuteGengarRounded.png`.replace(/\/{2,}/g, '/');
+            const getRuntimeBaseURL = () => {
+                const path = window.location.pathname;
+                if (path.includes('/pokemonTeamBuilder')) {
+                    return '/pokemonTeamBuilder/';
+                }
+                return '/';
+            };
+
+            const logoUrl = `${window.location.origin}${getRuntimeBaseURL()}LogoCuteGengarRounded.png`.replace(/([^:]\/)\/+/g, "$1");
             const loadImg = (url) => new Promise((resolve, reject) => {
                 if (!url) return reject(new Error('URL is empty'));
                 const img = new Image();
@@ -933,10 +941,15 @@ export default function PokePuzzleView() {
             });
             
             let logoImg;
-            try {
-                logoImg = await loadImg(logoUrl);
-            } catch (err) {
-                console.error("Could not load logo for canvas share", err);
+            const logoDomImg = document.querySelector('img[src*="LogoCuteGengar"]');
+            if (logoDomImg && logoDomImg.complete && logoDomImg.naturalWidth > 0) {
+                logoImg = logoDomImg;
+            } else {
+                try {
+                    logoImg = await loadImg(logoUrl);
+                } catch (err) {
+                    console.error("Could not load logo for canvas share", err);
+                }
             }
             
             if (logoImg) {
@@ -1002,12 +1015,12 @@ export default function PokePuzzleView() {
             ctx.lineTo(370, footerY);
             ctx.stroke();
             
-            const qrTarget = `${window.location.origin}${import.meta.env.BASE_URL || '/'}pokepuzzle`.replace(/([^:]\/)\/+/g, "$1");
+            const qrTarget = `${window.location.origin}${getRuntimeBaseURL()}pokepuzzle`.replace(/([^:]\/)\/+/g, "$1");
             let qrImg;
             try {
                 const qrDataUrl = await QRCode.toDataURL(qrTarget, {
                     margin: 1,
-                    width: 140,
+                    width: 70,
                     color: { dark: '#000000', light: '#ffffff' }
                 });
                 qrImg = await loadImg(qrDataUrl);
@@ -1030,7 +1043,7 @@ export default function PokePuzzleView() {
             
             ctx.fillStyle = '#a78bfa';
             ctx.font = 'bold 14px sans-serif';
-            const displayUrl = (host + import.meta.env.BASE_URL + 'pokepuzzle').replace(/\/{2,}/g, '/');
+            const displayUrl = (host + getRuntimeBaseURL() + 'pokepuzzle').replace(/\/{2,}/g, '/');
             ctx.fillText(displayUrl, 150, footerY + 65);
             
             canvas.toBlob(async (blob) => {

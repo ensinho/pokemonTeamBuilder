@@ -28,18 +28,23 @@ const serializeTeamPokemon = (pokemon) => ({
 // Author/brand link baked into every shared snippet.
 const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
 const BRAND_LABEL = 'github.com/ensinho/pokemonTeamBuilder';
-const BRAND_LOGO_URL = `${import.meta.env.BASE_URL || '/'}LogoCuteGengarRounded.png`.replace(/\/{2,}/g, '/');
+const BRAND_LOGO_URL = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname.includes('/pokemonTeamBuilder') ? '/pokemonTeamBuilder/' : '/'}LogoCuteGengarRounded.png`.replace(/([^:]\/)\/+/g, "$1")
+    : '/LogoCuteGengarRounded.png';
 
 // ---------------------------------------------------------------------------
 // Image helpers
 // ---------------------------------------------------------------------------
 
-/** Load an image with CORS enabled so the canvas stays untainted. */
+/** Load an image with CORS enabled only for external cross-origin URLs. */
 const loadImage = (src) =>
     new Promise((resolve, reject) => {
         if (!src) return reject(new Error('Missing image src'));
         const img = new Image();
-        img.crossOrigin = 'anonymous';
+        const isExternal = src.startsWith('http') && typeof window !== 'undefined' && !src.startsWith(window.location.origin);
+        if (isExternal) {
+            img.crossOrigin = 'anonymous';
+        }
         img.onload = () => resolve(img);
         img.onerror = () => reject(new Error(`Failed to load ${src}`));
         img.src = src;
@@ -188,18 +193,31 @@ const renderSnippet = async ({ canvas, background, title, subtitle, pokemons, sh
     const logoSize = 56;
     const logoX = 28;
     const logoY = footerY + (FOOTER_H - logoSize) / 2;
-    try {
-        const logo = await loadImage(BRAND_LOGO_URL);
-        ctx.save();
-        // round-mask the logo
-        ctx.beginPath();
-        ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
-        ctx.restore();
-    } catch {
-        // skip silently if logo can't load
+    let logo;
+    const logoDomImg = document.querySelector('img[src*="LogoCuteGengar"]');
+    if (logoDomImg && logoDomImg.complete && logoDomImg.naturalWidth > 0) {
+        logo = logoDomImg;
+    } else {
+        try {
+            logo = await loadImage(BRAND_LOGO_URL);
+        } catch {
+            // skip silently if logo can't load
+        }
+    }
+
+    if (logo) {
+        try {
+            ctx.save();
+            // round-mask the logo
+            ctx.beginPath();
+            ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+            ctx.restore();
+        } catch (err) {
+            console.error("Error drawing logo to snippet canvas:", err);
+        }
     }
 
     ctx.textAlign = 'left';
@@ -217,13 +235,19 @@ const renderSnippet = async ({ canvas, background, title, subtitle, pokemons, sh
     const qrSize = 64;
     const qrX = W - qrSize - 24;
     const qrY = footerY + (FOOTER_H - qrSize) / 2;
+    let qrImg;
     try {
         const qrDataUrl = await QRCode.toDataURL(qrTarget, {
             margin: 1,
-            width: qrSize * 2,
+            width: qrSize,
             color: { dark: '#111111', light: '#ffffff' },
         });
-        const qrImg = await loadImage(qrDataUrl);
+        qrImg = await loadImage(qrDataUrl);
+    } catch (err) {
+        console.error("Failed to generate QR code for canvas", err);
+    }
+
+    if (qrImg) {
         // White rounded plate behind the QR for contrast on busy backgrounds
         const pad = 6;
         ctx.fillStyle = '#ffffff';
@@ -240,9 +264,8 @@ const renderSnippet = async ({ canvas, background, title, subtitle, pokemons, sh
         ctx.arcTo(rx, ry, rx + rw, ry, radius);
         ctx.closePath();
         ctx.fill();
+
         ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
-    } catch {
-        // QR is non-essential — continue without it
     }
 };
 
