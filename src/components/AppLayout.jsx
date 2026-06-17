@@ -1140,9 +1140,6 @@ export default function AppLayout() {
                                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
                                 </div>
                             </div>
-                            <p className="app-shell__footer-copy">
-                                {t('layout.pokemonCopyright')}
-                            </p>
                         </footer>
                     )}
                 </div>

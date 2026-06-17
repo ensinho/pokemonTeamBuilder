@@ -546,7 +546,13 @@ export const TRANSLATIONS = {
             collapseSidebar: 'Collapse sidebar menu',
             switchTheme: 'Switch to {{theme}} theme',
             developedBy: 'Developed and built by',
-            pokemonCopyright: 'Using the PokéAPI. Pokémon and their names are trademarks of Nintendo.'
+            pokemonCopyright: 'Using the PokéAPI. Pokémon and their names are trademarks of Nintendo.',
+            fanDisclaimer: 'Disclaimer',
+            disclaimerTitle: 'Fan Project & Disclaimer',
+            disclaimerParagraph1: 'This is a non-commercial, fan-made application created purely out of love for the Pokémon franchise. It is 100% non-monetary, and does not generate any revenue, ads, or collect donations.',
+            disclaimerParagraph2: 'All Pokémon images, names, game data, and related trademarks are the sole property of Nintendo, Game Freak, Creatures Inc., and The Pokémon Company. We acknowledge and respect their intellectual property. All credit goes to them.',
+            disclaimerParagraph3: 'I just love Pokémon very much and wanted to build a awsome builder for the community. No copyright infringement or strikes intended!',
+            haveSuggestion: 'Have a suggestion?'
         },
         patchNotes: {
             developedBy: 'Developed by Enzo Esmeraldo',
@@ -1249,7 +1255,13 @@ export const TRANSLATIONS = {
             collapseSidebar: 'Recolher menu da barra lateral',
             switchTheme: 'Mudar para tema {{theme}}',
             developedBy: 'Desenvolvido e construído por',
-            pokemonCopyright: 'Utilizando a PokéAPI. Pokémon e seus nomes são marcas registradas da Nintendo.'
+            pokemonCopyright: 'Utilizando a PokéAPI. Pokémon e seus nomes são marcas registradas da Nintendo.',
+            fanDisclaimer: 'Aviso Legal',
+            disclaimerTitle: 'Projeto de Fã & Aviso Legal',
+            disclaimerParagraph1: 'Este é um aplicativo não comercial feito por um fã, para fãs, puramente por amor à franquia Pokémon. É 100% sem fins lucrativos, não exibe anúncios e não gera nenhuma receita ou doação.',
+            disclaimerParagraph2: 'Todas as imagens de Pokémon, nomes, dados de jogos e marcas registradas relacionadas são de propriedade exclusiva da Nintendo, Game Freak, Creatures Inc. e The Pokémon Company. Reconhecemos e respeitamos sua propriedade intelectual. Todos os créditos pertencem a eles.',
+            disclaimerParagraph3: 'Eu amo muito Pokémon e queria construir um builder para a comunidade. Nenhuma infração de direitos autorais ou strikes pretendidos!',
+            haveSuggestion: 'Tem uma sugestão?'
         },
         patchNotes: {
             developedBy: 'Desenvolvido por Enzo Esmeraldo',

@@ -11,8 +11,9 @@ import {
     serverTimestamp,
 } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
-import { HeartIcon, CloseIcon } from './icons';
+import { HeartIcon, CloseIcon, InfoIcon, MessageIcon } from './icons';
 import { useModalA11y } from '../hooks/useModalA11y';
+import { useTranslation } from '../hooks/useTranslation';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
@@ -21,10 +22,13 @@ const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
  * "Have a suggestion?" text link that opens a modal with a textarea.
  */
 export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }) => {
+    const { t } = useTranslation();
     const [likeCount, setLikeCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
     const [isToggling, setIsToggling] = useState(false);
     const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+    const [showDisclaimerModal, setShowDisclaimerModal] = useState(false);
+    const [showDisclaimerTooltip, setShowDisclaimerTooltip] = useState(false);
 
     useEffect(() => {
         if (!db) return;
@@ -99,7 +103,9 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
 
     return (
         <>
-            <span className="inline-flex items-center gap-2 ml-2 align-middle">
+            <span className="inline-flex items-center gap-1.5 ml-1 align-middle flex-wrap">
+                <span className="app-shell__footer-separator" aria-hidden="true">•</span>
+                
                 <button
                     type="button"
                     onClick={handleToggleLike}
@@ -107,18 +113,44 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
                     aria-pressed={hasLiked}
                     aria-label={hasLiked ? 'Remove your like' : 'Like this app'}
                     title={hasLiked ? 'You liked this' : 'Like this app'}
-                    className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-white' : 'border-surface-raised bg-surface-raised text-fg'}`}
+                    className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${hasLiked ? 'border-primary bg-primary text-white hover:opacity-90' : 'border-surface-raised bg-surface-raised text-muted hover:text-fg hover:border-border-hover'}`}
                 >
-                    <HeartIcon color="currentColor" />
+                    <HeartIcon color="currentColor" className="w-3.5 h-3.5 shrink-0" />
                     <span>{likeCount}</span>
                 </button>
+
+                <span className="app-shell__footer-separator" aria-hidden="true">•</span>
+
                 <button
                     type="button"
                     onClick={() => setShowSuggestionModal(true)}
-                    className="rounded text-[11px] text-muted underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-surface-raised bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-muted transition-colors duration-200 hover:text-fg hover:border-border-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
                 >
-                    Have a suggestion?
+                    <MessageIcon className="w-3.5 h-3.5 shrink-0" />
+                    <span>{t('layout.haveSuggestion')}</span>
                 </button>
+
+                <span className="app-shell__footer-separator" aria-hidden="true">•</span>
+
+                <div className="relative inline-block">
+                    <button
+                        type="button"
+                        onClick={() => setShowDisclaimerModal(true)}
+                        onMouseEnter={() => setShowDisclaimerTooltip(true)}
+                        onMouseLeave={() => setShowDisclaimerTooltip(false)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-surface-raised bg-surface-raised px-2.5 py-0.5 text-xs font-semibold text-muted transition-colors duration-200 hover:text-fg hover:border-border-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary cursor-pointer"
+                    >
+                        <InfoIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{t('layout.fanDisclaimer')}</span>
+                    </button>
+                    {showDisclaimerTooltip && (
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-30">
+                            <div className="px-2.5 py-1 bg-surface-raised border border-border text-[10px] text-fg rounded-md shadow-lg whitespace-nowrap animate-footer-tooltip">
+                                {t('layout.disclaimerTitle')}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </span>
 
             {showSuggestionModal && (
@@ -131,7 +163,84 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
                     showToast={showToast}
                 />
             )}
+
+            {showDisclaimerModal && (
+                <DisclaimerModal
+                    onClose={() => setShowDisclaimerModal(false)}
+                />
+            )}
         </>
+    );
+};
+
+const DisclaimerModal = ({ onClose }) => {
+    const dialogRef = useModalA11y(onClose);
+    const { t } = useTranslation();
+
+    return (
+        <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            onClick={onClose}
+            role="presentation"
+        >
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="disclaimer-modal-title"
+                tabIndex={-1}
+                className="relative w-full max-w-md rounded-2xl border border-surface-raised bg-surface p-6 shadow-2xl animate-scale-in focus:outline-none"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <button
+                    onClick={onClose}
+                    type="button"
+                    aria-label="Close disclaimer dialog"
+                    className="absolute top-4 right-4 text-muted hover:text-fg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-lg p-1"
+                >
+                    <CloseIcon />
+                </button>
+
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="p-2.5 rounded-xl bg-primary-soft text-primary">
+                        <InfoIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2
+                            id="disclaimer-modal-title"
+                            className="text-lg font-bold text-fg leading-tight"
+                        >
+                            {t('layout.disclaimerTitle')}
+                        </h2>
+                        <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
+                            Fan Project
+                        </span>
+                    </div>
+                </div>
+
+                <div className="space-y-3 text-sm text-muted leading-relaxed max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
+                    <p className="border-l-2 border-primary/30 pl-3 italic bg-primary-soft/20 py-1.5 rounded-r text-fg">
+                        {t('layout.disclaimerParagraph3')}
+                    </p>
+                    <p>
+                        {t('layout.disclaimerParagraph1')}
+                    </p>
+                    <p>
+                        {t('layout.disclaimerParagraph2')}
+                    </p>
+                </div>
+
+                <div className="mt-6 flex justify-end">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="rounded-lg bg-surface-raised border border-border px-4 py-2 text-sm font-semibold text-fg transition-all hover:scale-[1.02] hover:bg-surface active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                        {t('common.close') || 'Close'}
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 };
 
