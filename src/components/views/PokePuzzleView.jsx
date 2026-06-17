@@ -146,9 +146,18 @@ export default function PokePuzzleView() {
 
     // Input autocomplete suggestions
     const [inputValue, setInputValue] = useState('');
+    const [selectedCharIdx, setSelectedCharIdx] = useState(0);
     const currentGuessLetters = useMemo(() => inputValue.split(''), [inputValue]);
     const [activeSuggestionIdx, setActiveSuggestionIdx] = useState(0);
     const autocompleteContainerRef = useRef(null);
+    const inputRef = useRef(null);
+
+    // Sync text input selection cursor with selectedCharIdx
+    useEffect(() => {
+        if (inputRef.current && document.activeElement === inputRef.current) {
+            inputRef.current.setSelectionRange(selectedCharIdx, selectedCharIdx + 1);
+        }
+    }, [selectedCharIdx, inputValue]);
 
     // Countdown state for next daily
     const [nextDailyCountdown, setNextDailyCountdown] = useState('');
@@ -184,6 +193,7 @@ export default function PokePuzzleView() {
             setLoadedDailyDate(dateString);
             const dailyIdx = getDailyPokemonIndex(allowedPool.length);
             const dailyPokemon = allowedPool[dailyIdx];
+            const targetLen = normalizeNameForGame(dailyPokemon.name).length;
 
             // Load Daily state from localStorage
             const savedState = localStorage.getItem(`ptb:pokepuzzle:daily:${dateString}`);
@@ -193,7 +203,8 @@ export default function PokePuzzleView() {
                     setTargetPokemon(dailyPokemon);
                     setGuesses(parsed.guesses || []);
                     setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
-                    setInputValue('');
+                    setInputValue(' '.repeat(targetLen));
+                    setSelectedCharIdx(0);
                     setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
                 } catch (e) {
                     console.error("Failed to parse daily state:", e);
@@ -210,10 +221,12 @@ export default function PokePuzzleView() {
                     const parsed = JSON.parse(savedState);
                     const foundTarget = allowedPool.find(p => p.id === parsed.targetId);
                     if (foundTarget) {
+                        const targetLen = normalizeNameForGame(foundTarget.name).length;
                         setTargetPokemon(foundTarget);
                         setGuesses(parsed.guesses || []);
                         setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
-                        setInputValue('');
+                        setInputValue(' '.repeat(targetLen));
+                        setSelectedCharIdx(0);
                         setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
                         return;
                     }
@@ -316,7 +329,9 @@ export default function PokePuzzleView() {
         setTargetPokemon(pokemon);
         setGuesses([]);
         setGameStatus('IN_PROGRESS');
-        setInputValue('');
+        const norm = normalizeNameForGame(pokemon.name);
+        setInputValue(' '.repeat(norm.length));
+        setSelectedCharIdx(0);
         setUnlockedTips({ description: false, types: false, silhouette: false });
     };
 
@@ -380,7 +395,9 @@ export default function PokePuzzleView() {
                 setTargetPokemon(dailyPokemon);
                 setGuesses(parsed.guesses || []);
                 setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
-                setInputValue('');
+                const targetLen = normalizeNameForGame(dailyPokemon.name).length;
+                setInputValue(' '.repeat(targetLen));
+                setSelectedCharIdx(0);
                 setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
             } catch (e) {
                 initNewGame(dailyPokemon);
@@ -445,13 +462,14 @@ export default function PokePuzzleView() {
 
     const targetLength = targetNormalized.length;
 
-    // Suggestions matching target length & prefix
+    // Suggestions matching character-by-character against non-empty slots in inputValue
     const suggestions = useMemo(() => {
         if (!targetPokemon || allowedPool.length === 0) return [];
-        const prefix = normalizePokemonQuizInput(inputValue);
+        const chars = inputValue.split('');
+        const filledCount = chars.filter(c => c !== ' ').length;
 
         // Do not show autocomplete unless at least 80% of the name is typed
-        if (prefix.length < targetLength * 0.8) {
+        if (filledCount < targetLength * 0.8) {
             return [];
         }
 
@@ -464,9 +482,13 @@ export default function PokePuzzleView() {
             .filter(p => {
                 // Must be of same normalized length
                 if (p.normalized.length !== targetLength) return false;
-                // Prefix check if input has text
-                if (prefix) {
-                    return p.name.toLowerCase().startsWith(prefix) || p.normalized.startsWith(prefix);
+                
+                // Compare character-by-character
+                for (let i = 0; i < targetLength; i++) {
+                    const typedChar = chars[i];
+                    if (typedChar !== ' ' && p.normalized[i] !== typedChar) {
+                        return false;
+                    }
                 }
                 return true;
             })
@@ -511,23 +533,37 @@ export default function PokePuzzleView() {
         if (gameStatus !== 'IN_PROGRESS') return;
 
         if (key === 'backspace') {
-            setInputValue(prev => prev.slice(0, -1));
+            setInputValue(prev => {
+                const chars = prev.split('');
+                if (chars[selectedCharIdx] !== ' ') {
+                    chars[selectedCharIdx] = ' ';
+                    return chars.join('');
+                } else {
+                    const prevIdx = Math.max(0, selectedCharIdx - 1);
+                    chars[prevIdx] = ' ';
+                    setSelectedCharIdx(prevIdx);
+                    return chars.join('');
+                }
+            });
         } else if (key === 'enter') {
             submitCurrentGuess();
         } else {
             // Type a letter
-            if (inputValue.length < targetLength) {
-                const char = key.toLowerCase();
-                setInputValue(prev => prev + char);
-            }
+            const char = key.toLowerCase();
+            setInputValue(prev => {
+                const chars = prev.split('');
+                chars[selectedCharIdx] = char;
+                return chars.join('');
+            });
+            setSelectedCharIdx(prev => Math.min(targetLength - 1, prev + 1));
         }
-    }, [inputValue, targetLength, gameStatus]);
+    }, [targetLength, gameStatus, selectedCharIdx]);
 
     // Submission check & processing
     const submitCurrentGuess = () => {
         if (gameStatus !== 'IN_PROGRESS') return;
 
-        const guessStr = inputValue;
+        const guessStr = inputValue.replace(/\s/g, '');
         if (guessStr.length !== targetLength) {
             showToast(t('pokepuzzle.guessNotValidLength', { length: targetLength }), 'warning');
             return;
@@ -546,7 +582,8 @@ export default function PokePuzzleView() {
 
         const nextGuesses = [...guesses, matched.name];
         setGuesses(nextGuesses);
-        setInputValue('');
+        setInputValue(' '.repeat(targetLength));
+        setSelectedCharIdx(0);
 
         // Check Win
         if (guessStr === targetNormalized) {
@@ -577,45 +614,58 @@ export default function PokePuzzleView() {
         const handleKeyDown = (e) => {
             if (gameStatus !== 'IN_PROGRESS') return;
 
-            const isInputFocused = e.target.tagName === 'INPUT';
-            const key = e.key.toLowerCase();
+            const key = e.key;
+            const lowerKey = key.toLowerCase();
+
+            // Navigation
+            if (key === 'ArrowLeft') {
+                e.preventDefault();
+                setSelectedCharIdx(prev => Math.max(0, prev - 1));
+                return;
+            }
+            if (key === 'ArrowRight') {
+                e.preventDefault();
+                setSelectedCharIdx(prev => Math.min(targetLength - 1, prev + 1));
+                return;
+            }
 
             // Typing letters
-            if (/^[a-z]$/.test(key)) {
-                if (isInputFocused) return; // Native input handles typing
-                if (currentGuessLetters.length < targetLength) {
-                    setInputValue(prev => prev + key);
-                }
+            if (/^[a-zA-Z]$/.test(key)) {
+                e.preventDefault();
+                const char = lowerKey;
+                setInputValue(prev => {
+                    const chars = prev.split('');
+                    chars[selectedCharIdx] = char;
+                    return chars.join('');
+                });
+                setSelectedCharIdx(prev => Math.min(targetLength - 1, prev + 1));
                 return;
             }
 
-            if (e.key === 'Backspace') {
-                if (isInputFocused) return; // Native input handles backspace
-                setInputValue(prev => prev.slice(0, -1));
+            if (key === 'Backspace') {
+                e.preventDefault();
+                setInputValue(prev => {
+                    const chars = prev.split('');
+                    if (chars[selectedCharIdx] !== ' ') {
+                        chars[selectedCharIdx] = ' ';
+                        return chars.join('');
+                    } else {
+                        const prevIdx = Math.max(0, selectedCharIdx - 1);
+                        chars[prevIdx] = ' ';
+                        setSelectedCharIdx(prevIdx);
+                        return chars.join('');
+                    }
+                });
                 return;
             }
 
-            if (e.key === 'Enter') {
+            if (key === 'Enter') {
                 e.preventDefault();
                 // If autocomplete list is active, pick active suggestion
                 if (suggestions.length > 0) {
                     const selected = suggestions[activeSuggestionIdx];
                     if (selected) {
-                        const norm = normalizeNameForGame(selected.name);
-                        setInputValue(norm);
-                        // Clear autocomplete state by submitting
-                        setTimeout(() => {
-                            const nextGuesses = [...guesses, selected.name];
-                            setGuesses(nextGuesses);
-                            setInputValue('');
-                            if (norm === targetNormalized) {
-                                setGameStatus('WON');
-                                showToast(t('pokepuzzle.winTitle'), 'success');
-                            } else if (nextGuesses.length >= MAX_ATTEMPTS) {
-                                setGameStatus('LOST');
-                                showToast(t('pokepuzzle.loseTitle'), 'error');
-                            }
-                        }, 50);
+                        handleSelectSuggestion(selected);
                     }
                 } else {
                     submitCurrentGuess();
@@ -624,11 +674,11 @@ export default function PokePuzzleView() {
             }
 
             // Arrow keys for autocomplete suggestions navigation
-            if (e.key === 'ArrowDown' && suggestions.length > 0) {
+            if (key === 'ArrowDown' && suggestions.length > 0) {
                 e.preventDefault();
                 setActiveSuggestionIdx(prev => (prev + 1) % suggestions.length);
             }
-            if (e.key === 'ArrowUp' && suggestions.length > 0) {
+            if (key === 'ArrowUp' && suggestions.length > 0) {
                 e.preventDefault();
                 setActiveSuggestionIdx(prev => (prev - 1 + suggestions.length) % suggestions.length);
             }
@@ -636,7 +686,7 @@ export default function PokePuzzleView() {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [inputValue, targetLength, gameStatus, suggestions, activeSuggestionIdx, guesses, targetNormalized, allowedPool, showToast, t]);
+    }, [inputValue, targetLength, gameStatus, suggestions, activeSuggestionIdx, guesses, targetNormalized, allowedPool, showToast, t, selectedCharIdx]);
 
     // Click suggestion callback
     const handleSelectSuggestion = (pokemon) => {
@@ -647,7 +697,8 @@ export default function PokePuzzleView() {
         setTimeout(() => {
             const nextGuesses = [...guesses, pokemon.name];
             setGuesses(nextGuesses);
-            setInputValue('');
+            setInputValue(' '.repeat(targetLength));
+            setSelectedCharIdx(0);
 
             if (norm === targetNormalized) {
                 setGameStatus('WON');
@@ -675,7 +726,7 @@ export default function PokePuzzleView() {
 
         // Add active typing row if in progress
         if (gameStatus === 'IN_PROGRESS' && rows.length < MAX_ATTEMPTS) {
-            const activeRowLetters = [...currentGuessLetters];
+            const activeRowLetters = currentGuessLetters.map(l => l === ' ' ? '' : l);
             // Fill remaining blanks
             while (activeRowLetters.length < targetLength) {
                 activeRowLetters.push('');
@@ -1158,7 +1209,8 @@ export default function PokePuzzleView() {
                                 >
                                     {row.letters.map((letter, letterIdx) => {
                                         const status = row.statuses[letterIdx];
-                                        const hasLtr = letter !== '';
+                                        const hasLtr = letter !== '' && letter !== ' ';
+                                        const isSelected = !row.submitted && letterIdx === selectedCharIdx;
 
                                         return (
                                             <div
@@ -1167,8 +1219,14 @@ export default function PokePuzzleView() {
                                                     row.submitted && status === 'correct' ? 'is-correct' :
                                                     row.submitted && status === 'present' ? 'is-present' :
                                                     row.submitted && status === 'absent' ? 'is-absent' : ''
-                                                }`}
+                                                } ${isSelected ? 'is-selected-cell' : ''} ${!row.submitted ? 'is-active-row' : ''}`}
                                                 role="gridcell"
+                                                onClick={() => {
+                                                    if (!row.submitted) {
+                                                        setSelectedCharIdx(letterIdx);
+                                                        inputRef.current?.focus();
+                                                    }
+                                                }}
                                             >
                                                 {letter}
                                             </div>
@@ -1200,12 +1258,24 @@ export default function PokePuzzleView() {
                         {gameStatus === 'IN_PROGRESS' && (
                             <div className="pokepuzzle-input-container mt-4">
                                 <input
+                                    ref={inputRef}
                                     type="text"
                                     value={inputValue}
                                     onChange={(e) => {
-                                        const clean = e.target.value.toLowerCase().replace(/[^a-z]/g, '');
-                                        if (clean.length <= targetLength) {
-                                            setInputValue(clean);
+                                        const val = e.target.value.toLowerCase();
+                                        let clean = val.replace(/[^a-z ]/g, '');
+                                        if (clean.length > targetLength) {
+                                            clean = clean.slice(0, targetLength);
+                                        } else {
+                                            clean = clean.padEnd(targetLength, ' ');
+                                        }
+                                        setInputValue(clean);
+                                        setSelectedCharIdx(prev => Math.min(targetLength - 1, prev + 1));
+                                    }}
+                                    onSelect={(e) => {
+                                        const start = e.target.selectionStart;
+                                        if (typeof start === 'number') {
+                                            setSelectedCharIdx(Math.min(targetLength - 1, start));
                                         }
                                     }}
                                     placeholder={t('pokepuzzle.guessPlaceholder')}

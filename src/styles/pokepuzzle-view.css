@@ -182,11 +182,21 @@
     user-select: none;
     color: var(--color-fg);
     background: transparent;
-    transition: border-color 0.1s ease;
+    transition: all var(--duration-fast) var(--ease-smooth);
 }
 
 .pokepuzzle-tile.has-letter {
     border-color: var(--color-muted);
+}
+
+.pokepuzzle-tile.is-active-row {
+    cursor: pointer;
+}
+
+.pokepuzzle-tile.is-selected-cell {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 1px var(--color-primary), 0 0 12px rgba(124, 58, 237, 0.4);
+    transform: scale(1.05);
 }
 
 /* Flip Animations for Tile Checks */
