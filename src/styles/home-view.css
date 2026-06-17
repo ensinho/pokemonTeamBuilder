@@ -2419,13 +2419,19 @@
     /* Chat card should fill the entire vertical space on desktop */
     .home-view .home-forum-chat-card {
         height: 100% !important;
-        min-height: 520px;
+        min-height: 0 !important;
     }
 
     .home-sidebar {
-        height: 100% !important;
+        height: 0 !important;
+        min-height: 100% !important;
         display: flex !important;
         flex-direction: column !important;
+    }
+
+    .home-forum-chat-messages {
+        min-height: 0 !important;
+        flex: 1 1 0% !important;
     }
 }
 
