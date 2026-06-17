@@ -675,3 +675,38 @@
         max-height: 60px;
     }
 }
+
+/* Early Tip Unlock Button */
+.pokepuzzle-unlock-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--color-surface-raised), var(--color-surface));
+    border: 1px solid var(--color-primary-border, var(--color-primary));
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+    margin-top: 4px;
+    box-shadow: 0 2px 5px rgba(124, 58, 237, 0.05);
+}
+
+.pokepuzzle-unlock-btn:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+    transform: translateY(-1.5px);
+    box-shadow: 0 4px 10px var(--color-primary-soft);
+}
+
+.pokepuzzle-unlock-btn:hover .text-primary {
+    color: #ffffff !important;
+}
+
+.pokepuzzle-unlock-btn:active {
+    transform: translateY(0) scale(0.97);
+}
+

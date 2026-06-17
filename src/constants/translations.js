@@ -373,7 +373,7 @@ export const TRANSLATIONS = {
             dailySolvedBadge: 'Solved!',
             homeTeaserTitle: 'Daily Pokémon Guess',
             homeTeaserSubtitle: 'Who\'s That Pokémon?',
-            homeTeaserPlay: 'Play Challenge',
+            homeTeaserPlay: 'Play',
             homeTeaserSolved: 'Solved today in {{attempts}} tries!',
             notificationTitle: 'New Daily PokéPuzzle!',
             notificationBody: 'A new mystery Pokémon is available! Can you guess who it is?'

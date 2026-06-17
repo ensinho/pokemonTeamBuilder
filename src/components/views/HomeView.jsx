@@ -32,7 +32,7 @@ import {
     SuccessToastIcon,
     SwordsIcon,
 } from '../icons';
-import { Download, Edit, Award, Puzzle } from 'lucide-react';
+import { Download, Edit, Award, Puzzle, GitBranch, GitCommit, FileText, Sparkles, BookOpen, Flame, Folder, User, Palette } from 'lucide-react';
 
 const DEFAULT_GREETING_POKEMON = {
     morning: { id: 196, name: 'espeon' },
@@ -227,7 +227,11 @@ export function HomeView({
         sendMessage,
     } = useForumStore();
 
-    const { userId } = useAuthStore();
+    const { userId, isAnonymous, displayName, streak, userEmail } = useAuthStore();
+    const resolvedDisplayName = displayName || userEmail?.split('@')[0] || 'Trainer';
+    const resolvedUsername = displayName
+        ? displayName.toLowerCase().replace(/\s+/g, '')
+        : (userEmail ? userEmail.split('@')[0].toLowerCase().replace(/\s+/g, '') : 'trainer');
     const { currentTeam: activeRoster, teamName: activeRosterName, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore();
 
     const [replyText, setReplyText] = useState('');
@@ -536,154 +540,160 @@ export function HomeView({
         : [];
 
     return (
-        <main className="home-view space-y-3 pb-6">
-            <section className="grid gap-3.5 xl:grid-cols-[minmax(0,1.62fr)_minmax(280px,0.84fr)]">
-                <section
-                    className="home-panel home-panel--hero p-4"
-                    style={{
-                        '--home-hero-accent': heroAccent,
-                        '--home-hero-accent-soft': heroAccentSoft,
-                        '--home-hero-accent-border': heroAccentBorder,
-                        '--home-hero-surface': heroSurface,
-                        '--home-hero-surface-border': heroSurfaceBorder,
-                        '--home-hero-wallpaper-image': heroBackground ? `url(${heroBackground.url})` : 'none',
-                    }}
-                    aria-label="Trainer overview"
-                >
-                    {/* Wallpaper button — top-right of the hero card */}
-                    <button
-                        onClick={handleCycleHeroBackground}
-                        type="button"
-                        aria-label={`Change hero wallpaper. Current wallpaper: ${heroBackground?.name ?? 'default'}`}
-                        className="home-hero__wallpaper-btn"
-                        title={`Change wallpaper${heroBackground ? ` (${heroBackground.name})` : ''}`}
+        <main className="home-view pb-6 pt-2">
+            <div className="home-github-layout grid gap-4 md:gap-6 xl:grid-cols-[minmax(0,1.62fr)_minmax(280px,0.84fr)]">
+
+                {/* Left Column: Feed, README, Pinned Items */}
+                <div className="home-main-col flex flex-col gap-4 md:gap-6 min-w-0">
+
+                    {/* 1. owner / README.md Card (Greeting & Partner) */}
+                    <section
+                        className="home-panel home-readme-panel p-0"
+                        style={{
+                            backgroundImage: `linear-gradient(to bottom, rgba(17, 17, 19, 0.62), rgba(17, 17, 19, 0.7)), url(${heroBackground?.url})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center',
+                            borderColor: heroAccentBorder,
+                        }}
                     >
-                        <DiceIcon />
-                    </button>
-                    <div className="home-hero__content">
-                        <div className="home-hero__lead">
-                            <h1 className="home-panel__title home-panel__title--hero">
-                                {greeting.text}, {language === 'pt' ? 'Treinador' : 'Trainer'}.
-                            </h1>
-                            <p className="home-panel__description">
-                                {randomMessage}
-                            </p>
-                        </div>
-
-                        {greetingPokemonData && (
-                            <div className="home-partner-card glass-card">
-                                <div className="home-partner-card__actions">
+                        <div className="home-readme-header flex items-center justify-between px-4 py-2 border-b border-border/80 bg-surface-raised/40 text-xs text-muted font-mono">
+                            <div className="flex items-center gap-2">
+                                <BookOpen className="w-3.5 h-3.5" />
+                                <span>{userId ? resolvedUsername : 'guest'} / </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {onChangeHeroBackground && (
                                     <button
-                                        onClick={onOpenPokemonSelector}
                                         type="button"
-                                        aria-label={t('profile.changeAvatarBtn')}
-                                        className="home-partner-card__action-btn"
-                                        title={t('profile.changeAvatarBtn')}
+                                        onClick={handleCycleHeroBackground}
+                                        className="text-[10px] text-muted hover:text-fg font-semibold cursor-pointer bg-black/60 rounded px-1.5 py-0.5 bg-surface/50 transition-colors flex items-center gap-1"
+                                        title={language === 'pt' ? 'Mudar Fundo' : 'Change Background'}
                                     >
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                        </svg>
+                                        <Palette className="w-3 h-3 shrink-0" />
+                                        <span>{language === 'pt' ? 'Fundo' : 'Theme'}</span>
                                     </button>
-                                </div>
-
-                                <div className="home-partner-card__sprite-container">
-                                    <img
-                                        src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
-                                        alt={greetingPokemonData.name}
-                                        className="home-partner-card__sprite sprite-fade"
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                    />
-                                </div>
-
-                                <div className="home-partner-card__info">
-                                    <div className="home-partner-card__meta">
-                                        <span className="home-partner-card__badge">{t('home.partner')}</span>
-                                        {greetingPokemonData.types && (
-                                            <div className="home-partner-card__types">
-                                                {greetingPokemonData.types.map((type) => (
-                                                    <img
-                                                        key={type}
-                                                        src={typeIcons[type]}
-                                                        alt={type}
-                                                        className="h-4 w-4"
-                                                        title={type}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <h3 className="home-partner-card__name capitalize">
-                                        {greetingPokemonData.name}
-                                    </h3>
+                                )}
+                                <div className="flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+                                    <span className="text-[10px] uppercase tracking-wider font-semibold">Active</span>
                                 </div>
                             </div>
-                        )}
-                    </div>
-                </section>
+                        </div>
+                        <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                            <div className="space-y-2 flex-1 min-w-0">
+                                <h1 className="text-xl md:text-2xl font-bold text-fg leading-tight">
+                                    {greeting.text}.
+                                </h1>
+                                <p className="home-readme-description text-sm text-muted max-w-lg leading-relaxed font-medium">
+                                    {randomMessage}
+                                </p>
+                                <div className="flex items-center gap-2 pt-1.5">
+                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface border border-border text-[10px] text-muted font-bold font-mono">
+                                        <Flame className="w-3 h-3 text-warning shrink-0" />
+                                        {streak?.count || 0} {language === 'pt' ? 'Dias Seguidos' : 'Days Streak'}
+                                    </span>
+                                    <span className="text-[10px] text-muted-more font-mono">
+                                        Longest: {streak?.longest || 0}d
+                                    </span>
+                                </div>
+                            </div>
 
-                {/* Mobile Shortcuts (only visible on mobile via CSS) */}
-                <div className="home-mobile-shortcuts-section">
-                    <div className="home-shortcuts-container">
-                        {quickActions.map((shortcut) => (
-                            <button
-                                key={shortcut.path}
-                                type="button"
-                                onClick={() => navigate(shortcut.path)}
-                                className="home-list-button p-1 text-left flex items-center gap-2 w-full border-0 bg-transparent cursor-pointer"
-                            >
-                                <span className="home-list-button__icon w-4 h-4 flex-shrink-0 flex items-center justify-center text-muted" aria-hidden="true">
-                                    {shortcut.icon}
-                                </span>
-                                <span className="home-list-button__title text-xs truncate font-medium text-fg">{shortcut.label}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                            {greetingPokemonData && (
+                                <div
+                                    className="home-partner-card glass-card shadow-lg shrink-0 self-center md:self-auto"
+                                    style={{
+                                        '--partner-type-color': typeColors[greetingPokemonData.types?.[0]] || 'var(--color-primary)',
+                                        '--partner-type-glow': `${typeColors[greetingPokemonData.types?.[0]] || 'var(--color-primary)'}22`
+                                    }}
+                                >
+                                    <div className="home-partner-card__actions">
+                                        <button
+                                            onClick={onOpenPokemonSelector}
+                                            type="button"
+                                            aria-label={t('profile.changeAvatarBtn')}
+                                            className="home-partner-card__action-btn"
+                                            title={t('profile.changeAvatarBtn')}
+                                        >
+                                            <Edit className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
 
-                {activeTeam ? (
-                    <section
-                        className="home-panel home-panel--feature home-panel--interactive flex min-h-[195px] cursor-pointer flex-col justify-between p-4"
-                        onClick={() => handleEditTeam(activeTeam)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                handleEditTeam(activeTeam);
-                            }
-                        }}
-                        aria-label={`Continue editing team ${activeTeam.name}`}
-                    >
-                        <div className="space-y-3.5 min-w-0 w-full">
-                            <div className="flex items-start justify-between gap-4 w-full">
-                                <div className="min-w-0 flex-1">
-                                    <p className="home-panel__eyebrow">
-                                        {t('home.activeTeam')}
-                                    </p>
+                                    <div className="home-partner-card__sprite-container">
+                                        <img
+                                            src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
+                                            alt={greetingPokemonData.name}
+                                            className="home-partner-card__sprite sprite-fade"
+                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        />
+                                    </div>
+
+                                    <div className="home-partner-card__info">
+                                        <div className="home-partner-card__meta">
+                                            <span className="home-partner-card__badge">{t('home.partner')}</span>
+                                            {greetingPokemonData.types && (
+                                                <div className="home-partner-card__types">
+                                                    {greetingPokemonData.types.map((type) => (
+                                                        <img
+                                                            key={type}
+                                                            src={typeIcons[type]}
+                                                            alt={type}
+                                                            className="h-4 w-4"
+                                                            title={type}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <h3 className="home-partner-card__name capitalize">
+                                            {greetingPokemonData.name}
+                                        </h3>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    {/* 2. Pinned Item: Active Team Card */}
+                    {activeTeam ? (
+                        <section
+                            className="home-panel home-panel--pinned-repo p-0 cursor-pointer"
+                            onClick={() => handleEditTeam(activeTeam)}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleEditTeam(activeTeam);
+                                }
+                            }}
+                            aria-label={`Continue editing team ${activeTeam.name}`}
+                        >
+                            <div className="pinned-repo-header flex items-center justify-between px-4 py-2 border-b border-border bg-surface-raised">
+                                <div className="flex items-center gap-2 text-xs font-bold text-fg">
+                                    <Folder className="w-4 h-4 text-primary shrink-0" />
+                                    <span>active</span>
                                     {savedTeams.length > 1 ? (
-                                        <div className="relative inline-block w-full mt-1.5" onClick={(e) => e.stopPropagation()}>
-                                            <select
-                                                value={activeTeam.id}
-                                                onChange={(e) => setActiveTeamId(e.target.value)}
-                                                className="home-active-team-select text-lg font-bold bg-transparent border-0 border-b border-dashed border-muted hover:border-fg focus:outline-none pr-6 cursor-pointer max-w-[280px] truncate"
-                                            >
-                                                {savedTeams.map((team) => (
-                                                    <option key={team.id} value={team.id} className="bg-surface text-fg">
-                                                        {team.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                        <div className="relative inline-block ml-2" onClick={(e) => e.stopPropagation()}>
+                                            <div className="home-active-team-select-wrapper">
+                                                <select
+                                                    value={activeTeam.id}
+                                                    onChange={(e) => setActiveTeamId(e.target.value)}
+                                                    className="home-active-team-select text-xs font-bold bg-transparent border-0 border-b border-dashed border-muted hover:border-fg focus:outline-none pr-5 cursor-pointer max-w-[200px] truncate"
+                                                >
+                                                    {savedTeams.map((team) => (
+                                                        <option key={team.id} value={team.id} className="bg-surface text-fg">
+                                                            {team.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                            <span className="home-active-team-name-mobile text-muted">/ {activeTeam.name}</span>
                                         </div>
                                     ) : (
-                                        <h2 className="home-panel__title home-panel__title--feature truncate">
-                                            {activeTeam.name}
-                                        </h2>
+                                        <span className="text-muted ml-1">/ {activeTeam.name}</span>
                                     )}
-                                    <p className="home-panel__description max-w-lg mt-1.5">
-                                        {t('home.activeTeamDesc')}
-                                    </p>
                                 </div>
-                                <div className="flex items-center gap-1.5 shrink-0 self-start" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                     <button
                                         type="button"
                                         onClick={() => handleEditTeam(activeTeam)}
@@ -703,302 +713,381 @@ export function HomeView({
                                 </div>
                             </div>
 
-                            <div className="home-team-slots">
-                                {Array.from({ length: 6 }).map((_, index) => {
-                                    const pokemon = activeTeam.pokemons?.[index];
-                                    return (
-                                        <div key={index} className="home-team-slot">
-                                            {pokemon ? (
-                                                <img
-                                                    src={getTeamPokemonDisplaySprite(pokemon)}
-                                                    alt={pokemon.name}
-                                                    className="home-team-slot__sprite sprite-fade"
-                                                    title={pokemon.name}
-                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                />
-                                            ) : (
-                                                <div className="home-team-slot__empty">
-                                                    <PokeballIcon className="w-4 h-4" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
+                            <div className="p-4 space-y-3">
 
-                            <dl className="home-inline-meta">
-                                {activeTeamMeta.map(({ label, value }) => (
-                                    <div key={label}>
-                                        <dt>{label}</dt>
-                                        <dd>{value}</dd>
-                                    </div>
-                                ))}
-                            </dl>
-                        </div>
-
-
-                    </section>
-                ) : (
-                    <section className="home-panel home-panel--feature flex min-h-[200px] flex-col justify-between p-4">
-                        <div className="space-y-3">
-                            <div>
-                                <p className="home-panel__eyebrow">
-                                    {t('home.firstSteps')}
-                                </p>
-                                <h2 className="home-panel__title home-panel__title--feature">
-                                    {t('home.buildFirstTeam')}
-                                </h2>
-                            </div>
-                            <p className="home-panel__description max-w-lg">
-                                {t('home.buildFirstTeamDesc')}
-                            </p>
-                        </div>
-                        <div className="home-action-row mt-8">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/builder')}
-                                className="home-button home-button--primary w-full"
-                            >
-                                <SwordsIcon />
-                                {t('home.createFirstTeam')}
-                            </button>
-                        </div>
-                    </section>
-                )}
-            </section>
-
-            <section className="home-dashboard">
-                {/* Left Column: Compact General Chat Feed */}
-                <div className="home-forum-chat-card-wrapper home-forum-chat-card">
-                    <div className="home-forum-chat-header border-b border-border">
-                        <h3 className="home-forum-chat-title w-full">
-                            <MessageIcon className="w-5 h-5 text-primary shrink-0" />
-                            {language === 'pt' ? 'Chat e Times' : 'Chat & Teams'}
-                        </h3>
-                        <button
-                            type="button"
-                            onClick={() => navigate('/feed')}
-                            className="home-button home-button--inline"
-                        >
-                            <span className="home-forum-chat-header-btn-desktop">
-                                {language === 'pt' ? 'Fórum Completo →' : 'Full Forum →'}
-                            </span>
-                            <span className="home-forum-chat-header-btn-mobile">
-                                {language === 'pt' ? 'Fórum →' : 'Forum →'}
-                            </span>
-                        </button>
-                    </div>
-
-                    <div ref={messageListRef} className="home-forum-chat-messages custom-scrollbar">
-                        {messages.length === 0 ? (
-                            <div className="text-center py-12 text-muted text-xs">
-                                {language === 'pt' ? 'Nenhuma mensagem escrita no chat geral.' : 'No messages posted in general chat.'}
-                            </div>
-                        ) : (
-                            messages.map((message) => {
-                                const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
-                                return (
-                                    <div key={message.id} className="forum-message-item">
-                                        <div className="forum-message-avatar-wrap">
-                                            <div
-                                                className="forum-message-avatar cursor-pointer"
-                                                onClick={() => setSelectedProfile({
-                                                    userId: message.createdBy,
-                                                    name: message.creatorName,
-                                                    avatar: message.creatorAvatar,
-                                                    isShiny: message.creatorAvatarIsShiny
-                                                })}
-                                            >
-                                                {message.creatorAvatar ? (
+                                <div className="home-team-slots">
+                                    {Array.from({ length: 6 }).map((_, index) => {
+                                        const pokemon = activeTeam.pokemons?.[index];
+                                        return (
+                                            <div key={index} className="home-team-slot">
+                                                {pokemon ? (
                                                     <img
-                                                        src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
-                                                        alt=""
-                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        src={getTeamPokemonDisplaySprite(pokemon)}
+                                                        alt={pokemon.name}
+                                                        className="home-team-slot__sprite sprite-fade"
+                                                        title={pokemon.name}
+                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                                     />
                                                 ) : (
-                                                    <PokeballIcon className="w-4 h-4 text-muted opacity-50" />
+                                                    <div className="home-team-slot__empty">
+                                                        <PokeballIcon className="w-4 h-4" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                <div className="pinned-repo-footer flex items-center justify-between border-t border-border pt-3 mt-1 text-[10px] text-muted font-semibold font-mono">
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="home-type-dot" style={{ backgroundColor: activeTeam.isFavorite ? 'var(--color-accent)' : 'var(--color-primary)' }} />
+                                            <span>{activeTeam.isFavorite ? 'Favorite' : 'Team'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <GitCommit className="w-3.5 h-3.5" />
+                                            <span>{activeTeam.pokemons?.length || 0}/6</span>
+                                        </div>
+                                    </div>
+                                    <span>Updated recently</span>
+                                </div>
+                            </div>
+                        </section>
+                    ) : (
+                        <section className="home-panel home-panel--pinned-repo p-0">
+                            <div className="pinned-repo-header flex items-center gap-2 px-4 py-2 border-b border-border bg-surface-raised text-xs font-bold text-fg">
+                                <Folder className="w-4 h-4 text-primary shrink-0" />
+                                <span>team</span>
+                            </div>
+                            <div className="p-4 flex flex-col justify-between min-h-[140px]">
+                                <div className="space-y-2">
+                                    <h3 className="text-sm font-bold text-fg">{t('home.buildFirstTeam')}</h3>
+                                    <p className="text-xs text-muted leading-relaxed">
+                                        {t('home.buildFirstTeamDesc')}
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/builder')}
+                                    className="home-button home-button--primary mt-3 text-xs w-full justify-center"
+                                >
+                                    <SwordsIcon />
+                                    {t('home.createFirstTeam')}
+                                </button>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* 3. General Chat & Teams Feed (GitHub Timeline Style) */}
+                    <div className="home-forum-chat-card-wrapper home-forum-chat-card p-0">
+                        <div className="home-forum-chat-header px-4 py-3 border-b border-border flex items-center justify-between">
+                            <h3 className="home-forum-chat-title text-sm font-bold text-fg flex items-center gap-2 w-full">
+                                <MessageIcon className="w-4 h-4 text-primary shrink-0" />
+                                {language === 'pt' ? 'Linha do Tempo' : 'Timeline'}
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/feed')}
+                                className="home-button home-button--inline text-[10px] py-0.5 px-2"
+                            >
+                                <span className="home-forum-chat-header-btn-desktop">
+                                    {language === 'pt' ? 'Ver Fórum →' : 'View Forum →'}
+                                </span>
+                                <span className="home-forum-chat-header-btn-mobile">
+                                    {language === 'pt' ? 'Fórum →' : 'Forum →'}
+                                </span>
+                            </button>
+                        </div>
+
+                        <div ref={messageListRef} className="home-forum-chat-messages home-timeline-container custom-scrollbar px-4 py-4">
+                            {messages.length === 0 ? (
+                                <div className="text-center py-12 text-muted text-xs font-mono">
+                                    {language === 'pt' ? 'Nenhuma atividade registrada.' : 'No activity logged.'}
+                                </div>
+                            ) : (
+                                messages.map((message) => {
+                                    const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
+
+                                    return (
+                                        <div key={message.id} className="home-timeline-item">
+                                            {/* Timeline axis point & avatar */}
+                                            <div className="home-timeline-avatar-wrap">
+                                                <div
+                                                    className="home-timeline-avatar cursor-pointer"
+                                                    onClick={() => setSelectedProfile({
+                                                        userId: message.createdBy,
+                                                        name: message.creatorName,
+                                                        avatar: message.creatorAvatar,
+                                                        isShiny: message.creatorAvatarIsShiny
+                                                    })}
+                                                >
+                                                    {message.creatorAvatar ? (
+                                                        <img
+                                                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
+                                                            alt=""
+                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        />
+                                                    ) : (
+                                                        <PokeballIcon className="w-4 h-4 text-muted opacity-50" />
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Speech bubble or PR Card */}
+                                            <div className="home-timeline-content-wrap">
+                                                {message.sharedTeam ? (
+                                                    /* Pull Request Styled Merge Card */
+                                                    <div className="github-pr-card">
+                                                        <div className="github-pr-header flex items-center justify-between">
+                                                            <div className="flex items-center gap-1.5 text-xs text-muted flex-wrap">
+                                                                <GitBranch className="w-3.5 h-3.5 text-success shrink-0" />
+                                                                <span
+                                                                    className="font-bold text-fg cursor-pointer hover:underline"
+                                                                    onClick={() => setSelectedProfile({
+                                                                        userId: message.createdBy,
+                                                                        name: message.creatorName,
+                                                                        avatar: message.creatorAvatar,
+                                                                        isShiny: message.creatorAvatarIsShiny
+                                                                    })}
+                                                                >
+                                                                    @{message.creatorName}
+                                                                </span>
+                                                                <span>merged team:</span>
+                                                                <span className="font-mono bg-surface px-1.5 py-0.5 rounded border border-border text-primary font-bold">{message.sharedTeam.name}</span>
+                                                            </div>
+                                                            <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
+                                                        </div>
+                                                        <div className="github-pr-body mt-2.5 flex items-center justify-between gap-4 flex-wrap">
+                                                            <div className="flex gap-[1px] flex-wrap">
+                                                                {Array.from({ length: 6 }).map((_, slotIdx) => {
+                                                                    const pk = message.sharedTeam.pokemons?.[slotIdx];
+                                                                    const spriteUrl = pk ? (pk.customization?.isShiny ? pk.shinySprite : pk.sprite) : null;
+                                                                    return (
+                                                                        <div
+                                                                            key={slotIdx}
+                                                                            className="github-pr-slot border border-border bg-surface-raised rounded-md p-1 h-9 w-9 flex items-center justify-center cursor-pointer"
+                                                                            onMouseEnter={(e) => pk && setHoveredSlot({
+                                                                                messageId: message.id,
+                                                                                slotIndex: slotIdx,
+                                                                                pokemon: pk,
+                                                                                ref: e.currentTarget
+                                                                            })}
+                                                                            onMouseLeave={() => setHoveredSlot(null)}
+                                                                        >
+                                                                            {spriteUrl ? (
+                                                                                <img
+                                                                                    src={spriteUrl}
+                                                                                    alt={pk.name}
+                                                                                    className="h-8 w-8 object-contain"
+                                                                                    onError={(e) => { e.currentTarget.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; }}
+                                                                                />
+                                                                            ) : (
+                                                                                <span className="opacity-25"><PokeballIcon className="w-3.5 h-3.5" /></span>
+                                                                            )}
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleImportTeam(message.sharedTeam)}
+                                                                className="github-pr-merge-btn py-1 px-3 rounded-md text-xs font-bold flex items-center gap-1"
+                                                            >
+                                                                <Download className="w-3.5 h-3.5" />
+                                                                <span>{language === 'pt' ? 'Importar' : 'Import'}</span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    /* Talk bubble styled timeline comment */
+                                                    <div className="github-comment-bubble">
+                                                        <div className="github-comment-header flex items-center justify-between">
+                                                            <div className="flex items-center gap-1.5 text-xs text-muted flex-wrap">
+                                                                <span
+                                                                    className="font-bold text-fg cursor-pointer hover:underline"
+                                                                    onClick={() => setSelectedProfile({
+                                                                        userId: message.createdBy,
+                                                                        name: message.creatorName,
+                                                                        avatar: message.creatorAvatar,
+                                                                        isShiny: message.creatorAvatarIsShiny
+                                                                    })}
+                                                                >
+                                                                    @{message.creatorName}
+                                                                </span>
+                                                                {isMsgAdmin && (
+                                                                    <span className="github-comment-admin-badge text-[8px] uppercase tracking-wider px-1 border border-primary/45 rounded bg-primary-soft text-primary font-bold">
+                                                                        {message.creatorName === 'Professor Oak' ? 'System' : 'Admin'}
+                                                                    </span>
+                                                                )}
+                                                                <span>commented:</span>
+                                                            </div>
+                                                            <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
+                                                        </div>
+                                                        <div className="github-comment-body p-3">
+                                                            <p className="text-xs text-fg leading-relaxed">{message.text}</p>
+                                                        </div>
+                                                    </div>
                                                 )}
                                             </div>
                                         </div>
+                                    );
+                                })
+                            )}
+                            <div ref={messageListEndRef} />
+                        </div>
 
-                                        <div className="forum-message-bubble">
-                                            <div className="forum-message-header">
-                                                <div>
-                                                    <span
-                                                        className="forum-message-author text-xs cursor-pointer hover:underline"
-                                                        onClick={() => setSelectedProfile({
-                                                            userId: message.createdBy,
-                                                            name: message.creatorName,
-                                                            avatar: message.creatorAvatar,
-                                                            isShiny: message.creatorAvatarIsShiny
-                                                        })}
-                                                    >
-                                                        @{message.creatorName}
-                                                    </span>
-                                                    {isMsgAdmin && (
-                                                        <span className="forum-message-author-badge text-[9px]">
-                                                            {message.creatorName === 'Professor Oak' ? 'System' : 'Admin'}
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <span className="forum-message-time text-[9px]">
-                                                    {formatRelativeTime(message.createdAt, language)}
-                                                </span>
-                                            </div>
+                        <form onSubmit={handleSendMessageSubmit} className="forum-editor px-4 py-3 border-t border-border">
+                            {attachedTeam && (
+                                <div className="forum-attached-team-preview py-1.5 px-2.5 text-[11px] gap-1.5 flex items-center mb-2 bg-surface-raised border border-border rounded-lg">
+                                    <ClipIcon className="w-3 h-3 text-success shrink-0" />
+                                    <span className="truncate">{attachedTeam.name}</span>
+                                    <button type="button" onClick={() => setAttachedTeam(null)} className="ml-auto hover:text-danger text-muted">
+                                        <CloseIcon className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            )}
 
-                                            {message.text && (
-                                                <p className="forum-message-text text-xs">{message.text}</p>
+                            <div className="forum-chat-input-wrapper">
+                                <div className="relative shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAttachDropdownOpen(!isAttachDropdownOpen)}
+                                        className="forum-chat-attach-btn"
+                                        title={language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                                    >
+                                        <PlusIcon className="w-4 h-4" />
+                                    </button>
+                                    {isAttachDropdownOpen && (
+                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
+                                            <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
+                                                {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
+                                            </p>
+                                            {activeRoster.length > 0 && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setAttachedTeam({ name: activeRosterName || 'Active Team', pokemons: activeRoster });
+                                                        setIsAttachDropdownOpen(false);
+                                                    }}
+                                                    className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-primary font-bold truncate flex items-center gap-1.5"
+                                                >
+                                                    <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
+                                                    {language === 'pt' ? 'Time Ativo Construtor' : 'Active Team in Builder'}
+                                                </button>
                                             )}
-
-                                            {message.sharedTeam && (
-                                                <div className="forum-team-share-card compact-row mt-1.5">
-                                                    <div className="forum-team-share-left">
-                                                        <h5 className="forum-team-share-title text-[10px] font-bold flex items-center gap-1">
-                                                            <PokeballIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                            <span className="truncate max-w-[80px]">{message.sharedTeam.name}</span>
-                                                        </h5>
-                                                        <div className="forum-team-share-slots p-1 gap-1">
-                                                            {Array.from({ length: 6 }).map((_, slotIdx) => {
-                                                                const pk = message.sharedTeam.pokemons?.[slotIdx];
-                                                                const spriteUrl = pk ? (pk.customization?.isShiny ? pk.shinySprite : pk.sprite) : null;
-
-                                                                return (
-                                                                    <div
-                                                                        key={slotIdx}
-                                                                        className="forum-team-share-slot"
-                                                                        onMouseEnter={(e) => pk && setHoveredSlot({
-                                                                            messageId: message.id,
-                                                                            slotIndex: slotIdx,
-                                                                            pokemon: pk,
-                                                                            ref: e.currentTarget
-                                                                        })}
-                                                                        onMouseLeave={() => setHoveredSlot(null)}
-                                                                    >
-                                                                        {spriteUrl ? (
-                                                                            <img
-                                                                                src={spriteUrl}
-                                                                                alt={pk.name}
-                                                                                className="forum-team-share-sprite"
-                                                                                onError={(e) => { e.currentTarget.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; }}
-                                                                            />
-                                                                        ) : (
-                                                                            <span className="forum-team-share-empty">
-                                                                                <PokeballIcon className="w-3 h-3" />
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleImportTeam(message.sharedTeam)}
-                                                        className="btn btn-primary import-btn-compact py-0.5 px-2 h-6 text-[10px] font-bold flex items-center gap-0.5 shrink-0"
-                                                    >
-                                                        <Download />
-                                                        {language === 'pt' ? 'Importar' : 'Import'}
-                                                    </button>
-                                                </div>
-                                            )}
+                                            {savedTeams.map(team => (
+                                                <button
+                                                    type="button"
+                                                    key={team.id}
+                                                    onClick={() => {
+                                                        setAttachedTeam(team);
+                                                        setIsAttachDropdownOpen(false);
+                                                    }}
+                                                    className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate block"
+                                                >
+                                                    {team.name}
+                                                </button>
+                                            ))}
                                         </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                        <div ref={messageListEndRef} />
-                    </div>
+                                    )}
+                                </div>
 
-                    <form onSubmit={handleSendMessageSubmit} className="forum-editor p-2">
-                        {attachedTeam && (
-                            <div className="forum-attached-team-preview py-1 px-2 text-[11px] gap-1 flex items-center mb-2">
-                                <ClipIcon className="w-3 h-3 text-success shrink-0" />
-                                <span className="truncate">{attachedTeam.name}</span>
-                                <button type="button" onClick={() => setAttachedTeam(null)}>
-                                    <CloseIcon className="w-3 h-3" />
+                                <input
+                                    type="text"
+                                    value={replyText}
+                                    onChange={(e) => setReplyText(e.target.value)}
+                                    placeholder={language === 'pt' ? "Comente na linha do tempo..." : "Post to the timeline..."}
+                                    className="forum-chat-input-field text-xs"
+                                />
+
+                                <button
+                                    type="submit"
+                                    disabled={!replyText.trim() && !attachedTeam}
+                                    className="forum-chat-send-btn bg-primary text-white hover:opacity-95"
+                                    title={language === 'pt' ? 'Enviar' : 'Send'}
+                                >
+                                    <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                    </svg>
                                 </button>
                             </div>
-                        )}
+                        </form>
+                    </div>
+                </div>
 
-                        <div className="forum-chat-input-wrapper">
-                            <div className="relative shrink-0">
+                {/* Right Column: Profile Sidebar Card & Repos Grid */}
+                <aside className="home-sidebar flex flex-col gap-4 md:gap-7">
+
+                    {/* 1. Trainer Profile Sidebar Card (GitHub Style) */}
+                    <section className="home-profile-sidebar-card">
+                        <div className="home-profile-card-header flex items-center gap-3 w-full">
+                            <div className="home-profile-avatar-container shrink-0">
+                                <img
+                                    src={greetingPokemonData ? getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true }) : POKEBALL_PLACEHOLDER_URL}
+                                    alt="Trainer Avatar"
+                                    className="home-profile-avatar"
+                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    style={{ imageRendering: 'pixelated' }}
+                                />
                                 <button
-                                    type="button"
-                                    onClick={() => setIsAttachDropdownOpen(!isAttachDropdownOpen)}
-                                    className="forum-chat-attach-btn"
-                                    title={language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                                    onClick={onOpenPokemonSelector}
+                                    className="home-profile-avatar-edit-btn"
+                                    title={t('profile.changeAvatarBtn')}
                                 >
-                                    <PlusIcon className="w-4 h-4" />
+                                    <Edit className="w-3 h-3" />
                                 </button>
-                                {isAttachDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
-                                        <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
-                                            {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
-                                        </p>
-                                        {activeRoster.length > 0 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setAttachedTeam({ name: activeRosterName || 'Active Team', pokemons: activeRoster });
-                                                    setIsAttachDropdownOpen(false);
-                                                }}
-                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-primary font-bold truncate flex items-center gap-1.5"
-                                            >
-                                                <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
-                                                {language === 'pt' ? 'Time Ativo Construtor' : 'Active Team in Builder'}
-                                            </button>
-                                        )}
-                                        {savedTeams.map(team => (
-                                            <button
-                                                type="button"
-                                                key={team.id}
-                                                onClick={() => {
-                                                    setAttachedTeam(team);
-                                                    setIsAttachDropdownOpen(false);
-                                                }}
-                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate block"
-                                            >
-                                                {team.name}
-                                            </button>
-                                        ))}
+                            </div>
+
+                            <div className="home-profile-names min-w-0 flex-1 text-left">
+                                <h2 className="home-profile-fullname truncate text-fg font-bold leading-tight">{userId ? resolvedDisplayName : 'Guest Trainer'}</h2>
+                                <p className="home-profile-username truncate text-muted text-xs font-mono">@{userId ? resolvedUsername : 'guest'}</p>
+                            </div>
+
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="home-profile-edit-btn shrink-0 flex items-center justify-center p-1.5 border border-border bg-surface-raised rounded hover:bg-surface transition-colors"
+                                title={t('profile.trainerProfile')}
+                                style={{ width: 'auto', height: 'auto', display: 'inline-flex' }}
+                            >
+                                <Edit className="w-3.5 h-3.5 text-muted hover:text-fg" />
+                            </button>
+                        </div>
+
+                        <div className="home-profile-meta-list mt-3 pt-3 border-t border-border w-full">
+                            <div className="home-profile-meta-grid">
+                                <div className="flex items-center gap-1.5 text-xs text-muted">
+                                    <Folder className="w-3.5 h-3.5 shrink-0 opacity-70" />
+                                    <span className="truncate">{stats.totalTeams} {t('home.statTeamsMuted')}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-muted">
+                                    <StarIcon className="w-3.5 h-3.5 shrink-0 opacity-70" isFavorite={true} />
+                                    <span className="truncate">{stats.totalFavoritePokemons} {t('home.statPinnedMuted')}</span>
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-muted">
+                                    <Flame className="w-3.5 h-3.5 shrink-0 text-warning opacity-90" />
+                                    <span className="truncate">{streak?.count || 0} {language === 'pt' ? 'dias' : 'days'}</span>
+                                </div>
+                                {stats.favoriteType && (
+                                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                                        <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0" aria-hidden="true">
+                                            <span className="home-type-dot border border-border" style={{ backgroundColor: typeColors[stats.favoriteType] || '#A8A77A', width: '0.45rem', height: '0.45rem', shrink: 0 }} />
+                                        </div>
+                                        <span className="capitalize truncate">{t(`types.${stats.favoriteType}`)}</span>
                                     </div>
                                 )}
                             </div>
-
-                            <input
-                                type="text"
-                                value={replyText}
-                                onChange={(e) => setReplyText(e.target.value)}
-                                placeholder={language === 'pt' ? "Conversar..." : "Chat..."}
-                                className="forum-chat-input-field"
-                            />
-
-                            <button
-                                type="submit"
-                                disabled={!replyText.trim() && !attachedTeam}
-                                className="forum-chat-send-btn"
-                                title={language === 'pt' ? 'Enviar' : 'Send'}
-                            >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-                                </svg>
-                            </button>
                         </div>
-                    </form>
-                </div>
+                    </section>
 
-                {/* Right Column: Compacted Sidebar */}
-                <aside className="home-sidebar">
-                    {/* 1. Daily Pokémon section (always visible) */}
-                    {/* Daily PokéPuzzle widget */}
+                    {/* 2. Daily Challenge Card */}
                     {isDailyPokePuzzleLoading ? (
-                        <section className="home-sidebar-section py-3 px-1 animate-pulse">
+                        <div className="home-sidebar-section p-4 animate-pulse space-y-2">
                             <div className="home-skeleton home-skeleton--short"></div>
-                            <div className="mt-2 home-skeleton home-skeleton--title"></div>
-                        </section>
+                            <div className="home-skeleton home-skeleton--title"></div>
+                        </div>
                     ) : dailyPokePuzzleTarget ? (
-                        <section
-                            className="home-sidebar-section home-sidebar-section--daily cursor-pointer py-3.5 px-1 flex items-center gap-3 hover:text-primary transition-colors"
+                        <div
+                            className="home-sidebar-section--daily cursor-pointer flex items-center gap-3 p-4"
                             onClick={() => navigate('/pokepuzzle')}
                             role="button"
                             tabIndex={0}
@@ -1010,17 +1099,16 @@ export function HomeView({
                             }}
                             aria-label="Play daily Pokemon guess challenge"
                         >
-                            <div className="home-daily__sprite-container h-14 w-14 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center overflow-hidden">
+                            <div className="home-daily__sprite-container h-12 w-12 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center overflow-hidden">
                                 <img
                                     src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
                                     alt="Mystery daily Pokemon"
-                                    className={`home-daily__sprite h-12 w-12 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'
-                                        }`}
+                                    className={`home-daily__sprite h-10 w-10 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'}`}
                                     onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                 />
                             </div>
 
-                            <div className="min-w-0 flex-1 flex flex-col justify-between h-14">
+                            <div className="min-w-0 flex-1 flex flex-col justify-between h-12">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <p className="home-panel__eyebrow text-[9px] leading-none">{t('pokepuzzle.homeTeaserTitle')}</p>
@@ -1052,95 +1140,97 @@ export function HomeView({
                                     </span>
                                 </div>
                             </div>
-                        </section>
+                        </div>
                     ) : null}
 
-                    {/* 2. Trainer Stats Section */}
-                    <CollapsiblePanel
-                        title={t('home.statsTitle')}
-                        eyebrow={t('home.trainerCard')}
-                        className="home-sidebar-section home-trainer-stats-section py-3 px-1"
-                    >
-                        {stats.totalTeams > 0 ? (
-                            <div className="home-stat-grid gap-1">
-                                <div className="home-stat-card p-1">
-                                    <span className="home-stat-card__label text-[9px]">{t('home.statTeams')}</span>
-                                    <strong className="home-stat-card__value text-xs font-bold">{stats.totalTeams}</strong>
-                                </div>
-                                <div className="home-stat-card p-1">
-                                    <span className="home-stat-card__label text-[9px]">{t('home.statPinned')}</span>
-                                    <strong className="home-stat-card__value text-xs font-bold">{stats.totalFavoritePokemons}</strong>
-                                </div>
-                                <div className="home-stat-card home-stat-card--type p-1">
-                                    <span className="home-stat-card__label text-[9px]">{t('home.statFavType')}</span>
-                                    {stats.favoriteType ? (
-                                        <span className="home-type-pill capitalize text-[9px] py-1 px-1 mt-1 justify-center w-full" style={{ backgroundColor: `${typeColors[stats.favoriteType]}12`, borderColor: `${typeColors[stats.favoriteType]}24`, color: typeColors[stats.favoriteType] }}>
-                                            {stats.favoriteType}
-                                        </span>
-                                    ) : (
-                                        <strong className="home-stat-card__value text-xs font-bold mt-1">--</strong>
-                                    )}
-                                </div>
-                            </div>
-                        ) : (
-                            <TrainerStatsEmptyState
-                                onBrowsePokedex={() => navigate('/pokedex')}
-                            />
-                        )}
-                    </CollapsiblePanel>
+                    {/* 3. Pinned Shortcuts (GitHub Repos Style Grid) */}
+                    <section className="home-shortcuts-sidebar-card p-4">
+                        <h3 className="text-xs uppercase tracking-wider font-bold text-muted mb-3 flex items-center gap-1.5">
+                            <Folder className="w-3.5 h-3.5 text-primary" />
+                            <span>{t('home.shortcuts')}</span>
+                        </h3>
+                        <div className="home-pinned-repos-grid grid grid-cols-2 gap-2">
+                            {quickActions.map((shortcut) => {
+                                const repoMap = {
+                                    '/builder': { name: 'Builder', dotColor: '#7AC74C' }, // grass
+                                    '/pokedex': { name: 'Pokedex', dotColor: '#EE8130' }, // fire
+                                    '/quiz': { name: 'Quiz', dotColor: '#F7D02C' }, // electric
+                                    '/pokepuzzle': { name: 'Pokepuzzle', dotColor: '#6F35FC' } // dragon
+                                };
+                                const repo = repoMap[shortcut.path] || { name: 'widget', dotColor: '#A8A77A' };
 
-                    {/* 3. Shortcuts Section */}
-                    <CollapsiblePanel
-                        title={t('home.shortcuts')}
-                        eyebrow={language === 'pt' ? 'Navegação' : 'Navigation'}
-                        className="home-sidebar-section home-shortcuts-sidebar-section py-3 px-1"
-                    >
-                        <div className="home-shortcuts-container">
-                            {quickActions.map((shortcut) => (
-                                <button
-                                    key={shortcut.path}
-                                    type="button"
-                                    onClick={() => navigate(shortcut.path)}
-                                    className="home-list-button p-1 text-left flex items-center gap-2 w-full border-0 bg-transparent cursor-pointer"
-                                >
-                                    <span className="home-list-button__icon w-4 h-4 flex-shrink-0 flex items-center justify-center text-muted" aria-hidden="true">
-                                        {shortcut.icon}
-                                    </span>
-                                    <span className="home-list-button__title text-xs truncate font-medium text-fg">{shortcut.label}</span>
-                                </button>
-                            ))}
+                                return (
+                                    <button
+                                        key={shortcut.path}
+                                        type="button"
+                                        onClick={() => navigate(shortcut.path)}
+                                        className="github-repo-card text-left"
+                                    >
+                                        <div className="github-repo-title flex items-center gap-1.5 text-primary text-xs font-bold font-mono">
+                                            <span className="github-repo-icon-wrap w-4 h-4 flex items-center justify-center shrink-0 text-primary">
+                                                {shortcut.icon}
+                                            </span>
+                                            <span className="hover:underline">{repo.name}</span>
+                                        </div>
+                                        <p className="github-repo-desc text-[10px] text-muted text-left leading-normal mt-1 mb-2 line-clamp-2">
+                                            {shortcut.description}
+                                        </p>
+                                        <div className="github-repo-meta flex items-center gap-3 text-[9px] text-muted font-semibold font-mono">
+                                            <div className="flex items-center gap-1">
+                                                <span className="github-repo-dot" style={{ backgroundColor: repo.dotColor }} />
+                                                <span>PokeModule</span>
+                                            </div>
+                                            <div className="flex items-center gap-0.5">
+                                                <StarIcon className="w-2.5 h-2.5 text-muted opacity-60" isFavorite={false} />
+                                                <span>1</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                );
+                            })}
                         </div>
-                    </CollapsiblePanel>
+                    </section>
 
-                    {/* 4. Did You Know? Section */}
+                    {/* 4. Today's Tip Block (GitHub styled Alert box) */}
                     {!isTipDismissed && (
-                        <CollapsiblePanel
-                            title={t('home.didYouKnow')}
-                            eyebrow={t('home.todaysNote')}
-                            className="home-sidebar-section py-3 px-1"
-                        >
-                            <p className="text-xs text-muted leading-relaxed">{tipOfTheDay}</p>
-                        </CollapsiblePanel>
+                        <section className="github-tip-banner p-4">
+                            <div className="flex items-center justify-between mb-1">
+                                <span className="text-[10px] uppercase font-bold text-muted tracking-wider flex items-center gap-1 font-mono">
+                                    <FileText className="w-3 h-3 text-primary" />
+                                    {t('home.todaysNote')}
+                                </span>
+                                <button
+                                    onClick={() => {
+                                        setIsTipDismissed(true);
+                                        try { localStorage.setItem('homeTipDismissed', 'true'); } catch (_) { }
+                                    }}
+                                    className="text-muted hover:text-fg text-xs"
+                                >
+                                    <CloseIcon className="w-3 h-3" />
+                                </button>
+                            </div>
+                            <p className="text-xs text-fg leading-relaxed">{tipOfTheDay}</p>
+                        </section>
                     )}
 
-                    {/* 5. Pinned Favorites */}
+                    {/* 5. Pinned Favorites Widget */}
                     {featuredFavorites.length > 0 && (
-                        <section className="home-sidebar-section py-3 px-1">
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="w-full">
-                                    <p className="home-panel__eyebrow text-[9px]">{t('home.pinnedRoster')}</p>
-                                    <h3 className="home-panel__section-title mt-0.5">{t('home.yourFavorites')}</h3>
+                        <section className="home-sidebar-section-favorites p-4">
+                            <div className="flex items-center justify-between gap-3 border-b border-border pb-2 mb-2">
+                                <div className="flex items-center gap-1.5 text-xs font-bold text-fg">
+                                    <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
+                                    <span>{t('home.yourFavorites')}</span>
                                 </div>
                                 <button
                                     type="button"
                                     onClick={() => navigate('/favorites')}
-                                    className="home-button home-button--inline text-[10px] py-0.5 px-1.5"
+                                    className="home-button--inline text-[9px] font-semibold py-0.5 px-1.5 border border-border rounded text-muted hover:text-fg"
                                 >
                                     {t('home.seeAll')}
                                 </button>
                             </div>
 
-                            <div className="home-favorite-grid home-favorite-grid--sidebar mt-2.5">
+                            <div className="home-favorite-grid home-favorite-grid--sidebar mt-2">
                                 {featuredFavorites.map((pokemon) => (
                                     <div
                                         key={pokemon.id}
@@ -1151,7 +1241,7 @@ export function HomeView({
                                                 showDetails(pokemon);
                                             }
                                         }}
-                                        className="home-favorite-card home-favorite-card--compact p-1"
+                                        className="home-favorite-card home-favorite-card--compact cursor-pointer"
                                         role="button"
                                         tabIndex={0}
                                         aria-label={`Open details for ${pokemon.name}`}
@@ -1159,10 +1249,10 @@ export function HomeView({
                                         <img
                                             src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
                                             alt={pokemon.name}
-                                            className="home-favorite-card__sprite h-6 w-6"
+                                            className="home-favorite-card__sprite h-7 w-7"
                                             onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                         />
-                                        <p className="home-favorite-card__name home-favorite-name-desktop capitalize text-[9px]">
+                                        <p className="home-favorite-card__name capitalize text-[9px] mt-1 font-semibold font-mono truncate w-full">
                                             {pokemon.name}
                                         </p>
                                     </div>
@@ -1171,50 +1261,50 @@ export function HomeView({
                         </section>
                     )}
                 </aside>
+            </div>
 
-                {/* Popover for hovering pokemon details in chat */}
-                <AnchoredPopover
-                    isOpen={!!hoveredSlot}
-                    anchorRef={popoverAnchor}
-                    popoverRef={popoverRef}
-                    className="bg-surface border border-border rounded-lg shadow-xl p-3 text-xs w-48 space-y-1.5 z-50 elevation-3"
-                    arrowStyle={{ backgroundColor: 'var(--color-surface)', borderLeft: '1px solid var(--color-border)', borderTop: '1px solid var(--color-border)' }}
-                >
-                    {hoveredSlot && (
-                        <div>
-                            <h4 className="font-bold text-fg capitalize mb-1">{hoveredSlot.pokemon.name}</h4>
-                            {hoveredSlot.pokemon.customization?.ability && (
-                                <p><span className="text-muted">{t('builder.ability')}:</span> <span className="font-semibold text-fg capitalize">{hoveredSlot.pokemon.customization.ability.replace(/-/g, ' ')}</span></p>
-                            )}
-                            {hoveredSlot.pokemon.customization?.item && (
-                                <p><span className="text-muted">{t('builder.item')}:</span> <span className="font-semibold text-fg capitalize">{hoveredSlot.pokemon.customization.item.replace(/-/g, ' ')}</span></p>
-                            )}
-                            {hoveredSlot.pokemon.customization?.nature && (
-                                <p><span className="text-muted">{t('builder.nature')}:</span> <span className="font-semibold text-fg capitalize">{hoveredSlot.pokemon.customization.nature}</span></p>
-                            )}
-                            {hoveredSlot.pokemon.customization?.moves?.length > 0 && (
-                                <div className="mt-1 border-t border-border pt-1">
-                                    <span className="text-muted font-bold block mb-0.5">{t('builder.moves')}:</span>
-                                    <ul className="list-disc pl-3 space-y-0.5">
-                                        {hoveredSlot.pokemon.customization.moves.filter(Boolean).map(m => (
-                                            <li key={m} className="capitalize text-fg">{m.replace(/-/g, ' ')}</li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </AnchoredPopover>
+            {/* Popover for hovering pokemon details in chat */}
+            <AnchoredPopover
+                isOpen={!!hoveredSlot}
+                anchorRef={popoverAnchor}
+                popoverRef={popoverRef}
+                className="bg-surface border border-border rounded-lg shadow-xl p-3 text-xs w-48 space-y-1.5 z-50 elevation-3"
+                arrowStyle={{ backgroundColor: 'var(--color-surface)', borderLeft: '1px solid var(--color-border)', borderTop: '1px solid var(--color-border)' }}
+            >
+                {hoveredSlot && (
+                    <div>
+                        <h4 className="font-bold text-fg capitalize mb-1">{hoveredSlot.pokemon.name}</h4>
+                        {hoveredSlot.pokemon.customization?.ability && (
+                            <p><span className="text-muted">{t('builder.ability')}:</span> <span className="font-semibold text-fg capitalize">{hoveredSlot.pokemon.customization.ability.replace(/-/g, ' ')}</span></p>
+                        )}
+                        {hoveredSlot.pokemon.customization?.item && (
+                            <p><span className="text-muted">{t('builder.item')}:</span> <span className="font-semibold text-fg capitalize">{hoveredSlot.pokemon.customization.item.replace(/-/g, ' ')}</span></p>
+                        )}
+                        {hoveredSlot.pokemon.customization?.nature && (
+                            <p><span className="text-muted">{t('builder.nature')}:</span> <span className="font-semibold text-fg capitalize">{hoveredSlot.pokemon.customization.nature}</span></p>
+                        )}
+                        {hoveredSlot.pokemon.customization?.moves?.length > 0 && (
+                            <div className="mt-1 border-t border-border pt-1">
+                                <span className="text-muted font-bold block mb-0.5">{t('builder.moves')}:</span>
+                                <ul className="list-disc pl-3 space-y-0.5">
+                                    {hoveredSlot.pokemon.customization.moves.filter(Boolean).map(m => (
+                                        <li key={m} className="capitalize text-fg">{m.replace(/-/g, ' ')}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </AnchoredPopover>
 
-                <UserProfileModal
-                    isOpen={!!selectedProfile}
-                    profile={selectedProfile}
-                    onClose={() => setSelectedProfile(null)}
-                    messages={messages}
-                    handleImportTeam={handleImportTeam}
-                    language={language}
-                />
-            </section>
+            <UserProfileModal
+                isOpen={!!selectedProfile}
+                profile={selectedProfile}
+                onClose={() => setSelectedProfile(null)}
+                messages={messages}
+                handleImportTeam={handleImportTeam}
+                language={language}
+            />
         </main>
     );
 }

@@ -12,6 +12,7 @@ import {
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { PokeballIcon, StarsIcon, SparklesIcon, RefreshIcon } from '../icons';
 import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2 } from 'lucide-react';
+import QRCode from 'qrcode';
 import '../../styles/pokepuzzle-view.css';
 
 // Constants
@@ -126,6 +127,9 @@ export default function PokePuzzleView() {
     // Active tip tab: 'description', 'types', 'silhouette'
     const [activeTipTab, setActiveTipTab] = useState('description');
 
+    // Unlocked tips state (for early reveal)
+    const [unlockedTips, setUnlockedTips] = useState({ description: false, types: false, silhouette: false });
+
     // Game data pools
     const [pokemonIndex, setPokemonIndex] = useState([]);
     const [allowedPool, setAllowedPool] = useState([]); // Filtered to standard pokemon (IDs 1-1025)
@@ -190,6 +194,7 @@ export default function PokePuzzleView() {
                     setGuesses(parsed.guesses || []);
                     setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
                     setInputValue('');
+                    setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
                 } catch (e) {
                     console.error("Failed to parse daily state:", e);
                     initNewGame(dailyPokemon);
@@ -209,6 +214,7 @@ export default function PokePuzzleView() {
                         setGuesses(parsed.guesses || []);
                         setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
                         setInputValue('');
+                        setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
                         return;
                     }
                 } catch (e) {
@@ -230,7 +236,8 @@ export default function PokePuzzleView() {
             const stateToSave = {
                 guesses,
                 gameStatus,
-                targetId: targetPokemon.id
+                targetId: targetPokemon.id,
+                unlockedTips
             };
             localStorage.setItem(`ptb:pokepuzzle:daily:${dateString}`, JSON.stringify(stateToSave));
 
@@ -244,11 +251,12 @@ export default function PokePuzzleView() {
             const stateToSave = {
                 guesses,
                 gameStatus,
-                targetId: targetPokemon.id
+                targetId: targetPokemon.id,
+                unlockedTips
             };
             localStorage.setItem('ptb:pokepuzzle:ongoing', JSON.stringify(stateToSave));
         }
-    }, [guesses, gameStatus, targetPokemon, mode]);
+    }, [guesses, gameStatus, targetPokemon, mode, unlockedTips]);
 
     // Auto-select unlocked tip tab
     useEffect(() => {
@@ -309,6 +317,7 @@ export default function PokePuzzleView() {
         setGuesses([]);
         setGameStatus('IN_PROGRESS');
         setInputValue('');
+        setUnlockedTips({ description: false, types: false, silhouette: false });
     };
 
     // Ongoing mode: Pick random Pokémon and start
@@ -372,6 +381,7 @@ export default function PokePuzzleView() {
                 setGuesses(parsed.guesses || []);
                 setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
                 setInputValue('');
+                setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
             } catch (e) {
                 initNewGame(dailyPokemon);
             }
@@ -682,9 +692,9 @@ export default function PokePuzzleView() {
 
 
     // Progressive tip unlock status flags
-    const showPokedexEntry = guesses.length >= 3 || gameStatus !== 'IN_PROGRESS';
-    const showTypes = guesses.length >= 5 || gameStatus !== 'IN_PROGRESS';
-    const showSilhouette = guesses.length >= 7 || gameStatus !== 'IN_PROGRESS';
+    const showPokedexEntry = guesses.length >= 3 || gameStatus !== 'IN_PROGRESS' || unlockedTips.description;
+    const showTypes = guesses.length >= 5 || gameStatus !== 'IN_PROGRESS' || unlockedTips.types;
+    const showSilhouette = guesses.length >= 7 || gameStatus !== 'IN_PROGRESS' || unlockedTips.silhouette;
 
     // Renders custom Type badges
     const typeColors = {
@@ -798,10 +808,12 @@ export default function PokePuzzleView() {
             ctx.fillText(`${modeText} • ${guesses.length}/${MAX_ATTEMPTS} ${language === 'pt' ? 'tentativas' : 'tries'}`, 200, 75);
             
             // Load brand logo (Gengar) instead of target Pokémon artwork to not reveal it
-            const logoUrl = new URL((import.meta.env.BASE_URL || '/') + 'LogoCuteGengarRounded.png', window.location.origin).href;
+            const logoUrl = `${import.meta.env.BASE_URL || '/'}LogoCuteGengarRounded.png`.replace(/\/{2,}/g, '/');
             const loadImg = (url) => new Promise((resolve, reject) => {
                 const img = new Image();
-                img.crossOrigin = 'anonymous';
+                if (!url.startsWith('data:')) {
+                    img.crossOrigin = 'anonymous';
+                }
                 img.onload = () => resolve(img);
                 img.onerror = () => reject(new Error('Failed to load image: ' + url));
                 img.src = url;
@@ -877,12 +889,17 @@ export default function PokePuzzleView() {
             ctx.lineTo(370, footerY);
             ctx.stroke();
             
-            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + import.meta.env.BASE_URL + 'pokepuzzle')}`;
+            const qrTarget = `${window.location.origin}${import.meta.env.BASE_URL || '/'}pokepuzzle`.replace(/([^:]\/)\/+/g, "$1");
             let qrImg;
             try {
-                qrImg = await loadImg(qrUrl);
+                const qrDataUrl = await QRCode.toDataURL(qrTarget, {
+                    margin: 1,
+                    width: 140,
+                    color: { dark: '#000000', light: '#ffffff' }
+                });
+                qrImg = await loadImg(qrDataUrl);
             } catch (err) {
-                console.error("Failed to load QR code for canvas", err);
+                console.error("Failed to generate QR code for canvas", err);
             }
             
             if (qrImg) {
@@ -992,9 +1009,8 @@ export default function PokePuzzleView() {
                             <div className="pokepuzzle-tip-tabs">
                                 <button
                                     type="button"
-                                    onClick={() => showPokedexEntry && setActiveTipTab('description')}
+                                    onClick={() => setActiveTipTab('description')}
                                     className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''} ${!showPokedexEntry ? 'is-locked' : ''}`}
-                                    disabled={!showPokedexEntry}
                                 >
                                     <FileText className="w-3.5 h-3.5" />
                                     <span>{language === 'pt' ? 'Descrição' : 'Description'}</span>
@@ -1002,9 +1018,8 @@ export default function PokePuzzleView() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => showTypes && setActiveTipTab('types')}
+                                    onClick={() => setActiveTipTab('types')}
                                     className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'types' ? 'is-active' : ''} ${!showTypes ? 'is-locked' : ''}`}
-                                    disabled={!showTypes}
                                 >
                                     <Layers className="w-3.5 h-3.5" />
                                     <span>{language === 'pt' ? 'Tipos' : 'Types'}</span>
@@ -1012,9 +1027,8 @@ export default function PokePuzzleView() {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => showSilhouette && setActiveTipTab('silhouette')}
+                                    onClick={() => setActiveTipTab('silhouette')}
                                     className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'silhouette' ? 'is-active' : ''} ${!showSilhouette ? 'is-locked' : ''}`}
-                                    disabled={!showSilhouette}
                                 >
                                     <Image className="w-3.5 h-3.5" />
                                     <span>{language === 'pt' ? 'Silhueta' : 'Silhouette'}</span>
@@ -1032,9 +1046,22 @@ export default function PokePuzzleView() {
                                                 {isLoadingDetails ? '...' : targetDetails.description || 'No description found.'}
                                             </div>
                                         ) : (
-                                            <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
-                                            </span>
+                                            <div className="flex flex-col items-center justify-center gap-1.5 py-1">
+                                                <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
+                                                    <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
+                                                </span>
+                                                <span className="text-[10px] text-muted opacity-75">
+                                                    {language === 'pt' ? 'Desbloqueia na 3ª tentativa' : 'Unlocks at 3 attempts'}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setUnlockedTips(prev => ({ ...prev, description: true }))}
+                                                    className="pokepuzzle-unlock-btn"
+                                                >
+                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                                    <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 )}
@@ -1059,9 +1086,22 @@ export default function PokePuzzleView() {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
-                                            </span>
+                                            <div className="flex flex-col items-center justify-center gap-1.5 py-1">
+                                                <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
+                                                    <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
+                                                </span>
+                                                <span className="text-[10px] text-muted opacity-75">
+                                                    {language === 'pt' ? 'Desbloqueia na 5ª tentativa' : 'Unlocks at 5 attempts'}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setUnlockedTips(prev => ({ ...prev, types: true }))}
+                                                    className="pokepuzzle-unlock-btn"
+                                                >
+                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                                    <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 )}
@@ -1080,9 +1120,22 @@ export default function PokePuzzleView() {
                                                 )}
                                             </div>
                                         ) : (
-                                            <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
-                                            </span>
+                                            <div className="flex flex-col items-center justify-center gap-1.5 py-1">
+                                                <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
+                                                    <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
+                                                </span>
+                                                <span className="text-[10px] text-muted opacity-75">
+                                                    {language === 'pt' ? 'Desbloqueia na 7ª tentativa' : 'Unlocks at 7 attempts'}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setUnlockedTips(prev => ({ ...prev, silhouette: true }))}
+                                                    className="pokepuzzle-unlock-btn"
+                                                >
+                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                                    <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
+                                                </button>
+                                            </div>
                                         )}
                                     </div>
                                 )}
