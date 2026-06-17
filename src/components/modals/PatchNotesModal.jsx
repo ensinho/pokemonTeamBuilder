@@ -89,58 +89,173 @@ const ChatFeedVisual = ({ colors, t }) => {
     );
 };
 
-const MoreInfoVisual = ({ colors, t }) => {
-    const tabs = [
-        t('patchNotes.statsData'),
-        t('patchNotes.locations'),
-        t('patchNotes.moves'),
-        t('patchNotes.sprites')
-    ];
-    const stats = [
-        { name: 'HP', value: 45, max: 255 },
-        { name: 'ATK', value: 49, max: 255 },
-        { name: 'DEF', value: 49, max: 255 },
-    ];
+const PokePuzzleVisual = ({ colors, t, language }) => {
+    const [step, setStep] = React.useState(0); // 0: Silhouette/Empty, 1: Typing, 2: Flipping, 3: Revealed/Solved
+    const [typedLetters, setTypedLetters] = React.useState([]);
+    const targetName = 'GENGAR';
+    const firstGuessName = 'PIKACH'; // 6 letters
+
+    React.useEffect(() => {
+        let timer;
+        if (step === 0) {
+            setTypedLetters([]);
+            timer = setTimeout(() => {
+                setStep(1);
+            }, 1200);
+        } else if (step === 1) {
+            let charIndex = 0;
+            const interval = setInterval(() => {
+                if (charIndex <= targetName.length) {
+                    setTypedLetters(targetName.slice(0, charIndex).split(''));
+                    charIndex++;
+                } else {
+                    clearInterval(interval);
+                    setStep(2);
+                }
+            }, 180);
+            return () => clearInterval(interval);
+        } else if (step === 2) {
+            timer = setTimeout(() => {
+                setStep(3);
+            }, 1000);
+        } else if (step === 3) {
+            timer = setTimeout(() => {
+                setStep(0);
+            }, 3000);
+        }
+        return () => clearTimeout(timer);
+    }, [step]);
 
     return (
-        <div className="rounded-md bg-bg p-2" aria-hidden="true">
-            <div className="flex border-b mb-2" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                {tabs.map((tab, i) => (
-                    <span
-                        key={tab}
-                        className="text-[7px] font-bold px-2 pb-1.5 whitespace-nowrap"
-                        style={i === 0 ? {
-                            borderBottom: `2px solid ${colors.primary}`,
-                            color: colors.primary,
-                            marginBottom: '-1px',
-                        } : {
-                            color: 'rgba(255,255,255,0.3)',
+        <div className="rounded-md bg-bg p-3 flex flex-col items-center justify-center gap-3 relative overflow-hidden h-[150px]" aria-hidden="true">
+            <style>{`
+                @keyframes mini-tile-flip {
+                    0% { transform: rotateY(0deg); }
+                    45% { transform: rotateY(90deg); }
+                    55% { transform: rotateY(90deg); }
+                    100% { transform: rotateY(0deg); }
+                }
+                .mini-tile-flip {
+                    animation: mini-tile-flip 0.4s ease forwards;
+                }
+            `}</style>
+            
+            {/* Background decorative glow */}
+            <div className="absolute inset-0 bg-gradient-to-b from-violet-900/10 to-transparent pointer-events-none" />
+            
+            <div className="flex w-full items-center justify-around gap-2 z-10">
+                {/* Pokémon Silhouette / Reveal Frame */}
+                <div className="relative w-16 h-16 rounded-xl border border-border bg-surface/50 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+                    <img
+                        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png"
+                        alt="Gengar"
+                        className="w-14 h-14 object-contain transition-all duration-700"
+                        style={{
+                            filter: step === 3 
+                                ? 'none' 
+                                : 'brightness(0) drop-shadow(0 0 4px rgba(124, 58, 237, 0.6))',
+                            transform: step === 3 ? 'scale(1) rotate(0deg)' : 'scale(0.85) rotate(2deg)'
                         }}
-                    >
-                        {tab}
-                    </span>
-                ))}
-            </div>
-            <div className="space-y-1 px-1">
-                {stats.map((stat) => (
-                    <div key={stat.name} className="flex items-center gap-2">
-                        <span className="text-[7px] text-muted w-6 shrink-0">{stat.name}</span>
-                        <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }}>
-                            <div
-                                className="h-full rounded-full"
-                                style={{ width: `${(stat.value / stat.max) * 100}%`, backgroundColor: colors.primary }}
-                            />
+                    />
+                    {step !== 3 && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 text-white font-extrabold text-lg select-none">
+                            ?
                         </div>
-                        <span className="text-[8px] font-bold text-fg w-5 text-right">{stat.value}</span>
+                    )}
+                </div>
+
+                {/* Guess Grid */}
+                <div className="flex flex-col gap-1.5 flex-1 max-w-[180px]">
+                    {/* Row 1: Previous Guess "PIKACH" (P:absent, I:absent, K:absent, A:present, C:absent, H:absent) */}
+                    <div className="grid grid-cols-6 gap-1 w-full">
+                        {firstGuessName.split('').map((char, idx) => {
+                            const isPresent = char === 'A';
+                            return (
+                                <div 
+                                    key={idx} 
+                                    className="text-[10px] font-bold text-white flex items-center justify-center rounded w-full aspect-square border"
+                                    style={{
+                                        backgroundColor: isPresent ? '#f59e0b' : '#3b3954',
+                                        borderColor: isPresent ? '#f59e0b' : '#4a4868'
+                                    }}
+                                >
+                                    {char}
+                                </div>
+                            );
+                        })}
                     </div>
-                ))}
+
+                    {/* Row 2: Current Typing / Revealed Guess */}
+                    <div className="grid grid-cols-6 gap-1 w-full">
+                        {Array.from({ length: 6 }).map((_, idx) => {
+                            const letter = typedLetters[idx] || '';
+                            const isFilled = letter !== '';
+                            
+                            let bgColor = 'rgba(255, 255, 255, 0.03)';
+                            let borderColor = 'rgba(255, 255, 255, 0.1)';
+                            let textColor = 'var(--color-fg)';
+                            let animationStyle = '';
+
+                            if (isFilled && step === 1) {
+                                borderColor = 'var(--color-muted)';
+                            } else if (step >= 2) {
+                                bgColor = '#10b981';
+                                borderColor = '#10b981';
+                                textColor = '#ffffff';
+                                animationStyle = 'mini-tile-flip 0.4s ease forwards';
+                            }
+
+                            return (
+                                <div 
+                                    key={idx} 
+                                    className="text-[10px] font-bold flex items-center justify-center rounded w-full aspect-square border"
+                                    style={{
+                                        backgroundColor: bgColor,
+                                        borderColor: borderColor,
+                                        color: textColor,
+                                        animation: animationStyle,
+                                        animationDelay: step === 2 ? `${idx * 100}ms` : '0ms'
+                                    }}
+                                >
+                                    {letter}
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
+            {/* Subtitle / Action State Banner */}
+            <div className="text-[10px] font-bold z-10 flex items-center gap-1.5 h-4">
+                {step === 0 && (
+                    <span className="text-muted">
+                        {t('pokepuzzle.homeTeaserSubtitle') || "Who's That Pokémon?"}
+                    </span>
+                )}
+                {step === 1 && (
+                    <span className="text-primary animate-pulse">
+                        {language === 'pt' ? 'Digitando palpite...' : 'Typing guess...'}
+                    </span>
+                )}
+                {step === 2 && (
+                    <span className="text-warning">
+                        {language === 'pt' ? 'Verificando resposta...' : 'Checking answer...'}
+                    </span>
+                )}
+                {step === 3 && (
+                    <span className="text-success animate-bounce flex items-center gap-1">
+                        🎉 {language === 'pt' 
+                            ? 'Acertou! Gengar em 2 tentativas!' 
+                            : 'Correct! Gengar in 2 tries!'}
+                    </span>
+                )}
             </div>
         </div>
     );
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     const navigate = useNavigate();
     const goTo = useCallback((path) => {
@@ -149,6 +264,15 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
     }, [navigate, onClose]);
 
     const notes = [
+        {
+            key: 'pokepuzzle',
+            Icon: PokeballIcon,
+            title: t('patchNotes.pokepuzzleTitle'),
+            description: t('patchNotes.pokepuzzleDesc'),
+            cta: t('patchNotes.pokepuzzleCta'),
+            path: '/pokepuzzle',
+            Visual: PokePuzzleVisual,
+        },
         {
             key: 'chat-feed',
             Icon: MessageIcon,
@@ -213,7 +337,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                                 aria-label={`${title} – ${cta}`}
                             >
                                 <div className="mb-3 overflow-hidden rounded-lg bg-surface">
-                                    <NoteVisual colors={colors} t={t} />
+                                    <NoteVisual colors={colors} t={t} language={language} />
                                 </div>
                                 <div className="flex items-center gap-2 mb-1">
                                     <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
