@@ -5,6 +5,7 @@ import { appId } from '../../constants/firebase';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { GENERATION_RANGES, LEGENDARY_IDS, NATURES_LIST } from '../../constants/pokemon';
 import { typeColors } from '../../constants/types';
+import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
     getEvolutionChainData,
@@ -909,9 +910,9 @@ export function RandomGeneratorView({ colors, generations, db, userId }) {
                             }}
                         >
                             <img
-                                src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                src={getPokemonDisplaySprite(pokemon) || POKEBALL_PLACEHOLDER_URL}
                                 alt={pokemon.name}
-                                className="w-16 h-16 sm:w-20 sm:h-20 object-contain"
+                                className="w-16 h-16 sm:w-20 sm:h-20 object-contain image-pixelated"
                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                             />
                         </div>

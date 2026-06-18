@@ -22,6 +22,16 @@ import '../../styles/pokepuzzle-view.css';
 const MAX_ATTEMPTS = 8;
 const ALLOWED_MAX_ID = 1025; // National Dex standard pool
 
+// localStorage is best-effort here — Firestore is the real save for logged-in users.
+// A full quota (QuotaExceededError) must never crash the game.
+const safeLocalSet = (key, value) => {
+    try {
+        localStorage.setItem(key, value);
+    } catch (e) {
+        console.warn(`PokePuzzle: could not persist "${key}" to localStorage`, e);
+    }
+};
+
 // Keyboard rows QWERTY
 const KEYBOARD_ROWS = [
     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -340,10 +350,10 @@ export default function PokePuzzleView() {
             const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 
             // Save to LocalStorage
-            localStorage.setItem(`ptb:pokepuzzle:daily:${dateString}`, JSON.stringify(stateToSave));
+            safeLocalSet(`ptb:pokepuzzle:daily:${dateString}`, JSON.stringify(stateToSave));
 
             // Also broadcast state back to HomeView so it stays in sync
-            localStorage.setItem(`ptb:pokepuzzle:daily:summary`, JSON.stringify({
+            safeLocalSet(`ptb:pokepuzzle:daily:summary`, JSON.stringify({
                 solved: gameStatus === 'WON',
                 attempts: guesses.length,
                 date: dateString
@@ -356,7 +366,7 @@ export default function PokePuzzleView() {
             }
         } else {
             // Save to LocalStorage
-            localStorage.setItem('ptb:pokepuzzle:ongoing', JSON.stringify(stateToSave));
+            safeLocalSet('ptb:pokepuzzle:ongoing', JSON.stringify(stateToSave));
 
             // Sync with Firestore if logged in
             if (db && userId) {

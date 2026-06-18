@@ -24,7 +24,10 @@ const purgeStaleCacheVersions = () => {
             const stale = [];
             for (let i = 0; i < storage.length; i += 1) {
                 const key = storage.key(i);
-                if (key && key.startsWith('ptb:pokemon-data:') && !key.startsWith(CACHE_PREFIX)) {
+                if (!key || !key.startsWith('ptb:pokemon-data:')) continue;
+                // Drop entries from previous CACHE_VERSIONs, and any previously-persisted
+                // large index (now memory-only) that may still be hogging quota.
+                if (!key.startsWith(CACHE_PREFIX) || key.endsWith(':static:pokemon-index.json')) {
                     stale.push(key);
                 }
             }
@@ -45,6 +48,7 @@ const getStaticDataUrl = (path) => `${getBasePath()}data/${String(path).replace(
 
 const getStorage = (storage) => {
     if (typeof window === 'undefined') return null;
+    if (storage === 'none') return null; // memory-only: never touch Web Storage
     try {
         return storage === 'local' ? window.localStorage : window.sessionStorage;
     } catch (_) {
@@ -163,6 +167,16 @@ const fetchStaticJson = (path) => fetchJsonCached(getStaticDataUrl(path), {
     allow404: true,
 });
 
+// Large static files (e.g. the 1025-entry pokemon-index, ~200KB) must NOT go into
+// localStorage — they'd eat the ~5MB quota and break other features' setItem calls
+// (this caused a PokePuzzle QuotaExceededError). They're already cached by the
+// browser/PWA service worker over HTTP, so the in-memory cache is enough per session.
+const fetchLargeStaticJson = (path) => fetchJsonCached(getStaticDataUrl(path), {
+    cacheKey: `static:${path}`,
+    storage: 'none',
+    allow404: true,
+});
+
 const stripDiacritics = (value = '') => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 export const normalizePokemonQuizInput = (value = '') => stripDiacritics(String(value)
@@ -252,7 +266,7 @@ export const loadPokemonReferenceData = async () => {
 };
 
 export const loadPokemonIndex = async () => {
-    const staticPokemonIndex = await fetchStaticJson('pokemon-index.json');
+    const staticPokemonIndex = await fetchLargeStaticJson('pokemon-index.json');
     return normalizeResourceList(staticPokemonIndex, 'pokemons')
         .map((entry) => {
             const id = Number.parseInt(entry.id, 10);

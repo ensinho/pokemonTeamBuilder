@@ -1015,7 +1015,7 @@ export function HomeView({
                                             aria-label={`Open details for ${pokemon.name}`}
                                         >
                                             <img
-                                                src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL}
+                                                src={getPokemonDisplaySprite(pokemon) || POKEBALL_PLACEHOLDER_URL}
                                                 alt={pokemon.name}
                                                 className="home-favorite-card__sprite h-7 w-7"
                                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}

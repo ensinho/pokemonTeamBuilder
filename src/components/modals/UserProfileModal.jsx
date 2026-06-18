@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { PokeballIcon, SwordsIcon, CloseIcon } from '../icons';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { Download } from 'lucide-react';
 
 export function UserProfileModal({ isOpen, profile, onClose, messages = [], handleImportTeam, language = 'en' }) {
@@ -101,7 +102,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                                         <div className="flex gap-1.5">
                                             {Array.from({ length: 6 }).map((_, slotIdx) => {
                                                 const pk = team.pokemons?.[slotIdx];
-                                                const spriteUrl = pk ? (pk.customization?.isShiny ? pk.shinySprite : pk.sprite) : null;
+                                                const spriteUrl = pk ? getTeamPokemonDisplaySprite(pk) : null;
                                                 return (
                                                     <div key={slotIdx} className="w-8 h-8 rounded border border-border bg-surface flex items-center justify-center overflow-hidden shrink-0">
                                                         {spriteUrl ? (

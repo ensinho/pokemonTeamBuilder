@@ -23,6 +23,17 @@ export const getPokemonArtworkSpriteUrl = (pokemonId, { shiny = false } = {}) =>
 
 export const getPokemonSavedShinyState = (pokemon) => Boolean(pokemon?.customization?.isShiny || pokemon?.isShiny);
 
+/**
+ * Resolve the sprite to DISPLAY for a pokémon.
+ *
+ * The app's default look is the pixel-art game sprite (`front_default`), derived
+ * from the id — NOT the stored HD `official-artwork` photo. We derive from id at
+ * display time so the style is consistent everywhere regardless of what sprite
+ * URL happens to be stored on the object (index entry, Firestore doc, saved team).
+ *
+ * Pass `preferArtwork: true` to opt back into the HD artwork for a specific spot
+ * (e.g. a hero image or silhouette).
+ */
 export const getPokemonDisplaySprite = (pokemon, {
     shiny = false,
     animated = false,
@@ -30,22 +41,17 @@ export const getPokemonDisplaySprite = (pokemon, {
 } = {}) => {
     if (!pokemon) return POKEBALL_PLACEHOLDER_URL;
 
-    const fallbackSprite = preferArtwork
-        ? getPokemonArtworkSpriteUrl(pokemon.id, { shiny })
-        : getPokemonFrontSpriteUrl(pokemon.id, { shiny });
+    if (preferArtwork) {
+        return getPokemonArtworkSpriteUrl(pokemon.id, { shiny });
+    }
 
+    // Default everywhere: pixel-art game sprite derived from the id.
+    // `animated` still prefers the gen-5 animated sprite when one was stored.
     if (animated) {
-        if (shiny) {
-            return pokemon.animatedShinySprite || pokemon.shinySprite || fallbackSprite;
-        }
-        return pokemon.animatedSprite || pokemon.sprite || fallbackSprite;
+        const stored = shiny ? pokemon.animatedShinySprite : pokemon.animatedSprite;
+        if (stored) return stored;
     }
-
-    if (shiny) {
-        return pokemon.shinySprite || pokemon.animatedShinySprite || fallbackSprite;
-    }
-
-    return pokemon.sprite || pokemon.animatedSprite || fallbackSprite;
+    return getPokemonFrontSpriteUrl(pokemon.id, { shiny });
 };
 
 export const getTeamPokemonDisplaySprite = (pokemon, options = {}) => getPokemonDisplaySprite(pokemon, {

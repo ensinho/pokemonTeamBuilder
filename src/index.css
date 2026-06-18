@@ -277,7 +277,9 @@ input[type='checkbox']:checked + div + div {
 }
 .sprite-img {
     object-fit: contain;
-    image-rendering: auto;
+    /* Sprites are pixel-art game sprites — keep crisp edges when scaled up
+       instead of the browser's default smoothing. */
+    image-rendering: pixelated;
 }
 
 /* ============================================================

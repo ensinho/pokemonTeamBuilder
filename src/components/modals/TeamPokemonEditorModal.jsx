@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { typeColors } from '../../constants/types';
 import { getMoveDetails } from '../../services/pokemonDataCache';
+import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
@@ -121,7 +122,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0">
                             <img
-                                src={customization.isShiny ? (pokemon.animatedShinySprite || pokemon.shinySprite) : (pokemon.animatedSprite || pokemon.sprite)}
+                                src={getPokemonDisplaySprite(pokemon, { shiny: customization.isShiny, animated: true })}
                                 alt={pokemon.name}
                                 className="h-12 w-12 sm:h-14 sm:w-14 image-pixelated flex-shrink-0"
                             />

@@ -5,7 +5,7 @@ import { EmptyState } from '../EmptyState';
 import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
 import { AnchoredPopover } from '../AnchoredPopover';
-import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
     ClearIcon,
@@ -83,7 +83,7 @@ const MobilePokemonPickerCard = ({
 
             <div className="team-builder-mobile-card__media">
                 <div className="mx-auto aspect-square w-full max-w-[84px]">
-                    <Sprite src={pokemon.sprite} alt={pokemon.name} className="h-full w-full" />
+                    <Sprite src={getPokemonDisplaySprite(pokemon)} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>
 

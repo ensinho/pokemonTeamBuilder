@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { UserProfileModal } from '../modals/UserProfileModal';
 import {
@@ -547,7 +548,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         <div className="forum-team-share-slots">
                                                             {Array.from({ length: 6 }).map((_, slotIdx) => {
                                                                 const pk = message.sharedTeam.pokemons?.[slotIdx];
-                                                                const spriteUrl = pk ? (pk.customization?.isShiny ? pk.shinySprite : pk.sprite) : null;
+                                                                const spriteUrl = pk ? getTeamPokemonDisplaySprite(pk) : null;
 
                                                                 return (
                                                                     <div
@@ -694,7 +695,7 @@ export function FeedView({ colors, showToast, navigate }) {
                         <div className="forum-right-team-slots">
                             {Array.from({ length: 6 }).map((_, idx) => {
                                 const pk = featuredArsenalTeam.pokemons?.[idx];
-                                const spriteUrl = pk ? (pk.customization?.isShiny ? pk.shinySprite : pk.sprite) : null;
+                                const spriteUrl = pk ? getTeamPokemonDisplaySprite(pk) : null;
                                 return (
                                     <div key={idx} className="forum-right-team-slot">
                                         {spriteUrl ? (

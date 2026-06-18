@@ -37,6 +37,7 @@ import { StarIcon } from '../icons';
 import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
+import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 
 import {
     getPokemonEncountersData,
@@ -264,7 +265,7 @@ const MobilePokedexPokemonCard = ({
 
             <div className="team-builder-mobile-card__media">
                 <div className="mx-auto aspect-square w-full max-w-[84px]">
-                    <Sprite src={pokemon.sprite} alt={pokemon.name} className="h-full w-full" />
+                    <Sprite src={getPokemonDisplaySprite(pokemon)} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>
 

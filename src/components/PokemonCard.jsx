@@ -1,5 +1,6 @@
 import React from 'react';
 import { typeIcons } from '../constants/types';
+import { getPokemonDisplaySprite } from '../utils/pokemonSprites';
 import { SkeletonCard } from './SkeletonCard';
 import { Sprite } from './Sprite';
 import { StarIcon, PlusIcon } from './icons';
@@ -85,7 +86,7 @@ export const PokemonCard = React.memo(function PokemonCard({
             </div>
 
             <div className="pokemon-card__media">
-                <Sprite src={details.sprite} alt={details.name} className="w-full h-full" />
+                <Sprite src={getPokemonDisplaySprite(details)} alt={details.name} className="w-full h-full" />
             </div>
             <p className="pokemon-card__name">{details.name}</p>
 
