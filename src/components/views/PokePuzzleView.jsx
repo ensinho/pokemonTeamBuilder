@@ -142,6 +142,7 @@ export default function PokePuzzleView() {
 
     // Mode: 'daily' or 'ongoing'
     const [mode, setMode] = useState('daily');
+    const loadedModeRef = useRef('daily');
 
     // Active tip tab: 'description', 'types', 'silhouette'
     const [activeTipTab, setActiveTipTab] = useState('description');
@@ -206,6 +207,15 @@ export default function PokePuzzleView() {
     useEffect(() => {
         if (allowedPool.length === 0) return;
 
+        let active = true;
+
+        // Reset state immediately to prevent visual flash of previous mode's data
+        setTargetPokemon(null);
+        setTargetDetails({ types: [], description: '', image: '', id: 0 });
+        setGuesses([]);
+        setGameStatus('IN_PROGRESS');
+        setInputValue('');
+
         const loadGame = async () => {
             if (mode === 'daily') {
                 const now = new Date();
@@ -242,6 +252,8 @@ export default function PokePuzzleView() {
                     }
                 }
 
+                if (!active) return;
+
                 if (state) {
                     setTargetPokemon(dailyPokemon);
                     setGuesses(state.guesses || []);
@@ -249,6 +261,7 @@ export default function PokePuzzleView() {
                     setInputValue(' '.repeat(targetLen));
                     setSelectedCharIdx(0);
                     setUnlockedTips(state.unlockedTips || { description: false, types: false, silhouette: false });
+                    loadedModeRef.current = 'daily';
                 } else {
                     initNewGame(dailyPokemon);
                 }
@@ -280,6 +293,8 @@ export default function PokePuzzleView() {
                     }
                 }
 
+                if (!active) return;
+
                 if (state) {
                     const foundTarget = allowedPool.find(p => p.id === state.targetId);
                     if (foundTarget) {
@@ -290,6 +305,7 @@ export default function PokePuzzleView() {
                         setInputValue(' '.repeat(targetLen));
                         setSelectedCharIdx(0);
                         setUnlockedTips(state.unlockedTips || { description: false, types: false, silhouette: false });
+                        loadedModeRef.current = 'ongoing';
                         return;
                     }
                 }
@@ -300,11 +316,16 @@ export default function PokePuzzleView() {
         };
 
         loadGame();
+
+        return () => {
+            active = false;
+        };
     }, [mode, allowedPool, userId]);
 
     // Save state changes to LocalStorage & Firestore
     useEffect(() => {
         if (!targetPokemon) return;
+        if (loadedModeRef.current !== mode) return;
 
         const stateToSave = {
             guesses,
@@ -407,6 +428,7 @@ export default function PokePuzzleView() {
         setInputValue(' '.repeat(norm.length));
         setSelectedCharIdx(0);
         setUnlockedTips({ description: false, types: false, silhouette: false });
+        loadedModeRef.current = mode;
     };
 
     // Ongoing mode: Pick random Pokémon and start
@@ -1433,115 +1455,172 @@ export default function PokePuzzleView() {
                     {/* Sidebar congrats panel */}
                     {gameStatus !== 'IN_PROGRESS' && (
                         <div className="pokepuzzle-game-sidebar">
-                            <section
-                                className="pokepuzzle-result-card"
-                                style={{
-                                    '--type-color': typeColor,
-                                    '--type-glow-color': typeGlowColor
-                                }}
-                            >
-                                <div className="pokepuzzle-result-badge-wrapper">
-                                    {gameStatus === 'WON' ? (
-                                        <div className="pokepuzzle-badge-success-glow">
-                                            <Award className="w-6 h-6 text-success" />
-                                        </div>
-                                    ) : (
-                                        <div className="pokepuzzle-badge-danger-glow">
-                                            <Frown className="w-6 h-6 text-danger" />
-                                        </div>
-                                    )}
-                                </div>
-
-                                <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
-                                    {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
-                                </h2>
-
-                                <div className="pokepuzzle-result-sprite-box">
-                                    <img
-                                        src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
-                                        alt={targetPokemon.name}
-                                        className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
-                                        onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
-                                    />
-                                </div>
-
-                                <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
-
-                                <div className="pokepuzzle-result-types mt-0.5">
-                                    {isLoadingDetails ? '...' : targetDetails.types.map(type => (
-                                        <span
-                                            key={type}
-                                            className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
-                                            style={{
-                                                backgroundColor: `${typeColors[type]}18`,
-                                                borderColor: `${typeColors[type]}35`,
-                                                color: typeColors[type],
-                                            }}
-                                        >
-                                            {type}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                <p className="pokepuzzle-result-text mt-1">
-                                    {gameStatus === 'WON'
-                                        ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
-                                        : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
-                                    }
-                                </p>
-
-                                {/* Mini attempt preview grid */}
-                                <div className="pokepuzzle-share-preview mt-2 w-full">
-                                    <span className="text-[10px] text-muted uppercase font-bold tracking-wider mb-2 block">
-                                        {language === 'pt' ? 'Resumo das Tentativas' : 'Attempts Summary'}
-                                    </span>
-                                    <div className="flex flex-col gap-1 items-center justify-center">
-                                        {guesses.map((guess, idx) => {
-                                            const norm = normalizeNameForGame(guess);
-                                            const letterStatuses = checkLetters(norm, targetNormalized);
-                                            return (
-                                                <div key={idx} className="pokepuzzle-share-preview-row">
-                                                    {letterStatuses.map((status, sIdx) => (
-                                                        <span
-                                                            key={sIdx}
-                                                            className={`pokepuzzle-share-preview-tile is-${status}`}
-                                                        />
-                                                    ))}
-                                                </div>
-                                            );
-                                        })}
+                            {mode === 'daily' ? (
+                                <section
+                                    className="pokepuzzle-result-card"
+                                    style={{
+                                        '--type-color': typeColor,
+                                        '--type-glow-color': typeGlowColor
+                                    }}
+                                >
+                                    <div className="pokepuzzle-result-badge-wrapper">
+                                        {gameStatus === 'WON' ? (
+                                            <div className="pokepuzzle-badge-success-glow">
+                                                <Award className="w-6 h-6 text-success" />
+                                            </div>
+                                        ) : (
+                                            <div className="pokepuzzle-badge-danger-glow">
+                                                <Frown className="w-6 h-6 text-danger" />
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
 
-                                {/* Share Actions Row */}
-                                <div className="pokepuzzle-share-actions-container w-full mt-2 flex flex-col gap-2">
-                                    <button
-                                        onClick={handleShare}
-                                        className="btn btn-accent px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
-                                    >
-                                        <Share2 className="w-3.5 h-3.5" />
-                                        <span>{language === 'pt' ? 'Copiar Texto' : 'Copy Text'}</span>
-                                    </button>
-                                    <button
-                                        onClick={handleShareImage}
-                                        className="btn btn-secondary px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
-                                    >
-                                        <Image className="w-3.5 h-3.5" />
-                                        <span>{language === 'pt' ? 'Compartilhar Imagem' : 'Share Image'}</span>
-                                    </button>
-                                </div>
+                                    <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
+                                        {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
+                                    </h2>
 
-                                {/* Actions by Mode */}
-                                {mode === 'ongoing' && (
+                                    <div className="pokepuzzle-result-sprite-box">
+                                        <img
+                                            src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
+                                            alt={targetPokemon.name}
+                                            className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
+                                            onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
+                                        />
+                                    </div>
+
+                                    <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
+
+                                    <div className="pokepuzzle-result-types mt-0.5">
+                                        {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                            <span
+                                                key={type}
+                                                className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
+                                                style={{
+                                                    backgroundColor: `${typeColors[type]}18`,
+                                                    borderColor: `${typeColors[type]}35`,
+                                                    color: typeColors[type],
+                                                }}
+                                            >
+                                                {type}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <p className="pokepuzzle-result-text mt-1">
+                                        {gameStatus === 'WON'
+                                            ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
+                                            : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
+                                        }
+                                    </p>
+
+                                    {/* Mini attempt preview grid */}
+                                    <div className="pokepuzzle-share-preview mt-2 w-full">
+                                        <span className="text-[10px] text-muted uppercase font-bold tracking-wider mb-2 block">
+                                            {language === 'pt' ? 'Resumo das Tentativas' : 'Attempts Summary'}
+                                        </span>
+                                        <div className="flex flex-col gap-1 items-center justify-center">
+                                            {guesses.map((guess, idx) => {
+                                                const norm = normalizeNameForGame(guess);
+                                                const letterStatuses = checkLetters(norm, targetNormalized);
+                                                return (
+                                                    <div key={idx} className="pokepuzzle-share-preview-row">
+                                                        {letterStatuses.map((status, sIdx) => (
+                                                            <span
+                                                                key={sIdx}
+                                                                className={`pokepuzzle-share-preview-tile is-${status}`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Share Actions Row */}
+                                    <div className="pokepuzzle-share-actions-container w-full mt-2 flex flex-col gap-2">
+                                        <button
+                                            onClick={handleShare}
+                                            className="btn btn-accent px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
+                                        >
+                                            <Share2 className="w-3.5 h-3.5" />
+                                            <span>{language === 'pt' ? 'Copiar Texto' : 'Copy Text'}</span>
+                                        </button>
+                                        <button
+                                            onClick={handleShareImage}
+                                            className="btn btn-secondary px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
+                                        >
+                                            <Image className="w-3.5 h-3.5" />
+                                            <span>{language === 'pt' ? 'Compartilhar Imagem' : 'Share Image'}</span>
+                                        </button>
+                                    </div>
+                                </section>
+                            ) : (
+                                <section
+                                    className="pokepuzzle-result-card"
+                                    style={{
+                                        '--type-color': typeColor,
+                                        '--type-glow-color': typeGlowColor
+                                    }}
+                                >
+                                    <div className="pokepuzzle-result-badge-wrapper">
+                                        {gameStatus === 'WON' ? (
+                                            <div className="pokepuzzle-badge-success-glow">
+                                                <Award className="w-6 h-6 text-success" />
+                                            </div>
+                                        ) : (
+                                            <div className="pokepuzzle-badge-danger-glow">
+                                                <Frown className="w-6 h-6 text-danger" />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
+                                        {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
+                                    </h2>
+
+                                    <div className="pokepuzzle-result-sprite-box">
+                                        <img
+                                            src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
+                                            alt={targetPokemon.name}
+                                            className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
+                                            onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
+                                        />
+                                    </div>
+
+                                    <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
+
+                                    <div className="pokepuzzle-result-types mt-0.5">
+                                        {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                            <span
+                                                key={type}
+                                                className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
+                                                style={{
+                                                    backgroundColor: `${typeColors[type]}18`,
+                                                    borderColor: `${typeColors[type]}35`,
+                                                    color: typeColors[type],
+                                                }}
+                                            >
+                                                {type}
+                                            </span>
+                                        ))}
+                                    </div>
+
+                                    <p className="pokepuzzle-result-text mt-1">
+                                        {gameStatus === 'WON'
+                                            ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
+                                            : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
+                                        }
+                                    </p>
+
                                     <button
                                         onClick={startRandomOngoingGame}
-                                        className="btn btn-primary px-6 mt-1.5 flex items-center justify-center gap-2 w-full text-xs"
+                                        className="btn btn-primary px-8 py-3 flex items-center justify-center gap-2 w-full font-bold text-sm shadow-md mt-4"
                                     >
-                                        <RefreshIcon className="w-3.5 h-3.5" />
+                                        <RefreshIcon className="w-4 h-4" />
                                         <span>{t('pokepuzzle.playAgain')}</span>
                                     </button>
-                                )}
-                            </section>
+                                </section>
+                            )}
                         </div>
                     )}
                 </div>
