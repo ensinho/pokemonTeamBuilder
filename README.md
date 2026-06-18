@@ -1,8 +1,23 @@
+<div align="center">
+
 # ⚡ pokemonbuilder.app
 
-so i got tired of using 5 different outdated wikis just to plan a single team... so i built this.
+**a fast, clean Pokémon squad planner that does all the heavy type-math for you.**
 
-it's a fast, clean squad planner that does all the heavy math for you. no clutter, no annoying ads.
+[![Live](https://img.shields.io/badge/▶_try_it_live-pokemonbuilder.app-7C6AE8?style=for-the-badge&labelColor=4C3FA0)](https://pokemonbuilder.app)
+&nbsp;
+[![PWA](https://img.shields.io/badge/installable-PWA-7C6AE8?style=for-the-badge&logo=pwa&logoColor=white&labelColor=4C3FA0)](https://pokemonbuilder.app)
+
+[![React](https://img.shields.io/badge/React_19-7C6AE8?logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-7C6AE8?logo=vite&logoColor=white)](https://vite.dev)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-7C6AE8?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Zustand](https://img.shields.io/badge/Zustand-7C6AE8?logo=react&logoColor=white)](https://github.com/pmndrs/zustand)
+[![Firebase](https://img.shields.io/badge/Firebase-7C6AE8?logo=firebase&logoColor=white)](https://firebase.google.com)
+[![PokéAPI](https://img.shields.io/badge/PokéAPI-7C6AE8?logo=pokemon&logoColor=white)](https://pokeapi.co)
+
+</div>
+
+so i got tired of using 5 different outdated wikis just to plan a single team... so i built this. it does all the heavy math for you — no clutter, no annoying ads.
 
 👉 **[try it live here](https://pokemonbuilder.app)**
 
@@ -49,10 +64,7 @@ it's a fast, clean squad planner that does all the heavy math for you. no clutte
 
 ---
 
-## 🛠️ built with
-
-React 19 + Vite · Tailwind CSS · Zustand · Firebase (Auth + Firestore) · data from [PokéAPI](https://pokeapi.co), served from a pre-baked static cache for speed.
-
+A pure client-side React SPA backed by **Firebase** (Auth + Firestore) for persistence. Pokémon data comes from [PokéAPI](https://pokeapi.co), served from a **pre-baked static cache**. The type-coverage engine is custom and unit-tested.
 
 ---
 
