@@ -4,10 +4,56 @@ import { THEME_META } from '../../constants/theme';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { Sprite } from '../Sprite';
 import { useTranslation } from '../../hooks/useTranslation';
+import { auth } from '../../services/firebase';
+import { sendEmailVerification } from 'firebase/auth';
+import { useToastStore } from '../../store/useToastStore';
 import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon,
 } from '../icons';
+
+const EmailVerifyRow = () => {
+    const showToast = useToastStore((state) => state.showToast);
+    const user = auth?.currentUser;
+    const [sending, setSending] = useState(false);
+    const [sent, setSent] = useState(false);
+
+    // Anonymous / signed-out / already-verified users don't need this row.
+    if (!user || user.isAnonymous || user.emailVerified) return null;
+
+    const handleSend = async () => {
+        if (sending) return;
+        setSending(true);
+        try {
+            await sendEmailVerification(user);
+            setSent(true);
+            showToast?.('Verification email sent — check your inbox, then sign out and back in.', 'success');
+        } catch (err) {
+            showToast?.('Could not send verification email. Try again in a minute.', 'error');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    return (
+        <div className="profile-account-row" style={{ gap: '0.75rem' }}>
+            <div className="min-w-0">
+                <p className="profile-account-row__label">Email verification</p>
+                <p className="profile-account-row__value">
+                    {sent ? 'Sent — open the link, then re-login' : 'Your email is not verified'}
+                </p>
+            </div>
+            <button
+                type="button"
+                onClick={handleSend}
+                disabled={sending || sent}
+                className="profile-button"
+            >
+                {sending ? 'Sending…' : sent ? 'Sent ✓' : 'Verify email'}
+            </button>
+        </div>
+    );
+};
 
 /**
  * ProfileView — single screen for the user's account, preferences and
@@ -396,6 +442,7 @@ export function ProfileView({
                                     </div>
                                     <span className="profile-pill profile-pill--accent">{t('profile.syncedPill')}</span>
                                 </div>
+                                <EmailVerifyRow />
                                 <button
                                     type="button"
                                     onClick={onSignOut}

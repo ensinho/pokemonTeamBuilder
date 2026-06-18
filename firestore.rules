@@ -23,6 +23,11 @@ service cloud.firestore {
         allow read, write: if isOwner(userId);
       }
 
+      match /users/{userId}/profile/{docId} {
+        allow read: if isOwner(userId) || isAdmin();
+        allow write: if isOwner(userId);
+      }
+
       match /public/data/teams/{teamId} {
         allow read: if true;
         allow create: if isSignedIn() && validSharedTeam();
@@ -49,6 +54,21 @@ service cloud.firestore {
             && request.resource.data.createdBy == request.auth.uid;
           allow update, delete: if isAdmin()
             || (isSignedIn() && resource.data.createdBy == request.auth.uid);
+        }
+      }
+
+      match /feedback/likes {
+        allow read: if true;
+        allow create, update: if isSignedIn() && touchesOnlyOwnLike();
+        allow delete: if isAdmin();
+
+        function touchesOnlyOwnLike() {
+          let willHave = request.resource.data.get('userIds', []);
+          let alreadyHas = resource == null ? [] : resource.data.get('userIds', []);
+          let added = willHave.removeAll(alreadyHas);
+          let removed = alreadyHas.removeAll(willHave);
+          return added.hasOnly([request.auth.uid])
+            && removed.hasOnly([request.auth.uid]);
         }
       }
 
