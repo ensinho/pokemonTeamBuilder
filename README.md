@@ -1,6 +1,6 @@
 # ⚡ pokemonbuilder.app
 
-so i got tired of using 5 different outdated wikis just to plan a single team... so i built this. 
+so i got tired of using 5 different outdated wikis just to plan a single team... so i built this.
 
 it's a fast, clean squad planner that does all the heavy math for you. no clutter, no annoying ads.
 
@@ -15,7 +15,8 @@ it's a fast, clean squad planner that does all the heavy math for you. no clutte
 <br/>
 
 * build your squad of six in seconds.
-* **the math:** a custom coverage algorithm calculates all your team's dual-type weaknesses, resistances, and offensive gaps in real-time. 
+* **the math:** a custom coverage algorithm calculates all your team's dual-type weaknesses, resistances, and offensive gaps in real-time.
+* tweak each member — ability, nature, tera type, EVs/IVs, moves — and **export straight to Pokémon Showdown**.
 * saves automatically to the cloud so you don't lose your builds when you close the tab.
 </details>
 
@@ -23,16 +24,35 @@ it's a fast, clean squad planner that does all the heavy math for you. no clutte
 <summary><b>the power pokedex (click to expand)</b></summary>
 <br/>
 
-* filter by stats, type, or generation.
+* all 1025 pokémon, filtered by type or generation — instant, no loading spinners.
 * **encounter maps:** tells you *exactly* where to catch any pokémon, the encounter rate, and the method (surfing, grass, fishing, etc.) for each game version.
+* full move lists, abilities, base stats, evolution chains, and a sprite gallery per generation.
 </details>
 
 <details>
-<summary><b>the generation quiz (click to expand)</b></summary>
+<summary><b>the games (click to expand)</b></summary>
 <br/>
 
-* think you know every generation? test your memory and try to hit a perfect score.
+* **PokePuzzle:** a daily Wordle-style guessing game — narrow down the secret pokémon from tips.
+* **generation quiz:** think you know every gen? test your memory and try to hit a perfect score.
+* **random generator:** roll a surprise pokémon (or a whole team) when you're out of ideas.
 </details>
+
+<details>
+<summary><b>make it yours (click to expand)</b></summary>
+<br/>
+
+* favorite the pokémon you love, share teams with a link, and browse what the community is building in the feed.
+* 6 themes (dark, eclipse, midnight, daybreak, light, solar) and a daily trainer streak.
+* installable as a **PWA** — works like a native app on your phone.
+</details>
+
+---
+
+## 🛠️ built with
+
+React 19 + Vite · Tailwind CSS · Zustand · Firebase (Auth + Firestore) · data from [PokéAPI](https://pokeapi.co), served from a pre-baked static cache for speed.
+
 
 ---
 
