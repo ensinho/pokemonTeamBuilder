@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { db } from '../services/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
-import { typeChart } from '../constants/types';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
+import { analyzeTeam } from '../utils/teamAnalysis';
+import { buildShowdownExportText as buildShowdownText } from '../utils/showdownExport';
 import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
 import { usePokedexStore } from './usePokedexStore';
@@ -18,20 +19,6 @@ const serializeTeamPokemon = (pokemon) => ({
     animatedShinySprite: pokemon.animatedShinySprite || getPokemonFrontSpriteUrl(pokemon.id, { shiny: true }),
     instanceId: pokemon.instanceId,
     customization: pokemon.customization,
-});
-
-const formatShowdownCase = (str = '') =>
-    str.split('-').filter(Boolean).map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-
-const getDefaultCustomization = (pokemonData = {}) => ({
-    item: '',
-    nature: 'serious',
-    teraType: pokemonData.types?.[0] || 'normal',
-    isShiny: false,
-    ability: pokemonData.abilities?.[0]?.name || 'unknown',
-    moves: [],
-    evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
-    ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
 });
 
 export const useActiveTeamStore = create((set, get) => ({
@@ -58,71 +45,7 @@ export const useActiveTeamStore = create((set, get) => ({
     recalculateAnalysis: () => {
         const { currentTeam } = get();
         const pokemonsList = usePokedexStore.getState().pokemons;
-
-        if (currentTeam.length === 0) {
-            set({
-                teamAnalysis: { strengths: new Set(), weaknesses: {}, defensiveCoverage: {} },
-                suggestedPokemonIds: new Set()
-            });
-            return;
-        }
-
-        const teamWeaknessCounts = {};
-        const teamResistanceCounts = {};
-        const offensiveCoverage = new Set();
-
-        currentTeam.flatMap(d => d.types || []).forEach(type => {
-            Object.entries(typeChart[type]?.damageDealt || {}).forEach(([vs, mult]) => {
-                if (mult > 1) offensiveCoverage.add(vs.toLowerCase());
-            });
-        });
-
-        Object.keys(typeChart).forEach(attackingType => {
-            const capitalizedAttackingType = attackingType.charAt(0).toUpperCase() + attackingType.slice(1);
-            let weakCount = 0;
-            let resistanceCount = 0;
-
-            currentTeam.forEach(pokemon => {
-                const multiplier = (pokemon.types || []).reduce((acc, pokemonType) => {
-                    return acc * (typeChart[pokemonType]?.damageTaken[capitalizedAttackingType] ?? 1);
-                }, 1);
-
-                if (multiplier > 1) {
-                    weakCount++;
-                } else if (multiplier < 1) {
-                    resistanceCount++;
-                }
-            });
-
-            if (weakCount > 0 && weakCount >= currentTeam.length / 2 && weakCount > resistanceCount) {
-                teamWeaknessCounts[attackingType] = weakCount;
-            }
-
-            if (resistanceCount > 0) {
-                teamResistanceCounts[attackingType] = resistanceCount;
-            }
-        });
-
-        const weaknessTypes = Object.keys(teamWeaknessCounts);
-        let suggestions = new Set();
-        if (weaknessTypes.length > 0 && pokemonsList.length > 0) {
-            const potentialSuggestions = pokemonsList.filter(p => {
-                if (!p.types) return false;
-                return weaknessTypes.some(weakType => {
-                    const capitalizedWeakType = weakType.charAt(0).toUpperCase() + weakType.slice(1);
-                    const typeMultiplier = p.types.reduce((multiplier, pokemonType) => {
-                        return multiplier * (typeChart[pokemonType]?.damageTaken[capitalizedWeakType] ?? 1);
-                    }, 1);
-                    return typeMultiplier < 1;
-                });
-            });
-            suggestions = new Set(potentialSuggestions.map(p => p.id).slice(0, 10));
-        }
-
-        set({
-            teamAnalysis: { strengths: offensiveCoverage, weaknesses: teamWeaknessCounts, defensiveCoverage: teamResistanceCounts },
-            suggestedPokemonIds: suggestions
-        });
+        set(analyzeTeam(currentTeam, pokemonsList));
     },
 
     handleAddPokemon: (pokemon) => {
@@ -226,39 +149,7 @@ export const useActiveTeamStore = create((set, get) => ({
         }
     },
 
-    buildShowdownExportText: (teamMembers) => {
-        const statMap = { hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe' };
-
-        return teamMembers.map((member) => {
-            const baseCustomization = getDefaultCustomization(member);
-            const savedCustomization = member.customization || {};
-            const customization = {
-                ...baseCustomization,
-                ...savedCustomization,
-                evs: { ...baseCustomization.evs, ...(savedCustomization.evs || {}) },
-                ivs: { ...baseCustomization.ivs, ...(savedCustomization.ivs || {}) },
-                moves: Array.isArray(savedCustomization.moves) ? savedCustomization.moves : baseCustomization.moves,
-            };
-
-            const evsString = Object.entries(customization.evs)
-                .filter(([, val]) => Number(val) > 0)
-                .map(([key, val]) => `${val} ${statMap[key]}`)
-                .join(' / ');
-            const ivsString = Number(customization.ivs.attack) === 0 ? 'IVs: 0 Atk' : '';
-
-            return [
-                `${formatShowdownCase(member.name || 'Unknown Pokemon')} @ ${formatShowdownCase(customization.item || 'Nothing')}`,
-                `Ability: ${formatShowdownCase(customization.ability || 'Unknown')}`,
-                'Level: 50',
-                customization.isShiny ? 'Shiny: Yes' : null,
-                `Tera Type: ${formatShowdownCase(customization.teraType || 'normal')}`,
-                evsString ? `EVs: ${evsString}` : null,
-                `${formatShowdownCase(customization.nature || 'serious')} Nature`,
-                ivsString || null,
-                ...customization.moves.filter(Boolean).map((move) => `- ${formatShowdownCase(move)}`),
-            ].filter(Boolean).join('\n');
-        }).join('\n\n');
-    },
+    buildShowdownExportText: (teamMembers) => buildShowdownText(teamMembers),
 
     copyTextToClipboard: async (text, successMessage) => {
         try {
