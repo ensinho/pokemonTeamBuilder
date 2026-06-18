@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
@@ -40,21 +40,34 @@ import {
 } from './icons';
 import { Puzzle } from 'lucide-react';
 
-import {
-    AdminDashboardView,
-    AllTeamsView,
-    FavoritePokemonsView,
-    GenerationQuizView,
-    HomeView,
-    PokedexView,
-    ProfileView,
-    RandomGeneratorView,
-    TeamBuilderView,
-    FeedView,
-    PokePuzzleView,
-} from './views';
+// HomeView stays eager: it's the landing route, so lazy-loading it would only add a
+// fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
+// the initial bundle — the heavy ones (Pokedex, PokePuzzle, RandomGenerator) dominate it.
+import { HomeView } from './views';
+
+const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
+const AllTeamsView = lazy(() => import('./views/AllTeamsView').then((m) => ({ default: m.AllTeamsView })));
+const FavoritePokemonsView = lazy(() => import('./views/FavoritePokemonsView').then((m) => ({ default: m.FavoritePokemonsView })));
+const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
+const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
+const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
+const RandomGeneratorView = lazy(() => import('./views/RandomGeneratorView').then((m) => ({ default: m.RandomGeneratorView })));
+const TeamBuilderView = lazy(() => import('./views/TeamBuilderView').then((m) => ({ default: m.TeamBuilderView })));
+const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
+const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
 
 import '../styles/app-shell.css';
+
+const RouteFallback = () => (
+    <div
+        className="flex items-center justify-center w-full"
+        style={{ minHeight: '60vh', color: 'var(--color-primary)' }}
+        role="status"
+        aria-label="Loading"
+    >
+        <PokeballIcon className="w-16 h-16 shrink-0 animate-spin opacity-70" />
+    </div>
+);
 
 const TrainerAvatar = ({ pokemonId, isShiny = false, size = 24, color = 'currentColor', className = '' }) => {
     if (pokemonId) {
@@ -911,6 +924,7 @@ export default function AppLayout() {
                     <main className={`app-shell__body ${isMobileDetailsOpen ? 'is-mobile-detail' : ''}`}>
                         {pageFrameClassName ? (
                             <div className={pageFrameClassName}>
+                                <Suspense fallback={<RouteFallback />}>
                                 <Routes>
                                     <Route path="/" element={
                                         <HomeView
@@ -1093,6 +1107,7 @@ export default function AppLayout() {
                                     )}
                                     <Route path="*" element={<Navigate to="/" replace />} />
                                 </Routes>
+                                </Suspense>
                             </div>
                         ) : (
                             <Routes>

@@ -1,0 +1,71 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email in ['enzopo625@gmail.com'];
+    }
+
+    match /artifacts/{appId} {
+
+      match /users/{userId}/{document=**} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /public/data/teams/{teamId} {
+        allow read: if true;
+        allow create: if isSignedIn() && validSharedTeam();
+        allow update, delete: if isAdmin();
+
+        function validSharedTeam() {
+          return request.resource.data.name is string
+            && request.resource.data.name.size() <= 100
+            && request.resource.data.pokemons is list
+            && request.resource.data.pokemons.size() <= 6;
+        }
+      }
+
+      match /public/data/forumTopics/{topicId} {
+        allow read: if true;
+        allow create: if isSignedIn()
+          && request.resource.data.createdBy == request.auth.uid;
+        allow update, delete: if isAdmin()
+          || (isSignedIn() && resource.data.createdBy == request.auth.uid);
+
+        match /messages/{messageId} {
+          allow read: if true;
+          allow create: if isSignedIn()
+            && request.resource.data.createdBy == request.auth.uid;
+          allow update, delete: if isAdmin()
+            || (isSignedIn() && resource.data.createdBy == request.auth.uid);
+        }
+      }
+
+      match /feedback/{docId} {
+        allow create: if isSignedIn();
+        allow read, update, delete: if isAdmin();
+      }
+
+      match /suggestions/{docId} {
+        allow create: if isSignedIn();
+        allow read, update, delete: if isAdmin();
+      }
+
+      match /pokemons/{docId} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+  }
+}
