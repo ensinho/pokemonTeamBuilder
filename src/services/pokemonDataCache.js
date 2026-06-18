@@ -1,4 +1,6 @@
+import { doc, getDoc } from 'firebase/firestore';
 import { POKEAPI_BASE_URL } from '../constants/firebase';
+import { db } from './firebase';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 
 // Bump this version whenever the SHAPE of cached data changes (e.g. adding `types`
@@ -360,3 +362,58 @@ export const getPokemonEncountersData = (pokemonId) => fetchPokeApiJson(
         storage: 'local',
     }
 );
+
+// Normalize a raw PokéAPI `/pokemon` response into the "fat" shape the Team Builder
+// and editor modal expect (abilities[].name, moves[].name, types[], stats[]).
+const normalizePokemonApiData = (apiData) => ({
+    id: apiData.id,
+    name: apiData.name,
+    types: apiData.types?.map((t) => t.type?.name).filter(Boolean) || [],
+    abilities: apiData.abilities?.map((a) => ({
+        name: a.ability?.name,
+        url: a.ability?.url,
+        is_hidden: a.is_hidden,
+    })).filter((a) => a.name) || [],
+    moves: apiData.moves?.map((m) => ({ name: m.move?.name, url: m.move?.url })).filter((m) => m.name) || [],
+    stats: apiData.stats?.map((s) => ({ name: s.stat?.name, base_stat: s.base_stat })).filter((s) => s.name) || [],
+    sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default || null,
+});
+
+/**
+ * Resolve a Pokémon's full detail (abilities, moves, stats, types) by id.
+ *
+ * The Pokédex/Team Builder lists now carry only lightweight index data
+ * (id/name/types/sprite). When an action needs the full record — e.g. adding a
+ * Pokémon to a team — call this to lazily fetch it through the same cascade the
+ * detail panel uses: in-memory/static detail → live PokéAPI. Result is cached.
+ *
+ * @param {number|string} pokemonId
+ * @returns {Promise<object|null>} a fat pokémon object, or null if unresolvable
+ */
+export const resolvePokemonDetail = async (pokemonId) => {
+    const id = Number.parseInt(pokemonId, 10);
+    if (!Number.isInteger(id) || id <= 0) return null;
+
+    // 1) Firestore mirror (already-baked fat doc) — same source the detail panel prefers.
+    if (db) {
+        try {
+            const snap = await getDoc(doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(id)));
+            if (snap.exists()) {
+                const data = snap.data();
+                if (data?.abilities?.length) return data;
+            }
+        } catch (_) {
+            // Permission/network issue — fall through to static/PokéAPI.
+        }
+    }
+
+    // 2) Pre-baked static detail file (if generated).
+    const staticDetail = await getStaticPokemonDetail(id);
+    if (staticDetail?.abilities?.length) return staticDetail;
+
+    // 3) Live PokéAPI, normalized to the fat shape.
+    const apiData = await getPokemonApiData(id);
+    if (apiData) return normalizePokemonApiData(apiData);
+
+    return null;
+};

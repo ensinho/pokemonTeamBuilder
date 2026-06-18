@@ -83,8 +83,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     };
 
     const filteredMoves = useMemo(() => {
-        if (!moveSearch) return pokemon.moves;
-        return pokemon.moves.filter((move) => move.name.toLowerCase().includes(moveSearch.toLowerCase()));
+        const moves = pokemon.moves || [];
+        if (!moveSearch) return moves;
+        return moves.filter((move) => move.name.toLowerCase().includes(moveSearch.toLowerCase()));
     }, [moveSearch, pokemon.moves]);
 
     useEffect(() => {
@@ -220,7 +221,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             <div>
                                 <label htmlFor="editor-ability" className="mb-2 block text-base font-bold text-fg">{t('modals.editorModalAbilityLabel')}</label>
                                 <select id="editor-ability" value={customization.ability} onChange={(event) => handleCustomizationChange('ability', event.target.value)} className={`${controlClassName} p-3 capitalize`}>
-                                    {pokemon.abilities.map((ability) => (
+                                    {(pokemon.abilities || []).map((ability) => (
                                         <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
                                     ))}
                                 </select>
@@ -249,7 +250,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                             <div className="space-y-3">
                                 {statNames.map((statName, index) => {
-                                    const baseStat = pokemon.stats[index].base_stat;
+                                    const baseStat = pokemon.stats?.[index]?.base_stat ?? 0;
                                     const ev = customization.evs[statName];
                                     const totalStat = calculateStat(baseStat, ev, statName);
 

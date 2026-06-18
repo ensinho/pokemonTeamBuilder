@@ -3,6 +3,7 @@ import { db } from '../services/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
+import { resolvePokemonDetail } from '../services/pokemonDataCache';
 import { analyzeTeam } from '../utils/teamAnalysis';
 import { buildShowdownExportText as buildShowdownText } from '../utils/showdownExport';
 import { useAuthStore } from './useAuthStore';
@@ -48,23 +49,37 @@ export const useActiveTeamStore = create((set, get) => ({
         set(analyzeTeam(currentTeam, pokemonsList));
     },
 
-    handleAddPokemon: (pokemon) => {
+    handleAddPokemon: async (pokemon) => {
         const { currentTeam } = get();
         if (currentTeam.length >= 6) {
             useToastStore.getState().showToast("Your team is full (6 Pokémon)!", 'warning');
             return;
         }
 
+        // The Pokédex/Team Builder list now carries only lightweight index data
+        // (no abilities/moves/stats). Lazily resolve the full record on add so the
+        // member — and the editor modal — have everything they need.
+        let fullPokemon = pokemon;
+        if (!pokemon.abilities?.length || !pokemon.moves?.length) {
+            const resolved = await resolvePokemonDetail(pokemon.id);
+            if (!resolved) {
+                useToastStore.getState().showToast("Couldn't load this Pokémon's data. Try again.", 'error');
+                return;
+            }
+            // Keep any list-provided fields (e.g. derived sprites) but layer the fat data on top.
+            fullPokemon = { ...pokemon, ...resolved };
+        }
+
         const newMember = {
-            ...pokemon,
-            instanceId: `${pokemon.id}-${Date.now()}`,
+            ...fullPokemon,
+            instanceId: `${fullPokemon.id}-${Date.now()}`,
             customization: {
                 item: '',
                 nature: 'serious',
-                teraType: pokemon.types[0],
+                teraType: fullPokemon.types?.[0] || 'normal',
                 isShiny: false,
-                ability: pokemon.abilities[0].name,
-                moves: pokemon.moves.slice(0, 4).map(m => m.name),
+                ability: fullPokemon.abilities?.[0]?.name || 'unknown',
+                moves: (fullPokemon.moves || []).slice(0, 4).map(m => m.name),
                 evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
                 ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
             }
