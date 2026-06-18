@@ -23,7 +23,7 @@ so i got tired of using 5 different outdated wikis just to plan a single team...
 
 ---
 
-## 🎮 what's inside?
+## what's inside?
 
 <details>
 <summary><b>the smart team builder (click to expand)</b></summary>
