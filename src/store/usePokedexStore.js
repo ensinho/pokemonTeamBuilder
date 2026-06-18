@@ -1,11 +1,38 @@
 import { create } from 'zustand';
-import { db } from '../services/firebase';
-import { collection, query, where, orderBy, startAfter, limit, getDocs } from 'firebase/firestore';
+import { loadPokemonIndex } from '../services/pokemonDataCache';
 import { useToastStore } from './useToastStore';
 
+const PAGE_SIZE = 50;
+
+// The full static index is loaded once and cached here for the session.
+let fullIndexPromise = null;
+const getFullIndex = () => {
+    if (!fullIndexPromise) {
+        fullIndexPromise = loadPokemonIndex().catch((error) => {
+            fullIndexPromise = null; // allow retry on next attempt
+            throw error;
+        });
+    }
+    return fullIndexPromise;
+};
+
+// Pure client-side filtering — mirrors what the old Firestore `where` clauses did.
+const filterPokemons = (all, { generation, types, search }) => {
+    const searchTerm = (search || '').toLowerCase().trim();
+    const typeList = Array.from(types || []);
+
+    return all.filter((p) => {
+        if (generation && generation !== 'all' && p.generation !== generation) return false;
+        if (typeList.length > 0 && !typeList.some((t) => (p.types || []).includes(t))) return false;
+        if (searchTerm && !p.name.toLowerCase().includes(searchTerm)) return false;
+        return true;
+    });
+};
+
 export const usePokedexStore = create((set, get) => ({
-    pokemons: [],
-    lastVisibleDoc: null,
+    pokemons: [],          // currently visible (paged) slice
+    filteredPokemons: [],  // full filtered result set (client-side)
+    visibleCount: PAGE_SIZE,
     hasMore: true,
     isLoading: false,
     isFetchingMore: false,
@@ -41,87 +68,48 @@ export const usePokedexStore = create((set, get) => ({
         });
     },
 
-    buildQuery: (isPokedex, isLoadMore = false, cursor = null) => {
-        const state = get();
-        const genToUse = isPokedex ? state.pokedexSelectedGeneration : state.selectedGeneration;
-        const searchToUse = (isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm).toLowerCase();
-        const typesToUse = Array.from(isPokedex ? state.pokedexSelectedTypes : state.selectedTypes);
-
-        const q = collection(db, 'artifacts/pokemonTeamBuilder/pokemons');
-        const constraints = [];
-
-        if (genToUse !== 'all') {
-            constraints.push(where('generation', '==', genToUse));
-        }
-        if (typesToUse.length > 0) {
-            constraints.push(where('types', 'array-contains-any', typesToUse));
-        }
-
-        if (searchToUse) {
-            constraints.push(orderBy('name'));
-            constraints.push(where('name', '>=', searchToUse));
-            constraints.push(where('name', '<=', searchToUse + '\uf8ff'));
-        } else {
-            constraints.push(orderBy('id'));
-        }
-
-        if (isLoadMore && cursor) {
-            constraints.push(startAfter(cursor));
-        }
-
-        constraints.push(limit(50));
-
-        return query(q, ...constraints);
-    },
-
+    // Load the full index once, apply the active filters, and reveal the first page.
     fetchInitial: async (isPokedex) => {
-        set({ isLoading: true, hasMore: true, lastVisibleDoc: null });
-        const q = get().buildQuery(isPokedex, false, null);
+        set({ isLoading: true, visibleCount: PAGE_SIZE });
 
         try {
-            const documentSnapshots = await getDocs(q);
-            const firstBatch = documentSnapshots.docs.map(doc => doc.data());
-            const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length - 1];
+            const all = await getFullIndex();
+            const state = get();
+            const filtered = filterPokemons(all, {
+                generation: isPokedex ? state.pokedexSelectedGeneration : state.selectedGeneration,
+                types: isPokedex ? state.pokedexSelectedTypes : state.selectedTypes,
+                search: isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm,
+            });
 
             set({
-                pokemons: firstBatch,
-                lastVisibleDoc: lastVisible,
-                hasMore: documentSnapshots.docs.length >= 50
+                filteredPokemons: filtered,
+                pokemons: filtered.slice(0, PAGE_SIZE),
+                hasMore: filtered.length > PAGE_SIZE,
             });
         } catch (error) {
-            console.error("Error fetching pokemons:", error);
-            useToastStore.getState().showToast(
-                "Error loading Pokémon list. You may need to create a composite index in Firestore.",
-                "error"
-            );
-            set({ pokemons: [] });
+            console.error("Error loading Pokémon index:", error);
+            useToastStore.getState().showToast("Error loading Pokémon list.", "error");
+            set({ pokemons: [], filteredPokemons: [], hasMore: false });
         } finally {
             set({ isLoading: false });
         }
     },
 
-    fetchMore: async (isPokedex) => {
-        const { isFetchingMore, hasMore, lastVisibleDoc } = get();
-        if (isFetchingMore || !hasMore || !lastVisibleDoc) return;
+    // Reveal the next page — pure client-side slice, no network.
+    fetchMore: () => {
+        const { isFetchingMore, hasMore, visibleCount, filteredPokemons } = get();
+        if (isFetchingMore || !hasMore) return;
 
         set({ isFetchingMore: true });
-        const q = get().buildQuery(isPokedex, true, lastVisibleDoc);
-
         try {
-            const documentSnapshots = await getDocs(q);
-            const newBatch = documentSnapshots.docs.map(doc => doc.data());
-            const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length - 1];
-
-            set((state) => ({
-                pokemons: [...state.pokemons, ...newBatch],
-                lastVisibleDoc: lastVisible,
-                hasMore: documentSnapshots.docs.length >= 50
-            }));
-        } catch (error) {
-            console.error("Error fetching more pokemons:", error);
-            useToastStore.getState().showToast("Failed to load more Pokémon.", "error");
+            const nextCount = visibleCount + PAGE_SIZE;
+            set({
+                pokemons: filteredPokemons.slice(0, nextCount),
+                visibleCount: nextCount,
+                hasMore: filteredPokemons.length > nextCount,
+            });
         } finally {
             set({ isFetchingMore: false });
         }
-    }
+    },
 }));

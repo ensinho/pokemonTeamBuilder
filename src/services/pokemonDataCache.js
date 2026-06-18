@@ -1,11 +1,38 @@
 import { POKEAPI_BASE_URL } from '../constants/firebase';
+import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 
-const CACHE_PREFIX = 'ptb:pokemon-data:v1:';
+// Bump this version whenever the SHAPE of cached data changes (e.g. adding `types`
+// to pokemon-index.json). It invalidates all stale entries from older versions so
+// users never get a broken UI from a long-TTL cache of the old format.
+const CACHE_VERSION = 'v2';
+const CACHE_PREFIX = `ptb:pokemon-data:${CACHE_VERSION}:`;
 const REFERENCE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 const memoryCache = new Map();
 const pendingRequests = new Map();
+
+// One-time sweep of cache entries from previous CACHE_VERSIONs so they don't
+// linger in users' storage after a format change.
+const purgeStaleCacheVersions = () => {
+    if (typeof window === 'undefined') return;
+    for (const storageName of ['local', 'session']) {
+        try {
+            const storage = storageName === 'local' ? window.localStorage : window.sessionStorage;
+            const stale = [];
+            for (let i = 0; i < storage.length; i += 1) {
+                const key = storage.key(i);
+                if (key && key.startsWith('ptb:pokemon-data:') && !key.startsWith(CACHE_PREFIX)) {
+                    stale.push(key);
+                }
+            }
+            stale.forEach((key) => storage.removeItem(key));
+        } catch (_) {
+            // Storage unavailable (private mode / quota) — safe to skip.
+        }
+    }
+};
+purgeStaleCacheVersions();
 
 const getBasePath = () => {
     const base = import.meta.env.BASE_URL || '/';
@@ -225,11 +252,21 @@ export const loadPokemonReferenceData = async () => {
 export const loadPokemonIndex = async () => {
     const staticPokemonIndex = await fetchStaticJson('pokemon-index.json');
     return normalizeResourceList(staticPokemonIndex, 'pokemons')
-        .map((entry) => ({
-            id: Number.parseInt(entry.id, 10),
-            name: entry.name,
-            url: entry.url,
-        }))
+        .map((entry) => {
+            const id = Number.parseInt(entry.id, 10);
+            return {
+                id,
+                name: entry.name,
+                url: entry.url,
+                types: Array.isArray(entry.types) ? entry.types : [],
+                generation: entry.generation || null,
+                // Sprites are derivable from the id — no need to store them in the index.
+                sprite: getPokemonArtworkSpriteUrl(id),
+                shinySprite: getPokemonArtworkSpriteUrl(id, { shiny: true }),
+                animatedSprite: getPokemonFrontSpriteUrl(id),
+                animatedShinySprite: getPokemonFrontSpriteUrl(id, { shiny: true }),
+            };
+        })
         .filter((entry) => Number.isInteger(entry.id) && entry.id > 0 && entry.name);
 };
 

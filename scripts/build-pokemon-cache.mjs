@@ -155,6 +155,39 @@ const buildPokemonDetail = async (id) => {
     };
 };
 
+// Fetch just the lightweight list fields (types) for one pokémon.
+// Generation is derived from the id, so no extra request is needed for it.
+const fetchPokemonListEntry = async (entry) => {
+    const id = parseIdFromUrl(entry.url);
+    try {
+        const data = await fetchJson(entry.url);
+        return {
+            id,
+            name: entry.name,
+            url: entry.url,
+            types: data.types.map((t) => t.type.name),
+            generation: getGenerationName(id),
+        };
+    } catch (_) {
+        // Keep the entry usable even if its types fetch fails — types defaults to [].
+        return { id, name: entry.name, url: entry.url, types: [], generation: getGenerationName(id) };
+    }
+};
+
+// Enrich the whole index with types, in small concurrent batches to be gentle on PokéAPI.
+const buildEnrichedIndex = async (rawResults, { concurrency = 10, delayMs = 100 } = {}) => {
+    const valid = rawResults.filter((entry) => Number.isInteger(parseIdFromUrl(entry.url)));
+    const out = [];
+    for (let i = 0; i < valid.length; i += concurrency) {
+        const slice = valid.slice(i, i + concurrency);
+        const enriched = await Promise.all(slice.map(fetchPokemonListEntry));
+        out.push(...enriched);
+        console.log(`  index: ${out.length}/${valid.length} pokémon enriched with types`);
+        if (i + concurrency < valid.length) await sleep(delayMs);
+    }
+    return out.sort((a, b) => a.id - b.id);
+};
+
 const main = async () => {
     const generatedAt = new Date().toISOString();
     const detailIds = parseDetailsArg();
@@ -184,16 +217,20 @@ const main = async () => {
             source: `${POKEAPI_BASE_URL}/nature`,
             natures: natures.results,
         }),
-        writeJson(path.join(DATA_DIR, 'pokemon-index.json'), {
-            generatedAt,
-            source: `${POKEAPI_BASE_URL}/pokemon?limit=${NATIONAL_DEX_MAX}`,
-            pokemons: pokemonIndex.results.map((entry) => ({
-                id: parseIdFromUrl(entry.url),
-                name: entry.name,
-                url: entry.url,
-            })).filter((entry) => Number.isInteger(entry.id)),
-        }),
     ]);
+
+    // Enrich the index with `types` (and derived `generation`) so the Pokédex/Team Builder
+    // lists can load entirely from this static file instead of querying Firestore.
+    console.log('Enriching pokemon index with types (this fetches each pokémon once)...');
+    const enrichedPokemons = await buildEnrichedIndex(pokemonIndex.results, {
+        concurrency: 10,
+        delayMs: hasArg('--no-delay') ? 0 : 100,
+    });
+    await writeJson(path.join(DATA_DIR, 'pokemon-index.json'), {
+        generatedAt,
+        source: `${POKEAPI_BASE_URL}/pokemon?limit=${NATIONAL_DEX_MAX}`,
+        pokemons: enrichedPokemons,
+    });
 
     const generatedDetailIds = [];
     if (detailIds.length > 0) {
