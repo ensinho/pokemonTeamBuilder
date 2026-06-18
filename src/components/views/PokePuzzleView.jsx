@@ -11,7 +11,7 @@ import {
 } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { PokeballIcon, StarsIcon, SparklesIcon, RefreshIcon } from '../icons';
-import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2 } from 'lucide-react';
+import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2, Lightbulb } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
@@ -37,6 +37,21 @@ const normalizeNameForGame = (name) => {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "") // remove accents
         .replace(/[^a-z]/g, ""); // keep only letters
+};
+
+// Helper to determine Pokémon generation based on National Pokedex ID
+const getGenerationByPokemonId = (id) => {
+    if (!id) return 0;
+    if (id <= 151) return 1;
+    if (id <= 251) return 2;
+    if (id <= 386) return 3;
+    if (id <= 493) return 4;
+    if (id <= 649) return 5;
+    if (id <= 721) return 6;
+    if (id <= 809) return 7;
+    if (id <= 905) return 8; // Gen 8 (including Hisui)
+    if (id <= 1025) return 9; // Gen 9
+    return 9;
 };
 
 // Helper to format Pokémon name nicely for display
@@ -278,7 +293,7 @@ export default function PokePuzzleView() {
                         return;
                     }
                 }
-                
+
                 // If no saved state, start random
                 startRandomOngoingGame();
             }
@@ -302,7 +317,7 @@ export default function PokePuzzleView() {
         if (mode === 'daily') {
             const now = new Date();
             const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-            
+
             // Save to LocalStorage
             localStorage.setItem(`ptb:pokepuzzle:daily:${dateString}`, JSON.stringify(stateToSave));
 
@@ -528,7 +543,7 @@ export default function PokePuzzleView() {
         const filledCount = chars.filter(c => c !== ' ').length;
 
         // Do not show autocomplete unless at least 80% of the name is typed
-        if (filledCount < targetLength * 0.8) {
+        if (filledCount < targetLength * 0.5) {
             return [];
         }
 
@@ -541,7 +556,7 @@ export default function PokePuzzleView() {
             .filter(p => {
                 // Must be of same normalized length
                 if (p.normalized.length !== targetLength) return false;
-                
+
                 // Compare character-by-character
                 for (let i = 0; i < targetLength; i++) {
                     const typedChar = chars[i];
@@ -834,10 +849,10 @@ export default function PokePuzzleView() {
     const typeGlowColor = `${typeColor}40`; // 25% opacity for hex glow
 
     const generateShareText = () => {
-        const modeTitle = mode === 'daily' 
-            ? `${language === 'pt' ? 'PokePuzzle Diário' : 'Daily PokePuzzle'}` 
+        const modeTitle = mode === 'daily'
+            ? `${language === 'pt' ? 'PokePuzzle Diário' : 'Daily PokePuzzle'}`
             : `${language === 'pt' ? 'PokePuzzle Livre' : 'Ongoing PokePuzzle'}`;
-        
+
         const emojiGrid = guesses.map(guess => {
             const norm = normalizeNameForGame(guess);
             const letterStatuses = checkLetters(norm, targetNormalized);
@@ -849,7 +864,7 @@ export default function PokePuzzleView() {
         }).join('\n');
 
         const shareUrl = typeof window !== 'undefined' ? window.location.origin + '/pokepuzzle' : 'https://poketeambuilder.com/pokepuzzle';
-        
+
         return `PokePuzzle - ${modeTitle} ${guesses.length}/${MAX_ATTEMPTS}\n\n${emojiGrid}\n\nPlay here: ${shareUrl}`;
     };
 
@@ -881,42 +896,42 @@ export default function PokePuzzleView() {
 
     const handleShareImage = async () => {
         showToast(language === 'pt' ? 'Gerando imagem...' : 'Generating image...', 'info');
-        
+
         try {
             const canvas = document.createElement('canvas');
             canvas.width = 400;
             canvas.height = 640;
             const ctx = canvas.getContext('2d');
-            
+
             // 1. Background (sleek deep purple)
             ctx.fillStyle = '#0f0b21'; // Deep midnight purple
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             // Draw a subtle radial glow in the center matching target type
             const grad = ctx.createRadialGradient(200, 240, 20, 200, 240, 250);
             grad.addColorStop(0, '#7c3aed40'); // violet-600 with 25% opacity
             grad.addColorStop(1, 'transparent');
             ctx.fillStyle = grad;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
+
             // Draw purple border
             ctx.strokeStyle = '#7c3aed';
             ctx.lineWidth = 4;
             ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
-            
+
             // 2. Title Header
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 24px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText('POKÉPUZZLE', 200, 50);
-            
+
             ctx.fillStyle = '#c084fc'; // Light purple subtitle
             ctx.font = '14px sans-serif';
-            const modeText = mode === 'daily' 
+            const modeText = mode === 'daily'
                 ? (language === 'pt' ? 'Desafio Diário' : 'Daily Challenge')
                 : (language === 'pt' ? 'Modo Livre' : 'Ongoing Mode');
             ctx.fillText(`${modeText} • ${guesses.length}/${MAX_ATTEMPTS} ${language === 'pt' ? 'tentativas' : 'tries'}`, 200, 75);
-            
+
             // Load brand logo (Gengar) instead of target Pokémon artwork to not reveal it
             const getRuntimeBaseURL = () => {
                 const path = window.location.pathname;
@@ -939,7 +954,7 @@ export default function PokePuzzleView() {
                 img.onerror = (e) => reject(new Error('Failed to load image: ' + url));
                 img.src = url;
             });
-            
+
             let logoImg;
             const logoDomImg = document.querySelector('img[src*="LogoCuteGengar"]');
             if (logoDomImg && logoDomImg.complete && logoDomImg.naturalWidth > 0) {
@@ -951,7 +966,7 @@ export default function PokePuzzleView() {
                     console.error("Could not load logo for canvas share", err);
                 }
             }
-            
+
             if (logoImg) {
                 // Draw a nice container box background for logo (sleek indigo/purple theme)
                 ctx.fillStyle = '#1e1b4b'; // Deep indigo/purple
@@ -961,31 +976,31 @@ export default function PokePuzzleView() {
                 ctx.strokeStyle = '#4c1d95'; // Dark violet border
                 ctx.lineWidth = 2;
                 ctx.stroke();
-                
+
                 // Draw logo
                 ctx.drawImage(logoImg, 135, 110, 130, 130);
             }
-            
+
             // 3. Riddle Title (Who's That Pokémon?)
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 20px sans-serif';
             ctx.fillText(language === 'pt' ? 'Quem é esse Pokémon?' : "Who's That Pokémon?", 200, 290);
-            
+
             // Result Message
             ctx.fillStyle = '#c084fc';
             ctx.font = '14px sans-serif';
-            const msg = gameStatus === 'WON' 
+            const msg = gameStatus === 'WON'
                 ? (language === 'pt' ? `Acertou em ${guesses.length} tentativas!` : `Guessed correctly in ${guesses.length} attempts!`)
                 : (language === 'pt' ? `Não foi dessa vez!` : `Could not solve this time!`);
             ctx.fillText(msg, 200, 320);
-            
+
             // 4. Attempts Grid
             const squareSize = 16;
             const gap = 5;
             const rowWidth = targetLength * squareSize + (targetLength - 1) * gap;
             const startX = (canvas.width - rowWidth) / 2;
             let startY = 350;
-            
+
             guesses.forEach((guess) => {
                 const norm = normalizeNameForGame(guess);
                 const letterStatuses = checkLetters(norm, targetNormalized);
@@ -998,14 +1013,14 @@ export default function PokePuzzleView() {
                     } else {
                         ctx.fillStyle = '#3b3954'; // Sleek dark purple/gray
                     }
-                    
+
                     ctx.beginPath();
                     ctx.roundRect(x, startY, squareSize, squareSize, 3);
                     ctx.fill();
                 });
                 startY += squareSize + gap;
             });
-            
+
             // 5. QR Code and Link footer
             const footerY = 520;
             ctx.strokeStyle = '#3b3954';
@@ -1014,7 +1029,7 @@ export default function PokePuzzleView() {
             ctx.moveTo(30, footerY);
             ctx.lineTo(370, footerY);
             ctx.stroke();
-            
+
             const qrTarget = `${window.location.origin}${getRuntimeBaseURL()}pokepuzzle`.replace(/([^:]\/)\/+/g, "$1");
             let qrCanvas;
             try {
@@ -1026,7 +1041,7 @@ export default function PokePuzzleView() {
             } catch (err) {
                 console.error("Failed to generate QR code for canvas", err);
             }
-            
+
             if (qrCanvas) {
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
@@ -1034,21 +1049,21 @@ export default function PokePuzzleView() {
                 ctx.fill();
                 ctx.drawImage(qrCanvas, 55, footerY + 20, 70, 70);
             }
-            
+
             ctx.textAlign = 'left';
             ctx.fillStyle = '#94a3b8';
             ctx.font = 'bold 11px sans-serif';
             ctx.fillText(language === 'pt' ? 'ESCANEIE PARA JOGAR' : 'SCAN TO PLAY', 150, footerY + 45);
-            
+
             ctx.fillStyle = '#a78bfa';
             ctx.font = 'bold 14px sans-serif';
             const displayUrl = (host + getRuntimeBaseURL() + 'pokepuzzle').replace(/\/{2,}/g, '/');
             ctx.fillText(displayUrl, 150, footerY + 65);
-            
+
             canvas.toBlob(async (blob) => {
                 if (!blob) throw new Error('Canvas toBlob failed');
                 const file = new File([blob], 'pokepuzzle-result.png', { type: 'image/png' });
-                
+
                 if (navigator.canShare && navigator.canShare({ files: [file] })) {
                     try {
                         await navigator.share({
@@ -1063,7 +1078,7 @@ export default function PokePuzzleView() {
                         console.error('Error sharing image, falling back to download', shareErr);
                     }
                 }
-                
+
                 const dataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.download = `pokepuzzle-result-${guesses.length}.png`;
@@ -1073,7 +1088,7 @@ export default function PokePuzzleView() {
                 document.body.removeChild(link);
                 showToast(language === 'pt' ? 'Imagem baixada!' : 'Image downloaded!', 'success');
             }, 'image/png');
-            
+
         } catch (err) {
             console.error("Failed to generate and share results image:", err);
             showToast(language === 'pt' ? 'Erro ao gerar imagem de compartilhamento' : 'Failed to generate share image', 'error');
@@ -1123,12 +1138,17 @@ export default function PokePuzzleView() {
                         <section className="pokepuzzle-tips-container">
                             <div className="pokepuzzle-tips-header">
                                 <h3 className="pokepuzzle-tips-title">
-                                    <SparklesIcon className="w-4 h-4 text-accent" />
+                                    <Lightbulb className="w-4 h-4 text-accent" />
                                     <span>{language === 'pt' ? 'Serviço de Dicas' : 'Tips Service'}</span>
                                 </h3>
-                                <span className="text-[10px] uppercase font-bold text-muted bg-surface-raised border border-border px-2 py-0.5 rounded">
-                                    {guesses.length} / {MAX_ATTEMPTS} {language === 'pt' ? 'tentativas' : 'tries'}
-                                </span>
+                                <div className="flex gap-2 items-center">
+                                    <span className="text-[10px] uppercase font-bold text-accent bg-accent/10 border border-accent px-2 py-0.5 rounded">
+                                        {language === 'pt' ? `Geração ${getGenerationByPokemonId(targetPokemon.id)}` : `Gen ${getGenerationByPokemonId(targetPokemon.id)}`}
+                                    </span>
+                                    <span className="text-[10px] uppercase font-bold text-muted bg-surface-raised border border-border px-2 py-0.5 rounded">
+                                        {guesses.length} / {MAX_ATTEMPTS} {language === 'pt' ? 'tentativas' : 'tries'}
+                                    </span>
+                                </div>
                             </div>
                             {/* Horizontal tabs for tips */}
                             <div className="pokepuzzle-tip-tabs">
@@ -1289,11 +1309,10 @@ export default function PokePuzzleView() {
                                         return (
                                             <div
                                                 key={letterIdx}
-                                                className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''} ${
-                                                    row.submitted && status === 'correct' ? 'is-correct' :
+                                                className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''} ${row.submitted && status === 'correct' ? 'is-correct' :
                                                     row.submitted && status === 'present' ? 'is-present' :
-                                                    row.submitted && status === 'absent' ? 'is-absent' : ''
-                                                } ${isSelected ? 'is-selected-cell' : ''} ${!row.submitted ? 'is-active-row' : ''}`}
+                                                        row.submitted && status === 'absent' ? 'is-absent' : ''
+                                                    } ${isSelected ? 'is-selected-cell' : ''} ${!row.submitted ? 'is-active-row' : ''}`}
                                                 role="gridcell"
                                                 onClick={() => {
                                                     if (!row.submitted) {
@@ -1346,11 +1365,11 @@ export default function PokePuzzleView() {
                                         setInputValue(clean);
                                         setSelectedCharIdx(prev => Math.min(targetLength - 1, prev + 1));
                                     }}
-                                    onSelect={(e) => {
-                                        const start = e.target.selectionStart;
-                                        if (typeof start === 'number') {
-                                            setSelectedCharIdx(Math.min(targetLength - 1, start));
-                                        }
+                                    onMouseDown={(e) => {
+                                        // Focus the input, but prevent clicking from changing the text selection cursor position
+                                        e.preventDefault();
+                                        inputRef.current?.focus();
+                                        inputRef.current?.setSelectionRange(selectedCharIdx, selectedCharIdx + 1);
                                     }}
                                     placeholder={t('pokepuzzle.guessPlaceholder')}
                                     className="input-clean"
@@ -1396,11 +1415,10 @@ export default function PokePuzzleView() {
                                                     type="button"
                                                     key={key}
                                                     onClick={() => handleKeyClick(key)}
-                                                    className={`pokepuzzle-key ${isWide ? 'is-wide' : ''} ${
-                                                        status === 'correct' ? 'is-correct' :
+                                                    className={`pokepuzzle-key ${isWide ? 'is-wide' : ''} ${status === 'correct' ? 'is-correct' :
                                                         status === 'present' ? 'is-present' :
-                                                        status === 'absent' ? 'is-absent' : ''
-                                                    }`}
+                                                            status === 'absent' ? 'is-absent' : ''
+                                                        }`}
                                                 >
                                                     {label}
                                                 </button>
