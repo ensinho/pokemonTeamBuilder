@@ -1,35 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { CloseIcon, PokeballIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
     const { t } = useTranslation();
-    const dialogRef = useRef(null);
-    const previouslyFocusedRef = useRef(null);
-
-    useEffect(() => {
-        previouslyFocusedRef.current = document.activeElement;
-        const node = dialogRef.current;
-        if (node) {
-            const focusable = node.querySelector(
-                'button:not([disabled]), [href], input:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            (focusable || node).focus?.();
-        }
-        const onKey = (e) => {
-            if (e.key === 'Escape') { e.stopPropagation(); onDismiss?.(); }
-        };
-        document.addEventListener('keydown', onKey);
-        return () => {
-            document.removeEventListener('keydown', onKey);
-            const prev = previouslyFocusedRef.current;
-            if (prev && typeof prev.focus === 'function') prev.focus();
-        };
-    }, [onDismiss]);
+    const dialogRef = useModalA11y(onDismiss);
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/55 p-4 animate-fade-in sm:items-center"
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/65 backdrop-blur-sm p-4 animate-fade-in sm:items-center"
             onMouseDown={(e) => { if (e.target === e.currentTarget) onDismiss?.(); }}
         >
             <div

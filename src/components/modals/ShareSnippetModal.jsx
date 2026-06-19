@@ -532,7 +532,7 @@ export const ShareSnippetModal = ({
 
     return (
         <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center sm:items-center justify-center z-[60]"
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm flex items-center sm:items-center justify-center z-[60]"
             onClick={onClose}
             role="presentation"
         >
@@ -542,10 +542,7 @@ export const ShareSnippetModal = ({
                 aria-modal="true"
                 aria-labelledby="share-snippet-title"
                 tabIndex={-1}
-                className="mx-4 w-full max-h-[92vh] overflow-y-auto rounded-2xl border border-surface-raised bg-surface p-4 shadow-2xl animate-scale-in focus:outline-none sm:max-w-lg sm:rounded-2xl sm:p-5"
-                style={{
-                    paddingBottom: 'max(1rem, env(safe-area-inset-bottom))',
-                }}
+                className="mx-4 w-full max-h-[92vh] overflow-y-auto custom-scrollbar rounded-2xl border border-surface-raised bg-surface p-4 shadow-2xl animate-scale-in focus:outline-none sm:max-w-lg sm:rounded-2xl sm:p-5"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex items-start justify-between mb-4">

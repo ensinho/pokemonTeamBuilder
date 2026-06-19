@@ -3,32 +3,42 @@ import { PokeballIcon, SwordsIcon, CloseIcon } from '../icons';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { Download } from 'lucide-react';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 export function UserProfileModal({ isOpen, profile, onClose, messages = [], handleImportTeam, language = 'en' }) {
-    if (!isOpen || !profile) return null;
+    const dialogRef = useModalA11y(isOpen ? onClose : null);
 
-    const { name, avatar, isShiny } = profile;
-
-    // Scan messages for shared teams by this user
     const userSharedTeams = useMemo(() => {
+        if (!isOpen || !profile) return [];
         const teamsMap = new Map();
         messages.forEach(msg => {
             if (msg.createdBy === profile.userId && msg.sharedTeam) {
-                // Use team name as key to de-duplicate
                 teamsMap.set(msg.sharedTeam.name, msg.sharedTeam);
             }
         });
         return Array.from(teamsMap.values());
-    }, [messages, profile.userId]);
+    }, [isOpen, profile, messages]);
+
+    if (!isOpen || !profile) return null;
+
+    const { name, avatar, isShiny } = profile;
 
     const isMsgAdmin = profile.userId === 'system' || profile.userEmail === 'enzopo625@gmail.com' || name === 'Professor Oak';
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="relative w-full max-w-md bg-surface border border-border rounded-xl shadow-2xl overflow-hidden animate-scale-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="user-profile-modal-title"
+                tabIndex={-1}
+                className="relative w-full max-w-md bg-surface border border-border rounded-xl shadow-2xl overflow-hidden animate-scale-in outline-none"
+            >
                 {/* Close Button */}
                 <button
                     onClick={onClose}
+                    aria-label="Close"
                     className="absolute top-3 right-3 text-muted hover:text-fg p-1.5 rounded-lg hover:bg-surface-raised transition-colors z-10"
                 >
                     <CloseIcon className="w-5 h-5" />
@@ -63,7 +73,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
 
                     {/* Trainer Info */}
                     <div className="space-y-1">
-                        <h3 className="text-lg font-bold text-fg flex items-center gap-1.5">
+                        <h3 id="user-profile-modal-title" className="text-lg font-bold text-fg flex items-center gap-1.5">
                             @{name}
                         </h3>
                         <p className="text-xs text-muted">

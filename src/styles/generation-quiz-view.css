@@ -233,7 +233,7 @@
     left: 0;
     right: 0;
     top: calc(100% + 0.5rem);
-    z-index: 30;
+    z-index: var(--z-dropdown);
     overflow: hidden;
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
@@ -840,7 +840,7 @@
     .generation-quiz--running .generation-quiz__sticky-controls {
         position: sticky;
         top: calc(var(--app-shell-top-band-height, 5.35rem) - 0.25rem);
-        z-index: 18;
+        z-index: var(--z-content);
         background: var(--color-surface);
         padding: 0.5rem 0 0.8rem 0;
         border-bottom: 1px solid var(--color-border);
@@ -1234,7 +1234,7 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
-    z-index: 100;
+    z-index: var(--z-history-overlay);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--duration-fast) var(--ease-smooth);
@@ -1255,7 +1255,7 @@
     background: var(--color-surface);
     border-left: 1px solid var(--color-border);
     box-shadow: var(--elevation-4);
-    z-index: 101;
+    z-index: var(--z-history-panel);
     transform: translateX(100%);
     transition: transform var(--duration-fast) var(--ease-smooth);
     display: flex;
@@ -1586,5 +1586,15 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         width: 100%;
         gap: 0.35rem;
+    }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    [class^="generation-quiz"],
+    [class*=" generation-quiz"] {
+        animation-duration: 0.001ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.001ms !important;
     }
 }

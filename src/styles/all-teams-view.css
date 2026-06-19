@@ -380,3 +380,13 @@
         display: none;
     }
 }
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    [class^="all-teams"],
+    [class*=" all-teams"] {
+        animation-duration: 0.001ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.001ms !important;
+    }
+}

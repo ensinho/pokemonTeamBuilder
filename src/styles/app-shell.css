@@ -12,7 +12,7 @@
 .app-shell__overlay {
     position: fixed;
     inset: 0;
-    z-index: 30;
+    z-index: var(--z-overlay);
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
 }
@@ -20,7 +20,7 @@
 .app-shell__sidebar {
     position: fixed;
     inset: 0 auto 0 0;
-    z-index: 40;
+    z-index: var(--z-sidebar);
     display: flex;
     flex-direction: column;
     width: var(--app-shell-sidebar-width);
@@ -779,7 +779,7 @@
 .app-shell__header {
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: var(--z-dropdown);
     display: flex;
     height: var(--app-shell-top-band-height);
     box-sizing: border-box;

@@ -133,7 +133,7 @@
 .home-hero__wallpaper-btn svg {
     width: 1rem;
     height: 1rem;
-    transition: transform 0.4s var(--ease-bounce);
+    transition: transform var(--duration-entrance) var(--ease-bounce);
 }
 
 .home-hero__wallpaper-btn:hover svg {
@@ -2596,5 +2596,15 @@
     .github-comment-bubble,
     .github-pr-card {
         margin-left: 0;
+    }
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    [class^="home-"],
+    [class*=" home-"] {
+        animation-duration: 0.001ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.001ms !important;
     }
 }

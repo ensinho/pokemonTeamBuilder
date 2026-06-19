@@ -1,24 +1,24 @@
-// Stat bars use Pokémon-canonical stat colors, kept hardcoded.
-const STAT_COLORS = {
-    hp: 'bg-red-500',
-    attack: 'bg-orange-500',
-    defense: 'bg-yellow-500',
-    'special-attack': 'bg-blue-500',
-    'special-defense': 'bg-green-500',
-    speed: 'bg-pink-500',
+const STAT_VAR = {
+    hp:               '--stat-hp',
+    attack:           '--stat-atk',
+    defense:          '--stat-def',
+    'special-attack': '--stat-spa',
+    'special-defense':'--stat-spd',
+    speed:            '--stat-spe',
 };
 
 export const StatBar = ({ stat, value }) => {
     const width = (value / 255) * 100;
+    const color = `var(${STAT_VAR[stat] ?? '--stat-hp'})`;
     return (
         <div className="flex items-center gap-2">
-            <p className="w-1/3 text-sm font-semibold capitalize text-right text-fg">
+            <p className="w-1/3 text-sm font-semibold capitalize text-right" style={{ color: 'var(--color-fg)' }}>
                 {stat.replace('-', ' ')}
             </p>
-            <div className="w-2/3 rounded-full h-4 bg-surface-raised">
+            <div className="w-2/3 rounded-full h-4" style={{ backgroundColor: 'var(--color-surface-raised)' }}>
                 <div
-                    className={`${STAT_COLORS[stat]} h-4 rounded-full text-xs font-mono font-bold text-white flex items-center justify-end pr-2`}
-                    style={{ width: `${width}%` }}
+                    className="h-4 rounded-full text-xs font-mono font-bold text-white flex items-center justify-end pr-2"
+                    style={{ width: `${width}%`, backgroundColor: color }}
                 >
                     {value}
                 </div>

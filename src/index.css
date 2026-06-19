@@ -21,6 +21,7 @@
     --duration-normal: 150ms;
     --duration-slow: 250ms;
     --duration-entrance: 350ms;
+    --duration-blur-reveal: 1.2s;  /* intentional slow sprite blur reveal */
 
     /* Spacing scale — 4px base unit */
     --space-1: 0.25rem;  /* 4px  */
@@ -39,6 +40,24 @@
     --radius-md: 0.5rem;    /* 8px  — buttons, inputs */
     --radius-lg: 0.75rem;   /* 12px — cards */
     --radius-xl: 1rem;      /* 16px — panels, modals */
+
+    /* Z-index stacking layer */
+    --z-content:         10;
+    --z-dropdown:        20;
+    --z-sticky:          25;
+    --z-overlay:         30;
+    --z-sidebar:         40;
+    --z-modal:           50;
+    --z-history-overlay: 100;
+    --z-history-panel:   101;
+
+    /* Pokémon canonical stat colors — game-accurate, not theme-dependent */
+    --stat-hp:  #FF5959;
+    --stat-atk: #F5AC78;
+    --stat-def: #FAE078;
+    --stat-spa: #9DB7F5;
+    --stat-spd: #A7DB8D;
+    --stat-spe: #FA92B2;
 }
 
 /* ============================================================
@@ -67,6 +86,7 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.4);
     --elevation-2: 0 4px 16px -4px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.25);
     --elevation-3: 0 12px 32px -8px rgba(0,0,0,0.65);
+    --elevation-4: 0 20px 48px -12px rgba(0,0,0,0.75);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
@@ -93,6 +113,7 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
     --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
     --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
+    --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
@@ -119,6 +140,7 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
     --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
     --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
+    --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
@@ -145,6 +167,7 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.5);
     --elevation-2: 0 6px 20px -6px rgba(0,0,0,0.6), 0 2px 4px rgba(0,0,0,0.35);
     --elevation-3: 0 14px 36px -10px rgba(0,0,0,0.7);
+    --elevation-4: 0 20px 48px -12px rgba(0,0,0,0.8);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
@@ -171,6 +194,7 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.45);
     --elevation-2: 0 6px 20px -6px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.3);
     --elevation-3: 0 14px 36px -10px rgba(0,0,0,0.65);
+    --elevation-4: 0 20px 48px -12px rgba(0,0,0,0.75);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
@@ -197,6 +221,7 @@
     --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
     --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
     --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
+    --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
 
     --card-border-style: solid;
     --card-border-color: var(--color-border);
@@ -266,6 +291,7 @@ input[type='checkbox']:checked + div + div {
 .elevation-1 { box-shadow: var(--elevation-1); }
 .elevation-2 { box-shadow: var(--elevation-2); }
 .elevation-3 { box-shadow: var(--elevation-3); }
+.elevation-4 { box-shadow: var(--elevation-4); }
 
 /* Sprite fade-in */
 @keyframes sprite-fade-in {
@@ -494,3 +520,30 @@ input[type='checkbox']:checked + div + div {
         transition-duration: 0.001ms !important;
     }
 }
+
+/* ============================================================
+   POKÉMON TYPE BADGE COLORS
+   Game-canonical colors — not theme-dependent.
+   Use via TypeBadge component: className="type-badge--{type}"
+   ============================================================ */
+
+.type-badge--normal   { background-color: #A8A77A; color: #fff; }
+.type-badge--fire     { background-color: #EE8130; color: #fff; }
+.type-badge--water    { background-color: #6390F0; color: #fff; }
+.type-badge--electric { background-color: #F7D02C; color: #333; }
+.type-badge--grass    { background-color: #7AC74C; color: #fff; }
+.type-badge--ice      { background-color: #96D9D6; color: #333; }
+.type-badge--fighting { background-color: #C22E28; color: #fff; }
+.type-badge--poison   { background-color: #A33EA1; color: #fff; }
+.type-badge--ground   { background-color: #E2BF65; color: #333; }
+.type-badge--flying   { background-color: #A98FF3; color: #fff; }
+.type-badge--psychic  { background-color: #F95587; color: #fff; }
+.type-badge--bug      { background-color: #A6B91A; color: #fff; }
+.type-badge--rock     { background-color: #B6A136; color: #fff; }
+.type-badge--ghost    { background-color: #735797; color: #fff; }
+.type-badge--dragon   { background-color: #6F35FC; color: #fff; }
+.type-badge--dark     { background-color: #705746; color: #fff; }
+.type-badge--steel    { background-color: #B7B7CE; color: #333; }
+.type-badge--fairy    { background-color: #D685AD; color: #fff; }
+.type-badge--unknown  { background-color: #777777; color: #fff; }
+.type-badge--shadow   { background-color: #3D3D8F; color: #fff; }

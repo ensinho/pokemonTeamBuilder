@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { CloseIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
 export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onClose }) {
     const { t } = useTranslation();
@@ -12,7 +13,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
-    const { dialogRef } = useModalA11yLocal(onClose);
+    const dialogRef = useModalA11y(onClose);
 
     const isSignUp = mode === 'signUp';
 
@@ -44,7 +45,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-fade-in"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-fade-in"
             onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
         >
             <div
@@ -150,33 +151,6 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     );
 }
 
-// Local a11y helper that exposes the dialog ref.
-function useModalA11yLocal(onClose) {
-    const dialogRef = useRef(null);
-    const previouslyFocusedRef = useRef(null);
-
-    useEffect(() => {
-        previouslyFocusedRef.current = document.activeElement;
-        const node = dialogRef.current;
-        if (node) {
-            const focusable = node.querySelector(
-                'input:not([disabled]), button:not([disabled]), [href], select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-            );
-            (focusable || node).focus?.();
-        }
-        const onKey = (e) => {
-            if (e.key === 'Escape') { e.stopPropagation(); onClose?.(); }
-        };
-        document.addEventListener('keydown', onKey);
-        return () => {
-            document.removeEventListener('keydown', onKey);
-            const prev = previouslyFocusedRef.current;
-            if (prev && typeof prev.focus === 'function') prev.focus();
-        };
-    }, [onClose]);
-
-    return { dialogRef };
-}
 
 function prettifyAuthError(err, t) {
     const code = err?.code || '';

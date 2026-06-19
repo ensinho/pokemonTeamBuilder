@@ -295,7 +295,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--elevation-3);
-    z-index: 10;
+    z-index: var(--z-dropdown);
     margin-bottom: var(--space-1);
     max-height: 200px;
     overflow-y: auto;
@@ -349,7 +349,7 @@
     cursor: pointer;
     user-select: none;
     text-transform: uppercase;
-    transition: background 0.15s ease, border-color 0.15s ease;
+    transition: background var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
 
 .pokepuzzle-key:active {
@@ -885,7 +885,7 @@
     inset: 0;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(4px);
-    z-index: 100;
+    z-index: var(--z-history-overlay);
     opacity: 0;
     pointer-events: none;
     transition: opacity var(--duration-fast) var(--ease-smooth);
@@ -906,7 +906,7 @@
     background: var(--color-surface);
     border-left: 1px solid var(--color-border);
     box-shadow: var(--elevation-4);
-    z-index: 101;
+    z-index: var(--z-history-panel);
     transform: translateX(100%);
     transition: transform var(--duration-fast) var(--ease-smooth);
     display: flex;
@@ -1266,52 +1266,52 @@
 
 /* Visual Theme Overrides for Historical/Archived puzzles */
 .pokepuzzle-view.is-archive-mode {
-    --color-primary: #f59e0b;
+    --color-primary: var(--color-accent);
     /* Amber/gold */
     --color-primary-soft: rgba(245, 158, 11, 0.12);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-tile.is-selected-cell {
-    border-color: #f59e0b !important;
-    box-shadow: 0 0 0 1px #f59e0b, 0 0 12px rgba(245, 158, 11, 0.45);
+    border-color: var(--color-accent) !important;
+    box-shadow: 0 0 0 1px var(--color-accent), 0 0 12px rgba(245, 158, 11, 0.45);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-history-active-banner {
-    border-color: #f59e0b;
+    border-color: var(--color-accent);
     background: rgba(245, 158, 11, 0.12);
     box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-history-active-banner svg {
-    color: #f59e0b;
+    color: var(--color-accent);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-history-exit-btn {
-    border-color: #f59e0b;
-    color: #f59e0b;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-history-exit-btn:hover {
-    background: #f59e0b;
+    background: var(--color-accent);
     color: #ffffff;
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-tab-btn.is-active {
-    color: #f59e0b;
+    color: var(--color-accent);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-tip-tab-trigger.is-active {
-    color: #f59e0b;
-    border-bottom-color: #f59e0b;
+    color: var(--color-accent);
+    border-bottom-color: var(--color-accent);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-unlock-btn {
-    border-color: #f59e0b;
-    color: #f59e0b;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-unlock-btn:hover {
-    background: #f59e0b;
+    background: var(--color-accent);
     color: #ffffff;
     box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
 }
@@ -1322,5 +1322,15 @@
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-autocomplete-item:hover,
 .pokepuzzle-view.is-archive-mode .pokepuzzle-autocomplete-item.is-active {
-    color: #f59e0b;
+    color: var(--color-accent);
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+    [class^="pokepuzzle"],
+    [class*=" pokepuzzle"] {
+        animation-duration: 0.001ms !important;
+        animation-delay: 0ms !important;
+        transition-duration: 0.001ms !important;
+    }
 }

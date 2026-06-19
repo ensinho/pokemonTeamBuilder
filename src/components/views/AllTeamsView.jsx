@@ -5,6 +5,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
+import { EmptyState } from '../EmptyState';
 
 const timestampToDate = (value) => {
     if (!value) return null;
@@ -446,22 +447,15 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                         </div>
                     )
                 ) : (
-                    <div className="team-builder-empty-note all-teams-view__empty">
-                        <p className="all-teams-view__empty-copy">
-                            {teams.length === 0
-                                ? t('savedTeams.emptyDesc')
-                                : t('savedTeams.noMatchesDesc')}
-                        </p>
-                        {teams.length > 0 && searchTerm ? (
-                            <button
-                                type="button"
-                                onClick={() => setSearchTerm('')}
-                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
-                            >
-                                {language === 'pt' ? 'Limpar busca' : 'Clear search'}
-                            </button>
-                        ) : null}
-                    </div>
+                    <EmptyState
+                        compact={teams.length > 0}
+                        title={teams.length === 0 ? t('savedTeams.emptyTitle', { defaultValue: 'No saved teams' }) : t('savedTeams.noMatchesTitle', { defaultValue: 'No teams found' })}
+                        message={teams.length === 0 ? t('savedTeams.emptyDesc') : t('savedTeams.noMatchesDesc')}
+                        action={teams.length > 0 && searchTerm ? {
+                            label: language === 'pt' ? 'Limpar busca' : 'Clear search',
+                            onClick: () => setSearchTerm(''),
+                        } : undefined}
+                    />
                 )}
             </section>
         </main>

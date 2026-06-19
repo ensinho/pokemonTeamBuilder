@@ -14,6 +14,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import '../../styles/pokepuzzle-view.css';
+import { typeColors } from '../../constants/types';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -773,27 +774,6 @@ export default function PokePuzzleView() {
     const showTypes = guesses.length >= 5 || gameStatus !== 'IN_PROGRESS' || unlockedTips.types;
     const showSilhouette = guesses.length >= 7 || gameStatus !== 'IN_PROGRESS' || unlockedTips.silhouette;
 
-    // Renders custom Type badges
-    const typeColors = {
-        normal: '#A8A77A',
-        fire: '#EE8130',
-        water: '#6390F0',
-        electric: '#F7D02C',
-        grass: '#7AC74C',
-        ice: '#96D9D6',
-        fighting: '#C22E28',
-        poison: '#A33EA1',
-        ground: '#E2BF65',
-        flying: '#A98FF3',
-        psychic: '#F95587',
-        bug: '#A6B91A',
-        rock: '#B6A136',
-        ghost: '#735797',
-        dragon: '#6F35FC',
-        dark: '#705746',
-        steel: '#B7B7D0',
-        fairy: '#D685AD',
-    };
 
     const host = typeof window !== 'undefined' ? window.location.host : 'poketeambuilder.com';
     const primaryType = targetDetails.types?.[0] || 'normal';

@@ -117,14 +117,14 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
         : t('modals.greetingSelectorAllTypes');
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4" onClick={onClose} role="presentation">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="greeting-selector-title"
                 tabIndex={-1}
-                className="relative w-full max-w-7xl max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl custom-scrollbar animate-fade-in focus:outline-none"
+                className="relative w-full max-w-7xl max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl custom-scrollbar animate-scale-in focus:outline-none"
                 style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >

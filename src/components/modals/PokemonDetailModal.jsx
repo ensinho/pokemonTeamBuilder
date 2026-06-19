@@ -131,7 +131,7 @@ export function PokemonDetailModal({
         : pokemon;
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-3 sm:p-6" onClick={onClose} role="presentation">
+        <div className="fixed inset-0 bg-black/65 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-3 sm:p-6" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
