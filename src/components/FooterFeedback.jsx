@@ -103,9 +103,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
 
     return (
         <>
-            <span className="inline-flex items-center gap-1.5 ml-1 align-middle flex-wrap">
-                <span className="app-shell__footer-separator" aria-hidden="true">•</span>
-                
+            <span className="inline-flex items-center gap-1.5 ml-1 align-middle flex-wrap">                
                 <button
                     type="button"
                     onClick={handleToggleLike}

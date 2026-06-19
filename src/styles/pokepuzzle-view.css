@@ -702,6 +702,33 @@
         padding-bottom: var(--space-4);
     }
 
+    /* Header: keep tabs + History on ONE tidy row instead of a bulky stack. */
+    .pokepuzzle-header-row {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-2);
+        max-width: 100%;
+    }
+
+    .pokepuzzle-tab-btn {
+        font-size: 0.8rem;
+        padding: 0.5rem 0.35rem;
+    }
+
+    /* History collapses to a compact icon (+count) pill — label hidden. */
+    .pokepuzzle-history-toggle {
+        padding: 0.5rem 0.6rem;
+        gap: 0.35rem;
+    }
+
+    .pokepuzzle-history-toggle-label {
+        display: none;
+    }
+
+    .pokepuzzle-history-toggle-badge {
+        margin-left: 0;
+    }
+
     .pokepuzzle-tips-container {
         padding: var(--space-3);
     }
@@ -785,9 +812,19 @@
     align-items: center;
     justify-content: space-between;
     width: 100%;
-    max-width: 640px;
-    gap: var(--space-4);
+    max-width: 440px;
+    gap: var(--space-3);
     margin: 0 auto var(--space-2) auto;
+}
+
+/* Let the tab group take the available space, History sits snug at the end. */
+.pokepuzzle-header-row .pokepuzzle-tabs {
+    flex: 1;
+    max-width: none;
+}
+
+.pokepuzzle-header-row .pokepuzzle-history-toggle {
+    flex-shrink: 0;
 }
 
 .pokepuzzle-history-toggle {
@@ -1212,13 +1249,6 @@
 
 .pokepuzzle-history-exit-btn:active {
     transform: scale(0.97);
-}
-
-@media (max-width: 480px) {
-    .pokepuzzle-header-row {
-        flex-direction: column;
-        align-items: stretch;
-    }
 }
 
 /* Visual Theme Overrides for Historical/Archived puzzles */

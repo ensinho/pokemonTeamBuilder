@@ -1059,7 +1059,7 @@ export default function PokePuzzleView() {
                         title={language === 'pt' ? 'Ver Histórico de Puzzles' : 'View Puzzle History'}
                     >
                         <HistoryIcon />
-                        <span>{language === 'pt' ? 'Histórico' : 'History'}</span>
+                        <span className="pokepuzzle-history-toggle-label">{language === 'pt' ? 'Histórico' : 'History'}</span>
                         {playedHistoryCount > 0 && (
                             <span className="pokepuzzle-history-toggle-badge">
                                 {playedHistoryCount}
