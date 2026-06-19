@@ -8,7 +8,7 @@ import { useEffect, useRef } from 'react';
 // - Close: when already open, a dominant left swipe of `threshold`px anywhere closes it.
 //
 // Listeners are passive (we never preventDefault) so we don't fight native scroll.
-export function useEdgeSwipe({ enabled, isOpen, onOpen, onClose, edgeWidth = 28, threshold = 60 }) {
+export function useEdgeSwipe({ enabled, isOpen, onOpen, onClose, edgeWidth = 100, threshold = 120 }) {
     // Keep the latest callbacks/flags without re-binding listeners every render.
     const ctx = useRef({ enabled, isOpen, onOpen, onClose, edgeWidth, threshold });
     ctx.current = { enabled, isOpen, onOpen, onClose, edgeWidth, threshold };
