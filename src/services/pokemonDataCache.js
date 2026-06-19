@@ -6,7 +6,7 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/p
 // Bump this version whenever the SHAPE of cached data changes (e.g. adding `types`
 // to pokemon-index.json). It invalidates all stale entries from older versions so
 // users never get a broken UI from a long-TTL cache of the old format.
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_PREFIX = `ptb:pokemon-data:${CACHE_VERSION}:`;
 const REFERENCE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
@@ -276,6 +276,10 @@ export const loadPokemonIndex = async () => {
                 url: entry.url,
                 types: Array.isArray(entry.types) ? entry.types : [],
                 generation: entry.generation || null,
+                // Battle-form metadata (megas/regionals/gmax) — undefined for base Pokémon.
+                isForm: entry.isForm || false,
+                baseId: entry.baseId || null,
+                apiName: entry.apiName || entry.name,
                 // Sprites are derivable from the id — no need to store them in the index.
                 sprite: getPokemonArtworkSpriteUrl(id),
                 shinySprite: getPokemonArtworkSpriteUrl(id, { shiny: true }),

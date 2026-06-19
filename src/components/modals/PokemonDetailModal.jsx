@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
-import { getEvolutionChainData, getStaticPokemonDetail } from '../../services/pokemonDataCache';
+import { getEvolutionChainData, getStaticPokemonDetail, getPokemonSpeciesData, getPokemonApiData } from '../../services/pokemonDataCache';
+import { buildPokemonForms } from '../../utils/pokemonForms';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
@@ -30,6 +31,9 @@ export function PokemonDetailModal({
     const navigate = useNavigate();
     const [showShiny, setShowShiny] = useState(false);
     const [evolutionDetails, setEvolutionDetails] = useState([]);
+    const [forms, setForms] = useState([]);
+    // Which entity the "Add to team" button will add: null = base pokémon, else a form.
+    const [selectedFormId, setSelectedFormId] = useState(null);
     const pokemonWeaknesses = useMemo(() => getPokemonWeaknessEntries(pokemon?.types || []), [pokemon]);
 
     useEffect(() => {
@@ -94,12 +98,37 @@ export function PokemonDetailModal({
         };
     }, [pokemon, db, pokemonDetailsCache, setPokemonDetailsCache]);
 
+    // Fetch alternate forms / megas so they can be picked when adding to a team.
+    useEffect(() => {
+        setForms([]);
+        setSelectedFormId(null);
+        if (!pokemon?.id) return undefined;
+        let cancelled = false;
+        (async () => {
+            try {
+                const species = await getPokemonSpeciesData(pokemon.id);
+                if (cancelled || !species?.varieties?.length) return;
+                const built = await buildPokemonForms(species, { fetchPokemon: getPokemonApiData });
+                if (!cancelled) setForms(built);
+            } catch (err) {
+                console.error('Failed to load pokémon forms', err);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [pokemon?.id]);
+
     if (!pokemon) return null;
 
     const isAlreadyOnTeam = currentTeam.some((member) => member.id === pokemon.id);
     const spriteToShow = showShiny
         ? (pokemon.animatedShinySprite || pokemon.shinySprite)
         : (pokemon.animatedSprite || pokemon.sprite);
+
+    // The entity the Add button commits: base pokémon, or a chosen form (its own id/types).
+    const selectedForm = forms.find((f) => f.id === selectedFormId) || null;
+    const entityToAdd = selectedForm
+        ? { id: selectedForm.id, name: selectedForm.name, types: selectedForm.types, sprite: selectedForm.sprite }
+        : pokemon;
 
     return (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-3 sm:p-6" onClick={onClose} role="presentation">
@@ -228,13 +257,49 @@ export function PokemonDetailModal({
                             {pokemon.abilities?.map((ability, index) => <AbilityChip key={index} ability={ability} />)}
                         </div>
                     </div>
+
+                    {forms.length > 0 && onAdd && (
+                        <div className="mt-4 sm:mt-5">
+                            <h3 className="mb-2 text-center text-lg font-bold text-fg sm:mb-3 sm:text-xl">{t('modals.detailModalFormToAdd')}</h3>
+                            <div className="flex flex-wrap justify-center gap-2">
+                                {/* Base form chip */}
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedFormId(null)}
+                                    className={`flex items-center gap-2 rounded-xl border p-2 pr-3 transition-all ${!selectedFormId ? 'border-primary bg-primary-soft' : 'border-border bg-surface-raised hover:border-primary'}`}
+                                >
+                                    <img src={pokemon.sprite || POKEBALL_PLACEHOLDER_URL} alt={pokemon.name} className="h-9 w-9 image-pixelated" />
+                                    <span className="text-xs font-bold capitalize text-fg">{pokemon.name}</span>
+                                </button>
+                                {forms.map((form) => (
+                                    <button
+                                        key={form.id}
+                                        type="button"
+                                        onClick={() => setSelectedFormId(form.id)}
+                                        title={form.displayName}
+                                        className={`flex items-center gap-2 rounded-xl border p-2 pr-3 transition-all ${selectedFormId === form.id ? 'border-primary bg-primary-soft' : 'border-border bg-surface-raised hover:border-primary'}`}
+                                    >
+                                        <img src={form.sprite || POKEBALL_PLACEHOLDER_URL} alt={form.displayName} className="h-9 w-9 image-pixelated" />
+                                        <span className="text-left">
+                                            <span className="block text-xs font-bold capitalize text-fg leading-tight">{form.displayName}</span>
+                                            {form.types?.length > 0 && (
+                                                <span className="mt-1 flex gap-1">
+                                                    {form.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                                </span>
+                                            )}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {!isAlreadyOnTeam && onAdd && (
                     <div className="shrink-0 border-t border-surface-raised px-4 py-3 sm:px-5">
                         <div className="flex justify-center">
-                            <button onClick={() => { onAdd(pokemon); onClose(); }} className="w-full sm:w-auto bg-primary hover:opacity-90 text-white font-bold py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-opacity active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg">
-                                <PlusIcon /> {t('modals.detailModalAddTeam')}
+                            <button onClick={() => { onAdd(entityToAdd); onClose(); }} className="w-full sm:w-auto bg-primary hover:opacity-90 text-white font-bold py-2.5 px-6 rounded-lg flex items-center justify-center gap-2 transition-opacity active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg">
+                                <PlusIcon /> {selectedForm ? t('modals.detailModalAddFormTeam', { name: selectedForm.displayName }) : t('modals.detailModalAddTeam')}
                             </button>
                         </div>
                     </div>

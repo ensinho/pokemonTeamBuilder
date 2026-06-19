@@ -1,6 +1,8 @@
 {
-  "generatedAt": "2026-06-18T19:45:02.952Z",
-  "source": "https://pokeapi.co/api/v2/pokemon?limit=1025",
+  "generatedAt": "2026-06-19T14:41:17.340Z",
+  "source": "https://pokeapi.co/api/v2/pokemon?limit=100000",
+  "baseCount": 1025,
+  "formCount": 183,
   "pokemons": [
     {
       "id": 1,
@@ -9752,6 +9754,2343 @@
         "ghost"
       ],
       "generation": "generation-ix"
+    },
+    {
+      "id": 10033,
+      "name": "Mega Venusaur",
+      "apiName": "venusaur-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10033/",
+      "types": [
+        "grass",
+        "poison"
+      ],
+      "generation": "generation-i",
+      "baseId": 3,
+      "isForm": true
+    },
+    {
+      "id": 10034,
+      "name": "Mega Charizard X",
+      "apiName": "charizard-mega-x",
+      "url": "https://pokeapi.co/api/v2/pokemon/10034/",
+      "types": [
+        "fire",
+        "dragon"
+      ],
+      "generation": "generation-i",
+      "baseId": 6,
+      "isForm": true
+    },
+    {
+      "id": 10035,
+      "name": "Mega Charizard Y",
+      "apiName": "charizard-mega-y",
+      "url": "https://pokeapi.co/api/v2/pokemon/10035/",
+      "types": [
+        "fire",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 6,
+      "isForm": true
+    },
+    {
+      "id": 10036,
+      "name": "Mega Blastoise",
+      "apiName": "blastoise-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10036/",
+      "types": [
+        "water"
+      ],
+      "generation": "generation-i",
+      "baseId": 9,
+      "isForm": true
+    },
+    {
+      "id": 10037,
+      "name": "Mega Alakazam",
+      "apiName": "alakazam-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10037/",
+      "types": [
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 65,
+      "isForm": true
+    },
+    {
+      "id": 10038,
+      "name": "Mega Gengar",
+      "apiName": "gengar-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10038/",
+      "types": [
+        "ghost",
+        "poison"
+      ],
+      "generation": "generation-i",
+      "baseId": 94,
+      "isForm": true
+    },
+    {
+      "id": 10039,
+      "name": "Mega Kangaskhan",
+      "apiName": "kangaskhan-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10039/",
+      "types": [
+        "normal"
+      ],
+      "generation": "generation-i",
+      "baseId": 115,
+      "isForm": true
+    },
+    {
+      "id": 10040,
+      "name": "Mega Pinsir",
+      "apiName": "pinsir-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10040/",
+      "types": [
+        "bug",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 127,
+      "isForm": true
+    },
+    {
+      "id": 10041,
+      "name": "Mega Gyarados",
+      "apiName": "gyarados-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10041/",
+      "types": [
+        "water",
+        "dark"
+      ],
+      "generation": "generation-i",
+      "baseId": 130,
+      "isForm": true
+    },
+    {
+      "id": 10042,
+      "name": "Mega Aerodactyl",
+      "apiName": "aerodactyl-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10042/",
+      "types": [
+        "rock",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 142,
+      "isForm": true
+    },
+    {
+      "id": 10043,
+      "name": "Mega Mewtwo X",
+      "apiName": "mewtwo-mega-x",
+      "url": "https://pokeapi.co/api/v2/pokemon/10043/",
+      "types": [
+        "psychic",
+        "fighting"
+      ],
+      "generation": "generation-i",
+      "baseId": 150,
+      "isForm": true
+    },
+    {
+      "id": 10044,
+      "name": "Mega Mewtwo Y",
+      "apiName": "mewtwo-mega-y",
+      "url": "https://pokeapi.co/api/v2/pokemon/10044/",
+      "types": [
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 150,
+      "isForm": true
+    },
+    {
+      "id": 10045,
+      "name": "Mega Ampharos",
+      "apiName": "ampharos-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10045/",
+      "types": [
+        "electric",
+        "dragon"
+      ],
+      "generation": "generation-ii",
+      "baseId": 181,
+      "isForm": true
+    },
+    {
+      "id": 10046,
+      "name": "Mega Scizor",
+      "apiName": "scizor-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10046/",
+      "types": [
+        "bug",
+        "steel"
+      ],
+      "generation": "generation-ii",
+      "baseId": 212,
+      "isForm": true
+    },
+    {
+      "id": 10047,
+      "name": "Mega Heracross",
+      "apiName": "heracross-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10047/",
+      "types": [
+        "bug",
+        "fighting"
+      ],
+      "generation": "generation-ii",
+      "baseId": 214,
+      "isForm": true
+    },
+    {
+      "id": 10048,
+      "name": "Mega Houndoom",
+      "apiName": "houndoom-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10048/",
+      "types": [
+        "dark",
+        "fire"
+      ],
+      "generation": "generation-ii",
+      "baseId": 229,
+      "isForm": true
+    },
+    {
+      "id": 10049,
+      "name": "Mega Tyranitar",
+      "apiName": "tyranitar-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10049/",
+      "types": [
+        "rock",
+        "dark"
+      ],
+      "generation": "generation-ii",
+      "baseId": 248,
+      "isForm": true
+    },
+    {
+      "id": 10050,
+      "name": "Mega Blaziken",
+      "apiName": "blaziken-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10050/",
+      "types": [
+        "fire",
+        "fighting"
+      ],
+      "generation": "generation-iii",
+      "baseId": 257,
+      "isForm": true
+    },
+    {
+      "id": 10051,
+      "name": "Mega Gardevoir",
+      "apiName": "gardevoir-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10051/",
+      "types": [
+        "psychic",
+        "fairy"
+      ],
+      "generation": "generation-iii",
+      "baseId": 282,
+      "isForm": true
+    },
+    {
+      "id": 10052,
+      "name": "Mega Mawile",
+      "apiName": "mawile-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10052/",
+      "types": [
+        "steel",
+        "fairy"
+      ],
+      "generation": "generation-iii",
+      "baseId": 303,
+      "isForm": true
+    },
+    {
+      "id": 10053,
+      "name": "Mega Aggron",
+      "apiName": "aggron-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10053/",
+      "types": [
+        "steel"
+      ],
+      "generation": "generation-iii",
+      "baseId": 306,
+      "isForm": true
+    },
+    {
+      "id": 10054,
+      "name": "Mega Medicham",
+      "apiName": "medicham-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10054/",
+      "types": [
+        "fighting",
+        "psychic"
+      ],
+      "generation": "generation-iii",
+      "baseId": 308,
+      "isForm": true
+    },
+    {
+      "id": 10055,
+      "name": "Mega Manectric",
+      "apiName": "manectric-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10055/",
+      "types": [
+        "electric"
+      ],
+      "generation": "generation-iii",
+      "baseId": 310,
+      "isForm": true
+    },
+    {
+      "id": 10056,
+      "name": "Mega Banette",
+      "apiName": "banette-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10056/",
+      "types": [
+        "ghost"
+      ],
+      "generation": "generation-iii",
+      "baseId": 354,
+      "isForm": true
+    },
+    {
+      "id": 10057,
+      "name": "Mega Absol",
+      "apiName": "absol-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10057/",
+      "types": [
+        "dark"
+      ],
+      "generation": "generation-iii",
+      "baseId": 359,
+      "isForm": true
+    },
+    {
+      "id": 10058,
+      "name": "Mega Garchomp",
+      "apiName": "garchomp-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10058/",
+      "types": [
+        "dragon",
+        "ground"
+      ],
+      "generation": "generation-iv",
+      "baseId": 445,
+      "isForm": true
+    },
+    {
+      "id": 10059,
+      "name": "Mega Lucario",
+      "apiName": "lucario-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10059/",
+      "types": [
+        "fighting",
+        "steel"
+      ],
+      "generation": "generation-iv",
+      "baseId": 448,
+      "isForm": true
+    },
+    {
+      "id": 10060,
+      "name": "Mega Abomasnow",
+      "apiName": "abomasnow-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10060/",
+      "types": [
+        "grass",
+        "ice"
+      ],
+      "generation": "generation-iv",
+      "baseId": 460,
+      "isForm": true
+    },
+    {
+      "id": 10062,
+      "name": "Mega Latias",
+      "apiName": "latias-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10062/",
+      "types": [
+        "dragon",
+        "psychic"
+      ],
+      "generation": "generation-iii",
+      "baseId": 380,
+      "isForm": true
+    },
+    {
+      "id": 10063,
+      "name": "Mega Latios",
+      "apiName": "latios-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10063/",
+      "types": [
+        "dragon",
+        "psychic"
+      ],
+      "generation": "generation-iii",
+      "baseId": 381,
+      "isForm": true
+    },
+    {
+      "id": 10064,
+      "name": "Mega Swampert",
+      "apiName": "swampert-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10064/",
+      "types": [
+        "water",
+        "ground"
+      ],
+      "generation": "generation-iii",
+      "baseId": 260,
+      "isForm": true
+    },
+    {
+      "id": 10065,
+      "name": "Mega Sceptile",
+      "apiName": "sceptile-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10065/",
+      "types": [
+        "grass",
+        "dragon"
+      ],
+      "generation": "generation-iii",
+      "baseId": 254,
+      "isForm": true
+    },
+    {
+      "id": 10066,
+      "name": "Mega Sableye",
+      "apiName": "sableye-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10066/",
+      "types": [
+        "dark",
+        "ghost"
+      ],
+      "generation": "generation-iii",
+      "baseId": 302,
+      "isForm": true
+    },
+    {
+      "id": 10067,
+      "name": "Mega Altaria",
+      "apiName": "altaria-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10067/",
+      "types": [
+        "dragon",
+        "fairy"
+      ],
+      "generation": "generation-iii",
+      "baseId": 334,
+      "isForm": true
+    },
+    {
+      "id": 10068,
+      "name": "Mega Gallade",
+      "apiName": "gallade-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10068/",
+      "types": [
+        "psychic",
+        "fighting"
+      ],
+      "generation": "generation-iv",
+      "baseId": 475,
+      "isForm": true
+    },
+    {
+      "id": 10069,
+      "name": "Mega Audino",
+      "apiName": "audino-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10069/",
+      "types": [
+        "normal",
+        "fairy"
+      ],
+      "generation": "generation-v",
+      "baseId": 531,
+      "isForm": true
+    },
+    {
+      "id": 10070,
+      "name": "Mega Sharpedo",
+      "apiName": "sharpedo-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10070/",
+      "types": [
+        "water",
+        "dark"
+      ],
+      "generation": "generation-iii",
+      "baseId": 319,
+      "isForm": true
+    },
+    {
+      "id": 10071,
+      "name": "Mega Slowbro",
+      "apiName": "slowbro-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10071/",
+      "types": [
+        "water",
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 80,
+      "isForm": true
+    },
+    {
+      "id": 10072,
+      "name": "Mega Steelix",
+      "apiName": "steelix-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10072/",
+      "types": [
+        "steel",
+        "ground"
+      ],
+      "generation": "generation-ii",
+      "baseId": 208,
+      "isForm": true
+    },
+    {
+      "id": 10073,
+      "name": "Mega Pidgeot",
+      "apiName": "pidgeot-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10073/",
+      "types": [
+        "normal",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 18,
+      "isForm": true
+    },
+    {
+      "id": 10074,
+      "name": "Mega Glalie",
+      "apiName": "glalie-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10074/",
+      "types": [
+        "ice"
+      ],
+      "generation": "generation-iii",
+      "baseId": 362,
+      "isForm": true
+    },
+    {
+      "id": 10075,
+      "name": "Mega Diancie",
+      "apiName": "diancie-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10075/",
+      "types": [
+        "rock",
+        "fairy"
+      ],
+      "generation": "generation-vi",
+      "baseId": 719,
+      "isForm": true
+    },
+    {
+      "id": 10076,
+      "name": "Mega Metagross",
+      "apiName": "metagross-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10076/",
+      "types": [
+        "steel",
+        "psychic"
+      ],
+      "generation": "generation-iii",
+      "baseId": 376,
+      "isForm": true
+    },
+    {
+      "id": 10077,
+      "name": "Primal Kyogre",
+      "apiName": "kyogre-primal",
+      "url": "https://pokeapi.co/api/v2/pokemon/10077/",
+      "types": [
+        "water"
+      ],
+      "generation": "generation-iii",
+      "baseId": 382,
+      "isForm": true
+    },
+    {
+      "id": 10078,
+      "name": "Primal Groudon",
+      "apiName": "groudon-primal",
+      "url": "https://pokeapi.co/api/v2/pokemon/10078/",
+      "types": [
+        "ground",
+        "fire"
+      ],
+      "generation": "generation-iii",
+      "baseId": 383,
+      "isForm": true
+    },
+    {
+      "id": 10079,
+      "name": "Mega Rayquaza",
+      "apiName": "rayquaza-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10079/",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "generation": "generation-iii",
+      "baseId": 384,
+      "isForm": true
+    },
+    {
+      "id": 10087,
+      "name": "Mega Camerupt",
+      "apiName": "camerupt-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10087/",
+      "types": [
+        "fire",
+        "ground"
+      ],
+      "generation": "generation-iii",
+      "baseId": 323,
+      "isForm": true
+    },
+    {
+      "id": 10088,
+      "name": "Mega Lopunny",
+      "apiName": "lopunny-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10088/",
+      "types": [
+        "normal",
+        "fighting"
+      ],
+      "generation": "generation-iv",
+      "baseId": 428,
+      "isForm": true
+    },
+    {
+      "id": 10089,
+      "name": "Mega Salamence",
+      "apiName": "salamence-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10089/",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "generation": "generation-iii",
+      "baseId": 373,
+      "isForm": true
+    },
+    {
+      "id": 10090,
+      "name": "Mega Beedrill",
+      "apiName": "beedrill-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10090/",
+      "types": [
+        "bug",
+        "poison"
+      ],
+      "generation": "generation-i",
+      "baseId": 15,
+      "isForm": true
+    },
+    {
+      "id": 10091,
+      "name": "Alolan Rattata",
+      "apiName": "rattata-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10091/",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "generation": "generation-i",
+      "baseId": 19,
+      "isForm": true
+    },
+    {
+      "id": 10092,
+      "name": "Alolan Raticate",
+      "apiName": "raticate-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10092/",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "generation": "generation-i",
+      "baseId": 20,
+      "isForm": true
+    },
+    {
+      "id": 10093,
+      "name": "Alolan Raticate Totem",
+      "apiName": "raticate-totem-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10093/",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "generation": "generation-i",
+      "baseId": 20,
+      "isForm": true
+    },
+    {
+      "id": 10100,
+      "name": "Alolan Raichu",
+      "apiName": "raichu-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10100/",
+      "types": [
+        "electric",
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 26,
+      "isForm": true
+    },
+    {
+      "id": 10101,
+      "name": "Alolan Sandshrew",
+      "apiName": "sandshrew-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10101/",
+      "types": [
+        "ice",
+        "steel"
+      ],
+      "generation": "generation-i",
+      "baseId": 27,
+      "isForm": true
+    },
+    {
+      "id": 10102,
+      "name": "Alolan Sandslash",
+      "apiName": "sandslash-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10102/",
+      "types": [
+        "ice",
+        "steel"
+      ],
+      "generation": "generation-i",
+      "baseId": 28,
+      "isForm": true
+    },
+    {
+      "id": 10103,
+      "name": "Alolan Vulpix",
+      "apiName": "vulpix-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10103/",
+      "types": [
+        "ice"
+      ],
+      "generation": "generation-i",
+      "baseId": 37,
+      "isForm": true
+    },
+    {
+      "id": 10104,
+      "name": "Alolan Ninetales",
+      "apiName": "ninetales-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10104/",
+      "types": [
+        "ice",
+        "fairy"
+      ],
+      "generation": "generation-i",
+      "baseId": 38,
+      "isForm": true
+    },
+    {
+      "id": 10105,
+      "name": "Alolan Diglett",
+      "apiName": "diglett-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10105/",
+      "types": [
+        "ground",
+        "steel"
+      ],
+      "generation": "generation-i",
+      "baseId": 50,
+      "isForm": true
+    },
+    {
+      "id": 10106,
+      "name": "Alolan Dugtrio",
+      "apiName": "dugtrio-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10106/",
+      "types": [
+        "ground",
+        "steel"
+      ],
+      "generation": "generation-i",
+      "baseId": 51,
+      "isForm": true
+    },
+    {
+      "id": 10107,
+      "name": "Alolan Meowth",
+      "apiName": "meowth-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10107/",
+      "types": [
+        "dark"
+      ],
+      "generation": "generation-i",
+      "baseId": 52,
+      "isForm": true
+    },
+    {
+      "id": 10108,
+      "name": "Alolan Persian",
+      "apiName": "persian-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10108/",
+      "types": [
+        "dark"
+      ],
+      "generation": "generation-i",
+      "baseId": 53,
+      "isForm": true
+    },
+    {
+      "id": 10109,
+      "name": "Alolan Geodude",
+      "apiName": "geodude-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10109/",
+      "types": [
+        "rock",
+        "electric"
+      ],
+      "generation": "generation-i",
+      "baseId": 74,
+      "isForm": true
+    },
+    {
+      "id": 10110,
+      "name": "Alolan Graveler",
+      "apiName": "graveler-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10110/",
+      "types": [
+        "rock",
+        "electric"
+      ],
+      "generation": "generation-i",
+      "baseId": 75,
+      "isForm": true
+    },
+    {
+      "id": 10111,
+      "name": "Alolan Golem",
+      "apiName": "golem-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10111/",
+      "types": [
+        "rock",
+        "electric"
+      ],
+      "generation": "generation-i",
+      "baseId": 76,
+      "isForm": true
+    },
+    {
+      "id": 10112,
+      "name": "Alolan Grimer",
+      "apiName": "grimer-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10112/",
+      "types": [
+        "poison",
+        "dark"
+      ],
+      "generation": "generation-i",
+      "baseId": 88,
+      "isForm": true
+    },
+    {
+      "id": 10113,
+      "name": "Alolan Muk",
+      "apiName": "muk-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10113/",
+      "types": [
+        "poison",
+        "dark"
+      ],
+      "generation": "generation-i",
+      "baseId": 89,
+      "isForm": true
+    },
+    {
+      "id": 10114,
+      "name": "Alolan Exeggutor",
+      "apiName": "exeggutor-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10114/",
+      "types": [
+        "grass",
+        "dragon"
+      ],
+      "generation": "generation-i",
+      "baseId": 103,
+      "isForm": true
+    },
+    {
+      "id": 10115,
+      "name": "Alolan Marowak",
+      "apiName": "marowak-alola",
+      "url": "https://pokeapi.co/api/v2/pokemon/10115/",
+      "types": [
+        "fire",
+        "ghost"
+      ],
+      "generation": "generation-i",
+      "baseId": 105,
+      "isForm": true
+    },
+    {
+      "id": 10161,
+      "name": "Galarian Meowth",
+      "apiName": "meowth-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10161/",
+      "types": [
+        "steel"
+      ],
+      "generation": "generation-i",
+      "baseId": 52,
+      "isForm": true
+    },
+    {
+      "id": 10162,
+      "name": "Galarian Ponyta",
+      "apiName": "ponyta-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10162/",
+      "types": [
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 77,
+      "isForm": true
+    },
+    {
+      "id": 10163,
+      "name": "Galarian Rapidash",
+      "apiName": "rapidash-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10163/",
+      "types": [
+        "psychic",
+        "fairy"
+      ],
+      "generation": "generation-i",
+      "baseId": 78,
+      "isForm": true
+    },
+    {
+      "id": 10164,
+      "name": "Galarian Slowpoke",
+      "apiName": "slowpoke-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10164/",
+      "types": [
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 79,
+      "isForm": true
+    },
+    {
+      "id": 10165,
+      "name": "Galarian Slowbro",
+      "apiName": "slowbro-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10165/",
+      "types": [
+        "poison",
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 80,
+      "isForm": true
+    },
+    {
+      "id": 10166,
+      "name": "Galarian Farfetchd",
+      "apiName": "farfetchd-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10166/",
+      "types": [
+        "fighting"
+      ],
+      "generation": "generation-i",
+      "baseId": 83,
+      "isForm": true
+    },
+    {
+      "id": 10167,
+      "name": "Galarian Weezing",
+      "apiName": "weezing-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10167/",
+      "types": [
+        "poison",
+        "fairy"
+      ],
+      "generation": "generation-i",
+      "baseId": 110,
+      "isForm": true
+    },
+    {
+      "id": 10168,
+      "name": "Galarian Mr-mime",
+      "apiName": "mr-mime-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10168/",
+      "types": [
+        "ice",
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 122,
+      "isForm": true
+    },
+    {
+      "id": 10169,
+      "name": "Galarian Articuno",
+      "apiName": "articuno-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10169/",
+      "types": [
+        "psychic",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 144,
+      "isForm": true
+    },
+    {
+      "id": 10170,
+      "name": "Galarian Zapdos",
+      "apiName": "zapdos-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10170/",
+      "types": [
+        "fighting",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 145,
+      "isForm": true
+    },
+    {
+      "id": 10171,
+      "name": "Galarian Moltres",
+      "apiName": "moltres-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10171/",
+      "types": [
+        "dark",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 146,
+      "isForm": true
+    },
+    {
+      "id": 10172,
+      "name": "Galarian Slowking",
+      "apiName": "slowking-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10172/",
+      "types": [
+        "poison",
+        "psychic"
+      ],
+      "generation": "generation-ii",
+      "baseId": 199,
+      "isForm": true
+    },
+    {
+      "id": 10173,
+      "name": "Galarian Corsola",
+      "apiName": "corsola-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10173/",
+      "types": [
+        "ghost"
+      ],
+      "generation": "generation-ii",
+      "baseId": 222,
+      "isForm": true
+    },
+    {
+      "id": 10174,
+      "name": "Galarian Zigzagoon",
+      "apiName": "zigzagoon-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10174/",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "generation": "generation-iii",
+      "baseId": 263,
+      "isForm": true
+    },
+    {
+      "id": 10175,
+      "name": "Galarian Linoone",
+      "apiName": "linoone-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10175/",
+      "types": [
+        "dark",
+        "normal"
+      ],
+      "generation": "generation-iii",
+      "baseId": 264,
+      "isForm": true
+    },
+    {
+      "id": 10176,
+      "name": "Galarian Darumaka",
+      "apiName": "darumaka-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10176/",
+      "types": [
+        "ice"
+      ],
+      "generation": "generation-v",
+      "baseId": 554,
+      "isForm": true
+    },
+    {
+      "id": 10179,
+      "name": "Galarian Yamask",
+      "apiName": "yamask-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10179/",
+      "types": [
+        "ground",
+        "ghost"
+      ],
+      "generation": "generation-v",
+      "baseId": 562,
+      "isForm": true
+    },
+    {
+      "id": 10180,
+      "name": "Galarian Stunfisk",
+      "apiName": "stunfisk-galar",
+      "url": "https://pokeapi.co/api/v2/pokemon/10180/",
+      "types": [
+        "ground",
+        "steel"
+      ],
+      "generation": "generation-v",
+      "baseId": 618,
+      "isForm": true
+    },
+    {
+      "id": 10195,
+      "name": "Gigantamax Venusaur",
+      "apiName": "venusaur-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10195/",
+      "types": [
+        "grass",
+        "poison"
+      ],
+      "generation": "generation-i",
+      "baseId": 3,
+      "isForm": true
+    },
+    {
+      "id": 10196,
+      "name": "Gigantamax Charizard",
+      "apiName": "charizard-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10196/",
+      "types": [
+        "fire",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 6,
+      "isForm": true
+    },
+    {
+      "id": 10197,
+      "name": "Gigantamax Blastoise",
+      "apiName": "blastoise-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10197/",
+      "types": [
+        "water"
+      ],
+      "generation": "generation-i",
+      "baseId": 9,
+      "isForm": true
+    },
+    {
+      "id": 10198,
+      "name": "Gigantamax Butterfree",
+      "apiName": "butterfree-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10198/",
+      "types": [
+        "bug",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 12,
+      "isForm": true
+    },
+    {
+      "id": 10199,
+      "name": "Gigantamax Pikachu",
+      "apiName": "pikachu-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10199/",
+      "types": [
+        "electric"
+      ],
+      "generation": "generation-i",
+      "baseId": 25,
+      "isForm": true
+    },
+    {
+      "id": 10200,
+      "name": "Gigantamax Meowth",
+      "apiName": "meowth-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10200/",
+      "types": [
+        "normal"
+      ],
+      "generation": "generation-i",
+      "baseId": 52,
+      "isForm": true
+    },
+    {
+      "id": 10201,
+      "name": "Gigantamax Machamp",
+      "apiName": "machamp-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10201/",
+      "types": [
+        "fighting"
+      ],
+      "generation": "generation-i",
+      "baseId": 68,
+      "isForm": true
+    },
+    {
+      "id": 10202,
+      "name": "Gigantamax Gengar",
+      "apiName": "gengar-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10202/",
+      "types": [
+        "ghost",
+        "poison"
+      ],
+      "generation": "generation-i",
+      "baseId": 94,
+      "isForm": true
+    },
+    {
+      "id": 10203,
+      "name": "Gigantamax Kingler",
+      "apiName": "kingler-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10203/",
+      "types": [
+        "water"
+      ],
+      "generation": "generation-i",
+      "baseId": 99,
+      "isForm": true
+    },
+    {
+      "id": 10204,
+      "name": "Gigantamax Lapras",
+      "apiName": "lapras-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10204/",
+      "types": [
+        "water",
+        "ice"
+      ],
+      "generation": "generation-i",
+      "baseId": 131,
+      "isForm": true
+    },
+    {
+      "id": 10205,
+      "name": "Gigantamax Eevee",
+      "apiName": "eevee-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10205/",
+      "types": [
+        "normal"
+      ],
+      "generation": "generation-i",
+      "baseId": 133,
+      "isForm": true
+    },
+    {
+      "id": 10206,
+      "name": "Gigantamax Snorlax",
+      "apiName": "snorlax-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10206/",
+      "types": [
+        "normal"
+      ],
+      "generation": "generation-i",
+      "baseId": 143,
+      "isForm": true
+    },
+    {
+      "id": 10207,
+      "name": "Gigantamax Garbodor",
+      "apiName": "garbodor-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10207/",
+      "types": [
+        "poison"
+      ],
+      "generation": "generation-v",
+      "baseId": 569,
+      "isForm": true
+    },
+    {
+      "id": 10208,
+      "name": "Gigantamax Melmetal",
+      "apiName": "melmetal-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10208/",
+      "types": [
+        "steel"
+      ],
+      "generation": "generation-vii",
+      "baseId": 809,
+      "isForm": true
+    },
+    {
+      "id": 10209,
+      "name": "Gigantamax Rillaboom",
+      "apiName": "rillaboom-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10209/",
+      "types": [
+        "grass"
+      ],
+      "generation": "generation-viii",
+      "baseId": 812,
+      "isForm": true
+    },
+    {
+      "id": 10210,
+      "name": "Gigantamax Cinderace",
+      "apiName": "cinderace-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10210/",
+      "types": [
+        "fire"
+      ],
+      "generation": "generation-viii",
+      "baseId": 815,
+      "isForm": true
+    },
+    {
+      "id": 10211,
+      "name": "Gigantamax Inteleon",
+      "apiName": "inteleon-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10211/",
+      "types": [
+        "water"
+      ],
+      "generation": "generation-viii",
+      "baseId": 818,
+      "isForm": true
+    },
+    {
+      "id": 10212,
+      "name": "Gigantamax Corviknight",
+      "apiName": "corviknight-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10212/",
+      "types": [
+        "flying",
+        "steel"
+      ],
+      "generation": "generation-viii",
+      "baseId": 823,
+      "isForm": true
+    },
+    {
+      "id": 10213,
+      "name": "Gigantamax Orbeetle",
+      "apiName": "orbeetle-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10213/",
+      "types": [
+        "bug",
+        "psychic"
+      ],
+      "generation": "generation-viii",
+      "baseId": 826,
+      "isForm": true
+    },
+    {
+      "id": 10214,
+      "name": "Gigantamax Drednaw",
+      "apiName": "drednaw-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10214/",
+      "types": [
+        "water",
+        "rock"
+      ],
+      "generation": "generation-viii",
+      "baseId": 834,
+      "isForm": true
+    },
+    {
+      "id": 10215,
+      "name": "Gigantamax Coalossal",
+      "apiName": "coalossal-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10215/",
+      "types": [
+        "rock",
+        "fire"
+      ],
+      "generation": "generation-viii",
+      "baseId": 839,
+      "isForm": true
+    },
+    {
+      "id": 10216,
+      "name": "Gigantamax Flapple",
+      "apiName": "flapple-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10216/",
+      "types": [
+        "grass",
+        "dragon"
+      ],
+      "generation": "generation-viii",
+      "baseId": 841,
+      "isForm": true
+    },
+    {
+      "id": 10217,
+      "name": "Gigantamax Appletun",
+      "apiName": "appletun-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10217/",
+      "types": [
+        "grass",
+        "dragon"
+      ],
+      "generation": "generation-viii",
+      "baseId": 842,
+      "isForm": true
+    },
+    {
+      "id": 10218,
+      "name": "Gigantamax Sandaconda",
+      "apiName": "sandaconda-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10218/",
+      "types": [
+        "ground"
+      ],
+      "generation": "generation-viii",
+      "baseId": 844,
+      "isForm": true
+    },
+    {
+      "id": 10219,
+      "name": "Gigantamax Toxtricity Amped",
+      "apiName": "toxtricity-amped-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10219/",
+      "types": [
+        "electric",
+        "poison"
+      ],
+      "generation": "generation-viii",
+      "baseId": 849,
+      "isForm": true
+    },
+    {
+      "id": 10220,
+      "name": "Gigantamax Centiskorch",
+      "apiName": "centiskorch-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10220/",
+      "types": [
+        "fire",
+        "bug"
+      ],
+      "generation": "generation-viii",
+      "baseId": 851,
+      "isForm": true
+    },
+    {
+      "id": 10221,
+      "name": "Gigantamax Hatterene",
+      "apiName": "hatterene-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10221/",
+      "types": [
+        "psychic",
+        "fairy"
+      ],
+      "generation": "generation-viii",
+      "baseId": 858,
+      "isForm": true
+    },
+    {
+      "id": 10222,
+      "name": "Gigantamax Grimmsnarl",
+      "apiName": "grimmsnarl-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10222/",
+      "types": [
+        "dark",
+        "fairy"
+      ],
+      "generation": "generation-viii",
+      "baseId": 861,
+      "isForm": true
+    },
+    {
+      "id": 10223,
+      "name": "Gigantamax Alcremie",
+      "apiName": "alcremie-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10223/",
+      "types": [
+        "fairy"
+      ],
+      "generation": "generation-viii",
+      "baseId": 869,
+      "isForm": true
+    },
+    {
+      "id": 10224,
+      "name": "Gigantamax Copperajah",
+      "apiName": "copperajah-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10224/",
+      "types": [
+        "steel"
+      ],
+      "generation": "generation-viii",
+      "baseId": 879,
+      "isForm": true
+    },
+    {
+      "id": 10225,
+      "name": "Gigantamax Duraludon",
+      "apiName": "duraludon-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10225/",
+      "types": [
+        "steel",
+        "dragon"
+      ],
+      "generation": "generation-viii",
+      "baseId": 884,
+      "isForm": true
+    },
+    {
+      "id": 10226,
+      "name": "Gigantamax Urshifu Single Strike",
+      "apiName": "urshifu-single-strike-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10226/",
+      "types": [
+        "fighting",
+        "dark"
+      ],
+      "generation": "generation-viii",
+      "baseId": 892,
+      "isForm": true
+    },
+    {
+      "id": 10227,
+      "name": "Gigantamax Urshifu Rapid Strike",
+      "apiName": "urshifu-rapid-strike-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10227/",
+      "types": [
+        "fighting",
+        "water"
+      ],
+      "generation": "generation-viii",
+      "baseId": 892,
+      "isForm": true
+    },
+    {
+      "id": 10228,
+      "name": "Gigantamax Toxtricity Low Key",
+      "apiName": "toxtricity-low-key-gmax",
+      "url": "https://pokeapi.co/api/v2/pokemon/10228/",
+      "types": [
+        "electric",
+        "poison"
+      ],
+      "generation": "generation-viii",
+      "baseId": 849,
+      "isForm": true
+    },
+    {
+      "id": 10229,
+      "name": "Hisuian Growlithe",
+      "apiName": "growlithe-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10229/",
+      "types": [
+        "fire",
+        "rock"
+      ],
+      "generation": "generation-i",
+      "baseId": 58,
+      "isForm": true
+    },
+    {
+      "id": 10230,
+      "name": "Hisuian Arcanine",
+      "apiName": "arcanine-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10230/",
+      "types": [
+        "fire",
+        "rock"
+      ],
+      "generation": "generation-i",
+      "baseId": 59,
+      "isForm": true
+    },
+    {
+      "id": 10231,
+      "name": "Hisuian Voltorb",
+      "apiName": "voltorb-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10231/",
+      "types": [
+        "electric",
+        "grass"
+      ],
+      "generation": "generation-i",
+      "baseId": 100,
+      "isForm": true
+    },
+    {
+      "id": 10232,
+      "name": "Hisuian Electrode",
+      "apiName": "electrode-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10232/",
+      "types": [
+        "electric",
+        "grass"
+      ],
+      "generation": "generation-i",
+      "baseId": 101,
+      "isForm": true
+    },
+    {
+      "id": 10233,
+      "name": "Hisuian Typhlosion",
+      "apiName": "typhlosion-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10233/",
+      "types": [
+        "fire",
+        "ghost"
+      ],
+      "generation": "generation-ii",
+      "baseId": 157,
+      "isForm": true
+    },
+    {
+      "id": 10234,
+      "name": "Hisuian Qwilfish",
+      "apiName": "qwilfish-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10234/",
+      "types": [
+        "dark",
+        "poison"
+      ],
+      "generation": "generation-ii",
+      "baseId": 211,
+      "isForm": true
+    },
+    {
+      "id": 10235,
+      "name": "Hisuian Sneasel",
+      "apiName": "sneasel-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10235/",
+      "types": [
+        "fighting",
+        "poison"
+      ],
+      "generation": "generation-ii",
+      "baseId": 215,
+      "isForm": true
+    },
+    {
+      "id": 10236,
+      "name": "Hisuian Samurott",
+      "apiName": "samurott-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10236/",
+      "types": [
+        "water",
+        "dark"
+      ],
+      "generation": "generation-v",
+      "baseId": 503,
+      "isForm": true
+    },
+    {
+      "id": 10237,
+      "name": "Hisuian Lilligant",
+      "apiName": "lilligant-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10237/",
+      "types": [
+        "grass",
+        "fighting"
+      ],
+      "generation": "generation-v",
+      "baseId": 549,
+      "isForm": true
+    },
+    {
+      "id": 10238,
+      "name": "Hisuian Zorua",
+      "apiName": "zorua-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10238/",
+      "types": [
+        "normal",
+        "ghost"
+      ],
+      "generation": "generation-v",
+      "baseId": 570,
+      "isForm": true
+    },
+    {
+      "id": 10239,
+      "name": "Hisuian Zoroark",
+      "apiName": "zoroark-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10239/",
+      "types": [
+        "normal",
+        "ghost"
+      ],
+      "generation": "generation-v",
+      "baseId": 571,
+      "isForm": true
+    },
+    {
+      "id": 10240,
+      "name": "Hisuian Braviary",
+      "apiName": "braviary-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10240/",
+      "types": [
+        "psychic",
+        "flying"
+      ],
+      "generation": "generation-v",
+      "baseId": 628,
+      "isForm": true
+    },
+    {
+      "id": 10241,
+      "name": "Hisuian Sliggoo",
+      "apiName": "sliggoo-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10241/",
+      "types": [
+        "steel",
+        "dragon"
+      ],
+      "generation": "generation-vi",
+      "baseId": 705,
+      "isForm": true
+    },
+    {
+      "id": 10242,
+      "name": "Hisuian Goodra",
+      "apiName": "goodra-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10242/",
+      "types": [
+        "steel",
+        "dragon"
+      ],
+      "generation": "generation-vi",
+      "baseId": 706,
+      "isForm": true
+    },
+    {
+      "id": 10243,
+      "name": "Hisuian Avalugg",
+      "apiName": "avalugg-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10243/",
+      "types": [
+        "ice",
+        "rock"
+      ],
+      "generation": "generation-vi",
+      "baseId": 713,
+      "isForm": true
+    },
+    {
+      "id": 10244,
+      "name": "Hisuian Decidueye",
+      "apiName": "decidueye-hisui",
+      "url": "https://pokeapi.co/api/v2/pokemon/10244/",
+      "types": [
+        "grass",
+        "fighting"
+      ],
+      "generation": "generation-vii",
+      "baseId": 724,
+      "isForm": true
+    },
+    {
+      "id": 10253,
+      "name": "Paldean Wooper",
+      "apiName": "wooper-paldea",
+      "url": "https://pokeapi.co/api/v2/pokemon/10253/",
+      "types": [
+        "poison",
+        "ground"
+      ],
+      "generation": "generation-ii",
+      "baseId": 194,
+      "isForm": true
+    },
+    {
+      "id": 10278,
+      "name": "Mega Clefable",
+      "apiName": "clefable-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10278/",
+      "types": [
+        "fairy",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 36,
+      "isForm": true
+    },
+    {
+      "id": 10279,
+      "name": "Mega Victreebel",
+      "apiName": "victreebel-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10279/",
+      "types": [
+        "grass",
+        "poison"
+      ],
+      "generation": "generation-i",
+      "baseId": 71,
+      "isForm": true
+    },
+    {
+      "id": 10280,
+      "name": "Mega Starmie",
+      "apiName": "starmie-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10280/",
+      "types": [
+        "water",
+        "psychic"
+      ],
+      "generation": "generation-i",
+      "baseId": 121,
+      "isForm": true
+    },
+    {
+      "id": 10281,
+      "name": "Mega Dragonite",
+      "apiName": "dragonite-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10281/",
+      "types": [
+        "dragon",
+        "flying"
+      ],
+      "generation": "generation-i",
+      "baseId": 149,
+      "isForm": true
+    },
+    {
+      "id": 10282,
+      "name": "Mega Meganium",
+      "apiName": "meganium-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10282/",
+      "types": [
+        "grass",
+        "fairy"
+      ],
+      "generation": "generation-ii",
+      "baseId": 154,
+      "isForm": true
+    },
+    {
+      "id": 10283,
+      "name": "Mega Feraligatr",
+      "apiName": "feraligatr-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10283/",
+      "types": [
+        "water",
+        "dragon"
+      ],
+      "generation": "generation-ii",
+      "baseId": 160,
+      "isForm": true
+    },
+    {
+      "id": 10284,
+      "name": "Mega Skarmory",
+      "apiName": "skarmory-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10284/",
+      "types": [
+        "steel",
+        "flying"
+      ],
+      "generation": "generation-ii",
+      "baseId": 227,
+      "isForm": true
+    },
+    {
+      "id": 10285,
+      "name": "Mega Froslass",
+      "apiName": "froslass-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10285/",
+      "types": [
+        "ice",
+        "ghost"
+      ],
+      "generation": "generation-iv",
+      "baseId": 478,
+      "isForm": true
+    },
+    {
+      "id": 10286,
+      "name": "Mega Emboar",
+      "apiName": "emboar-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10286/",
+      "types": [
+        "fire",
+        "fighting"
+      ],
+      "generation": "generation-v",
+      "baseId": 500,
+      "isForm": true
+    },
+    {
+      "id": 10287,
+      "name": "Mega Excadrill",
+      "apiName": "excadrill-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10287/",
+      "types": [
+        "ground",
+        "steel"
+      ],
+      "generation": "generation-v",
+      "baseId": 530,
+      "isForm": true
+    },
+    {
+      "id": 10288,
+      "name": "Mega Scolipede",
+      "apiName": "scolipede-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10288/",
+      "types": [
+        "bug",
+        "poison"
+      ],
+      "generation": "generation-v",
+      "baseId": 545,
+      "isForm": true
+    },
+    {
+      "id": 10289,
+      "name": "Mega Scrafty",
+      "apiName": "scrafty-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10289/",
+      "types": [
+        "dark",
+        "fighting"
+      ],
+      "generation": "generation-v",
+      "baseId": 560,
+      "isForm": true
+    },
+    {
+      "id": 10290,
+      "name": "Mega Eelektross",
+      "apiName": "eelektross-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10290/",
+      "types": [
+        "electric"
+      ],
+      "generation": "generation-v",
+      "baseId": 604,
+      "isForm": true
+    },
+    {
+      "id": 10291,
+      "name": "Mega Chandelure",
+      "apiName": "chandelure-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10291/",
+      "types": [
+        "ghost",
+        "fire"
+      ],
+      "generation": "generation-v",
+      "baseId": 609,
+      "isForm": true
+    },
+    {
+      "id": 10292,
+      "name": "Mega Chesnaught",
+      "apiName": "chesnaught-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10292/",
+      "types": [
+        "grass",
+        "fighting"
+      ],
+      "generation": "generation-vi",
+      "baseId": 652,
+      "isForm": true
+    },
+    {
+      "id": 10293,
+      "name": "Mega Delphox",
+      "apiName": "delphox-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10293/",
+      "types": [
+        "fire",
+        "psychic"
+      ],
+      "generation": "generation-vi",
+      "baseId": 655,
+      "isForm": true
+    },
+    {
+      "id": 10294,
+      "name": "Mega Greninja",
+      "apiName": "greninja-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10294/",
+      "types": [
+        "water",
+        "dark"
+      ],
+      "generation": "generation-vi",
+      "baseId": 658,
+      "isForm": true
+    },
+    {
+      "id": 10295,
+      "name": "Mega Pyroar",
+      "apiName": "pyroar-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10295/",
+      "types": [
+        "fire",
+        "normal"
+      ],
+      "generation": "generation-vi",
+      "baseId": 668,
+      "isForm": true
+    },
+    {
+      "id": 10296,
+      "name": "Mega Floette",
+      "apiName": "floette-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10296/",
+      "types": [
+        "fairy"
+      ],
+      "generation": "generation-vi",
+      "baseId": 670,
+      "isForm": true
+    },
+    {
+      "id": 10297,
+      "name": "Mega Malamar",
+      "apiName": "malamar-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10297/",
+      "types": [
+        "dark",
+        "psychic"
+      ],
+      "generation": "generation-vi",
+      "baseId": 687,
+      "isForm": true
+    },
+    {
+      "id": 10298,
+      "name": "Mega Barbaracle",
+      "apiName": "barbaracle-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10298/",
+      "types": [
+        "rock",
+        "fighting"
+      ],
+      "generation": "generation-vi",
+      "baseId": 689,
+      "isForm": true
+    },
+    {
+      "id": 10299,
+      "name": "Mega Dragalge",
+      "apiName": "dragalge-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10299/",
+      "types": [
+        "poison",
+        "dragon"
+      ],
+      "generation": "generation-vi",
+      "baseId": 691,
+      "isForm": true
+    },
+    {
+      "id": 10300,
+      "name": "Mega Hawlucha",
+      "apiName": "hawlucha-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10300/",
+      "types": [
+        "fighting",
+        "flying"
+      ],
+      "generation": "generation-vi",
+      "baseId": 701,
+      "isForm": true
+    },
+    {
+      "id": 10301,
+      "name": "Mega Zygarde",
+      "apiName": "zygarde-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10301/",
+      "types": [
+        "dragon",
+        "ground"
+      ],
+      "generation": "generation-vi",
+      "baseId": 718,
+      "isForm": true
+    },
+    {
+      "id": 10302,
+      "name": "Mega Drampa",
+      "apiName": "drampa-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10302/",
+      "types": [
+        "normal",
+        "dragon"
+      ],
+      "generation": "generation-vii",
+      "baseId": 780,
+      "isForm": true
+    },
+    {
+      "id": 10303,
+      "name": "Mega Falinks",
+      "apiName": "falinks-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10303/",
+      "types": [
+        "fighting"
+      ],
+      "generation": "generation-viii",
+      "baseId": 870,
+      "isForm": true
+    },
+    {
+      "id": 10304,
+      "name": "Mega Raichu X",
+      "apiName": "raichu-mega-x",
+      "url": "https://pokeapi.co/api/v2/pokemon/10304/",
+      "types": [
+        "electric"
+      ],
+      "generation": "generation-i",
+      "baseId": 26,
+      "isForm": true
+    },
+    {
+      "id": 10305,
+      "name": "Mega Raichu Y",
+      "apiName": "raichu-mega-y",
+      "url": "https://pokeapi.co/api/v2/pokemon/10305/",
+      "types": [
+        "electric"
+      ],
+      "generation": "generation-i",
+      "baseId": 26,
+      "isForm": true
+    },
+    {
+      "id": 10306,
+      "name": "Mega Chimecho",
+      "apiName": "chimecho-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10306/",
+      "types": [
+        "psychic",
+        "steel"
+      ],
+      "generation": "generation-iii",
+      "baseId": 358,
+      "isForm": true
+    },
+    {
+      "id": 10308,
+      "name": "Mega Staraptor",
+      "apiName": "staraptor-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10308/",
+      "types": [
+        "fighting",
+        "flying"
+      ],
+      "generation": "generation-iv",
+      "baseId": 398,
+      "isForm": true
+    },
+    {
+      "id": 10311,
+      "name": "Mega Heatran",
+      "apiName": "heatran-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10311/",
+      "types": [
+        "fire",
+        "steel"
+      ],
+      "generation": "generation-iv",
+      "baseId": 485,
+      "isForm": true
+    },
+    {
+      "id": 10312,
+      "name": "Mega Darkrai",
+      "apiName": "darkrai-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10312/",
+      "types": [
+        "dark"
+      ],
+      "generation": "generation-iv",
+      "baseId": 491,
+      "isForm": true
+    },
+    {
+      "id": 10313,
+      "name": "Mega Golurk",
+      "apiName": "golurk-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10313/",
+      "types": [
+        "ground",
+        "ghost"
+      ],
+      "generation": "generation-v",
+      "baseId": 623,
+      "isForm": true
+    },
+    {
+      "id": 10314,
+      "name": "Mega Meowstic",
+      "apiName": "meowstic-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10314/",
+      "types": [
+        "psychic"
+      ],
+      "generation": "generation-vi",
+      "baseId": 678,
+      "isForm": true
+    },
+    {
+      "id": 10315,
+      "name": "Mega Crabominable",
+      "apiName": "crabominable-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10315/",
+      "types": [
+        "fighting",
+        "ice"
+      ],
+      "generation": "generation-vii",
+      "baseId": 740,
+      "isForm": true
+    },
+    {
+      "id": 10316,
+      "name": "Mega Golisopod",
+      "apiName": "golisopod-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10316/",
+      "types": [
+        "bug",
+        "steel"
+      ],
+      "generation": "generation-vii",
+      "baseId": 768,
+      "isForm": true
+    },
+    {
+      "id": 10317,
+      "name": "Mega Magearna",
+      "apiName": "magearna-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10317/",
+      "types": [
+        "steel",
+        "fairy"
+      ],
+      "generation": "generation-vii",
+      "baseId": 801,
+      "isForm": true
+    },
+    {
+      "id": 10318,
+      "name": "Mega Magearna Original",
+      "apiName": "magearna-original-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10318/",
+      "types": [
+        "steel",
+        "fairy"
+      ],
+      "generation": "generation-vii",
+      "baseId": 801,
+      "isForm": true
+    },
+    {
+      "id": 10319,
+      "name": "Mega Zeraora",
+      "apiName": "zeraora-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10319/",
+      "types": [
+        "electric"
+      ],
+      "generation": "generation-vii",
+      "baseId": 807,
+      "isForm": true
+    },
+    {
+      "id": 10320,
+      "name": "Mega Scovillain",
+      "apiName": "scovillain-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10320/",
+      "types": [
+        "grass",
+        "fire"
+      ],
+      "generation": "generation-ix",
+      "baseId": 952,
+      "isForm": true
+    },
+    {
+      "id": 10321,
+      "name": "Mega Glimmora",
+      "apiName": "glimmora-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10321/",
+      "types": [
+        "rock",
+        "poison"
+      ],
+      "generation": "generation-ix",
+      "baseId": 970,
+      "isForm": true
+    },
+    {
+      "id": 10322,
+      "name": "Mega Tatsugiri Curly",
+      "apiName": "tatsugiri-curly-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10322/",
+      "types": [
+        "dragon",
+        "water"
+      ],
+      "generation": "generation-ix",
+      "baseId": 978,
+      "isForm": true
+    },
+    {
+      "id": 10323,
+      "name": "Mega Tatsugiri Droopy",
+      "apiName": "tatsugiri-droopy-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10323/",
+      "types": [
+        "dragon",
+        "water"
+      ],
+      "generation": "generation-ix",
+      "baseId": 978,
+      "isForm": true
+    },
+    {
+      "id": 10324,
+      "name": "Mega Tatsugiri Stretchy",
+      "apiName": "tatsugiri-stretchy-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10324/",
+      "types": [
+        "dragon",
+        "water"
+      ],
+      "generation": "generation-ix",
+      "baseId": 978,
+      "isForm": true
+    },
+    {
+      "id": 10325,
+      "name": "Mega Baxcalibur",
+      "apiName": "baxcalibur-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10325/",
+      "types": [
+        "dragon",
+        "ice"
+      ],
+      "generation": "generation-ix",
+      "baseId": 998,
+      "isForm": true
     }
   ]
 }

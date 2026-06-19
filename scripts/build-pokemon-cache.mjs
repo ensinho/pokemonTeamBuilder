@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { formDisplayName } from '../src/utils/pokemonForms.js';
 
 const POKEAPI_BASE_URL = (process.env.VITE_POKEAPI_BASE_URL || process.env.POKEAPI_BASE_URL || 'https://pokeapi.co/api/v2').replace(/\/+$/, '');
 const DATA_DIR = path.join(process.cwd(), 'public', 'data');
@@ -93,13 +94,17 @@ const flattenEvolutionChain = (chain) => {
 
 const getForms = async (speciesData) => {
     const forms = [];
-    const varieties = (speciesData.varieties || []).filter((variety) => !variety.is_default).slice(0, 5);
+    const varieties = (speciesData.varieties || []).filter((variety) => !variety.is_default).slice(0, 8);
     for (const variety of varieties) {
         try {
             const formData = await fetchJson(variety.pokemon.url);
             forms.push({
+                // Forms carry their OWN id + types so they can be navigated to and added
+                // to a team like a base Pokémon (mirrors src/utils/pokemonForms.js).
+                id: formData.id,
                 name: variety.pokemon.name,
-                sprite: formData.sprites.front_default || formData.sprites.other?.['official-artwork']?.front_default || null,
+                types: formData.types.map((entry) => entry.type.name),
+                sprite: formData.sprites.other?.['official-artwork']?.front_default || formData.sprites.front_default || null,
             });
         } catch (_) {
             // Optional flavor data. Keep the cache usable when one form fails.
@@ -188,6 +193,51 @@ const buildEnrichedIndex = async (rawResults, { concurrency = 10, delayMs = 100 
     return out.sort((a, b) => a.id - b.id);
 };
 
+// "Battle forms" = alternate formes with their own types/stats worth a grid card:
+// megas, primals, regional variants and gigantamax. We deliberately EXCLUDE purely
+// cosmetic formes (Pikachu caps, Alcremie creams, Vivillon patterns, Rotom appliances,
+// Deoxys/Wormadam formes…) which would just clutter the dex with near-duplicates.
+const BATTLE_FORM_SUFFIX = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax)$/;
+const isBattleForm = (name) => BATTLE_FORM_SUFFIX.test(name);
+
+// Build lightweight index entries for battle forms so they appear in the Pokédex /
+// Team Builder grids. A form carries its OWN id+types but inherits its base species'
+// generation (so Mega Charizard still filters under Gen I). `baseId` links it home.
+const buildFormIndex = async (allPokemonResults, { concurrency = 10, delayMs = 100 } = {}) => {
+    const formEntries = allPokemonResults.filter((entry) => {
+        const id = parseIdFromUrl(entry.url);
+        return Number.isInteger(id) && id > NATIONAL_DEX_MAX && isBattleForm(entry.name);
+    });
+
+    const out = [];
+    for (let i = 0; i < formEntries.length; i += concurrency) {
+        const slice = formEntries.slice(i, i + concurrency);
+        const enriched = await Promise.all(slice.map(async (entry) => {
+            const id = parseIdFromUrl(entry.url);
+            try {
+                const data = await fetchJson(entry.url);
+                const baseId = data.species?.url ? parseIdFromUrl(data.species.url) : null;
+                return {
+                    id,
+                    name: formDisplayName(entry.name, data.species?.name),
+                    apiName: entry.name,
+                    url: entry.url,
+                    types: data.types.map((t) => t.type.name),
+                    generation: getGenerationName(baseId || id),
+                    baseId,
+                    isForm: true,
+                };
+            } catch (_) {
+                return null;
+            }
+        }));
+        out.push(...enriched.filter(Boolean));
+        console.log(`  forms: ${out.length}/${formEntries.length} battle forms enriched`);
+        if (i + concurrency < formEntries.length) await sleep(delayMs);
+    }
+    return out.sort((a, b) => a.id - b.id);
+};
+
 const main = async () => {
     const generatedAt = new Date().toISOString();
     const detailIds = parseDetailsArg();
@@ -197,7 +247,8 @@ const main = async () => {
         fetchJson('/generation'),
         fetchJson('/item?limit=2000'),
         fetchJson('/nature'),
-        fetchJson(`/pokemon?limit=${NATIONAL_DEX_MAX}`),
+        // Full list incl. form ids (>10000) so we can surface battle forms in the grids.
+        fetchJson('/pokemon?limit=100000'),
     ]);
 
     await Promise.all([
@@ -219,17 +270,34 @@ const main = async () => {
         }),
     ]);
 
+    // The base national-dex entries (ids 1..NATIONAL_DEX_MAX) — forms are handled separately.
+    const baseResults = pokemonIndex.results.filter((entry) => {
+        const id = parseIdFromUrl(entry.url);
+        return Number.isInteger(id) && id > 0 && id <= NATIONAL_DEX_MAX;
+    });
+
     // Enrich the index with `types` (and derived `generation`) so the Pokédex/Team Builder
     // lists can load entirely from this static file instead of querying Firestore.
     console.log('Enriching pokemon index with types (this fetches each pokémon once)...');
-    const enrichedPokemons = await buildEnrichedIndex(pokemonIndex.results, {
+    const enrichedPokemons = await buildEnrichedIndex(baseResults, {
         concurrency: 10,
         delayMs: hasArg('--no-delay') ? 0 : 100,
     });
+
+    // Battle forms (megas, primals, regionals, gigantamax) get their own grid cards.
+    console.log('Enriching battle forms (megas / regionals / gigantamax)...');
+    const formPokemons = await buildFormIndex(pokemonIndex.results, {
+        concurrency: 10,
+        delayMs: hasArg('--no-delay') ? 0 : 100,
+    });
+
+    const allIndexEntries = [...enrichedPokemons, ...formPokemons].sort((a, b) => a.id - b.id);
     await writeJson(path.join(DATA_DIR, 'pokemon-index.json'), {
         generatedAt,
-        source: `${POKEAPI_BASE_URL}/pokemon?limit=${NATIONAL_DEX_MAX}`,
-        pokemons: enrichedPokemons,
+        source: `${POKEAPI_BASE_URL}/pokemon?limit=100000`,
+        baseCount: enrichedPokemons.length,
+        formCount: formPokemons.length,
+        pokemons: allIndexEntries,
     });
 
     const generatedDetailIds = [];

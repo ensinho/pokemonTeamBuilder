@@ -49,6 +49,12 @@ import {
     getMachineDetails,
 } from '../../services/pokemonDataCache';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { buildPokemonForms, formDisplayName } from '../../utils/pokemonForms';
+
+// A form's `/pokemon` name is raw ("charizard-mega-x"); show it nicely when its id
+// is in the form range. Base Pokémon keep their plain name.
+const displayNameFromApi = (apiData) =>
+    apiData?.id > 1025 ? formDisplayName(apiData.name, apiData.species?.name) : apiData?.name;
 
 const METHOD_ICON_MAP = {
     'walk': Footprints,
@@ -313,6 +319,7 @@ export function PokedexView({
     const [locationsVersionFilter, setLocationsVersionFilter] = useState('all');
     const [showShiny, setShowShiny] = useState(false);
     const [evolutionDetails, setEvolutionDetails] = useState([]);
+    const [forms, setForms] = useState([]);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
     // Moves State
@@ -369,7 +376,7 @@ export function PokedexView({
                         if (apiData) {
                             details = {
                                 id: apiData.id,
-                                name: apiData.name,
+                                name: displayNameFromApi(apiData),
                                 types: apiData.types?.map((t) => t.type?.name) || [],
                                 sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default,
                             };
@@ -380,7 +387,7 @@ export function PokedexView({
                     if (apiData) {
                         details = {
                             id: apiData.id,
-                            name: apiData.name,
+                            name: displayNameFromApi(apiData),
                             types: apiData.types?.map((t) => t.type?.name) || [],
                             sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default,
                         };
@@ -410,6 +417,7 @@ export function PokedexView({
             setFullApiData(null);
             setSpeciesData(null);
             setEvolutionDetails([]);
+            setForms([]);
             setEncounters([]);
             setCustomSelectedSprite(null);
         }
@@ -424,6 +432,7 @@ export function PokedexView({
             setIsEncountersLoading(true);
             setEncounters([]);
             setEvolutionDetails([]);
+            setForms([]);
             setFullApiData(null);
             setSpeciesData(null);
             setCustomSelectedSprite(null);
@@ -452,7 +461,7 @@ export function PokedexView({
                         if (apiData) {
                             details = {
                                 id: apiData.id,
-                                name: apiData.name,
+                                name: displayNameFromApi(apiData),
                                 types: apiData.types?.map((t) => t.type?.name) || [],
                                 sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default,
                             };
@@ -558,6 +567,26 @@ export function PokedexView({
             cancelled = true;
         };
     }, [selectedPokemonDetails, db, pokemonDetailsCache, setPokemonDetailsCache]);
+
+    // Derive alternate forms / megas from the species' varieties. Token-guarded so a
+    // slow form fetch for a previously-selected Pokémon can't land on the current one.
+    useEffect(() => {
+        if (!speciesData?.varieties?.length) {
+            setForms([]);
+            return undefined;
+        }
+        let cancelled = false;
+        (async () => {
+            try {
+                const built = await buildPokemonForms(speciesData, { fetchPokemon: getPokemonApiData });
+                if (!cancelled) setForms(built);
+            } catch (err) {
+                console.error('Failed to build pokémon forms', err);
+                if (!cancelled) setForms([]);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [speciesData]);
 
     // List of unique version groups available for this Pokémon's moves
     const availableMoveVersions = useMemo(() => {
@@ -1088,6 +1117,42 @@ export function PokedexView({
                                             </button>
                                             {index < evolutionDetails.length - 1 && <span className="text-muted text-base">➔</span>}
                                         </React.Fragment>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Alternate Forms & Mega Evolutions — click to open that form's full detail */}
+                    {forms.length > 0 && (
+                        <div className="rounded-xl bg-surface p-4 border border-border">
+                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Formas & Megas' : 'Forms & Megas'}</h4>
+                            <div className="overflow-x-auto custom-scrollbar pb-1">
+                                <div className="flex min-w-max items-stretch gap-2 px-1 justify-center">
+                                    {forms.map((form) => (
+                                        <button
+                                            key={form.id}
+                                            type="button"
+                                            onClick={() => handleSelectPokemon({ id: form.id })}
+                                            title={form.displayName}
+                                            className="w-[6.5rem] text-center p-2 rounded-xl transition-all border bg-surface-raised border-border hover:border-primary hover:bg-primary-soft"
+                                        >
+                                            <img
+                                                src={form.sprite || POKEBALL_PLACEHOLDER_URL}
+                                                alt={form.displayName}
+                                                className="h-14 w-14 mx-auto image-pixelated"
+                                            />
+                                            <p className="text-[11px] font-bold text-fg capitalize mt-1 leading-tight line-clamp-2">
+                                                {form.displayName}
+                                            </p>
+                                            {form.types?.length > 0 && (
+                                                <div className="mt-1.5 flex flex-wrap justify-center gap-1">
+                                                    {form.types.map((type) => (
+                                                        <TypeBadge key={type} type={type} colors={colors} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </button>
                                     ))}
                                 </div>
                             </div>
