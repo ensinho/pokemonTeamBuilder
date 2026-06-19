@@ -985,6 +985,60 @@
     .app-shell__header-team {
         display: none;
     }
+
+    /* ---- Mobile sidebar drawer ---------------------------------------
+       The sidebar is an off-canvas drawer you pull in from the left edge
+       (see useEdgeSwipe). Give it comfortable mobile sizing, larger tap
+       targets, a rounded leading edge and a depth shadow when open. */
+    .app-shell {
+        --app-shell-sidebar-width: min(17rem, 82vw);
+        --app-shell-gutter: 0.85rem;
+    }
+
+    .app-shell__sidebar {
+        border-right: none;
+        border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+        box-shadow: 0 0 0 1px var(--color-border);
+    }
+
+    .app-shell__sidebar.is-open {
+        box-shadow: 18px 0 48px -12px rgba(0, 0, 0, 0.55),
+            0 0 0 1px var(--color-border);
+    }
+
+    /* Roomier nav so items are easy to tap with a thumb. */
+    .app-shell__nav {
+        padding: 0.75rem var(--app-shell-gutter);
+    }
+
+    .app-shell__nav-list {
+        gap: 0.25rem;
+    }
+
+    .app-shell__nav-group-list {
+        gap: 0.25rem;
+    }
+
+    .app-shell__nav-link,
+    .app-shell__account-button {
+        min-height: 2.75rem;
+        padding: 0.55rem 0.7rem;
+        font-size: 0.95rem;
+    }
+
+    .app-shell__nav-icon {
+        width: 1.35rem;
+        height: 1.35rem;
+    }
+
+    .app-shell__nav-icon>svg {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .app-shell__brand {
+        height: 4rem;
+    }
 }
 
 .app-shell__body.is-mobile-detail {

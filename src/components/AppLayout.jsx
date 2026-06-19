@@ -18,6 +18,7 @@ import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
+import { useEdgeSwipe } from '../hooks/useEdgeSwipe';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/useLanguageStore';
 
@@ -211,6 +212,14 @@ export default function AppLayout() {
             document.body.style.overflow = '';
         };
     }, [isMobileDetailsOpen]);
+
+    // Mobile gesture: pull from the left edge to open the sidebar, swipe left to close.
+    useEdgeSwipe({
+        enabled: isMobile && !isMobileDetailsOpen,
+        isOpen: isSidebarOpen,
+        onOpen: () => setIsSidebarOpen(true),
+        onClose: () => setIsSidebarOpen(false),
+    });
 
 
     // Auth Splash Loader
