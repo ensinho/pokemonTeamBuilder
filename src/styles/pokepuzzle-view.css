@@ -633,26 +633,39 @@
     animation: fade-in-up var(--duration-normal) var(--ease-out-expo);
 }
 
-/* Header Countdown timer under Tabs */
+/* Header Countdown timer under Tabs — a compact pill centered to the same
+   axis as the header row so the two read as one aligned column. */
 .pokepuzzle-header-countdown {
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     align-items: center;
-    gap: 2px;
-    margin: var(--space-2) 0 var(--space-1) 0;
-    padding: var(--space-2) var(--space-4);
+    justify-content: center;
+    gap: var(--space-2);
+    width: max-content;
+    max-width: 100%;
+    margin: 0 auto var(--space-1) auto;
+    padding: var(--space-1) var(--space-3);
     background: var(--color-surface-raised);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     animation: fade-in var(--duration-normal) var(--ease-smooth);
+    white-space: nowrap;
+}
+
+.pokepuzzle-header-countdown-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
 }
 
 .pokepuzzle-header-countdown-time {
     font-family: var(--font-mono);
-    font-size: 1.15rem;
+    font-size: 1rem;
     font-weight: 800;
     color: var(--color-primary);
     letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
 }
 
 /* Desktop layout overrides */
@@ -831,8 +844,8 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.45rem 0.95rem;
-    border-radius: var(--radius-sm);
+    padding: 0.67rem 0.95rem;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
     color: var(--color-fg);

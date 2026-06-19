@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSessionGame } from '../../hooks/useSessionGame';
+import { usePokePuzzleHistory } from '../../hooks/usePokePuzzleHistory';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useToastStore } from '../../store/useToastStore';
@@ -172,12 +173,15 @@ export default function PokePuzzleView() {
     const showToast = useToastStore(state => state.showToast);
     const { colors } = useThemeStore();
     const navigate = useNavigate();
-    const { userId, pokePuzzleMigrationTick } = useAuthStore();
+    const { userId, pokePuzzleMigrationTick, bumpPokePuzzleStreak } = useAuthStore();
 
     const [selectedDate, setSelectedDate] = useState(() => getTodayDateString());
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(5);
     const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
+    // Bumped to force the anonymous (localStorage) history fallback to re-read,
+    // e.g. after a local delete. Logged-in users update via the Firestore listener.
+    const [historyRefresh, setHistoryRefresh] = useState(0);
 
     // Mode: 'daily' or 'ongoing'. selectedDate + mode describe WHAT the user
     // wants to view; sessionKey is the single derived identity of that game.
@@ -205,6 +209,18 @@ export default function PokePuzzleView() {
     const { target: targetPokemon, guesses, gameStatus, unlockedTips } = session;
     const targetDetails = session.details || { types: [], description: '', image: '', id: 0 };
     const isLoadingDetails = session.detailsLoading;
+
+    // Past daily dates available in the History drawer.
+    const pastDates = useMemo(() => getPastDates(), []);
+
+    // Reactive, per-account daily history. Logged in → live Firestore listener
+    // (syncs across devices); anonymous → localStorage. `revision` re-reads the
+    // local fallback after each save (session) / migration.
+    const historyByDate = usePokePuzzleHistory({
+        userId,
+        dates: pastDates,
+        revision: `${session.guesses.length}:${session.gameStatus}:${pokePuzzleMigrationTick}:${historyRefresh}`,
+    });
 
     // Active tip tab: 'description', 'types', 'silhouette'
     const [activeTipTab, setActiveTipTab] = useState('description');
@@ -404,27 +420,15 @@ export default function PokePuzzleView() {
         return () => clearInterval(timer);
     }, [mode, loadedDailyDate, handleDailyReset, selectedDate]);
 
-    // Calculate how many past daily puzzles have been played/completed
+    // How many past daily puzzles the account has touched (badge count).
     const playedHistoryCount = useMemo(() => {
-        if (allowedPool.length === 0) return 0;
-        const pastDates = getPastDates();
         let count = 0;
         pastDates.forEach(dateStr => {
-            const saved = localStorage.getItem(ppKey(userId, `daily:${dateStr}`));
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    if (parsed.guesses?.length > 0) {
-                        count++;
-                    }
-                } catch (e) {}
-            }
+            const entry = historyByDate.get(dateStr);
+            if (entry?.guesses?.length > 0) count++;
         });
         return count;
-        // Reads non-reactive localStorage — these deps are deliberate refresh
-        // signals (a guess/switch/migration may change the saved counts).
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [allowedPool, selectedDate, userId, session, pokePuzzleMigrationTick]);
+    }, [pastDates, historyByDate]);
 
     // Delete history run progress
     const deleteHistoryRun = async (dateStr) => {
@@ -438,9 +442,11 @@ export default function PokePuzzleView() {
                     console.error("Failed to delete from Firestore:", e);
                 }
             }
+            // Logged-in users update via the Firestore listener; nudge the
+            // anonymous localStorage fallback to re-read.
+            setHistoryRefresh(n => n + 1);
             // If we just deleted the session we're currently viewing, reload it
-            // cleanly (it'll fall back to a fresh game). Otherwise the history
-            // list re-reads localStorage on its own when reopened.
+            // cleanly (it'll fall back to a fresh game).
             if (selectedDate === dateStr && mode === 'daily') {
                 loadSession(dailyKey(dateStr));
             }
@@ -572,6 +578,14 @@ export default function PokePuzzleView() {
         }
     }, [targetLength, gameStatus, selectedCharIdx]);
 
+    // A guess on TODAY's daily counts as "played today" → advance the trainer
+    // streak (idempotent per day; only the daily mode for the live date counts).
+    const registerDailyPlay = useCallback(() => {
+        if (mode === 'daily' && selectedDate === getTodayDateString()) {
+            bumpPokePuzzleStreak();
+        }
+    }, [mode, selectedDate, bumpPokePuzzleStreak]);
+
     // Submission check & processing
     const submitCurrentGuess = () => {
         if (gameStatus !== 'IN_PROGRESS') return;
@@ -594,6 +608,7 @@ export default function PokePuzzleView() {
         }
 
         addGuess(matched.name);
+        registerDailyPlay();
         const nextCount = guesses.length + 1;
         setInputValue(' '.repeat(targetLength));
         setSelectedCharIdx(0);
@@ -707,6 +722,7 @@ export default function PokePuzzleView() {
         const norm = normalizeNameForGame(pokemon.name);
 
         addGuess(pokemon.name);
+        registerDailyPlay();
         const nextCount = guesses.length + 1;
         setInputValue(' '.repeat(targetLength));
         setSelectedCharIdx(0);
@@ -1094,8 +1110,8 @@ export default function PokePuzzleView() {
             {/* Header countdown timer for Daily challenge */}
             {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
                 <div className="pokepuzzle-header-countdown animate-fade-in">
-                    <span className="text-[10px] text-muted uppercase font-bold tracking-wider">
-                        {language === 'pt' ? 'PRÓXIMO POKÉMON EM' : 'NEXT DAILY POKÉMON IN'}
+                    <span className="pokepuzzle-header-countdown-label">
+                        {language === 'pt' ? 'PRÓXIMO EM' : 'NEXT IN'}
                     </span>
                     <span className="pokepuzzle-header-countdown-time">{nextDailyCountdown}</span>
                 </div>
@@ -1616,19 +1632,10 @@ export default function PokePuzzleView() {
                     </div>
                 ) : (
                     <>
-                        {getPastDates()
+                        {pastDates
                             .map((dateStr) => {
-                                const saved = localStorage.getItem(ppKey(userId, `daily:${dateStr}`));
-                                let itemStatus = 'NOT_PLAYED'; // NOT_PLAYED, IN_PROGRESS, WON, LOST
-                                let attemptsCount = 0;
-                                
-                                if (saved) {
-                                    try {
-                                        const parsed = JSON.parse(saved);
-                                        itemStatus = parsed.gameStatus;
-                                        attemptsCount = parsed.guesses?.length || 0;
-                                    } catch (e) {}
-                                }
+                                const saved = historyByDate.get(dateStr) || null;
+                                const itemStatus = saved?.gameStatus || 'NOT_PLAYED'; // NOT_PLAYED, IN_PROGRESS, WON, LOST
 
                                 // Identify corresponding target pokemon for spoiler/reveal info
                                 const pokemonIdx = getDailyPokemonIndex(dateStr, allowedPool);

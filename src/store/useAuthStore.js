@@ -82,13 +82,11 @@ export const useAuthStore = create((set, get) => {
     let authUnsubscribe = null;
     let syncNudgeTimer = null;
     let profileHydratedFromFirestore = false;
-    let streakBumped = false;
 
-    // Helper to calculate streak daily increment
-    const bumpStreak = (currentStreak) => {
-        if (streakBumped) return currentStreak;
-        streakBumped = true;
-
+    // Advance a streak by one "day played". Pure date-diff: same day → no-op,
+    // exactly +1 day → increment, any gap → reset to 1. `lastVisit` holds the
+    // last day a PokePuzzle was played (field name kept for storage compat).
+    const advanceStreak = (currentStreak) => {
         const today = new Date();
         const todayStr = today.toISOString().slice(0, 10); // YYYY-MM-DD
 
@@ -99,7 +97,7 @@ export const useAuthStore = create((set, get) => {
             nextCount = 1;
         } else {
             const last = new Date(currentStreak.lastVisit + 'T00:00:00');
-            const diffDays = Math.round((today.setHours(0,0,0,0) - last.getTime()) / 86400000);
+            const diffDays = Math.round((today.setHours(0, 0, 0, 0) - last.getTime()) / 86400000);
             nextCount = diffDays === 1 ? (currentStreak.count || 0) + 1 : 1;
         }
 
@@ -229,18 +227,15 @@ export const useAuthStore = create((set, get) => {
                                     lastVisit: remote.lastVisit || mergedStreak.lastVisit || null,
                                 };
                             }
-                            // Calculate daily streak bump
-                            const finalStreak = bumpStreak(mergedStreak);
-                            set({ streak: finalStreak });
+                            // The streak now tracks consecutive daily PokePuzzles
+                            // PLAYED, not app visits — it is bumped from the game
+                            // (bumpPokePuzzleStreak), never on app open. Just load it.
+                            set({ streak: mergedStreak });
                         } else {
-                            // No snap, fallback bump streak with local settings
-                            const finalStreak = bumpStreak(getInitialStreak());
-                            set({ streak: finalStreak });
+                            set({ streak: getInitialStreak() });
                         }
                     } catch (e) {
-                        // Non-fatal, just bump streak locally
-                        const finalStreak = bumpStreak(getInitialStreak());
-                        set({ streak: finalStreak });
+                        set({ streak: getInitialStreak() });
                     } finally {
                         profileHydratedFromFirestore = true;
                         
@@ -316,6 +311,19 @@ export const useAuthStore = create((set, get) => {
             };
 
             await get().savePreferences(updates);
+        },
+
+        // Advance the trainer streak because a daily PokePuzzle was played
+        // TODAY. Idempotent per day (advanceStreak no-ops if already counted).
+        // Persists to localStorage + the user's Firestore profile so it stays
+        // in sync across devices.
+        bumpPokePuzzleStreak: () => {
+            const current = get().streak || getInitialStreak();
+            const next = advanceStreak(current);
+            if (next === current) return;          // already counted today
+            set({ streak: next });
+            get().syncPreferencesToFirestore().catch(e =>
+                console.error('Failed to sync PokePuzzle streak:', e));
         },
 
 
