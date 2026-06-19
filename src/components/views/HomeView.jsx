@@ -274,7 +274,9 @@ export function HomeView({
 
                 // 2. Fall back to LocalStorage
                 if (!summary) {
-                    const savedSummary = localStorage.getItem('ptb:pokepuzzle:daily:summary');
+                    // Per-account key — must match PokePuzzleView's ppKey() namespacing
+                    // so a signed-out user never inherits a previous account's summary.
+                    const savedSummary = localStorage.getItem(`ptb:pokepuzzle:${userId || 'anon'}:daily:summary`);
                     if (savedSummary) {
                         const parsed = JSON.parse(savedSummary);
                         if (parsed.date === dateString) {

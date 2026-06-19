@@ -1,36 +1,28 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useSessionGame } from '../../hooks/useSessionGame';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useToastStore } from '../../store/useToastStore';
 import { useThemeStore } from '../../store/useThemeStore';
-import {
-    loadPokemonIndex,
-    getPokemonApiData,
-    getPokemonSpeciesData,
-    normalizePokemonQuizInput
-} from '../../services/pokemonDataCache';
+import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
-import { PokeballIcon, StarsIcon, SparklesIcon, RefreshIcon } from '../icons';
+import { PokeballIcon, StarsIcon, SparklesIcon, RefreshIcon, CloseIcon } from '../icons';
 import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2, Lightbulb } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, deleteDoc } from 'firebase/firestore';
 import '../../styles/pokepuzzle-view.css';
 
 // Constants
 const MAX_ATTEMPTS = 8;
 const ALLOWED_MAX_ID = 1025; // National Dex standard pool
 
-// localStorage is best-effort here — Firestore is the real save for logged-in users.
-// A full quota (QuotaExceededError) must never crash the game.
-const safeLocalSet = (key, value) => {
-    try {
-        localStorage.setItem(key, value);
-    } catch (e) {
-        console.warn(`PokePuzzle: could not persist "${key}" to localStorage`, e);
-    }
-};
+// PokePuzzle progress is per-account. localStorage is global to the browser,
+// so we namespace every key by userId — otherwise after signing out a fresh
+// anonymous user would inherit the previous account's wins from localStorage.
+// `anon` is a safe fallback before auth resolves (Firestore is the real store).
+const ppKey = (userId, suffix) => `ptb:pokepuzzle:${userId || 'anon'}:${suffix}`;
 
 // Keyboard rows QWERTY
 const KEYBOARD_ROWS = [
@@ -85,33 +77,51 @@ const formatPokemonDisplayName = (name = '') => {
         .join(' ');
 };
 
-// Helper to blank out the Pokémon name in its pokedex entry description
-const hidePokemonName = (text, name) => {
-    if (!text || !name) return '';
-    const normalizedName = normalizeNameForGame(name);
-    // Escape target name for regex
-    const escaped = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-    const regex1 = new RegExp(`\\b${escaped}(s)?\\b`, 'gi');
-    let cleanedText = text.replace(regex1, '______');
+// Seeded daily index selector with historical overrides
+const getDailyPokemonIndex = (dateString, allowedPool) => {
+    if (!allowedPool || allowedPool.length === 0) return 0;
 
-    // Also catch normalized matches just in case
-    if (normalizedName && normalizedName.length > 2) {
-        const regex2 = new RegExp(`\\b${normalizedName}(s)?\\b`, 'gi');
-        cleanedText = cleanedText.replace(regex2, '______');
+    // Explicit absolute overrides for past daily puzzles
+    const overrides = {
+        '2026-6-18': 'golurk',
+        '2026-06-18': 'golurk',
+        '2026-6-17': 'pawniard',
+        '2026-06-17': 'pawniard',
+        '2026-6-16': 'bisharp',
+        '2026-06-16': 'bisharp'
+    };
+
+    const targetName = overrides[dateString];
+    if (targetName) {
+        const idx = allowedPool.findIndex(p => p.name.toLowerCase() === targetName);
+        if (idx !== -1) return idx;
     }
-    return cleanedText;
-};
 
-// Seeded daily index selector
-const getDailyPokemonIndex = (poolLength) => {
-    if (poolLength <= 0) return 0;
-    const now = new Date();
-    const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+    // Default to hashing algorithm
     let hash = 0;
     for (let i = 0; i < dateString.length; i++) {
         hash = dateString.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return Math.abs(hash) % poolLength;
+    return Math.abs(hash) % allowedPool.length;
+};
+
+// Helper to get today's date string in YYYY-MM-DD format
+const getTodayDateString = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+};
+
+// Helper to get past dates list (restricted to the past 3 days)
+const getPastDates = (count = 3) => {
+    const dates = [];
+    const now = new Date();
+    for (let i = 1; i <= count; i++) {
+        const d = new Date();
+        d.setDate(now.getDate() - i);
+        const dateString = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+        dates.push(dateString);
+    }
+    return dates;
 };
 
 // Wordle duplicate letter checking algorithm
@@ -143,36 +153,61 @@ const checkLetters = (guess, target) => {
     return result;
 };
 
+// A "session" is one playable game, identified by a sessionKey:
+//   - `daily:YYYY-M-D`  (today or any archived date)
+//   - `ongoing`         (the free-play game)
+// The full session lifecycle (load/save/details) lives in useSessionGame.
+const dailyKey = (dateString) => `daily:${dateString}`;
+const ONGOING_KEY = 'ongoing';
+
+const HistoryIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1em', height: '1em' }}>
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+    </svg>
+);
+
 export default function PokePuzzleView() {
     const { t, language } = useTranslation();
     const showToast = useToastStore(state => state.showToast);
     const { colors } = useThemeStore();
     const navigate = useNavigate();
-    const { userId } = useAuthStore();
+    const { userId, pokePuzzleMigrationTick } = useAuthStore();
 
-    // Mode: 'daily' or 'ongoing'
+    const [selectedDate, setSelectedDate] = useState(() => getTodayDateString());
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(5);
+    const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
+
+    // Mode: 'daily' or 'ongoing'. selectedDate + mode describe WHAT the user
+    // wants to view; sessionKey is the single derived identity of that game.
     const [mode, setMode] = useState('daily');
-    const loadedModeRef = useRef('daily');
-
-    // Active tip tab: 'description', 'types', 'silhouette'
-    const [activeTipTab, setActiveTipTab] = useState('description');
-
-    // Unlocked tips state (for early reveal)
-    const [unlockedTips, setUnlockedTips] = useState({ description: false, types: false, silhouette: false });
+    const sessionKey = mode === 'daily' ? dailyKey(selectedDate) : ONGOING_KEY;
 
     // Game data pools
     const [pokemonIndex, setPokemonIndex] = useState([]);
     const [allowedPool, setAllowedPool] = useState([]); // Filtered to standard pokemon (IDs 1-1025)
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
 
-    // Active target details
-    const [targetPokemon, setTargetPokemon] = useState(null);
-    const [targetDetails, setTargetDetails] = useState({ types: [], description: '', image: '', id: 0 });
-    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+    // ── The entire game lifecycle (load / save / details) lives in this hook.
+    //    Loading is an explicit command (loadSession) — no derived-key effect
+    //    chain, so load and save can never fight over the same target.
+    const {
+        session,
+        loadSession,
+        startRandomOngoing,
+        addGuess,
+        setStatus,
+        unlockTip,
+    } = useSessionGame({ userId, allowedPool, language, getDailyIndex: getDailyPokemonIndex });
 
-    // Current Game Progress states
-    const [guesses, setGuesses] = useState([]); // Normalized guesses strings
-    const [gameStatus, setGameStatus] = useState('IN_PROGRESS'); // IN_PROGRESS, WON, LOST
+    // Aliases so the render tree below reads naturally.
+    const { target: targetPokemon, guesses, gameStatus, unlockedTips } = session;
+    const targetDetails = session.details || { types: [], description: '', image: '', id: 0 };
+    const isLoadingDetails = session.detailsLoading;
+
+    // Active tip tab: 'description', 'types', 'silhouette'
+    const [activeTipTab, setActiveTipTab] = useState('description');
 
     // Input autocomplete suggestions
     const [inputValue, setInputValue] = useState('');
@@ -192,6 +227,22 @@ export default function PokePuzzleView() {
     // Countdown state for next daily
     const [nextDailyCountdown, setNextDailyCountdown] = useState('');
     const [loadedDailyDate, setLoadedDailyDate] = useState('');
+
+    // One-time sweep of legacy un-namespaced keys (pre per-account scoping).
+    // They're never read anymore; removing them prevents stale cross-account
+    // data from lingering in the browser.
+    useEffect(() => {
+        ['ptb:pokepuzzle:ongoing', 'ptb:pokepuzzle:daily:summary'].forEach(k => {
+            try { localStorage.removeItem(k); } catch (e) { /* ignore */ }
+        });
+        try {
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const k = localStorage.key(i);
+                // Legacy daily keys: "ptb:pokepuzzle:daily:<date>" (no userId segment).
+                if (k && /^ptb:pokepuzzle:daily:/.test(k)) localStorage.removeItem(k);
+            }
+        } catch (e) { /* ignore */ }
+    }, []);
 
     // Fetch Pokémon Index on Mount
     useEffect(() => {
@@ -213,168 +264,32 @@ export default function PokePuzzleView() {
         fetchIndex();
     }, [showToast]);
 
-    // Handle game mode changes & initialize games
+    // ── LOAD TRIGGER ──────────────────────────────────────────────────────
+    //  The ONLY place that kicks off a load. Whenever the user's intent
+    //  (sessionKey), the data pool, the account, or a post-login migration
+    //  changes, ask the hook to load that key. The hook handles staleness,
+    //  saving, and details internally, so this is a one-line command — there
+    //  is no save logic here to race against.
     useEffect(() => {
         if (allowedPool.length === 0) return;
+        loadSession(sessionKey);
+    }, [sessionKey, allowedPool, userId, pokePuzzleMigrationTick, loadSession]);
 
-        let active = true;
-
-        // Reset state immediately to prevent visual flash of previous mode's data
-        setTargetPokemon(null);
-        setTargetDetails({ types: [], description: '', image: '', id: 0 });
-        setGuesses([]);
-        setGameStatus('IN_PROGRESS');
-        setInputValue('');
-
-        const loadGame = async () => {
-            if (mode === 'daily') {
-                const now = new Date();
-                const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-                setLoadedDailyDate(dateString);
-                const dailyIdx = getDailyPokemonIndex(allowedPool.length);
-                const dailyPokemon = allowedPool[dailyIdx];
-                const targetLen = normalizeNameForGame(dailyPokemon.name).length;
-
-                let state = null;
-
-                // 1. Try Firestore if logged in
-                if (db && userId) {
-                    try {
-                        const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, `daily_${dateString}`);
-                        const snap = await getDoc(docRef);
-                        if (snap.exists()) {
-                            state = snap.data();
-                        }
-                    } catch (e) {
-                        console.error("Failed to load daily from Firestore:", e);
-                    }
-                }
-
-                // 2. Fall back to LocalStorage
-                if (!state) {
-                    const savedState = localStorage.getItem(`ptb:pokepuzzle:daily:${dateString}`);
-                    if (savedState) {
-                        try {
-                            state = JSON.parse(savedState);
-                        } catch (e) {
-                            console.error("Failed to parse daily state from localStorage:", e);
-                        }
-                    }
-                }
-
-                if (!active) return;
-
-                if (state) {
-                    setTargetPokemon(dailyPokemon);
-                    setGuesses(state.guesses || []);
-                    setGameStatus(state.gameStatus || 'IN_PROGRESS');
-                    setInputValue(' '.repeat(targetLen));
-                    setSelectedCharIdx(0);
-                    setUnlockedTips(state.unlockedTips || { description: false, types: false, silhouette: false });
-                    loadedModeRef.current = 'daily';
-                } else {
-                    initNewGame(dailyPokemon);
-                }
-            } else {
-                let state = null;
-
-                // 1. Try Firestore if logged in
-                if (db && userId) {
-                    try {
-                        const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, 'ongoing');
-                        const snap = await getDoc(docRef);
-                        if (snap.exists()) {
-                            state = snap.data();
-                        }
-                    } catch (e) {
-                        console.error("Failed to load ongoing from Firestore:", e);
-                    }
-                }
-
-                // 2. Fall back to LocalStorage
-                if (!state) {
-                    const savedState = localStorage.getItem('ptb:pokepuzzle:ongoing');
-                    if (savedState) {
-                        try {
-                            state = JSON.parse(savedState);
-                        } catch (e) {
-                            console.error("Failed to parse ongoing state from localStorage:", e);
-                        }
-                    }
-                }
-
-                if (!active) return;
-
-                if (state) {
-                    const foundTarget = allowedPool.find(p => p.id === state.targetId);
-                    if (foundTarget) {
-                        const targetLen = normalizeNameForGame(foundTarget.name).length;
-                        setTargetPokemon(foundTarget);
-                        setGuesses(state.guesses || []);
-                        setGameStatus(state.gameStatus || 'IN_PROGRESS');
-                        setInputValue(' '.repeat(targetLen));
-                        setSelectedCharIdx(0);
-                        setUnlockedTips(state.unlockedTips || { description: false, types: false, silhouette: false });
-                        loadedModeRef.current = 'ongoing';
-                        return;
-                    }
-                }
-
-                // If no saved state, start random
-                startRandomOngoingGame();
-            }
-        };
-
-        loadGame();
-
-        return () => {
-            active = false;
-        };
-    }, [mode, allowedPool, userId]);
-
-    // Save state changes to LocalStorage & Firestore
+    // Reset the input cursor whenever a new target is loaded.
     useEffect(() => {
         if (!targetPokemon) return;
-        if (loadedModeRef.current !== mode) return;
+        setInputValue(' '.repeat(normalizeNameForGame(targetPokemon.name).length));
+        setSelectedCharIdx(0);
+    }, [targetPokemon]);
 
-        const stateToSave = {
-            guesses,
-            gameStatus,
-            targetId: targetPokemon.id,
-            unlockedTips,
-            updatedAt: new Date().toISOString()
-        };
-
-        if (mode === 'daily') {
-            const now = new Date();
-            const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-
-            // Save to LocalStorage
-            safeLocalSet(`ptb:pokepuzzle:daily:${dateString}`, JSON.stringify(stateToSave));
-
-            // Also broadcast state back to HomeView so it stays in sync
-            safeLocalSet(`ptb:pokepuzzle:daily:summary`, JSON.stringify({
-                solved: gameStatus === 'WON',
-                attempts: guesses.length,
-                date: dateString
-            }));
-
-            // Sync with Firestore if logged in
-            if (db && userId) {
-                const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, `daily_${dateString}`);
-                setDoc(docRef, stateToSave).catch(e => console.error("Failed to save daily to Firestore:", e));
-            }
+    // Track today's loaded date for the midnight-rollover check.
+    useEffect(() => {
+        if (mode === 'daily' && selectedDate === getTodayDateString()) {
+            setLoadedDailyDate(selectedDate);
         } else {
-            // Save to LocalStorage
-            safeLocalSet('ptb:pokepuzzle:ongoing', JSON.stringify(stateToSave));
-
-            // Sync with Firestore if logged in
-            if (db && userId) {
-                const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, 'ongoing');
-                setDoc(docRef, stateToSave).catch(e => console.error("Failed to save ongoing to Firestore:", e));
-            }
+            setLoadedDailyDate('');
         }
-    }, [guesses, gameStatus, targetPokemon, mode, unlockedTips, userId]);
+    }, [mode, selectedDate]);
 
     // Auto-select unlocked tip tab
     useEffect(() => {
@@ -389,64 +304,10 @@ export default function PokePuzzleView() {
         }
     }, [guesses.length]);
 
-    // Fetch Details for target Pokémon (Pokedex entry & Types) when guess progresses
-    useEffect(() => {
-        if (!targetPokemon) return;
-
-        const fetchTargetDetails = async () => {
-            setIsLoadingDetails(true);
-            try {
-                const [apiData, speciesData] = await Promise.all([
-                    getPokemonApiData(targetPokemon.id),
-                    getPokemonSpeciesData(targetPokemon.id)
-                ]);
-
-                if (apiData && speciesData) {
-                    const types = apiData.types.map(t => t.type.name);
-                    const descriptionEntry = speciesData.flavor_text_entries?.find(
-                        entry => entry.language?.name === language
-                    ) || speciesData.flavor_text_entries?.find(
-                        entry => entry.language?.name === 'en'
-                    );
-
-                    const rawDesc = descriptionEntry?.flavor_text || '';
-                    const cleanedDesc = rawDesc.replace(/[\n\f\r]/g, ' ');
-
-                    setTargetDetails({
-                        types,
-                        description: hidePokemonName(cleanedDesc, targetPokemon.name),
-                        image: getPokemonArtworkSpriteUrl(targetPokemon.id),
-                        id: targetPokemon.id
-                    });
-                }
-            } catch (err) {
-                console.error("Failed to fetch target details:", err);
-            } finally {
-                setIsLoadingDetails(false);
-            }
-        };
-
-        fetchTargetDetails();
-    }, [targetPokemon, language]);
-
-    // Initializer for a clean game
-    const initNewGame = (pokemon) => {
-        setTargetPokemon(pokemon);
-        setGuesses([]);
-        setGameStatus('IN_PROGRESS');
-        const norm = normalizeNameForGame(pokemon.name);
-        setInputValue(' '.repeat(norm.length));
-        setSelectedCharIdx(0);
-        setUnlockedTips({ description: false, types: false, silhouette: false });
-        loadedModeRef.current = mode;
-    };
-
-    // Ongoing mode: Pick random Pokémon and start
-    const startRandomOngoingGame = () => {
-        if (allowedPool.length === 0) return;
-        const randomIdx = Math.floor(Math.random() * allowedPool.length);
-        initNewGame(allowedPool[randomIdx]);
-    };
+    // Ongoing mode "Play Again": pick a new random Pokémon and start clean.
+    const startRandomOngoingGame = useCallback(() => {
+        startRandomOngoing();
+    }, [startRandomOngoing]);
 
     // Trigger local push notification when Daily challenge resets
     const triggerResetNotification = useCallback(() => {
@@ -484,35 +345,14 @@ export default function PokePuzzleView() {
         }
     }, [t]);
 
-    // Handle Daily challenge transition when timer resets
+    // Handle Daily challenge transition when the day rolls over at midnight.
+    // Just point selectedDate at the new day — the load effect reloads the
+    // session atomically (Firestore → localStorage → fresh), no manual poking.
     const handleDailyReset = useCallback(() => {
         if (allowedPool.length === 0) return;
         const now = new Date();
         const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-        setLoadedDailyDate(dateString);
-        const dailyIdx = getDailyPokemonIndex(allowedPool.length);
-        const dailyPokemon = allowedPool[dailyIdx];
-
-        // Load new daily state
-        const savedState = localStorage.getItem(`ptb:pokepuzzle:daily:${dateString}`);
-        if (savedState) {
-            try {
-                const parsed = JSON.parse(savedState);
-                setTargetPokemon(dailyPokemon);
-                setGuesses(parsed.guesses || []);
-                setGameStatus(parsed.gameStatus || 'IN_PROGRESS');
-                const targetLen = normalizeNameForGame(dailyPokemon.name).length;
-                setInputValue(' '.repeat(targetLen));
-                setSelectedCharIdx(0);
-                setUnlockedTips(parsed.unlockedTips || { description: false, types: false, silhouette: false });
-            } catch (e) {
-                initNewGame(dailyPokemon);
-            }
-        } else {
-            initNewGame(dailyPokemon);
-        }
-
-        // Trigger notification
+        setSelectedDate(dateString); // triggers the load effect
         triggerResetNotification();
     }, [allowedPool, triggerResetNotification]);
 
@@ -537,7 +377,11 @@ export default function PokePuzzleView() {
             const now = new Date();
             const currentDailyDate = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 
-            // Check if day rolled over
+            // Only the live "today" puzzle can roll over. If the user is viewing
+            // an archived date, never auto-reset — let them play it freely.
+            if (selectedDate !== getTodayDateString()) return;
+
+            // Day rolled over while viewing today's puzzle → load the new day.
             if (loadedDailyDate && currentDailyDate !== loadedDailyDate) {
                 handleDailyReset();
                 return;
@@ -558,7 +402,70 @@ export default function PokePuzzleView() {
         updateCountdown();
         const timer = setInterval(updateCountdown, 1000);
         return () => clearInterval(timer);
-    }, [mode, loadedDailyDate, handleDailyReset]);
+    }, [mode, loadedDailyDate, handleDailyReset, selectedDate]);
+
+    // Calculate how many past daily puzzles have been played/completed
+    const playedHistoryCount = useMemo(() => {
+        if (allowedPool.length === 0) return 0;
+        const pastDates = getPastDates();
+        let count = 0;
+        pastDates.forEach(dateStr => {
+            const saved = localStorage.getItem(ppKey(userId, `daily:${dateStr}`));
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed.guesses?.length > 0) {
+                        count++;
+                    }
+                } catch (e) {}
+            }
+        });
+        return count;
+        // Reads non-reactive localStorage — these deps are deliberate refresh
+        // signals (a guess/switch/migration may change the saved counts).
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [allowedPool, selectedDate, userId, session, pokePuzzleMigrationTick]);
+
+    // Delete history run progress
+    const deleteHistoryRun = async (dateStr) => {
+        if (window.confirm(language === 'pt' ? `Tem certeza que quer deletar o progresso do dia ${dateStr}?` : `Are you sure you want to delete the progress for ${dateStr}?`)) {
+            localStorage.removeItem(ppKey(userId, `daily:${dateStr}`));
+            if (db && userId) {
+                try {
+                    const docRef = doc(db, `artifacts/pokemonTeamBuilder/users/${userId}/pokepuzzle`, `daily_${dateStr}`);
+                    await deleteDoc(docRef);
+                } catch (e) {
+                    console.error("Failed to delete from Firestore:", e);
+                }
+            }
+            // If we just deleted the session we're currently viewing, reload it
+            // cleanly (it'll fall back to a fresh game). Otherwise the history
+            // list re-reads localStorage on its own when reopened.
+            if (selectedDate === dateStr && mode === 'daily') {
+                loadSession(dailyKey(dateStr));
+            }
+            showToast(language === 'pt' ? 'Progresso deletado!' : 'Progress deleted!', 'success');
+        }
+    };
+
+    const handleHistoryScroll = useCallback((e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop - clientHeight < 20) {
+            if (!isHistoryLoadingMore && visibleHistoryLimit < 30) {
+                setIsHistoryLoadingMore(true);
+                setTimeout(() => {
+                    setVisibleHistoryLimit((prev) => Math.min(prev + 5, 30));
+                    setIsHistoryLoadingMore(false);
+                }, 400);
+            }
+        }
+    }, [isHistoryLoadingMore, visibleHistoryLimit]);
+
+    useEffect(() => {
+        if (!isHistoryOpen) {
+            setVisibleHistoryLimit(5);
+        }
+    }, [isHistoryOpen]);
 
     // Target name normalized & its length
     const targetNormalized = useMemo(() => {
@@ -686,21 +593,21 @@ export default function PokePuzzleView() {
             return;
         }
 
-        const nextGuesses = [...guesses, matched.name];
-        setGuesses(nextGuesses);
+        addGuess(matched.name);
+        const nextCount = guesses.length + 1;
         setInputValue(' '.repeat(targetLength));
         setSelectedCharIdx(0);
 
         // Check Win
         if (guessStr === targetNormalized) {
-            setGameStatus('WON');
+            setStatus('WON');
             showToast(t('pokepuzzle.winTitle'), 'success');
             return;
         }
 
         // Check Lose
-        if (nextGuesses.length >= MAX_ATTEMPTS) {
-            setGameStatus('LOST');
+        if (nextCount >= MAX_ATTEMPTS) {
+            setStatus('LOST');
             showToast(t('pokepuzzle.loseTitle'), 'error');
         }
     };
@@ -796,24 +703,21 @@ export default function PokePuzzleView() {
 
     // Click suggestion callback
     const handleSelectSuggestion = (pokemon) => {
+        if (gameStatus !== 'IN_PROGRESS') return;
         const norm = normalizeNameForGame(pokemon.name);
-        setInputValue(norm);
 
-        // Submit
-        setTimeout(() => {
-            const nextGuesses = [...guesses, pokemon.name];
-            setGuesses(nextGuesses);
-            setInputValue(' '.repeat(targetLength));
-            setSelectedCharIdx(0);
+        addGuess(pokemon.name);
+        const nextCount = guesses.length + 1;
+        setInputValue(' '.repeat(targetLength));
+        setSelectedCharIdx(0);
 
-            if (norm === targetNormalized) {
-                setGameStatus('WON');
-                showToast(t('pokepuzzle.winTitle'), 'success');
-            } else if (nextGuesses.length >= MAX_ATTEMPTS) {
-                setGameStatus('LOST');
-                showToast(t('pokepuzzle.loseTitle'), 'error');
-            }
-        }, 50);
+        if (norm === targetNormalized) {
+            setStatus('WON');
+            showToast(t('pokepuzzle.winTitle'), 'success');
+        } else if (nextCount >= MAX_ATTEMPTS) {
+            setStatus('LOST');
+            showToast(t('pokepuzzle.loseTitle'), 'error');
+        }
     };
 
     // Calculate dynamic rows on PokePuzzle grid
@@ -1128,22 +1032,64 @@ export default function PokePuzzleView() {
     };
 
     return (
-        <main className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
-            {/* Mode Switcher Tabs */}
-            <div className="pokepuzzle-tabs">
-                <button
-                    onClick={() => setMode('daily')}
-                    className={`pokepuzzle-tab-btn ${mode === 'daily' ? 'is-active' : ''}`}
-                >
-                    {t('pokepuzzle.dailyTab')}
-                </button>
-                <button
-                    onClick={() => setMode('ongoing')}
-                    className={`pokepuzzle-tab-btn ${mode === 'ongoing' ? 'is-active' : ''}`}
-                >
-                    {t('pokepuzzle.ongoingTab')}
-                </button>
+        <>
+            <main className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''} ${selectedDate !== getTodayDateString() ? 'is-archive-mode' : ''}`}>
+            {/* Header Area with Tabs and History button */}
+            <div className="pokepuzzle-header-row">
+                <div className="pokepuzzle-tabs">
+                    <button
+                        onClick={() => setMode('daily')}
+                        className={`pokepuzzle-tab-btn ${mode === 'daily' ? 'is-active' : ''}`}
+                    >
+                        {t('pokepuzzle.dailyTab')}
+                    </button>
+                    <button
+                        onClick={() => setMode('ongoing')}
+                        className={`pokepuzzle-tab-btn ${mode === 'ongoing' ? 'is-active' : ''}`}
+                    >
+                        {t('pokepuzzle.ongoingTab')}
+                    </button>
+                </div>
+
+                {mode === 'daily' && (
+                    <button
+                        type="button"
+                        onClick={() => setIsHistoryOpen(true)}
+                        className="pokepuzzle-history-toggle"
+                        title={language === 'pt' ? 'Ver Histórico de Puzzles' : 'View Puzzle History'}
+                    >
+                        <HistoryIcon />
+                        <span>{language === 'pt' ? 'Histórico' : 'History'}</span>
+                        {playedHistoryCount > 0 && (
+                            <span className="pokepuzzle-history-toggle-badge">
+                                {playedHistoryCount}
+                            </span>
+                        )}
+                    </button>
+                )}
             </div>
+
+            {/* Previous Puzzle Indicator Banner */}
+            {mode === 'daily' && selectedDate !== getTodayDateString() && (
+                <div className="pokepuzzle-history-active-banner animate-fade-in">
+                    <HistoryIcon />
+                    <div className="flex-1">
+                        {language === 'pt' ? (
+                            <span>Você está jogando o PokéPuzzle de <strong>{selectedDate}</strong> (Histórico)</span>
+                        ) : (
+                            <span>You are playing the PokéPuzzle from <strong>{selectedDate}</strong> (History)</span>
+                        )}
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setSelectedDate(getTodayDateString())}
+                        className="pokepuzzle-history-exit-btn"
+                        title={language === 'pt' ? 'Voltar para o desafio de hoje' : 'Return to today\'s challenge'}
+                    >
+                        {language === 'pt' ? 'Voltar para Hoje' : 'Exit to Today'}
+                    </button>
+                </div>
+            )}
 
             {/* Header countdown timer for Daily challenge */}
             {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
@@ -1232,7 +1178,7 @@ export default function PokePuzzleView() {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setUnlockedTips(prev => ({ ...prev, description: true }))}
+                                                    onClick={() => unlockTip('description')}
                                                     className="pokepuzzle-unlock-btn"
                                                 >
                                                     <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -1272,7 +1218,7 @@ export default function PokePuzzleView() {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setUnlockedTips(prev => ({ ...prev, types: true }))}
+                                                    onClick={() => unlockTip('types')}
                                                     className="pokepuzzle-unlock-btn"
                                                 >
                                                     <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -1306,7 +1252,7 @@ export default function PokePuzzleView() {
                                                 </span>
                                                 <button
                                                     type="button"
-                                                    onClick={() => setUnlockedTips(prev => ({ ...prev, silhouette: true }))}
+                                                    onClick={() => unlockTip('silhouette')}
                                                     className="pokepuzzle-unlock-btn"
                                                 >
                                                     <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -1636,5 +1582,169 @@ export default function PokePuzzleView() {
                 </div>
             )}
         </main>
+
+        {/* History Drawer Overlay */}
+        <div
+            className={`pokepuzzle-history-overlay ${isHistoryOpen ? 'is-open' : ''}`}
+            onClick={() => setIsHistoryOpen(false)}
+        />
+
+        {/* History Drawer Sidebar */}
+        <div className={`pokepuzzle-history-sidebar ${isHistoryOpen ? 'is-open' : ''}`}>
+            <div className="pokepuzzle-history-sidebar-header">
+                <h3 className="pokepuzzle-history-sidebar-title">
+                    <HistoryIcon /> {language === 'pt' ? 'Histórico do PokéPuzzle' : 'PokéPuzzle History'}
+                </h3>
+                <button
+                    type="button"
+                    className="pokepuzzle-history-sidebar-close"
+                    onClick={() => setIsHistoryOpen(false)}
+                    title={language === 'pt' ? 'Fechar Histórico' : 'Close History'}
+                >
+                    <CloseIcon />
+                </button>
+            </div>
+
+            <div
+                className="pokepuzzle-history-sidebar-scroll"
+                onScroll={handleHistoryScroll}
+            >
+                {allowedPool.length === 0 ? (
+                    <div className="pokepuzzle-history-loading">
+                        <div className="pokepuzzle-history-loading-spinner" />
+                        <span>{language === 'pt' ? 'Carregando dados...' : 'Loading data...'}</span>
+                    </div>
+                ) : (
+                    <>
+                        {getPastDates()
+                            .map((dateStr) => {
+                                const saved = localStorage.getItem(ppKey(userId, `daily:${dateStr}`));
+                                let itemStatus = 'NOT_PLAYED'; // NOT_PLAYED, IN_PROGRESS, WON, LOST
+                                let attemptsCount = 0;
+                                
+                                if (saved) {
+                                    try {
+                                        const parsed = JSON.parse(saved);
+                                        itemStatus = parsed.gameStatus;
+                                        attemptsCount = parsed.guesses?.length || 0;
+                                    } catch (e) {}
+                                }
+
+                                // Identify corresponding target pokemon for spoiler/reveal info
+                                const pokemonIdx = getDailyPokemonIndex(dateStr, allowedPool);
+                                const pokemon = allowedPool[pokemonIdx];
+                                const isCompleted = itemStatus === 'WON' || itemStatus === 'LOST';
+
+                                return (
+                                    <div key={dateStr} className="pokepuzzle-history__item">
+                                        <div className="pokepuzzle-history__info">
+                                            <div className="pokepuzzle-history__date-row">
+                                                <span className="pokepuzzle-history__date">{dateStr}</span>
+                                                {saved && (
+                                                    <span className={`pokepuzzle-history__badge ${isCompleted ? 'pokepuzzle-history__badge--complete' : 'pokepuzzle-history__badge--progress'}`}>
+                                                        {itemStatus === 'WON' 
+                                                            ? (language === 'pt' ? 'Acertou' : 'Solved')
+                                                            : itemStatus === 'LOST'
+                                                                ? (language === 'pt' ? 'Esgotado' : 'Failed')
+                                                                : (language === 'pt' ? 'Em Progresso' : 'In Progress')}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Visually show if completed (reveal sprite and name) or if not completed (obscured) */}
+                                        <div className="pokepuzzle-history__item-detail">
+                                            <img
+                                                src={isCompleted 
+                                                    ? getPokemonArtworkSpriteUrl(pokemon.id) 
+                                                    : getPokemonFrontSpriteUrl(pokemon.id)
+                                                }
+                                                alt="Pokémon preview"
+                                                className={`pokepuzzle-history__pokemon-sprite ${!isCompleted ? 'is-mystery' : ''}`}
+                                                onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(pokemon.id); }}
+                                            />
+                                            <div className="pokepuzzle-history__pokemon-info">
+                                                <span className="pokepuzzle-history__pokemon-name">
+                                                    {isCompleted 
+                                                        ? formatPokemonDisplayName(pokemon.name) 
+                                                        : '???'
+                                                    }
+                                                </span>
+                                                <span className="pokepuzzle-history__pokemon-meta">
+                                                    {isCompleted 
+                                                        ? `#${String(pokemon.id).padStart(3, '0')}` 
+                                                        : (language === 'pt' 
+                                                            ? `Tamanho: ${normalizeNameForGame(pokemon.name).length} letras` 
+                                                            : `Length: ${normalizeNameForGame(pokemon.name).length} letters`)
+                                                    }
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="pokepuzzle-history__actions">
+                                            {itemStatus === 'IN_PROGRESS' ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setMode('daily');
+                                                        setSelectedDate(dateStr);
+                                                        setIsHistoryOpen(false);
+                                                    }}
+                                                    className="pokepuzzle-history__btn pokepuzzle-history__btn--continue"
+                                                >
+                                                    {language === 'pt' ? 'Continuar' : 'Continue'}
+                                                </button>
+                                            ) : isCompleted ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setMode('daily');
+                                                        setSelectedDate(dateStr);
+                                                        setIsHistoryOpen(false);
+                                                    }}
+                                                    className="pokepuzzle-history__btn pokepuzzle-history__btn--play"
+                                                >
+                                                    {language === 'pt' ? 'Ver Resultado' : 'View Result'}
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setMode('daily');
+                                                        setSelectedDate(dateStr);
+                                                        setIsHistoryOpen(false);
+                                                    }}
+                                                    className="pokepuzzle-history__btn pokepuzzle-history__btn--play"
+                                                >
+                                                    {language === 'pt' ? 'Jogar' : 'Play'}
+                                                </button>
+                                            )}
+
+                                            {saved && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => deleteHistoryRun(dateStr)}
+                                                    className="pokepuzzle-history__btn--delete"
+                                                    title={language === 'pt' ? 'Deletar Progresso' : 'Delete Progress'}
+                                                >
+                                                    <CloseIcon />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+
+                        {isHistoryLoadingMore && (
+                            <div className="pokepuzzle-history-loading">
+                                <div className="pokepuzzle-history-loading-spinner" />
+                                <span>{language === 'pt' ? 'Carregando mais dias...' : 'Loading older days...'}</span>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </div>
+        </>
     );
 }

@@ -225,28 +225,60 @@
     0% {
         transform: rotateX(0deg);
     }
+
     45% {
         transform: rotateX(90deg);
     }
+
     55% {
         transform: rotateX(90deg);
     }
+
     100% {
         transform: rotateX(0deg);
     }
 }
 
 /* Delay for Row Tile Flips */
-.pokepuzzle-row .pokepuzzle-tile:nth-child(1) { animation-delay: 0ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(2) { animation-delay: 150ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(3) { animation-delay: 300ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(4) { animation-delay: 450ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(5) { animation-delay: 600ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(6) { animation-delay: 750ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(7) { animation-delay: 900ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(8) { animation-delay: 1050ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(9) { animation-delay: 1200ms; }
-.pokepuzzle-row .pokepuzzle-tile:nth-child(10) { animation-delay: 1350ms; }
+.pokepuzzle-row .pokepuzzle-tile:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(2) {
+    animation-delay: 150ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(3) {
+    animation-delay: 300ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(4) {
+    animation-delay: 450ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(5) {
+    animation-delay: 600ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(6) {
+    animation-delay: 750ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(7) {
+    animation-delay: 900ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(8) {
+    animation-delay: 1050ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(9) {
+    animation-delay: 1200ms;
+}
+
+.pokepuzzle-row .pokepuzzle-tile:nth-child(10) {
+    animation-delay: 1350ms;
+}
 
 /* Input and Autocomplete */
 .pokepuzzle-input-container {
@@ -385,11 +417,14 @@
 }
 
 @keyframes badge-glow-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
         border-color: rgba(16, 185, 129, 0.3);
     }
+
     50% {
         transform: scale(1.05);
         box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
@@ -409,11 +444,14 @@
 }
 
 @keyframes badge-danger-pulse {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1);
         box-shadow: 0 0 15px rgba(239, 68, 68, 0.2);
         border-color: rgba(239, 68, 68, 0.3);
     }
+
     50% {
         transform: scale(1.05);
         box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
@@ -548,19 +586,30 @@
     justify-content: center;
     margin-top: var(--space-2);
 }
+
 .pokepuzzle-guide-item {
     display: flex;
     align-items: center;
     gap: 4px;
 }
+
 .pokepuzzle-guide-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
 }
-.pokepuzzle-guide-dot.correct { background: var(--color-success); }
-.pokepuzzle-guide-dot.present { background: var(--color-warning); }
-.pokepuzzle-guide-dot.absent { background: var(--color-border); }
+
+.pokepuzzle-guide-dot.correct {
+    background: var(--color-success);
+}
+
+.pokepuzzle-guide-dot.present {
+    background: var(--color-warning);
+}
+
+.pokepuzzle-guide-dot.absent {
+    background: var(--color-border);
+}
 
 /* Game side-by-side flex layout containers */
 .pokepuzzle-game-container {
@@ -622,7 +671,7 @@
 
     .pokepuzzle-game-main {
         flex: 1.25;
-        max-width: 520px;
+        max-width: 680px;
     }
 
     .pokepuzzle-game-sidebar {
@@ -639,6 +688,7 @@
         opacity: 0;
         transform: translateX(40px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
@@ -651,36 +701,45 @@
         gap: var(--space-2);
         padding-bottom: var(--space-4);
     }
+
     .pokepuzzle-tips-container {
         padding: var(--space-3);
     }
+
     .pokepuzzle-tips-header {
         margin-bottom: var(--space-2);
         padding-bottom: var(--space-1.5);
     }
+
     .pokepuzzle-tip-tabs {
         margin-bottom: var(--space-2);
     }
+
     .pokepuzzle-tip-tab-trigger {
         font-size: 0.72rem;
         padding: 0.4rem 0.2rem;
         gap: 4px;
     }
+
     .pokepuzzle-tip-tab-trigger svg {
         width: 12px;
         height: 12px;
     }
+
     .pokepuzzle-tip-card {
         padding: var(--space-3);
         min-height: 80px;
         gap: var(--space-1);
     }
+
     .pokepuzzle-tip-label {
         font-size: 0.6rem;
     }
+
     .pokepuzzle-tip-content {
         font-size: 0.75rem;
     }
+
     .pokepuzzle-tip-description-text {
         max-height: 60px;
     }
@@ -720,3 +779,505 @@
     transform: translateY(0) scale(0.97);
 }
 
+/* PokéPuzzle History Drawer CSS rules */
+.pokepuzzle-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 640px;
+    gap: var(--space-4);
+    margin: 0 auto var(--space-2) auto;
+}
+
+.pokepuzzle-history-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-history-toggle:hover {
+    transform: translateY(-1px);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.pokepuzzle-history-toggle svg {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.pokepuzzle-history-toggle-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary);
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    padding: 0.05rem 0.4rem;
+    margin-left: 0.2rem;
+}
+
+.pokepuzzle-history-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-history-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.pokepuzzle-history-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 380px;
+    max-width: 100vw;
+    background: var(--color-surface);
+    border-left: 1px solid var(--color-border);
+    box-shadow: var(--elevation-4);
+    z-index: 101;
+    transform: translateX(100%);
+    transition: transform var(--duration-fast) var(--ease-smooth);
+    display: flex;
+    flex-direction: column;
+}
+
+.pokepuzzle-history-sidebar.is-open {
+    transform: translateX(0);
+}
+
+.pokepuzzle-history-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.pokepuzzle-history-sidebar-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-fg);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pokepuzzle-history-sidebar-title svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    color: var(--color-primary);
+}
+
+.pokepuzzle-history-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-history-sidebar-close:hover {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
+}
+
+.pokepuzzle-history-sidebar-close svg {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.pokepuzzle-history-sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.pokepuzzle-history-sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.pokepuzzle-history-sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.pokepuzzle-history-sidebar-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+.pokepuzzle-history-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted);
+}
+
+.pokepuzzle-history-sidebar-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--color-muted);
+    height: 100%;
+}
+
+.pokepuzzle-history-sidebar-empty-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    opacity: 0.4;
+}
+
+.pokepuzzle-history-sidebar-empty-text {
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.pokepuzzle-history-sidebar .pokepuzzle-history__item {
+    padding: 1rem;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    box-shadow: none;
+    transform: none;
+    transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-history-sidebar .pokepuzzle-history__item:hover {
+    border-color: var(--color-primary-soft);
+    box-shadow: var(--elevation-1);
+    transform: translateY(-1px);
+}
+
+.pokepuzzle-history-sidebar .pokepuzzle-history__stats {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.pokepuzzle-history-sidebar .pokepuzzle-history__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.65rem;
+    margin-top: 0;
+}
+
+.pokepuzzle-history-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    gap: 0.5rem;
+}
+
+.pokepuzzle-history-loading-spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--color-border);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: team-builder-spin 0.6s linear infinite;
+}
+
+.pokepuzzle-history__item {
+    padding: 1rem;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    box-shadow: none;
+    transform: none;
+    transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-history__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.pokepuzzle-history__date-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.pokepuzzle-history__date {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.pokepuzzle-history__badge {
+    display: inline-block;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    text-transform: uppercase;
+    width: max-content;
+}
+
+.pokepuzzle-history__badge--complete {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--color-success);
+}
+
+.pokepuzzle-history__badge--progress {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning);
+}
+
+.pokepuzzle-history__btn {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-history__btn--continue {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.pokepuzzle-history__btn--continue:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.pokepuzzle-history__btn--play:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.pokepuzzle-history__btn--delete {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+    margin-left: auto;
+}
+
+.pokepuzzle-history__btn--delete:hover {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: color-mix(in srgb, var(--color-danger) 8%, var(--color-surface));
+}
+
+.pokepuzzle-history__btn--delete svg {
+    width: 0.85rem;
+    height: 0.85rem;
+}
+
+.pokepuzzle-history__item-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem;
+}
+
+.pokepuzzle-history__pokemon-sprite {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+}
+
+.pokepuzzle-history__pokemon-sprite.is-mystery {
+    filter: brightness(0) drop-shadow(0 0 4px rgba(124, 106, 232, 0.45));
+    opacity: 0.6;
+}
+
+.pokepuzzle-history__pokemon-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.pokepuzzle-history__pokemon-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    color: var(--color-fg);
+}
+
+.pokepuzzle-history__pokemon-meta {
+    font-size: 0.7rem;
+    color: var(--color-muted);
+}
+
+/* History banner when playing a previous puzzle */
+.pokepuzzle-history-active-banner {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.8rem 1.1rem;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-fg);
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.pokepuzzle-history-active-banner svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+.pokepuzzle-history-exit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.pokepuzzle-history-exit-btn:hover {
+    background: var(--color-primary);
+    color: #ffffff;
+}
+
+.pokepuzzle-history-exit-btn:active {
+    transform: scale(0.97);
+}
+
+@media (max-width: 480px) {
+    .pokepuzzle-header-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+/* Visual Theme Overrides for Historical/Archived puzzles */
+.pokepuzzle-view.is-archive-mode {
+    --color-primary: #f59e0b;
+    /* Amber/gold */
+    --color-primary-soft: rgba(245, 158, 11, 0.12);
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-tile.is-selected-cell {
+    border-color: #f59e0b !important;
+    box-shadow: 0 0 0 1px #f59e0b, 0 0 12px rgba(245, 158, 11, 0.45);
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-history-active-banner {
+    border-color: #f59e0b;
+    background: rgba(245, 158, 11, 0.12);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-history-active-banner svg {
+    color: #f59e0b;
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-history-exit-btn {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-history-exit-btn:hover {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-tab-btn.is-active {
+    color: #f59e0b;
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-tip-tab-trigger.is-active {
+    color: #f59e0b;
+    border-bottom-color: #f59e0b;
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-unlock-btn {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-unlock-btn:hover {
+    background: #f59e0b;
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.25);
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-unlock-btn:hover .text-primary {
+    color: #ffffff !important;
+}
+
+.pokepuzzle-view.is-archive-mode .pokepuzzle-autocomplete-item:hover,
+.pokepuzzle-view.is-archive-mode .pokepuzzle-autocomplete-item.is-active {
+    color: #f59e0b;
+}

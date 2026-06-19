@@ -15,6 +15,41 @@ import { appId, ADMIN_EMAILS } from '../constants/firebase';
 import { useThemeStore } from './useThemeStore';
 import { useToastStore } from './useToastStore';
 import { useLanguageStore } from './useLanguageStore';
+import { migrateLocalProgress, listLocalSuffixesForUid, ppLocalKey, pickBestState } from '../utils/pokePuzzleMigration';
+
+// Move PokePuzzle progress from an anonymous uid onto the just-authenticated
+// account. localStorage is the reliable source (the game mirrors every save
+// there); we also push the merged result into the account's Firestore so
+// history/board reflect it immediately without needing another guess.
+const migratePokePuzzleProgress = async (fromUid, toUid) => {
+    if (!fromUid || !toUid || fromUid === toUid) return;
+
+    // 1. localStorage merge (always available, even offline).
+    const suffixes = listLocalSuffixesForUid(fromUid);
+    migrateLocalProgress(fromUid, toUid);
+
+    // 2. Best-effort Firestore sync of the merged states.
+    if (!db) return;
+    for (const suffix of suffixes) {
+        if (suffix === 'daily:summary') continue;
+        const merged = (() => {
+            try { return JSON.parse(localStorage.getItem(ppLocalKey(toUid, suffix))); } catch { return null; }
+        })();
+        if (!merged) continue;
+
+        // suffix -> firestore docId: 'ongoing' stays; 'daily:DATE' -> 'daily_DATE'
+        const docId = suffix === 'ongoing' ? 'ongoing' : suffix.replace(/^daily:/, 'daily_');
+        try {
+            const ref = doc(db, `artifacts/pokemonTeamBuilder/users/${toUid}/pokepuzzle`, docId);
+            // Merge against any existing account doc with the same keep-best rule.
+            const snap = await getDoc(ref);
+            const best = snap.exists() ? pickBestState(snap.data(), merged) : merged;
+            await setDoc(ref, best);
+        } catch (e) {
+            console.error('PokePuzzle Firestore migration failed for', docId, e);
+        }
+    }
+};
 
 const getInitialStreak = () => {
     if (typeof window === 'undefined') return { count: 0, longest: 0, lastVisit: null };
@@ -105,6 +140,10 @@ export const useAuthStore = create((set, get) => {
         greetingPokemonIsShiny: getInitialGreeting().isShiny,
         streak: getInitialStreak(),
         showSyncPrompt: false,
+        // Bumped after PokePuzzle progress is migrated onto a freshly
+        // authenticated account, so PokePuzzleView reloads from the new
+        // namespace (its load already ran against the empty one).
+        pokePuzzleMigrationTick: 0,
 
         initAuth: () => {
             if (authUnsubscribe) return;
@@ -334,18 +373,33 @@ export const useAuthStore = create((set, get) => {
         handleSignUp: async (email, password) => {
             const current = auth.currentUser;
             if (current && current.isAnonymous) {
+                // linkWithCredential upgrades the anonymous account IN PLACE —
+                // the uid is unchanged, so PokePuzzle progress is already under
+                // the right namespace. No migration needed.
                 const credential = EmailAuthProvider.credential(email, password);
                 const result = await linkWithCredential(current, credential);
-                
+
                 set({
                     isAnonymous: false,
                     userEmail: result.user.email || email,
                     isAdmin: Boolean(result.user.email && ADMIN_EMAILS.includes(result.user.email.trim().toLowerCase())),
                 });
-                
+
                 useToastStore.getState().showToast(`Account created — synced as ${result.user.email || email}.`, 'success');
             } else {
+                // No anonymous session to link → a brand-new uid. Migrate any
+                // progress saved under the previous anonymous uid (if present).
+                const prevAnonUid = current && current.isAnonymous ? current.uid : null;
                 const result = await createUserWithEmailAndPassword(auth, email, password);
+
+                if (prevAnonUid && result.user?.uid && prevAnonUid !== result.user.uid) {
+                    try {
+                        await migratePokePuzzleProgress(prevAnonUid, result.user.uid);
+                        set({ pokePuzzleMigrationTick: get().pokePuzzleMigrationTick + 1 });
+                    } catch (e) {
+                        console.error('PokePuzzle migration on sign-up failed:', e);
+                    }
+                }
                 set({
                     isAnonymous: false,
                     userEmail: result.user.email || email,
@@ -357,7 +411,22 @@ export const useAuthStore = create((set, get) => {
         },
 
         handleSignIn: async (email, password) => {
+            // Capture the anonymous uid BEFORE the sign-in switches identities,
+            // so we can migrate its PokePuzzle progress onto the account.
+            const prevUser = auth.currentUser;
+            const prevAnonUid = prevUser && prevUser.isAnonymous ? prevUser.uid : null;
+
             const result = await signInWithEmailAndPassword(auth, email, password);
+
+            if (prevAnonUid && result.user?.uid && prevAnonUid !== result.user.uid) {
+                try {
+                    await migratePokePuzzleProgress(prevAnonUid, result.user.uid);
+                    set({ pokePuzzleMigrationTick: get().pokePuzzleMigrationTick + 1 });
+                } catch (e) {
+                    console.error('PokePuzzle migration on sign-in failed:', e);
+                }
+            }
+
             set({
                 isAnonymous: false,
                 userEmail: result.user.email || email,
