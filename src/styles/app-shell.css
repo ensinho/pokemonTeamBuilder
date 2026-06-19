@@ -946,21 +946,38 @@
 
 @media (max-width: 767px) {
     .app-shell__footer-row {
-        flex-direction: row;
+        flex-direction: column;
+        align-items: center;
         justify-content: center;
         text-align: center;
+        gap: 0.75rem;
+    }
+
+    /* Stack the credit line above the feedback pills, both centered. */
+    .app-shell__footer-credit {
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
         gap: 0.6rem;
     }
 
-    .app-shell__footer-credit {
+    /* Center the pill group; drop the inline left offset. */
+    .app-shell__footer-feedback {
+        margin-left: 0;
         justify-content: center;
-        width: 100%;
+        gap: 0.5rem;
+    }
+
+    /* The "•" dividers only read as separators when items sit inline.
+       Once the pills wrap/center on mobile they look like stray dots — hide. */
+    .app-shell__footer-separator {
+        display: none;
     }
 
     .app-shell__footer-links {
         justify-content: center;
         width: 100%;
-        margin-top: 0.1rem;
     }
 }
 
