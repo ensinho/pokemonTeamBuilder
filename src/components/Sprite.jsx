@@ -7,25 +7,45 @@ import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
  * and the "pop-in unstyled" flicker that happens with bare <img>.
  *
  * Pass through any extra className for sizing (w-16 h-16 etc).
+ *
+ * `artworkSrc` — optional HD official-artwork URL. When the pixel sprite
+ * loads as a tiny placeholder (naturalWidth ≤ 40, i.e. the PokeAPI blank
+ * 40×40 image served for forms without a sprite), we silently switch to
+ * the artwork URL so the card never shows the pokéball fallback.
  */
 export const Sprite = React.memo(function Sprite({
     src,
     alt = '',
     className = '',
     fallback = POKEBALL_PLACEHOLDER_URL,
+    artworkSrc = null,
     eager = false,
 }) {
     const [loaded, setLoaded] = useState(false);
     const [errored, setErrored] = useState(false);
+    const [usedArtwork, setUsedArtwork] = useState(false);
 
-    const handleLoad = useCallback(() => setLoaded(true), []);
+    const handleLoad = useCallback((e) => {
+        // If the sprite resolved to the PokeAPI blank placeholder (40×40),
+        // and we have an artwork URL to try, switch to it instead.
+        if (artworkSrc && !usedArtwork && e.currentTarget.naturalWidth <= 40) {
+            setUsedArtwork(true);
+            return; // don't mark as loaded yet — artwork img will fire its own onLoad
+        }
+        setLoaded(true);
+    }, [artworkSrc, usedArtwork]);
+
     const handleError = useCallback(() => {
-        // Avoid infinite loop if the placeholder itself fails.
+        // On error: try artwork first if available, otherwise fall back to pokéball.
+        if (artworkSrc && !usedArtwork) {
+            setUsedArtwork(true);
+            return;
+        }
         if (!errored) setErrored(true);
         setLoaded(true);
-    }, [errored]);
+    }, [artworkSrc, usedArtwork, errored]);
 
-    const finalSrc = errored || !src ? fallback : src;
+    const finalSrc = errored || !src ? fallback : usedArtwork ? artworkSrc : src;
 
     return (
         <span className={`relative inline-block overflow-hidden ${className}`}>

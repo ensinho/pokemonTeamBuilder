@@ -5,7 +5,7 @@ import { EmptyState } from '../EmptyState';
 import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
 import { AnchoredPopover } from '../AnchoredPopover';
-import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
     ClearIcon,
@@ -83,7 +83,7 @@ const MobilePokemonPickerCard = ({
 
             <div className="team-builder-mobile-card__media">
                 <div className="mx-auto aspect-square w-full max-w-[84px]">
-                    <Sprite src={getPokemonDisplaySprite(pokemon)} alt={pokemon.name} className="h-full w-full" />
+                    <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>
 
@@ -246,7 +246,7 @@ const MobileTeamSlot = ({ pokemon, index, onEdit, onRemove }) => {
                 title={pokemon ? pokemon.name : `Empty slot ${index + 1}`}
             >
                 {pokemon ? (
-                    <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} alt={pokemon.name} className="h-9 w-9" />
+                    <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-9 w-9" />
                 ) : (
                     <img
                         src={POKEBALL_PLACEHOLDER_URL}

@@ -2,7 +2,7 @@ import React from 'react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
-import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
 import { PokemonCard } from '../PokemonCard';
@@ -234,7 +234,7 @@ export function TeamBuilderView({
                                     onDragEnd={() => setDragIndex(null)}
                                 >
                                     <div className="team-builder-slot__media">
-                                        <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} alt={pokemon.name} className="w-full h-full" />
+                                        <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="w-full h-full" />
                                     </div>
                                     <p className="team-builder-slot__name">{pokemon.name}</p>
 
