@@ -52,10 +52,20 @@ export function SpeedTiersView({ generations = [] }) {
             .sort((a, b) => b.speed - a.speed || a.name.localeCompare(b.name));
     }, [pokemonIndex, search, gen, spread]);
 
+    const tiers = useMemo(() => {
+        const map = new Map();
+        for (const p of ranked) {
+            const list = map.get(p.speed);
+            if (list) list.push(p);
+            else map.set(p.speed, [p]);
+        }
+        return Array.from(map.values());
+    }, [ranked]);
+
     useEffect(() => { setVisibleCount(PAGE); }, [search, gen, spreadKey]);
 
-    const visible = ranked.slice(0, visibleCount);
-    const hasMore = visibleCount < ranked.length;
+    const visibleTiers = tiers.slice(0, visibleCount);
+    const hasMore = visibleCount < tiers.length;
 
     const sentinelRef = useRef(null);
     useEffect(() => {
@@ -130,26 +140,50 @@ export function SpeedTiersView({ generations = [] }) {
             ) : (
                 <div className="ref-list custom-scrollbar">
                     <div className="spd-list">
-                        {visible.map((p, i) => (
-                            <button key={`${p.id}-${p.name}`} type="button" className="spd-row" onClick={() => navigate(`/pokemon/${p.id}`)}>
-                                <span className="spd-row__rank">#{i + 1}</span>
-                                <img
-                                    src={getPokemonFrontSpriteUrl(p.id)}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="spd-row__sprite"
-                                    loading="lazy"
-                                    onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                />
-                                <span className="spd-row__name">
-                                    {p.name.replace(/-/g, ' ')}
-                                    <span className="spd-row__types">
-                                        {p.types?.map((type) => <TypeBadge key={type} type={type} />)}
-                                    </span>
-                                </span>
-                                <span className="spd-row__speed">{p.speed}</span>
-                            </button>
-                        ))}
+                        {visibleTiers.map((tier, i) => {
+                            const main = tier[0];
+                            const rest = tier.slice(1);
+                            return (
+                                <div key={main.speed} className="spd-tier">
+                                    <span className="spd-row__rank">#{i + 1}</span>
+                                    <button type="button" className="spd-tier__main-btn" onClick={() => navigate(`/pokemon/${main.id}`)}>
+                                        <img
+                                            src={getPokemonFrontSpriteUrl(main.id)}
+                                            alt=""
+                                            aria-hidden="true"
+                                            className="spd-row__sprite"
+                                            loading="lazy"
+                                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                        />
+                                    </button>
+                                    <div className="spd-tier__body">
+                                        <button type="button" className="spd-tier__name" onClick={() => navigate(`/pokemon/${main.id}`)}>
+                                            {main.name.replace(/-/g, ' ')}
+                                            <span className="spd-row__types">
+                                                {main.types?.map((type) => <TypeBadge key={type} type={type} />)}
+                                            </span>
+                                        </button>
+                                        {rest.length > 0 && (
+                                            <div className="spd-chips">
+                                                {rest.map((p) => (
+                                                    <button key={`${p.id}-${p.name}`} type="button" className="spd-chip" onClick={() => navigate(`/pokemon/${p.id}`)}>
+                                                        <img
+                                                            src={getPokemonFrontSpriteUrl(p.id)}
+                                                            alt=""
+                                                            className="spd-chip__sprite"
+                                                            loading="lazy"
+                                                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                                        />
+                                                        {p.name.replace(/-/g, ' ')}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <span className="spd-row__speed">{main.speed}</span>
+                                </div>
+                            );
+                        })}
                     </div>
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}
                 </div>
