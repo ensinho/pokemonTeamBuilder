@@ -215,10 +215,7 @@ export default function AppLayout() {
 
     // UI Local States
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    // Start collapsed only on desktop; mobile always shows full labels
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
-        typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
-    );
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
