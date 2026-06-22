@@ -113,15 +113,20 @@ const getTodayDateString = () => {
     return `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
 };
 
-// Helper to get past dates list (restricted to the past 3 days)
-const getPastDates = (count = 3) => {
+// The day PokéPuzzle went live. Daily history lists every day from here up to
+// yesterday — there are no playable puzzles before this date. (Month is
+// 0-indexed: 5 = June.)
+const PUZZLE_LAUNCH_DATE = new Date(2026, 5, 16);
+
+// All past daily-puzzle dates, newest first, from yesterday back to launch.
+const getPastDates = () => {
     const dates = [];
-    const now = new Date();
-    for (let i = 1; i <= count; i++) {
-        const d = new Date();
-        d.setDate(now.getDate() - i);
-        const dateString = `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
-        dates.push(dateString);
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - 1); // start at yesterday (today is the live puzzle)
+    while (d >= PUZZLE_LAUNCH_DATE) {
+        dates.push(`${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`);
+        d.setDate(d.getDate() - 1);
     }
     return dates;
 };
@@ -458,15 +463,15 @@ export default function PokePuzzleView() {
     const handleHistoryScroll = useCallback((e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
         if (scrollHeight - scrollTop - clientHeight < 20) {
-            if (!isHistoryLoadingMore && visibleHistoryLimit < 30) {
+            if (!isHistoryLoadingMore && visibleHistoryLimit < pastDates.length) {
                 setIsHistoryLoadingMore(true);
                 setTimeout(() => {
-                    setVisibleHistoryLimit((prev) => Math.min(prev + 5, 30));
+                    setVisibleHistoryLimit((prev) => Math.min(prev + 5, pastDates.length));
                     setIsHistoryLoadingMore(false);
                 }, 400);
             }
         }
-    }, [isHistoryLoadingMore, visibleHistoryLimit]);
+    }, [isHistoryLoadingMore, visibleHistoryLimit, pastDates.length]);
 
     useEffect(() => {
         if (!isHistoryOpen) {
@@ -1613,6 +1618,7 @@ export default function PokePuzzleView() {
                 ) : (
                     <>
                         {pastDates
+                            .slice(0, visibleHistoryLimit)
                             .map((dateStr) => {
                                 const saved = historyByDate.get(dateStr) || null;
                                 const itemStatus = saved?.gameStatus || 'NOT_PLAYED'; // NOT_PLAYED, IN_PROGRESS, WON, LOST
