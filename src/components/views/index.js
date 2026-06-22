@@ -1,5 +1,6 @@
 export { AdminDashboardView } from './AdminDashboardView';
 export { AllTeamsView } from './AllTeamsView';
+export { TeamDetailView } from './TeamDetailView';
 export { FavoritePokemonsView } from './FavoritePokemonsView';
 export { FavoritesView } from './FavoritesView';
 export { GenerationQuizView } from './GenerationQuizView';

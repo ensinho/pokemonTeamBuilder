@@ -158,7 +158,9 @@ export const useActiveTeamStore = create((set, get) => ({
             await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
             useToastStore.getState().showToast(`Team "${teamName}" saved!`, 'success');
             useFirestoreTeamsStore.getState().setActiveTeamId(teamId);
-            get().handleClearTeam();
+            // Keep the roster on screen so the save doesn't feel like the team vanished.
+            // Switch into edit mode for the just-saved team (button becomes "Update team").
+            set({ editingTeamId: teamId });
         } catch (e) {
             useToastStore.getState().showToast("Error saving team.", 'error');
         }

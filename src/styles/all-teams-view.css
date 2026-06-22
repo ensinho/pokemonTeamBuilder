@@ -167,7 +167,14 @@
 }
 
 .all-teams-view__actions {
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--color-border);
+    width: 100%;
 }
 
 .all-teams-view__empty {
@@ -199,10 +206,7 @@
 
     .all-teams-view__actions {
         flex-wrap: wrap;
-    }
-
-    .all-teams-view__actions .team-builder-button {
-        min-width: 100%;
+        gap: 0.75rem;
     }
 }
 

@@ -63,6 +63,7 @@ const PokemonDetailView = lazy(() => import('./views/PokemonDetailView').then((m
 const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').then((m) => ({ default: m.DamageCalculatorView })));
 const SpeedTiersView = lazy(() => import('./views/SpeedTiersView').then((m) => ({ default: m.SpeedTiersView })));
 const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) => ({ default: m.TournamentsView })));
+const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => ({ default: m.TeamDetailView })));
 
 import '../styles/app-shell.css';
 
@@ -1134,6 +1135,21 @@ export default function AppLayout() {
                                     } />
                                     {/* Saved Teams now lives as a tab inside /favorites. */}
                                     <Route path="/teams" element={<Navigate to="/favorites?tab=teams" replace />} />
+                                    <Route path="/teams/:id" element={
+                                        <TeamDetailView
+                                            teams={savedTeams}
+                                            onEdit={handleEditTeam}
+                                            onShare={handleShareSavedTeam}
+                                            onExport={handleExportSavedTeamToShowdown}
+                                            requestDelete={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
+                                            onToggleFavorite={handleToggleFavorite}
+                                            activeTeamId={activeTeamId}
+                                            setActiveTeamId={setActiveTeamId}
+                                            colors={colors}
+                                            fetchPokemonDetails={fetchPokemonDetails}
+                                            showDetails={showDetails}
+                                        />
+                                    } />
                                     <Route path="/generator" element={
                                         <RandomGeneratorView
                                             colors={colors}
