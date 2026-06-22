@@ -10,6 +10,7 @@ export function useActiveTeam() {
         suggestedPokemonIds: store.suggestedPokemonIds,
         editingTeamMember: store.editingTeamMember,
         shareModal: store.shareModal,
+        isRandomizing: store.isRandomizing,
 
         setTeamName: store.setTeamName,
         setEditingTeamId: store.setEditingTeamId,
@@ -18,6 +19,7 @@ export function useActiveTeam() {
         setCurrentTeam: store.setCurrentTeam,
         recalculateAnalysis: store.recalculateAnalysis,
         handleAddPokemon: store.handleAddPokemon,
+        handleRandomizeTeam: store.handleRandomizeTeam,
         handleRemoveFromTeam: store.handleRemoveFromTeam,
         handleReorderTeam: store.handleReorderTeam,
         handleClearTeam: store.handleClearTeam,

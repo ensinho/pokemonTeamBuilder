@@ -11,6 +11,27 @@ import { useToastStore } from './useToastStore';
 import { usePokedexStore } from './usePokedexStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 
+// Monotonic counter so instanceIds stay unique even when several members are
+// created within the same millisecond (e.g. the randomizer building 6 at once).
+let teamMemberSeq = 0;
+
+// Build a fully-formed team member (with default customization) from a resolved
+// Pokémon record. Shared by handleAddPokemon and handleRandomizeTeam.
+const createTeamMember = (fullPokemon) => ({
+    ...fullPokemon,
+    instanceId: `${fullPokemon.id}-${Date.now()}-${teamMemberSeq++}`,
+    customization: {
+        item: '',
+        nature: 'serious',
+        teraType: fullPokemon.types?.[0] || 'normal',
+        isShiny: false,
+        ability: fullPokemon.abilities?.[0]?.name || 'unknown',
+        moves: (fullPokemon.moves || []).slice(0, 4).map((m) => m.name),
+        evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
+        ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
+    },
+});
+
 const serializeTeamPokemon = (pokemon) => ({
     id: pokemon.id,
     name: pokemon.name,
@@ -29,6 +50,7 @@ export const useActiveTeamStore = create((set, get) => ({
     teamAnalysis: { strengths: new Set(), weaknesses: {}, defensiveCoverage: {} },
     suggestedPokemonIds: new Set(),
     editingTeamMember: null,
+    isRandomizing: false,
 
     // Share Modal state
     shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' },
@@ -70,23 +92,53 @@ export const useActiveTeamStore = create((set, get) => ({
             fullPokemon = { ...pokemon, ...resolved };
         }
 
-        const newMember = {
-            ...fullPokemon,
-            instanceId: `${fullPokemon.id}-${Date.now()}`,
-            customization: {
-                item: '',
-                nature: 'serious',
-                teraType: fullPokemon.types?.[0] || 'normal',
-                isShiny: false,
-                ability: fullPokemon.abilities?.[0]?.name || 'unknown',
-                moves: (fullPokemon.moves || []).slice(0, 4).map(m => m.name),
-                evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
-                ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
-            }
-        };
-
-        set({ currentTeam: [...currentTeam, newMember] });
+        set({ currentTeam: [...currentTeam, createTeamMember(fullPokemon)] });
         get().recalculateAnalysis();
+    },
+
+    // Fill the team with up to `count` random distinct Pokémon drawn from `pool`
+    // (the list the picker currently shows, so it respects the active game/type/
+    // search filters). Full records are resolved lazily, in parallel.
+    handleRandomizeTeam: async (pool, count = 6) => {
+        if (get().isRandomizing) return;
+        const seen = new Set();
+        const candidates = [];
+        for (const p of Array.isArray(pool) ? pool : []) {
+            if (p && p.id != null && !seen.has(p.id)) {
+                seen.add(p.id);
+                candidates.push(p);
+            }
+        }
+        if (candidates.length === 0) {
+            useToastStore.getState().showToast('No Pokémon available to randomize.', 'warning');
+            return;
+        }
+
+        // Partial Fisher–Yates: pick `count` distinct entries without a full shuffle.
+        const picks = [];
+        for (let i = 0; i < count && candidates.length > 0; i += 1) {
+            const j = Math.floor(Math.random() * candidates.length);
+            picks.push(candidates.splice(j, 1)[0]);
+        }
+
+        set({ isRandomizing: true });
+        try {
+            const resolved = await Promise.all(picks.map(async (pokemon) => {
+                let full = pokemon;
+                if (!pokemon.abilities?.length || !pokemon.moves?.length) {
+                    const detail = await resolvePokemonDetail(pokemon.id);
+                    if (detail) full = { ...pokemon, ...detail };
+                }
+                return createTeamMember(full);
+            }));
+            set({ currentTeam: resolved, editingTeamId: null });
+            get().recalculateAnalysis();
+            useToastStore.getState().showToast(`Randomized a team of ${resolved.length}!`, 'success');
+        } catch (_) {
+            useToastStore.getState().showToast('Could not randomize a team. Try again.', 'error');
+        } finally {
+            set({ isRandomizing: false });
+        }
     },
 
     handleRemoveFromTeam: (instanceId) => {

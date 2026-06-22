@@ -6,6 +6,8 @@ import { typeColors, typeIcons } from '../../constants/types';
 import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
+import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
+import { Dices } from 'lucide-react';
 import { PokemonDetailModal } from '../modals/PokemonDetailModal';
 import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
@@ -35,6 +37,15 @@ function hexToRgba(hex, alpha) {
     const b = parseInt(h.slice(4, 6), 16);
     if ([r, g, b].some(Number.isNaN)) return `rgba(119,119,119,${alpha})`;
     return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// Inline CSS custom properties driving the per-type disc/ring behind a team
+// member's sprite. Falls back to a single colour for mono-type Pokémon.
+export function typeDiscStyle(pokemon) {
+    const types = pokemon?.types || [];
+    const a = typeColors[types[0]] || '#6390F0';
+    const b = typeColors[types[1]] || a;
+    return { '--type-a': a, '--type-b': b };
 }
 
 function AnalysisTypeBadge({ type }) {
@@ -89,6 +100,8 @@ export function TeamBuilderView({
     availablePokemons,
     gamePokemonIds,
     handleAddPokemonToTeam,
+    handleRandomizeTeam,
+    isRandomizing,
     lastPokemonElementRef,
     isFetchingMore,
     selectedTypes,
@@ -108,6 +121,7 @@ export function TeamBuilderView({
 }) {
     const { t, language } = useTranslation();
     const [dragIndex, setDragIndex] = React.useState(null);
+    const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
             return false;
@@ -242,6 +256,8 @@ export function TeamBuilderView({
                     gamePokemonIds={gamePokemonIds}
                     partnerSuggestions={partnerSuggestions}
                     handleAddPokemonToTeam={handleAddPokemonToTeam}
+                    handleRandomizeTeam={handleRandomizeTeam}
+                    isRandomizing={isRandomizing}
                     lastPokemonElementRef={lastPokemonElementRef}
                     isFetchingMore={isFetchingMore}
                     selectedTypes={selectedTypes}
@@ -330,7 +346,7 @@ export function TeamBuilderView({
                                     }}
                                     onDragEnd={() => setDragIndex(null)}
                                 >
-                                    <div className="team-builder-slot__media">
+                                    <div className="team-builder-slot__media tb-type-disc" style={typeDiscStyle(pokemon)}>
                                         <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="w-full h-full" />
                                     </div>
                                     <p className="team-builder-slot__name">{pokemon.name}</p>
@@ -367,6 +383,17 @@ export function TeamBuilderView({
                                 </div>
                             ))}
                         </div>
+
+                        <button
+                            type="button"
+                            onClick={() => handleRandomizeTeam?.(displayedPokemons)}
+                            disabled={isRandomizing || displayedPokemons.length === 0}
+                            className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-randomize mt-3 w-full"
+                            title={t('builder.randomizeTeam')}
+                        >
+                            <Dices className="h-4 w-4" />
+                            {isRandomizing ? t('builder.randomizing') : t('builder.randomizeTeam')}
+                        </button>
 
                         <TeamIdentitySummary team={currentTeam} />
 
@@ -437,11 +464,14 @@ export function TeamBuilderView({
 
                 <div className="lg:col-span-9 space-y-6">
                     <section className="team-builder-panel team-builder-panel--picker p-4">
-                        <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
-                            <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
-                                <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('nav.pokedex')}</h2>
-                                <span className="team-builder-panel__meta team-builder-panel__meta--compact">{displayedPokemons.length}</span>
-                            </div>
+                        <div className="team-builder-picker-cover-row">
+                            <GameCoverBanner
+                                games={games}
+                                selectedGame={selectedGame}
+                                onOpen={() => setIsGamePickerOpen(true)}
+                                className="game-cover--compact"
+                            />
+                            <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0">{displayedPokemons.length}</span>
                         </div>
 
                         <div className="team-builder-filterbar mt-3">
@@ -523,19 +553,11 @@ export function TeamBuilderView({
                                 </div>
 
                                 {games.length > 0 && setSelectedGame && (
-                                    <div className="team-builder-select-wrap">
-                                        <select
-                                            value={selectedGame || 'all'}
-                                            onChange={(e) => setSelectedGame(e.target.value)}
-                                            className="team-builder-field team-builder-field--compact team-builder-select"
-                                            aria-label={t('builder.gameFilterLabel')}
-                                        >
-                                            <option value="all">{t('builder.allGames')}</option>
-                                            {games.map((game) => (
-                                                <option key={game.key} value={game.key}>{game.label}</option>
-                                            ))}
-                                        </select>
-                                    </div>
+                                    <GameFilterChip
+                                        games={games}
+                                        selectedGame={selectedGame}
+                                        onOpen={() => setIsGamePickerOpen(true)}
+                                    />
                                 )}
 
                                 <button
@@ -587,7 +609,7 @@ export function TeamBuilderView({
                                 </div>
                             ) : (
                                 <div className="team-builder-results__scroll custom-scrollbar">
-                                    <div className="team-builder-results__grid grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 p-1 py-4">
+                                    <div className="team-builder-results__grid grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 p-1 py-2">
                                         {isGameFilterActive ? (
                                             <>
                                                 {regionalPokemons.length > 0 && (
@@ -719,6 +741,14 @@ export function TeamBuilderView({
                     </section>
                 </div>
             </main> : null}
+
+            <GamePickerModal
+                isOpen={isGamePickerOpen}
+                onClose={() => setIsGamePickerOpen(false)}
+                games={games}
+                selectedGame={selectedGame}
+                onSelectGame={setSelectedGame}
+            />
 
             {detailPokemon && (
                 <PokemonDetailModal

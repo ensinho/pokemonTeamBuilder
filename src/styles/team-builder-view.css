@@ -565,7 +565,7 @@
 }
 
 .team-builder-mobile__available {
-    max-height: 60vh;
+    max-height: 52vh;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
@@ -893,9 +893,11 @@
 
 @media (min-width: 1024px) {
     .team-builder-panel--picker {
-        height: calc(100vh - 7rem);
-        max-height: calc(100vh - 7rem);
-        min-height: calc(100vh - 7rem);
+        /* Leave a peek of the Recent Teams section below so users discover it
+           instead of assuming the picker is the whole page. */
+        height: calc(100vh - 6.67rem);
+        max-height: calc(100vh - 6.67rem);
+        min-height: calc(100vh - 6.67rem);
     }
 
     .team-builder-analysis-grid {
@@ -1304,7 +1306,7 @@
     opacity: 0.85;
     border-bottom: 1px solid var(--color-border);
     padding: 0.25rem 0 0.5rem;
-    margin: 1.5rem 0.25rem 0.6rem;
+    margin: 0.5rem 0.35rem 0.6rem;
     display: flex;
     align-items: center;
     gap: 0.5rem;

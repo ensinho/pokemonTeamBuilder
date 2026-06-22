@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
-import { typeIcons } from '../../constants/types';
+import { typeIcons, typeColors } from '../../constants/types';
+import { Dices } from 'lucide-react';
+import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
 import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
@@ -18,6 +20,14 @@ import {
     TrophyIcon,
 } from '../icons';
 import { Save, SaveAll } from 'lucide-react';
+
+// Inline CSS custom properties for the per-type ring/tint behind a sprite.
+const typeVars = (pokemon) => {
+    const types = pokemon?.types || [];
+    const a = typeColors[types[0]] || '#6390F0';
+    const b = typeColors[types[1]] || a;
+    return { '--type-a': a, '--type-b': b };
+};
 
 const MobilePokemonPickerCard = ({
     pokemon,
@@ -82,7 +92,7 @@ const MobilePokemonPickerCard = ({
                 </button>
             </div>
 
-            <div className="team-builder-mobile-card__media">
+            <div className="team-builder-mobile-card__media tb-type-tint" style={typeVars(pokemon)}>
                 <div className="mx-auto aspect-square w-full max-w-[84px]">
                     <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
                 </div>
@@ -242,7 +252,8 @@ const MobileTeamSlot = ({ pokemon, index, onEdit, onRemove }) => {
             <button
                 type="button"
                 onClick={() => pokemon && onEdit?.(pokemon)}
-                className={`team-builder-mobile-slot ${pokemon ? 'is-filled' : 'is-empty'}`}
+                className={`team-builder-mobile-slot ${pokemon ? 'is-filled tb-type-ring' : 'is-empty'}`}
+                style={pokemon ? typeVars(pokemon) : undefined}
                 aria-label={pokemon ? `${t('common.edit')} ${pokemon.name}` : `Empty team slot ${index + 1}`}
                 title={pokemon ? pokemon.name : `Empty slot ${index + 1}`}
             >
@@ -307,6 +318,8 @@ export const MobileTeamBuilderView = ({
     gamePokemonIds,
     partnerSuggestions = [],
     handleAddPokemonToTeam,
+    handleRandomizeTeam,
+    isRandomizing,
     lastPokemonElementRef,
     isFetchingMore,
     selectedTypes,
@@ -320,6 +333,7 @@ export const MobileTeamBuilderView = ({
     setShowOnlyFavorites,
 }) => {
     const { t, language } = useTranslation();
+    const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
 
     React.useEffect(() => {
         if (selectedTypes.size <= 1) return;
@@ -446,6 +460,17 @@ export const MobileTeamBuilderView = ({
                         ))}
                     </div>
 
+                    <button
+                        type="button"
+                        onClick={() => handleRandomizeTeam?.(displayedPokemons)}
+                        disabled={isRandomizing || displayedPokemons.length === 0}
+                        className="team-builder-button team-builder-button--secondary team-builder-randomize mt-3 w-full"
+                        title={t('builder.randomizeTeam')}
+                    >
+                        <Dices className="h-4 w-4" />
+                        {isRandomizing ? t('builder.randomizing') : t('builder.randomizeTeam')}
+                    </button>
+
                     <TeamAnalysisChip
                         teamAnalysis={teamAnalysis}
                         teamSize={currentTeam.length}
@@ -486,16 +511,12 @@ export const MobileTeamBuilderView = ({
                     {games.length > 0 && setSelectedGame && (
                         <label className="team-builder-control team-builder-mobile__filter-control">
                             <span className="team-builder-control__label">{t('builder.gameFilterLabel')}</span>
-                            <select
-                                value={selectedGame || 'all'}
-                                onChange={(event) => setSelectedGame(event.target.value)}
-                                className="team-builder-field team-builder-select"
-                            >
-                                <option value="all">{t('builder.allGames')}</option>
-                                {games.map((game) => (
-                                    <option key={game.key} value={game.key}>{game.label}</option>
-                                ))}
-                            </select>
+                            <GameFilterChip
+                                games={games}
+                                selectedGame={selectedGame}
+                                onOpen={() => setIsGamePickerOpen(true)}
+                                className="w-full"
+                            />
                         </label>
                     )}
 
@@ -529,12 +550,14 @@ export const MobileTeamBuilderView = ({
             </section>
 
             <section className="team-builder-panel p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                    <div>
-                        <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Feed da Pokédex' : 'Pokédex feed'}</p>
-                        <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">{language === 'pt' ? 'Pokémon Disponíveis' : 'Available Pokémon'}</h3>
-                    </div>
-                    <span className="team-builder-panel__meta">
+                <div className="team-builder-picker-cover-row mb-3">
+                    <GameCoverBanner
+                        games={games}
+                        selectedGame={selectedGame}
+                        onOpen={() => setIsGamePickerOpen(true)}
+                        className="game-cover--compact"
+                    />
+                    <span className="team-builder-panel__meta shrink-0">
                         {displayedPokemons.length}
                     </span>
                 </div>
@@ -576,7 +599,7 @@ export const MobileTeamBuilderView = ({
                         </div>
                     ) : (
                         <>
-                            <div className="p-2 custom-scrollbar">
+                            <div className="p-1 custom-scrollbar">
                                 <div className="team-builder-mobile__grid grid grid-cols-3 gap-2">
                                     {isGameFilterActive ? (
                                         <>
@@ -793,6 +816,13 @@ export const MobileTeamBuilderView = ({
                 </div>
             </section>
 
+            <GamePickerModal
+                isOpen={isGamePickerOpen}
+                onClose={() => setIsGamePickerOpen(false)}
+                games={games}
+                selectedGame={selectedGame}
+                onSelectGame={setSelectedGame}
+            />
         </div>
     );
 };

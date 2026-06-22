@@ -191,7 +191,8 @@ export default function AppLayout() {
         handleReorderTeam, handleSaveTeam, handleClearTeam, handleExportToShowdown,
         handleShareTeam, editingTeamMember, setEditingTeamMember, shareModal,
         closeShareModal, handleUpdateTeamMember, suggestedPokemonIds, teamAnalysis,
-        setCurrentTeam, shareTeamByData, handleAddPokemon, setEditingTeamId
+        setCurrentTeam, shareTeamByData, handleAddPokemon, setEditingTeamId,
+        handleRandomizeTeam, isRandomizing
     } = useActiveTeam();
 
     const {
@@ -1043,6 +1044,8 @@ export default function AppLayout() {
                                             availablePokemons={availablePokemons}
                                             gamePokemonIds={pokedex.gamePokemonIds}
                                             handleAddPokemonToTeam={handleAddPokemon}
+                                            handleRandomizeTeam={handleRandomizeTeam}
+                                            isRandomizing={isRandomizing}
                                             lastPokemonElementRef={pokedex.lastPokemonElementRef}
                                             isFetchingMore={pokedex.isFetchingMore}
                                             selectedTypes={pokedex.selectedTypes}
