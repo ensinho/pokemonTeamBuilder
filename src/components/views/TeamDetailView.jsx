@@ -17,6 +17,7 @@ import { CompactStatBar, getPokemonWeaknessEntries, WeaknessBadge } from '../mod
 import { useTranslation } from '../../hooks/useTranslation';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
+import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { EmptyState } from '../EmptyState';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -83,7 +84,8 @@ export function TeamDetailView({
 
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
-    const { partnersFor, status: tournamentStatus } = useTournamentData();
+    const { partnersFor, popular, status: tournamentStatus } = useTournamentData();
+    const { usageFor } = useCompetitiveUsage();
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
 
     // Saved members store only id/name/sprites + customization; resolve full
@@ -121,6 +123,9 @@ export function TeamDetailView({
         [teamAnalysis],
     );
 
+    // Tournament meta usage map: pokemon id → appearance count across all tournament teams.
+    const usageMap = React.useMemo(() => new Map(popular.map((p) => [p.id, p.count])), [popular]);
+
     const avgBst = React.useMemo(() => {
         const totals = members
             .map((m) => (m.stats || []).reduce((sum, s) => sum + (s.base_stat ?? s.value ?? 0), 0))
@@ -129,18 +134,29 @@ export function TeamDetailView({
         return Math.round(totals.reduce((a, b) => a + b, 0) / totals.length);
     }, [members]);
 
+    // Meta-relevance bonus: average tournament presence across team members (0–15 pts).
+    // Uses appearance counts from real VGC tournament data so meta staples score higher.
+    const metaBonus = React.useMemo(() => {
+        if (!popular.length || !members.length) return 0;
+        const topCount = popular[0]?.count || 1;
+        const scores = members.map((m) => Math.min(1, (usageMap.get(m.id) || 0) / (topCount * 0.4)));
+        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        return Math.round(avg * 15);
+    }, [popular, members, usageMap]);
+
     const score = React.useMemo(() => {
         if (!members.length) return 0;
-        const raw = 58 + offenseTypes.length * 2 + resistEntries.length * 1.6 - weaknessEntries.length * 8
-            + (members.length === 6 ? 6 : 0);
+        // Type coverage (max ~30) + resistance depth (max ~20) − weakness penalty + meta bonus (0–15)
+        const raw = 50 + offenseTypes.length * 2 + resistEntries.length * 1.5
+            - weaknessEntries.length * 7.5 + (members.length === 6 ? 5 : 0) + metaBonus;
         return Math.round(clamp(raw, 5, 100));
-    }, [members.length, offenseTypes.length, resistEntries.length, weaknessEntries.length]);
+    }, [members.length, offenseTypes.length, resistEntries.length, weaknessEntries.length, metaBonus]);
 
     const grade = React.useMemo(() => {
         if (score >= 82) return { label: pt ? 'Excelente' : 'Excellent', color: 'var(--color-success)' };
-        if (score >= 64) return { label: pt ? 'Sólido' : 'Solid', color: 'var(--color-primary)' };
-        if (score >= 42) return { label: pt ? 'Ajustar' : 'Needs tuning', color: 'var(--color-accent)' };
-        return { label: pt ? 'Frágil' : 'Fragile', color: 'var(--color-danger)' };
+        if (score >= 66) return { label: pt ? 'Sólido' : 'Solid', color: 'var(--color-primary)' };
+        if (score >= 44) return { label: pt ? 'Ajustar' : 'Fair', color: 'var(--color-accent)' };
+        return { label: pt ? 'Frágil' : 'Weak', color: 'var(--color-danger)' };
     }, [score, pt]);
 
     const partnerSuggestions = React.useMemo(() => {
@@ -197,8 +213,8 @@ export function TeamDetailView({
                         </div>
                         <p className="team-detail-subtitle">
                             {pt
-                                ? `${members.length} de 6 membros · análise de cobertura, fraquezas e itens`
-                                : `${members.length} of 6 members · coverage, weakness & item analysis`}
+                                ? `${members.length} / 6 membros · score de torneio, cobertura e picks de item`
+                                : `${members.length} / 6 members · tournament score, coverage & item picks`}
                         </p>
                     </div>
 
@@ -266,7 +282,7 @@ export function TeamDetailView({
                 <div className="team-detail-coverage">
                     <div className="team-detail-coverage__col">
                         <h3 className="team-detail-coverage__title team-detail-coverage__title--success">
-                            <Swords className="w-3.5 h-3.5" /> {pt ? 'Cobertura Ofensiva' : 'Offensive coverage'}
+                            <Swords className="w-3.5 h-3.5" /> {pt ? 'Ofensa' : 'Offense'}
                         </h3>
                         <div className="team-detail-chips">
                             {offenseTypes.length > 0
@@ -276,7 +292,7 @@ export function TeamDetailView({
                     </div>
                     <div className="team-detail-coverage__col">
                         <h3 className="team-detail-coverage__title team-detail-coverage__title--primary">
-                            <Shield className="w-3.5 h-3.5" /> {pt ? 'Resistências' : 'Defensive coverage'}
+                            <Shield className="w-3.5 h-3.5" /> {pt ? 'Defesa' : 'Defense'}
                         </h3>
                         <div className="team-detail-chips">
                             {resistEntries.length > 0
@@ -286,7 +302,7 @@ export function TeamDetailView({
                     </div>
                     <div className="team-detail-coverage__col">
                         <h3 className="team-detail-coverage__title team-detail-coverage__title--danger">
-                            <AlertTriangle className="w-3.5 h-3.5" /> {pt ? 'Fraquezas em comum' : 'Shared weaknesses'}
+                            <AlertTriangle className="w-3.5 h-3.5" /> {pt ? 'Fraquezas' : 'Weaknesses'}
                         </h3>
                         <div className="team-detail-chips">
                             {weaknessEntries.length > 0
@@ -299,12 +315,14 @@ export function TeamDetailView({
 
             {/* Members */}
             <section className="team-builder-panel p-5 md:p-6">
-                <h2 className="team-detail-section-title">{pt ? 'Integrantes' : 'Team members'}</h2>
+                <h2 className="team-detail-section-title">{pt ? 'Integrantes' : 'Roster'}</h2>
                 <div className="team-detail-members">
                     {members.map((m) => {
                         const cz = m.customization || {};
                         const weaknesses = getPokemonWeaknessEntries(m.types || []).slice(0, 6);
-                        const itemPicks = suggestItemsForPokemon(m, language);
+                        const usage = usageFor(m.id);
+                        const itemPicks = suggestItemsForPokemon(m, language, usage);
+                        const itemsFromMeta = Boolean(usage && usage.n >= 2 && usage.items?.length);
                         const moves = (cz.moves || []).filter(Boolean);
                         return (
                             <article key={m.instanceId || m.id} className="team-detail-member">
@@ -316,9 +334,21 @@ export function TeamDetailView({
                                         className="team-detail-member__sprite"
                                     />
                                     <div className="min-w-0 flex-1">
-                                        <button type="button" onClick={() => showDetails?.(m)} className="team-detail-member__name">
-                                            {m.name} <span className="team-detail-member__id">#{m.id}</span>
-                                        </button>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <button type="button" onClick={() => showDetails?.(m)} className="team-detail-member__name">
+                                                {m.name} <span className="team-detail-member__id">#{m.id}</span>
+                                            </button>
+                                            {usageMap.get(m.id) > 0 && (
+                                                <span
+                                                    className="team-detail-meta-pill"
+                                                    title={pt
+                                                        ? `Aparece em ${usageMap.get(m.id)} time(s) de torneio`
+                                                        : `Appears in ${usageMap.get(m.id)} tournament team(s)`}
+                                                >
+                                                    <Trophy className="w-2.5 h-2.5" />{usageMap.get(m.id)}
+                                                </span>
+                                            )}
+                                        </div>
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {(m.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                                         </div>
@@ -376,7 +406,11 @@ export function TeamDetailView({
                                 {/* Item suggestions */}
                                 {itemPicks.length > 0 && (
                                     <div className="team-detail-member__items">
-                                        <p className="team-detail-member__sub"><Sparkles className="w-3 h-3 inline -mt-0.5" /> {pt ? 'Itens sugeridos' : 'Suggested items'}</p>
+                                        <p className="team-detail-member__sub">
+                                            {itemsFromMeta
+                                                ? <><Trophy className="w-3 h-3 inline -mt-0.5" /> {pt ? 'Itens de torneio' : 'Tournament items'}</>
+                                                : <><Sparkles className="w-3 h-3 inline -mt-0.5" /> {pt ? 'Itens sugeridos' : 'Suggested items'}</>}
+                                        </p>
                                         <div className="team-detail-item-list">
                                             {itemPicks.map((it) => (
                                                 <div key={it.slug} className="team-detail-item" title={it.reason}>
@@ -401,12 +435,12 @@ export function TeamDetailView({
                 <section className="team-builder-panel p-5 md:p-6">
                     <h2 className="team-detail-section-title">
                         <Trophy className="w-4 h-4 text-primary inline -mt-1 mr-1.5" />
-                        {pt ? 'Parceiros de torneios' : 'Tournament partners'}
+                        {pt ? 'Parceiros de meta' : 'Meta partners'}
                     </h2>
                     <p className="team-detail-note mb-3">
                         {pt
-                            ? 'Pokémon frequentemente usados ao lado deste time em campeonatos.'
-                            : 'Pokémon often built alongside this team in championships.'}
+                            ? 'Pokémon frequentemente co-usados com este time em campeonatos VGC.'
+                            : 'Pokémon most co-used with this team in VGC championships.'}
                     </p>
                     <div className="team-detail-partners">
                         {partnerSuggestions.map((p) => (

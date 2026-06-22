@@ -214,7 +214,7 @@ export default function AppLayout() {
     const { isInstallable, isIOS, handleInstall } = usePWAInstall();
 
     // UI Local States
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     // Start collapsed only on desktop; mobile always shows full labels
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(
         typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
@@ -432,12 +432,17 @@ export default function AppLayout() {
         const teamIds = new Set(currentTeam.map(p => p.id));
         const available = pokedex.pokemons.filter(p => !teamIds.has(p.id));
 
+        const indexMap = new Map(pokedex.pokemons.map((p, idx) => [p.id, idx]));
+
         return available.sort((a, b) => {
             const aIsSuggested = suggestedPokemonIds.has(a.id);
             const bIsSuggested = suggestedPokemonIds.has(b.id);
             if (aIsSuggested && !bIsSuggested) return -1;
             if (!aIsSuggested && bIsSuggested) return 1;
-            return a.id - b.id;
+
+            const aIndex = indexMap.get(a.id) ?? 0;
+            const bIndex = indexMap.get(b.id) ?? 0;
+            return aIndex - bIndex;
         });
     }, [pokedex.pokemons, currentTeam, suggestedPokemonIds]);
 
@@ -1033,6 +1038,7 @@ export default function AppLayout() {
                                             generations={generations}
                                             isInitialLoading={pokedex.isLoading}
                                             availablePokemons={availablePokemons}
+                                            gamePokemonIds={pokedex.gamePokemonIds}
                                             handleAddPokemonToTeam={handleAddPokemon}
                                             lastPokemonElementRef={pokedex.lastPokemonElementRef}
                                             isFetchingMore={pokedex.isFetchingMore}

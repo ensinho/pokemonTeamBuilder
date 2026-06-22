@@ -22,7 +22,12 @@ const getGameSets = () => {
     if (!gameSetsPromise) {
         gameSetsPromise = loadGames().then((games) => {
             const map = new Map();
-            for (const g of games) map.set(g.key, new Set(g.pokemonIds));
+            for (const g of games) {
+                map.set(g.key, {
+                    ids: new Set(g.pokemonIds),
+                    generation: g.generation
+                });
+            }
             return map;
         }).catch((error) => {
             gameSetsPromise = null;
@@ -33,17 +38,36 @@ const getGameSets = () => {
 };
 
 // Pure client-side filtering — mirrors what the old Firestore `where` clauses did.
-const filterPokemons = (all, { generation, types, search, gameIds }) => {
+const filterPokemons = (all, { generation, types, search, gameIds, gameGen }) => {
     const searchTerm = (search || '').toLowerCase().trim();
     const typeList = Array.from(types || []);
 
-    return all.filter((p) => {
-        if (gameIds && !gameIds.has(p.id)) return false;
+    const filtered = all.filter((p) => {
         if (generation && generation !== 'all' && p.generation !== generation) return false;
         if (typeList.length > 0 && !typeList.some((t) => (p.types || []).includes(t))) return false;
         if (searchTerm && !p.name.toLowerCase().includes(searchTerm)) return false;
         return true;
     });
+
+    if (gameIds) {
+        return [...filtered].sort((a, b) => {
+            const aIn = gameIds.has(a.id);
+            const bIn = gameIds.has(b.id);
+            if (aIn && !bIn) return -1;
+            if (!aIn && bIn) return 1;
+
+            if (aIn && bIn && gameGen) {
+                const aNative = a.generation === gameGen;
+                const bNative = b.generation === gameGen;
+                if (aNative && !bNative) return -1;
+                if (!aNative && bNative) return 1;
+            }
+
+            return a.id - b.id;
+        });
+    }
+
+    return filtered;
 };
 
 export const usePokedexStore = create((set, get) => ({
@@ -53,6 +77,7 @@ export const usePokedexStore = create((set, get) => ({
     hasMore: true,
     isLoading: false,
     isFetchingMore: false,
+    gameSets: null,        // Game key -> Set of national-dex ids (loaded once)
 
     // Filters for Team Builder page
     selectedGeneration: 'all',
@@ -96,14 +121,29 @@ export const usePokedexStore = create((set, get) => ({
             const state = get();
             const gameKey = isPokedex ? state.pokedexSelectedGame : state.selectedGame;
             let gameIds = null;
-            if (gameKey && gameKey !== 'all') {
-                try { gameIds = (await getGameSets()).get(gameKey) || null; } catch (_) { gameIds = null; }
+            let gameGen = null;
+            let gameSets = state.gameSets;
+            if (!gameSets) {
+                try {
+                    gameSets = await getGameSets();
+                    set({ gameSets });
+                } catch (_) {
+                    gameSets = null;
+                }
+            }
+            if (gameKey && gameKey !== 'all' && gameSets) {
+                const gameData = gameSets.get(gameKey);
+                if (gameData) {
+                    gameIds = gameData.ids || null;
+                    gameGen = gameData.generation || null;
+                }
             }
             const filtered = filterPokemons(all, {
                 generation: isPokedex ? state.pokedexSelectedGeneration : state.selectedGeneration,
                 types: isPokedex ? state.pokedexSelectedTypes : state.selectedTypes,
                 search: isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm,
                 gameIds,
+                gameGen,
             });
 
             set({

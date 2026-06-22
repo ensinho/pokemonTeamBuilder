@@ -19,6 +19,7 @@ export function usePokedex() {
     const isLoading = usePokedexStore(state => state.isLoading);
     const isFetchingMore = usePokedexStore(state => state.isFetchingMore);
     const hasMore = usePokedexStore(state => state.hasMore);
+    const gameSets = usePokedexStore(state => state.gameSets);
 
     const selectedGeneration = usePokedexStore(state => state.selectedGeneration);
     const selectedGame = usePokedexStore(state => state.selectedGame);
@@ -54,6 +55,9 @@ export function usePokedex() {
     const game = isPokedex ? pokedexSelectedGame : selectedGame;
     const types = isPokedex ? pokedexSelectedTypes : selectedTypes;
     const activeSearch = isPokedex ? debouncedPokedexSearchTermInStore : debouncedSearchTermInStore;
+
+    // Derived Set of Pokemon IDs for the selected game
+    const gamePokemonIds = gameSets && game && game !== 'all' ? (gameSets.get(game)?.ids || null) : null;
 
     useEffect(() => {
         if (!isAuthReady) return;
@@ -119,6 +123,7 @@ export function usePokedex() {
         isFetchingMore,
         hasMore,
         lastPokemonElementRef,
+        gamePokemonIds,
         
         // Builder filters & actions
         selectedGeneration,

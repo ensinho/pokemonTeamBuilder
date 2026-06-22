@@ -304,6 +304,7 @@ export const MobileTeamBuilderView = ({
     generations,
     isInitialLoading,
     displayedPokemons,
+    gamePokemonIds,
     partnerSuggestions = [],
     handleAddPokemonToTeam,
     lastPokemonElementRef,
@@ -341,6 +342,22 @@ export const MobileTeamBuilderView = ({
             handleTypeSelection(nextType);
         }
     };
+
+    const isGameFilterActive = !!(selectedGame && selectedGame !== 'all' && gamePokemonIds);
+    const selectedGameObj = React.useMemo(() => {
+        return isGameFilterActive ? games.find((g) => g.key === selectedGame) : null;
+    }, [games, selectedGame, isGameFilterActive]);
+    const gameLabel = selectedGameObj ? selectedGameObj.label : selectedGame;
+
+    const regionalPokemons = React.useMemo(() => {
+        if (!isGameFilterActive) return [];
+        return displayedPokemons.filter((p) => gamePokemonIds.has(p.id));
+    }, [displayedPokemons, isGameFilterActive, gamePokemonIds]);
+
+    const nationalPokemons = React.useMemo(() => {
+        if (!isGameFilterActive) return [];
+        return displayedPokemons.filter((p) => !gamePokemonIds.has(p.id));
+    }, [displayedPokemons, isGameFilterActive, gamePokemonIds]);
 
     return (
         <div className="team-builder-mobile space-y-4">
@@ -561,18 +578,61 @@ export const MobileTeamBuilderView = ({
                         <>
                             <div className="p-2 custom-scrollbar">
                                 <div className="team-builder-mobile__grid grid grid-cols-3 gap-2">
-                                    {displayedPokemons.map((pokemon, index) => (
-                                        <MobilePokemonPickerCard
-                                            key={pokemon.id}
-                                            pokemon={pokemon}
-                                            onAddToTeam={handleAddPokemonToTeam}
-                                            isSuggested={suggestedPokemonIds.has(pokemon.id)}
-                                            isFavorite={favoritePokemons.has(pokemon.id)}
-                                            onToggleFavorite={onToggleFavoritePokemon}
-                                            colors={colors}
-                                            lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
-                                        />
-                                    ))}
+                                    {isGameFilterActive ? (
+                                        <>
+                                            {regionalPokemons.length > 0 && (
+                                                <>
+                                                    <h4 className="pokedex-section-title pokedex-section-title--mobile">
+                                                        {t('builder.regionalDex', { game: gameLabel })}
+                                                    </h4>
+                                                    {regionalPokemons.map((pokemon, index) => (
+                                                        <MobilePokemonPickerCard
+                                                            key={pokemon.id}
+                                                            pokemon={pokemon}
+                                                            onAddToTeam={handleAddPokemonToTeam}
+                                                            isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                            isFavorite={favoritePokemons.has(pokemon.id)}
+                                                            onToggleFavorite={onToggleFavoritePokemon}
+                                                            colors={colors}
+                                                            lastRef={index === regionalPokemons.length - 1 && nationalPokemons.length === 0 ? lastPokemonElementRef : null}
+                                                        />
+                                                    ))}
+                                                </>
+                                            )}
+                                            {nationalPokemons.length > 0 && (
+                                                <>
+                                                    <h4 className="pokedex-section-title pokedex-section-title--national pokedex-section-title--mobile">
+                                                        {t('builder.nationalDex')}
+                                                    </h4>
+                                                    {nationalPokemons.map((pokemon, index) => (
+                                                        <MobilePokemonPickerCard
+                                                            key={pokemon.id}
+                                                            pokemon={pokemon}
+                                                            onAddToTeam={handleAddPokemonToTeam}
+                                                            isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                            isFavorite={favoritePokemons.has(pokemon.id)}
+                                                            onToggleFavorite={onToggleFavoritePokemon}
+                                                            colors={colors}
+                                                            lastRef={index === nationalPokemons.length - 1 ? lastPokemonElementRef : null}
+                                                        />
+                                                    ))}
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
+                                        displayedPokemons.map((pokemon, index) => (
+                                            <MobilePokemonPickerCard
+                                                key={pokemon.id}
+                                                pokemon={pokemon}
+                                                onAddToTeam={handleAddPokemonToTeam}
+                                                isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                isFavorite={favoritePokemons.has(pokemon.id)}
+                                                onToggleFavorite={onToggleFavoritePokemon}
+                                                colors={colors}
+                                                lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
+                                            />
+                                        ))
+                                    )}
                                 </div>
 
                                 {isFetchingMore && (

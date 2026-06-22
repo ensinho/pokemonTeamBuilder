@@ -1292,3 +1292,31 @@
 .pokedex-mobile-filter-full {
     grid-column: 1 / -1;
 }
+
+/* Regional / National Pokedex Section Headers in Grid */
+.pokedex-section-title {
+    grid-column: 1 / -1;
+    font-size: 0.675rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    opacity: 0.85;
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.25rem 0 0.5rem;
+    margin: 1.5rem 0.25rem 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    user-select: none;
+}
+
+.pokedex-section-title--national {
+    color: var(--color-muted);
+    opacity: 0.7;
+}
+
+.pokedex-section-title--mobile {
+    font-size: 0.625rem;
+    margin: 1.25rem 0.25rem 0.5rem;
+}
