@@ -265,6 +265,13 @@ export const loadPokemonReferenceData = async () => {
     return { generations, items, natures };
 };
 
+// Per-game Pokédex membership (species + native forms) for the "by game" filter.
+export const loadGames = async () => {
+    const data = await fetchStaticJson('games.json');
+    return normalizeResourceList(data, 'games')
+        .filter((g) => g && g.key && Array.isArray(g.pokemonIds));
+};
+
 export const loadPokemonIndex = async () => {
     const staticPokemonIndex = await fetchLargeStaticJson('pokemon-index.json');
     return normalizeResourceList(staticPokemonIndex, 'pokemons')
@@ -280,6 +287,9 @@ export const loadPokemonIndex = async () => {
                 isForm: entry.isForm || false,
                 baseId: entry.baseId || null,
                 apiName: entry.apiName || entry.name,
+                // Compact base stats (added in cache v? rebuild) — null on older indexes.
+                // Powers Speed Tiers + the damage calculator with no per-row fetch.
+                baseStats: entry.baseStats || null,
                 // Sprites are derivable from the id — no need to store them in the index.
                 sprite: getPokemonArtworkSpriteUrl(id),
                 shinySprite: getPokemonArtworkSpriteUrl(id, { shiny: true }),
@@ -324,6 +334,92 @@ export const getMoveDetails = async (moveUrl, moveName) => {
         pp: data.pp,
         damage_class: data.damage_class?.name,
         machines: data.machines || [],
+        // Pokémon that can learn this move (for cross-linking to detail pages).
+        learnedBy: (data.learned_by_pokemon || []).map((p) => ({
+            name: p.name,
+            id: getIdFromResource(p),
+        })).filter((p) => p.name && Number.isInteger(p.id)),
+    };
+};
+
+// ── DATABASE list endpoints (Moves / Abilities / Items list views) ──────────
+// These return the lightweight name+url index for an entity type. Row details
+// are fetched lazily per visible page via getMoveDetails / getAbilityDetails /
+// getItemDetails so we never blast PokéAPI with ~900 requests up front.
+
+export const getMovesList = async () => {
+    const data = await fetchPokeApiJson('/move?limit=1000', {
+        cacheKey: 'reference:moves-list',
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
+    return normalizeResourceList(data, 'moves').map((entry) => ({
+        name: entry.name,
+        url: entry.url,
+        id: getIdFromResource(entry),
+    }));
+};
+
+export const getAbilitiesList = async () => {
+    const data = await fetchPokeApiJson('/ability?limit=500', {
+        cacheKey: 'reference:abilities-list',
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
+    return normalizeResourceList(data, 'abilities').map((entry) => ({
+        name: entry.name,
+        url: entry.url,
+        id: getIdFromResource(entry),
+    }));
+};
+
+const pickEnglish = (entries = [], field) =>
+    entries.find((entry) => entry.language?.name === 'en')?.[field];
+
+export const getAbilityDetails = async (ability) => {
+    const name = getNamedResourceName(ability, ability?.url);
+    if (!name) return null;
+    const data = await fetchPokeApiJson(ability?.url || `/ability/${name}`, {
+        cacheKey: `ability-detail:${name}`,
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
+    const holders = Array.isArray(data.pokemon) ? data.pokemon : [];
+    return {
+        name: data.name,
+        id: data.id,
+        effect: pickEnglish(data.effect_entries, 'short_effect')
+            || pickEnglish(data.effect_entries, 'effect')
+            || 'No description available.',
+        generation: data.generation?.name || null,
+        pokemonCount: holders.length,
+        // Pokémon that can have this ability (for cross-linking to detail pages).
+        pokemon: holders.map((entry) => ({
+            name: entry.pokemon?.name,
+            id: getIdFromResource(entry.pokemon),
+            isHidden: entry.is_hidden,
+        })).filter((p) => p.name && Number.isInteger(p.id)),
+    };
+};
+
+export const getItemDetails = async (item) => {
+    const name = getNamedResourceName(item, item?.url);
+    if (!name) return null;
+    const data = await fetchPokeApiJson(item?.url || `/item/${name}`, {
+        cacheKey: `item-detail:${name}`,
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
+    return {
+        name: data.name,
+        id: data.id,
+        sprite: data.sprites?.default || null,
+        category: data.category?.name || null,
+        cost: data.cost ?? 0,
+        flingPower: data.fling_power ?? null,
+        effect: pickEnglish(data.effect_entries, 'short_effect')
+            || pickEnglish(data.flavor_text_entries, 'text')
+            || 'No description available.',
     };
 };
 

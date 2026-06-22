@@ -2435,6 +2435,35 @@
     }
 }
 
+@media (min-width: 1280px) {
+    /* Right column split: trainer widgets stacked on top, feed in the bottom half. */
+    .home-sidebar .home-desktop-widgets-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+        flex: 0 0 auto !important;
+        width: 100% !important;
+    }
+
+    .home-sidebar .home-profile-sidebar-card,
+    .home-sidebar .home-sidebar-section--daily {
+        height: auto !important;
+        flex: 0 0 auto !important;
+    }
+
+    .home-sidebar .home-forum-chat-card-wrapper {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    .home-sidebar .home-forum-chat-messages {
+        flex: 1 1 0% !important;
+        max-height: 48vh !important;
+    }
+}
+
 /* ==========================================================================
    RESPONSIVE OVERRIDES
    ========================================================================== */

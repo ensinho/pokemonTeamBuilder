@@ -21,6 +21,7 @@ import { POKEMON_TIPS } from '../../constants/pokemon';
 import { getPokemonApiData, getStaticPokemonDetail, loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
+import { HomeDashboard } from '../HomeDashboard';
 import { UserProfileModal } from '../modals/UserProfileModal';
 import {
     AccountIcon,
@@ -686,7 +687,7 @@ export function HomeView({
                     {/* 2. Pinned Item: Active Team Card */}
                     {activeTeam ? (
                         <section
-                            className="home-panel home-panel--pinned-repo p-0 cursor-pointer"
+                            className="home-panel home-panel--pinned-repo p-0 cursor-pointer xl:hidden"
                             onClick={() => handleEditTeam(activeTeam)}
                             role="button"
                             tabIndex={0}
@@ -784,7 +785,7 @@ export function HomeView({
                             </div>
                         </section>
                     ) : (
-                        <section className="home-panel home-panel--pinned-repo p-0">
+                        <section className="home-panel home-panel--pinned-repo p-0 xl:hidden">
                             <div className="pinned-repo-header flex items-center gap-2 px-4 py-2 border-b border-border bg-surface-raised text-xs font-bold text-fg">
                                 <Folder className="w-4 h-4 text-primary shrink-0" />
                                 <span>team</span>
@@ -808,7 +809,14 @@ export function HomeView({
                         </section>
                     )}
 
-                    {/* Desktop widgets grid */}
+                    {/* Dashboard hub: quick access, popular-in-tournaments, recent teams */}
+                    <HomeDashboard navigate={navigate} />
+
+                    </div>
+
+                {/* Right column: trainer widgets up top, activity feed in the bottom half */}
+                <aside className="home-sidebar flex flex-col gap-4 md:gap-7">
+                    {/* Trainer widgets (profile + daily) */}
                     <div className="home-desktop-widgets-grid">
                         {/* 1. Trainer Profile Sidebar Card (GitHub Style) */}
                         <section className="home-profile-sidebar-card">
@@ -935,128 +943,9 @@ export function HomeView({
                             </div>
                         ) : null}
 
-                        {/* 3. Pinned Shortcuts (GitHub Repos Style Grid) */}
-                        <section className="home-shortcuts-sidebar-card p-4">
-                            <h3 className="text-xs uppercase tracking-wider font-bold text-muted mb-3 flex items-center gap-1.5">
-                                <Folder className="w-3.5 h-3.5 text-primary" />
-                                <span>{t('home.shortcuts')}</span>
-                            </h3>
-                            <div className="home-pinned-repos-grid grid grid-cols-2 gap-2">
-                                {quickActions.map((shortcut) => {
-                                    const repoMap = {
-                                        '/builder': { name: 'Builder', dotColor: '#7AC74C' }, // grass
-                                        '/pokedex': { name: 'Pokedex', dotColor: '#EE8130' }, // fire
-                                        '/quiz': { name: 'Quiz', dotColor: '#F7D02C' }, // electric
-                                        '/pokepuzzle': { name: 'Pokepuzzle', dotColor: '#6F35FC' } // dragon
-                                    };
-                                    const repo = repoMap[shortcut.path] || { name: 'widget', dotColor: '#A8A77A' };
-
-                                    return (
-                                        <button
-                                            key={shortcut.path}
-                                            type="button"
-                                            onClick={() => navigate(shortcut.path)}
-                                            className="github-repo-card text-left"
-                                        >
-                                            <div className="github-repo-title flex items-center gap-1.5 text-primary text-xs font-bold font-mono">
-                                                <span className="github-repo-icon-wrap w-4 h-4 flex items-center justify-center shrink-0 text-primary">
-                                                    {shortcut.icon}
-                                                </span>
-                                                <span className="hover:underline">{repo.name}</span>
-                                            </div>
-                                            <p className="github-repo-desc text-[10px] text-muted text-left leading-normal mt-1 mb-2 line-clamp-2">
-                                                {shortcut.description}
-                                            </p>
-                                            <div className="github-repo-meta flex items-center gap-3 text-[9px] text-muted font-semibold font-mono">
-                                                <div className="flex items-center gap-1">
-                                                    <span className="github-repo-dot" style={{ backgroundColor: repo.dotColor }} />
-                                                    <span>PokeModule</span>
-                                                </div>
-                                                <div className="flex items-center gap-0.5">
-                                                    <StarIcon className="w-2.5 h-2.5 text-muted opacity-60" isFavorite={false} />
-                                                    <span>1</span>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </section>
-
-                        {/* 5. Pinned Favorites Widget */}
-                        {featuredFavorites.length > 0 && (
-                            <section className="home-sidebar-section-favorites p-4">
-                                <div className="flex items-center justify-between gap-3 border-b border-border pb-2 mb-2">
-                                    <div className="flex items-center gap-1.5 text-xs font-bold text-fg">
-                                        <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
-                                        <span>{t('home.yourFavorites')}</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate('/favorites')}
-                                        className="home-button--inline text-[9px] font-semibold py-0.5 px-1.5 border border-border rounded text-muted hover:text-fg"
-                                    >
-                                        {t('home.seeAll')}
-                                    </button>
-                                </div>
-
-                                <div className="home-favorite-grid home-favorite-grid--sidebar mt-2">
-                                    {featuredFavorites.map((pokemon) => (
-                                        <div
-                                            key={pokemon.id}
-                                            onClick={() => showDetails(pokemon)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter' || e.key === ' ') {
-                                                    e.preventDefault();
-                                                    showDetails(pokemon);
-                                                }
-                                            }}
-                                            className="home-favorite-card home-favorite-card--compact cursor-pointer"
-                                            role="button"
-                                            tabIndex={0}
-                                            aria-label={`Open details for ${pokemon.name}`}
-                                        >
-                                            <img
-                                                src={getPokemonDisplaySprite(pokemon) || POKEBALL_PLACEHOLDER_URL}
-                                                alt={pokemon.name}
-                                                className="home-favorite-card__sprite h-7 w-7"
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                            />
-                                            <p className="home-favorite-card__name capitalize text-[9px] mt-1 font-semibold font-mono truncate w-full">
-                                                {pokemon.name}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-                        )}
-
-                        {/* 4. Today's Tip Block (GitHub styled Alert box) */}
-                        {!isTipDismissed && (
-                            <section className="github-tip-banner p-4">
-                                <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[10px] uppercase font-bold text-muted tracking-wider flex items-center gap-1 font-mono">
-                                        <FileText className="w-3 h-3 text-primary" />
-                                        {t('home.todaysNote')}
-                                    </span>
-                                    <button
-                                        onClick={() => {
-                                            setIsTipDismissed(true);
-                                            try { localStorage.setItem('homeTipDismissed', 'true'); } catch (_) { }
-                                        }}
-                                        className="text-muted hover:text-fg text-xs"
-                                    >
-                                        <CloseIcon className="w-3 h-3" />
-                                    </button>
-                                </div>
-                                <p className="text-xs text-fg leading-relaxed">{tipOfTheDay}</p>
-                            </section>
-                        )}
                     </div>
-                </div>
 
-                {/* Right Column: General Chat & Teams Feed (GitHub Timeline Style) */}
-                <aside className="home-sidebar flex flex-col gap-4 md:gap-7">
+                    {/* Activity feed — bottom half of the right column */}
                     <div className="home-forum-chat-card-wrapper home-forum-chat-card p-0">
                         <div className="home-forum-chat-header px-4 py-3 border-b border-border flex items-center justify-between">
                             <h3 className="home-forum-chat-title text-sm font-bold text-fg flex items-center gap-2 w-full">

@@ -2,7 +2,6 @@ export { AuthModal } from './AuthModal';
 export { ConfirmDialog } from './ConfirmDialog';
 export { GreetingPokemonSelectorModal } from './GreetingPokemonSelectorModal';
 export { PatchNotesModal } from './PatchNotesModal';
-export { PokemonDetailModal } from './PokemonDetailModal';
 export { ShareSnippetModal } from './ShareSnippetModal';
 export { SyncPromptModal } from './SyncPromptModal';
 export { TeamPokemonEditorModal } from './TeamPokemonEditorModal';

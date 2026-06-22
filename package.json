@@ -8,6 +8,8 @@
     "dev": "vite",
     "data:cache": "node scripts/build-pokemon-cache.mjs",
     "data:cache:details": "node scripts/build-pokemon-cache.mjs --details=1-151",
+    "data:tournaments": "node scripts/build-tournaments.mjs",
+    "prebuild": "node scripts/build-tournaments.mjs",
     "build": "vite build",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",

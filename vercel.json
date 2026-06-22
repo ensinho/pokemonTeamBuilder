@@ -1,4 +1,11 @@
 {
+  "buildCommand": "npm run build",
+  "crons": [
+    {
+      "path": "/api/refresh-tournaments",
+      "schedule": "0 6 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/((?!api/.*).*)",

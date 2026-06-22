@@ -5,7 +5,7 @@ import { EmptyState } from '../EmptyState';
 import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
 import { AnchoredPopover } from '../AnchoredPopover';
-import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
     ClearIcon,
@@ -15,6 +15,7 @@ import {
     ShowdownIcon,
     StarIcon,
     TrashIcon,
+    TrophyIcon,
 } from '../icons';
 import { Save, SaveAll } from 'lucide-react';
 
@@ -297,9 +298,13 @@ export const MobileTeamBuilderView = ({
     setSearchInput,
     selectedGeneration,
     setSelectedGeneration,
+    selectedGame,
+    setSelectedGame,
+    games = [],
     generations,
     isInitialLoading,
     displayedPokemons,
+    partnerSuggestions = [],
     handleAddPokemonToTeam,
     lastPokemonElementRef,
     isFetchingMore,
@@ -461,6 +466,22 @@ export const MobileTeamBuilderView = ({
                         </select>
                     </label>
 
+                    {games.length > 0 && setSelectedGame && (
+                        <label className="team-builder-control team-builder-mobile__filter-control">
+                            <span className="team-builder-control__label">{t('builder.gameFilterLabel')}</span>
+                            <select
+                                value={selectedGame || 'all'}
+                                onChange={(event) => setSelectedGame(event.target.value)}
+                                className="team-builder-field team-builder-select"
+                            >
+                                <option value="all">{t('builder.allGames')}</option>
+                                {games.map((game) => (
+                                    <option key={game.key} value={game.key}>{game.label}</option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
+
                     <div className="team-builder-control team-builder-mobile__filter-control">
                         <span className="team-builder-control__label">{t('pokedex.typesFilterLabel')}</span>
                         <div className="team-builder-mobile__filter-group">
@@ -500,6 +521,36 @@ export const MobileTeamBuilderView = ({
                         {displayedPokemons.length}
                     </span>
                 </div>
+
+                {partnerSuggestions.length > 0 && (
+                    <div className="mt-3">
+                        <div className="flex items-center gap-1.5 mb-2">
+                            <TrophyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-muted">{t('builder.tournamentPartners')}</span>
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                            {partnerSuggestions.map((p) => (
+                                <button
+                                    key={p.id}
+                                    type="button"
+                                    onClick={() => handleAddPokemonToTeam(p)}
+                                    title={(p.name || '').replace(/-/g, ' ')}
+                                    className="shrink-0 w-16 flex flex-col items-center gap-0.5 p-1.5 rounded-lg border border-border bg-bg active:border-primary transition-all"
+                                >
+                                    <img
+                                        src={getPokemonFrontSpriteUrl(p.id)}
+                                        alt=""
+                                        aria-hidden="true"
+                                        loading="lazy"
+                                        className="w-9 h-9 image-pixelated"
+                                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                    />
+                                    <span className="text-[9px] capitalize text-muted truncate w-full text-center">{(p.name || '').replace(/-/g, ' ')}</span>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <div className="team-builder-mobile__available mt-2">
                     {isInitialLoading ? (

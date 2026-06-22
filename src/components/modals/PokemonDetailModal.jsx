@@ -184,16 +184,28 @@ export function PokemonDetailModal({
                         <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                             {pokemon.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                         </div>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                onClose();
-                                navigate(`/pokedex?pokemon=${pokemon.id}`);
-                            }}
-                            className="mt-3.5 text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface-raised hover:border-primary hover:text-primary transition-all mx-auto text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        >
-                            {t('modals.pokedexViewLocations')}
-                        </button>
+                        <div className="mt-3.5 flex flex-wrap items-center justify-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onClose();
+                                    navigate(`/pokedex?pokemon=${pokemon.id}`);
+                                }}
+                                className="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface-raised hover:border-primary hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                                {t('modals.pokedexViewLocations')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onClose();
+                                    navigate(`/pokemon/${pokemon.id}`);
+                                }}
+                                className="text-xs flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface-raised hover:border-primary hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                                {t('pdetail.viewFullPage')}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="mt-4 sm:hidden">

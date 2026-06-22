@@ -27,7 +27,6 @@ import {
     ConfirmDialog,
     GreetingPokemonSelectorModal,
     PatchNotesModal,
-    PokemonDetailModal,
     ShareSnippetModal,
     SyncPromptModal,
     TeamPokemonEditorModal
@@ -35,9 +34,10 @@ import {
 
 import {
     GithubIcon, LinkedinIcon, CloseIcon, CollapseLeftIcon, CollapseRightIcon,
-    DownloadIcon, MenuIcon, PokeballIcon, SavedTeamsIcon, StarsIcon, SwordsIcon, DiceIcon,
+    DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon, DiceIcon,
     HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
-    ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon
+    ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon,
+    ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
 import { Puzzle } from 'lucide-react';
 
@@ -47,8 +47,7 @@ import { Puzzle } from 'lucide-react';
 import { HomeView } from './views';
 
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
-const AllTeamsView = lazy(() => import('./views/AllTeamsView').then((m) => ({ default: m.AllTeamsView })));
-const FavoritePokemonsView = lazy(() => import('./views/FavoritePokemonsView').then((m) => ({ default: m.FavoritePokemonsView })));
+const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
 const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
 const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
@@ -56,6 +55,13 @@ const RandomGeneratorView = lazy(() => import('./views/RandomGeneratorView').the
 const TeamBuilderView = lazy(() => import('./views/TeamBuilderView').then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
 const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
+const MovesListView = lazy(() => import('./views/MovesListView').then((m) => ({ default: m.MovesListView })));
+const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m) => ({ default: m.AbilitiesListView })));
+const ItemsListView = lazy(() => import('./views/ItemsListView').then((m) => ({ default: m.ItemsListView })));
+const PokemonDetailView = lazy(() => import('./views/PokemonDetailView').then((m) => ({ default: m.PokemonDetailView })));
+const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').then((m) => ({ default: m.DamageCalculatorView })));
+const SpeedTiersView = lazy(() => import('./views/SpeedTiersView').then((m) => ({ default: m.SpeedTiersView })));
+const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) => ({ default: m.TournamentsView })));
 
 import '../styles/app-shell.css';
 
@@ -122,10 +128,17 @@ export default function AppLayout() {
         const path = location.pathname;
         if (path.includes('/feed')) return 'feed';
         if (path.includes('/pokedex')) return 'pokedex';
+        if (path.includes('/pokemon/')) return 'pokemonDetail';
+        if (path.includes('/pokepuzzle')) return 'pokepuzzle';
+        if (path.includes('/moves')) return 'moves';
+        if (path.includes('/abilities')) return 'abilities';
+        if (path.includes('/items')) return 'items';
+        if (path.includes('/tournaments')) return 'tournaments';
+        if (path.includes('/damage-calculator')) return 'damageCalc';
+        if (path.includes('/speed-tiers')) return 'speedTiers';
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/quiz')) return 'generationQuiz';
         if (path.includes('/generator')) return 'randomGenerator';
-        if (path.includes('/pokepuzzle')) return 'pokepuzzle';
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
         if (path.includes('/profile')) return 'profile';
@@ -162,7 +175,7 @@ export default function AppLayout() {
         return savedTeams.find(t => t.id === activeTeamId) || savedTeams[0];
     }, [savedTeams, activeTeamId]);
 
-    const { generations, items, natures } = useReferenceStore();
+    const { generations, items, natures, games } = useReferenceStore();
 
     // Pokedex logic hook
     const pokedex = usePokedex();
@@ -177,7 +190,6 @@ export default function AppLayout() {
         typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
     );
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
-    const [modalPokemon, setModalPokemon] = useState(null);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
 
@@ -313,6 +325,13 @@ export default function AppLayout() {
             'favorites': { title: t('favorites.title'), subtitle: t('home.pinnedRoster') },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             'profile': { title: t('profile.title'), subtitle: t('profile.trainerProfile') },
+            'pokemonDetail': { title: t('nav.pokemonList'), subtitle: t('home.shortcutPokedexDesc') },
+            'moves': { title: t('nav.moves'), subtitle: t('db.movesSubtitle') },
+            'abilities': { title: t('nav.abilities'), subtitle: t('db.abilitiesSubtitle') },
+            'items': { title: t('nav.items'), subtitle: t('db.itemsSubtitle') },
+            'tournaments': { title: t('nav.tournaments'), subtitle: t('tools.tournamentsSubtitle') },
+            'damageCalc': { title: t('nav.damageCalc'), subtitle: t('tools.damageSubtitle') },
+            'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
         };
         return pages[currentPage] || pages['home'];
     }, [currentPage, t]);
@@ -335,9 +354,19 @@ export default function AppLayout() {
                 title: t('nav.teamBuilding'),
                 items: [
                     { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
-                    { key: 'pokedex', label: t('nav.pokedex'), path: '/pokedex', icon: <PokeballIcon /> },
+                    { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
+                    { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
+                    { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
+                ]
+            },
+            {
+                title: t('nav.database'),
+                items: [
+                    { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
                     { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
-                    { key: 'allTeams', label: t('nav.savedTeams'), path: '/teams', icon: <SavedTeamsIcon /> },
+                    { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
+                    { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
                 ]
             },
             {
@@ -511,20 +540,14 @@ export default function AppLayout() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId]);
 
+    // Single source of truth for Pokémon detail: the /pokemon/:id page.
     const showDetails = useCallback((pokemon) => {
-        setModalPokemon(pokemon);
-    }, []);
+        if (pokemon?.id != null) navigate(`/pokemon/${pokemon.id}`);
+    }, [navigate]);
 
-    const handleRailSlotClick = useCallback(async (pokemon) => {
-        if (!pokemon) return;
-        const detail = await fetchPokemonDetails(pokemon.id);
-        if (detail) {
-            showDetails({
-                ...detail,
-                customization: pokemon.customization
-            });
-        }
-    }, [fetchPokemonDetails, showDetails]);
+    const handleRailSlotClick = useCallback((pokemon) => {
+        if (pokemon?.id != null) navigate(`/pokemon/${pokemon.id}`);
+    }, [navigate]);
 
     const handleShareSavedTeam = useCallback(async (team) => {
         await shareTeamByData(team?.pokemons || [], team?.name || 'Unnamed Team');
@@ -581,21 +604,6 @@ export default function AppLayout() {
     return (
         <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
             {/* Modal Components */}
-            {modalPokemon && (
-                <PokemonDetailModal
-                    pokemon={modalPokemon}
-                    onClose={() => setModalPokemon(null)}
-                    onAdd={currentPage === 'builder' ? handleAddPokemon : null}
-                    currentTeam={currentTeam}
-                    colors={colors}
-                    showPokemonDetails={showDetails}
-                    pokemonDetailsCache={pokemonDetailsCache}
-                    setPokemonDetailsCache={setPokemonDetailsCache}
-                    db={db}
-                    isFavorite={favoritePokemons.has(modalPokemon.id)}
-                    onToggleFavorite={handleToggleFavoritePokemon}
-                />
-            )}
             {editingTeamMember && (
                 <TeamPokemonEditorModal
                     pokemon={editingTeamMember}
@@ -989,6 +997,9 @@ export default function AppLayout() {
                                             setSearchInput={pokedex.setSearchInput}
                                             selectedGeneration={pokedex.selectedGeneration}
                                             setSelectedGeneration={pokedex.setSelectedGeneration}
+                                            selectedGame={pokedex.selectedGame}
+                                            setSelectedGame={pokedex.setSelectedGame}
+                                            games={games}
                                             generations={generations}
                                             isInitialLoading={pokedex.isLoading}
                                             availablePokemons={availablePokemons}
@@ -1032,15 +1043,51 @@ export default function AppLayout() {
                                         />
                                     } />
 
-                                    <Route path="/favorites" element={
-                                        <FavoritePokemonsView
-                                            allPokemons={pokedex.pokemons}
+                                    <Route path="/pokemon/:idOrName" element={
+                                        <PokemonDetailView
+                                            colors={colors}
                                             favoritePokemons={favoritePokemons}
                                             onToggleFavoritePokemon={handleToggleFavoritePokemon}
-                                            showDetails={showDetails}
-                                            colors={colors}
-                                            onAddToTeam={handleAddPokemon}
-                                            isLoading={pokedex.isLoading}
+                                            onAdd={handleAddPokemon}
+                                            currentTeam={currentTeam}
+                                        />
+                                    } />
+                                    <Route path="/moves" element={<MovesListView />} />
+                                    <Route path="/abilities" element={<AbilitiesListView />} />
+                                    <Route path="/items" element={<ItemsListView />} />
+                                    <Route path="/tournaments" element={
+                                        <TournamentsView db={db} onOpenTeam={handleEditTeam} />
+                                    } />
+                                    <Route path="/damage-calculator" element={
+                                        <DamageCalculatorView />
+                                    } />
+                                    <Route path="/speed-tiers" element={
+                                        <SpeedTiersView generations={generations} />
+                                    } />
+                                    <Route path="/favorites" element={
+                                        <FavoritesView
+                                            pokemonProps={{
+                                                allPokemons: pokedex.pokemons,
+                                                favoritePokemons,
+                                                onToggleFavoritePokemon: handleToggleFavoritePokemon,
+                                                showDetails,
+                                                colors,
+                                                onAddToTeam: handleAddPokemon,
+                                                isLoading: pokedex.isLoading,
+                                            }}
+                                            teamsProps={{
+                                                teams: savedTeams,
+                                                onEdit: handleEditTeam,
+                                                onExport: handleExportSavedTeamToShowdown,
+                                                onShare: handleShareSavedTeam,
+                                                requestDelete: (id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name }),
+                                                onToggleFavorite: handleToggleFavorite,
+                                                searchTerm: teamSearchTerm,
+                                                setSearchTerm: setTeamSearchTerm,
+                                                colors,
+                                                activeTeamId,
+                                                setActiveTeamId,
+                                            }}
                                         />
                                     } />
                                     <Route path="/quiz" element={
@@ -1052,21 +1099,8 @@ export default function AppLayout() {
                                     <Route path="/pokepuzzle" element={
                                         <PokePuzzleView />
                                     } />
-                                    <Route path="/teams" element={
-                                        <AllTeamsView
-                                            teams={savedTeams}
-                                            onEdit={handleEditTeam}
-                                            onExport={handleExportSavedTeamToShowdown}
-                                            onShare={handleShareSavedTeam}
-                                            requestDelete={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
-                                            onToggleFavorite={handleToggleFavorite}
-                                            searchTerm={teamSearchTerm}
-                                            setSearchTerm={setTeamSearchTerm}
-                                            colors={colors}
-                                            activeTeamId={activeTeamId}
-                                            setActiveTeamId={setActiveTeamId}
-                                        />
-                                    } />
+                                    {/* Saved Teams now lives as a tab inside /favorites. */}
+                                    <Route path="/teams" element={<Navigate to="/favorites?tab=teams" replace />} />
                                     <Route path="/generator" element={
                                         <RandomGeneratorView
                                             colors={colors}

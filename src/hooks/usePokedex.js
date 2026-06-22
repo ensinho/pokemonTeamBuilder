@@ -21,10 +21,12 @@ export function usePokedex() {
     const hasMore = usePokedexStore(state => state.hasMore);
 
     const selectedGeneration = usePokedexStore(state => state.selectedGeneration);
+    const selectedGame = usePokedexStore(state => state.selectedGame);
     const selectedTypes = usePokedexStore(state => state.selectedTypes);
     const showOnlyFavorites = usePokedexStore(state => state.showOnlyFavorites);
 
     const pokedexSelectedGeneration = usePokedexStore(state => state.pokedexSelectedGeneration);
+    const pokedexSelectedGame = usePokedexStore(state => state.pokedexSelectedGame);
     const pokedexSelectedTypes = usePokedexStore(state => state.pokedexSelectedTypes);
     const pokedexShowOnlyFavorites = usePokedexStore(state => state.pokedexShowOnlyFavorites);
 
@@ -49,13 +51,14 @@ export function usePokedex() {
 
     // Initial fetch when filters/debounced terms change
     const gen = isPokedex ? pokedexSelectedGeneration : selectedGeneration;
+    const game = isPokedex ? pokedexSelectedGame : selectedGame;
     const types = isPokedex ? pokedexSelectedTypes : selectedTypes;
     const activeSearch = isPokedex ? debouncedPokedexSearchTermInStore : debouncedSearchTermInStore;
 
     useEffect(() => {
         if (!isAuthReady) return;
         fetchInitial(isPokedex);
-    }, [isAuthReady, isPokedex, gen, types, activeSearch, fetchInitial]);
+    }, [isAuthReady, isPokedex, gen, game, types, activeSearch, fetchInitial]);
 
     // Infinite scroll observer setup
     const observer = useRef(null);
@@ -99,11 +102,13 @@ export function usePokedex() {
 
     // Stable action callbacks for callers
     const handleSetSelectedGeneration = useCallback((val) => setFilter('selectedGeneration', val), [setFilter]);
+    const handleSetSelectedGame = useCallback((val) => setFilter('selectedGame', val), [setFilter]);
     const handleSetSearchInput = useCallback((val) => setFilter('searchInput', val), [setFilter]);
     const handleSetShowOnlyFavorites = useCallback((val) => setFilter('showOnlyFavorites', val), [setFilter]);
     const handleTypeSelectionCall = useCallback((type) => toggleTypeSelection(type, false), [toggleTypeSelection]);
 
     const handleSetPokedexSelectedGeneration = useCallback((val) => setFilter('pokedexSelectedGeneration', val), [setFilter]);
+    const handleSetPokedexSelectedGame = useCallback((val) => setFilter('pokedexSelectedGame', val), [setFilter]);
     const handleSetPokedexSearchInput = useCallback((val) => setFilter('pokedexSearchInput', val), [setFilter]);
     const handleSetPokedexShowOnlyFavorites = useCallback((val) => setFilter('pokedexShowOnlyFavorites', val), [setFilter]);
     const handlePokedexTypeSelectionCall = useCallback((type) => toggleTypeSelection(type, true), [toggleTypeSelection]);
@@ -117,20 +122,24 @@ export function usePokedex() {
         
         // Builder filters & actions
         selectedGeneration,
+        selectedGame,
         selectedTypes,
         searchInput,
         showOnlyFavorites,
         setSelectedGeneration: handleSetSelectedGeneration,
+        setSelectedGame: handleSetSelectedGame,
         setSearchInput: handleSetSearchInput,
         setShowOnlyFavorites: handleSetShowOnlyFavorites,
         handleTypeSelection: handleTypeSelectionCall,
 
         // Pokedex filters & actions
         pokedexSelectedGeneration,
+        pokedexSelectedGame,
         pokedexSelectedTypes,
         pokedexSearchInput,
         pokedexShowOnlyFavorites,
         setPokedexSelectedGeneration: handleSetPokedexSelectedGeneration,
+        setPokedexSelectedGame: handleSetPokedexSelectedGame,
         setPokedexSearchInput: handleSetPokedexSearchInput,
         setPokedexShowOnlyFavorites: handleSetPokedexShowOnlyFavorites,
         handlePokedexTypeSelection: handlePokedexTypeSelectionCall,

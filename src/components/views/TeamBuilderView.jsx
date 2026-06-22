@@ -2,7 +2,7 @@ import React from 'react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
-import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
 import { PokemonCard } from '../PokemonCard';
@@ -10,6 +10,8 @@ import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
 import { TypeBadge } from '../TypeBadge';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useTournamentData } from '../../hooks/useTournamentData';
+import { useReferenceStore } from '../../store/useReferenceStore';
 import {
     ClearIcon,
     EditIcon,
@@ -18,6 +20,7 @@ import {
     ShowdownIcon,
     StarIcon,
     TrashIcon,
+    TrophyIcon,
 } from '../icons';
 
 function AnalysisTypeBadge({ type, colors }) {
@@ -60,6 +63,9 @@ export function TeamBuilderView({
     setSearchInput,
     selectedGeneration,
     setSelectedGeneration,
+    selectedGame,
+    setSelectedGame,
+    games = [],
     generations,
     isInitialLoading,
     availablePokemons,
@@ -116,6 +122,25 @@ export function TeamBuilderView({
         : availablePokemons;
     const selectedTypeCount = selectedTypes.size;
 
+    // Tournament partner suggestions: Pokémon most often built alongside the
+    // current team (weighted toward the last-added one), drawn from the FULL
+    // index — not just the Pokémon currently visible in the picker.
+    const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
+    const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
+    const { partnersFor, status: tournamentStatus } = useTournamentData();
+
+    React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
+
+    const partnerSuggestions = React.useMemo(() => {
+        if (tournamentStatus !== 'ready' || currentTeam.length === 0 || currentTeam.length >= 6) return [];
+        const ids = currentTeam.map((p) => p.id);
+        const lastId = currentTeam[currentTeam.length - 1]?.id ?? null;
+        const byId = new Map(pokemonIndex.map((p) => [p.id, p]));
+        return partnersFor(ids, lastId, 14)
+            .map(({ id }) => byId.get(id) || { id, name: `#${id}`, types: [] })
+            .filter((entry) => !ids.includes(entry.id));
+    }, [currentTeam, partnersFor, pokemonIndex, tournamentStatus]);
+
     return (
         <>
             {!isDesktopLayout ? (
@@ -141,9 +166,13 @@ export function TeamBuilderView({
                     setSearchInput={setSearchInput}
                     selectedGeneration={selectedGeneration}
                     setSelectedGeneration={setSelectedGeneration}
+                    selectedGame={selectedGame}
+                    setSelectedGame={setSelectedGame}
+                    games={games}
                     generations={generations}
                     isInitialLoading={isInitialLoading}
                     displayedPokemons={displayedPokemons}
+                    partnerSuggestions={partnerSuggestions}
                     handleAddPokemonToTeam={handleAddPokemonToTeam}
                     lastPokemonElementRef={lastPokemonElementRef}
                     isFetchingMore={isFetchingMore}
@@ -409,6 +438,22 @@ export function TeamBuilderView({
                                 </select>
                             </div>
 
+                            {games.length > 0 && setSelectedGame && (
+                                <div className="team-builder-select-wrap">
+                                    <select
+                                        value={selectedGame || 'all'}
+                                        onChange={(e) => setSelectedGame(e.target.value)}
+                                        className="team-builder-field team-builder-field--compact team-builder-select"
+                                        aria-label={t('builder.gameFilterLabel')}
+                                    >
+                                        <option value="all">{t('builder.allGames')}</option>
+                                        {games.map((game) => (
+                                            <option key={game.key} value={game.key}>{game.label}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+
                             <button
                                 type="button"
                                 onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
@@ -419,6 +464,36 @@ export function TeamBuilderView({
                                 <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
                             </button>
                         </div>
+
+                        {partnerSuggestions.length > 0 && (
+                            <div className="team-builder-partners mt-3">
+                                <div className="flex items-center gap-1.5 mb-2">
+                                    <TrophyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted">{t('builder.tournamentPartners')}</span>
+                                </div>
+                                <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+                                    {partnerSuggestions.map((p) => (
+                                        <button
+                                            key={p.id}
+                                            type="button"
+                                            onClick={() => handleAddPokemonToTeam(p)}
+                                            title={t('builder.addPartner', { name: (p.name || '').replace(/-/g, ' '), defaultValue: `Add ${p.name}` })}
+                                            className="shrink-0 w-[4.25rem] flex flex-col items-center gap-0.5 p-1.5 rounded-lg border border-border bg-bg hover:border-primary hover:-translate-y-0.5 transition-all"
+                                        >
+                                            <img
+                                                src={getPokemonFrontSpriteUrl(p.id)}
+                                                alt=""
+                                                aria-hidden="true"
+                                                loading="lazy"
+                                                className="w-10 h-10 image-pixelated"
+                                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                            />
+                                            <span className="text-[9px] capitalize text-muted truncate w-full text-center">{(p.name || '').replace(/-/g, ' ')}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
                         <div className="team-builder-results mt-4">
                             {isInitialLoading ? (

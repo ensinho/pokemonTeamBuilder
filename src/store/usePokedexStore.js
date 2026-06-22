@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { loadPokemonIndex } from '../services/pokemonDataCache';
+import { loadPokemonIndex, loadGames } from '../services/pokemonDataCache';
 import { useToastStore } from './useToastStore';
 
 const PAGE_SIZE = 50;
@@ -16,12 +16,29 @@ const getFullIndex = () => {
     return fullIndexPromise;
 };
 
+// Game key -> Set of national-dex ids (species + native forms), loaded once.
+let gameSetsPromise = null;
+const getGameSets = () => {
+    if (!gameSetsPromise) {
+        gameSetsPromise = loadGames().then((games) => {
+            const map = new Map();
+            for (const g of games) map.set(g.key, new Set(g.pokemonIds));
+            return map;
+        }).catch((error) => {
+            gameSetsPromise = null;
+            throw error;
+        });
+    }
+    return gameSetsPromise;
+};
+
 // Pure client-side filtering — mirrors what the old Firestore `where` clauses did.
-const filterPokemons = (all, { generation, types, search }) => {
+const filterPokemons = (all, { generation, types, search, gameIds }) => {
     const searchTerm = (search || '').toLowerCase().trim();
     const typeList = Array.from(types || []);
 
     return all.filter((p) => {
+        if (gameIds && !gameIds.has(p.id)) return false;
         if (generation && generation !== 'all' && p.generation !== generation) return false;
         if (typeList.length > 0 && !typeList.some((t) => (p.types || []).includes(t))) return false;
         if (searchTerm && !p.name.toLowerCase().includes(searchTerm)) return false;
@@ -39,6 +56,7 @@ export const usePokedexStore = create((set, get) => ({
 
     // Filters for Team Builder page
     selectedGeneration: 'all',
+    selectedGame: 'all',
     selectedTypes: new Set(),
     searchInput: '',
     debouncedSearchTerm: '',
@@ -46,6 +64,7 @@ export const usePokedexStore = create((set, get) => ({
 
     // Filters for Pokedex page
     pokedexSelectedGeneration: 'all',
+    pokedexSelectedGame: 'all',
     pokedexSelectedTypes: new Set(),
     pokedexSearchInput: '',
     debouncedPokedexSearchTerm: '',
@@ -75,10 +94,16 @@ export const usePokedexStore = create((set, get) => ({
         try {
             const all = await getFullIndex();
             const state = get();
+            const gameKey = isPokedex ? state.pokedexSelectedGame : state.selectedGame;
+            let gameIds = null;
+            if (gameKey && gameKey !== 'all') {
+                try { gameIds = (await getGameSets()).get(gameKey) || null; } catch (_) { gameIds = null; }
+            }
             const filtered = filterPokemons(all, {
                 generation: isPokedex ? state.pokedexSelectedGeneration : state.selectedGeneration,
                 types: isPokedex ? state.pokedexSelectedTypes : state.selectedTypes,
                 search: isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm,
+                gameIds,
             });
 
             set({

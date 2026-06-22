@@ -1,6 +1,7 @@
 export { AdminDashboardView } from './AdminDashboardView';
 export { AllTeamsView } from './AllTeamsView';
 export { FavoritePokemonsView } from './FavoritePokemonsView';
+export { FavoritesView } from './FavoritesView';
 export { GenerationQuizView } from './GenerationQuizView';
 export { HomeView } from './HomeView';
 export { MobileTeamBuilderView } from './MobileTeamBuilderView';
@@ -10,3 +11,10 @@ export { RandomGeneratorView } from './RandomGeneratorView';
 export { TeamBuilderView } from './TeamBuilderView';
 export { FeedView } from './FeedView';
 export { default as PokePuzzleView } from './PokePuzzleView';
+export { MovesListView } from './MovesListView';
+export { AbilitiesListView } from './AbilitiesListView';
+export { ItemsListView } from './ItemsListView';
+export { PokemonDetailView } from './PokemonDetailView';
+export { DamageCalculatorView } from './DamageCalculatorView';
+export { SpeedTiersView } from './SpeedTiersView';
+export { TournamentsView } from './TournamentsView';

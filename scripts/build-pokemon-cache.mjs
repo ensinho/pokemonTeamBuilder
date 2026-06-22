@@ -160,7 +160,25 @@ const buildPokemonDetail = async (id) => {
     };
 };
 
-// Fetch just the lightweight list fields (types) for one pokémon.
+// Compact base-stat map keyed by the short names the app uses everywhere.
+// Powers the Speed Tiers table and the damage calculator without a per-row fetch.
+const toBaseStats = (stats = []) => {
+    const map = {};
+    for (const entry of stats) {
+        const key = entry.stat?.name;
+        if (key) map[key] = entry.base_stat;
+    }
+    return {
+        hp: map.hp ?? 0,
+        attack: map.attack ?? 0,
+        defense: map.defense ?? 0,
+        'special-attack': map['special-attack'] ?? 0,
+        'special-defense': map['special-defense'] ?? 0,
+        speed: map.speed ?? 0,
+    };
+};
+
+// Fetch just the lightweight list fields (types + base stats) for one pokémon.
 // Generation is derived from the id, so no extra request is needed for it.
 const fetchPokemonListEntry = async (entry) => {
     const id = parseIdFromUrl(entry.url);
@@ -172,10 +190,11 @@ const fetchPokemonListEntry = async (entry) => {
             url: entry.url,
             types: data.types.map((t) => t.type.name),
             generation: getGenerationName(id),
+            baseStats: toBaseStats(data.stats),
         };
     } catch (_) {
-        // Keep the entry usable even if its types fetch fails — types defaults to [].
-        return { id, name: entry.name, url: entry.url, types: [], generation: getGenerationName(id) };
+        // Keep the entry usable even if its fetch fails — types/baseStats default to empty.
+        return { id, name: entry.name, url: entry.url, types: [], generation: getGenerationName(id), baseStats: null };
     }
 };
 
@@ -226,6 +245,7 @@ const buildFormIndex = async (allPokemonResults, { concurrency = 10, delayMs = 1
                     generation: getGenerationName(baseId || id),
                     baseId,
                     isForm: true,
+                    baseStats: toBaseStats(data.stats),
                 };
             } catch (_) {
                 return null;
