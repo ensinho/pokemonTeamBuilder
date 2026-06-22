@@ -1016,6 +1016,10 @@ export default function AppLayout() {
                                             onToggleFavoritePokemon={handleToggleFavoritePokemon}
                                             showOnlyFavorites={pokedex.showOnlyFavorites}
                                             setShowOnlyFavorites={pokedex.setShowOnlyFavorites}
+                                            db={db}
+                                            fetchPokemonDetails={fetchPokemonDetails}
+                                            pokemonDetailsCache={pokemonDetailsCache}
+                                            setPokemonDetailsCache={setPokemonDetailsCache}
                                         />
                                     } />
                                     <Route path="/pokedex" element={

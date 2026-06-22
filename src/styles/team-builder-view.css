@@ -537,15 +537,17 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    align-self: flex-start;
+    align-self: center;
+    height: 2.15rem;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0.2rem 0.45rem;
-    font-size: 0.625rem;
+    padding: 0 0.7rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    white-space: nowrap;
     color: var(--color-muted);
 }
 
@@ -935,6 +937,75 @@
     padding: 0;
     box-shadow: none;
     flex-wrap: wrap;
+    align-items: center;
+}
+
+/* Collapsible filter bar: type chips + search + chevron on a single row */
+.team-builder-filterbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.team-builder-filterbar .team-builder-type-grid--compact {
+    flex: 0 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.team-builder-search-wrap--inline {
+    flex: 1 1 240px;
+    min-width: 200px;
+    height: 2.15rem;
+}
+
+.team-builder-filter-toggle {
+    position: relative;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.15rem;
+    height: 2.15rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-smooth),
+        border-color var(--duration-fast) var(--ease-smooth),
+        background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-filter-toggle:hover {
+    color: var(--color-fg);
+    border-color: var(--color-border-hover);
+}
+
+.team-builder-filter-toggle.is-open {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.team-builder-filter-toggle__chevron {
+    transition: transform var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-filter-toggle.is-open .team-builder-filter-toggle__chevron {
+    transform: rotate(180deg);
+}
+
+.team-builder-filter-toggle__dot {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-surface);
 }
 
 .team-builder-search-wrap {

@@ -1,10 +1,12 @@
 import React from 'react';
+import { ChevronDown } from 'lucide-react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
+import { PokemonDetailModal } from '../modals/PokemonDetailModal';
 import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
@@ -23,7 +25,19 @@ import {
     TrophyIcon,
 } from '../icons';
 
-function AnalysisTypeBadge({ type, colors }) {
+// Convert a hex color (#rgb or #rrggbb) to an rgba() string with the given alpha.
+function hexToRgba(hex, alpha) {
+    if (typeof hex !== 'string') return `rgba(119,119,119,${alpha})`;
+    let h = hex.replace('#', '');
+    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    if ([r, g, b].some(Number.isNaN)) return `rgba(119,119,119,${alpha})`;
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function AnalysisTypeBadge({ type }) {
     const { t } = useTranslation();
     const typeLower = type.toLowerCase();
     const color = typeColors[typeLower] || '#777';
@@ -31,8 +45,12 @@ function AnalysisTypeBadge({ type, colors }) {
 
     return (
         <span
-            className="inline-flex items-center gap-1.5 text-[10px] text-white font-bold px-3 py-1 rounded-md shadow-sm"
-            style={{ backgroundColor: color }}
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-md border"
+            style={{
+                backgroundColor: hexToRgba(color, 0.13),
+                borderColor: hexToRgba(color, 0.55),
+                color,
+            }}
         >
             {icon && <img src={icon} alt="" className="w-3 h-3 object-contain shrink-0" aria-hidden="true" />}
             <span className="leading-none">{t(`types.${typeLower}`, { defaultValue: type }).toUpperCase()}</span>
@@ -82,6 +100,10 @@ export function TeamBuilderView({
     onToggleFavoritePokemon,
     showOnlyFavorites,
     setShowOnlyFavorites,
+    db,
+    fetchPokemonDetails,
+    pokemonDetailsCache = {},
+    setPokemonDetailsCache,
 }) {
     const { t, language } = useTranslation();
     const [dragIndex, setDragIndex] = React.useState(null);
@@ -117,10 +139,25 @@ export function TeamBuilderView({
         };
     }, []);
 
+    // Collapsible picker header — keep type filter + search always visible, tuck
+    // the rest (generation, game, favorites, tournament partners) behind a chevron.
+    const [filtersExpanded, setFiltersExpanded] = React.useState(() => {
+        if (typeof window === 'undefined') return false;
+        return window.localStorage.getItem('tb-filters-expanded') === '1';
+    });
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            window.localStorage.setItem('tb-filters-expanded', filtersExpanded ? '1' : '0');
+        }
+    }, [filtersExpanded]);
+
     const displayedPokemons = showOnlyFavorites
         ? availablePokemons.filter((pokemon) => favoritePokemons.has(pokemon.id))
         : availablePokemons;
     const selectedTypeCount = selectedTypes.size;
+    const hasActiveFilters = (selectedGeneration && selectedGeneration !== 'all')
+        || (selectedGame && selectedGame !== 'all')
+        || showOnlyFavorites;
 
     // Tournament partner suggestions: Pokémon most often built alongside the
     // current team (weighted toward the last-added one), drawn from the FULL
@@ -140,6 +177,19 @@ export function TeamBuilderView({
             .map(({ id }) => byId.get(id) || { id, name: `#${id}`, types: [] })
             .filter((entry) => !ids.includes(entry.id));
     }, [currentTeam, partnersFor, pokemonIndex, tournamentStatus]);
+
+    // Picker cards open a detail MODAL (not the fullscreen page). Show immediately
+    // with the list data, then enrich with full stats/abilities once they resolve.
+    const [detailPokemon, setDetailPokemon] = React.useState(null);
+    const openDetailModal = React.useCallback(async (pokemon) => {
+        if (pokemon?.id == null) return;
+        setDetailPokemon(pokemon);
+        if (typeof fetchPokemonDetails !== 'function') return;
+        const full = await fetchPokemonDetails(pokemon.id);
+        if (full) {
+            setDetailPokemon((cur) => (cur && cur.id === pokemon.id ? { ...pokemon, ...full } : cur));
+        }
+    }, [fetchPokemonDetails]);
 
     return (
         <>
@@ -179,7 +229,7 @@ export function TeamBuilderView({
                     selectedTypes={selectedTypes}
                     onToggleFavoritePokemon={onToggleFavoritePokemon}
                     handleTypeSelection={handleTypeSelection}
-                    showDetails={showDetails}
+                    showDetails={openDetailModal}
                     suggestedPokemonIds={suggestedPokemonIds}
                     colors={colors}
                     onEditTeamPokemon={onEditTeamPokemon}
@@ -376,28 +426,8 @@ export function TeamBuilderView({
                             </div>
                         </div>
 
-                        <div className="team-builder-picker-toolbar team-builder-picker-toolbar--compact mt-3">
-                            <div className="team-builder-picker-focus" role="group" aria-label="Type focus">
-                                <div className="team-builder-type-grid team-builder-type-grid--compact">
-                                    {Object.keys(typeColors).map((type) => (
-                                        <button
-                                            key={type}
-                                            type="button"
-                                            onClick={() => handleTypeSelection(type)}
-                                            className={`team-builder-type-button team-builder-type-button--compact ${selectedTypes.has(type) ? 'is-active' : ''}`}
-                                            title={type}
-                                            aria-pressed={selectedTypes.has(type)}
-                                        >
-                                            <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
-                        </div>
-
-                        <div className="team-builder-unified-toolbar mt-3">
-                            <div className="team-builder-search-wrap">
+                        <div className="team-builder-filterbar mt-3">
+                            <div className="team-builder-search-wrap team-builder-search-wrap--inline">
                                 <span className="team-builder-search-icon" aria-hidden="true">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -422,50 +452,87 @@ export function TeamBuilderView({
                                 )}
                             </div>
 
-                            <div className="team-builder-select-wrap">
-                                <select
-                                    value={selectedGeneration}
-                                    onChange={(e) => setSelectedGeneration(e.target.value)}
-                                    className="team-builder-field team-builder-field--compact team-builder-select"
-                                    aria-label={t('pokedex.genFilterLabel')}
-                                >
-                                    <option value="all">{t('pokedex.allGens')}</option>
-                                    {generations.map((generation) => (
-                                        <option key={generation} value={generation} className="capitalize">
-                                            {generation.replace('-', ' ')}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {games.length > 0 && setSelectedGame && (
-                                <div className="team-builder-select-wrap">
-                                    <select
-                                        value={selectedGame || 'all'}
-                                        onChange={(e) => setSelectedGame(e.target.value)}
-                                        className="team-builder-field team-builder-field--compact team-builder-select"
-                                        aria-label={t('builder.gameFilterLabel')}
+                            <div className="team-builder-type-grid team-builder-type-grid--compact" role="group" aria-label="Type focus">
+                                {Object.keys(typeColors).map((type) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => handleTypeSelection(type)}
+                                        className={`team-builder-type-button team-builder-type-button--compact ${selectedTypes.has(type) ? 'is-active' : ''}`}
+                                        title={type}
+                                        aria-pressed={selectedTypes.has(type)}
                                     >
-                                        <option value="all">{t('builder.allGames')}</option>
-                                        {games.map((game) => (
-                                            <option key={game.key} value={game.key}>{game.label}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            )}
+                                        <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
+                                    </button>
+                                ))}
+                            </div>
 
                             <button
                                 type="button"
-                                onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                                className={`team-builder-toggle team-builder-toggle--compact ${showOnlyFavorites ? 'is-active' : ''}`}
-                                aria-pressed={showOnlyFavorites}
+                                onClick={() => setFiltersExpanded((v) => !v)}
+                                className={`team-builder-filter-toggle ${filtersExpanded ? 'is-open' : ''}`}
+                                aria-expanded={filtersExpanded}
+                                aria-label={filtersExpanded
+                                    ? t('builder.fewerFilters', { defaultValue: language === 'pt' ? 'Menos filtros' : 'Fewer filters' })
+                                    : t('builder.moreFilters', { defaultValue: language === 'pt' ? 'Mais filtros' : 'More filters' })}
+                                title={filtersExpanded
+                                    ? t('builder.fewerFilters', { defaultValue: language === 'pt' ? 'Menos filtros' : 'Fewer filters' })
+                                    : t('builder.moreFilters', { defaultValue: language === 'pt' ? 'Mais filtros' : 'More filters' })}
                             >
-                                <StarIcon className="w-4 h-4" isFavorite={showOnlyFavorites} color="currentColor" />
-                                <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
+                                <ChevronDown className="team-builder-filter-toggle__chevron w-4 h-4" />
+                                {!filtersExpanded && hasActiveFilters && <span className="team-builder-filter-toggle__dot" aria-hidden="true" />}
                             </button>
                         </div>
 
-                        {partnerSuggestions.length > 0 && (
+                        {filtersExpanded && (
+                            <div className="team-builder-unified-toolbar mt-3">
+                                <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
+
+                                <div className="team-builder-select-wrap">
+                                    <select
+                                        value={selectedGeneration}
+                                        onChange={(e) => setSelectedGeneration(e.target.value)}
+                                        className="team-builder-field team-builder-field--compact team-builder-select"
+                                        aria-label={t('pokedex.genFilterLabel')}
+                                    >
+                                        <option value="all">{t('pokedex.allGens')}</option>
+                                        {generations.map((generation) => (
+                                            <option key={generation} value={generation} className="capitalize">
+                                                {generation.replace('-', ' ')}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {games.length > 0 && setSelectedGame && (
+                                    <div className="team-builder-select-wrap">
+                                        <select
+                                            value={selectedGame || 'all'}
+                                            onChange={(e) => setSelectedGame(e.target.value)}
+                                            className="team-builder-field team-builder-field--compact team-builder-select"
+                                            aria-label={t('builder.gameFilterLabel')}
+                                        >
+                                            <option value="all">{t('builder.allGames')}</option>
+                                            {games.map((game) => (
+                                                <option key={game.key} value={game.key}>{game.label}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                                    className={`team-builder-toggle team-builder-toggle--compact ${showOnlyFavorites ? 'is-active' : ''}`}
+                                    aria-pressed={showOnlyFavorites}
+                                >
+                                    <StarIcon className="w-4 h-4" isFavorite={showOnlyFavorites} color="currentColor" />
+                                    <span>{showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}</span>
+                                </button>
+                            </div>
+                        )}
+
+                        {filtersExpanded && partnerSuggestions.length > 0 && (
                             <div className="team-builder-partners mt-3">
                                 <div className="flex items-center gap-1.5 mb-2">
                                     <TrophyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
@@ -507,7 +574,7 @@ export function TeamBuilderView({
                                             <PokemonCard
                                                 key={pokemon.id}
                                                 details={pokemon}
-                                                onCardClick={showDetails}
+                                                onCardClick={openDetailModal}
                                                 onAddToTeam={handleAddPokemonToTeam}
                                                 lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
                                                 isSuggested={suggestedPokemonIds.has(pokemon.id)}
@@ -589,6 +656,22 @@ export function TeamBuilderView({
                     </section>
                 </div>
             </main> : null}
+
+            {detailPokemon && (
+                <PokemonDetailModal
+                    pokemon={detailPokemon}
+                    onClose={() => setDetailPokemon(null)}
+                    onAdd={handleAddPokemonToTeam}
+                    currentTeam={currentTeam}
+                    colors={colors}
+                    showPokemonDetails={openDetailModal}
+                    db={db}
+                    pokemonDetailsCache={pokemonDetailsCache}
+                    setPokemonDetailsCache={setPokemonDetailsCache}
+                    isFavorite={favoritePokemons.has(detailPokemon.id)}
+                    onToggleFavorite={onToggleFavoritePokemon}
+                />
+            )}
         </>
     );
 }
