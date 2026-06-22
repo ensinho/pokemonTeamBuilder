@@ -139,3 +139,26 @@
 .hd-trn-card__badge { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.1rem 0.4rem; border-radius: 999px; background: var(--color-primary-soft); color: var(--color-primary); }
 .hd-trn-card__roster { display: flex; gap: 0.15rem; flex-wrap: wrap; }
 .hd-trn-card__roster img { width: 2rem; height: 2rem; image-rendering: pixelated; background: var(--color-surface); border-radius: 0.4rem; }
+
+/* Loading skeletons — shown while tournament + Pokémon data load. Mirror the
+   real layouts (popular row + tournament cards) so there's no shift on ready. */
+@keyframes hd-skel-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.85; } }
+
+.hd-skel { background: var(--color-border); border-radius: 0.5rem; animation: hd-skel-pulse 1.2s ease-in-out infinite; }
+
+.hd-skel-mon {
+    flex: 0 0 auto;
+    width: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.25rem;
+}
+.hd-skel-mon__sprite { width: 2.75rem; height: 2.75rem; border-radius: 0.6rem; }
+.hd-skel-mon__name { width: 80%; height: 0.55rem; }
+
+.hd-skel-card__title { width: 65%; height: 0.8rem; }
+.hd-skel-card__meta { width: 45%; height: 0.6rem; }
+.hd-skel-card__roster { display: flex; gap: 0.15rem; }
+.hd-skel-card__roster .hd-skel { width: 2rem; height: 2rem; border-radius: 0.4rem; }

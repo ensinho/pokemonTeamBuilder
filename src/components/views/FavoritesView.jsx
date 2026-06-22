@@ -13,10 +13,11 @@ import { SavedTeamsIcon, StarsIcon } from '../icons';
 export function FavoritesView({ teamsProps, pokemonProps }) {
     const { t } = useTranslation();
     const [params, setParams] = useSearchParams();
-    const tab = params.get('tab') === 'teams' ? 'teams' : 'pokemon';
+    // Teams are the default tab (most-used surface); Pokémon needs ?tab=pokemon.
+    const tab = params.get('tab') === 'pokemon' ? 'pokemon' : 'teams';
 
     const selectTab = (next) => {
-        setParams(next === 'teams' ? { tab: 'teams' } : {}, { replace: true });
+        setParams(next === 'pokemon' ? { tab: 'pokemon' } : {}, { replace: true });
     };
 
     const teamCount = teamsProps?.teams?.length ?? 0;
@@ -44,16 +45,16 @@ export function FavoritesView({ teamsProps, pokemonProps }) {
         <div className="flex flex-col gap-3">
             <div className="flex gap-2" role="tablist" aria-label={t('favorites.title')}>
                 <TabButton
-                    id="pokemon"
-                    icon={<StarsIcon className="w-4 h-4 shrink-0" />}
-                    label={t('nav.favorites')}
-                    count={pokemonCount}
-                />
-                <TabButton
                     id="teams"
                     icon={<SavedTeamsIcon className="w-4 h-4 shrink-0" />}
                     label={t('nav.savedTeams')}
                     count={teamCount}
+                />
+                <TabButton
+                    id="pokemon"
+                    icon={<StarsIcon className="w-4 h-4 shrink-0" />}
+                    label={t('nav.favorites')}
+                    count={pokemonCount}
                 />
             </div>
 

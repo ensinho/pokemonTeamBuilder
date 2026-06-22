@@ -27,8 +27,9 @@ export function HomeDashboard({ navigate }) {
     const { t } = useTranslation();
     const { popular, recent, status } = useTournamentData();
 
-    const topPopular = popular.slice(0, 16);
+    const topPopular = popular.slice(0, 15);
     const topTeams = recent.slice(0, 4);
+    const isLoading = status === 'loading';
 
     return (
         <div className="hd-stack">
@@ -48,6 +49,48 @@ export function HomeDashboard({ navigate }) {
                     </div>
                 </div>
             </section>
+
+            {/* Loading skeletons while the tournament + Pokémon dataset loads */}
+            {isLoading && (
+                <>
+                    <section className="hd-panel">
+                        <div className="hd-panel__head">
+                            <span className="hd-panel__title"><Flame className="w-4 h-4" /> {t('home.popularPokemon')}</span>
+                        </div>
+                        <div className="hd-panel__body">
+                            <div className="hd-popular">
+                                {Array.from({ length: 12 }).map((_, i) => (
+                                    <div key={i} className="hd-skel-mon" aria-hidden="true">
+                                        <span className="hd-skel hd-skel-mon__sprite" />
+                                        <span className="hd-skel hd-skel-mon__name" />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="hd-panel">
+                        <div className="hd-panel__head">
+                            <span className="hd-panel__title"><TrophyIcon className="w-4 h-4" /> {t('nav.tournaments')}</span>
+                        </div>
+                        <div className="hd-panel__body">
+                            <div className="hd-trn">
+                                {Array.from({ length: 4 }).map((_, i) => (
+                                    <div key={i} className="hd-trn-card" aria-hidden="true" style={{ cursor: 'default' }}>
+                                        <span className="hd-skel hd-skel-card__title" />
+                                        <span className="hd-skel hd-skel-card__meta" />
+                                        <div className="hd-skel-card__roster">
+                                            {Array.from({ length: 6 }).map((__, j) => (
+                                                <span key={j} className="hd-skel" />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                </>
+            )}
 
             {/* Popular in tournaments — real usage from baked results */}
             {status === 'ready' && topPopular.length > 0 && (
