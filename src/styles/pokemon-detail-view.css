@@ -22,6 +22,23 @@
 }
 .pdv__back:hover { color: var(--color-primary); border-color: var(--color-primary); }
 
+/* Type-tinted glow behind the profile artwork (--type-glow set inline). */
+.pdv__glow {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 60%;
+    background: radial-gradient(120% 90% at 50% -20%, color-mix(in srgb, var(--type-glow, var(--color-primary)) 26%, transparent), transparent 70%);
+    pointer-events: none;
+}
+.pdv__glow::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 3px;
+    background: var(--type-glow, var(--color-primary));
+    opacity: 0.85;
+}
+
 .pdv__grid {
     display: grid;
     grid-template-columns: minmax(0, 320px) minmax(0, 1fr);

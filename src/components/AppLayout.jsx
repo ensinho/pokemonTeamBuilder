@@ -575,14 +575,20 @@ export default function AppLayout() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId]);
 
-    // Single source of truth for Pokémon detail: the /pokemon/:id page.
+    // Single source of truth for Pokémon detail: the /pokemon/:id page. We stash
+    // the originating route in history state so the detail page's back button can
+    // return there (and label itself accordingly) instead of always hitting /pokedex.
     const showDetails = useCallback((pokemon) => {
-        if (pokemon?.id != null) navigate(`/pokemon/${pokemon.id}`);
-    }, [navigate]);
+        if (pokemon?.id != null) {
+            navigate(`/pokemon/${pokemon.id}`, { state: { from: location.pathname + location.search } });
+        }
+    }, [navigate, location.pathname, location.search]);
 
     const handleRailSlotClick = useCallback((pokemon) => {
-        if (pokemon?.id != null) navigate(`/pokemon/${pokemon.id}`);
-    }, [navigate]);
+        if (pokemon?.id != null) {
+            navigate(`/pokemon/${pokemon.id}`, { state: { from: location.pathname + location.search } });
+        }
+    }, [navigate, location.pathname, location.search]);
 
     const handleShareSavedTeam = useCallback(async (team) => {
         await shareTeamByData(team?.pokemons || [], team?.name || 'Unnamed Team');
@@ -1090,6 +1096,9 @@ export default function AppLayout() {
                                             onToggleFavoritePokemon={handleToggleFavoritePokemon}
                                             onAdd={handleAddPokemon}
                                             currentTeam={currentTeam}
+                                            db={db}
+                                            pokemonDetailsCache={pokemonDetailsCache}
+                                            setPokemonDetailsCache={setPokemonDetailsCache}
                                         />
                                     } />
                                     <Route path="/moves" element={<MovesListView />} />

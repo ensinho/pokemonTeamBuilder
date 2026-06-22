@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Pencil, Share2, Star, Trash2, Trophy, Shield, Swords,
-    AlertTriangle, Gauge, Sparkles, CircleCheck,
+    AlertTriangle, Gauge, Sparkles, CircleCheck, ArrowUpRight,
 } from 'lucide-react';
 
 import '../../styles/team-detail-view.css';
@@ -192,7 +192,7 @@ export function TeamDetailView({
             </button>
 
             {/* Header */}
-            <section className="team-builder-panel team-detail-header p-5 md:p-6">
+            <section className="team-builder-panel team-detail-header p-4 md:p-5">
                 <div className="team-detail-header__main">
                     <div className="min-w-0">
                         <div className="flex items-center gap-2.5 flex-wrap">
@@ -413,13 +413,20 @@ export function TeamDetailView({
                                         </p>
                                         <div className="team-detail-item-list">
                                             {itemPicks.map((it) => (
-                                                <div key={it.slug} className="team-detail-item" title={it.reason}>
+                                                <button
+                                                    key={it.slug}
+                                                    type="button"
+                                                    onClick={() => navigate(`/items?q=${encodeURIComponent(it.slug)}`)}
+                                                    className="team-detail-item"
+                                                    title={pt ? `Ver ${it.label} no banco de itens` : `View ${it.label} in the items database`}
+                                                >
                                                     <img src={itemSpriteUrl(it.slug)} alt="" className="w-6 h-6 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                                                    <div className="min-w-0">
+                                                    <div className="min-w-0 flex-1">
                                                         <span className="team-detail-item__name">{it.label}</span>
                                                         <span className="team-detail-item__reason">{it.reason}</span>
                                                     </div>
-                                                </div>
+                                                    <ArrowUpRight className="team-detail-item__go w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                                                </button>
                                             ))}
                                         </div>
                                     </div>

@@ -1,4 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
 import { getItemDetails } from '../../services/pokemonDataCache';
@@ -24,6 +25,16 @@ export function ItemsListView() {
 
     const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
         useReferenceList({ loadIndex, loadDetail });
+
+    // Deep-link support: /items?q=<slug> pre-fills the search and opens that item,
+    // so suggestions elsewhere (e.g. team detail) can link straight to its entry.
+    const [searchParams] = useSearchParams();
+    const queryItem = searchParams.get('q');
+    useEffect(() => {
+        if (!queryItem) return;
+        setSearch(queryItem);
+        setOpenName(queryItem);
+    }, [queryItem, setSearch]);
 
     const toggle = useCallback((name) => {
         setOpenName((prev) => (prev === name ? null : name));
