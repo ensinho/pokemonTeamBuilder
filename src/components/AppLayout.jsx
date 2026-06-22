@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
+import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
@@ -97,18 +98,46 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, size = 24, color = 'current
     return <AccountIcon color={color} className={`shrink-0 ${className}`} />;
 };
 
-const ShellNavButton = ({ active, collapsed, label, onClick, icon }) => (
-    <button
-        type="button"
-        onClick={onClick}
-        title={collapsed ? label : undefined}
-        aria-current={active ? 'page' : undefined}
-        className={`app-shell__nav-link ${active ? 'is-active' : ''} ${collapsed ? 'is-collapsed' : ''}`}
-    >
-        <span className="app-shell__nav-icon" aria-hidden="true">{icon}</span>
-        <span className={`app-shell__nav-text ${collapsed ? 'is-hidden' : ''}`}>{label}</span>
-    </button>
-);
+const ShellNavButton = ({ active, collapsed, label, onClick, icon }) => {
+    const buttonRef = useRef(null);
+    // Styled hover tooltip for the collapsed rail. Rendered via a portal with
+    // fixed positioning so it escapes the sidebar's `overflow: hidden` clip.
+    const [tooltipPos, setTooltipPos] = useState(null);
+
+    const showTooltip = () => {
+        if (!collapsed || !buttonRef.current) return;
+        const rect = buttonRef.current.getBoundingClientRect();
+        setTooltipPos({ top: rect.top + rect.height / 2, left: rect.right + 10 });
+    };
+    const hideTooltip = () => setTooltipPos(null);
+
+    return (
+        <button
+            ref={buttonRef}
+            type="button"
+            onClick={onClick}
+            onMouseEnter={showTooltip}
+            onMouseLeave={hideTooltip}
+            onFocus={showTooltip}
+            onBlur={hideTooltip}
+            aria-current={active ? 'page' : undefined}
+            className={`app-shell__nav-link ${active ? 'is-active' : ''} ${collapsed ? 'is-collapsed' : ''}`}
+        >
+            <span className="app-shell__nav-icon" aria-hidden="true">{icon}</span>
+            <span className={`app-shell__nav-text ${collapsed ? 'is-hidden' : ''}`}>{label}</span>
+            {collapsed && tooltipPos && createPortal(
+                <span
+                    role="tooltip"
+                    className="app-shell__nav-tooltip"
+                    style={{ top: tooltipPos.top, left: tooltipPos.left }}
+                >
+                    {label}
+                </span>,
+                document.body
+            )}
+        </button>
+    );
+};
 
 const AUTH_SPLASH_MESSAGES = [
     'Checking if you are who you say you are',

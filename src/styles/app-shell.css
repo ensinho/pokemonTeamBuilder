@@ -413,6 +413,45 @@
     display: none;
 }
 
+/* Collapsed-rail hover tooltip — portaled to <body> with fixed positioning so
+   it is not clipped by the sidebar's `overflow: hidden`. */
+.app-shell__nav-tooltip {
+    position: fixed;
+    z-index: var(--z-tooltip, 1200);
+    transform: translateY(-50%);
+    white-space: nowrap;
+    padding: 0.3rem 0.55rem;
+    border-radius: var(--radius-sm, 0.375rem);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.25));
+    pointer-events: none;
+    animation: app-shell-tooltip-in var(--duration-fast, 120ms) var(--ease-smooth, ease-out);
+}
+
+/* Small arrow pointing back toward the rail icon. */
+.app-shell__nav-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -4px;
+    width: 8px;
+    height: 8px;
+    transform: translateY(-50%) rotate(45deg);
+    background: var(--color-surface-raised);
+    border-left: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+@keyframes app-shell-tooltip-in {
+    from { opacity: 0; transform: translateY(-50%) translateX(-3px); }
+    to { opacity: 1; transform: translateY(-50%) translateX(0); }
+}
+
 .app-shell__account {
     margin-top: auto;
     border-top: 1px solid var(--color-border);

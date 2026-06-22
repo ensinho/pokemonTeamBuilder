@@ -50,6 +50,7 @@
     --z-modal:           50;
     --z-history-overlay: 100;
     --z-history-panel:   101;
+    --z-tooltip:         110;
 
     /* Pokémon canonical stat colors — game-accurate, not theme-dependent */
     --stat-hp:  #FF5959;
