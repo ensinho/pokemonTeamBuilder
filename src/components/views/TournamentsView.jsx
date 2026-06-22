@@ -1,11 +1,22 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/tools-views.css';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyState } from '../EmptyState';
-import { PokeballIcon, TrophyIcon, ShowdownIcon, ShareIcon } from '../icons';
+import { PokeballIcon, TrophyIcon, ShowdownIcon, ShareIcon, ClearIcon } from '../icons';
+
+// Match a team against the search term across its Pokémon, title/player,
+// tournament name, placement, format and date — so any of those finds it.
+function teamMatches(team, q) {
+    if (!q) return true;
+    const haystack = [
+        team.title, team.player, team.tournament, team.placement, team.format, team.date,
+        ...(Array.isArray(team.pokemons) ? team.pokemons.map((m) => m.name) : []),
+    ];
+    return haystack.some((v) => typeof v === 'string' && v.toLowerCase().includes(q));
+}
 
 function TeamCard({ team, onOpen, navigate, t }) {
     const roster = Array.isArray(team.pokemons) ? team.pokemons.slice(0, 6) : [];
@@ -69,11 +80,16 @@ export function TournamentsView({ onOpenTeam }) {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { teams, status } = useTournamentData();
+    const [search, setSearch] = useState('');
 
-    const { featured, tournament } = useMemo(() => ({
-        featured: teams.filter((tm) => tm.featured),
-        tournament: teams.filter((tm) => !tm.featured),
-    }), [teams]);
+    const query = search.trim().toLowerCase();
+    const { featured, tournament } = useMemo(() => {
+        const matched = query ? teams.filter((tm) => teamMatches(tm, query)) : teams;
+        return {
+            featured: matched.filter((tm) => tm.featured),
+            tournament: matched.filter((tm) => !tm.featured),
+        };
+    }, [teams, query]);
 
     if (status === 'loading') {
         return (
@@ -87,8 +103,34 @@ export function TournamentsView({ onOpenTeam }) {
         return <EmptyState title={t('tools.tournamentsEmpty')} message={t('tools.tournamentsEmptyDesc')} />;
     }
 
+    const noMatches = query && featured.length === 0 && tournament.length === 0;
+
     return (
         <div>
+            <div className="trn-toolbar">
+                <div className="trn-search-wrap">
+                    <span className="trn-search-icon" aria-hidden="true">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        placeholder={t('tools.searchTournaments')}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="trn-search-input"
+                    />
+                    {search && (
+                        <button type="button" onClick={() => setSearch('')} className="trn-search-clear" aria-label={t('common.clear')}>
+                            <ClearIcon className="w-4 h-4" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {noMatches && <EmptyState compact title={t('tools.tournamentsNoMatch')} message={t('db.noMatchesDesc')} />}
+
             {featured.length > 0 && (
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.featuredTeams')}</h2>

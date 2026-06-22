@@ -1,8 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
-import { getAbilitiesList, getAbilityDetails } from '../../services/pokemonDataCache';
+import { getAbilitiesList, getAbilityDetails, resolvePokemonDetail } from '../../services/pokemonDataCache';
 import { useReferenceList } from '../../hooks/useReferenceList';
+import { useReferenceStore } from '../../store/useReferenceStore';
+import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNames';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
@@ -15,8 +17,17 @@ export function AbilitiesListView() {
     const { t } = useTranslation();
     const [openName, setOpenName] = useState(null);
 
+    // Lets a search for a Pokémon name surface that Pokémon's abilities.
+    const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
+    const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
+    useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
+    const getRelatedNames = useCallback(
+        makePokemonRelatedNamesResolver(pokemonIndex, resolvePokemonDetail, 'abilities'),
+        [pokemonIndex],
+    );
+
     const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
-        useReferenceList({ loadIndex: getAbilitiesList, loadDetail });
+        useReferenceList({ loadIndex: getAbilitiesList, loadDetail, getRelatedNames });
 
     const toggle = useCallback((name) => {
         setOpenName((prev) => (prev === name ? null : name));

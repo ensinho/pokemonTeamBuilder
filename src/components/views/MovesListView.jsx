@@ -1,9 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
 import { typeColors } from '../../constants/types';
-import { getMovesList, getMoveDetails } from '../../services/pokemonDataCache';
+import { getMovesList, getMoveDetails, resolvePokemonDetail } from '../../services/pokemonDataCache';
 import { useReferenceList } from '../../hooks/useReferenceList';
+import { useReferenceStore } from '../../store/useReferenceStore';
+import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNames';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyState } from '../EmptyState';
 import { TypeBadge } from '../TypeBadge';
@@ -26,8 +28,17 @@ export function MovesListView() {
     const [typeFilter, setTypeFilter] = useState('all');
     const [categoryFilter, setCategoryFilter] = useState('all');
 
+    // Lets a search for a Pokémon name surface the moves it can learn.
+    const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
+    const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
+    useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
+    const getRelatedNames = useCallback(
+        makePokemonRelatedNamesResolver(pokemonIndex, resolvePokemonDetail, 'moves'),
+        [pokemonIndex],
+    );
+
     const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
-        useReferenceList({ loadIndex: getMovesList, loadDetail });
+        useReferenceList({ loadIndex: getMovesList, loadDetail, getRelatedNames });
 
     // Type/category filters operate on already-resolved detail rows; a row whose
     // detail hasn't loaded yet is kept until we know it doesn't match.

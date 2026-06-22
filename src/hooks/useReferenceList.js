@@ -12,8 +12,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
  * @param {Function} opts.loadIndex  async () => Array<{ name, url, id }>
  * @param {Function} opts.loadDetail async (entry) => detail | null
  * @param {number}   [opts.pageSize] rows revealed per "load more" step
+ * @param {Function} [opts.getRelatedNames] async (normalizedSearch) => string[] | null
+ *        When the search term names a Pokémon, returns the index entry names
+ *        related to it (e.g. that Pokémon's moves/abilities) so a search for
+ *        "pikachu" surfaces "thunderbolt"/"static". Returns null when the term
+ *        isn't a Pokémon, leaving the plain name filter in charge.
  */
-export function useReferenceList({ loadIndex, loadDetail, pageSize = 40 }) {
+export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRelatedNames }) {
     const [index, setIndex] = useState([]);
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
     const [search, setSearch] = useState('');
@@ -33,10 +38,36 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40 }) {
     }, [loadIndex]);
 
     const normalized = search.trim().toLowerCase().replace(/\s+/g, '-');
+
+    // Names related to a searched Pokémon (its moves/abilities). Resolved lazily
+    // since it may require fetching that Pokémon's record. null = not a Pokémon.
+    const [relatedNames, setRelatedNames] = useState(null);
+    useEffect(() => {
+        if (!normalized || !getRelatedNames) { setRelatedNames(null); return undefined; }
+        let cancelled = false;
+        setRelatedNames(null);
+        Promise.resolve(getRelatedNames(normalized))
+            .then((names) => { if (!cancelled) setRelatedNames(Array.isArray(names) ? names : null); })
+            .catch(() => { if (!cancelled) setRelatedNames(null); });
+        return () => { cancelled = true; };
+    }, [normalized, getRelatedNames]);
+
     const filtered = useMemo(() => {
         if (!normalized) return index;
-        return index.filter((entry) => entry.name.includes(normalized));
-    }, [index, normalized]);
+        const byName = index.filter((entry) => entry.name.includes(normalized));
+        if (!relatedNames || relatedNames.length === 0) return byName;
+        // Merge the Pokémon-related entries in, de-duped against the name matches.
+        const related = new Set(relatedNames);
+        const seen = new Set(byName.map((entry) => entry.name));
+        const merged = [...byName];
+        for (const entry of index) {
+            if (related.has(entry.name) && !seen.has(entry.name)) {
+                merged.push(entry);
+                seen.add(entry.name);
+            }
+        }
+        return merged;
+    }, [index, normalized, relatedNames]);
 
     // Reset the window whenever the filter changes.
     useEffect(() => { setVisibleCount(pageSize); }, [normalized, pageSize]);

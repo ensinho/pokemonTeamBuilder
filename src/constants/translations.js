@@ -80,8 +80,8 @@ export const TRANSLATIONS = {
             movesSubtitle: 'Every move, with power, accuracy and effect',
             abilitiesSubtitle: 'Browse abilities and what they do',
             itemsSubtitle: 'Held items, berries and their effects',
-            searchMoves: 'Search moves…',
-            searchAbilities: 'Search abilities…',
+            searchMoves: 'Search moves or a Pokémon…',
+            searchAbilities: 'Search abilities or a Pokémon…',
             searchItems: 'Search items…',
             colName: 'Name',
             colType: 'Type',
@@ -159,7 +159,9 @@ export const TRANSLATIONS = {
             featuredTeams: 'Featured Teams',
             tournamentTeams: 'Tournament Teams',
             importToBuilder: 'Open in Builder',
-            viewTeam: 'View team'
+            viewTeam: 'View team',
+            searchTournaments: 'Search by Pokémon, title or date…',
+            tournamentsNoMatch: 'No teams match your search'
         },
         splash: {
             msg1: 'Checking if you are who you say you are',
@@ -891,8 +893,8 @@ export const TRANSLATIONS = {
             movesSubtitle: 'Todos os movimentos, com poder, precisão e efeito',
             abilitiesSubtitle: 'Explore habilidades e o que elas fazem',
             itemsSubtitle: 'Itens segurados, berries e seus efeitos',
-            searchMoves: 'Buscar movimentos…',
-            searchAbilities: 'Buscar habilidades…',
+            searchMoves: 'Buscar movimentos ou Pokémon…',
+            searchAbilities: 'Buscar habilidades ou Pokémon…',
             searchItems: 'Buscar itens…',
             colName: 'Nome',
             colType: 'Tipo',
@@ -970,7 +972,9 @@ export const TRANSLATIONS = {
             featuredTeams: 'Times em Destaque',
             tournamentTeams: 'Times de Torneio',
             importToBuilder: 'Abrir no Construtor',
-            viewTeam: 'Ver time'
+            viewTeam: 'Ver time',
+            searchTournaments: 'Buscar por Pokémon, título ou data…',
+            tournamentsNoMatch: 'Nenhum time corresponde à busca'
         },
         splash: {
             msg1: 'Verificando se você é quem diz ser',

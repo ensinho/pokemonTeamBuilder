@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-22T17:53:48.217Z",
+  "generatedAt": "2026-06-22T20:01:58.496Z",
   "source": "pokepaste sets from tournament teams",
   "species": 58,
   "byId": {
@@ -873,15 +873,15 @@
           "count": 2
         },
         {
-          "name": "Taunt",
-          "count": 1
-        },
-        {
           "name": "Fake Out",
           "count": 1
         },
         {
           "name": "Quash",
+          "count": 1
+        },
+        {
+          "name": "Taunt",
           "count": 1
         }
       ]
@@ -2418,13 +2418,13 @@
           "count": 1
         },
         {
-          "name": "Focus Sash",
-          "slug": "focus-sash",
+          "name": "Colbur Berry",
+          "slug": "colbur-berry",
           "count": 1
         },
         {
-          "name": "Colbur Berry",
-          "slug": "colbur-berry",
+          "name": "Focus Sash",
+          "slug": "focus-sash",
           "count": 1
         }
       ],
