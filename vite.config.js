@@ -2,9 +2,18 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Unique id for this build, used to cache-bust static /data/*.json files on every
+// deploy (see src/services/pokemonDataCache.js). Overridable via VITE_BUILD_ID
+// (e.g. a git SHA in CI); falls back to Vercel's commit SHA, then to the build
+// timestamp, which is unique per `vite build` invocation.
+const buildId = process.env.VITE_BUILD_ID || process.env.VERCEL_GIT_COMMIT_SHA || String(Date.now())
+
 // https://vitejs.dev/config/
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || (process.env.VERCEL ? '/' : '/pokemonTeamBuilder/'),
+  define: {
+    __BUILD_ID__: JSON.stringify(buildId),
+  },
   plugins: [
     react(),
     VitePWA({

@@ -7,15 +7,28 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/p
 // to pokemon-index.json). It invalidates all stale entries from older versions so
 // users never get a broken UI from a long-TTL cache of the old format.
 const CACHE_VERSION = 'v3';
-const CACHE_PREFIX = `ptb:pokemon-data:${CACHE_VERSION}:`;
+
+// Unique per production build, injected by Vite (see vite.config define). Every
+// deploy gets a new id, so the static /data/*.json files are re-keyed in our Web
+// Storage cache AND cache-busted at the browser-HTTP layer (?v= on their URLs).
+// This is what makes a rebuild bullet-proof: a freshly regenerated index can never
+// be shadowed by a stale force-cache copy of the previous build's file.
+// `typeof` guard is safe even when the global isn't defined (e.g. tests) — it
+// evaluates to 'undefined' rather than throwing a ReferenceError.
+// eslint-disable-next-line no-undef
+const BUILD_ID = (typeof __BUILD_ID__ !== 'undefined' && __BUILD_ID__) ? String(__BUILD_ID__) : 'dev';
+
+const CACHE_PREFIX = `ptb:pokemon-data:${CACHE_VERSION}:${BUILD_ID}:`;
 const REFERENCE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 const memoryCache = new Map();
 const pendingRequests = new Map();
 
-// One-time sweep of cache entries from previous CACHE_VERSIONs so they don't
-// linger in users' storage after a format change.
+// One-time sweep of cache entries from previous CACHE_VERSIONs / builds so they
+// don't linger in users' storage after a format change or redeploy. Because
+// CACHE_PREFIX now embeds the per-build BUILD_ID, every deploy flushes the
+// previous build's cached data here too.
 const purgeStaleCacheVersions = () => {
     if (typeof window === 'undefined') return;
     for (const storageName of ['local', 'session']) {
@@ -44,7 +57,13 @@ const getBasePath = () => {
     return base.endsWith('/') ? base : `${base}/`;
 };
 
-const getStaticDataUrl = (path) => `${getBasePath()}data/${String(path).replace(/^\/+/, '')}`;
+// Append the build id as a cache-buster so each deploy fetches a brand-new URL.
+// Combined with `cache: 'force-cache'` this is ideal: unchanged build = instant
+// cache hit; new build = new URL = guaranteed fresh download. It defeats the
+// browser HTTP cache even when (as on Vercel) the file's own headers say
+// `max-age=0, must-revalidate` but `force-cache` would otherwise serve it stale.
+const getStaticDataUrl = (path) =>
+    `${getBasePath()}data/${String(path).replace(/^\/+/, '')}?v=${BUILD_ID}`;
 
 const getStorage = (storage) => {
     if (typeof window === 'undefined') return null;
