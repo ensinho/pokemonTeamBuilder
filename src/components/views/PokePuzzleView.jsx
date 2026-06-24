@@ -15,6 +15,7 @@ import { db } from '../../services/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
 import '../../styles/pokepuzzle-view.css';
 import { typeColors } from '../../constants/types';
+import { getDailyPokemonIndex } from '../../utils/pokePuzzle';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -79,33 +80,7 @@ const formatPokemonDisplayName = (name = '') => {
         .join(' ');
 };
 
-// Seeded daily index selector with historical overrides
-const getDailyPokemonIndex = (dateString, allowedPool) => {
-    if (!allowedPool || allowedPool.length === 0) return 0;
-
-    // Explicit absolute overrides for past daily puzzles
-    const overrides = {
-        '2026-6-18': 'golurk',
-        '2026-06-18': 'golurk',
-        '2026-6-17': 'pawniard',
-        '2026-06-17': 'pawniard',
-        '2026-6-16': 'bisharp',
-        '2026-06-16': 'bisharp'
-    };
-
-    const targetName = overrides[dateString];
-    if (targetName) {
-        const idx = allowedPool.findIndex(p => p.name.toLowerCase() === targetName);
-        if (idx !== -1) return idx;
-    }
-
-    // Default to hashing algorithm
-    let hash = 0;
-    for (let i = 0; i < dateString.length; i++) {
-        hash = dateString.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return Math.abs(hash) % allowedPool.length;
-};
+// Seeded daily index selector is now imported from '../../utils/pokePuzzle'
 
 // Helper to get today's date string in YYYY-MM-DD format
 const getTodayDateString = () => {

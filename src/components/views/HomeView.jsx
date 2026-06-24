@@ -12,6 +12,7 @@ import { TRANSLATIONS } from '../../constants/translations';
 
 import '../../styles/home-view.css';
 import '../../styles/forum-view.css';
+import { getDailyPokemonIndex } from '../../utils/pokePuzzle';
 
 
 import { DEFAULT_BACKGROUND_ID, SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
@@ -167,16 +168,7 @@ const TrainerStatsEmptyState = ({ onBrowsePokedex }) => {
 };
 
 const ALLOWED_MAX_ID = 1025;
-const getDailyPokemonIndex = (poolLength) => {
-    if (poolLength <= 0) return 0;
-    const now = new Date();
-    const dateString = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
-    let hash = 0;
-    for (let i = 0; i < dateString.length; i++) {
-        hash = dateString.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return Math.abs(hash) % poolLength;
-};
+// Seeded daily index selector is now imported from '../../utils/pokePuzzle'
 
 // Helper to format Pokémon name nicely for display
 const formatPokemonDisplayName = (name = '') => {
@@ -296,7 +288,7 @@ export function HomeView({
                 const index = await loadPokemonIndex();
                 const filtered = index.filter(p => p.id <= ALLOWED_MAX_ID);
                 if (filtered.length > 0) {
-                    const dailyIdx = getDailyPokemonIndex(filtered.length);
+                    const dailyIdx = getDailyPokemonIndex(dateString, filtered);
                     setDailyPokePuzzleTarget(filtered[dailyIdx]);
 
                     // Pick a random pokemon ID from the pool for the silhouette (to confuse the user)
