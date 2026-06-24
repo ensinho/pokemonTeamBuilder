@@ -20,7 +20,7 @@ export const CORES = [
         id: 'rain', name: 'Rain', emoji: '🌧️', accent: '#3b82f6',
         summary: { en: 'Drizzle sets rain; Swift Swim sweepers and boosted Water moves clean up.', pt: 'Drizzle traz a chuva; varredores com Swift Swim e golpes de Água potencializados fecham o jogo.' },
         setterAbilities: ['drizzle'], setterMoves: ['rain-dance'],
-        abuserAbilities: ['swift-swim'], abuserMoves: ['electro-shot'],
+        abuserAbilities: ['swift-swim'], abuserMoves: ['electro-shot', 'wave-crash', 'hydro-pump', 'surf', 'weather-ball', 'water-spout', 'muddy-water'],
         guide: {
             en: ['Lead a Drizzle setter (Pelipper, Politoed) to turn on rain for 5 turns.', 'Pair Swift Swim sweepers that double Speed and fire off rain-boosted Water moves.', 'Add a Tailwind or redirection partner to buy turns if your weather is overwritten.', 'Carry a Water-immune or Grass answer for opposing rain mirrors.'],
             pt: ['Comece com um setter de Drizzle (Pelipper, Politoed) para ativar a chuva por 5 turnos.', 'Combine varredores Swift Swim que dobram a Velocidade e disparam golpes de Água potencializados.', 'Adicione um parceiro de Tailwind ou redirecionamento para ganhar turnos se o clima for sobrescrito.', 'Tenha uma resposta imune a Água ou tipo Planta para espelhos de chuva.'],
@@ -30,7 +30,7 @@ export const CORES = [
         id: 'sun', name: 'Sun', emoji: '☀️', accent: '#f59e0b',
         summary: { en: 'Drought powers Fire attacks; Chlorophyll & Protosynthesis sweepers snowball.', pt: 'Drought potencializa ataques de Fogo; varredores Chlorophyll e Protosynthesis dominam.' },
         setterAbilities: ['drought', 'orichalcum-pulse'], setterMoves: ['sunny-day'],
-        abuserAbilities: ['chlorophyll', 'solar-power', 'protosynthesis'],
+        abuserAbilities: ['chlorophyll', 'solar-power', 'protosynthesis'], abuserMoves: ['weather-ball', 'heat-wave', 'flamethrower', 'overheat', 'fire-blast', 'solar-beam'],
         guide: {
             en: ['Open with a Drought setter (Torkoal, Groudon, Koraidon) to bank sun.', 'Bring Chlorophyll sweepers for doubled Speed or Protosynthesis Paradox attackers.', 'Sun also weakens enemy Water moves — lean into Fire/Grass offense.', 'Pack a Wide Guard / redirection support to protect your frail abusers.'],
             pt: ['Abra com um setter de Drought (Torkoal, Groudon, Koraidon) para garantir o sol.', 'Traga varredores Chlorophyll com Velocidade dobrada ou atacantes Paradox com Protosynthesis.', 'O sol também enfraquece golpes de Água inimigos — aposte na ofensiva Fogo/Planta.', 'Inclua suporte de Wide Guard / redirecionamento para proteger seus atacantes frágeis.'],
@@ -50,7 +50,7 @@ export const CORES = [
         id: 'snow', name: 'Snow', emoji: '❄️', accent: '#7dd3fc',
         summary: { en: 'Snow Warning + Aurora Veil walls hits; Slush Rush sweepers race ahead.', pt: 'Snow Warning + Aurora Veil bloqueiam dano; varredores Slush Rush disparam à frente.' },
         setterAbilities: ['snow-warning'], setterMoves: ['snowscape', 'chilly-reception'],
-        abuserAbilities: ['slush-rush', 'ice-body'], keyMoves: ['aurora-veil'],
+        abuserAbilities: ['slush-rush', 'ice-body'], abuserMoves: ['blizzard', 'icicle-crash', 'ice-spinner'], keyMoves: ['aurora-veil'],
         guide: {
             en: ['Set snow (Ninetales-Alola, Baxcalibur) to raise Ice-types\' Defense.', 'Click Aurora Veil turn one to halve incoming damage for both slots.', 'Snowball with Slush Rush sweepers under the veil.', 'Snow only lasts 5 turns — apply pressure fast.'],
             pt: ['Ative a neve (Ninetales-Alola, Baxcalibur) para elevar a Defesa de tipos Gelo.', 'Use Aurora Veil no primeiro turno para reduzir pela metade o dano em ambos os slots.', 'Domine com varredores Slush Rush sob o véu.', 'A neve dura só 5 turnos — pressione rápido.'],
@@ -78,7 +78,7 @@ export const CORES = [
         id: 'psyterrain', name: 'Psychic Terrain', emoji: '🔮', accent: '#ec4899',
         summary: { en: 'Blocks priority and boosts Psychic moves — a fortress for slower setups.', pt: 'Bloqueia prioridade e potencializa golpes Psíquicos — uma fortaleza para setups lentos.' },
         setterAbilities: ['psychic-surge'], setterMoves: ['psychic-terrain'],
-        abuserMoves: ['expanding-force'],
+        abuserMoves: ['expanding-force', 'psychic', 'psyshock', 'psystrike'],
         guide: {
             en: ['Lead Indeedee or another Psychic Surge setter to shut off priority moves.', 'This protects slow setup and Trick Room sweepers from Fake Out / priority.', 'Boosted Psychic-type attacks hit hard into the meta.', 'Watch for Terrain overwrites and Grassy/Electric setters.'],
             pt: ['Comece com Indeedee ou outro setter de Psychic Surge para anular golpes de prioridade.', 'Isso protege setups lentos e varredores de Trick Room contra Fake Out / prioridade.', 'Ataques Psíquicos potencializados causam muito dano no meta.', 'Cuidado com sobrescrita de terreno e setters Grassy/Electric.'],
@@ -88,7 +88,7 @@ export const CORES = [
         id: 'eleterrain', name: 'Electric Terrain', emoji: '⚡', accent: '#eab308',
         summary: { en: 'Powers Electric moves and blocks sleep; Quark Drive Paradoxes thrive.', pt: 'Potencializa golpes Elétricos e bloqueia sono; Paradoxos com Quark Drive prosperam.' },
         setterAbilities: ['electric-surge', 'hadron-engine'], setterMoves: ['electric-terrain'],
-        abuserAbilities: ['quark-drive'], abuserMoves: ['rising-voltage'],
+        abuserAbilities: ['quark-drive'], abuserMoves: ['rising-voltage', 'thunderbolt', 'thunder', 'thunderclap'],
         guide: {
             en: ['Set the terrain (Pawmot, Miraidon, Tapu Koko-style leads).', 'Quark Drive Paradox attackers get a free offensive or Speed boost.', 'Grounded teammates can\'t be put to sleep — great vs. Spore/Yawn.', 'Boosted Electric STAB pressures Water and Flying cores.'],
             pt: ['Ative o terreno (Pawmot, Miraidon e líderes do estilo Tapu Koko).', 'Atacantes Paradox com Quark Drive ganham bônus ofensivo ou de Velocidade grátis.', 'Companheiros no chão não podem dormir — ótimo contra Spore/Yawn.', 'O STAB Elétrico potencializado pressiona cores de Água e Voador.'],
@@ -98,7 +98,7 @@ export const CORES = [
         id: 'grassyterrain', name: 'Grassy Terrain', emoji: '🌿', accent: '#22c55e',
         summary: { en: 'Grassy Surge heals and boosts Grass moves; activates Grassy Glide.', pt: 'Grassy Surge cura e potencializa golpes Planta; ativa Grassy Glide.' },
         setterAbilities: ['grassy-surge'], setterMoves: ['grassy-terrain'],
-        abuserAbilities: ['grass-pelt'], abuserMoves: ['grassy-glide'],
+        abuserAbilities: ['grass-pelt'], abuserMoves: ['grassy-glide', 'wood-hammer', 'leaf-storm', 'power-whip'],
         guide: {
             en: [
                 'Lead a Grassy Surge setter (Rillaboom) to automatically set Grassy Terrain.',
@@ -191,7 +191,7 @@ export function buildCores({ smogonById = {}, usageById = {}, popular = [] } = {
         return {
             ...core,
             setters: setters.sort(bySort).slice(0, 14),
-            abusers: abusers.sort(bySort).slice(0, 20),
+            abusers: abusers.sort(bySort).slice(0, 28),
             memberCount: setters.length + abusers.length,
         };
     }).filter((c) => c.setters.length > 0 || c.abusers.length > 0);

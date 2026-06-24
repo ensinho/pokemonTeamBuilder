@@ -64,7 +64,7 @@
 /* Quick access: a single compact grid of icon tiles */
 .hd-tiles {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 0.5rem;
 }
 .hd-tile {
@@ -75,19 +75,21 @@
     gap: 0.3rem;
     padding: 0.6rem 0.35rem;
     border-radius: 0.75rem;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    color: var(--color-fg);
+    border: 1px dashed var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
     cursor: pointer;
     transition: border-color 0.12s ease, color 0.12s ease, transform 0.1s ease, background 0.12s ease;
 }
 .hd-tile:hover {
+    border-style: solid;
     border-color: var(--color-primary);
     color: var(--color-primary);
     background: var(--color-primary-soft);
     transform: translateY(-2px);
 }
-.hd-tile__icon { display: inline-flex; color: var(--color-primary); }
+.hd-tile__icon { display: inline-flex; color: var(--color-muted); transition: color 0.12s ease; }
+.hd-tile:hover .hd-tile__icon { color: var(--color-primary); }
 .hd-tile__icon svg { width: 1.25rem; height: 1.25rem; }
 .hd-tile__label {
     font-size: 0.6875rem;
@@ -191,27 +193,51 @@
 }
 
 .hd-core-tile {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.75rem;
     padding: 0.85rem 1rem;
     border-radius: 0.875rem;
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
+    background: linear-gradient(135deg,
+                var(--color-surface-raised),
+                color-mix(in srgb, var(--color-primary) 9%, var(--color-bg)));
     color: var(--color-fg);
     text-align: left;
     cursor: pointer;
+    box-shadow: var(--elevation-1);
+    overflow: hidden;
     transition: border-color var(--duration-fast) var(--ease-smooth),
                 background-color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth),
                 transform var(--duration-fast) var(--ease-smooth);
 }
 
+/* Accent rail down the leading edge — marks these as the primary actions */
+.hd-core-tile::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: var(--color-primary);
+    opacity: 0.55;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+                width var(--duration-fast) var(--ease-smooth);
+}
+
 .hd-core-tile:hover {
     border-color: var(--color-primary);
-    background: var(--color-primary-soft);
+    background: linear-gradient(135deg,
+                var(--color-surface-raised),
+                var(--color-primary-soft));
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px -8px var(--color-primary-soft);
+    box-shadow: 0 10px 24px -10px var(--color-primary-soft), var(--elevation-2);
+}
+
+.hd-core-tile:hover::before {
+    opacity: 1;
+    width: 4px;
 }
 
 .hd-core-tile__icon-wrap {
@@ -598,37 +624,83 @@
         gap: 0.4rem;
     }
     
+    /* Mobile: fewer, bigger popular mons — 6 in a roomy 3-col grid so the
+       names fit and the row reads clean instead of cramped. */
     .hd-meta-mons-grid {
-        grid-template-columns: repeat(5, 1fr);
-        gap: 0.35rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.45rem;
+    }
+    .hd-meta-mons-grid .hd-meta-mon-btn:nth-child(n + 7),
+    .hd-meta-mons-grid .hd-skel-mon-btn:nth-child(n + 7) {
+        display: none;
     }
     .hd-meta-mon-btn {
-        padding: 0.35rem 0.15rem;
+        padding: 0.5rem 0.25rem;
     }
     .hd-meta-mon-icon-wrap {
-        width: 2.3rem;
-        height: 2.3rem;
+        width: 2.6rem;
+        height: 2.6rem;
     }
     .hd-meta-mon-icon-wrap img {
-        width: 2.1rem;
-        height: 2.1rem;
+        width: 2.4rem;
+        height: 2.4rem;
     }
-    
+    .hd-meta-mon-name {
+        font-size: 0.6875rem;
+    }
+
     .hd-meta-teams-list {
         grid-template-columns: 1fr;
+        gap: 0.6rem;
     }
 
+    /* Mobile: stack the team meta above a full-width roster so every one of
+       the six sprites is visible and evenly spread — never clipped. */
     .hd-meta-team-row {
-        padding: 0.55rem 0.75rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+        padding: 0.7rem 0.8rem;
     }
-
+    .hd-meta-team-roster {
+        width: 100%;
+        gap: 0.3rem;
+        justify-content: space-between;
+    }
     .hd-meta-team-roster-sprite-wrap {
-        width: 1.85rem;
-        height: 1.85rem;
+        flex: 1 1 0;
+        width: auto;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        max-width: 3rem;
+        border-radius: 0.6rem;
     }
     .hd-meta-team-roster-sprite-wrap img {
-        width: 1.7rem;
-        height: 1.7rem;
+        width: 78%;
+        height: 78%;
+    }
+
+    /* Keep the loading skeleton matching the stacked layout (no shift) */
+    .hd-skel-team-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+    }
+    .hd-skel-team-info {
+        width: 100%;
+    }
+    .hd-skel-team-roster {
+        width: 100%;
+        gap: 0.3rem;
+        justify-content: space-between;
+    }
+    .hd-skel-roster-icon {
+        flex: 1 1 0;
+        width: auto;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        max-width: 3rem;
+        border-radius: 0.6rem;
     }
 }
 

@@ -396,6 +396,7 @@ export const TRANSLATIONS = {
         },
         favorites: {
             title: 'Favorite Pokémon',
+            subtitle: 'Review and manage your starred Pokémon.',
             tabFavorites: 'Favorite Pokémon',
             groupByLabel: 'Group by',
             groupNone: 'No Grouping',
@@ -1230,6 +1231,7 @@ export const TRANSLATIONS = {
         },
         favorites: {
             title: 'Pokémon Favoritos',
+            subtitle: 'Reveja e gerencie seus Pokémon marcados.',
             tabFavorites: 'Pokémon Favoritos',
             groupByLabel: 'Agrupar por',
             groupNone: 'Sem Agrupamento',

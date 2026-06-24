@@ -2522,7 +2522,7 @@
 
     .home-sidebar .home-forum-chat-messages {
         flex: 1 1 0% !important;
-        max-height: 48vh !important;
+        max-height: 52vh !important;
     }
 }
 

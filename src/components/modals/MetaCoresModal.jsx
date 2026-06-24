@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Atom, ListChecks, Zap, Trophy, ChevronLeft, Check, Plus } from 'lucide-react';
+import { Atom, ListChecks, Zap, Trophy, ChevronLeft, Check, Plus, Users } from 'lucide-react';
 
 import { coreIconFor } from '../coreIcons';
 import { useSmogonData } from '../../hooks/useSmogonData';
@@ -93,7 +93,28 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
         return map;
     }, [selected]);
 
+    // The most-used VGC lineup for this core: lead with the top setter, then fill
+    // by tournament usage from setters + payoffs (6 unique mons).
+    const suggestedTeam = useMemo(() => {
+        if (!selected) return [];
+        const out = [];
+        const seen = new Set();
+        const push = (m) => { if (m && !seen.has(m.id)) { seen.add(m.id); out.push(m); } };
+        push(selected.setters[0]);
+        for (const m of [...selected.setters, ...selected.abusers].sort((a, b) => b.usage - a.usage)) {
+            if (out.length >= 6) break;
+            push(m);
+        }
+        return out.slice(0, 6);
+    }, [selected]);
+
     const openCore = (id) => { setCoreId(id); setPicked(new Set()); };
+
+    const addSuggested = () => {
+        const toAdd = suggestedTeam.filter((m) => !teamIds.has(m.id)).slice(0, remainingSlots);
+        for (const m of toAdd) onAddToTeam?.(indexById.get(m.id) || { id: m.id, name: m.name, types: [] });
+        onClose();
+    };
 
     const toggle = (id) => setPicked((prev) => {
         const next = new Set(prev);
@@ -193,22 +214,67 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                         </>
                     ) : (
                         <>
-                            <p className="text-sm text-muted">{pt ? selected.summary.pt : selected.summary.en}</p>
+                            {/* Suggested team — the most-used VGC lineup for this core, shown as
+                                small roster icons (mirrors the home VGC teams strip). */}
+                            {suggestedTeam.length > 0 && (
+                                <div className="rounded-xl border border-border bg-surface-raised p-3">
+                                    <div className="mb-2.5 flex items-center justify-between gap-2">
+                                        <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted">
+                                            <Users className="h-4 w-4" style={{ color: selected.accent }} />
+                                            {pt ? 'Time sugerido' : 'Suggested team'}
+                                        </h3>
+                                        <button
+                                            type="button"
+                                            onClick={addSuggested}
+                                            disabled={remainingSlots === 0 || suggestedTeam.every((m) => teamIds.has(m.id))}
+                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                                            style={{ backgroundColor: selected.accent }}
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                            {pt ? 'Adicionar time' : 'Add team'}
+                                        </button>
+                                    </div>
+                                    <div className="flex flex-wrap gap-2">
+                                        {suggestedTeam.map((m) => {
+                                            const onTeam = teamIds.has(m.id);
+                                            return (
+                                                <div key={m.id} className="flex w-[3.25rem] flex-col items-center gap-0.5" title={pretty(m.name)}>
+                                                    <div
+                                                        className={`relative flex h-11 w-11 items-center justify-center rounded-full border bg-surface ${onTeam ? 'border-success' : 'border-border'}`}
+                                                    >
+                                                        <img
+                                                            src={getPokemonFrontSpriteUrl(m.id)}
+                                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                            alt=""
+                                                            className="h-9 w-9 image-pixelated"
+                                                            loading="lazy"
+                                                        />
+                                                        {onTeam && (
+                                                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-success text-[8px] font-bold text-white">✓</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="w-full truncate text-center text-[9px] font-semibold capitalize text-muted">{pretty(m.name)}</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
 
-                            {/* How to build */}
-                            <div className="mt-4 rounded-xl border border-border bg-surface-raised p-4">
-                                <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-fg">
-                                    <ListChecks className="h-4 w-4" style={{ color: selected.accent }} />
+                            {/* How to build — compact chip steps */}
+                            <div className="mt-3">
+                                <h3 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">
+                                    <ListChecks className="h-3.5 w-3.5" style={{ color: selected.accent }} />
                                     {pt ? 'Como montar' : 'How to build it'}
                                 </h3>
-                                <ol className="space-y-1.5">
+                                <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                                     {(pt ? selected.guide.pt : selected.guide.en).map((step, i) => (
-                                        <li key={i} className="flex gap-2 text-sm text-fg">
-                                            <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white" style={{ backgroundColor: selected.accent }}>{i + 1}</span>
+                                        <span key={i} className="flex items-start gap-1.5 rounded-md bg-surface-raised px-2.5 py-1.5 text-[11px] font-medium leading-snug text-fg">
+                                            <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: selected.accent }}>{i + 1}</span>
                                             <span>{step}</span>
-                                        </li>
+                                        </span>
                                     ))}
-                                </ol>
+                                </div>
                             </div>
 
                             {remainingSlots === 0 && (

@@ -751,6 +751,79 @@
     gap: 0.3rem;
 }
 
+/* Compact search-and-filter bar: search always visible, the rest of the
+   filters collapse behind the toggle to keep the picker close to the top. */
+.team-builder-mobile__filter-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+.team-builder-mobile__search {
+    position: relative;
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
+}
+
+.team-builder-mobile__search-icon {
+    position: absolute;
+    left: 0.7rem;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+    pointer-events: none;
+}
+
+.team-builder-mobile__search-field {
+    padding-left: 2.15rem;
+}
+
+.team-builder-mobile__filter-toggle {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    font-weight: 600;
+}
+
+.team-builder-mobile__filter-toggle.has-active,
+.team-builder-mobile__filter-toggle.is-open {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.team-builder-mobile__filter-chevron {
+    transition: transform var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-mobile__filter-chevron.is-open {
+    transform: rotate(180deg);
+}
+
+.team-builder-mobile__filter-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
 .team-builder-mobile__filters {
     display: grid;
     gap: 0.55rem;

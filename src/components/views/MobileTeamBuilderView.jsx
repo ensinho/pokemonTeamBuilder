@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
-import { Dices, Trophy, ShieldCheck, Sparkles } from 'lucide-react';
+import { Dices, Trophy, ShieldCheck, Sparkles, ChevronDown, SlidersHorizontal, Search } from 'lucide-react';
 import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
 import { Sprite } from '../Sprite';
@@ -367,6 +367,7 @@ export const MobileTeamBuilderView = ({
     const { t, language } = useTranslation();
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
+    const [filtersExpanded, setFiltersExpanded] = React.useState(false);
     const { byId: smogonById } = useSmogonData();
     const { byId: usageById } = useCompetitiveUsage();
     const teamCores = React.useMemo(
@@ -421,6 +422,15 @@ export const MobileTeamBuilderView = ({
     }, [games, selectedGame, isGameFilterActive]);
     const gameLabel = selectedGameObj ? selectedGameObj.label : selectedGame;
 
+    // How many of the collapsible filters are currently narrowing the list —
+    // surfaced as a badge on the toggle so users know filters are active even
+    // while the panel is closed.
+    const activeFilterCount =
+        (selectedGeneration && selectedGeneration !== 'all' ? 1 : 0) +
+        (isGameFilterActive ? 1 : 0) +
+        (selectedTypes.size > 0 ? 1 : 0) +
+        (showOnlyFavorites ? 1 : 0);
+
     const regionalPokemons = React.useMemo(() => {
         if (!isGameFilterActive) return [];
         return displayedPokemons.filter((p) => gamePokemonIds.has(p.id));
@@ -432,9 +442,9 @@ export const MobileTeamBuilderView = ({
     }, [displayedPokemons, isGameFilterActive, gamePokemonIds]);
 
     return (
-        <div className="team-builder-mobile space-y-4">
+        <div className="team-builder-mobile space-y-3">
             <div className="team-builder-mobile__sticky">
-                <section className="team-builder-panel team-builder-mobile__composer p-4">
+                <section className="team-builder-panel team-builder-mobile__composer p-3.5">
                     <div className="team-builder-panel__header flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <div>
@@ -458,7 +468,7 @@ export const MobileTeamBuilderView = ({
                         <span className="team-builder-panel__meta">{currentTeam.length}/6</span>
                     </div>
 
-                    <div className="team-builder-mobile__composer-row mt-4">
+                    <div className="team-builder-mobile__composer-row mt-3">
                         <input
                             type="text"
                             value={teamName}
@@ -505,7 +515,7 @@ export const MobileTeamBuilderView = ({
                         </button>
                     </div>
 
-                    <div className="team-builder-mobile__slots mt-3">
+                    <div className="team-builder-mobile__slots mt-2.5">
                         {Array.from({ length: 6 }).map((_, index) => (
                             <MobileTeamSlot
                                 key={currentTeam[index]?.instanceId ?? `mobile-slot-${index}`}
@@ -522,7 +532,7 @@ export const MobileTeamBuilderView = ({
                         type="button"
                         onClick={() => handleRandomizeTeam?.(displayedPokemons)}
                         disabled={isRandomizing || displayedPokemons.length === 0}
-                        className="team-builder-button team-builder-button--secondary team-builder-randomize mt-3 w-full"
+                        className="team-builder-button team-builder-button--secondary team-builder-randomize mt-2.5 w-full"
                         title={t('builder.randomizeTeam')}
                     >
                         <Dices className="h-4 w-4" />
@@ -537,77 +547,95 @@ export const MobileTeamBuilderView = ({
                 </section>
             </div>
 
-            <section className="team-builder-panel p-4">
-                <div className="team-builder-mobile__filters">
-                    <label className="team-builder-control team-builder-mobile__filter-control team-builder-mobile__filter-control--full">
-                        <span className="team-builder-control__label">{t('common.search')}</span>
+            <section className="team-builder-panel p-3.5">
+                <div className="team-builder-mobile__filter-bar">
+                    <div className="team-builder-mobile__search">
+                        <Search className="team-builder-mobile__search-icon" aria-hidden="true" />
                         <input
                             type="text"
                             placeholder={t('pokedex.searchPlaceholder')}
                             value={searchInput}
                             onChange={(event) => setSearchInput(event.target.value)}
-                            className="team-builder-field"
+                            className="team-builder-field team-builder-mobile__search-field"
+                            aria-label={t('common.search')}
                         />
-                    </label>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setFiltersExpanded((value) => !value)}
+                        className={`team-builder-mobile__filter-toggle ${filtersExpanded ? 'is-open' : ''} ${activeFilterCount > 0 ? 'has-active' : ''}`}
+                        aria-expanded={filtersExpanded}
+                        aria-label={language === 'pt' ? 'Filtros' : 'Filters'}
+                    >
+                        <SlidersHorizontal className="h-4 w-4 shrink-0" />
+                        {activeFilterCount > 0 && (
+                            <span className="team-builder-mobile__filter-count">{activeFilterCount}</span>
+                        )}
+                        <ChevronDown className={`team-builder-mobile__filter-chevron h-4 w-4 shrink-0 ${filtersExpanded ? 'is-open' : ''}`} />
+                    </button>
+                </div>
 
-                    <label className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">{t('pokedex.genFilterLabel')}</span>
-                        <select
-                            value={selectedGeneration}
-                            onChange={(event) => setSelectedGeneration(event.target.value)}
-                            className="team-builder-field team-builder-select"
-                        >
-                            <option value="all">{t('pokedex.allGens')}</option>
-                            {generations.map((generation) => (
-                                <option key={generation} value={generation} className="capitalize">
-                                    {generation.replace('-', ' ')}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-
-                    {games.length > 0 && setSelectedGame && (
+                {filtersExpanded && (
+                    <div className="team-builder-mobile__filters mt-3">
                         <label className="team-builder-control team-builder-mobile__filter-control">
-                            <span className="team-builder-control__label">{t('builder.gameFilterLabel')}</span>
-                            <GameFilterChip
-                                games={games}
-                                selectedGame={selectedGame}
-                                onOpen={() => setIsGamePickerOpen(true)}
-                                className="w-full"
-                            />
-                        </label>
-                    )}
-
-                    <div className="team-builder-control team-builder-mobile__filter-control">
-                        <span className="team-builder-control__label">{t('pokedex.typesFilterLabel')}</span>
-                        <div className="team-builder-mobile__filter-group">
+                            <span className="team-builder-control__label">{t('pokedex.genFilterLabel')}</span>
                             <select
-                                value={selectedTypeValue}
-                                onChange={(event) => handleTypeSelectChange(event.target.value)}
+                                value={selectedGeneration}
+                                onChange={(event) => setSelectedGeneration(event.target.value)}
                                 className="team-builder-field team-builder-select"
                             >
-                                <option value="all">{t('pokedex.allTypes')}</option>
-                                {Object.keys(typeIcons).map((type) => (
-                                    <option key={type} value={type} className="capitalize">
-                                        {t(`types.${type}`)}
+                                <option value="all">{t('pokedex.allGens')}</option>
+                                {generations.map((generation) => (
+                                    <option key={generation} value={generation} className="capitalize">
+                                        {generation.replace('-', ' ')}
                                     </option>
                                 ))}
                             </select>
-                            <button
-                                type="button"
-                                onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                                className={`team-builder-toggle team-builder-mobile__toggle-favorite ${showOnlyFavorites ? 'is-active' : ''}`}
-                                aria-pressed={showOnlyFavorites}
-                                title={t('pokedex.favoritesOnly')}
-                            >
-                                <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
-                            </button>
+                        </label>
+
+                        {games.length > 0 && setSelectedGame && (
+                            <label className="team-builder-control team-builder-mobile__filter-control">
+                                <span className="team-builder-control__label">{t('builder.gameFilterLabel')}</span>
+                                <GameFilterChip
+                                    games={games}
+                                    selectedGame={selectedGame}
+                                    onOpen={() => setIsGamePickerOpen(true)}
+                                    className="w-full"
+                                />
+                            </label>
+                        )}
+
+                        <div className="team-builder-control team-builder-mobile__filter-control team-builder-mobile__filter-control--full">
+                            <span className="team-builder-control__label">{t('pokedex.typesFilterLabel')}</span>
+                            <div className="team-builder-mobile__filter-group">
+                                <select
+                                    value={selectedTypeValue}
+                                    onChange={(event) => handleTypeSelectChange(event.target.value)}
+                                    className="team-builder-field team-builder-select"
+                                >
+                                    <option value="all">{t('pokedex.allTypes')}</option>
+                                    {Object.keys(typeIcons).map((type) => (
+                                        <option key={type} value={type} className="capitalize">
+                                            {t(`types.${type}`)}
+                                        </option>
+                                    ))}
+                                </select>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                                    className={`team-builder-toggle team-builder-mobile__toggle-favorite ${showOnlyFavorites ? 'is-active' : ''}`}
+                                    aria-pressed={showOnlyFavorites}
+                                    title={t('pokedex.favoritesOnly')}
+                                >
+                                    <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
             </section>
 
-            <section className="team-builder-panel p-4">
+            <section className="team-builder-panel p-3.5">
                 <div className="team-builder-picker-cover-row mb-3">
                     <GameCoverBanner
                         games={games}
@@ -625,7 +653,7 @@ export const MobileTeamBuilderView = ({
                 <button
                     type="button"
                     onClick={() => setIsCoresOpen(true)}
-                    className="mt-3 flex w-full items-center gap-3 rounded-xl border border-border bg-bg p-3 text-left active:border-primary"
+                    className="mt-2.5 flex w-full items-center gap-3 rounded-xl border border-border bg-bg p-2.5 text-left active:border-primary"
                 >
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15">
                         <Atom className="h-4 w-4 text-primary" />
@@ -754,7 +782,7 @@ export const MobileTeamBuilderView = ({
             </section>
 
             {currentTeam.length > 0 && (
-                <section className="team-builder-panel p-4 animate-fade-in" aria-label="Team analysis">
+                <section className="team-builder-panel p-3.5 animate-fade-in" aria-label="Team analysis">
                     <div className="flex items-center justify-between gap-2 mb-3">
                         <div>
                             <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Análise' : 'Analysis'}</p>
@@ -801,7 +829,7 @@ export const MobileTeamBuilderView = ({
                 </section>
             )}
 
-            <section className="team-builder-panel p-5">
+            <section className="team-builder-panel p-4">
                 <div className="flex items-center justify-between gap-3">
                     <div>
                         <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Trabalho salvo' : 'Saved work'}</p>
@@ -818,7 +846,7 @@ export const MobileTeamBuilderView = ({
                     </button>
                 </div>
 
-                <div className="mt-4 space-y-3">
+                <div className="mt-3 space-y-2.5">
                     {recentTeams.length > 0 ? recentTeams.map((team) => (
                         <div
                             key={team.id}
@@ -852,7 +880,7 @@ export const MobileTeamBuilderView = ({
                                 </button>
                             </div>
 
-                            <div className="mt-4 flex gap-2">
+                            <div className="mt-3 flex gap-2">
                                 {(() => {
                                     const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
                                     return (

@@ -3,7 +3,7 @@ import '../styles/home-dashboard.css';
 import { useTournamentData } from '../hooks/useTournamentData';
 import { useTranslation } from '../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
-import { Flame } from 'lucide-react';
+import { Flame, Puzzle } from 'lucide-react';
 import {
     SwordsIcon, SavedTeamsIcon, TrophyIcon, CalculatorIcon, GaugeIcon,
     PokeballIcon, ScrollIcon, SparklesIcon, BagIcon,
@@ -28,18 +28,18 @@ const CORE_SHORTCUTS = [
             en: 'Browse the complete Pokedex and base stats.'
         }
     },
-    { 
-        key: 'savedTeams', 
-        path: '/favorites?tab=teams', 
-        icon: <SavedTeamsIcon className="w-5 h-5" />,
+    {
+        key: 'pokepuzzle',
+        path: '/pokepuzzle',
+        icon: <Puzzle className="w-5 h-5" />,
         desc: {
-            pt: 'Gerencie seus times salvos e favoritos.',
-            en: 'Manage your saved and favorite rosters.'
+            pt: 'Adivinhe o Pokémon do dia e teste seus conhecimentos.',
+            en: 'Guess the daily Pokémon and test your knowledge.'
         }
     },
-    { 
-        key: 'tournaments', 
-        path: '/tournaments', 
+    {
+        key: 'tournaments',
+        path: '/tournaments',
         icon: <TrophyIcon className="w-5 h-5" />,
         desc: {
             pt: 'Explore times e o meta da VGC de torneios oficiais.',
@@ -49,6 +49,7 @@ const CORE_SHORTCUTS = [
 ];
 
 const UTILITY_SHORTCUTS = [
+    { key: 'savedTeams', path: '/favorites?tab=teams', icon: <SavedTeamsIcon className="w-5 h-5" /> },
     { key: 'damageCalc', path: '/damage-calculator', icon: <CalculatorIcon className="w-5 h-5" /> },
     { key: 'speedTiers', path: '/speed-tiers', icon: <GaugeIcon className="w-5 h-5" /> },
     { key: 'moves', path: '/moves', icon: <ScrollIcon className="w-5 h-5" /> },
@@ -173,7 +174,9 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                         {/* Popular Mons Icon Row - Grid style, no scroll */}
                         <div>
                             <p className="text-[10px] text-muted font-bold uppercase tracking-wider mb-2.5">
-                                {language === 'pt' ? 'Pokémon Populares (Passe o mouse para filtrar)' : 'Popular Pokémon (Hover to filter)'}
+                                {language === 'pt' ? 'Pokémon Populares ' : 'Popular Pokémon '}
+                                <span className="hidden sm:inline">{language === 'pt' ? '(Passe o mouse para filtrar)' : '(Hover to filter)'}</span>
+                                <span className="sm:hidden">{language === 'pt' ? '(Toque para filtrar)' : '(Tap to filter)'}</span>
                             </p>
                             <div className="hd-meta-mons-grid">
                                 {topPopular.slice(0, 10).map((mon) => (

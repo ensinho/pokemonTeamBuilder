@@ -1,9 +1,11 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import '../../styles/team-builder-view.css';
+import '../../styles/all-teams-view.css';
 import { typeColors, typeIcons } from '../../constants/types';
 import { GENERATION_RANGES } from '../../constants/pokemon';
 import { PokemonCard } from '../PokemonCard';
 import { ClearIcon, StarIcon } from '../icons';
+import { ExternalLink } from 'lucide-react';
 import { EmptyState } from '../EmptyState';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
@@ -64,6 +66,12 @@ export function FavoritePokemonsView({
         return activeList.filter((pokemon) => favoritePokemons.has(pokemon.id));
     }, [activeList, favoritePokemons]);
 
+    const favoriteTypesCount = useMemo(() => {
+        const set = new Set();
+        favoritePokemonsList.forEach((pokemon) => (pokemon.types || []).forEach((type) => set.add(type)));
+        return set.size;
+    }, [favoritePokemonsList]);
+
     const filteredFavorites = useMemo(() => {
         let filtered = favoritePokemonsList;
 
@@ -120,76 +128,88 @@ export function FavoritePokemonsView({
     }, [filteredFavorites, groupBy]);
 
     return (
-        <main className="team-builder grid grid-cols-1">
-            <section className="team-builder-panel team-builder-panel--picker p-4">
-                <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
-                    <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
-                        <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('favorites.title')}</h2>
-                        <span className="team-builder-panel__meta team-builder-panel__meta--compact">{filteredFavorites.length}</span>
+        <main className="all-teams-view">
+            <section className="team-builder-panel all-teams-view__panel p-5 md:p-6">
+                <div className="all-teams-view__header">
+                    <div>
+                        <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Coleção' : 'Collection'}</p>
+                        <div className="all-teams-view__heading-row">
+                            <h2 className="team-builder-panel__title all-teams-view__title">{t('favorites.title')}</h2>
+                            <span className="team-builder-panel__meta">{filteredFavorites.length}</span>
+                        </div>
+                        <p className="team-builder-panel__copy all-teams-view__copy">
+                            {t('favorites.subtitle')}
+                        </p>
+                    </div>
+
+                    <div className="all-teams-view__summary" aria-label={language === 'pt' ? 'Resumo dos favoritos' : 'Favorites summary'}>
+                        <span className="team-builder-picker-summary">{`${favoritePokemonsList.length} total`}</span>
+                        <span className="team-builder-picker-summary">{language === 'pt' ? `${favoriteTypesCount} tipos` : `${favoriteTypesCount} types`}</span>
                     </div>
                 </div>
 
-                <div className="team-builder-unified-toolbar mt-3 flex flex-wrap gap-2 items-center">
-                    <div className="team-builder-search-wrap flex-1 min-w-[200px]">
-                        <span className="team-builder-search-icon" aria-hidden="true">
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-                            </svg>
-                        </span>
+                <div className="all-teams-view__toolbar">
+                    <label className="team-builder-control all-teams-view__search-control" htmlFor="favorites-search">
+                        <span className="team-builder-control__label">{language === 'pt' ? 'Pesquisar favoritos' : 'Search favorites'}</span>
                         <input
+                            id="favorites-search"
                             type="text"
                             placeholder={t('favorites.searchPlaceholder')}
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
-                            className="team-builder-field team-builder-field--compact team-builder-search-input"
+                            className="team-builder-field"
                         />
-                        {searchInput && (
+                    </label>
+
+                    <div className="all-teams-view__toolbar-actions">
+                        {searchInput ? (
                             <button
                                 type="button"
                                 onClick={() => setSearchInput('')}
-                                className="team-builder-search-clear"
-                                aria-label={t('common.clear')}
+                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
                             >
-                                <ClearIcon className="w-4 h-4" />
+                                {language === 'pt' ? 'Limpar busca' : 'Clear search'}
                             </button>
-                        )}
-                    </div>
+                        ) : null}
 
-                    <div className="team-builder-select-wrap shrink-0">
-                        <select
-                            value={selectedType}
-                            onChange={(e) => setSelectedType(e.target.value)}
-                            className="team-builder-field team-builder-field--compact team-builder-select appearance-none capitalize"
-                            aria-label={t('pokedex.typesFilterLabel')}
-                        >
-                            <option value="all">{t('favorites.typeFilterPlaceholder')}</option>
-                            {Object.keys(typeColors).map((type) => (
-                                <option key={type} value={type}>{t(`types.${type}`)}</option>
-                            ))}
-                        </select>
-                    </div>
+                        <div className="team-builder-select-wrap shrink-0">
+                            <select
+                                value={selectedType}
+                                onChange={(e) => setSelectedType(e.target.value)}
+                                className="team-builder-field team-builder-field--compact team-builder-select appearance-none capitalize"
+                                aria-label={t('pokedex.typesFilterLabel')}
+                            >
+                                <option value="all">{t('favorites.typeFilterPlaceholder')}</option>
+                                {Object.keys(typeColors).map((type) => (
+                                    <option key={type} value={type}>{t(`types.${type}`)}</option>
+                                ))}
+                            </select>
+                        </div>
 
-                    <div className="team-builder-select-wrap shrink-0">
-                        <select
-                            value={groupBy}
-                            onChange={(e) => setGroupBy(e.target.value)}
-                            className="team-builder-field team-builder-field--compact team-builder-select appearance-none"
-                            aria-label={t('favorites.groupByLabel')}
-                        >
-                            <option value="none">{t('favorites.groupNone')}</option>
-                            <option value="generation">{t('favorites.groupGeneration')}</option>
-                            <option value="type">{t('favorites.groupType')}</option>
-                        </select>
+                        <div className="team-builder-select-wrap shrink-0">
+                            <select
+                                value={groupBy}
+                                onChange={(e) => setGroupBy(e.target.value)}
+                                className="team-builder-field team-builder-field--compact team-builder-select appearance-none"
+                                aria-label={t('favorites.groupByLabel')}
+                            >
+                                <option value="none">{t('favorites.groupNone')}</option>
+                                <option value="generation">{t('favorites.groupGeneration')}</option>
+                                <option value="type">{t('favorites.groupType')}</option>
+                            </select>
+                        </div>
+
+                        <span className="team-builder-picker-summary">{language === 'pt' ? `${filteredFavorites.length} visíveis` : `${filteredFavorites.length} visible`}</span>
                     </div>
                 </div>
 
-                <div className="team-builder-results mt-4">
+                <div className="all-teams-view__results mt-4">
                     {activeLoading ? (
-                        <div className="team-builder-spinner-wrap h-full">
+                        <div className="team-builder-spinner-wrap py-16">
                             <div className="team-builder-spinner" aria-hidden="true"></div>
                         </div>
                     ) : (
-                        <div className="team-builder-results__scroll custom-scrollbar">
+                        <div>
                             {groupBy === 'none' ? (
                                 <div className="team-builder-results__grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8 gap-4 p-1 py-4">
                                     {filteredFavorites.map((pokemon) => (
@@ -285,7 +305,8 @@ export function FavoritePokemonsView({
                                         spriteSrc={favoritePokemons.size === 0 ? getPokemonArtworkSpriteUrl(385) : undefined}
                                         action={{
                                             label: t('nav.pokedex'),
-                                            onClick: () => navigate('/pokedex')
+                                            onClick: () => navigate('/pokedex'),
+                                            icon: <ExternalLink className="w-4 h-4" />
                                         }}
                                     />
                                 </div>

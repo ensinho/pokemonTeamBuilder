@@ -8,7 +8,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
  * Props:
  *   title     — required short headline
  *   message   — secondary copy
- *   action    — optional { label, onClick } primary CTA
+ *   action    — optional { label, onClick, icon } primary CTA (icon renders after the label)
  *   spriteSrc — Pokémon sprite to use as illustration; defaults to Pokéball
  *   compact   — smaller variant for inline empty grids
  */
@@ -37,6 +37,7 @@ export function EmptyState({ title, message, action, spriteSrc, compact = false 
                     className="empty-state__action mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg font-semibold text-white bg-primary hover:opacity-90 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                 >
                     {action.label}
+                    {action.icon}
                 </button>
             )}
         </div>

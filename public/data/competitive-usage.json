@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T20:23:07.197Z",
+  "generatedAt": "2026-06-24T20:50:01.048Z",
   "source": "pokepaste sets from tournament teams",
   "species": 58,
   "byId": {
@@ -873,15 +873,15 @@
           "count": 2
         },
         {
-          "name": "Taunt",
-          "count": 1
-        },
-        {
           "name": "Fake Out",
           "count": 1
         },
         {
           "name": "Quash",
+          "count": 1
+        },
+        {
+          "name": "Taunt",
           "count": 1
         }
       ]
@@ -1349,7 +1349,7 @@
       "tera": [],
       "moves": [
         {
-          "name": "Iron Head",
+          "name": "Protect",
           "count": 8
         },
         {
@@ -1357,7 +1357,7 @@
           "count": 8
         },
         {
-          "name": "Protect",
+          "name": "Iron Head",
           "count": 8
         },
         {
@@ -2418,13 +2418,13 @@
           "count": 1
         },
         {
-          "name": "Focus Sash",
-          "slug": "focus-sash",
+          "name": "Colbur Berry",
+          "slug": "colbur-berry",
           "count": 1
         },
         {
-          "name": "Colbur Berry",
-          "slug": "colbur-berry",
+          "name": "Focus Sash",
+          "slug": "focus-sash",
           "count": 1
         }
       ],
