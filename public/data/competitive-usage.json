@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T18:44:05.170Z",
+  "generatedAt": "2026-06-24T18:58:40.298Z",
   "source": "pokepaste sets from tournament teams",
   "species": 58,
   "byId": {
@@ -1919,11 +1919,11 @@
       "tera": [],
       "moves": [
         {
-          "name": "Close Combat",
+          "name": "Rock Slide",
           "count": 4
         },
         {
-          "name": "Rock Slide",
+          "name": "Close Combat",
           "count": 4
         },
         {

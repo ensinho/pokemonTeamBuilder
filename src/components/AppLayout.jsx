@@ -22,6 +22,7 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useEdgeSwipe } from '../hooks/useEdgeSwipe';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/useLanguageStore';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 import {
     AuthModal,
@@ -30,7 +31,8 @@ import {
     PatchNotesModal,
     ShareSnippetModal,
     SyncPromptModal,
-    TeamPokemonEditorModal
+    TeamPokemonEditorModal,
+    VersionUpdateModal
 } from './modals';
 
 import {
@@ -220,6 +222,83 @@ export default function AppLayout() {
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
+    const [showVersionModal, setShowVersionModal] = useState(false);
+
+    // PWA SW registration & update prompt
+    const {
+        needRefresh: [needRefresh, setNeedRefresh],
+        updateServiceWorker,
+    } = useRegisterSW();
+
+    useEffect(() => {
+        if (needRefresh) {
+            setShowVersionModal(true);
+        }
+    }, [needRefresh]);
+
+    const handleVersionRefresh = useCallback(() => {
+        if (needRefresh) {
+            updateServiceWorker(true);
+        } else {
+            window.location.reload();
+        }
+        setShowVersionModal(false);
+    }, [needRefresh, updateServiceWorker]);
+
+    // Periodic and focus check for new index.html / hashed assets
+    useEffect(() => {
+        let isCancelled = false;
+
+        const checkNewVersion = async () => {
+            try {
+                const response = await fetch(`${window.location.origin}${import.meta.env.BASE_URL || '/'}index.html?t=${Date.now()}`, { cache: 'no-store' });
+                if (!response.ok) return;
+                const html = await response.text();
+                
+                // Find all script tags in the fetched HTML
+                const scriptRegex = /<script\b[^>]*src="([^"]+)"/g;
+                let match;
+                const fetchedScripts = [];
+                while ((match = scriptRegex.exec(html)) !== null) {
+                    fetchedScripts.push(match[1]);
+                }
+                
+                // Compare with scripts in current document
+                const currentScripts = Array.from(document.querySelectorAll('script')).map(s => s.getAttribute('src')).filter(Boolean);
+                
+                // Check if any fetched asset is new
+                const isNewVersion = fetchedScripts.some(src => {
+                    if (src.includes('/assets/') && src.endsWith('.js')) {
+                        return !currentScripts.includes(src);
+                    }
+                    return false;
+                });
+                
+                if (isNewVersion && !isCancelled) {
+                    setShowVersionModal(true);
+                }
+            } catch (e) {
+                console.error('Error checking version:', e);
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                checkNewVersion();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        const intervalId = setInterval(checkNewVersion, 5 * 60 * 1000);
+        const initialTimeout = setTimeout(checkNewVersion, 10 * 1000);
+
+        return () => {
+            isCancelled = true;
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            clearInterval(intervalId);
+            clearTimeout(initialTimeout);
+        };
+    }, []);
 
     // Track mobile viewport
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
@@ -662,6 +741,12 @@ export default function AppLayout() {
                     isInstallable={isInstallable}
                     isIOS={isIOS}
                     onInstall={handleInstall}
+                />
+            )}
+            {showVersionModal && (
+                <VersionUpdateModal
+                    onRefresh={handleVersionRefresh}
+                    onDismiss={() => setShowVersionModal(false)}
                 />
             )}
             {showGreetingPokemonSelector && (

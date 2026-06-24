@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { ChartColumnIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MapPinIcon, PokeballIcon, MessageIcon } from '../icons';
+import { ChartColumnIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MapPinIcon, PokeballIcon, StarsIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 
 const SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
@@ -26,61 +26,85 @@ const LikeFeedbackVisual = ({ t }) => (
     </div>
 );
 
-const ChatFeedVisual = ({ colors, t }) => {
-    const teamPokemonIds = [1, 4, 7, 25, 133, 143]; // Bulbasaur, Charmander, Squirtle, Pikachu, Eevee, Snorlax
+const CoresSuggestionsVisual = ({ colors, t, language }) => {
+    const pt = language === 'pt';
 
     return (
-        <div className="rounded-md bg-bg p-3 text-left" aria-hidden="true">
-            <div className="flex items-start gap-2">
-                <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center overflow-hidden shrink-0 border"
-                    style={{ backgroundColor: colors.primary + '12', borderColor: colors.primary + '33' }}
-                >
-                    <img
-                        src={`${SPRITE_BASE}/25.png`}
-                        alt=""
-                        className="w-6 h-6 object-contain"
-                    />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-1 mb-0.5">
-                        <span className="text-[10px] font-bold text-fg">@AshKetchum</span>
-                        <span className="text-[7px] text-muted">now</span>
-                    </div>
-                    <p className="text-[9px] text-fg leading-tight">
-                        Check out my Gen I starter dream team! ⚡
-                    </p>
+        <div className="rounded-md bg-bg p-3 text-left flex flex-col gap-2 relative overflow-hidden h-[150px] justify-center" aria-hidden="true">
+            {/* Background design accents */}
+            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-500/10 blur-xl pointer-events-none" />
 
-                    <div
-                        className="mt-1.5 rounded-md p-1.5 flex items-center justify-between gap-2 border"
-                        style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                            borderColor: 'rgba(255, 255, 255, 0.06)'
-                        }}
-                    >
+            {/* Row 1: Weather Core Header + Badges */}
+            <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold uppercase tracking-wider text-muted">
+                    {pt ? 'Core Detectado' : 'Detected Core'}
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold text-white bg-blue-500">
+                    <span>🌧️ {pt ? 'Chuva' : 'Rain'}</span>
+                </span>
+            </div>
+
+            {/* Row 2: Rain setters/abusers on team */}
+            <div className="flex items-center gap-1.5 bg-surface/50 border border-border rounded-lg p-1.5">
+                <div className="flex -space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                        <img
+                            src={`${SPRITE_BASE}/279.png`}
+                            alt="Pelipper"
+                            className="w-8 h-8 object-contain"
+                            style={{ imageRendering: 'pixelated' }}
+                        />
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+                        <img
+                            src={`${SPRITE_BASE}/260.png`}
+                            alt="Swampert"
+                            className="w-8 h-8 object-contain"
+                            style={{ imageRendering: 'pixelated' }}
+                        />
+                    </div>
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className="text-[9px] font-bold text-fg leading-tight">Pelipper + Swampert</div>
+                    <div className="text-[7px] text-muted truncate">{pt ? 'Drizzle + Damp/Swift Swim' : 'Drizzle + Damp/Swift Swim'}</div>
+                </div>
+            </div>
+
+            {/* Row 3: Synergy Suggestions section */}
+            <div className="space-y-1">
+                <div className="text-[8px] font-bold text-muted uppercase tracking-wider">
+                    {pt ? 'Sugestões de Sinergia' : 'Synergy Suggestions'}
+                </div>
+                <div className="grid grid-cols-2 gap-1.5">
+                    {/* Suggestion 1: Ludicolo */}
+                    <div className="flex items-center gap-1 rounded-lg border border-border bg-surface/30 p-1">
+                        <img
+                            src={`${SPRITE_BASE}/272.png`}
+                            alt="Ludicolo"
+                            className="w-6 h-6 object-contain shrink-0"
+                            style={{ imageRendering: 'pixelated' }}
+                        />
                         <div className="min-w-0 flex-1">
-                            <h4 className="text-[8px] font-bold text-fg truncate">Gen I Starters</h4>
-                            <div className="flex gap-0.5 mt-0.5">
-                                {teamPokemonIds.map((id, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="w-4 h-4 rounded bg-surface border border-border flex items-center justify-center overflow-hidden shrink-0"
-                                    >
-                                        <img
-                                            src={`${SPRITE_BASE}/${id}.png`}
-                                            alt=""
-                                            className="w-3.5 h-3.5 object-contain"
-                                            style={{ imageRendering: 'pixelated' }}
-                                        />
-                                    </div>
-                                ))}
+                            <div className="text-[8px] font-bold text-fg truncate">Ludicolo</div>
+                            <div className="text-[6px] font-semibold text-primary truncate">
+                                {pt ? 'Swift Swim Payoff' : 'Swift Swim Payoff'}
                             </div>
                         </div>
-                        <div
-                            className="text-[7px] font-bold px-1.5 py-0.5 rounded text-white shrink-0"
-                            style={{ backgroundColor: colors.primary }}
-                        >
-                            {t('common.import') || 'Import'}
+                    </div>
+
+                    {/* Suggestion 2: Amoonguss */}
+                    <div className="flex items-center gap-1 rounded-lg border border-border bg-surface/30 p-1">
+                        <img
+                            src={`${SPRITE_BASE}/591.png`}
+                            alt="Amoonguss"
+                            className="w-6 h-6 object-contain shrink-0"
+                            style={{ imageRendering: 'pixelated' }}
+                        />
+                        <div className="min-w-0 flex-1">
+                            <div className="text-[8px] font-bold text-fg truncate">Amoonguss</div>
+                            <div className="text-[6px] font-semibold text-success truncate">
+                                {pt ? 'Cobre Elétrico/Planta' : 'Covers Grass/Elec'}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -139,10 +163,10 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                     animation: mini-tile-flip 0.4s ease forwards;
                 }
             `}</style>
-            
+
             {/* Background decorative glow */}
             <div className="absolute inset-0 bg-gradient-to-b from-violet-900/10 to-transparent pointer-events-none" />
-            
+
             <div className="flex w-full items-center justify-around gap-2 z-10">
                 {/* Pokémon Silhouette / Reveal Frame */}
                 <div className="relative w-16 h-16 rounded-xl border border-border bg-surface/50 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
@@ -151,8 +175,8 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                         alt="Gengar"
                         className="w-14 h-14 object-contain transition-all duration-700"
                         style={{
-                            filter: step === 3 
-                                ? 'none' 
+                            filter: step === 3
+                                ? 'none'
                                 : 'brightness(0) drop-shadow(0 0 4px rgba(124, 58, 237, 0.6))',
                             transform: step === 3 ? 'scale(1) rotate(0deg)' : 'scale(0.85) rotate(2deg)'
                         }}
@@ -171,8 +195,8 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                         {firstGuessName.split('').map((char, idx) => {
                             const isPresent = char === 'A';
                             return (
-                                <div 
-                                    key={idx} 
+                                <div
+                                    key={idx}
                                     className="text-[10px] font-bold text-white flex items-center justify-center rounded w-full aspect-square border"
                                     style={{
                                         backgroundColor: isPresent ? '#f59e0b' : '#3b3954',
@@ -190,7 +214,7 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                         {Array.from({ length: 6 }).map((_, idx) => {
                             const letter = typedLetters[idx] || '';
                             const isFilled = letter !== '';
-                            
+
                             let bgColor = 'rgba(255, 255, 255, 0.03)';
                             let borderColor = 'rgba(255, 255, 255, 0.1)';
                             let textColor = 'var(--color-fg)';
@@ -206,8 +230,8 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                             }
 
                             return (
-                                <div 
-                                    key={idx} 
+                                <div
+                                    key={idx}
                                     className="text-[10px] font-bold flex items-center justify-center rounded w-full aspect-square border"
                                     style={{
                                         backgroundColor: bgColor,
@@ -244,8 +268,8 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                 )}
                 {step === 3 && (
                     <span className="text-success animate-bounce flex items-center gap-1">
-                        🎉 {language === 'pt' 
-                            ? 'Acertou! Gengar em 2 tentativas!' 
+                        🎉 {language === 'pt'
+                            ? 'Acertou! Gengar em 2 tentativas!'
                             : 'Correct! Gengar in 2 tries!'}
                     </span>
                 )}
@@ -274,13 +298,13 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
             Visual: PokePuzzleVisual,
         },
         {
-            key: 'chat-feed',
-            Icon: MessageIcon,
-            title: t('patchNotes.chatFeedTitle'),
-            description: t('patchNotes.chatFeedDesc'),
-            cta: t('patchNotes.chatFeedCta'),
-            path: '/',
-            Visual: ChatFeedVisual,
+            key: 'cores-suggestions',
+            Icon: StarsIcon,
+            title: t('patchNotes.synergyTitle'),
+            description: t('patchNotes.synergyDesc'),
+            cta: t('patchNotes.synergyCta'),
+            path: '/builder',
+            Visual: CoresSuggestionsVisual,
         },
         {
             key: 'like',

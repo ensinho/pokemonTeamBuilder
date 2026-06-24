@@ -17,7 +17,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       // Use the existing site.webmanifest — only add the service worker
       manifest: false,
       workbox: {
