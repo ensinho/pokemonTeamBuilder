@@ -798,6 +798,59 @@
     background: color-mix(in srgb, var(--color-success) 4%, var(--color-surface));
 }
 
+/* ── Mobile synergy-pick card ──────────────────────────────────────── */
+.team-builder-mobile-card.is-synergy {
+    --synergy-color: var(--color-primary);
+    overflow: visible;
+    background:
+        linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+        linear-gradient(135deg, var(--synergy-color), color-mix(in srgb, var(--synergy-color) 60%, #fff)) border-box;
+    border: 1.5px solid transparent;
+    box-shadow: 0 0 8px -2px color-mix(in srgb, var(--synergy-color) 35%, transparent);
+    animation: synergy-pulse-m 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes synergy-pulse-m {
+    0%   { box-shadow: 0 0  6px -2px color-mix(in srgb, var(--synergy-color) 30%, transparent); }
+    100% { box-shadow: 0 0 14px -1px color-mix(in srgb, var(--synergy-color) 50%, transparent); }
+}
+
+.team-builder-mobile-card__reason-icon {
+    position: absolute;
+    top: -0.3rem;
+    right: -0.3rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.15rem;
+    height: 1.15rem;
+    border-radius: 50%;
+    background: var(--synergy-color);
+    color: #fff;
+    box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.team-builder-mobile-card__reason-icon svg {
+    width: 0.6rem;
+    height: 0.6rem;
+}
+
+.team-builder-mobile-card__reason-label {
+    display: block;
+    width: 100%;
+    margin-top: 0.05rem;
+    font-size: 0.5rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--synergy-color);
+    letter-spacing: 0.01em;
+}
+
 .team-builder-mobile-card__badge {
     display: inline-flex;
     align-items: center;

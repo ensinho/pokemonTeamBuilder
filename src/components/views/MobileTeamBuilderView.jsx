@@ -1,12 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
-import { Dices } from 'lucide-react';
+import { Dices, Trophy, ShieldCheck, Sparkles } from 'lucide-react';
 import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
 import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
 import { AnchoredPopover } from '../AnchoredPopover';
+import { MetaCoresModal } from '../modals/MetaCoresModal';
+import { Atom, ChevronRight } from 'lucide-react';
+import { coreIconFor } from '../coreIcons';
+// SynergySuggestions strip removed — synergy picks now appear in-grid
+import { detectTeamCores } from '../../utils/metaCores';
+import { useSmogonData } from '../../hooks/useSmogonData';
+import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -29,10 +36,23 @@ const typeVars = (pokemon) => {
     return { '--type-a': a, '--type-b': b };
 };
 
+// Map reason kind → icon + default colour (same logic as PokemonCard)
+const REASON_VISUALS = {
+    ability: (r) => ({ Icon: coreIconFor(r.coreId), color: r.accent || 'var(--color-primary)' }),
+    partner: () => ({ Icon: Trophy, color: 'var(--color-primary)' }),
+    type:    () => ({ Icon: ShieldCheck, color: '#38bdf8' }),
+    meta:    () => ({ Icon: Sparkles, color: 'var(--color-primary)' }),
+};
+function reasonVisual(reason) {
+    const fn = REASON_VISUALS[reason?.kind];
+    return fn ? fn(reason) : { Icon: Sparkles, color: 'var(--color-primary)' };
+}
+
 const MobilePokemonPickerCard = ({
     pokemon,
     onAddToTeam,
     isSuggested,
+    synergyReason,
     isFavorite,
     onToggleFavorite,
     lastRef,
@@ -54,6 +74,9 @@ const MobilePokemonPickerCard = ({
         onToggleFavorite?.(pokemon.id);
     };
 
+    const hasSynergy = !!synergyReason;
+    const { Icon: ReasonIcon, color: reasonColor } = hasSynergy ? reasonVisual(synergyReason) : {};
+
     return (
         <article
             ref={lastRef}
@@ -62,9 +85,14 @@ const MobilePokemonPickerCard = ({
             aria-label={`${language === 'pt' ? 'Adicionar' : 'Add'} ${pokemon.name} ${language === 'pt' ? 'ao time' : 'to team'}`}
             onClick={handleCardClick}
             onKeyDown={handleKeyDown}
-            className={`team-builder-mobile-card ${isSuggested ? 'is-suggested' : ''
-                }`}
+            className={`team-builder-mobile-card ${hasSynergy ? 'is-synergy' : isSuggested ? 'is-suggested' : ''}`}
+            style={hasSynergy ? { '--synergy-color': reasonColor } : undefined}
         >
+            {hasSynergy && (
+                <span className="team-builder-mobile-card__reason-icon" title={synergyReason.label}>
+                    <ReasonIcon />
+                </span>
+            )}
             <div className="flex items-center justify-between gap-1">
                 <div className="flex items-center gap-1">
                     {pokemon.types.map((type) => (
@@ -75,7 +103,7 @@ const MobilePokemonPickerCard = ({
                             className="h-4 w-4 rounded-full"
                         />
                     ))}
-                    {isSuggested && (
+                    {!hasSynergy && isSuggested && (
                         <div className="team-builder-mobile-card__badge ml-1">
                             {language === 'pt' ? 'Novo' : 'New'}
                         </div>
@@ -102,6 +130,9 @@ const MobilePokemonPickerCard = ({
                 <p className="team-builder-mobile-card__name font-bold capitalize">
                     {pokemon.name}
                 </p>
+                {hasSynergy && synergyReason.label && (
+                    <span className="team-builder-mobile-card__reason-label" style={{ color: reasonColor }}>{synergyReason.label}</span>
+                )}
             </div>
         </article>
     );
@@ -316,7 +347,8 @@ export const MobileTeamBuilderView = ({
     isInitialLoading,
     displayedPokemons,
     gamePokemonIds,
-    partnerSuggestions = [],
+    synergySuggestions = [],
+    addSuggestion,
     handleAddPokemonToTeam,
     handleRandomizeTeam,
     isRandomizing,
@@ -334,6 +366,32 @@ export const MobileTeamBuilderView = ({
 }) => {
     const { t, language } = useTranslation();
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
+    const [isCoresOpen, setIsCoresOpen] = React.useState(false);
+    const { byId: smogonById } = useSmogonData();
+    const { byId: usageById } = useCompetitiveUsage();
+    const teamCores = React.useMemo(
+        () => detectTeamCores(currentTeam.map((p) => p.id), { smogonById, usageById }),
+        [currentTeam, smogonById, usageById]
+    );
+    const synergyReasonById = React.useMemo(
+        () => new Map(synergySuggestions.map((s) => [s.id, s.primary])),
+        [synergySuggestions]
+    );
+
+    // Synergy-only picks not in the displayed list, prepended to grid.
+    const displayedIdSet = React.useMemo(() => new Set(displayedPokemons.map((p) => p.id)), [displayedPokemons]);
+    const pokemonIndexById = React.useMemo(() => {
+        const m = new Map();
+        // displayedPokemons itself is the best source for index data
+        for (const p of displayedPokemons) m.set(p.id, p);
+        return m;
+    }, [displayedPokemons]);
+    const synergyOnlyCards = React.useMemo(() => {
+        if (!synergySuggestions.length) return [];
+        return synergySuggestions
+            .filter((s) => !displayedIdSet.has(s.id))
+            .map((s) => ({ ...s, _synergyOnly: true }));
+    }, [synergySuggestions, displayedIdSet]);
 
     React.useEffect(() => {
         if (selectedTypes.size <= 1) return;
@@ -562,35 +620,36 @@ export const MobileTeamBuilderView = ({
                     </span>
                 </div>
 
-                {partnerSuggestions.length > 0 && (
-                    <div className="mt-3">
-                        <div className="flex items-center gap-1.5 mb-2">
-                            <TrophyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-muted">{t('builder.tournamentPartners')}</span>
-                        </div>
-                        <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                            {partnerSuggestions.map((p) => (
-                                <button
-                                    key={p.id}
-                                    type="button"
-                                    onClick={() => handleAddPokemonToTeam(p)}
-                                    title={(p.name || '').replace(/-/g, ' ')}
-                                    className="shrink-0 w-16 flex flex-col items-center gap-0.5 p-1.5 rounded-lg border border-border bg-bg active:border-primary transition-all"
-                                >
-                                    <img
-                                        src={getPokemonFrontSpriteUrl(p.id)}
-                                        alt=""
-                                        aria-hidden="true"
-                                        loading="lazy"
-                                        className="w-9 h-9 image-pixelated"
-                                        onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                    />
-                                    <span className="text-[9px] capitalize text-muted truncate w-full text-center">{(p.name || '').replace(/-/g, ' ')}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                )}
+
+
+                <button
+                    type="button"
+                    onClick={() => setIsCoresOpen(true)}
+                    className="mt-3 flex w-full items-center gap-3 rounded-xl border border-border bg-bg p-3 text-left active:border-primary"
+                >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15">
+                        <Atom className="h-4 w-4 text-primary" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-bold text-fg">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
+                        <span className="mt-1 flex flex-wrap items-center gap-1">
+                            {teamCores.length > 0 ? (
+                                teamCores.slice(0, 3).map((c) => {
+                                    const CIcon = coreIconFor(c.id);
+                                    return (
+                                        <span key={c.id} className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ color: c.accent, backgroundColor: `${c.accent}22` }}>
+                                            <CIcon className="h-3 w-3" />{c.name}
+                                        </span>
+                                    );
+                                })
+                            ) : (
+                                <span className="text-[11px] text-muted">{language === 'pt' ? 'Toque para montar um core' : 'Tap to build a core'}</span>
+                            )}
+                            {teamCores.length > 3 && <span className="text-[10px] font-bold text-muted">+{teamCores.length - 3}</span>}
+                        </span>
+                    </span>
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+                </button>
 
                 <div className="team-builder-mobile__available mt-2">
                     {isInitialLoading ? (
@@ -601,6 +660,18 @@ export const MobileTeamBuilderView = ({
                         <>
                             <div className="p-1 custom-scrollbar">
                                 <div className="team-builder-mobile__grid grid grid-cols-3 gap-2">
+                                    {/* Synergy-only picks (not in current filtered list) */}
+                                    {synergyOnlyCards.map((pokemon) => (
+                                        <MobilePokemonPickerCard
+                                            key={`syn-${pokemon.id}`}
+                                            pokemon={pokemon}
+                                            onAddToTeam={handleAddPokemonToTeam}
+                                            synergyReason={pokemon.primary}
+                                            isFavorite={favoritePokemons.has(pokemon.id)}
+                                            onToggleFavorite={onToggleFavoritePokemon}
+                                            colors={colors}
+                                        />
+                                    ))}
                                     {isGameFilterActive ? (
                                         <>
                                             {regionalPokemons.length > 0 && (
@@ -613,7 +684,8 @@ export const MobileTeamBuilderView = ({
                                                             key={pokemon.id}
                                                             pokemon={pokemon}
                                                             onAddToTeam={handleAddPokemonToTeam}
-                                                            isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                            synergyReason={synergyReasonById.get(pokemon.id)}
+                                                            isSuggested={synergyReasonById.has(pokemon.id)}
                                                             isFavorite={favoritePokemons.has(pokemon.id)}
                                                             onToggleFavorite={onToggleFavoritePokemon}
                                                             colors={colors}
@@ -632,7 +704,8 @@ export const MobileTeamBuilderView = ({
                                                             key={pokemon.id}
                                                             pokemon={pokemon}
                                                             onAddToTeam={handleAddPokemonToTeam}
-                                                            isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                            synergyReason={synergyReasonById.get(pokemon.id)}
+                                                            isSuggested={synergyReasonById.has(pokemon.id)}
                                                             isFavorite={favoritePokemons.has(pokemon.id)}
                                                             onToggleFavorite={onToggleFavoritePokemon}
                                                             colors={colors}
@@ -648,7 +721,8 @@ export const MobileTeamBuilderView = ({
                                                 key={pokemon.id}
                                                 pokemon={pokemon}
                                                 onAddToTeam={handleAddPokemonToTeam}
-                                                isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                synergyReason={synergyReasonById.get(pokemon.id)}
+                                                isSuggested={synergyReasonById.has(pokemon.id)}
                                                 isFavorite={favoritePokemons.has(pokemon.id)}
                                                 onToggleFavorite={onToggleFavoritePokemon}
                                                 colors={colors}
@@ -823,6 +897,14 @@ export const MobileTeamBuilderView = ({
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}
             />
+
+            {isCoresOpen && (
+                <MetaCoresModal
+                    onClose={() => setIsCoresOpen(false)}
+                    currentTeam={currentTeam}
+                    onAddToTeam={handleAddPokemonToTeam}
+                />
+            )}
         </div>
     );
 };

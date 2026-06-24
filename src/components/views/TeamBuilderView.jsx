@@ -13,6 +13,14 @@ import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
 import { TypeBadge } from '../TypeBadge';
+import { MetaCoresModal } from '../modals/MetaCoresModal';
+import { Atom } from 'lucide-react';
+import { coreIconFor } from '../coreIcons';
+import { detectTeamCores } from '../../utils/metaCores';
+import { buildSynergySuggestions } from '../../utils/synergySuggestions';
+// SynergySuggestions strip removed — synergy picks now appear in-grid
+import { useSmogonData } from '../../hooks/useSmogonData';
+import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useReferenceStore } from '../../store/useReferenceStore';
@@ -122,6 +130,7 @@ export function TeamBuilderView({
     const { t, language } = useTranslation();
     const [dragIndex, setDragIndex] = React.useState(null);
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
+    const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
             return false;
@@ -179,19 +188,53 @@ export function TeamBuilderView({
     // index — not just the Pokémon currently visible in the picker.
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
-    const { partnersFor, status: tournamentStatus } = useTournamentData();
+    const { partnersFor, status: tournamentStatus, popular, synergy } = useTournamentData();
+    const { byId: smogonById } = useSmogonData();
+    const { byId: usageById } = useCompetitiveUsage();
 
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
 
-    const partnerSuggestions = React.useMemo(() => {
-        if (tournamentStatus !== 'ready' || currentTeam.length === 0 || currentTeam.length >= 6) return [];
-        const ids = currentTeam.map((p) => p.id);
-        const lastId = currentTeam[currentTeam.length - 1]?.id ?? null;
-        const byId = new Map(pokemonIndex.map((p) => [p.id, p]));
-        return partnersFor(ids, lastId, 14)
-            .map(({ id }) => byId.get(id) || { id, name: `#${id}`, types: [] })
-            .filter((entry) => !ids.includes(entry.id));
-    }, [currentTeam, partnersFor, pokemonIndex, tournamentStatus]);
+    // Which meta core(s) the current roster already commits to (has a setter for).
+    const teamCores = React.useMemo(
+        () => detectTeamCores(currentTeam.map((p) => p.id), { smogonById, usageById }),
+        [currentTeam, smogonById, usageById]
+    );
+
+    // Team-aware synergy suggestions: by ability/core, tournament partner, and
+    // type coverage — ranked across the whole relevant dex, reactive to the team.
+    const synergySuggestions = React.useMemo(() => {
+        if (currentTeam.length >= 6) return [];
+        return buildSynergySuggestions({
+            team: currentTeam,
+            pokemonIndex,
+            synergy,
+            smogonById,
+            usageById,
+            popular,
+            limit: 12,
+        });
+    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular]);
+
+    const suggestionIndexById = React.useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
+    const addSuggestion = React.useCallback(
+        (s) => handleAddPokemonToTeam(suggestionIndexById.get(s.id) || s),
+        [handleAddPokemonToTeam, suggestionIndexById]
+    );
+    // Map synergy id → primary reason for in-grid border/icon rendering.
+    const synergyReasonById = React.useMemo(
+        () => new Map(synergySuggestions.map((s) => [s.id, s.primary])),
+        [synergySuggestions]
+    );
+
+    // Synergy-only picks that aren't already in the displayed list, prepended as
+    // enriched cards at the top of the grid so the user sees them immediately.
+    const displayedIdSet = React.useMemo(() => new Set(displayedPokemons.map((p) => p.id)), [displayedPokemons]);
+    const synergyOnlyCards = React.useMemo(() => {
+        if (!synergySuggestions.length) return [];
+        return synergySuggestions
+            .filter((s) => !displayedIdSet.has(s.id) && suggestionIndexById.has(s.id))
+            .map((s) => ({ ...suggestionIndexById.get(s.id), ...s, _synergyOnly: true }));
+    }, [synergySuggestions, displayedIdSet, suggestionIndexById]);
 
     const isGameFilterActive = !!(selectedGame && selectedGame !== 'all' && gamePokemonIds);
     const selectedGameObj = React.useMemo(() => {
@@ -254,7 +297,8 @@ export function TeamBuilderView({
                     isInitialLoading={isInitialLoading}
                     displayedPokemons={displayedPokemons}
                     gamePokemonIds={gamePokemonIds}
-                    partnerSuggestions={partnerSuggestions}
+                    synergySuggestions={synergySuggestions}
+                    addSuggestion={addSuggestion}
                     handleAddPokemonToTeam={handleAddPokemonToTeam}
                     handleRandomizeTeam={handleRandomizeTeam}
                     isRandomizing={isRandomizing}
@@ -275,6 +319,37 @@ export function TeamBuilderView({
 
             {isDesktopLayout ? <main className="team-builder grid grid-cols-12 gap-6 xl:gap-7">
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-6 lg:self-start">
+                    <button
+                        type="button"
+                        onClick={() => setIsCoresOpen(true)}
+                        className="team-builder-panel flex w-full items-center gap-2.5 p-3 text-left transition-all hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        title={language === 'pt' ? 'Montar a partir de um core do meta' : 'Build around a meta core'}
+                    >
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15">
+                            <Atom className="h-4 w-4 text-primary" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                            <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
+                            <span className="mt-1 flex flex-wrap items-center gap-1">
+                                {teamCores.length > 0 ? (
+                                    teamCores.slice(0, 3).map((c) => {
+                                        const CIcon = coreIconFor(c.id);
+                                        return (
+                                            <span key={c.id} className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ color: c.accent, backgroundColor: `${c.accent}22` }}>
+                                                <CIcon className="h-3 w-3" />{c.name}
+                                            </span>
+                                        );
+                                    })
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-1.5 py-0.5 text-[10px] font-semibold text-muted">
+                                        {language === 'pt' ? 'Nenhum core ainda' : 'No core yet'}
+                                    </span>
+                                )}
+                                {teamCores.length > 3 && <span className="text-[10px] font-bold text-muted">+{teamCores.length - 3}</span>}
+                            </span>
+                        </span>
+                        <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted" />
+                    </button>
                     <section className="team-builder-panel p-4">
                         <div className="team-builder-current-head">
                             <div className="team-builder-panel__header team-builder-panel__header--compact flex items-center justify-between gap-3 mb-4">
@@ -572,35 +647,7 @@ export function TeamBuilderView({
                             </div>
                         )}
 
-                        {filtersExpanded && partnerSuggestions.length > 0 && (
-                            <div className="team-builder-partners mt-3">
-                                <div className="flex items-center gap-1.5 mb-2">
-                                    <TrophyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted">{t('builder.tournamentPartners')}</span>
-                                </div>
-                                <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
-                                    {partnerSuggestions.map((p) => (
-                                        <button
-                                            key={p.id}
-                                            type="button"
-                                            onClick={() => handleAddPokemonToTeam(p)}
-                                            title={t('builder.addPartner', { name: (p.name || '').replace(/-/g, ' '), defaultValue: `Add ${p.name}` })}
-                                            className="shrink-0 w-[4.25rem] flex flex-col items-center gap-0.5 p-1.5 rounded-lg border border-border bg-bg hover:border-primary hover:-translate-y-0.5 transition-all"
-                                        >
-                                            <img
-                                                src={getPokemonFrontSpriteUrl(p.id)}
-                                                alt=""
-                                                aria-hidden="true"
-                                                loading="lazy"
-                                                className="w-10 h-10 image-pixelated"
-                                                onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
-                                            />
-                                            <span className="text-[9px] capitalize text-muted truncate w-full text-center">{(p.name || '').replace(/-/g, ' ')}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
+
 
                         <div className="team-builder-results mt-4">
                             {isInitialLoading ? (
@@ -610,6 +657,19 @@ export function TeamBuilderView({
                             ) : (
                                 <div className="team-builder-results__scroll custom-scrollbar">
                                     <div className="team-builder-results__grid grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 p-1 py-2">
+                                        {/* Synergy-only picks (not in the current filtered list) */}
+                                        {synergyOnlyCards.map((pokemon) => (
+                                            <PokemonCard
+                                                key={`syn-${pokemon.id}`}
+                                                details={pokemon}
+                                                onCardClick={openDetailModal}
+                                                onAddToTeam={handleAddPokemonToTeam}
+                                                synergyReason={pokemon.primary}
+                                                colors={colors}
+                                                isFavorite={favoritePokemons.has(pokemon.id)}
+                                                onToggleFavorite={onToggleFavoritePokemon}
+                                            />
+                                        ))}
                                         {isGameFilterActive ? (
                                             <>
                                                 {regionalPokemons.length > 0 && (
@@ -624,7 +684,8 @@ export function TeamBuilderView({
                                                                 onCardClick={openDetailModal}
                                                                 onAddToTeam={handleAddPokemonToTeam}
                                                                 lastRef={index === regionalPokemons.length - 1 && nationalPokemons.length === 0 ? lastPokemonElementRef : null}
-                                                                isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                                synergyReason={synergyReasonById.get(pokemon.id)}
+                                                                isSuggested={synergyReasonById.has(pokemon.id)}
                                                                 colors={colors}
                                                                 isFavorite={favoritePokemons.has(pokemon.id)}
                                                                 onToggleFavorite={onToggleFavoritePokemon}
@@ -644,7 +705,8 @@ export function TeamBuilderView({
                                                                 onCardClick={openDetailModal}
                                                                 onAddToTeam={handleAddPokemonToTeam}
                                                                 lastRef={index === nationalPokemons.length - 1 ? lastPokemonElementRef : null}
-                                                                isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                                synergyReason={synergyReasonById.get(pokemon.id)}
+                                                                isSuggested={synergyReasonById.has(pokemon.id)}
                                                                 colors={colors}
                                                                 isFavorite={favoritePokemons.has(pokemon.id)}
                                                                 onToggleFavorite={onToggleFavoritePokemon}
@@ -661,7 +723,8 @@ export function TeamBuilderView({
                                                     onCardClick={openDetailModal}
                                                     onAddToTeam={handleAddPokemonToTeam}
                                                     lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
-                                                    isSuggested={suggestedPokemonIds.has(pokemon.id)}
+                                                    synergyReason={synergyReasonById.get(pokemon.id)}
+                                                    isSuggested={synergyReasonById.has(pokemon.id)}
                                                     colors={colors}
                                                     isFavorite={favoritePokemons.has(pokemon.id)}
                                                     onToggleFavorite={onToggleFavoritePokemon}
@@ -749,6 +812,14 @@ export function TeamBuilderView({
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}
             />
+
+            {isCoresOpen && (
+                <MetaCoresModal
+                    onClose={() => setIsCoresOpen(false)}
+                    currentTeam={currentTeam}
+                    onAddToTeam={handleAddPokemonToTeam}
+                />
+            )}
 
             {detailPokemon && (
                 <PokemonDetailModal

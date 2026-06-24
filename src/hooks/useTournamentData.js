@@ -62,5 +62,5 @@ export function useTournamentData() {
         [synergy]
     );
 
-    return { teams, popular, recent, status, partnersFor };
+    return { teams, popular, recent, status, partnersFor, synergy };
 }

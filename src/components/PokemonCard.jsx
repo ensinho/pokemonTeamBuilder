@@ -1,10 +1,24 @@
 import React from 'react';
+import { Trophy, ShieldCheck, Sparkles } from 'lucide-react';
 import { typeIcons } from '../constants/types';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../utils/pokemonSprites';
 import { SkeletonCard } from './SkeletonCard';
 import { Sprite } from './Sprite';
 import { StarIcon, PlusIcon } from './icons';
+import { coreIconFor } from './coreIcons';
 import '../styles/pokemon-card.css';
+
+// Map reason kind → icon + default colour
+const REASON_VISUALS = {
+    ability: (r) => ({ Icon: coreIconFor(r.coreId), color: r.accent || 'var(--color-primary)' }),
+    partner: () => ({ Icon: Trophy, color: 'var(--color-primary)' }),
+    type:    () => ({ Icon: ShieldCheck, color: '#38bdf8' }),
+    meta:    () => ({ Icon: Sparkles, color: 'var(--color-primary)' }),
+};
+function reasonVisual(reason) {
+    const fn = REASON_VISUALS[reason?.kind];
+    return fn ? fn(reason) : { Icon: Sparkles, color: 'var(--color-primary)' };
+}
 
 export const PokemonCard = React.memo(function PokemonCard({
     onCardClick,
@@ -12,6 +26,7 @@ export const PokemonCard = React.memo(function PokemonCard({
     details,
     lastRef,
     isSuggested,
+    synergyReason,
     isFavorite,
     onToggleFavorite,
     isSelected,
@@ -40,6 +55,9 @@ export const PokemonCard = React.memo(function PokemonCard({
         }
     };
 
+    const hasSynergy = !!synergyReason;
+    const { Icon: ReasonIcon, color: reasonColor } = hasSynergy ? reasonVisual(synergyReason) : {};
+
     return (
         <div
             ref={lastRef}
@@ -48,8 +66,14 @@ export const PokemonCard = React.memo(function PokemonCard({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${details.name}`}
-            className={`pokemon-card group ${isSuggested ? 'pokemon-card--suggested' : ''} ${isSelected ? 'pokemon-card--selected' : ''}`}
+            className={`pokemon-card group ${hasSynergy ? 'pokemon-card--synergy' : isSuggested ? 'pokemon-card--suggested' : ''} ${isSelected ? 'pokemon-card--selected' : ''}`}
+            style={hasSynergy ? { '--synergy-color': reasonColor } : undefined}
         >
+            {hasSynergy && (
+                <span className="pokemon-card__reason-icon" title={synergyReason.label}>
+                    <ReasonIcon />
+                </span>
+            )}
             <div className="pokemon-card__topbar">
                 <div className="pokemon-card__types">
                     {details.types.map((type) => (
@@ -63,7 +87,7 @@ export const PokemonCard = React.memo(function PokemonCard({
                 </div>
 
                 <div className="pokemon-card__meta">
-                    {isSuggested && (
+                    {!hasSynergy && isSuggested && (
                         <div className="pokemon-card__badge">
                             Suggested
                         </div>
@@ -89,6 +113,9 @@ export const PokemonCard = React.memo(function PokemonCard({
                 <Sprite src={getPokemonDisplaySprite(details)} artworkSrc={getPokemonArtworkSpriteUrl(details.id)} alt={details.name} className="w-full h-full" />
             </div>
             <p className="pokemon-card__name">{details.name}</p>
+            {hasSynergy && synergyReason.label && (
+                <span className="pokemon-card__reason-label" style={{ color: reasonColor }}>{synergyReason.label}</span>
+            )}
 
             {onAddToTeam && (
                 <button

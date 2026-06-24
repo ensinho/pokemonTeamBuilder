@@ -18,6 +18,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
+import { useSmogonData } from '../../hooks/useSmogonData';
 import { EmptyState } from '../EmptyState';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
@@ -86,6 +87,7 @@ export function TeamDetailView({
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
     const { partnersFor, popular, status: tournamentStatus } = useTournamentData();
     const { usageFor } = useCompetitiveUsage();
+    const { smogonFor } = useSmogonData();
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
 
     // Saved members store only id/name/sprites + customization; resolve full
@@ -321,8 +323,10 @@ export function TeamDetailView({
                         const cz = m.customization || {};
                         const weaknesses = getPokemonWeaknessEntries(m.types || []).slice(0, 6);
                         const usage = usageFor(m.id);
-                        const itemPicks = suggestItemsForPokemon(m, language, usage);
+                        const smogon = smogonFor(m.id);
+                        const itemPicks = suggestItemsForPokemon(m, language, usage, smogon);
                         const itemsFromMeta = Boolean(usage && usage.n >= 2 && usage.items?.length);
+                        const itemsFromSmogon = !itemsFromMeta && Boolean(smogon?.sets?.length);
                         const moves = (cz.moves || []).filter(Boolean);
                         return (
                             <article key={m.instanceId || m.id} className="team-detail-member">
@@ -409,7 +413,9 @@ export function TeamDetailView({
                                         <p className="team-detail-member__sub">
                                             {itemsFromMeta
                                                 ? <><Trophy className="w-3 h-3 inline -mt-0.5" /> {pt ? 'Itens de torneio' : 'Tournament items'}</>
-                                                : <><Sparkles className="w-3 h-3 inline -mt-0.5" /> {pt ? 'Itens sugeridos' : 'Suggested items'}</>}
+                                                : itemsFromSmogon
+                                                    ? <><Sparkles className="w-3 h-3 inline -mt-0.5" /> {pt ? 'Recomendado pelo Smogon' : 'Smogon recommends'}</>
+                                                    : <><Sparkles className="w-3 h-3 inline -mt-0.5" /> {pt ? 'Itens sugeridos' : 'Suggested items'}</>}
                                         </p>
                                         <div className="team-detail-item-list">
                                             {itemPicks.map((it) => (

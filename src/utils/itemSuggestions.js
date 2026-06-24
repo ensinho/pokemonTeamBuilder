@@ -86,6 +86,26 @@ function usagePicks(usageEntry, displayName, language) {
     });
 }
 
+// ── Smogon recommended picks (expert sets, robust full-meta coverage) ────────
+// Used when there's no measured tournament usage for this species but Smogon
+// curates sets for it — items come from the recommended sets (primary + listed
+// alternatives), labelled with the set they belong to.
+function smogonPicks(smogonEntry, language) {
+    const picks = [];
+    const seen = new Set();
+    for (const set of smogonEntry.sets || []) {
+        for (const slug of [set.item, ...(set.itemAlts || [])].filter(Boolean)) {
+            if (seen.has(slug)) continue;
+            seen.add(slug);
+            const role = itemRole(slug, language);
+            const head = r(`Smogon ${set.name} set`, `Conjunto ${set.name} (Smogon)`, language);
+            picks.push({ slug, label: titleCase(slug), reason: role ? `${head} · ${role}` : head });
+            if (picks.length >= 3) return picks;
+        }
+    }
+    return picks;
+}
+
 // ── Heuristic fallback (no tournament data for this species) ─────────────────
 const statMap = (stats = []) => {
     const out = { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 };
@@ -143,16 +163,27 @@ function heuristicItems(pokemon, language) {
 }
 
 /**
+ * Recommend held items, best source first:
+ *   1. real tournament usage (what champions ran on this exact species),
+ *   2. Smogon's expert-curated sets (robust, full-meta coverage),
+ *   3. a stat/archetype heuristic (so every species still gets ideas).
+ *
  * @param {{ stats?: Array, name?: string }} pokemon - enriched team member
  * @param {'en'|'pt'} language
  * @param {{ n: number, items: Array<{ name: string, slug: string, count: number }> }|null} [usageEntry]
  *        real mined usage for this species, if available
+ * @param {{ sets?: Array<{ name: string, item: string, itemAlts?: string[] }> }|null} [smogonEntry]
+ *        Smogon recommended sets for this species, if available
  * @returns {Array<{ slug: string, label: string, reason: string }>}
  */
-export function suggestItemsForPokemon(pokemon, language = 'en', usageEntry = null) {
+export function suggestItemsForPokemon(pokemon, language = 'en', usageEntry = null, smogonEntry = null) {
     if (usageEntry && usageEntry.n >= 2 && usageEntry.items?.length) {
         const displayName = titleCase(pokemon?.name || '');
         const picks = usagePicks(usageEntry, displayName, language);
+        if (picks.length) return picks;
+    }
+    if (smogonEntry && smogonEntry.sets?.length) {
+        const picks = smogonPicks(smogonEntry, language);
         if (picks.length) return picks;
     }
     return heuristicItems(pokemon, language);

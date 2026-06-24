@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Sparkles } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
 import { getMoveDetails } from '../../services/pokemonDataCache';
 import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { useSmogonData } from '../../hooks/useSmogonData';
+import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
 import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
@@ -20,7 +23,10 @@ const STAT_COLOR_VAR = {
 };
 
 export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => {} }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
+    const pt = language === 'pt';
+    const { smogonFor } = useSmogonData();
+    const smogonEntry = smogonFor(pokemon.id);
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
@@ -195,6 +201,40 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                 >
                     {activeTab === 'build' && (
                         <div role="tabpanel" id="panel-build" aria-labelledby="tab-build" className="space-y-5">
+                            {smogonEntry?.sets?.length > 0 && (
+                                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3">
+                                    <div className="mb-2 flex flex-wrap items-center gap-2">
+                                        <Sparkles className="h-4 w-4 text-primary" />
+                                        <h3 className="text-sm font-bold text-fg">{pt ? 'Conjuntos Smogon' : 'Smogon sets'}</h3>
+                                        <span className="text-[11px] text-muted">{pt ? 'um clique preenche tudo' : 'one click fills everything'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                        {smogonEntry.sets.map((set, i) => {
+                                            const spread = formatEvSpread(set.evs);
+                                            return (
+                                                <button
+                                                    key={`${set.name}-${i}`}
+                                                    type="button"
+                                                    onClick={() => setCustomization((prev) => applySmogonSet(set, prev))}
+                                                    className="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                                    title={pt ? `Aplicar conjunto ${set.name}` : `Apply the ${set.name} set`}
+                                                >
+                                                    <span className="flex items-center justify-between gap-1">
+                                                        <span className="truncate text-sm font-bold text-fg">{set.name}</span>
+                                                        {set.source && <span className="shrink-0 rounded bg-primary/15 px-1 text-[9px] font-bold text-primary">{set.source}</span>}
+                                                    </span>
+                                                    <span className="block truncate text-[11px] capitalize text-muted">
+                                                        {set.item ? set.item.replace(/-/g, ' ') : (pt ? 'sem item' : 'no item')}
+                                                        {set.tera?.[0] ? ` · Tera ${set.tera[0].replace(/-/g, ' ')}` : ''}
+                                                    </span>
+                                                    {spread && <span className="mt-0.5 block truncate font-mono text-[10px] text-muted">{spread}</span>}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-4">
                                 <div>
                                     <label htmlFor="editor-item" className={fieldLabelClassName}>{t('modals.editorModalItemLabel')}</label>

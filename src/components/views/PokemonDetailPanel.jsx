@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import {
     MapPin, Star, Sparkles, ChevronRight, Compass, Footprints, Waves, Fish, Gift, Music,
-    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, ChevronLeft,
+    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, ChevronLeft, Trophy,
 } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
@@ -23,6 +23,7 @@ import {
 } from '../../services/pokemonDataCache';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { buildPokemonForms, formDisplayName } from '../../utils/pokemonForms';
+import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 
 // ── Shared helpers (mirrors PokedexView's detail panel) ──────────────────────
 const displayNameFromApi = (apiData) =>
@@ -489,6 +490,12 @@ export function PokemonDetailPanel({
 
     // ── Tab content (copied from PokedexView's renderDetailsContent) ───────────
     const renderDetailsContent = () => {
+        // Competitive only needs the species id, so it renders even while the rest
+        // of the Pokédex details are still loading.
+        if (activeTab === 'competitive') {
+            return <SmogonCompetitivePanel pokemonId={selectedPokemon?.id || pokemonId} />;
+        }
+
         if (!selectedPokemonDetails) return null;
 
         if (activeTab === 'data') {
@@ -972,6 +979,7 @@ export function PokemonDetailPanel({
                 )}
                 {[
                     { key: 'data', icon: <Activity className="w-4 h-4" />, label: t('pokedex.dataTab') },
+                    { key: 'competitive', icon: <Trophy className="w-4 h-4" />, label: language === 'pt' ? 'Competitivo' : 'Competitive' },
                     { key: 'locations', icon: <MapPin className="w-4 h-4" />, label: t('pokedex.locationsTab') },
                     { key: 'moves', icon: <Swords className="w-4 h-4" />, label: t('pokedex.movesTab') },
                     { key: 'sprites', icon: <ImageIcon className="w-4 h-4" />, label: t('pokedex.spritesTab') },

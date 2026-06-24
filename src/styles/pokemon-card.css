@@ -18,6 +18,70 @@
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
+/* ── Synergy-pick cards ─────────────────────────────────────────────── */
+.pokemon-card--synergy {
+    --synergy-color: var(--color-primary);
+    overflow: visible;
+    border-color: var(--synergy-color);
+    background:
+        linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+        linear-gradient(135deg, var(--synergy-color), color-mix(in srgb, var(--synergy-color) 60%, #fff)) border-box;
+    border: 1.5px solid transparent;
+    box-shadow: 0 0 8px -2px color-mix(in srgb, var(--synergy-color) 35%, transparent);
+    animation: synergy-pulse 2.6s ease-in-out infinite alternate, fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
+}
+
+@keyframes synergy-pulse {
+    0%   { box-shadow: 0 0  6px -2px color-mix(in srgb, var(--synergy-color) 30%, transparent); }
+    100% { box-shadow: 0 0 14px -1px color-mix(in srgb, var(--synergy-color) 50%, transparent); }
+}
+
+.pokemon-card--synergy:hover {
+    box-shadow: 0 0 16px -1px color-mix(in srgb, var(--synergy-color) 55%, transparent);
+    border-color: var(--synergy-color);
+}
+
+/* Floating reason icon pill — positioned top-right outside the card padding */
+.pokemon-card__reason-icon {
+    position: absolute;
+    top: -0.35rem;
+    right: -0.35rem;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    background: var(--synergy-color);
+    color: #fff;
+    box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.pokemon-card__reason-icon svg {
+    width: 0.7rem;
+    height: 0.7rem;
+}
+
+/* Reason label below the name */
+.pokemon-card__reason-label {
+    display: block;
+    width: 100%;
+    padding: 0 0.15rem;
+    margin-top: -0.1rem;
+    margin-bottom: 0.2rem;
+    font-size: 0.575rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--synergy-color);
+    letter-spacing: 0.01em;
+}
+
+/* Keep the old suggested class as a soft fallback (non-synergy badge) */
 .pokemon-card--suggested {
     border-color: color-mix(in srgb, var(--color-success) 24%, var(--color-border));
     background: color-mix(in srgb, var(--color-success) 4%, var(--color-surface));

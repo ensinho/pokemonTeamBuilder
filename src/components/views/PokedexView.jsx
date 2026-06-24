@@ -24,7 +24,8 @@ import {
     Image as ImageIcon,
     Database,
     Zap,
-    HandFist
+    HandFist,
+    Trophy
 } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
@@ -37,6 +38,7 @@ import { StarIcon } from '../icons';
 import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
+import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 
 import {
@@ -1034,8 +1036,14 @@ export function PokedexView({
         return `${rate} (${percent}% with PokéBall, full HP)`;
     }, [speciesData]);
 
-    // Render detailed content (Data, Locations, Moves, or Sprites tabs)
+    // Render detailed content (Data, Competitive, Locations, Moves, or Sprites tabs)
     const renderDetailsContent = () => {
+        // Competitive only needs the species id, so it renders independently of the
+        // (heavier) Pokédex detail fetch.
+        if (activeTab === 'competitive') {
+            return <SmogonCompetitivePanel pokemonId={selectedPokemon?.id} />;
+        }
+
         if (!selectedPokemonDetails) return null;
 
         if (activeTab === 'data') {
@@ -1799,6 +1807,7 @@ export function PokedexView({
                 <div className="flex border-b border-border overflow-x-auto whitespace-nowrap scrollbar-none shrink-0 bg-surface px-2">
                     {[
                         { key: 'data', icon: <Activity className="w-4 h-4" />, label: t('pokedex.dataTab') },
+                        { key: 'competitive', icon: <Trophy className="w-4 h-4" />, label: language === 'pt' ? 'Competitivo' : 'Competitive' },
                         { key: 'locations', icon: <MapPin className="w-4 h-4" />, label: t('pokedex.locationsTab') },
                         { key: 'moves', icon: <Swords className="w-4 h-4" />, label: t('pokedex.movesTab') },
                         { key: 'sprites', icon: <ImageIcon className="w-4 h-4" />, label: t('pokedex.spritesTab') },
@@ -2103,6 +2112,14 @@ export function PokedexView({
                             >
                                 <Activity className="w-4 h-4" />
                                 <span>{t('pokedex.dataTab')}</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('competitive')}
+                                className={`pb-2.5 px-3 text-center font-bold text-sm border-b-2 transition-all flex items-center justify-center gap-2 shrink-0 ${activeTab === 'competitive' ? 'border-primary text-primary font-extrabold' : 'border-transparent text-muted hover:text-fg'}`}
+                            >
+                                <Trophy className="w-4 h-4" />
+                                <span>{language === 'pt' ? 'Competitivo' : 'Competitive'}</span>
                             </button>
                             <button
                                 type="button"
