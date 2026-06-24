@@ -199,6 +199,13 @@ export function FeedView({ colors, showToast, navigate }) {
         }
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSendMessageSubmit(e);
+        }
+    };
+
     // Handle Import Team from forum post
     const handleImportTeam = (sharedTeam) => {
         if (!sharedTeam || !sharedTeam.pokemons) return;
@@ -648,6 +655,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                 <textarea
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                     placeholder={language === 'pt' ? "Envie uma resposta pública..." : "Send a public reply..."}
                                     className="forum-chat-input-field forum-chat-textarea custom-scrollbar"
                                 />

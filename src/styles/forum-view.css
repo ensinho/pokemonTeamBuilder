@@ -913,8 +913,7 @@
     height: auto;
     min-height: 1.85rem;
     max-height: 6rem;
-    padding-top: 0.35rem;
-    padding-bottom: 0.35rem;
+    padding: 6.5px 0.5rem;
     line-height: 1.25;
 }
 
