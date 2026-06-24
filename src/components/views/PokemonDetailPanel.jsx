@@ -613,23 +613,23 @@ export function PokemonDetailPanel({
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Nº Nacional' : 'National ID'}</td>
                                             <td className="font-mono font-bold">#{formattedId || '----'}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.typesFilterLabel')}</td>
                                             <td className="flex gap-1">{selectedPokemonDetails.types?.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Espécie' : 'Species'}</td>
                                             <td className="font-bold capitalize">{pokemonGenus || t('common.loading')}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.height')}</td>
                                             <td className="font-bold font-mono">{heightInM ? `${heightInM} m` : t('common.loading')} {heightInFt && <span className="text-muted font-normal text-[11px] font-sans">({heightInFt})</span>}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.weight')}</td>
                                             <td className="font-bold font-mono">{weightInKg ? `${weightInKg} kg` : t('common.loading')} {weightInLbs && <span className="text-muted font-normal text-[11px] font-sans">({weightInLbs} lbs)</span>}</td>
                                         </tr>
@@ -660,10 +660,10 @@ export function PokemonDetailPanel({
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Pontos de EV' : 'EV Yield'}</td><td className="font-bold font-mono text-right truncate max-w-[200px]">{evYield}</td></tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Taxa de Captura' : 'Catch Rate'}</td><td className="font-bold font-mono text-right">{catchRateText || t('common.loading')}</td></tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Amizade Base' : 'Base Friendship'}</td><td className="font-bold font-mono text-right">{baseFriendshipText || t('common.loading')}</td></tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Exp. Base' : 'Base Exp.'}</td><td className="font-mono font-bold text-right">{fullApiData?.base_experience ?? t('common.loading')}</td></tr>
+                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Pontos de EV' : 'EV Yield'}</td><td className="font-bold font-mono text-right truncate max-w-[200px]">{evYield}</td></tr>
+                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Taxa de Captura' : 'Catch Rate'}</td><td className="font-bold font-mono text-right">{catchRateText || t('common.loading')}</td></tr>
+                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Amizade Base' : 'Base Friendship'}</td><td className="font-bold font-mono text-right">{baseFriendshipText || t('common.loading')}</td></tr>
+                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Exp. Base' : 'Base Exp.'}</td><td className="font-mono font-bold text-right">{fullApiData?.base_experience ?? t('common.loading')}</td></tr>
                                         <tr className="py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Crescimento' : 'Growth Rate'}</td><td className="font-bold text-right">{growthRateText || t('common.loading')}</td></tr>
                                     </tbody>
                                 </table>
@@ -709,7 +709,7 @@ export function PokemonDetailPanel({
                                                     </summary>
                                                     <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                                         {neutralTypes.map((tName) => (
-                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
+                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
                                                                 <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0 opacity-60" />{tName}
                                                             </span>
                                                         ))}
@@ -728,8 +728,8 @@ export function PokemonDetailPanel({
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Grupos de Ovos' : 'Egg Groups'}</td><td className="font-bold text-right capitalize">{eggGroups}</td></tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Gênero' : 'Gender Ratio'}</td><td className="font-bold font-mono text-right">{genderText || t('common.loading')}</td></tr>
+                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Grupos de Ovos' : 'Egg Groups'}</td><td className="font-bold text-right capitalize">{eggGroups}</td></tr>
+                                        <tr className="border-b border-border py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Gênero' : 'Gender Ratio'}</td><td className="font-bold font-mono text-right">{genderText || t('common.loading')}</td></tr>
                                         <tr className="py-2 flex justify-between items-center"><td className="text-muted">{language === 'pt' ? 'Ciclos de Ovo' : 'Egg Cycles'}</td><td className="font-bold font-mono text-right">{eggCyclesText || t('common.loading')}</td></tr>
                                     </tbody>
                                 </table>
@@ -842,13 +842,13 @@ export function PokemonDetailPanel({
                     ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0) ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                             {[{ key: 'levelUp', title: t('pokedex.movesLevelUp'), col: t('pokedex.movesHeaderLevel'), rows: resolvedMoves.levelUp },
-                              { key: 'machine', title: t('pokedex.movesMachine'), col: t('pokedex.movesHeaderTm'), rows: resolvedMoves.machine }].map((block) => (
+                            { key: 'machine', title: t('pokedex.movesMachine'), col: t('pokedex.movesHeaderTm'), rows: resolvedMoves.machine }].map((block) => (
                                 <div key={block.key} className="rounded-xl bg-surface p-4 border border-border">
                                     <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border"><ChevronRight className="w-3.5 h-3.5 text-primary" /><span>{block.title}</span></h5>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-left text-xs border-collapse pokedex-moves-table">
                                             <thead>
-                                                <tr className="border-b border-border/80 text-muted">
+                                                <tr className="border-b border-border text-muted">
                                                     <th className="pb-2 font-bold w-12">{block.col}</th>
                                                     <th className="pb-2 font-bold">{t('pokedex.movesHeaderName')}</th>
                                                     <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderType')}</th>
@@ -859,7 +859,7 @@ export function PokemonDetailPanel({
                                             </thead>
                                             <tbody>
                                                 {block.rows.map((m, idx) => (
-                                                    <tr key={idx} className="border-b border-border/40 hover:bg-bg/10">
+                                                    <tr key={idx} className="border-b border-border hover:bg-bg/10">
                                                         <td className="py-2.5 font-bold font-mono text-muted">{block.key === 'levelUp' ? m.level : (m.tmName ? formatTmName(m.tmName) : '—')}</td>
                                                         <td className="py-2.5 font-bold capitalize text-fg">{m.name.replace('-', ' ')}</td>
                                                         <td className="py-2.5 text-center"><span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider text-white" style={{ backgroundColor: typeColors[m.type] }}>{m.type.slice(0, 3)}</span></td>
@@ -926,11 +926,11 @@ export function PokemonDetailPanel({
                                                 {pokemonGenerationSprites.map((g) => <th key={g.name} className="p-3 font-bold text-muted min-w-[90px]">{g.name}</th>)}
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-border/60">
+                                        <tbody className="divide-y divide-border">
                                             <tr>
                                                 <td className="p-3 font-bold text-muted text-left border-r border-border">Normal</td>
                                                 {pokemonGenerationSprites.map((g) => (
-                                                    <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                    <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
                                                         {g.normal ? <img src={g.normal} alt={`${selectedPokemonDetails.name} ${g.name} normal`} onClick={() => setCustomSelectedSprite(g.normal)} className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.normal ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`} title={language === 'pt' ? 'Pré-visualizar Sprite Normal' : 'Preview Normal Sprite'} /> : <span className="text-muted text-[10px]">➔</span>}
                                                     </td>
                                                 ))}
@@ -938,7 +938,7 @@ export function PokemonDetailPanel({
                                             <tr>
                                                 <td className="p-3 font-bold text-muted text-left border-r border-border">{language === 'pt' ? 'Brilhante' : 'Shiny'}</td>
                                                 {pokemonGenerationSprites.map((g) => (
-                                                    <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                    <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
                                                         {g.shiny ? <img src={g.shiny} alt={`${selectedPokemonDetails.name} ${g.name} shiny`} onClick={() => setCustomSelectedSprite(g.shiny)} className={`h-12 w-12 mx-auto image-pixelated cursor-pointer hover:scale-110 active:scale-90 transition-transform ${customSelectedSprite === g.shiny ? 'ring-2 ring-primary rounded-lg bg-primary/10' : ''}`} title={language === 'pt' ? 'Pré-visualizar Sprite Brilhante' : 'Preview Shiny Sprite'} /> : <span className="text-muted text-[10px]">—</span>}
                                                     </td>
                                                 ))}

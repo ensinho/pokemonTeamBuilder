@@ -147,7 +147,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
 
                     {/* Pokémon Sprite Card */}
                     {artworkUrl && (
-                        <div className="relative group my-4 mx-auto w-40 h-40 flex items-center justify-center rounded-2xl bg-surface-raised/40 border border-border/60 p-4 shadow-lg overflow-visible">
+                        <div className="relative group my-4 mx-auto w-40 h-40 flex items-center justify-center rounded-2xl bg-surface-raised/40 border border-border p-4 shadow-lg overflow-visible">
                             {/* Pulsing ring animation */}
                             <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-primary-soft/40 to-accent-soft/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                             <div className="absolute w-32 h-32 border-2 border-dashed border-primary/20 rounded-full animate-spin pointer-events-none" style={{ animationDuration: '25s' }} />
@@ -167,12 +167,12 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                     </div>
 
                     {/* Stats */}
-                    <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto bg-surface-raised/30 rounded-2xl p-4 border border-border/40">
+                    <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto bg-surface-raised/30 rounded-2xl p-4 border border-border">
                         <div className="text-center">
                             <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">{t('quiz.totalGuessed')}</span>
                             <span className="text-lg font-black text-fg">{totalCount}</span>
                         </div>
-                        <div className="text-center border-l border-border/40">
+                        <div className="text-center border-l border-border">
                             <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">{t('quiz.accuracy')}</span>
                             <span className="text-lg font-black text-success">{accuracy}%</span>
                         </div>

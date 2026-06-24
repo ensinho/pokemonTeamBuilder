@@ -22,7 +22,7 @@ const STAT_COLOR_VAR = {
     speed: '--stat-spe',
 };
 
-export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => {} }) {
+export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => { } }) {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
     const { smogonFor } = useSmogonData();
@@ -202,7 +202,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                     {activeTab === 'build' && (
                         <div role="tabpanel" id="panel-build" aria-labelledby="tab-build" className="space-y-5">
                             {smogonEntry?.sets?.length > 0 && (
-                                <div className="rounded-xl border border-primary/30 bg-primary/5 p-3">
+                                <div className="rounded-xl border border-border bg-primary/5 p-3">
                                     <div className="mb-2 flex flex-wrap items-center gap-2">
                                         <Sparkles className="h-4 w-4 text-primary" />
                                         <h3 className="text-sm font-bold text-fg">{pt ? 'Conjuntos Smogon' : 'Smogon sets'}</h3>

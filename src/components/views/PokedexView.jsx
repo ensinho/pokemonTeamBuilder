@@ -1181,11 +1181,11 @@ export function PokedexView({
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Nº Nacional' : 'National ID'}</td>
                                             <td className="font-mono font-bold">#{formattedId || '----'}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.typesFilterLabel')}</td>
                                             <td className="flex gap-1">
                                                 {selectedPokemonDetails.types?.map((type) => (
@@ -1193,17 +1193,17 @@ export function PokedexView({
                                                 ))}
                                             </td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Espécie' : 'Species'}</td>
                                             <td className="font-bold capitalize">{pokemonGenus || t('common.loading')}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.height')}</td>
                                             <td className="font-bold font-mono">
                                                 {heightInM ? `${heightInM} m` : t('common.loading')} {heightInFt && <span className="text-muted font-normal text-[11px] font-sans">({heightInFt})</span>}
                                             </td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                             <td className="text-muted">{t('pokedex.weight')}</td>
                                             <td className="font-bold font-mono">
                                                 {weightInKg ? `${weightInKg} kg` : t('common.loading')} {weightInLbs && <span className="text-muted font-normal text-[11px] font-sans">({weightInLbs} lbs)</span>}
@@ -1242,19 +1242,19 @@ export function PokedexView({
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Pontos de EV' : 'EV Yield'}</td>
                                             <td className="font-bold font-mono text-right truncate max-w-[200px]">{evYield}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Taxa de Captura' : 'Catch Rate'}</td>
                                             <td className="font-bold font-mono text-right">{catchRateText || t('common.loading')}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Amizade Base' : 'Base Friendship'}</td>
                                             <td className="font-bold font-mono text-right">{baseFriendshipText || t('common.loading')}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Exp. Base' : 'Base Exp.'}</td>
                                             <td className="font-mono font-bold text-right">{fullApiData?.base_experience ?? t('common.loading')}</td>
                                         </tr>
@@ -1313,7 +1313,7 @@ export function PokedexView({
                                                     </summary>
                                                     <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                                         {neutralTypes.map(tName => (
-                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
+                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
                                                                 <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0 opacity-60" />
                                                                 {tName}
                                                             </span>
@@ -1334,11 +1334,11 @@ export function PokedexView({
                                 </h4>
                                 <table className="w-full text-xs text-fg">
                                     <tbody>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Grupos de Ovos' : 'Egg Groups'}</td>
                                             <td className="font-bold text-right capitalize">{eggGroups}</td>
                                         </tr>
-                                        <tr className="border-b border-border/40 py-2 flex justify-between items-center">
+                                        <tr className="border-b border-border py-2 flex justify-between items-center">
                                             <td className="text-muted">{language === 'pt' ? 'Gênero' : 'Gender Ratio'}</td>
                                             <td className="font-bold font-mono text-right">{genderText || t('common.loading')}</td>
                                         </tr>
@@ -1523,7 +1523,7 @@ export function PokedexView({
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs border-collapse pokedex-moves-table">
                                         <thead>
-                                            <tr className="border-b border-border/80 text-muted">
+                                            <tr className="border-b border-border text-muted">
                                                 <th className="pb-2 font-bold w-12">{t('pokedex.movesHeaderLevel')}</th>
                                                 <th className="pb-2 font-bold">{t('pokedex.movesHeaderName')}</th>
                                                 <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderType')}</th>
@@ -1535,7 +1535,7 @@ export function PokedexView({
                                         <tbody>
                                             {resolvedMoves.levelUp.map((m, idx) => {
                                                 return (
-                                                    <tr key={idx} className="border-b border-border/40 hover:bg-bg/10">
+                                                    <tr key={idx} className="border-b border-border hover:bg-bg/10">
                                                         <td className="py-2.5 font-bold font-mono text-muted">{m.level}</td>
                                                         <td className="py-2.5 font-bold capitalize text-fg">{m.name.replace('-', ' ')}</td>
                                                         <td className="py-2.5 text-center">
@@ -1573,7 +1573,7 @@ export function PokedexView({
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left text-xs border-collapse pokedex-moves-table">
                                         <thead>
-                                            <tr className="border-b border-border/80 text-muted">
+                                            <tr className="border-b border-border text-muted">
                                                 <th className="pb-2 font-bold w-12">{t('pokedex.movesHeaderTm')}</th>
                                                 <th className="pb-2 font-bold">{t('pokedex.movesHeaderName')}</th>
                                                 <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderType')}</th>
@@ -1585,7 +1585,7 @@ export function PokedexView({
                                         <tbody>
                                             {resolvedMoves.machine.map((m, idx) => {
                                                 return (
-                                                    <tr key={idx} className="border-b border-border/40 hover:bg-bg/10">
+                                                    <tr key={idx} className="border-b border-border hover:bg-bg/10">
                                                         <td className="py-2.5 font-mono text-primary font-bold">
                                                             {m.tmName ? formatTmName(m.tmName) : '—'}
                                                         </td>
@@ -1696,12 +1696,12 @@ export function PokedexView({
                                                 ))}
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-border/60">
+                                        <tbody className="divide-y divide-border">
                                             {/* Normal Sprites */}
                                             <tr>
                                                 <td className="p-3 font-bold text-muted text-left border-r border-border">Normal</td>
                                                 {pokemonGenerationSprites.map((g) => (
-                                                    <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                    <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
                                                         {g.normal ? (
                                                             <img
                                                                 src={g.normal}
@@ -1721,7 +1721,7 @@ export function PokedexView({
                                             <tr>
                                                 <td className="p-3 font-bold text-muted text-left border-r border-border">{language === 'pt' ? 'Brilhante' : 'Shiny'}</td>
                                                 {pokemonGenerationSprites.map((g) => (
-                                                    <td key={g.name} className="p-2 border-r border-border/40 hover:bg-bg/25 transition-colors">
+                                                    <td key={g.name} className="p-2 border-r border-border hover:bg-bg/25 transition-colors">
                                                         {g.shiny ? (
                                                             <img
                                                                 src={g.shiny}

@@ -90,15 +90,13 @@ const ToggleSwitch = ({ checked, onChange, label, activeColor = 'bg-primary' }) 
             className="inline-flex items-center gap-2.5 group focus:outline-none cursor-pointer"
         >
             <span
-                className={`relative inline-block rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary ${
-                    checked ? activeColor : 'bg-surface-raised border border-border'
-                }`}
+                className={`relative inline-block rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary ${checked ? activeColor : 'bg-surface-raised border border-border'
+                    }`}
                 style={{ width: '2rem', height: '1.1rem' }}
             >
                 <span
-                    className={`absolute top-[1px] left-[1px] inline-block rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                        checked ? 'translate-x-[0.9rem]' : 'translate-x-0'
-                    }`}
+                    className={`absolute top-[1px] left-[1px] inline-block rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? 'translate-x-[0.9rem]' : 'translate-x-0'
+                        }`}
                     style={{ width: '0.9rem', height: '0.9rem' }}
                 />
             </span>
@@ -480,7 +478,7 @@ export function DamageCalculatorView() {
                             </span>
                         </div>
 
-                        <p className="text-xs leading-relaxed text-fg/90 font-medium select-all bg-bg/40 p-2.5 rounded-lg border border-border/40 font-mono">
+                        <p className="text-xs leading-relaxed text-fg/90 font-medium select-all bg-bg/40 p-2.5 rounded-lg border border-border font-mono">
                             {summaryText}
                         </p>
 
@@ -506,7 +504,7 @@ export function DamageCalculatorView() {
                         </div>
 
                         {/* 16 Roll list */}
-                        <div className="mt-3 text-[11px] text-muted leading-tight font-mono select-none bg-surface/60 p-2 rounded border border-border/40">
+                        <div className="mt-3 text-[11px] text-muted leading-tight font-mono select-none bg-surface/60 p-2 rounded border border-border">
                             <strong>Possible damage rolls:</strong> ({result.damageRolls.join(', ')})
                         </div>
                     </div>
@@ -573,10 +571,10 @@ export function DamageCalculatorView() {
                     <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-xs font-extrabold tracking-wider uppercase text-[#F08030] flex items-center gap-1.5">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M14.5 17.5 3 6V3h3l11.5 11.5"/>
-                                <path d="m13 19 6-6"/>
-                                <path d="m16 22 5-5"/>
-                                <path d="m19 21 2-2"/>
+                                <path d="M14.5 17.5 3 6V3h3l11.5 11.5" />
+                                <path d="m13 19 6-6" />
+                                <path d="m16 22 5-5" />
+                                <path d="m19 21 2-2" />
                             </svg>
                             Pokémon 1 (Attacker)
                         </span>
@@ -588,7 +586,7 @@ export function DamageCalculatorView() {
                     {/* Top Section: Sprite + Name/Level/Status inputs */}
                     <div className="flex gap-4 items-start">
                         {/* Big Sprite Container */}
-                        <div className="w-20 h-20 bg-bg border border-border/80 rounded-xl flex items-center justify-center relative overflow-hidden shrink-0 shadow-inner">
+                        <div className="w-20 h-20 bg-bg border border-border rounded-xl flex items-center justify-center relative overflow-hidden shrink-0 shadow-inner">
                             {p1.pokemon ? (
                                 <img
                                     src={getPokemonDisplaySprite(p1.pokemon, { preferArtwork: true })}
@@ -601,7 +599,7 @@ export function DamageCalculatorView() {
                             ) : (
                                 <div className="text-muted/30">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                        <circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                                     </svg>
                                 </div>
                             )}
@@ -610,7 +608,7 @@ export function DamageCalculatorView() {
                         {/* Name & Basic Controls side-by-side */}
                         <div className="flex-1 min-w-0 space-y-2">
                             <PokemonPicker pokemons={allPokemons} value={p1.pokemon} onSelect={(p) => handleSelectPokemon('p1', p)} />
-                            
+
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <label className="dmg-field__label">Level</label>
@@ -642,7 +640,7 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Active Attack Card */}
-                    <div className="p-3 rounded-xl bg-primary-soft/10 border border-primary/20 flex flex-col justify-center">
+                    <div className="p-3 rounded-xl bg-primary-soft/10 border border-border flex flex-col justify-center">
                         <span className="text-[10px] font-extrabold text-[#F08030] uppercase tracking-wider mb-1 flex items-center gap-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
                             Active Attack
@@ -688,7 +686,7 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Stats Table */}
-                    <div className="bg-bg/25 p-2 rounded-lg border border-border/80">
+                    <div className="bg-bg/25 p-2 rounded-lg border border-border">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-border text-[10px] text-muted uppercase tracking-wider font-semibold">
@@ -742,7 +740,7 @@ export function DamageCalculatorView() {
                         <div className="flex items-center justify-between mb-1">
                             <span className="text-xs font-extrabold uppercase tracking-wider text-muted flex items-center gap-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#F08030]">
-                                    <circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/>
+                                    <circle cx="12" cy="12" r="10" /><path d="m4.93 4.93 4.24 4.24" /><path d="m14.83 9.17 4.24-4.24" /><path d="m14.83 14.83 4.24 4.24" /><path d="m9.17 14.83-4.24 4.24" />
                                 </svg>
                                 Attacker Moveset
                             </span>
@@ -756,8 +754,8 @@ export function DamageCalculatorView() {
                                         key={idx}
                                         onClick={() => setP1(prev => ({ ...prev, activeMoveIndex: idx }))}
                                         className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all relative group ${isActive
-                                                ? 'bg-primary-soft/30 border-primary ring-1 ring-primary shadow-sm'
-                                                : 'bg-bg/15 border-border hover:bg-bg/30 hover:border-border-hover'
+                                            ? 'bg-primary-soft/30 border-primary ring-1 ring-primary shadow-sm'
+                                            : 'bg-bg/15 border-border hover:bg-bg/30 hover:border-border-hover'
                                             }`}
                                     >
                                         <div className="flex items-center justify-between mb-2">
@@ -889,8 +887,8 @@ export function DamageCalculatorView() {
                     <div className="border-b border-border pb-2">
                         <span className="text-xs font-extrabold tracking-wider uppercase text-primary flex items-center gap-1.5">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M2 22h20"/>
-                                <path d="M5 22V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v15"/>
+                                <path d="M2 22h20" />
+                                <path d="M5 22V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v15" />
                             </svg>
                             Field Conditions
                         </span>
@@ -1034,7 +1032,7 @@ export function DamageCalculatorView() {
                         </div>
 
                         {/* Spikes Layer toggle */}
-                        <div className="flex items-center justify-between border-t border-border/60 pt-2 flex-wrap gap-1">
+                        <div className="flex items-center justify-between border-t border-border pt-2 flex-wrap gap-1">
                             <span className="text-xs font-semibold text-muted">Spikes Layers</span>
                             <div className="flex bg-bg p-0.5 rounded border border-border text-[10px] font-bold">
                                 {[0, 1, 2, 3].map((val) => (
@@ -1060,7 +1058,7 @@ export function DamageCalculatorView() {
                     <div className="flex items-center justify-between border-b border-border pb-2">
                         <span className="text-xs font-extrabold tracking-wider uppercase text-[#6890F0] flex items-center gap-1.5">
                             <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                             </svg>
                             Pokémon 2 (Defender)
                         </span>
@@ -1072,7 +1070,7 @@ export function DamageCalculatorView() {
                     {/* Top Section: Sprite + Name/Level/Status inputs */}
                     <div className="flex gap-4 items-start">
                         {/* Big Sprite Container */}
-                        <div className="w-20 h-20 bg-bg border border-border/80 rounded-xl flex items-center justify-center relative overflow-hidden shrink-0 shadow-inner">
+                        <div className="w-20 h-20 bg-bg border border-border rounded-xl flex items-center justify-center relative overflow-hidden shrink-0 shadow-inner">
                             {p2.pokemon ? (
                                 <img
                                     src={getPokemonDisplaySprite(p2.pokemon, { preferArtwork: true })}
@@ -1085,7 +1083,7 @@ export function DamageCalculatorView() {
                             ) : (
                                 <div className="text-muted/30">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                        <circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                                        <circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                                     </svg>
                                 </div>
                             )}
@@ -1094,7 +1092,7 @@ export function DamageCalculatorView() {
                         {/* Name & Basic Controls side-by-side */}
                         <div className="flex-1 min-w-0 space-y-2">
                             <PokemonPicker pokemons={allPokemons} value={p2.pokemon} onSelect={(p) => handleSelectPokemon('p2', p)} />
-                            
+
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
                                     <label className="dmg-field__label">Level</label>
@@ -1126,7 +1124,7 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Target Health Card */}
-                    <div className="p-3 rounded-xl bg-bg/50 border border-border/60 flex flex-col justify-center">
+                    <div className="p-3 rounded-xl bg-bg/50 border border-border flex flex-col justify-center">
                         <span className="text-[10px] font-extrabold text-[#6890F0] uppercase tracking-wider mb-1 flex items-center gap-1">
                             <span className="h-1.5 w-1.5 rounded-full bg-[#6890F0] animate-pulse" />
                             Target Health
@@ -1136,9 +1134,8 @@ export function DamageCalculatorView() {
                             {/* Progress bar fill */}
                             <div className="h-2 w-full bg-surface rounded-full overflow-hidden border border-border" aria-hidden="true">
                                 <div
-                                    className={`h-full transition-all duration-300 ${
-                                        p2.currentHp > 50 ? 'bg-success' : (p2.currentHp > 20 ? 'bg-warning' : 'bg-danger')
-                                    }`}
+                                    className={`h-full transition-all duration-300 ${p2.currentHp > 50 ? 'bg-success' : (p2.currentHp > 20 ? 'bg-warning' : 'bg-danger')
+                                        }`}
                                     style={{ width: `${p2.currentHp}%` }}
                                 />
                             </div>
@@ -1168,7 +1165,7 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Stats Table */}
-                    <div className="bg-bg/25 p-2 rounded-lg border border-border/80">
+                    <div className="bg-bg/25 p-2 rounded-lg border border-border">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-border text-[10px] text-muted uppercase tracking-wider font-semibold">

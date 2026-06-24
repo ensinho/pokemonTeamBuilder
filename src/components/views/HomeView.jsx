@@ -587,7 +587,7 @@ export function HomeView({
                             borderColor: heroAccentBorder,
                         }}
                     >
-                        <div className="home-readme-header flex items-center justify-between px-4 py-2 border-b border-border/80 bg-surface-raised/40 text-xs text-muted font-mono">
+                        <div className="home-readme-header flex items-center justify-between px-4 py-2 border-b border-border bg-surface-raised/40 text-xs text-muted font-mono">
                             <div className="flex items-center gap-2">
                                 <BookOpen className="w-3.5 h-3.5" />
                                 <span>{userId ? resolvedUsername : 'guest'} / </span>
@@ -812,7 +812,7 @@ export function HomeView({
                     {/* Dashboard hub: quick access, popular-in-tournaments, recent teams */}
                     <HomeDashboard navigate={navigate} />
 
-                    </div>
+                </div>
 
                 {/* Right column: trainer widgets up top, activity feed in the bottom half */}
                 <aside className="home-sidebar flex flex-col gap-4 md:gap-7">
@@ -1007,20 +1007,20 @@ export function HomeView({
                                                     <div className="github-pr-card">
                                                         <div className="github-pr-header flex items-center justify-between">
                                                             <div className="flex items-center gap-1.5 text-xs text-muted flex-wrap">
-                                                                 <GitBranch className="w-3.5 h-3.5 text-success shrink-0" />
-                                                                 <span
-                                                                     className="font-bold text-fg cursor-pointer hover:underline"
-                                                                     onClick={() => setSelectedProfile({
-                                                                         userId: message.createdBy,
-                                                                         name: message.creatorName,
-                                                                         avatar: message.creatorAvatar,
-                                                                         isShiny: message.creatorAvatarIsShiny
-                                                                     })}
-                                                                 >
-                                                                     @{message.creatorName}
-                                                                 </span>
-                                                                 <span>merged team:</span>
-                                                                 <span className="font-mono bg-surface px-1.5 py-0.5 rounded border border-border text-primary font-bold">{message.sharedTeam.name}</span>
+                                                                <GitBranch className="w-3.5 h-3.5 text-success shrink-0" />
+                                                                <span
+                                                                    className="font-bold text-fg cursor-pointer hover:underline"
+                                                                    onClick={() => setSelectedProfile({
+                                                                        userId: message.createdBy,
+                                                                        name: message.creatorName,
+                                                                        avatar: message.creatorAvatar,
+                                                                        isShiny: message.creatorAvatarIsShiny
+                                                                    })}
+                                                                >
+                                                                    @{message.creatorName}
+                                                                </span>
+                                                                <span>merged team:</span>
+                                                                <span className="font-mono bg-surface px-1.5 py-0.5 rounded border border-border text-primary font-bold">{message.sharedTeam.name}</span>
                                                             </div>
                                                             <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
                                                         </div>

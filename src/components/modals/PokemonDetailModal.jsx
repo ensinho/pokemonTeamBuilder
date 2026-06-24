@@ -294,11 +294,11 @@ export function PokemonDetailModal({
                             </h4>
                             <table className="w-full text-xs text-fg">
                                 <tbody>
-                                    <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                    <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                         <td className="text-muted">{language === 'pt' ? 'Nº Nacional' : 'National ID'}</td>
                                         <td className="font-mono font-bold">#{String(pokemon.id).padStart(4, '0')}</td>
                                     </tr>
-                                    <tr className="border-b border-border/40 py-2.5 flex justify-between items-center">
+                                    <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                         <td className="text-muted">{t('pokedex.typesFilterLabel')}</td>
                                         <td className="flex gap-1">
                                             {pokemon.types?.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
@@ -374,7 +374,7 @@ export function PokemonDetailModal({
                                         </summary>
                                         <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                             {neutralTypes.map((tName) => (
-                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full border border-border/50 bg-surface-raised/40 px-2 py-0.5 text-[11px] font-semibold capitalize text-muted/70">
+                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised/40 px-2 py-0.5 text-[11px] font-semibold capitalize text-muted/70">
                                                     <img src={typeIcons[tName]} alt={tName} className="h-3.5 w-3.5 shrink-0 opacity-60" />
                                                     {tName}
                                                 </span>
