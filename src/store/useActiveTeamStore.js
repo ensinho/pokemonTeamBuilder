@@ -26,7 +26,7 @@ const createTeamMember = (fullPokemon) => ({
         teraType: fullPokemon.types?.[0] || 'normal',
         isShiny: false,
         ability: fullPokemon.abilities?.[0]?.name || 'unknown',
-        moves: (fullPokemon.moves || []).slice(0, 4).map((m) => m.name),
+        moves: [],
         evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
         ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
     },

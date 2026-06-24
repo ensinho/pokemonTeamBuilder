@@ -238,6 +238,41 @@
     flex: 1;
     overflow-y: auto;
     padding: 0.6rem var(--app-shell-gutter);
+    /* Firefox: thin, theme-tinted scrollbar instead of the default chunky one. */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color var(--duration-slow) var(--ease-smooth);
+}
+
+/* Chrome/Edge/Safari render a chunky, high-contrast scrollbar by default that
+   clashes with the dark sidebar. Make it a slim, theme-tinted overlay that stays
+   invisible until the sidebar is hovered/scrolled, matching Firefox's look. */
+.app-shell__nav:hover,
+.app-shell__nav:focus-within {
+    scrollbar-color: color-mix(in srgb, var(--color-border) 80%, transparent) transparent;
+}
+
+.app-shell__nav::-webkit-scrollbar {
+    width: 6px;
+}
+
+.app-shell__nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.app-shell__nav::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 999px;
+    transition: background-color var(--duration-slow) var(--ease-smooth);
+}
+
+.app-shell__nav:hover::-webkit-scrollbar-thumb,
+.app-shell__nav:focus-within::-webkit-scrollbar-thumb {
+    background-color: color-mix(in srgb, var(--color-border) 80%, transparent);
+}
+
+.app-shell__nav::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-muted);
 }
 
 .app-shell__nav-list {

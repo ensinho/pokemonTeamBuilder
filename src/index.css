@@ -282,6 +282,56 @@ body {
     image-rendering: pixelated;
 }
 
+/* Polished EV range slider (TeamPokemonEditorModal). The colored track fill is
+   set inline per-stat via a linear-gradient background; here we shape the track
+   and give it a smooth, grabbable thumb across engines. */
+.ev-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 0.5rem;
+    border-radius: 999px;
+    cursor: pointer;
+    outline: none;
+}
+.ev-slider:focus-visible {
+    box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+}
+.ev-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    transition: transform var(--duration-fast) var(--ease-spring);
+}
+.ev-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.18);
+}
+.ev-slider:active::-webkit-slider-thumb {
+    transform: scale(1.24);
+}
+.ev-slider::-moz-range-track {
+    background: transparent;
+    border-radius: 999px;
+    height: 0.5rem;
+}
+.ev-slider::-moz-range-thumb {
+    width: 1.05rem;
+    height: 1.05rem;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 2px solid var(--color-primary);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+    transition: transform var(--duration-fast) var(--ease-spring);
+}
+.ev-slider::-moz-range-thumb:hover {
+    transform: scale(1.18);
+}
+
 /* Editor modal shiny toggle */
 input[type='checkbox']:checked + div + div {
     transform: translateX(100%);

@@ -13,6 +13,15 @@ export function useModalA11y(onClose) {
     const dialogRef = useRef(null);
     const previouslyFocusedRef = useRef(null);
 
+    // Keep the latest onClose without re-running the focus effect. Callers often
+    // pass an inline arrow (e.g. `() => setX(null)`) that changes identity on
+    // every parent render; if that drove the effect, any parent re-render while
+    // the modal is open (e.g. updating a shared cache as the user types) would
+    // re-run the mount logic and yank focus back to the dialog — stealing it
+    // from inputs after a single keystroke.
+    const onCloseRef = useRef(onClose);
+    onCloseRef.current = onClose;
+
     useEffect(() => {
         previouslyFocusedRef.current = document.activeElement;
         const node = dialogRef.current;
@@ -25,7 +34,7 @@ export function useModalA11y(onClose) {
         const onKey = (e) => {
             if (e.key === 'Escape') {
                 e.stopPropagation();
-                onClose?.();
+                onCloseRef.current?.();
             }
         };
         document.addEventListener('keydown', onKey);
@@ -36,7 +45,7 @@ export function useModalA11y(onClose) {
                 prev.focus();
             }
         };
-    }, [onClose]);
+    }, []);
 
     return dialogRef;
 }

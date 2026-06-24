@@ -1,21 +1,30 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { typeColors } from '../../constants/types';
+import { typeColors, typeIcons } from '../../constants/types';
 import { getMoveDetails } from '../../services/pokemonDataCache';
 import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
+
+// Canonical, theme-independent stat colors (defined in index.css :root).
+const STAT_COLOR_VAR = {
+    hp: '--stat-hp',
+    attack: '--stat-atk',
+    defense: '--stat-def',
+    'special-attack': '--stat-spa',
+    'special-defense': '--stat-spd',
+    speed: '--stat-spe',
+};
 
 export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => {} }) {
     const { t } = useTranslation();
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
-    const [activeTab, setActiveTab] = useState('loadout');
+    const [activeTab, setActiveTab] = useState('build');
     const dialogRef = useModalA11y(onClose);
     const statNames = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
     const pokemonWeaknesses = useMemo(() => getPokemonWeaknessEntries(pokemon?.types || []), [pokemon]);
@@ -37,7 +46,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     useEffect(() => {
         setCustomization(pokemon.customization);
         setMoveSearch('');
-        setActiveTab('loadout');
+        setActiveTab('build');
     }, [pokemon]);
 
     useEffect(() => {
@@ -90,7 +99,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     }, [moveSearch, pokemon.moves]);
 
     useEffect(() => {
-        filteredMoves.slice(0, 20).forEach((move) => {
+        filteredMoves.forEach((move) => {
             if (moveDetailsCache[move.name] === undefined) {
                 fetchMoveDetails(move.url, move.name);
             }
@@ -100,12 +109,12 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     if (!pokemon) return null;
 
     const tabs = [
-        { id: 'loadout', label: t('modals.editorModalTabLoadout') },
+        { id: 'build', label: t('modals.editorModalTabBuild') },
         { id: 'stats', label: t('modals.editorModalTabStats') },
-        { id: 'moves', label: t('modals.editorModalTabMoves', { count: customization.moves.length }) },
     ];
 
-    const controlClassName = 'w-full rounded-lg border-2 border-transparent bg-surface-raised text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary';
+    const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm capitalize text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary';
+    const fieldLabelClassName = 'mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text-muted';
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-3 sm:p-4" onClick={onClose} role="presentation">
@@ -184,82 +193,179 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                         '--scrollbar-thumb-border-color': colors.card,
                     }}
                 >
-                    {activeTab === 'loadout' && (
-                        <div role="tabpanel" id="panel-loadout" aria-labelledby="tab-loadout" className="space-y-5">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {activeTab === 'build' && (
+                        <div role="tabpanel" id="panel-build" aria-labelledby="tab-build" className="space-y-5">
+                            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-4">
                                 <div>
-                                    <label htmlFor="editor-item" className="mb-1 block text-sm font-bold text-fg">{t('modals.editorModalItemLabel')}</label>
-                                    <select id="editor-item" value={customization.item} onChange={(event) => handleCustomizationChange('item', event.target.value)} className={`${controlClassName} p-2 capitalize`}>
+                                    <label htmlFor="editor-item" className={fieldLabelClassName}>{t('modals.editorModalItemLabel')}</label>
+                                    <select id="editor-item" value={customization.item} onChange={(event) => handleCustomizationChange('item', event.target.value)} className={controlClassName}>
                                         <option value="">{t('common.none')}</option>
                                         {items.map((item) => <option key={item.name} value={item.name} className="capitalize">{item.name.replace(/-/g, ' ')}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label htmlFor="editor-nature" className="mb-1 block text-sm font-bold text-fg">{t('modals.editorModalNatureLabel')}</label>
-                                    <select id="editor-nature" value={customization.nature} onChange={(event) => handleCustomizationChange('nature', event.target.value)} className={`${controlClassName} p-2 capitalize`}>
+                                    <label htmlFor="editor-nature" className={fieldLabelClassName}>{t('modals.editorModalNatureLabel')}</label>
+                                    <select id="editor-nature" value={customization.nature} onChange={(event) => handleCustomizationChange('nature', event.target.value)} className={controlClassName}>
                                         {natures.map((nature) => <option key={nature.name} value={nature.name} className="capitalize">{nature.name.replace(/-/g, ' ')}</option>)}
                                     </select>
                                 </div>
                                 <div>
-                                    <label htmlFor="editor-tera" className="mb-1 block text-sm font-bold text-fg">{t('modals.editorModalTeraLabel')}</label>
-                                    <select id="editor-tera" value={customization.teraType} onChange={(event) => handleCustomizationChange('teraType', event.target.value)} className={`${controlClassName} p-2 capitalize`}>
+                                    <label htmlFor="editor-tera" className={fieldLabelClassName}>{t('modals.editorModalTeraLabel')}</label>
+                                    <select id="editor-tera" value={customization.teraType} onChange={(event) => handleCustomizationChange('teraType', event.target.value)} className={controlClassName}>
                                         {Object.keys(typeColors).map((type) => <option key={type} value={type} className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</option>)}
                                     </select>
                                 </div>
-                                <div className="flex items-end">
-                                    <button type="button" role="switch" aria-checked={customization.isShiny} onClick={() => handleCustomizationChange('isShiny', !customization.isShiny)} className="inline-flex items-center gap-3 group focus:outline-none">
-                                        <span
-                                            className={`relative inline-block w-11 h-6 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-primary ${customization.isShiny ? 'bg-success' : 'bg-surface-raised'}`}
-                                            aria-hidden="true"
-                                        >
-                                            <span className={`absolute top-0.5 left-0.5 inline-block w-5 h-5 bg-white rounded-full shadow transition-transform ${customization.isShiny ? 'translate-x-5' : 'translate-x-0'}`} />
-                                        </span>
-                                        <span className="text-sm font-bold text-fg">{t('modals.editorModalShinyLabel')}</span>
-                                    </button>
+                                <div>
+                                    <label htmlFor="editor-ability" className={fieldLabelClassName}>{t('modals.editorModalAbilityLabel')}</label>
+                                    <select id="editor-ability" value={customization.ability} onChange={(event) => handleCustomizationChange('ability', event.target.value)} className={controlClassName}>
+                                        {(pokemon.abilities || []).map((ability) => (
+                                            <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 
-                            <div>
-                                <label htmlFor="editor-ability" className="mb-2 block text-base font-bold text-fg">{t('modals.editorModalAbilityLabel')}</label>
-                                <select id="editor-ability" value={customization.ability} onChange={(event) => handleCustomizationChange('ability', event.target.value)} className={`${controlClassName} p-3 capitalize`}>
-                                    {(pokemon.abilities || []).map((ability) => (
-                                        <option key={ability.name} value={ability.name} className="capitalize">{ability.name.replace(/-/g, ' ')}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={customization.isShiny}
+                                onClick={() => handleCustomizationChange('isShiny', !customization.isShiny)}
+                                className={`inline-flex w-fit items-center gap-2.5 rounded-full border px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${customization.isShiny ? 'border-success/50 bg-success/15' : 'border-border bg-surface-raised'}`}
+                            >
+                                <span
+                                    className={`relative inline-block h-5 w-9 flex-shrink-0 rounded-full transition-colors ${customization.isShiny ? 'bg-success' : 'bg-bg'}`}
+                                    aria-hidden="true"
+                                >
+                                    <span className={`absolute left-0.5 top-0.5 inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${customization.isShiny ? 'translate-x-4' : 'translate-x-0'}`} />
+                                </span>
+                                <span className="text-sm font-semibold text-fg">{t('modals.editorModalShinyLabel')}</span>
+                            </button>
 
-                            <div>
-                                <h3 className="mb-2 text-base font-bold text-fg">{t('modals.editorModalBaseStats')}</h3>
-                                <div className="space-y-1.5">
-                                    {pokemon.stats?.map((stat) => <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />)}
+                            <div className="border-t border-surface-raised pt-5">
+                                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-base font-bold text-fg">{t('modals.editorModalMovesHeading')}</h3>
+                                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${customization.moves.length === 4 ? 'bg-success/15 text-success' : 'bg-surface-raised text-muted'}`}>
+                                            {customization.moves.length}/4
+                                        </span>
+                                    </div>
+                                    <span className="text-xs text-muted">{t('modals.editorModalMovesHint')}</span>
+                                </div>
+
+                                <div className="mb-3 flex min-h-[2.25rem] flex-wrap items-center gap-2">
+                                    {customization.moves.length === 0 && (
+                                        <span className="text-sm italic text-muted">{t('modals.editorModalNoMovesYet')}</span>
+                                    )}
+                                    {customization.moves.map((moveName) => {
+                                        const moveType = moveDetailsCache[moveName]?.type;
+                                        const tint = moveType ? typeColors[moveType] : colors.primary;
+                                        return (
+                                            <button
+                                                key={moveName}
+                                                type="button"
+                                                onClick={() => handleMoveToggle(moveName)}
+                                                aria-label={t('modals.editorModalRemoveMove', { move: moveName.replace(/-/g, ' ') })}
+                                                className="group inline-flex items-center gap-1.5 rounded-full border py-1 pl-1.5 pr-2.5 text-sm font-semibold capitalize text-fg transition-transform hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                                style={{ borderColor: tint, backgroundColor: `color-mix(in srgb, ${tint} 22%, var(--color-surface))` }}
+                                            >
+                                                {moveType && <img src={typeIcons[moveType]} alt="" className="h-4 w-4 flex-shrink-0" />}
+                                                {moveName.replace(/-/g, ' ')}
+                                                <CloseIcon className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" />
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                <input
+                                    type="text"
+                                    placeholder={t('modals.editorModalSearchMoves')}
+                                    value={moveSearch}
+                                    onChange={(event) => setMoveSearch(event.target.value)}
+                                    className="mb-3 w-full rounded-lg bg-surface-raised p-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    aria-label={t('modals.editorModalSearchMoves')}
+                                />
+
+                                <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto custom-scrollbar pr-1 sm:grid-cols-3" style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}>
+                                    {filteredMoves.length === 0 ? (
+                                        <p className="col-span-full py-6 text-center text-sm text-muted">{t('modals.editorModalNoMovesFound')}</p>
+                                    ) : filteredMoves.map((move) => {
+                                        const moveType = moveDetailsCache[move.name]?.type;
+                                        const tint = moveType ? typeColors[moveType] : colors.primary;
+                                        const isSelected = customization.moves.includes(move.name);
+                                        const isFull = customization.moves.length >= 4;
+                                        const isDisabled = !isSelected && isFull;
+                                        const style = isSelected
+                                            ? { borderColor: tint, backgroundColor: `color-mix(in srgb, ${tint} 20%, var(--color-surface))` }
+                                            : undefined;
+
+                                        return (
+                                            <button
+                                                key={move.name}
+                                                type="button"
+                                                disabled={isDisabled}
+                                                onClick={() => handleMoveToggle(move.name)}
+                                                aria-pressed={isSelected}
+                                                className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm capitalize text-fg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isSelected ? 'font-semibold' : 'border-border bg-surface-raised hover:border-border-hover'} ${isDisabled ? 'cursor-not-allowed opacity-40 hover:border-border' : ''}`}
+                                                style={style}
+                                            >
+                                                {moveType ? (
+                                                    <img src={typeIcons[moveType]} alt="" className="h-4 w-4 flex-shrink-0" />
+                                                ) : (
+                                                    <span className="h-4 w-4 flex-shrink-0 animate-pulse rounded-full bg-surface-raised" aria-hidden="true" />
+                                                )}
+                                                <span className="truncate">{move.name.replace(/-/g, ' ')}</span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'stats' && (
-                        <div role="tabpanel" id="panel-stats" aria-labelledby="tab-stats">
-                            <div className="flex items-baseline justify-between mb-3">
+                        <div role="tabpanel" id="panel-stats" aria-labelledby="tab-stats" className="space-y-5">
+                            <div className="flex items-baseline justify-between">
                                 <h3 className="text-lg font-bold text-fg">{t('modals.editorModalEffortValues')}</h3>
                                 <p className="text-sm text-muted">
                                     {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}>{remainingEVs}</span> / 510
                                 </p>
                             </div>
-                            <div className="mb-5 h-2 w-full overflow-hidden rounded-full bg-surface-raised">
-                                <div className="h-full bg-primary transition-all" style={{ width: `${((510 - remainingEVs) / 510) * 100}%` }} />
+                            <div className="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
+                                <div className="h-full bg-primary transition-all duration-200" style={{ width: `${((510 - remainingEVs) / 510) * 100}%` }} />
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {statNames.map((statName, index) => {
                                     const baseStat = pokemon.stats?.[index]?.base_stat ?? 0;
                                     const ev = customization.evs[statName];
                                     const totalStat = calculateStat(baseStat, ev, statName);
+                                    const minTotal = calculateStat(baseStat, 0, statName);
+                                    const maxTotal = calculateStat(baseStat, 252, statName);
+                                    const colorVar = STAT_COLOR_VAR[statName] ?? '--stat-hp';
+                                    const basePct = (minTotal / maxTotal) * 100;
+                                    const totalPct = (totalStat / maxTotal) * 100;
+                                    const fillPct = (ev / 252) * 100;
+                                    const statColor = `var(${colorVar})`;
 
                                     return (
-                                        <div key={statName}>
-                                            <div className="flex justify-between items-center capitalize text-sm">
-                                                <span className="text-fg">{statName.replace(/-/g, ' ')}</span>
-                                                <span className="text-muted">{t('modals.editorModalEvStatShort', { ev, total: totalStat })}</span>
+                                        <div key={statName} className="space-y-1.5">
+                                            <div className="flex items-baseline justify-between text-sm capitalize">
+                                                <span className="font-semibold text-fg">{statName.replace(/-/g, ' ')}</span>
+                                                <span className="flex items-baseline gap-2 text-muted">
+                                                    <span className="text-xs">{ev} EV</span>
+                                                    <span className="font-mono text-base font-bold text-fg">{totalStat}</span>
+                                                </span>
+                                            </div>
+                                            {/* Live total bar — the base segment is solid, the EV-added segment is striped and grows as you drag. */}
+                                            <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-surface-raised">
+                                                <div
+                                                    className="absolute inset-y-0 left-0 rounded-full transition-all duration-200"
+                                                    style={{ width: `${totalPct}%`, backgroundColor: statColor, opacity: 0.45 }}
+                                                />
+                                                <div
+                                                    className="absolute inset-y-0 left-0 rounded-full transition-all duration-200"
+                                                    style={{ width: `${basePct}%`, backgroundColor: statColor }}
+                                                />
                                             </div>
                                             <input
                                                 type="range"
@@ -268,60 +374,11 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 value={ev}
                                                 step="4"
                                                 onChange={(event) => handleEvChange(statName, event.target.value)}
-                                                className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-surface-raised focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                                className="ev-slider"
+                                                style={{ background: `linear-gradient(to right, ${statColor} 0%, ${statColor} ${fillPct}%, var(--color-surface-raised) ${fillPct}%, var(--color-surface-raised) 100%)` }}
                                                 aria-label={`${statName.replace(/-/g, ' ')} EV`}
                                             />
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-
-                    {activeTab === 'moves' && (
-                        <div role="tabpanel" id="panel-moves" aria-labelledby="tab-moves">
-                            <div className="mb-4 grid min-h-[80px] grid-cols-2 gap-2 rounded-lg bg-bg p-2">
-                                {customization.moves.map((moveName) => {
-                                    const moveType = moveDetailsCache[moveName]?.type;
-                                    return (
-                                        <div key={moveName} className="p-2 rounded-lg text-center text-sm capitalize text-white" style={{ backgroundColor: moveType ? typeColors[moveType] : colors.cardLight }}>
-                                            {moveName.replace(/-/g, ' ')}
-                                        </div>
-                                    );
-                                })}
-                                {Array.from({ length: 4 - customization.moves.length }).map((_, index) => (
-                                    <div key={index} className="flex items-center justify-center rounded-lg bg-surface-raised p-2 opacity-50">
-                                        <div className="h-1 w-8 rounded-full bg-bg"></div>
-                                    </div>
-                                ))}
-                            </div>
-                            <input
-                                type="text"
-                                placeholder={t('modals.editorModalSearchMoves')}
-                                value={moveSearch}
-                                onChange={(event) => setMoveSearch(event.target.value)}
-                                className="mb-2 w-full rounded-lg bg-surface-raised p-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                aria-label={t('modals.editorModalSearchMoves')}
-                            />
-                            <div className="grid grid-cols-2 gap-2 max-h-[55vh] overflow-y-auto custom-scrollbar pr-2" style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}>
-                                {filteredMoves.map((move) => {
-                                    const moveType = moveDetailsCache[move.name]?.type;
-                                    const isSelected = customization.moves.includes(move.name);
-                                    const style = isSelected
-                                        ? { backgroundColor: moveType ? typeColors[moveType] : colors.primary, color: 'white' }
-                                        : undefined;
-
-                                    return (
-                                        <button
-                                            key={move.name}
-                                            type="button"
-                                            onClick={() => handleMoveToggle(move.name)}
-                                            aria-pressed={isSelected}
-                                            className={`rounded-lg p-2 text-sm capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isSelected ? 'text-white' : 'bg-surface-raised text-fg hover:opacity-80'}`}
-                                            style={style}
-                                        >
-                                            {move.name.replace(/-/g, ' ')}
-                                        </button>
                                     );
                                 })}
                             </div>
