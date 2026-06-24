@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T19:19:08.129Z",
+  "generatedAt": "2026-06-24T20:23:07.197Z",
   "source": "pokepaste sets from tournament teams",
   "species": 58,
   "byId": {
@@ -339,13 +339,13 @@
       "n": 2,
       "items": [
         {
-          "name": "Sitrus Berry",
-          "slug": "sitrus-berry",
+          "name": "Gyaradosite",
+          "slug": "gyaradosite",
           "count": 1
         },
         {
-          "name": "Gyaradosite",
-          "slug": "gyaradosite",
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
           "count": 1
         }
       ],
@@ -362,18 +362,6 @@
           "count": 2
         },
         {
-          "name": "Taunt",
-          "count": 1
-        },
-        {
-          "name": "Thunder Wave",
-          "count": 1
-        },
-        {
-          "name": "Helping Hand",
-          "count": 1
-        },
-        {
           "name": "Lash Out",
           "count": 1
         },
@@ -383,6 +371,18 @@
         },
         {
           "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Taunt",
+          "count": 1
+        },
+        {
+          "name": "Thunder Wave",
+          "count": 1
+        },
+        {
+          "name": "Helping Hand",
           "count": 1
         }
       ]
@@ -1349,7 +1349,7 @@
       "tera": [],
       "moves": [
         {
-          "name": "Protect",
+          "name": "Iron Head",
           "count": 8
         },
         {
@@ -1357,7 +1357,7 @@
           "count": 8
         },
         {
-          "name": "Iron Head",
+          "name": "Protect",
           "count": 8
         },
         {

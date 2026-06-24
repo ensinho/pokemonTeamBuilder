@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T19:19:21.684Z",
+  "generatedAt": "2026-06-24T20:23:20.708Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -23,7 +23,7 @@
     "Nat Dex UU",
     "Nat Dex Mono"
   ],
-  "species": 463,
+  "species": 462,
   "byId": {
     "3": {
       "name": "Venusaur",
@@ -2903,7 +2903,7 @@
     "73": {
       "name": "Tentacruel",
       "gen": "NU",
-      "overview": "",
+      "overview": "Poison\nTentacruel is a surprising option on Poison teams, as Toxapex's incredible bulk and longevity completely outclass it as a defensive wall in a majority of situations. However, Tentacruel has enough unique tools such that it could be worth considering over Toxapex should a more proactive Water-type threat be…",
       "sets": [
         {
           "name": "Defensive Pivot",
@@ -2992,7 +2992,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Tentacruel finds a niche on Poison teams thanks to a flurry of unique traits over its competition in Toxapex such as a vastly superior Speed stat and tools such as Rapid Spin, which makes Tentacruel the only form of entry hazard removal on Poison teams not weak to Steel-type attacks, allowing it to comfortably spin…",
           "source": "Monotype"
         },
         {
@@ -3033,7 +3033,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Tentacruel is one of Water's best forms of role compression, removing entry hazards thanks to its access to Rapid Spin, absorbing Toxic Spikes placed by Toxapex and indirectly by Glimmora with its Poison typing, and slow pivoting with Flip Turn. Aside from this, its great ability in Liquid Ooze allows it to punish the…",
           "source": "Monotype"
         }
       ]
@@ -3081,7 +3081,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Choice Band lets Alolan Golem OHKO Bisharp with Brick Break.\nThis is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -3862,7 +3862,7 @@
     "91": {
       "name": "Cloyster",
       "gen": "Battle Stadium",
-      "overview": "",
+      "overview": "Water\nCloyster is generally outclassed on Water teams, its poor defensive typing and lacking offensive prowess before setting up compared to options like Primarina and Urshifu-R makes finding that turn to get in and use Shell Smash difficult. However, should it overcome these hurdles, Cloyster can be a meance being…",
       "sets": [
         {
           "name": "Shell Smash Sweeper",
@@ -3999,7 +3999,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Thanks to its excellent offensive movepool and access to Shell Smash, Cloyster finds a niche on Water teams. Thanks to Cloyster's high Defense stat, it can reliably use Shell Smash in front of some of the tier's premier physical attackers, such as Ceruledge and Mamoswine. Ice Beam is a great option to hit physically…",
           "source": "Monotype"
         },
         {
@@ -4043,7 +4043,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Cloyster is one of Ice's best setup sweepers thanks to its access to Shell Smash in addition to its high Defense stat, which gives it opportunities to set up on the tier's physical attackers like Garchomp, Iron Treads, and Ceruledge. Icicle Spear targets opposing Flying-, Ground-, and Dragon-type Pokemon such as…",
           "source": "Monotype"
         }
       ]
@@ -6014,7 +6014,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Gyarados finds a unique spot on Flying-type teams due to its unique combination of Intimidate, ability to spread paralysis, and ability to phaze. Intimidate allows Gyarados to safely switch into physical threats such as Barraskewda and Mamoswine. Dragon Tail punishes setup sweepers such as Weavile, Ceruledge, and…",
           "source": "Monotype"
         }
       ]
@@ -6751,7 +6751,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -8688,7 +8688,7 @@
     "195": {
       "name": "Quagsire",
       "gen": "OU",
-      "overview": "Facing RU with a stalwart expression, Quagsire is a decent physical wall, utilizing its ability Unaware to stonewall a vast majority of setup sweepers such as Bisharp, Gyarados, and Mimikyu. Quagsire uses Pokemon such as Bisharp and Mimikyu as opportunities to heal off chip damage or establish Spikes, while Toxic…",
+      "overview": "Facing RU with a stalwart expression, Quagsire is a decent physical wall, utilizing its ability Unaware to stonewall very pertinent setup sweepers such as Bisharp and Mimikyu. Quagsire uses Pokemon such as Bisharp and Mimikyu as opportunities to heal off chip damage or establish Spikes, while Toxic allows Quagsire to…",
       "sets": [
         {
           "name": "Defensive",
@@ -8790,7 +8790,8 @@
           "ability": "unaware",
           "nature": "impish",
           "tera": [
-            "poison"
+            "poison",
+            "fairy"
           ],
           "moves": [
             [
@@ -8823,7 +8824,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nToxic allows Quagsire to threaten Flying-types such as Galarian Zapdos, Noivern, and Gyarados while also helping wear down Pokemon such as Mamoswine and Hippowdon. Heavy-Duty Boots allows Quagsire to ignore chip damage from entry hazards that might otherwise overwhelm it, while Leftovers accentuates…",
+          "description": "Set Details\nToxic allows Quagsire to threaten Flying-types such as Noivern and Yanmega while also helping wear down Pokemon such as Gastrodon and Swampert. Heavy-Duty Boots allows Quagsire to ignore chip damage from entry hazards that might otherwise overwhelm it, while Leftovers accentuates Quagsire's longevity by…",
           "source": "RU"
         },
         {
@@ -8868,7 +8869,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Quagsire is a great option for Ground teams due to its physical bulk and Unaware, checking a wide range of physical attackers like Hisuian Samurott, Cetitan, and Choice Scarf Urshifu-R. Stealth Rock or Spikes wears down threats like Greninja, Iron Valiant, and Meowscarada. Toxic allows Quagsire to further wither down…",
           "source": "Monotype"
         }
       ]
@@ -9214,7 +9215,7 @@
     "199": {
       "name": "Slowking-Galar",
       "gen": "Battle Stadium",
-      "overview": "",
+      "overview": "Psychic\nSlowking finds stiff competition from Slowbro, which is the far superior physical wall that can be a potential wincon with Iron Defense + Body Press. Additionally, Psychic teams greatly wish to have more offensive teammates, which creates issues with fitting Slowking onto these builds. However, Slowking's…",
       "sets": [
         {
           "name": "AV Tank",
@@ -9411,8 +9412,10 @@
       "sets": [
         {
           "name": "Support",
-          "item": "leftovers",
-          "itemAlts": [],
+          "item": "rocky-helmet",
+          "itemAlts": [
+            "leftovers"
+          ],
           "ability": "",
           "nature": "relaxed",
           "tera": [
@@ -9450,7 +9453,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nForretress is a solid choice for the support slot on teams, compressing multiple key positions into one teamslot. Spikes allows it to pair with a Stealth Rock setter, like Hippowdon or Rhyperior, to get up multiple layers of entry hazards. Body Press, with the allocated 164 EVs in Defense, threatens an…",
+          "description": "Set Details\nForretress is a solid choice for the support slot on teams, compressing multiple key positions into one teamslot. Spikes allows it to pair with a Stealth Rock setter, like Gastrodon or Rhyperior, to get up multiple layers of entry hazards. Body Press, with the allocated 164 EVs in Defense, threatens an…",
           "source": "RU"
         },
         {
@@ -9496,7 +9499,7 @@
             "speed": 0
           },
           "level": null,
-          "description": "",
+          "description": "Forretress finds a solid role on Bug teams thanks to its secondary Steel typing and solid support movepool. Spikes provides chip against switch-ins such as Hisuian Arcanine and Gholdengo. Rapid Spin provides support by removing hazards, allowing teammates like Lokix, Slither Wing, and Kleavor to come in safely. Gyro…",
           "source": "Monotype"
         }
       ]
@@ -10986,9 +10989,61 @@
           "source": "Ubers"
         },
         {
-          "name": "Wall",
+          "name": "Physically Defensive",
           "item": "rocky-helmet",
-          "itemAlts": [],
+          "itemAlts": [
+            "heavy-duty-boots",
+            "leftovers"
+          ],
+          "ability": "sturdy",
+          "nature": "impish",
+          "tera": [
+            "ghost"
+          ],
+          "moves": [
+            [
+              "spikes",
+              "stealth-rock"
+            ],
+            [
+              "body-press",
+              "brave-bird"
+            ],
+            [
+              "brave-bird",
+              "iron-defense",
+              "whirlwind"
+            ],
+            [
+              "roost"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 8,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "UU"
+        },
+        {
+          "name": "Mixed Defense",
+          "item": "rocky-helmet",
+          "itemAlts": [
+            "covert-cloak"
+          ],
           "ability": "sturdy",
           "nature": "impish",
           "tera": [
@@ -11031,48 +11086,6 @@
           "level": null,
           "description": "Skarmory leverages its incredible defensive typing and physical bulk to act as an effective entry hazard setter and blanket check to physical attackers like Excadrill, Lokix, and Ogerpon. Body Press lets it target the aforementioned Excadrill as well as Scizor and Tyranitar, preventing them from using it as setup…",
           "source": "UU"
-        },
-        {
-          "name": "Physically Defensive (Flying)",
-          "item": "rocky-helmet",
-          "itemAlts": [],
-          "ability": "sturdy",
-          "nature": "bold",
-          "tera": [],
-          "moves": [
-            [
-              "body-press"
-            ],
-            [
-              "spikes"
-            ],
-            [
-              "whirlwind",
-              "iron-defense"
-            ],
-            [
-              "roost"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "Monotype"
         }
       ]
     },
@@ -11171,7 +11184,7 @@
     "230": {
       "name": "Kingdra",
       "gen": "RU",
-      "overview": "",
+      "overview": "Water\nKingdra is a solid Swift Swim special attacker for Water teams; however, it is only functional in this role and faces competition from Basculegion-F, which has superior Special Attack. Along with that, rain teams can opt to not run a special attacking Swift Swim threat and instead choose to run Choice Specs…",
       "sets": [
         {
           "name": "Rain Sweeper",
@@ -12155,7 +12168,7 @@
           "itemAlts": [
             "choice-specs"
           ],
-          "ability": "",
+          "ability": "inner-focus",
           "nature": "timid",
           "tera": [
             "water"
@@ -13575,7 +13588,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Swampert is the best offensive Stealth Rock setter available to Water teams thanks to its great bulk and access to Flip Turn. Its partial Ground typing is also excellent, granting it an Electric immunity which notably lets it block Volt Switch from common threats such as Zapdos, Iron Treads, and Iron Hands. STAB…",
           "source": "Monotype"
         }
       ]
@@ -14259,7 +14272,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Breloom fulfills a variety of roles for Fighting teams, with Spore immobilizing threats like Corviknight, Pelipper, and Toxapex and operates as a revenge killer with Mach Punch. Swords Dance further boosts its great Attack and lets Breloom take advantage of forcing foes out after they have been afflicted with Spore to…",
           "source": "Monotype"
         }
       ]
@@ -14688,7 +14701,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Sableye is a good pick for Dark teams thanks to its Fighting immunity, spinblocking prowess, and ability to pester opposing teams with a wide array of status moves. Night Shade provides a consistent form of damage, preventing Sableye from being too passive, as well as letting it deal with Skarmory and Iron Hands…",
           "source": "Monotype"
         },
         {
@@ -15620,7 +15633,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is a winning set from the Monotype Rising sets project.",
           "source": "Monotype"
         }
       ]
@@ -17114,7 +17127,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Latias is a great Choice Scarf user on Dragon teams, offering a wide variety of of both offense and support. Latias's typing and ability coupled with its great defenses grant it the ability to switch into many common moves, such as Landorus-T's Earthquake and Sneasler's Close Combat, and retaliate with STAB Draco…",
           "source": "Monotype"
         }
       ]
@@ -18366,7 +18379,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Torterra finds its place on Grass teams as a Shell Smash sweeper with a great STAB combination and convenient Speed tier, being able to outpace most of the unboosted metagame after a Shell Smash and break through Pokemon that trouble Grass teams such as Toxapex and Clodsire. Bullet Seed, alongside Loaded Dice, gives…",
           "source": "Monotype"
         }
       ]
@@ -18694,9 +18707,9 @@
             ]
           ],
           "evs": {
-            "hp": 144,
+            "hp": 72,
             "attack": 0,
-            "defense": 0,
+            "defense": 72,
             "special-attack": 148,
             "special-defense": 0,
             "speed": 216
@@ -18853,7 +18866,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Choice Scarf Staraptor provides hyper-offensive Normal teams a way to deal with fast threats like non-Choice Scarf Iron Valiant, Ogerpon-W, and Choice Specs Greninja and momentum in U-turn and Final Gambit. Close Combat complements Brave Bird because it thrashes Steel-types, OHKOing Bisharp and threatening Iron Treads…",
           "source": "Monotype"
         },
         {
@@ -19347,7 +19360,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Gastrodon's great bulk, typing, and ability allow it to function as a sturdy mixed wall and check to Water-types such as Greninja, Urshifu-S, and Barraskewda. Earth Power targets Gholdengo and Archaludon, while Earthquake deals more damage to Hisuian Goodra, Clodsire, Flutter Mane, and Calm Mind Keldeo. Ice Beam hits…",
           "source": "Monotype"
         },
         {
@@ -20080,7 +20093,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Skuntank fills a very important role on Poison teams by packing a much-desired Psychic immunity, which allows it to switch into Psychic-type moves from many common threats such as Greninja, Flutter Mane, and Hatterene. It proceeds to force them out with its hard hitting Poison Jab-which can spread poison around, while…",
           "source": "Monotype"
         }
       ]
@@ -20264,7 +20277,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Will never be OHKOed from full HP by an unboosted Chien-Pao's Crunch.\nThis is a sample set as we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -20810,7 +20823,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -21053,7 +21066,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Hippowdon is a mandatory pick on sand-based Ground teams for its access to Sand Stream, which allows it to enable one of the type's most dangerous offensive threats in Sand Rush Excadrill; in addition, its amazing bulk lets it further support its team as a mixed wall and entry hazard setter. Earthquake is the default…",
           "source": "Monotype"
         },
         {
@@ -21530,7 +21543,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Abomasnow fulfills a unique niche on Grass teams as the best dual screens setter that the type has access to. With Aurora Veil and its ability Snow Warning, it can significantly decrease the amount of damage common setup sweepers on Grass teams take, such as Sinistcha and the Ogerpon formes. Blizzard's perfect…",
           "source": "Monotype"
         },
         {
@@ -21574,7 +21587,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Thanks to its ability to set snow and Aurora Veil, Abomasnow is a valuable choice for Ice-type teams. Its Grass typing provides a way to deal with Water-types such as Azumarill, Basculegion, and Quagsire. Giga Drain is its main STAB move, dealing damage while providing recovery for Abomasnow. Alternatively, it can use…",
           "source": "Monotype"
         }
       ]
@@ -21758,7 +21771,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Weavile is an incredible wallbreaker on Dark teams because of its high Speed and access to Swords Dance. At +2, Triple Axel allows Weavile to break through defensive Pokemon such as Great Tusk, Swampert, and specially defensive Corviknight while also letting it OHKO offensive ones like the Ogerpon formes and Walking…",
           "source": "Monotype"
         }
       ]
@@ -21948,7 +21961,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Equipped with an Assault Vest, Magnezone turns into a bulky tank on Electric teams. With its bulk, it is able to serve as the type's best answer to strong Fairy-types such as Hatterene and Flutter Mane. Flash Cannon allows Magnezone to threaten Fairy- and Ice-types such as Hatterene, Clefable, and Alolan Ninetales.…",
           "source": "Monotype"
         }
       ]
@@ -22340,9 +22353,98 @@
     },
     "469": {
       "name": "Yanmega",
-      "gen": "Monotype",
-      "overview": "",
+      "gen": "RU",
+      "overview": "Yanmega finds a niche on Bug teams thanks to Tinted Lens, which turns Yanmega into a fantastic wallbreaker. This lets Yanmega deal with Steel- and Flying-types such as Archaludon and Gliscor that would otherwise pose a threat to Bug teams. However, Yanmega is held back by its typing, mediocre general bulk, and a…",
       "sets": [
+        {
+          "name": "Speed Boost Sweeper",
+          "item": "throat-spray",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "modest",
+          "tera": [
+            "ghost"
+          ],
+          "moves": [
+            [
+              "bug-buzz"
+            ],
+            [
+              "air-slash",
+              "psychic-noise",
+              "giga-drain"
+            ],
+            [
+              "shadow-ball"
+            ],
+            [
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 4,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
+        {
+          "name": "Tinted Lens Wallbreaker",
+          "item": "choice-specs",
+          "itemAlts": [],
+          "ability": "tinted-lens",
+          "nature": "timid",
+          "tera": [
+            "bug"
+          ],
+          "moves": [
+            [
+              "bug-buzz"
+            ],
+            [
+              "air-slash"
+            ],
+            [
+              "u-turn"
+            ],
+            [
+              "giga-drain",
+              "psychic-noise"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 4,
+            "special-attack": 252,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
         {
           "name": "Choice Specs (Bug)",
           "item": "choice-specs",
@@ -22381,7 +22483,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Yanmega serves as a potent wallbreaker in Bug teams, as Tinted Lens allows it to bypass many of the common checks to the type. Bug Buzz hits hard against most of the tier, 2HKOing key foes such as Toxapex, Gliscor, and Archaludon. Air Slash deals with Pokemon that resist Bug Buzz even through Tinted Lens such as…",
           "source": "Monotype"
         }
       ]
@@ -22710,7 +22812,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Choice Scarf Mamoswine is a specialized niche option for Ice teams, being just fast enough to provide relevant speed control, notably just outspeeding Choice Specs Dragapult with a Jolly nature while helping shore up the awful Fire matchup with fast and strong EdgeQuake coverage. In addition, it offers nice role…",
           "source": "Monotype"
         },
         {
@@ -22751,7 +22853,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Mamoswine is a great offensive option for Ground teams thanks to its huge Attack stat, access to priority, and unique STAB combination. Thick Fat's extremely valuable Ice resistance allows Mamoswine to switch into foes like Articuno and Alolan Ninetales. Icicle Crash shreds Grass-type Pokemon, such as Amoonguss and…",
           "source": "Monotype"
         }
       ]
@@ -23192,7 +23294,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFroslass is one of the many viable leads of RU due to its good Speed stat and access to Spikes and Taunt. Froslass can be powerful against slower teams, as they may have trouble stopping it from setting Spikes. Spikes allows offensive teammates, such as Bisharp and Armarouge, to more easily break through…",
+          "description": "Set Details\nFroslass is one of the many viable leads of RU due to its good Speed stat and access to Spikes and Taunt. Froslass can be powerful against slower teams, as they may have trouble stopping it from setting Spikes. Spikes allows offensive teammates, such as Bisharp and Toxtricity, to more easily break through…",
           "source": "RU"
         },
         {
@@ -24977,7 +25079,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Manaphy is an incredibly potent wallbreaker for Water teams, making use of the highly coveted Tail Glow in tandem with its great bulk and coverage to blast through bulky Water answers. Ice Beam targets Dragon-types like Dragonite and Roaring Moon and Grass-types like Hydrapple and Sinistcha. Psychic allows Manaphy to…",
           "source": "Monotype"
         }
       ]
@@ -25931,7 +26033,7 @@
     "500": {
       "name": "Emboar",
       "gen": "PU",
-      "overview": "",
+      "overview": "Fighting\nEmboar is unique on Fighting teams in its ability to be a good Fairy-neutral special attack sponge that is immune to getting burned. Compared to fellow Assault Vest users like Iron Hands and Gallade, however, it lacks a useful secondary offensive typing that allows it to break through common…",
       "sets": [
         {
           "name": "Wallbreaker",
@@ -26066,7 +26168,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "With its part-Fire typing, good defensive stats, and Reckless-boosted moves, Assault Vest Emboar is able to check a multitude of threats to Fighting teams from Bug, Ghost, and Fairy. Fire Blast lets Emboar power through a would-be check in Skarmory and also hits Forretress without suffering from recoil damage or Rocky…",
           "source": "Monotype"
         }
       ]
@@ -26318,7 +26420,7 @@
     "530": {
       "name": "Excadrill",
       "gen": "OU",
-      "overview": "",
+      "overview": "Excadrill is typically overshadowed by the same-typed Iron Treads, but Excadrill finds a niche on Steel-type teams as a Choice Scarf user. Iron Treads provides more utility, as well as being able to OHKO Landorus with Ice Spinner, while Excadrill provides more immediate power and has fewer switch-ins thanks to Mold…",
       "sets": [
         {
           "name": "Sand Sweeper",
@@ -27004,7 +27106,7 @@
     "549": {
       "name": "Lilligant-Hisui",
       "gen": "Doubles OU",
-      "overview": "",
+      "overview": "Fighting\nHisuian Lilligant, on paper, has a lot of appealing traits for Fighting, thanks to Victory Dance making it an incredible setup threat. Its secondary Grass typing also provides nice resistances to Water, Electric, and Ground, making it a solid answer to threats like Urshifu-R, Raging Bolt, and the Landorus…",
       "sets": [
         {
           "name": "Sun Support",
@@ -28093,7 +28195,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -29168,7 +29270,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Sticky Web Galvantula is a decent lead on Bug teams due to its ability to set Sticky Web up, allowing teammates such as Volcarona and Scizor to sweep more easily. Thunder, combined with the accuracy boost from Compound Eyes, is Galvantula's strongest move, which hits Water-types such as Toxapex and deters Flying-type…",
           "source": "Monotype"
         },
         {
@@ -29210,7 +29312,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "With its high base Speed, Galvantula is an excellent lead due to it being the only consistent Sticky Web setter on Electric teams. Thunder, combined with the accuracy boost from Compound Eyes, is Galvantula's strongest move, which hits Water-types such as Toxapex and deters Flying-type Defoggers such as Corviknight.…",
           "source": "Monotype"
         },
         {
@@ -30692,7 +30794,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "When paired with an Eviolite, Bisharp is capable of taking on the role of a bulky setup sweeper that also discourages the use of Defog. Additonally, Bisharp's Dark typing allows Eviolite to ease the matchup against Ghost teams by letting Bisharp take on their Ghost-type STAB moves better with its improved bulk. Throat…",
           "source": "Monotype"
         },
         {
@@ -30733,7 +30835,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Bisharp's extra bulk provided by Eviolite allows it to lure in unsuspecting checks to the non-Eviolite Bisharp set such as Ogerpon-H and Choice Specs Flutter Mane and set up on them with Swords Dance or KO them outright. Furthermore, its Steel typing is incredibly valuable, as it enables it to take Fairy-type attacks…",
           "source": "Monotype"
         },
         {
@@ -30776,7 +30878,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Bisharp serves a niche role on Dark teams with its secondary Steel typing and Defiant ability enabling it to take on the bulky Calm Mind Fairy-types of the tier such as Primarina and Clefable and punish Defog from the likes of Mandibuzz or Sticky Web from Araquanid or Galvantula, respectively. At +2 Attack, Iron Head…",
           "source": "Monotype"
         }
       ]
@@ -30802,12 +30904,13 @@
               "bulk-up"
             ],
             [
+              "facade",
+              "body-slam",
               "brave-bird"
             ],
             [
-              "close-combat",
-              "body-slam",
-              "facade"
+              "shadow-claw",
+              "close-combat"
             ],
             [
               "roost"
@@ -30830,7 +30933,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Close Combat nails Steel-types like Copperajah, while Body Slam allows Braviary to fish for paralysis to help it against both walls and faster foes late-game. However, Facade capitalizes on how widespread status ailments, namely paralysis, is in NU to give Braviary an amped up attack. Braviary outpaces offensive…",
+          "description": "Braviary outpaces offensive Sylveon and Incineroar with its 96 Speed EVs. Tera Electric is a great defensive Tera type, but it doesn't offer as many useful resistances as Tera Ground and Steel do. Defog sets can be run, but there are better forms of removal that aren't as easily taken advantage of by Galarian Articuno…",
           "source": "NU"
         },
         {
@@ -30962,7 +31065,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Braviary serves as good entry hazard removal for Normal teams due to its good bulk and Fighting neutrality, which let it comfortably use Defog in front of foes like Sneasler and Meowscarada. Brave Bird is Braviary's strongest STAB move, threatening to OHKO foes like the Ogerpon formes and Sinistcha. U-turn helps keep…",
           "source": "Monotype"
         }
       ]
@@ -31250,7 +31353,7 @@
             "speed": 23
           },
           "level": null,
-          "description": "",
+          "description": "Mandibuzz is a decent supportive piece for Dark teams with its ability to pivot into physical attackers like Ceruledge, Garchomp, and Excadrill due to its great bulk and U-turn to position its other teammates into favorable matchups. Foul Play punishes strong physical attackers like Ogerpon-W, Dragonite, and Scizor.…",
           "source": "Monotype"
         }
       ]
@@ -33322,7 +33425,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -33376,58 +33479,6 @@
           "level": null,
           "description": "Chespin's Grass typing, access to Bulletproof, and reliable recovery in Synthesis allow it to wall staples like Foongus and check Ground-types like Alolan Diglett and Mudbray. It can leverage its bulk to make progress by setting Spikes. Bullet Seed has the benefit of breaking Substitute from Alolan Diglett. As an…",
           "source": "Little Cup"
-        }
-      ]
-    },
-    "651": {
-      "name": "Quilladin",
-      "gen": "ZU",
-      "overview": "",
-      "sets": [
-        {
-          "name": "Hazard Setter",
-          "item": "eviolite",
-          "itemAlts": [],
-          "ability": "bulletproof",
-          "nature": "impish",
-          "tera": [
-            "poison",
-            "water"
-          ],
-          "moves": [
-            [
-              "spikes"
-            ],
-            [
-              "synthesis"
-            ],
-            [
-              "wood-hammer"
-            ],
-            [
-              "super-fang",
-              "roar"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 4,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "ZU"
         }
       ]
     },
@@ -33576,7 +33627,7 @@
     "655": {
       "name": "Delphox",
       "gen": "PU",
-      "overview": "",
+      "overview": "Psychic\nDelphox suffers from not having the best stats overall, it's not as fast nor as powerful as one would like out of an offensive powerhouse for Psychic, being just barely slower than Iron Treads and struggling to break threats like Ting-Lu and Araquanid. However, if these threats can be dealt with for Delphox,…",
       "sets": [
         {
           "name": "Nasty Plot",
@@ -33665,7 +33716,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Delphox manages to find a place on Psychic teams because of its respectable base 104 Speed and access to Nasty Plot enabling it to eliminate the likes of Corviknight, Heatran, and Scizor, which otherwise prove huge problems for Psychic teams. Fire Blast and Flamethrower melt through problematic Steel- and Ice-types…",
           "source": "Monotype"
         }
       ]
@@ -33853,7 +33904,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "With access to colorful coverage, Greninja makes itself a great revenge killer and potential sweeper when paired with a Choice Scarf. Ice Beam allows Greninja to muscle through opposing Ground- and Flying-type Choice Scarf users such as Great Tusk and Enamorus. Low Kick lets Greninja hit targets that can easily take…",
           "source": "Monotype"
         }
       ]
@@ -33954,7 +34005,7 @@
     "663": {
       "name": "Talonflame",
       "gen": "VGC 2025",
-      "overview": "Talonflame is a fantastic support Pokemon that can utilize its high Speed and access to recovery to serve as a reliable pivot and Defogger. Flame Body and Will-O-Wisp, combined with a resistance to common attacks like U-turn and Close Combat, allow Talonflame to deter and punish attacks from pivots like Mienshao and…",
+      "overview": "",
       "sets": [
         {
           "name": "Offensive Tailwind Support",
@@ -34097,15 +34148,13 @@
           "source": "UU"
         },
         {
-          "name": "Utility",
+          "name": "Defog (Fire)",
           "item": "heavy-duty-boots",
           "itemAlts": [],
-          "ability": "",
+          "ability": "gale-wings",
           "nature": "jolly",
           "tera": [
-            "ground",
-            "water",
-            "fairy"
+            "fire"
           ],
           "moves": [
             [
@@ -34113,10 +34162,9 @@
             ],
             [
               "will-o-wisp",
-              "taunt"
+              "u-turn"
             ],
             [
-              "u-turn",
               "defog"
             ],
             [
@@ -34124,12 +34172,12 @@
             ]
           ],
           "evs": {
-            "hp": 248,
-            "attack": 8,
+            "hp": 128,
+            "attack": 252,
             "defense": 0,
             "special-attack": 0,
             "special-defense": 0,
-            "speed": 252
+            "speed": 128
           },
           "ivs": {
             "hp": 31,
@@ -34140,15 +34188,15 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nWill-O-Wisp gives Talonflame a more reliable way of crippling physical attackers like Mimikyu, Krookodile, and Bisharp. Taunt prevents defensive Pokemon like Hippowdon and Gastrodon and setup sweepers like Armarouge and Reuniclus from taking advantage of Talonflame's passivity by safely setting up entry…",
-          "source": "RU"
+          "description": "Talonflame, due to its Ground immunity and access to entry hazard removal with Defog, has a great spot on Fire teams. Gale Wings makes Brave Bird a priority move at full HP, which allows Talonflame to take out threats like Ogerpon-W, Choice Scarf Great Tusk, and Keldeo. Will-O-Wisp weakens physical threats like…",
+          "source": "Monotype"
         }
       ]
     },
     "666": {
       "name": "Vivillon",
       "gen": "VGC 2025",
-      "overview": "",
+      "overview": "Bug\nVivillon has one powerful trick, Sleep Powder with its accuracy boosted thanks to Compound Eyes, which nearly guarantees that it will be leading the game off and inflicting sleep for strong early momentum. However, as direct competition to Bug's other special attacking options, even ignoring Volcarona, Vivillon…",
       "sets": [
         {
           "name": "Support",
@@ -34231,7 +34279,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Focus Sash Vivillon finds a singular niche on Bug teams due to its wide variety of status moves and Compound Eyes allowing it to often lead off and immediately make progress. Hurricane deals with annoying Fighting- and Bug-types such as Iron Valiant and Lokix as long as its Focus Sash is still intact. Sleep Powder…",
           "source": "Monotype"
         }
       ]
@@ -34485,7 +34533,7 @@
     "678": {
       "name": "Meowstic",
       "gen": "Monotype",
-      "overview": "",
+      "overview": "=========\nOutmatched by Deoxys-S, Meowstic-M is an inferior screens setter option for Psychic. Due to its lack of utility options like Knock Off, Taunt, Stealth Rock, and Spikes, Meowstic provides little outside of dual screens and Thunder Wave. However, with its ability Prankster, Meowstic can reliably set up dual…",
       "sets": [
         {
           "name": "Dual Screens Setter",
@@ -34526,7 +34574,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Boasting useful utility in dual screens and a complementary ability in Prankster, Meowstic-M is a niche dual screens setter for Psychic teams. Light Screen and Reflect mitigate damage for teammates attempting to set up, prolonging survivability and amplifying offensive capability. Charm helps deal with physical…",
           "source": "Monotype"
         }
       ]
@@ -34852,7 +34900,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is a sample set as we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         },
         {
@@ -35287,7 +35335,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         },
         {
@@ -35663,7 +35711,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Klefki is an excellent pick for Fairy teams due to its Prankster dual screens and Spikes support, which enables threats such as Azumarill, Primarina, and Hatterene to set up and sweep. Foul Play allows Klefki to punish setup sweepers such as Scizor and Ogerpon-H while preventing Roaring Moon and Excadrill from setting…",
           "source": "Monotype"
         },
         {
@@ -35705,7 +35753,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is a sample set as we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -36140,7 +36188,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Noivern finds a niche on Dragon teams thanks to its blazing Speed stat, allowing it to blitz past threats such as Iron Valiant and non-Choice Scarf Greninja, along with having access to Defog to provide a form of entry hazard removal. Hurricane allows it to check Fighting-types like Iron Valiant, Sneasler, and Gallade…",
           "source": "Monotype"
         }
       ]
@@ -36572,50 +36620,6 @@
           "source": "Nat Dex Doubles"
         },
         {
-          "name": "Stealth Rock",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "careful",
-          "tera": [
-            "ghost",
-            "water"
-          ],
-          "moves": [
-            [
-              "stealth-rock"
-            ],
-            [
-              "encore"
-            ],
-            [
-              "diamond-storm"
-            ],
-            [
-              "body-press"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 4,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 252,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
-        {
           "name": "Trick Room Sweeper",
           "item": "power-herb",
           "itemAlts": [],
@@ -36657,6 +36661,50 @@
           "level": null,
           "description": "",
           "source": "RU"
+        },
+        {
+          "name": "Wallbreaker",
+          "item": "diancite",
+          "itemAlts": [],
+          "ability": "magic-bounce",
+          "nature": "hasty",
+          "tera": [],
+          "moves": [
+            [
+              "moonblast"
+            ],
+            [
+              "earth-power"
+            ],
+            [
+              "mystical-fire"
+            ],
+            [
+              "diamond-storm",
+              "power-gem",
+              "stealth-rock",
+              "spikes"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Mega Diancie is a very potent wallbreaker that applies a lot of offensive pressure to bulky offense and balance builds, threatening Pokemon such as Zapdos, Raging Bolt, and Great Tusk. Mega Diancie’s coverage further cements its role as a wallbreaker; for example, Earth Power hits foes such as Heatran, Gholdengo,…",
+          "source": "Nat Dex"
         }
       ]
     },
@@ -36861,7 +36909,7 @@
     "721": {
       "name": "Volcanion",
       "gen": "Doubles OU",
-      "overview": "",
+      "overview": "Water\nVolcanion is a solid option for Water teams thanks to its unique typing and outstanding offenses. What it lacks in utility, it makes up for in sheer power if given the right opportunities to wallbreak, easily dismantling common defensive cores on Steel and Flying. However, Water has no shortage of great special…",
       "sets": [
         {
           "name": "Assault Vest",
@@ -39069,7 +39117,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Araquanid makes for a good Sticky Web setter for Bug teams due to having more bulk than other Sticky Web setters, such as Galvantula and Ribombee, as well as being a huge asset to Bug teams with its Water Bubble ability, resisting Fire-type moves and hitting Fire-type Pokemon super effectively. Liquidation is a strong…",
           "source": "Monotype"
         },
         {
@@ -39110,7 +39158,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is a winning set from the Monotype Rising sets project. This will be updated as we work on new analyses. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -39900,7 +39948,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Shell Smash Minior is a great sweeper for Rock teams due to its great Speed, being able to take out Choice Scarf users like Iron Valiant, Sneasler, and Meowscarada after a boost. Minior is also appreciated on Rock teams as a Ground-immune Pokemon. Stone Edge at +2 is able to take out targets like Pelipper and…",
           "source": "Monotype"
         }
       ]
@@ -43421,7 +43469,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Cinderace is a staple on Fire teams thanks to its incredible Speed tier and coverage, which allow it to take advantage of Libero to sweep effectively. With Choice Scarf, Cinderace outspeeds and OHKOes foes like Iron Valiant, non-Choice Scarf Greninja, and non-Choice Scarf Flutter Mane. Gunk Shot allows Cinderace to…",
           "source": "Monotype"
         },
         {
@@ -43464,7 +43512,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Cinderace is a great asset to Fire teams due to its mix of offensive presence and utility. Pyro Ball deals a lot of damage under sun and comes with the nice touch of not activating Libero. Libero-boosted High Jump Kick provides valuable coverage, hitting Archaludon, Hydreigon, and Garganacl. Low Kick is an…",
           "source": "Monotype"
         }
       ]
@@ -43876,7 +43924,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Drednaw is a fierce setup sweeper, capable of turning the tide against unfavorable matchups like Ground, Steel, and Water. Stone Edge is Drednaw's hardest hitting move, dealing with Pelipper and Dragonite. Liquidation hits troublesome Ground-types like Great Tusk, Iron Treads, and Ting-Lu. Earthquake threatens Water…",
           "source": "Monotype"
         }
       ]
@@ -43969,7 +44017,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Coalossal is a decent defensive wall that fits well on Rock teams due to it being able to tank physical hits from Scizor and Meowscarada, which greatly threaten Rock teams. Coalossal does well in the Steel matchup, as it threatens Gholdengo, Corviknight, and Skarmory. Flame Body allows it to fish for burns to weaken…",
           "source": "Monotype"
         }
       ]
@@ -44403,7 +44451,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Thanks to its huge Speed, good Attack, and Swift Swim, Choice Band Barraskewda is a formidable rain sweeper, outpacing Flutter Mane and heavily threatening teams with no sturdy Water-resistant Pokemon like Dark, Fighting, and Normal. Liquidation heavily pressures foes under rain, OHKOing the likes of Enamorus, Iron…",
           "source": "Monotype"
         }
       ]
@@ -44539,7 +44587,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is a sample set as we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -45310,7 +45358,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Quiver Dance Frosmoth is an incredibly threatening setup sweeper thanks to its ability to do massive damage in matchups that Bug struggles with such as Flying and Dragon as well as find opportunities to set up on numerous special attackers like Choice Specs Iron Valiant and Spectrier thanks to Ice Scales. Substitute…",
           "source": "Monotype"
         },
         {
@@ -45352,7 +45400,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Frosmoth is a dangerous setup sweeper on Ice teams when given snow and Aurora Veil support. Quiver Dance allows Frosmoth to be a dangerous wincon when given free turns against passive walls like Amoonguss. Hurricane allows Frosmoth to sweep through Fighting teams after two Quiver Dance boosts while allowing it…",
           "source": "Monotype"
         }
       ]
@@ -47145,7 +47193,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Zarude can serve as a physical wallbreaker with a great Speed tier and Choice Band, which allow it to outspeed and beat Pokemon like Gholdengo, Skeledirge, and Heatran, as well as a great pivot with U-turn. Power Whip is an excellent STAB move that allows Zarude to 2HKO Toxapex and Hatterene. Drain Punch grants Zarude…",
           "source": "Monotype"
         }
       ]
@@ -47523,7 +47571,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "240 Speed EVs outspeeds Corviknight.\nThis is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -47712,7 +47760,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Choice Specs helps Spectrier take full advantage of its phenomenal Special Attack stat by making sure it is able to repeatedly OHKO any Pokemon after they have been damaged by chip damage or entry hazards, allowing Spectrier to sweep easily with the assist of Grim Neigh. Shadow Ball destroys Ghost-types like Sinistcha…",
           "source": "Monotype"
         }
       ]
@@ -50852,7 +50900,7 @@
     "936": {
       "name": "Armarouge",
       "gen": "VGC 2023",
-      "overview": "The incredible power of Armor Cannon makes Armarouge a terrifying foe in the RU tier, often threatening a KO whenever it enters the field. With its excellent STAB combination that hits most of the metagame, Weak Armor that constantly deters weak physical moves like U-turn and Rapid Spin, and the physical bulk to make…",
+      "overview": "",
       "sets": [
         {
           "name": "TR Sweeper",
@@ -51500,7 +51548,7 @@
     "941": {
       "name": "Kilowattrel",
       "gen": "RU",
-      "overview": "Kilowattrel swoops into RU as a niche option that has great Speed and good power, which when combined with its great typing allow it to take on Ground- and Fighting-types such as Krookodile and Galarian Zapdos. Kilowattrel is one of the fastest Pokemon in the tier, only being outsped by Talonflame and Barraskewda, and…",
+      "overview": "Kilowattrel swoops into RU as a niche option that has great Speed and good power, which when combined with its great typing allow it to take on Ground-, Water-, and Grass-types such as Krookodile, Slowbro, and Chesnaught. Kilowattrel is one of the fastest Pokemon in the tier, only being outsped by Barraskewda, and it…",
       "sets": [
         {
           "name": "Offensive Pivot",
@@ -51635,7 +51683,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Kilowattrel is an essential component to Flying teams, providing an Electric immunity, pivot support, an excellent Speed tier that allows it to outspeed Choice Specs Greninja and Iron Valiant, and a range of hard-hitting attacks. With rain support, Thunder can be used as Kilowattrel's hard-hitting STAB attack to hit…",
           "source": "Monotype"
         },
         {
@@ -51676,7 +51724,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -52072,7 +52120,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Brambleghast's unique attributes allow it to act not only as an entry hazard setter but as a hazard remover as well. Spikes helps offensive teams deal extra chip damage to Pokemon that would otherwise stifle progress, such as Ting-Lu and Alolan Muk. Rapid Spin removes opposing hazards, helping preserve offensive…",
           "source": "Monotype"
         }
       ]
@@ -52270,7 +52318,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -53015,7 +53063,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Tinkaton finds a niche on Fairy teams thanks to its secondary Steel typing and unique support options. Gigaton Hammer OHKOes Rock- and Fairy-types like Glimmora, Kleavor, Flutter Mane, and Hatterene. Knock Off provides Tinkaton with another offensive option that removes important items from Steel-types such as…",
           "source": "Monotype"
         }
       ]
@@ -54462,7 +54510,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Cetitan's unique combination of Slush Rush and Belly Drum make it a great snow sweeper for Ice teams. Cetitan is able to use Belly Drum in combination with Slush Rush to boost its Attack and Speed to some of the highest in the tier. Icicle Crash is Cetitan's best way of attacking, shredding most foes that aim to stand…",
           "source": "Monotype"
         },
         {
@@ -58077,7 +58125,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         }
       ]
@@ -60204,7 +60252,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Walking Wake provides an interesting Speed tier, outspeeding problematic threats such as Iron Treads and Landorus, and offers coverage that pressures types such as Steel and Flying for Dragon teams. Scald's burn chance makes Walking Wake riskier to switch into, as it can inflict burn and reduce the threat of…",
           "source": "Monotype"
         }
       ]
@@ -60302,7 +60350,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
           "source": "Monotype"
         },
         {
@@ -61017,7 +61065,7 @@
     "1016": {
       "name": "Fezandipiti",
       "gen": "OU",
-      "overview": "",
+      "overview": "Fairy\nFezandipiti can serve a very nice defensive role on Fairy thanks to it being the only Fairy-type Pokemon with access to both a pivoting move and a reliable form of recovery, along with its ability to take on the Ogerpon formes and absorb Toxic Spikes. However, unlike most of Fairy's defensive setpieces,…",
       "sets": [
         {
           "name": "Bulky Pivot",
@@ -61148,7 +61196,7 @@
             "speed": 16
           },
           "level": null,
-          "description": "",
+          "description": "Fezandipiti finds a spot on Fairy teams thanks to its Poison typing, access to U-turn, and solid special bulk enabling it to comfortably take hits from the likes of Choice Specs Dragapult and Raging Bolt while bringing in teammates. Beat Up pairs well with Toxic Chain, enabling Fezandipiti to reliably spread poison…",
           "source": "Monotype"
         },
         {
@@ -62242,7 +62290,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Iron Boulder is a good Choice Scarf user on Psychic teams thanks to its great Speed tier, allowing it to outspeed other threatening Choice Scarf users like Roaring Moon, Meowscarada, and Hisuian Samurott and threaten them with its respectable power and colorful coverage options. Mighty Cleave is Iron Boulder's main…",
           "source": "Monotype"
         },
         {
@@ -62902,7 +62950,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Pecharunt is a solid physical wall that helps to reduce the pressure on Poison's other physical walls by soaking up hard hits from threats like Iron Hands, Ogerpon-H, and Gliscor. Hex has incredible synergy with Poison teams making use of the type's constant status-spreading to output solid damage. Shadow Ball gives a…",
           "source": "Monotype"
         }
       ]

@@ -562,6 +562,74 @@ export function HomeView({
         ]
         : [];
 
+    // Daily PokéPuzzle teaser — rendered below the shortcuts on mobile and in
+    // the sidebar on desktop (each placement gates visibility by breakpoint).
+    const dailyPuzzleCard = isDailyPokePuzzleLoading ? (
+        <div className="home-sidebar-section home-sidebar-section--daily p-4 animate-pulse space-y-2">
+            <div className="home-skeleton home-skeleton--short"></div>
+            <div className="home-skeleton home-skeleton--title"></div>
+        </div>
+    ) : dailyPokePuzzleTarget ? (
+        <div
+            className="home-sidebar-section--daily cursor-pointer flex items-center gap-3 p-4 mb-4"
+            onClick={() => navigate('/pokepuzzle')}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate('/pokepuzzle');
+                }
+            }}
+            aria-label="Play daily Pokemon guess challenge"
+        >
+            <div className={`home-daily__sprite-container h-12 w-12 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center overflow-hidden ${!dailyPokePuzzleSummary?.solved ? 'is-unsolved' : ''}`}>
+                <img
+                    src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
+                    alt="Mystery daily Pokemon"
+                    className={`home-daily__sprite h-10 w-10 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'}`}
+                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                />
+            </div>
+
+            <div className="min-w-0 flex-1 flex flex-col justify-between h-12">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <p className="home-panel__eyebrow text-[9px] leading-none">{t('pokepuzzle.homeTeaserTitle')}</p>
+                        <h3 className="home-panel__title home-panel__title--daily capitalize text-xs font-semibold truncate mt-1">
+                            {dailyPokePuzzleSummary?.solved ? formatPokemonDisplayName(dailyPokePuzzleTarget.name) : '??????'}
+                        </h3>
+                    </div>
+                    {dailyPokePuzzleSummary?.solved ? (
+                        <span className="badge badge-success text-[8px] py-0.5 px-1.5 shrink-0 flex items-center gap-0.5">
+                            <Award className="w-3.5 h-3.5 text-white" />
+                            {t('pokepuzzle.dailySolvedBadge')}
+                        </span>
+                    ) : (
+                        <span className="home-daily__number text-[9px] font-semibold text-muted">
+                            #{String(dailyPokePuzzleTarget.id).padStart(3, '0')}
+                        </span>
+                    )}
+                </div>
+
+                <div className="flex justify-between items-center text-[10px]">
+                    <span className="text-muted truncate mr-2">
+                        {dailyPokePuzzleSummary?.solved
+                            ? t('pokepuzzle.homeTeaserSolved', { attempts: dailyPokePuzzleSummary.attempts })
+                            : t('pokepuzzle.homeTeaserSubtitle')
+                        }
+                    </span>
+                    <span className="text-primary font-bold hover:underline shrink-0 flex items-center gap-1.5">
+                        {!dailyPokePuzzleSummary?.solved && (
+                            <span className="w-1.5 h-1.5 rounded-full bg-purple animate-pulse" style={{ backgroundColor: '#7c3aed', boxShadow: '0 0 6px #7c3aed' }} />
+                        )}
+                        <span>{dailyPokePuzzleSummary?.solved ? t('common.yes') : t('pokepuzzle.homeTeaserPlay')} →</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    ) : null;
+
     return (
         <main className="home-view pb-6 pt-2">
             <div className="home-github-layout grid gap-4 md:gap-6 xl:grid-cols-[minmax(0,1.62fr)_minmax(280px,0.84fr)]">
@@ -801,8 +869,13 @@ export function HomeView({
                         </section>
                     )}
 
-                    {/* Dashboard hub: quick access, popular-in-tournaments, recent teams */}
-                    <HomeDashboard navigate={navigate} />
+                    {/* Dashboard hub: quick access, popular-in-tournaments, recent teams.
+                        The puzzle teaser renders below the shortcuts on mobile only;
+                        on desktop it lives in the sidebar (see aside below). */}
+                    <HomeDashboard
+                        navigate={navigate}
+                        puzzleCard={dailyPuzzleCard}
+                    />
 
                 </div>
 
@@ -871,71 +944,12 @@ export function HomeView({
                             </div>
                         </section>
 
-                        {/* 2. Daily Challenge Card */}
-                        {isDailyPokePuzzleLoading ? (
-                            <div className="home-sidebar-section home-sidebar-section--daily p-4 animate-pulse space-y-2">
-                                <div className="home-skeleton home-skeleton--short"></div>
-                                <div className="home-skeleton home-skeleton--title"></div>
-                            </div>
-                        ) : dailyPokePuzzleTarget ? (
-                            <div
-                                className="home-sidebar-section--daily cursor-pointer flex items-center gap-3 p-4"
-                                onClick={() => navigate('/pokepuzzle')}
-                                role="button"
-                                tabIndex={0}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter' || e.key === ' ') {
-                                        e.preventDefault();
-                                        navigate('/pokepuzzle');
-                                    }
-                                }}
-                                aria-label="Play daily Pokemon guess challenge"
-                            >
-                                <div className="home-daily__sprite-container h-12 w-12 shrink-0 bg-surface border border-border rounded-md flex items-center justify-center overflow-hidden">
-                                    <img
-                                        src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
-                                        alt="Mystery daily Pokemon"
-                                        className={`home-daily__sprite h-10 w-10 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'}`}
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                    />
-                                </div>
 
-                                <div className="min-w-0 flex-1 flex flex-col justify-between h-12">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <p className="home-panel__eyebrow text-[9px] leading-none">{t('pokepuzzle.homeTeaserTitle')}</p>
-                                            <h3 className="home-panel__title home-panel__title--daily capitalize text-xs font-semibold truncate mt-1">
-                                                {dailyPokePuzzleSummary?.solved ? formatPokemonDisplayName(dailyPokePuzzleTarget.name) : '??????'}
-                                            </h3>
-                                        </div>
-                                        {dailyPokePuzzleSummary?.solved ? (
-                                            <span className="badge badge-success text-[8px] py-0.5 px-1.5 shrink-0 flex items-center gap-0.5">
-                                                <Award className="w-3.5 h-3.5 text-white" />
-                                                {t('pokepuzzle.dailySolvedBadge')}
-                                            </span>
-                                        ) : (
-                                            <span className="home-daily__number text-[9px] font-semibold text-muted">
-                                                #{String(dailyPokePuzzleTarget.id).padStart(3, '0')}
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-between items-center text-[10px]">
-                                        <span className="text-muted truncate mr-2">
-                                            {dailyPokePuzzleSummary?.solved
-                                                ? t('pokepuzzle.homeTeaserSolved', { attempts: dailyPokePuzzleSummary.attempts })
-                                                : t('pokepuzzle.homeTeaserSubtitle')
-                                            }
-                                        </span>
-                                        <span className="text-primary font-bold hover:underline shrink-0">
-                                            {dailyPokePuzzleSummary?.solved ? t('common.yes') : t('pokepuzzle.homeTeaserPlay')} →
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : null}
 
                     </div>
+
+                    {/* Daily PokéPuzzle teaser — desktop only (mobile renders it below the shortcuts) */}
+                    {dailyPuzzleCard && <div className="hidden xl:block">{dailyPuzzleCard}</div>}
 
                     {/* Activity feed — bottom half of the right column */}
                     <div className="home-forum-chat-card-wrapper home-forum-chat-card p-0">

@@ -11,6 +11,17 @@
     .hd-stack { order: 2; }
 }
 
+/* The daily PokéPuzzle teaser now lives inside this stack, directly below
+   the shortcuts panel — not in the legacy flattened sidebar. Neutralize the
+   old sidebar rules (height:100% stretch on desktop, order:3 on mobile) so it
+   behaves as a normal compact block in DOM order on every breakpoint. */
+.hd-stack .home-sidebar-section--daily {
+    order: 0 !important;
+    height: auto !important;
+    margin-bottom: 0 !important;
+    align-items: center;
+}
+
 .hd-panel {
     border: 1px solid var(--color-border);
     border-radius: 0.875rem;
@@ -53,7 +64,7 @@
 /* Quick access: a single compact grid of icon tiles */
 .hd-tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.5rem;
 }
 .hd-tile {
@@ -162,3 +173,462 @@
 .hd-skel-card__meta { width: 45%; height: 0.6rem; }
 .hd-skel-card__roster { display: flex; gap: 0.15rem; }
 .hd-skel-card__roster .hd-skel { width: 2rem; height: 2rem; border-radius: 0.4rem; }
+
+/* Staggered entrance animation for dashboard panels */
+.hd-panel {
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
+}
+.hd-panel:nth-child(1) { animation-delay: 80ms; }
+.hd-panel:nth-child(2) { animation-delay: 160ms; }
+.hd-panel:nth-child(3) { animation-delay: 240ms; }
+
+/* Premium Dual-Tier Shortcuts layout */
+.hd-core-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.hd-core-tile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.875rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-fg);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                transform var(--duration-fast) var(--ease-smooth);
+}
+
+.hd-core-tile:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px -8px var(--color-primary-soft);
+}
+
+.hd-core-tile__icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    transition: all var(--duration-fast) var(--ease-smooth);
+}
+
+.hd-core-tile:hover .hd-core-tile__icon-wrap {
+    background: var(--color-primary);
+    border-color: transparent;
+    color: #ffffff;
+    box-shadow: 0 4px 10px var(--color-primary-soft);
+}
+
+.hd-core-tile__icon {
+    display: flex;
+    color: var(--color-primary);
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.hd-core-tile:hover .hd-core-tile__icon {
+    color: #ffffff;
+}
+
+.hd-core-tile__info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.hd-core-tile__label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.hd-core-tile:hover .hd-core-tile__label {
+    color: var(--color-primary);
+}
+
+.hd-core-tile__desc {
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+    line-height: 1.3;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.hd-divider-title {
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    border-top: 1px solid var(--color-border);
+    padding-top: 1rem;
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+/* Fused Tournament Meta Section Grid */
+.hd-meta-mons-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 0.5rem;
+}
+
+.hd-meta-mon-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.45rem 0.25rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                transform var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.hd-meta-mon-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-raised);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.hd-meta-mon-btn.is-active {
+    border-color: #7c3aed !important;
+    background: rgba(124, 58, 237, 0.08) !important;
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.2) !important;
+}
+
+.hd-meta-mon-icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+}
+
+.hd-meta-mon-icon-wrap img {
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.hd-meta-mon-badge {
+    position: absolute;
+    top: -0.2rem;
+    right: -0.2rem;
+    font-size: 0.55rem;
+    font-weight: 800;
+    font-family: monospace;
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+    border-radius: 999px;
+    padding: 0.05rem 0.25rem;
+    border: 1px solid var(--color-border);
+    line-height: 1;
+}
+
+.hd-meta-mon-btn.is-active .hd-meta-mon-badge {
+    color: #7c3aed;
+    background: rgba(124, 58, 237, 0.15);
+    border-color: rgba(124, 58, 237, 0.3);
+}
+
+.hd-meta-mon-name {
+    font-size: 0.625rem;
+    text-transform: capitalize;
+    color: var(--color-muted);
+    text-align: center;
+    line-height: 1.1;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hd-meta-mon-btn.is-active .hd-meta-mon-name {
+    color: var(--color-fg);
+    font-weight: 600;
+}
+
+/* Responsive two-column team cards */
+.hd-meta-teams-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+}
+
+.hd-meta-teams-empty {
+    grid-column: 1 / -1;
+}
+
+.hd-meta-team-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.65rem 0.85rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                transform var(--duration-fast) var(--ease-smooth);
+}
+
+.hd-meta-team-row:hover {
+    border-color: var(--color-primary);
+    background: var(--color-surface-raised);
+    transform: translateY(-2px);
+}
+
+.hd-meta-team-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    text-align: left;
+}
+
+.hd-meta-team-player {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.hd-meta-team-details {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    color: var(--color-muted);
+}
+
+.hd-meta-team-badge {
+    font-size: 0.55rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    padding: 0.05rem 0.35rem;
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    border-radius: 4px;
+}
+
+.hd-meta-team-roster {
+    display: flex;
+    gap: 0.2rem;
+    flex-shrink: 0;
+}
+
+.hd-meta-team-roster-sprite-wrap {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                transform var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.hd-meta-team-roster-sprite-wrap img {
+    width: 1.85rem;
+    height: 1.85rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.hd-meta-team-roster-sprite-wrap.is-empty {
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+    background: transparent;
+}
+
+.hd-meta-team-roster-sprite-wrap.is-highlighted {
+    border-color: #7c3aed !important;
+    background: rgba(124, 58, 237, 0.15) !important;
+    transform: scale(1.15) translateY(-1px);
+    box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+}
+
+/* Skeleton Loaders */
+.hd-skel-mon-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.45rem 0.25rem;
+}
+
+.hd-skel-mon-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 50%;
+}
+
+.hd-skel-mon-name {
+    width: 70%;
+    height: 0.55rem;
+}
+
+.hd-skel-team-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.65rem 0.85rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.75rem;
+}
+
+.hd-skel-team-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 40%;
+}
+
+.hd-skel-team-player {
+    width: 80%;
+    height: 0.78rem;
+}
+
+.hd-skel-team-meta {
+    width: 50%;
+    height: 0.65rem;
+}
+
+.hd-skel-team-roster {
+    display: flex;
+    gap: 0.2rem;
+    flex-shrink: 0;
+}
+
+.hd-skel-roster-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+}
+
+/* Responsiveness Media Queries */
+@media (max-width: 1024px) {
+    .hd-core-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .hd-tiles {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .hd-meta-mons-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .hd-tiles {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .hd-core-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 0;
+    }
+
+    /* Mobile: surface only the highlight (core) shortcuts — hide the
+       secondary databases/utilities grid to keep the launcher focused. */
+    .hd-divider-title,
+    .hd-tiles {
+        display: none !important;
+    }
+    .hd-core-tile {
+        padding: 0.65rem 0.5rem;
+        flex-direction: column;
+        text-align: center;
+        gap: 0.35rem;
+        border-radius: 0.75rem;
+    }
+    .hd-core-tile__icon-wrap {
+        width: 2.2rem;
+        height: 2.2rem;
+        margin: 0;
+    }
+    .hd-core-tile__desc {
+        display: none !important;
+    }
+    .hd-core-tile__label {
+        font-size: 0.75rem;
+    }
+    
+    .hd-tiles {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.4rem;
+    }
+    
+    .hd-meta-mons-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.35rem;
+    }
+    .hd-meta-mon-btn {
+        padding: 0.35rem 0.15rem;
+    }
+    .hd-meta-mon-icon-wrap {
+        width: 2.3rem;
+        height: 2.3rem;
+    }
+    .hd-meta-mon-icon-wrap img {
+        width: 2.1rem;
+        height: 2.1rem;
+    }
+    
+    .hd-meta-teams-list {
+        grid-template-columns: 1fr;
+    }
+
+    .hd-meta-team-row {
+        padding: 0.55rem 0.75rem;
+    }
+
+    .hd-meta-team-roster-sprite-wrap {
+        width: 1.85rem;
+        height: 1.85rem;
+    }
+    .hd-meta-team-roster-sprite-wrap img {
+        width: 1.7rem;
+        height: 1.7rem;
+    }
+}
+
