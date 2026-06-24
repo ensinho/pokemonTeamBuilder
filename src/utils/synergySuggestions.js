@@ -37,7 +37,7 @@ const bstOf = (entry) => entry ? Object.values(entry.baseStats || {}).reduce((a,
  * @returns {Array<{id,name,types,score,reasons,primary}>}
  */
 export function buildSynergySuggestions({
-    team = [], pokemonIndex = [], synergy = {}, smogonById = {}, usageById = {}, popular = [], limit = 12,
+    team = [], pokemonIndex = [], synergy = {}, smogonById = {}, usageById = {}, popular = [], limit = 15,
 } = {}) {
     const indexById = new Map(pokemonIndex.map((p) => [p.id, p]));
     const popularMap = new Map(popular.map((p) => [p.id, p.count]));
@@ -124,7 +124,8 @@ export function buildSynergySuggestions({
     // Effectiveness boosts so the strongest options float up within each reason:
     // real tournament usage first, then raw base-stat total as a gentle tiebreak.
     for (const [id, c] of cand) {
-        c.score += Math.min(popularMap.get(id) || 0, WEIGHTS.USAGE_CAP) * WEIGHTS.USAGE_FACTOR;
+        const usageCount = (popularMap.get(id) || 0) + (usageById[id]?.n || 0);
+        c.score += Math.min(usageCount, WEIGHTS.USAGE_CAP) * WEIGHTS.USAGE_FACTOR;
         c.score += Math.min(bstOf(indexById.get(id)) / 120, 5);
     }
 

@@ -20,7 +20,7 @@ export const CORES = [
         id: 'rain', name: 'Rain', emoji: '🌧️', accent: '#3b82f6',
         summary: { en: 'Drizzle sets rain; Swift Swim sweepers and boosted Water moves clean up.', pt: 'Drizzle traz a chuva; varredores com Swift Swim e golpes de Água potencializados fecham o jogo.' },
         setterAbilities: ['drizzle'], setterMoves: ['rain-dance'],
-        abuserAbilities: ['swift-swim'],
+        abuserAbilities: ['swift-swim'], abuserMoves: ['electro-shot'],
         guide: {
             en: ['Lead a Drizzle setter (Pelipper, Politoed) to turn on rain for 5 turns.', 'Pair Swift Swim sweepers that double Speed and fire off rain-boosted Water moves.', 'Add a Tailwind or redirection partner to buy turns if your weather is overwritten.', 'Carry a Water-immune or Grass answer for opposing rain mirrors.'],
             pt: ['Comece com um setter de Drizzle (Pelipper, Politoed) para ativar a chuva por 5 turnos.', 'Combine varredores Swift Swim que dobram a Velocidade e disparam golpes de Água potencializados.', 'Adicione um parceiro de Tailwind ou redirecionamento para ganhar turnos se o clima for sobrescrito.', 'Tenha uma resposta imune a Água ou tipo Planta para espelhos de chuva.'],
@@ -78,6 +78,7 @@ export const CORES = [
         id: 'psyterrain', name: 'Psychic Terrain', emoji: '🔮', accent: '#ec4899',
         summary: { en: 'Blocks priority and boosts Psychic moves — a fortress for slower setups.', pt: 'Bloqueia prioridade e potencializa golpes Psíquicos — uma fortaleza para setups lentos.' },
         setterAbilities: ['psychic-surge'], setterMoves: ['psychic-terrain'],
+        abuserMoves: ['expanding-force'],
         guide: {
             en: ['Lead Indeedee or another Psychic Surge setter to shut off priority moves.', 'This protects slow setup and Trick Room sweepers from Fake Out / priority.', 'Boosted Psychic-type attacks hit hard into the meta.', 'Watch for Terrain overwrites and Grassy/Electric setters.'],
             pt: ['Comece com Indeedee ou outro setter de Psychic Surge para anular golpes de prioridade.', 'Isso protege setups lentos e varredores de Trick Room contra Fake Out / prioridade.', 'Ataques Psíquicos potencializados causam muito dano no meta.', 'Cuidado com sobrescrita de terreno e setters Grassy/Electric.'],
@@ -87,10 +88,30 @@ export const CORES = [
         id: 'eleterrain', name: 'Electric Terrain', emoji: '⚡', accent: '#eab308',
         summary: { en: 'Powers Electric moves and blocks sleep; Quark Drive Paradoxes thrive.', pt: 'Potencializa golpes Elétricos e bloqueia sono; Paradoxos com Quark Drive prosperam.' },
         setterAbilities: ['electric-surge', 'hadron-engine'], setterMoves: ['electric-terrain'],
-        abuserAbilities: ['quark-drive'],
+        abuserAbilities: ['quark-drive'], abuserMoves: ['rising-voltage'],
         guide: {
             en: ['Set the terrain (Pawmot, Miraidon, Tapu Koko-style leads).', 'Quark Drive Paradox attackers get a free offensive or Speed boost.', 'Grounded teammates can\'t be put to sleep — great vs. Spore/Yawn.', 'Boosted Electric STAB pressures Water and Flying cores.'],
             pt: ['Ative o terreno (Pawmot, Miraidon e líderes do estilo Tapu Koko).', 'Atacantes Paradox com Quark Drive ganham bônus ofensivo ou de Velocidade grátis.', 'Companheiros no chão não podem dormir — ótimo contra Spore/Yawn.', 'O STAB Elétrico potencializado pressiona cores de Água e Voador.'],
+        },
+    },
+    {
+        id: 'grassyterrain', name: 'Grassy Terrain', emoji: '🌿', accent: '#22c55e',
+        summary: { en: 'Grassy Surge heals and boosts Grass moves; activates Grassy Glide.', pt: 'Grassy Surge cura e potencializa golpes Planta; ativa Grassy Glide.' },
+        setterAbilities: ['grassy-surge'], setterMoves: ['grassy-terrain'],
+        abuserAbilities: ['grass-pelt'], abuserMoves: ['grassy-glide'],
+        guide: {
+            en: [
+                'Lead a Grassy Surge setter (Rillaboom) to automatically set Grassy Terrain.',
+                'Pair with partners that run Grassy Glide for priority Grass-type attacks.',
+                'Grounded Pokémon will recover a small amount of HP each turn under terrain.',
+                'Be careful with opposing Flying, Poison, or Steel types that resist Grass.'
+            ],
+            pt: [
+                'Comece com um setter de Grassy Surge (Rillaboom) para ativar o Grassy Terrain.',
+                'Combine com parceiros com Grassy Glide para obter golpes Planta com prioridade.',
+                'Pokémon no chão recuperam um pouco de PS a cada turno sob o terreno.',
+                'Cuidado com tipos Voadores, Venenosos ou Metálicos oponentes que resistem a Planta.'
+            ]
         },
     },
 ];

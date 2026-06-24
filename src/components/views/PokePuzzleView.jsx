@@ -1010,709 +1010,709 @@ export default function PokePuzzleView() {
     return (
         <>
             <main className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''} ${selectedDate !== getTodayDateString() ? 'is-archive-mode' : ''}`}>
-            {/* Header Area with Tabs and History button */}
-            <div className="pokepuzzle-header-row">
-                <div className="pokepuzzle-tabs">
-                    <button
-                        onClick={() => setMode('daily')}
-                        className={`pokepuzzle-tab-btn ${mode === 'daily' ? 'is-active' : ''}`}
-                    >
-                        {t('pokepuzzle.dailyTab')}
-                    </button>
-                    <button
-                        onClick={() => setMode('ongoing')}
-                        className={`pokepuzzle-tab-btn ${mode === 'ongoing' ? 'is-active' : ''}`}
-                    >
-                        {t('pokepuzzle.ongoingTab')}
-                    </button>
-                </div>
-
-                {mode === 'daily' && (
-                    <button
-                        type="button"
-                        onClick={() => setIsHistoryOpen(true)}
-                        className="pokepuzzle-history-toggle"
-                        title={language === 'pt' ? 'Ver Histórico de Puzzles' : 'View Puzzle History'}
-                    >
-                        <HistoryIcon />
-                        <span className="pokepuzzle-history-toggle-label">{language === 'pt' ? 'Histórico' : 'History'}</span>
-                        {playedHistoryCount > 0 && (
-                            <span className="pokepuzzle-history-toggle-badge">
-                                {playedHistoryCount}
-                            </span>
-                        )}
-                    </button>
-                )}
-            </div>
-
-            {/* Previous Puzzle Indicator Banner */}
-            {mode === 'daily' && selectedDate !== getTodayDateString() && (
-                <div className="pokepuzzle-history-active-banner animate-fade-in">
-                    <HistoryIcon />
-                    <div className="flex-1">
-                        {language === 'pt' ? (
-                            <span>Você está jogando o PokéPuzzle de <strong>{selectedDate}</strong> (Histórico)</span>
-                        ) : (
-                            <span>You are playing the PokéPuzzle from <strong>{selectedDate}</strong> (History)</span>
-                        )}
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => setSelectedDate(getTodayDateString())}
-                        className="pokepuzzle-history-exit-btn"
-                        title={language === 'pt' ? 'Voltar para o desafio de hoje' : 'Return to today\'s challenge'}
-                    >
-                        {language === 'pt' ? 'Voltar para Hoje' : 'Exit to Today'}
-                    </button>
-                </div>
-            )}
-
-            {/* Header countdown timer for Daily challenge */}
-            {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
-                <div className="pokepuzzle-header-countdown animate-fade-in">
-                    <span className="pokepuzzle-header-countdown-label">
-                        {language === 'pt' ? 'PRÓXIMO EM' : 'NEXT IN'}
-                    </span>
-                    <span className="pokepuzzle-header-countdown-time">{nextDailyCountdown}</span>
-                </div>
-            )}
-
-            {/* Load State Indicator */}
-            {isLoadingIndex && (
-                <div className="flex flex-col items-center justify-center py-12">
-                    <div className="team-builder-spinner" aria-hidden="true"></div>
-                    <p className="text-xs text-muted mt-3">{t('common.loading')}</p>
-                </div>
-            )}
-
-            {!isLoadingIndex && targetPokemon && (
-                <div className={`pokepuzzle-game-container ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
-                    <div className="pokepuzzle-game-main">
-                        {/* Tips / Clues Section */}
-                        <section className="pokepuzzle-tips-container">
-                            <div className="pokepuzzle-tips-header">
-                                <h3 className="pokepuzzle-tips-title">
-                                    <Lightbulb className="w-4 h-4 text-accent" />
-                                    <span>{language === 'pt' ? 'Serviço de Dicas' : 'Tips Service'}</span>
-                                </h3>
-                                <div className="flex gap-2 items-center">
-                                    <span className="text-[10px] uppercase font-bold text-accent bg-accent/10 border border-accent px-2 py-0.5 rounded">
-                                        {language === 'pt' ? `Geração ${getGenerationByPokemonId(targetPokemon.id)}` : `Gen ${getGenerationByPokemonId(targetPokemon.id)}`}
-                                    </span>
-                                    <span className="text-[10px] uppercase font-bold text-muted bg-surface-raised border border-border px-2 py-0.5 rounded">
-                                        {guesses.length} / {MAX_ATTEMPTS} {language === 'pt' ? 'tentativas' : 'tries'}
-                                    </span>
-                                </div>
-                            </div>
-                            {/* Horizontal tabs for tips */}
-                            <div className="pokepuzzle-tip-tabs">
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTipTab('description')}
-                                    className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''} ${!showPokedexEntry ? 'is-locked' : ''}`}
-                                >
-                                    <FileText className="w-3.5 h-3.5" />
-                                    <span>{language === 'pt' ? 'Descrição' : 'Description'}</span>
-                                    {!showPokedexEntry && <Lock className="w-3 h-3 text-muted shrink-0" />}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTipTab('types')}
-                                    className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'types' ? 'is-active' : ''} ${!showTypes ? 'is-locked' : ''}`}
-                                >
-                                    <Layers className="w-3.5 h-3.5" />
-                                    <span>{language === 'pt' ? 'Tipos' : 'Types'}</span>
-                                    {!showTypes && <Lock className="w-3 h-3 text-muted shrink-0" />}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTipTab('silhouette')}
-                                    className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'silhouette' ? 'is-active' : ''} ${!showSilhouette ? 'is-locked' : ''}`}
-                                >
-                                    <Image className="w-3.5 h-3.5" />
-                                    <span>{language === 'pt' ? 'Silhueta' : 'Silhouette'}</span>
-                                    {!showSilhouette && <Lock className="w-3 h-3 text-muted shrink-0" />}
-                                </button>
-                            </div>
-
-                            {/* Active tip card content */}
-                            <div className="pokepuzzle-tip-card-wrapper w-full">
-                                {activeTipTab === 'description' && (
-                                    <div className={`pokepuzzle-tip-card ${!showPokedexEntry ? 'is-locked' : ''}`}>
-                                        <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipEntry')}</span>
-                                        {showPokedexEntry ? (
-                                            <div className="pokepuzzle-tip-content pokepuzzle-tip-description-text custom-scrollbar">
-                                                {isLoadingDetails ? '...' : targetDetails.description || 'No description found.'}
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center gap-1.5 py-1">
-                                                <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                    <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
-                                                </span>
-                                                <span className="text-[10px] text-muted opacity-75">
-                                                    {language === 'pt' ? 'Desbloqueia na 3ª tentativa' : 'Unlocks at 3 attempts'}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => unlockTip('description')}
-                                                    className="pokepuzzle-unlock-btn"
-                                                >
-                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                                    <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTipTab === 'types' && (
-                                    <div className={`pokepuzzle-tip-card ${!showTypes ? 'is-locked' : ''}`}>
-                                        <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipTypes')}</span>
-                                        {showTypes ? (
-                                            <div className="pokepuzzle-tip-content pokepuzzle-clue-types">
-                                                {isLoadingDetails ? '...' : targetDetails.types.map(type => (
-                                                    <span
-                                                        key={type}
-                                                        className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded"
-                                                        style={{
-                                                            backgroundColor: `${typeColors[type]}18`,
-                                                            borderColor: `${typeColors[type]}35`,
-                                                            color: typeColors[type],
-                                                        }}
-                                                    >
-                                                        {type}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center gap-1.5 py-1">
-                                                <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                    <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
-                                                </span>
-                                                <span className="text-[10px] text-muted opacity-75">
-                                                    {language === 'pt' ? 'Desbloqueia na 5ª tentativa' : 'Unlocks at 5 attempts'}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => unlockTip('types')}
-                                                    className="pokepuzzle-unlock-btn"
-                                                >
-                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                                    <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {activeTipTab === 'silhouette' && (
-                                    <div className={`pokepuzzle-tip-card ${!showSilhouette ? 'is-locked' : ''}`}>
-                                        <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipSilhouette')}</span>
-                                        {showSilhouette ? (
-                                            <div className="pokepuzzle-tip-content flex justify-center">
-                                                {isLoadingDetails ? '...' : (
-                                                    <img
-                                                        src={targetDetails.image || getPokemonArtworkSpriteUrl(targetDetails.id)}
-                                                        alt="Silhouette tip"
-                                                        className="w-12 h-12 object-contain pokepuzzle-silhouette animate-pulse"
-                                                    />
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center gap-1.5 py-1">
-                                                <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                    <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
-                                                </span>
-                                                <span className="text-[10px] text-muted opacity-75">
-                                                    {language === 'pt' ? 'Desbloqueia na 7ª tentativa' : 'Unlocks at 7 attempts'}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => unlockTip('silhouette')}
-                                                    className="pokepuzzle-unlock-btn"
-                                                >
-                                                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                                    <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-
-                        {/* Game Letter Board Grid */}
-                        <section
-                            className="pokepuzzle-grid"
-                            style={{ '--length': targetLength }}
-                            role="grid"
-                            aria-label="Wordle guess board"
+                {/* Header Area with Tabs and History button */}
+                <div className="pokepuzzle-header-row">
+                    <div className="pokepuzzle-tabs">
+                        <button
+                            onClick={() => setMode('daily')}
+                            className={`pokepuzzle-tab-btn ${mode === 'daily' ? 'is-active' : ''}`}
                         >
-                            {gridRows.map((row, rowIdx) => (
-                                <div
-                                    key={rowIdx}
-                                    className="pokepuzzle-row"
-                                    style={{ gridTemplateColumns: `repeat(${targetLength}, minmax(0, 1fr))` }}
-                                    role="row"
-                                >
-                                    {row.letters.map((letter, letterIdx) => {
-                                        const status = row.statuses[letterIdx];
-                                        const hasLtr = letter !== '' && letter !== ' ';
-                                        const isSelected = !row.submitted && letterIdx === selectedCharIdx;
+                            {t('pokepuzzle.dailyTab')}
+                        </button>
+                        <button
+                            onClick={() => setMode('ongoing')}
+                            className={`pokepuzzle-tab-btn ${mode === 'ongoing' ? 'is-active' : ''}`}
+                        >
+                            {t('pokepuzzle.ongoingTab')}
+                        </button>
+                    </div>
 
-                                        return (
-                                            <div
-                                                key={letterIdx}
-                                                className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''} ${row.submitted && status === 'correct' ? 'is-correct' :
-                                                    row.submitted && status === 'present' ? 'is-present' :
-                                                        row.submitted && status === 'absent' ? 'is-absent' : ''
-                                                    } ${isSelected ? 'is-selected-cell' : ''} ${!row.submitted ? 'is-active-row' : ''}`}
-                                                role="gridcell"
-                                                onClick={() => {
-                                                    if (!row.submitted) {
-                                                        setSelectedCharIdx(letterIdx);
-                                                        inputRef.current?.focus();
-                                                    }
-                                                }}
-                                            >
-                                                {letter}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            ))}
-                        </section>
+                    {mode === 'daily' && (
+                        <button
+                            type="button"
+                            onClick={() => setIsHistoryOpen(true)}
+                            className="pokepuzzle-history-toggle"
+                            title={language === 'pt' ? 'Ver Histórico de Puzzles' : 'View Puzzle History'}
+                        >
+                            <HistoryIcon />
+                            <span className="pokepuzzle-history-toggle-label">{language === 'pt' ? 'Histórico' : 'History'}</span>
+                            {playedHistoryCount > 0 && (
+                                <span className="pokepuzzle-history-toggle-badge">
+                                    {playedHistoryCount}
+                                </span>
+                            )}
+                        </button>
+                    )}
+                </div>
 
-                        {/* Color Status Guide */}
-                        {gameStatus === 'IN_PROGRESS' && (
-                            <div className="pokepuzzle-guide-box">
-                                <div className="pokepuzzle-guide-item">
-                                    <span className="pokepuzzle-guide-dot correct" />
-                                    <span>{t('pokepuzzle.letterCorrect')}</span>
-                                </div>
-                                <div className="pokepuzzle-guide-item">
-                                    <span className="pokepuzzle-guide-dot present" />
-                                    <span>{t('pokepuzzle.letterPresent')}</span>
-                                </div>
-                                <div className="pokepuzzle-guide-item">
-                                    <span className="pokepuzzle-guide-dot absent" />
-                                    <span>{t('pokepuzzle.letterAbsent')}</span>
-                                </div>
-                            </div>
-                        )}
+                {/* Previous Puzzle Indicator Banner */}
+                {mode === 'daily' && selectedDate !== getTodayDateString() && (
+                    <div className="pokepuzzle-history-active-banner animate-fade-in">
+                        <HistoryIcon />
+                        <div className="flex-1">
+                            {language === 'pt' ? (
+                                <span>Você está jogando o PokéPuzzle de <strong>{selectedDate}</strong> (Histórico)</span>
+                            ) : (
+                                <span>You are playing the PokéPuzzle from <strong>{selectedDate}</strong> (History)</span>
+                            )}
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedDate(getTodayDateString())}
+                            className="pokepuzzle-history-exit-btn"
+                            title={language === 'pt' ? 'Voltar para o desafio de hoje' : 'Return to today\'s challenge'}
+                        >
+                            {language === 'pt' ? 'Voltar para Hoje' : 'Exit to Today'}
+                        </button>
+                    </div>
+                )}
 
-                        {/* Autocomplete Input Panel */}
-                        {gameStatus === 'IN_PROGRESS' && (
-                            <div className="pokepuzzle-input-container mt-4">
-                                <input
-                                    ref={inputRef}
-                                    type="text"
-                                    value={inputValue}
-                                    onChange={(e) => {
-                                        const val = e.target.value.toLowerCase();
-                                        let clean = val.replace(/[^a-z ]/g, '');
-                                        if (clean.length > targetLength) {
-                                            clean = clean.slice(0, targetLength);
-                                        } else {
-                                            clean = clean.padEnd(targetLength, ' ');
-                                        }
-                                        setInputValue(clean);
-                                        setSelectedCharIdx(prev => Math.min(targetLength - 1, prev + 1));
-                                    }}
-                                    onMouseDown={(e) => {
-                                        // Focus the input, but prevent clicking from changing the text selection cursor position
-                                        e.preventDefault();
-                                        inputRef.current?.focus();
-                                        inputRef.current?.setSelectionRange(selectedCharIdx, selectedCharIdx + 1);
-                                    }}
-                                    placeholder={t('pokepuzzle.guessPlaceholder')}
-                                    className="input-clean"
-                                    aria-label="Type Pokémon name"
-                                />
+                {/* Header countdown timer for Daily challenge */}
+                {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
+                    <div className="pokepuzzle-header-countdown animate-fade-in">
+                        <span className="pokepuzzle-header-countdown-label">
+                            {language === 'pt' ? 'PRÓXIMO EM' : 'NEXT IN'}
+                        </span>
+                        <span className="pokepuzzle-header-countdown-time">{nextDailyCountdown}</span>
+                    </div>
+                )}
 
-                                {/* Dropdown list */}
-                                {inputValue.trim() && suggestions.length > 0 && (
-                                    <div className="pokepuzzle-autocomplete-list custom-scrollbar" ref={autocompleteContainerRef}>
-                                        {suggestions.map((p, idx) => (
-                                            <div
-                                                key={p.id}
-                                                onClick={() => handleSelectSuggestion(p)}
-                                                className={`pokepuzzle-autocomplete-item ${idx === activeSuggestionIdx ? 'is-active' : ''}`}
-                                            >
-                                                <span className="capitalize">{p.displayName}</span>
-                                                <span className="text-[10px] text-muted uppercase font-bold">
-                                                    #{String(p.id).padStart(3, '0')}
-                                                </span>
-                                            </div>
-                                        ))}
+                {/* Load State Indicator */}
+                {isLoadingIndex && (
+                    <div className="flex flex-col items-center justify-center py-12">
+                        <div className="team-builder-spinner" aria-hidden="true"></div>
+                        <p className="text-xs text-muted mt-3">{t('common.loading')}</p>
+                    </div>
+                )}
+
+                {!isLoadingIndex && targetPokemon && (
+                    <div className={`pokepuzzle-game-container ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}`}>
+                        <div className="pokepuzzle-game-main">
+                            {/* Tips / Clues Section */}
+                            <section className="pokepuzzle-tips-container">
+                                <div className="pokepuzzle-tips-header">
+                                    <h3 className="pokepuzzle-tips-title">
+                                        <Lightbulb className="w-4 h-4 text-accent" />
+                                        <span>{language === 'pt' ? 'Serviço de Dicas' : 'Tips Service'}</span>
+                                    </h3>
+                                    <div className="flex gap-2 items-center">
+                                        <span className="text-[10px] uppercase font-bold text-accent bg-accent/10 border border-accent px-2 py-0.5 rounded">
+                                            {language === 'pt' ? `Geração ${getGenerationByPokemonId(targetPokemon.id)}` : `Gen ${getGenerationByPokemonId(targetPokemon.id)}`}
+                                        </span>
+                                        <span className="text-[10px] uppercase font-bold text-muted bg-surface-raised border border-border px-2 py-0.5 rounded">
+                                            {guesses.length} / {MAX_ATTEMPTS} {language === 'pt' ? 'tentativas' : 'tries'}
+                                        </span>
                                     </div>
-                                )}
-                            </div>
-                        )}
+                                </div>
+                                {/* Horizontal tabs for tips */}
+                                <div className="pokepuzzle-tip-tabs">
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTipTab('description')}
+                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''} ${!showPokedexEntry ? 'is-locked' : ''}`}
+                                    >
+                                        <FileText className="w-3.5 h-3.5" />
+                                        <span>{language === 'pt' ? 'Descrição' : 'Description'}</span>
+                                        {!showPokedexEntry && <Lock className="w-3 h-3 text-muted shrink-0" />}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTipTab('types')}
+                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'types' ? 'is-active' : ''} ${!showTypes ? 'is-locked' : ''}`}
+                                    >
+                                        <Layers className="w-3.5 h-3.5" />
+                                        <span>{language === 'pt' ? 'Tipos' : 'Types'}</span>
+                                        {!showTypes && <Lock className="w-3 h-3 text-muted shrink-0" />}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTipTab('silhouette')}
+                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'silhouette' ? 'is-active' : ''} ${!showSilhouette ? 'is-locked' : ''}`}
+                                    >
+                                        <Image className="w-3.5 h-3.5" />
+                                        <span>{language === 'pt' ? 'Silhueta' : 'Silhouette'}</span>
+                                        {!showSilhouette && <Lock className="w-3 h-3 text-muted shrink-0" />}
+                                    </button>
+                                </div>
 
-                        {/* Virtual QWERTY Keyboard */}
-                        {gameStatus === 'IN_PROGRESS' && (
-                            <section className="pokepuzzle-keyboard" aria-label="Virtual keyboard">
-                                {KEYBOARD_ROWS.map((row, rowIdx) => (
-                                    <div key={rowIdx} className="pokepuzzle-keyboard-row">
-                                        {row.map(key => {
-                                            const status = keyboardStatusMap[key];
-                                            const isWide = key === 'enter' || key === 'backspace';
-                                            const label = key === 'backspace'
-                                                ? <Delete className="w-4 h-4" />
-                                                : key === 'enter'
-                                                    ? <CornerDownLeft className="w-4 h-4" />
-                                                    : key;
+                                {/* Active tip card content */}
+                                <div className="pokepuzzle-tip-card-wrapper w-full">
+                                    {activeTipTab === 'description' && (
+                                        <div className={`pokepuzzle-tip-card ${!showPokedexEntry ? 'is-locked' : ''}`}>
+                                            <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipEntry')}</span>
+                                            {showPokedexEntry ? (
+                                                <div className="pokepuzzle-tip-content pokepuzzle-tip-description-text custom-scrollbar">
+                                                    {isLoadingDetails ? '...' : targetDetails.description || 'No description found.'}
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center gap-1.5 py-1">
+                                                    <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
+                                                        <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted opacity-75">
+                                                        {language === 'pt' ? 'Desbloqueia na 3ª tentativa' : 'Unlocks at 3 attempts'}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => unlockTip('description')}
+                                                        className="pokepuzzle-unlock-btn"
+                                                    >
+                                                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                                        <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {activeTipTab === 'types' && (
+                                        <div className={`pokepuzzle-tip-card ${!showTypes ? 'is-locked' : ''}`}>
+                                            <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipTypes')}</span>
+                                            {showTypes ? (
+                                                <div className="pokepuzzle-tip-content pokepuzzle-clue-types">
+                                                    {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                                        <span
+                                                            key={type}
+                                                            className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded"
+                                                            style={{
+                                                                backgroundColor: `${typeColors[type]}18`,
+                                                                borderColor: `${typeColors[type]}35`,
+                                                                color: typeColors[type],
+                                                            }}
+                                                        >
+                                                            {type}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center gap-1.5 py-1">
+                                                    <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
+                                                        <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted opacity-75">
+                                                        {language === 'pt' ? 'Desbloqueia na 5ª tentativa' : 'Unlocks at 5 attempts'}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => unlockTip('types')}
+                                                        className="pokepuzzle-unlock-btn"
+                                                    >
+                                                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                                        <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {activeTipTab === 'silhouette' && (
+                                        <div className={`pokepuzzle-tip-card ${!showSilhouette ? 'is-locked' : ''}`}>
+                                            <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipSilhouette')}</span>
+                                            {showSilhouette ? (
+                                                <div className="pokepuzzle-tip-content flex justify-center">
+                                                    {isLoadingDetails ? '...' : (
+                                                        <img
+                                                            src={targetDetails.image || getPokemonArtworkSpriteUrl(targetDetails.id)}
+                                                            alt="Silhouette tip"
+                                                            className="w-12 h-12 object-contain pokepuzzle-silhouette animate-pulse"
+                                                        />
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center gap-1.5 py-1">
+                                                    <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
+                                                        <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
+                                                    </span>
+                                                    <span className="text-[10px] text-muted opacity-75">
+                                                        {language === 'pt' ? 'Desbloqueia na 7ª tentativa' : 'Unlocks at 7 attempts'}
+                                                    </span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => unlockTip('silhouette')}
+                                                        className="pokepuzzle-unlock-btn"
+                                                    >
+                                                        <Sparkles className="w-3.5 h-3.5 text-primary" />
+                                                        <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                            {/* Game Letter Board Grid */}
+                            <section
+                                className="pokepuzzle-grid"
+                                style={{ '--length': targetLength }}
+                                role="grid"
+                                aria-label="Wordle guess board"
+                            >
+                                {gridRows.map((row, rowIdx) => (
+                                    <div
+                                        key={rowIdx}
+                                        className="pokepuzzle-row"
+                                        style={{ gridTemplateColumns: `repeat(${targetLength}, minmax(0, 1fr))` }}
+                                        role="row"
+                                    >
+                                        {row.letters.map((letter, letterIdx) => {
+                                            const status = row.statuses[letterIdx];
+                                            const hasLtr = letter !== '' && letter !== ' ';
+                                            const isSelected = !row.submitted && letterIdx === selectedCharIdx;
 
                                             return (
-                                                <button
-                                                    type="button"
-                                                    key={key}
-                                                    onClick={() => handleKeyClick(key)}
-                                                    className={`pokepuzzle-key ${isWide ? 'is-wide' : ''} ${status === 'correct' ? 'is-correct' :
-                                                        status === 'present' ? 'is-present' :
-                                                            status === 'absent' ? 'is-absent' : ''
-                                                        }`}
+                                                <div
+                                                    key={letterIdx}
+                                                    className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''} ${row.submitted && status === 'correct' ? 'is-correct' :
+                                                        row.submitted && status === 'present' ? 'is-present' :
+                                                            row.submitted && status === 'absent' ? 'is-absent' : ''
+                                                        } ${isSelected ? 'is-selected-cell' : ''} ${!row.submitted ? 'is-active-row' : ''}`}
+                                                    role="gridcell"
+                                                    onClick={() => {
+                                                        if (!row.submitted) {
+                                                            setSelectedCharIdx(letterIdx);
+                                                            inputRef.current?.focus();
+                                                        }
+                                                    }}
                                                 >
-                                                    {label}
-                                                </button>
+                                                    {letter}
+                                                </div>
                                             );
                                         })}
                                     </div>
                                 ))}
                             </section>
-                        )}
-                    </div>
 
-                    {/* Sidebar congrats panel */}
-                    {gameStatus !== 'IN_PROGRESS' && (
-                        <div className="pokepuzzle-game-sidebar">
-                            {mode === 'daily' ? (
-                                <section
-                                    className="pokepuzzle-result-card"
-                                    style={{
-                                        '--type-color': typeColor,
-                                        '--type-glow-color': typeGlowColor
-                                    }}
-                                >
-                                    <div className="pokepuzzle-result-badge-wrapper">
-                                        {gameStatus === 'WON' ? (
-                                            <div className="pokepuzzle-badge-success-glow">
-                                                <Award className="w-6 h-6 text-success" />
-                                            </div>
-                                        ) : (
-                                            <div className="pokepuzzle-badge-danger-glow">
-                                                <Frown className="w-6 h-6 text-danger" />
-                                            </div>
-                                        )}
+                            {/* Color Status Guide */}
+                            {gameStatus === 'IN_PROGRESS' && (
+                                <div className="pokepuzzle-guide-box">
+                                    <div className="pokepuzzle-guide-item">
+                                        <span className="pokepuzzle-guide-dot correct" />
+                                        <span>{t('pokepuzzle.letterCorrect')}</span>
                                     </div>
-
-                                    <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
-                                        {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
-                                    </h2>
-
-                                    <div className="pokepuzzle-result-sprite-box">
-                                        <img
-                                            src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
-                                            alt={targetPokemon.name}
-                                            className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
-                                            onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
-                                        />
+                                    <div className="pokepuzzle-guide-item">
+                                        <span className="pokepuzzle-guide-dot present" />
+                                        <span>{t('pokepuzzle.letterPresent')}</span>
                                     </div>
-
-                                    <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
-
-                                    <div className="pokepuzzle-result-types mt-0.5">
-                                        {isLoadingDetails ? '...' : targetDetails.types.map(type => (
-                                            <span
-                                                key={type}
-                                                className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
-                                                style={{
-                                                    backgroundColor: `${typeColors[type]}18`,
-                                                    borderColor: `${typeColors[type]}35`,
-                                                    color: typeColors[type],
-                                                }}
-                                            >
-                                                {type}
-                                            </span>
-                                        ))}
+                                    <div className="pokepuzzle-guide-item">
+                                        <span className="pokepuzzle-guide-dot absent" />
+                                        <span>{t('pokepuzzle.letterAbsent')}</span>
                                     </div>
+                                </div>
+                            )}
 
-                                    <p className="pokepuzzle-result-text mt-1">
-                                        {gameStatus === 'WON'
-                                            ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
-                                            : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
-                                        }
-                                    </p>
+                            {/* Autocomplete Input Panel */}
+                            {gameStatus === 'IN_PROGRESS' && (
+                                <div className="pokepuzzle-input-container mt-4">
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={inputValue}
+                                        onChange={(e) => {
+                                            const val = e.target.value.toLowerCase();
+                                            let clean = val.replace(/[^a-z ]/g, '');
+                                            if (clean.length > targetLength) {
+                                                clean = clean.slice(0, targetLength);
+                                            } else {
+                                                clean = clean.padEnd(targetLength, ' ');
+                                            }
+                                            setInputValue(clean);
+                                            setSelectedCharIdx(prev => Math.min(targetLength - 1, prev + 1));
+                                        }}
+                                        onMouseDown={(e) => {
+                                            // Focus the input, but prevent clicking from changing the text selection cursor position
+                                            e.preventDefault();
+                                            inputRef.current?.focus();
+                                            inputRef.current?.setSelectionRange(selectedCharIdx, selectedCharIdx + 1);
+                                        }}
+                                        placeholder={t('pokepuzzle.guessPlaceholder')}
+                                        className="input-clean"
+                                        aria-label="Type Pokémon name"
+                                    />
 
-                                    {/* Mini attempt preview grid */}
-                                    <div className="pokepuzzle-share-preview mt-2 w-full">
-                                        <span className="text-[10px] text-muted uppercase font-bold tracking-wider mb-2 block">
-                                            {language === 'pt' ? 'Resumo das Tentativas' : 'Attempts Summary'}
-                                        </span>
-                                        <div className="flex flex-col gap-1 items-center justify-center">
-                                            {guesses.map((guess, idx) => {
-                                                const norm = normalizeNameForGame(guess);
-                                                const letterStatuses = checkLetters(norm, targetNormalized);
+                                    {/* Dropdown list */}
+                                    {inputValue.trim() && suggestions.length > 0 && (
+                                        <div className="pokepuzzle-autocomplete-list custom-scrollbar" ref={autocompleteContainerRef}>
+                                            {suggestions.map((p, idx) => (
+                                                <div
+                                                    key={p.id}
+                                                    onClick={() => handleSelectSuggestion(p)}
+                                                    className={`pokepuzzle-autocomplete-item ${idx === activeSuggestionIdx ? 'is-active' : ''}`}
+                                                >
+                                                    <span className="capitalize">{p.displayName}</span>
+                                                    <span className="text-[10px] text-muted uppercase font-bold">
+                                                        #{String(p.id).padStart(3, '0')}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Virtual QWERTY Keyboard */}
+                            {gameStatus === 'IN_PROGRESS' && (
+                                <section className="pokepuzzle-keyboard" aria-label="Virtual keyboard">
+                                    {KEYBOARD_ROWS.map((row, rowIdx) => (
+                                        <div key={rowIdx} className="pokepuzzle-keyboard-row">
+                                            {row.map(key => {
+                                                const status = keyboardStatusMap[key];
+                                                const isWide = key === 'enter' || key === 'backspace';
+                                                const label = key === 'backspace'
+                                                    ? <Delete className="w-4 h-4" />
+                                                    : key === 'enter'
+                                                        ? <CornerDownLeft className="w-4 h-4" />
+                                                        : key;
+
                                                 return (
-                                                    <div key={idx} className="pokepuzzle-share-preview-row">
-                                                        {letterStatuses.map((status, sIdx) => (
-                                                            <span
-                                                                key={sIdx}
-                                                                className={`pokepuzzle-share-preview-tile is-${status}`}
-                                                            />
-                                                        ))}
-                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        key={key}
+                                                        onClick={() => handleKeyClick(key)}
+                                                        className={`pokepuzzle-key ${isWide ? 'is-wide' : ''} ${status === 'correct' ? 'is-correct' :
+                                                            status === 'present' ? 'is-present' :
+                                                                status === 'absent' ? 'is-absent' : ''
+                                                            }`}
+                                                    >
+                                                        {label}
+                                                    </button>
                                                 );
                                             })}
                                         </div>
-                                    </div>
-
-                                    {/* Share Actions Row */}
-                                    <div className="pokepuzzle-share-actions-container w-full mt-2 flex flex-col gap-2">
-                                        <button
-                                            onClick={handleShare}
-                                            className="btn btn-accent px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
-                                        >
-                                            <Share2 className="w-3.5 h-3.5" />
-                                            <span>{language === 'pt' ? 'Copiar Texto' : 'Copy Text'}</span>
-                                        </button>
-                                        <button
-                                            onClick={handleShareImage}
-                                            className="btn btn-secondary px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
-                                        >
-                                            <Image className="w-3.5 h-3.5" />
-                                            <span>{language === 'pt' ? 'Compartilhar Imagem' : 'Share Image'}</span>
-                                        </button>
-                                    </div>
-                                </section>
-                            ) : (
-                                <section
-                                    className="pokepuzzle-result-card"
-                                    style={{
-                                        '--type-color': typeColor,
-                                        '--type-glow-color': typeGlowColor
-                                    }}
-                                >
-                                    <div className="pokepuzzle-result-badge-wrapper">
-                                        {gameStatus === 'WON' ? (
-                                            <div className="pokepuzzle-badge-success-glow">
-                                                <Award className="w-6 h-6 text-success" />
-                                            </div>
-                                        ) : (
-                                            <div className="pokepuzzle-badge-danger-glow">
-                                                <Frown className="w-6 h-6 text-danger" />
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
-                                        {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
-                                    </h2>
-
-                                    <div className="pokepuzzle-result-sprite-box">
-                                        <img
-                                            src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
-                                            alt={targetPokemon.name}
-                                            className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
-                                            onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
-                                        />
-                                    </div>
-
-                                    <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
-
-                                    <div className="pokepuzzle-result-types mt-0.5">
-                                        {isLoadingDetails ? '...' : targetDetails.types.map(type => (
-                                            <span
-                                                key={type}
-                                                className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
-                                                style={{
-                                                    backgroundColor: `${typeColors[type]}18`,
-                                                    borderColor: `${typeColors[type]}35`,
-                                                    color: typeColors[type],
-                                                }}
-                                            >
-                                                {type}
-                                            </span>
-                                        ))}
-                                    </div>
-
-                                    <p className="pokepuzzle-result-text mt-1">
-                                        {gameStatus === 'WON'
-                                            ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
-                                            : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
-                                        }
-                                    </p>
-
-                                    <button
-                                        onClick={startRandomOngoingGame}
-                                        className="btn btn-primary px-8 py-3 flex items-center justify-center gap-2 w-full font-bold text-sm shadow-md mt-4"
-                                    >
-                                        <RefreshIcon className="w-4 h-4" />
-                                        <span>{t('pokepuzzle.playAgain')}</span>
-                                    </button>
+                                    ))}
                                 </section>
                             )}
                         </div>
-                    )}
-                </div>
-            )}
-        </main>
 
-        {/* History Drawer Overlay */}
-        <div
-            className={`pokepuzzle-history-overlay ${isHistoryOpen ? 'is-open' : ''}`}
-            onClick={() => setIsHistoryOpen(false)}
-        />
+                        {/* Sidebar congrats panel */}
+                        {gameStatus !== 'IN_PROGRESS' && (
+                            <div className="pokepuzzle-game-sidebar">
+                                {mode === 'daily' ? (
+                                    <section
+                                        className="pokepuzzle-result-card"
+                                        style={{
+                                            '--type-color': typeColor,
+                                            '--type-glow-color': typeGlowColor
+                                        }}
+                                    >
+                                        <div className="pokepuzzle-result-badge-wrapper">
+                                            {gameStatus === 'WON' ? (
+                                                <div className="pokepuzzle-badge-success-glow">
+                                                    <Award className="w-6 h-6 text-success" />
+                                                </div>
+                                            ) : (
+                                                <div className="pokepuzzle-badge-danger-glow">
+                                                    <Frown className="w-6 h-6 text-danger" />
+                                                </div>
+                                            )}
+                                        </div>
 
-        {/* History Drawer Sidebar */}
-        <div className={`pokepuzzle-history-sidebar ${isHistoryOpen ? 'is-open' : ''}`}>
-            <div className="pokepuzzle-history-sidebar-header">
-                <h3 className="pokepuzzle-history-sidebar-title">
-                    <HistoryIcon /> {language === 'pt' ? 'Histórico do PokéPuzzle' : 'PokéPuzzle History'}
-                </h3>
-                <button
-                    type="button"
-                    className="pokepuzzle-history-sidebar-close"
-                    onClick={() => setIsHistoryOpen(false)}
-                    title={language === 'pt' ? 'Fechar Histórico' : 'Close History'}
-                >
-                    <CloseIcon />
-                </button>
-            </div>
+                                        <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
+                                            {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
+                                        </h2>
 
-            <div
-                className="pokepuzzle-history-sidebar-scroll"
-                onScroll={handleHistoryScroll}
-            >
-                {allowedPool.length === 0 ? (
-                    <div className="pokepuzzle-history-loading">
-                        <div className="pokepuzzle-history-loading-spinner" />
-                        <span>{language === 'pt' ? 'Carregando dados...' : 'Loading data...'}</span>
+                                        <div className="pokepuzzle-result-sprite-box">
+                                            <img
+                                                src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
+                                                alt={targetPokemon.name}
+                                                className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
+                                                onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
+                                            />
+                                        </div>
+
+                                        <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
+
+                                        <div className="pokepuzzle-result-types mt-0.5">
+                                            {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                                <span
+                                                    key={type}
+                                                    className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
+                                                    style={{
+                                                        backgroundColor: `${typeColors[type]}18`,
+                                                        borderColor: `${typeColors[type]}35`,
+                                                        color: typeColors[type],
+                                                    }}
+                                                >
+                                                    {type}
+                                                </span>
+                                            ))}
+                                        </div>
+
+                                        <p className="pokepuzzle-result-text mt-1">
+                                            {gameStatus === 'WON'
+                                                ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
+                                                : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
+                                            }
+                                        </p>
+
+                                        {/* Mini attempt preview grid */}
+                                        <div className="pokepuzzle-share-preview mt-2 w-full">
+                                            <span className="text-[10px] text-muted uppercase font-bold tracking-wider mb-2 block">
+                                                {language === 'pt' ? 'Resumo das Tentativas' : 'Attempts Summary'}
+                                            </span>
+                                            <div className="flex flex-col gap-1 items-center justify-center">
+                                                {guesses.map((guess, idx) => {
+                                                    const norm = normalizeNameForGame(guess);
+                                                    const letterStatuses = checkLetters(norm, targetNormalized);
+                                                    return (
+                                                        <div key={idx} className="pokepuzzle-share-preview-row">
+                                                            {letterStatuses.map((status, sIdx) => (
+                                                                <span
+                                                                    key={sIdx}
+                                                                    className={`pokepuzzle-share-preview-tile is-${status}`}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        {/* Share Actions Row */}
+                                        <div className="pokepuzzle-share-actions-container w-full mt-2 flex flex-col gap-2">
+                                            <button
+                                                onClick={handleShare}
+                                                className="btn btn-accent px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
+                                            >
+                                                <Share2 className="w-3.5 h-3.5" />
+                                                <span>{language === 'pt' ? 'Copiar Texto' : 'Copy Text'}</span>
+                                            </button>
+                                            <button
+                                                onClick={handleShareImage}
+                                                className="btn btn-secondary px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
+                                            >
+                                                <Image className="w-3.5 h-3.5" />
+                                                <span>{language === 'pt' ? 'Compartilhar Imagem' : 'Share Image'}</span>
+                                            </button>
+                                        </div>
+                                    </section>
+                                ) : (
+                                    <section
+                                        className="pokepuzzle-result-card"
+                                        style={{
+                                            '--type-color': typeColor,
+                                            '--type-glow-color': typeGlowColor
+                                        }}
+                                    >
+                                        <div className="pokepuzzle-result-badge-wrapper">
+                                            {gameStatus === 'WON' ? (
+                                                <div className="pokepuzzle-badge-success-glow">
+                                                    <Award className="w-6 h-6 text-success" />
+                                                </div>
+                                            ) : (
+                                                <div className="pokepuzzle-badge-danger-glow">
+                                                    <Frown className="w-6 h-6 text-danger" />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <h2 className={`pokepuzzle-result-title ${gameStatus === 'WON' ? 'is-win' : 'is-lose'}`}>
+                                            {gameStatus === 'WON' ? t('pokepuzzle.winTitle') : t('pokepuzzle.loseTitle')}
+                                        </h2>
+
+                                        <div className="pokepuzzle-result-sprite-box">
+                                            <img
+                                                src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
+                                                alt={targetPokemon.name}
+                                                className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
+                                                onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
+                                            />
+                                        </div>
+
+                                        <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
+
+                                        <div className="pokepuzzle-result-types mt-0.5">
+                                            {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                                <span
+                                                    key={type}
+                                                    className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
+                                                    style={{
+                                                        backgroundColor: `${typeColors[type]}18`,
+                                                        borderColor: `${typeColors[type]}35`,
+                                                        color: typeColors[type],
+                                                    }}
+                                                >
+                                                    {type}
+                                                </span>
+                                            ))}
+                                        </div>
+
+                                        <p className="pokepuzzle-result-text mt-1">
+                                            {gameStatus === 'WON'
+                                                ? t('pokepuzzle.winMessage', { name: formatPokemonDisplayName(targetPokemon.name), attempts: guesses.length })
+                                                : t('pokepuzzle.loseMessage', { name: formatPokemonDisplayName(targetPokemon.name) })
+                                            }
+                                        </p>
+
+                                        <button
+                                            onClick={startRandomOngoingGame}
+                                            className="btn btn-primary px-8 py-3 flex items-center justify-center gap-2 w-full font-bold text-sm shadow-md mt-4"
+                                        >
+                                            <RefreshIcon className="w-4 h-4" />
+                                            <span>{t('pokepuzzle.playAgain')}</span>
+                                        </button>
+                                    </section>
+                                )}
+                            </div>
+                        )}
                     </div>
-                ) : (
-                    <>
-                        {pastDates
-                            .slice(0, visibleHistoryLimit)
-                            .map((dateStr) => {
-                                const saved = historyByDate.get(dateStr) || null;
-                                const itemStatus = saved?.gameStatus || 'NOT_PLAYED'; // NOT_PLAYED, IN_PROGRESS, WON, LOST
+                )}
+            </main>
 
-                                // Identify corresponding target pokemon for spoiler/reveal info
-                                const pokemonIdx = getDailyPokemonIndex(dateStr, allowedPool);
-                                const pokemon = allowedPool[pokemonIdx];
-                                const isCompleted = itemStatus === 'WON' || itemStatus === 'LOST';
+            {/* History Drawer Overlay */}
+            <div
+                className={`pokepuzzle-history-overlay ${isHistoryOpen ? 'is-open' : ''}`}
+                onClick={() => setIsHistoryOpen(false)}
+            />
 
-                                return (
-                                    <div key={dateStr} className="pokepuzzle-history__item">
-                                        <div className="pokepuzzle-history__info">
-                                            <div className="pokepuzzle-history__date-row">
-                                                <span className="pokepuzzle-history__date">{dateStr}</span>
-                                                {saved && (
-                                                    <span className={`pokepuzzle-history__badge ${isCompleted ? 'pokepuzzle-history__badge--complete' : 'pokepuzzle-history__badge--progress'}`}>
-                                                        {itemStatus === 'WON' 
-                                                            ? (language === 'pt' ? 'Acertou' : 'Solved')
-                                                            : itemStatus === 'LOST'
-                                                                ? (language === 'pt' ? 'Esgotado' : 'Failed')
-                                                                : (language === 'pt' ? 'Em Progresso' : 'In Progress')}
+            {/* History Drawer Sidebar */}
+            <div className={`pokepuzzle-history-sidebar ${isHistoryOpen ? 'is-open' : ''}`}>
+                <div className="pokepuzzle-history-sidebar-header">
+                    <h3 className="pokepuzzle-history-sidebar-title">
+                        <HistoryIcon /> {language === 'pt' ? 'Histórico do PokéPuzzle' : 'PokéPuzzle History'}
+                    </h3>
+                    <button
+                        type="button"
+                        className="pokepuzzle-history-sidebar-close"
+                        onClick={() => setIsHistoryOpen(false)}
+                        title={language === 'pt' ? 'Fechar Histórico' : 'Close History'}
+                    >
+                        <CloseIcon />
+                    </button>
+                </div>
+
+                <div
+                    className="pokepuzzle-history-sidebar-scroll"
+                    onScroll={handleHistoryScroll}
+                >
+                    {allowedPool.length === 0 ? (
+                        <div className="pokepuzzle-history-loading">
+                            <div className="pokepuzzle-history-loading-spinner" />
+                            <span>{language === 'pt' ? 'Carregando dados...' : 'Loading data...'}</span>
+                        </div>
+                    ) : (
+                        <>
+                            {pastDates
+                                .slice(0, visibleHistoryLimit)
+                                .map((dateStr) => {
+                                    const saved = historyByDate.get(dateStr) || null;
+                                    const itemStatus = saved?.gameStatus || 'NOT_PLAYED'; // NOT_PLAYED, IN_PROGRESS, WON, LOST
+
+                                    // Identify corresponding target pokemon for spoiler/reveal info
+                                    const pokemonIdx = getDailyPokemonIndex(dateStr, allowedPool);
+                                    const pokemon = allowedPool[pokemonIdx];
+                                    const isCompleted = itemStatus === 'WON' || itemStatus === 'LOST';
+
+                                    return (
+                                        <div key={dateStr} className="pokepuzzle-history__item">
+                                            <div className="pokepuzzle-history__info">
+                                                <div className="pokepuzzle-history__date-row">
+                                                    <span className="pokepuzzle-history__date">{dateStr}</span>
+                                                    {saved && (
+                                                        <span className={`pokepuzzle-history__badge ${isCompleted ? 'pokepuzzle-history__badge--complete' : 'pokepuzzle-history__badge--progress'}`}>
+                                                            {itemStatus === 'WON'
+                                                                ? (language === 'pt' ? 'Acertou' : 'Solved')
+                                                                : itemStatus === 'LOST'
+                                                                    ? (language === 'pt' ? 'Esgotado' : 'Failed')
+                                                                    : (language === 'pt' ? 'Em Progresso' : 'In Progress')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            {/* Visually show if completed (reveal sprite and name) or if not completed (obscured) */}
+                                            <div className="pokepuzzle-history__item-detail">
+                                                <img
+                                                    src={isCompleted
+                                                        ? getPokemonArtworkSpriteUrl(pokemon.id)
+                                                        : getPokemonFrontSpriteUrl(pokemon.id)
+                                                    }
+                                                    alt="Pokémon preview"
+                                                    className={`pokepuzzle-history__pokemon-sprite ${!isCompleted ? 'is-mystery' : ''}`}
+                                                    onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(pokemon.id); }}
+                                                />
+                                                <div className="pokepuzzle-history__pokemon-info">
+                                                    <span className="pokepuzzle-history__pokemon-name">
+                                                        {isCompleted
+                                                            ? formatPokemonDisplayName(pokemon.name)
+                                                            : '???'
+                                                        }
                                                     </span>
+                                                    <span className="pokepuzzle-history__pokemon-meta">
+                                                        {isCompleted
+                                                            ? `#${String(pokemon.id).padStart(3, '0')}`
+                                                            : (language === 'pt'
+                                                                ? `Tamanho: ${normalizeNameForGame(pokemon.name).length} letras`
+                                                                : `Length: ${normalizeNameForGame(pokemon.name).length} letters`)
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="pokepuzzle-history__actions">
+                                                {itemStatus === 'IN_PROGRESS' ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setMode('daily');
+                                                            setSelectedDate(dateStr);
+                                                            setIsHistoryOpen(false);
+                                                        }}
+                                                        className="pokepuzzle-history__btn pokepuzzle-history__btn--continue"
+                                                    >
+                                                        {language === 'pt' ? 'Continuar' : 'Continue'}
+                                                    </button>
+                                                ) : isCompleted ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setMode('daily');
+                                                            setSelectedDate(dateStr);
+                                                            setIsHistoryOpen(false);
+                                                        }}
+                                                        className="pokepuzzle-history__btn pokepuzzle-history__btn--play"
+                                                    >
+                                                        {language === 'pt' ? 'Ver Resultado' : 'View Result'}
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setMode('daily');
+                                                            setSelectedDate(dateStr);
+                                                            setIsHistoryOpen(false);
+                                                        }}
+                                                        className="pokepuzzle-history__btn pokepuzzle-history__btn--play"
+                                                    >
+                                                        {language === 'pt' ? 'Jogar' : 'Play'}
+                                                    </button>
+                                                )}
+
+                                                {saved && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteHistoryRun(dateStr)}
+                                                        className="pokepuzzle-history__btn--delete"
+                                                        title={language === 'pt' ? 'Deletar Progresso' : 'Delete Progress'}
+                                                    >
+                                                        <CloseIcon />
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
+                                    );
+                                })}
 
-                                        {/* Visually show if completed (reveal sprite and name) or if not completed (obscured) */}
-                                        <div className="pokepuzzle-history__item-detail">
-                                            <img
-                                                src={isCompleted 
-                                                    ? getPokemonArtworkSpriteUrl(pokemon.id) 
-                                                    : getPokemonFrontSpriteUrl(pokemon.id)
-                                                }
-                                                alt="Pokémon preview"
-                                                className={`pokepuzzle-history__pokemon-sprite ${!isCompleted ? 'is-mystery' : ''}`}
-                                                onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(pokemon.id); }}
-                                            />
-                                            <div className="pokepuzzle-history__pokemon-info">
-                                                <span className="pokepuzzle-history__pokemon-name">
-                                                    {isCompleted 
-                                                        ? formatPokemonDisplayName(pokemon.name) 
-                                                        : '???'
-                                                    }
-                                                </span>
-                                                <span className="pokepuzzle-history__pokemon-meta">
-                                                    {isCompleted 
-                                                        ? `#${String(pokemon.id).padStart(3, '0')}` 
-                                                        : (language === 'pt' 
-                                                            ? `Tamanho: ${normalizeNameForGame(pokemon.name).length} letras` 
-                                                            : `Length: ${normalizeNameForGame(pokemon.name).length} letters`)
-                                                    }
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <div className="pokepuzzle-history__actions">
-                                            {itemStatus === 'IN_PROGRESS' ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setMode('daily');
-                                                        setSelectedDate(dateStr);
-                                                        setIsHistoryOpen(false);
-                                                    }}
-                                                    className="pokepuzzle-history__btn pokepuzzle-history__btn--continue"
-                                                >
-                                                    {language === 'pt' ? 'Continuar' : 'Continue'}
-                                                </button>
-                                            ) : isCompleted ? (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setMode('daily');
-                                                        setSelectedDate(dateStr);
-                                                        setIsHistoryOpen(false);
-                                                    }}
-                                                    className="pokepuzzle-history__btn pokepuzzle-history__btn--play"
-                                                >
-                                                    {language === 'pt' ? 'Ver Resultado' : 'View Result'}
-                                                </button>
-                                            ) : (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setMode('daily');
-                                                        setSelectedDate(dateStr);
-                                                        setIsHistoryOpen(false);
-                                                    }}
-                                                    className="pokepuzzle-history__btn pokepuzzle-history__btn--play"
-                                                >
-                                                    {language === 'pt' ? 'Jogar' : 'Play'}
-                                                </button>
-                                            )}
-
-                                            {saved && (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteHistoryRun(dateStr)}
-                                                    className="pokepuzzle-history__btn--delete"
-                                                    title={language === 'pt' ? 'Deletar Progresso' : 'Delete Progress'}
-                                                >
-                                                    <CloseIcon />
-                                                </button>
-                                            )}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-
-                        {isHistoryLoadingMore && (
-                            <div className="pokepuzzle-history-loading">
-                                <div className="pokepuzzle-history-loading-spinner" />
-                                <span>{language === 'pt' ? 'Carregando mais dias...' : 'Loading older days...'}</span>
-                            </div>
-                        )}
-                    </>
-                )}
+                            {isHistoryLoadingMore && (
+                                <div className="pokepuzzle-history-loading">
+                                    <div className="pokepuzzle-history-loading-spinner" />
+                                    <span>{language === 'pt' ? 'Carregando mais dias...' : 'Loading older days...'}</span>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </div>
-        </div>
         </>
     );
 }

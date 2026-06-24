@@ -53,7 +53,7 @@ export function FavoritesView({ teamsProps, pokemonProps }) {
                 <TabButton
                     id="pokemon"
                     icon={<StarsIcon className="w-4 h-4 shrink-0" />}
-                    label={t('nav.favorites')}
+                    label={t('favorites.tabFavorites')}
                     count={pokemonCount}
                 />
             </div>

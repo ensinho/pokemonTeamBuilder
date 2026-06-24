@@ -42,7 +42,7 @@ import {
     ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
-import { Puzzle } from 'lucide-react';
+import { BoxIcon, Puzzle } from 'lucide-react';
 
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -254,7 +254,7 @@ export default function AppLayout() {
                 const response = await fetch(`${window.location.origin}${import.meta.env.BASE_URL || '/'}index.html?t=${Date.now()}`, { cache: 'no-store' });
                 if (!response.ok) return;
                 const html = await response.text();
-                
+
                 // Find all script tags in the fetched HTML
                 const scriptRegex = /<script\b[^>]*src="([^"]+)"/g;
                 let match;
@@ -262,10 +262,10 @@ export default function AppLayout() {
                 while ((match = scriptRegex.exec(html)) !== null) {
                     fetchedScripts.push(match[1]);
                 }
-                
+
                 // Compare with scripts in current document
                 const currentScripts = Array.from(document.querySelectorAll('script')).map(s => s.getAttribute('src')).filter(Boolean);
-                
+
                 // Check if any fetched asset is new
                 const isNewVersion = fetchedScripts.some(src => {
                     if (src.includes('/assets/') && src.endsWith('.js')) {
@@ -273,7 +273,7 @@ export default function AppLayout() {
                     }
                     return false;
                 });
-                
+
                 if (isNewVersion && !isCancelled) {
                     setShowVersionModal(true);
                 }
@@ -413,21 +413,21 @@ export default function AppLayout() {
 
         if (seenVersion && seenVersion !== PATCH_NOTES_VERSION) {
             // Version has been bumped!
-            
+
             // Set flag to show patch notes after the reload
             localStorage.setItem('showPatchNotesAfterReload', '1');
-            
+
             // 1. Unregister all active service workers to clear PWA cache
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then((registrations) => {
                     for (const registration of registrations) {
                         registration.unregister();
                     }
-                }).catch(() => {});
+                }).catch(() => { });
             }
 
             // 2. Clear session storage completely
-            try { sessionStorage.clear(); } catch (e) {}
+            try { sessionStorage.clear(); } catch (e) { }
 
             // 3. Clear non-essential localStorage keys
             try {
@@ -453,7 +453,7 @@ export default function AppLayout() {
                         localStorage.removeItem(key);
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
 
             // 4. Update version in localStorage to match the new one BEFORE reloading
             localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
@@ -488,7 +488,7 @@ export default function AppLayout() {
             'generationQuiz': { title: t('quiz.title'), subtitle: t('quiz.subtitle') },
             'randomGenerator': { title: t('generator.title'), subtitle: t('generator.subtitle') },
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
-            'favorites': { title: t('favorites.title'), subtitle: t('home.pinnedRoster') },
+            'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             'profile': { title: t('profile.title'), subtitle: t('profile.trainerProfile') },
             'pokemonDetail': { title: t('nav.pokemonList'), subtitle: t('home.shortcutPokedexDesc') },
@@ -529,7 +529,7 @@ export default function AppLayout() {
                 title: t('nav.database'),
                 items: [
                     { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
-                    { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <BoxIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
                     { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
@@ -541,12 +541,6 @@ export default function AppLayout() {
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
                     { key: 'randomGenerator', label: t('nav.generator'), path: '/generator', icon: <DiceIcon /> },
-                ]
-            },
-            {
-                title: t('nav.trainerProfile'),
-                items: [
-                    { key: 'profile', label: t('nav.profile'), path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
                 ]
             }
         ];
@@ -1125,239 +1119,239 @@ export default function AppLayout() {
                         {pageFrameClassName ? (
                             <div className={pageFrameClassName}>
                                 <Suspense fallback={<RouteFallback />}>
-                                <Routes>
-                                    <Route path="/" element={
-                                        <HomeView
-                                            colors={colors}
-                                            navigate={navigate}
-                                            savedTeams={savedTeams}
-                                            favoritePokemons={favoritePokemons}
-                                            allPokemons={pokedex.pokemons}
-                                            recentTeams={recentTeams}
-                                            showDetails={showDetails}
-                                            onToggleFavoritePokemon={handleToggleFavoritePokemon}
-                                            handleEditTeam={handleEditTeam}
-                                            greetingPokemonId={greetingPokemonId}
-                                            greetingPokemonIsShiny={greetingPokemonIsShiny}
-                                            heroBackgroundId={homeWallpaperId}
-                                            onChangeHeroBackground={setHomeWallpaperPreference}
-                                            onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
-                                            db={db}
-                                            theme={theme}
-                                            onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
-                                            activeTeamId={activeTeamId}
-                                            setActiveTeamId={setActiveTeamId}
-                                        />
-                                    } />
-                                    <Route path="/feed" element={
-                                        <FeedView
-                                            colors={colors}
-                                            showToast={showToast}
-                                            navigate={navigate}
-                                        />
-                                    } />
-                                    <Route path="/builder" element={
-                                        <TeamBuilderView
-                                            currentTeam={currentTeam}
-                                            teamName={teamName}
-                                            setTeamName={setTeamName}
-                                            handleRemoveFromTeam={handleRemoveFromTeam}
-                                            handleReorderTeam={handleReorderTeam}
-                                            handleSaveTeam={() => handleSaveTeam(savedTeams)}
-                                            editingTeamId={editingTeamId}
-                                            activeTeamId={activeTeamId}
-                                            setActiveTeamId={setActiveTeamId}
-                                            handleClearTeam={handleClearTeam}
-                                            recentTeams={recentTeams}
-                                            onNavigateToTeams={() => navigate('/teams')}
-                                            handleToggleFavorite={handleToggleFavorite}
-                                            handleEditTeam={handleEditTeam}
-                                            requestDeleteTeam={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
-                                            handleShareTeam={handleShareTeam}
-                                            handleExportToShowdown={handleExportToShowdown}
-                                            teamAnalysis={teamAnalysis}
-                                            searchInput={pokedex.searchInput}
-                                            setSearchInput={pokedex.setSearchInput}
-                                            selectedGeneration={pokedex.selectedGeneration}
-                                            setSelectedGeneration={pokedex.setSelectedGeneration}
-                                            selectedGame={pokedex.selectedGame}
-                                            setSelectedGame={pokedex.setSelectedGame}
-                                            games={games}
-                                            generations={generations}
-                                            isInitialLoading={pokedex.isLoading}
-                                            availablePokemons={availablePokemons}
-                                            gamePokemonIds={pokedex.gamePokemonIds}
-                                            handleAddPokemonToTeam={handleAddPokemon}
-                                            handleRandomizeTeam={handleRandomizeTeam}
-                                            isRandomizing={isRandomizing}
-                                            lastPokemonElementRef={pokedex.lastPokemonElementRef}
-                                            isFetchingMore={pokedex.isFetchingMore}
-                                            selectedTypes={pokedex.selectedTypes}
-                                            handleTypeSelection={pokedex.handleTypeSelection}
-                                            showDetails={showDetails}
-                                            suggestedPokemonIds={suggestedPokemonIds}
-                                            colors={colors}
-                                            onEditTeamPokemon={handleEditTeamMember}
-                                            favoritePokemons={favoritePokemons}
-                                            onToggleFavoritePokemon={handleToggleFavoritePokemon}
-                                            showOnlyFavorites={pokedex.showOnlyFavorites}
-                                            setShowOnlyFavorites={pokedex.setShowOnlyFavorites}
-                                            db={db}
-                                            fetchPokemonDetails={fetchPokemonDetails}
-                                            pokemonDetailsCache={pokemonDetailsCache}
-                                            setPokemonDetailsCache={setPokemonDetailsCache}
-                                        />
-                                    } />
-                                    <Route path="/pokedex" element={
-                                        <PokedexView
-                                            pokemons={pokedex.pokemons}
-                                            lastPokemonElementRef={pokedex.lastPokemonElementRef}
-                                            isFetchingMore={pokedex.isFetchingMore}
-                                            searchInput={pokedex.pokedexSearchInput}
-                                            setSearchInput={pokedex.setPokedexSearchInput}
-                                            selectedTypes={pokedex.pokedexSelectedTypes}
-                                            handleTypeSelection={pokedex.handlePokedexTypeSelection}
-                                            selectedGeneration={pokedex.pokedexSelectedGeneration}
-                                            setSelectedGeneration={pokedex.setPokedexSelectedGeneration}
-                                            generations={generations}
-                                            isInitialLoading={pokedex.isLoading}
-                                            colors={colors}
-                                            showDetails={showDetails}
-                                            favoritePokemons={favoritePokemons}
-                                            onToggleFavoritePokemon={handleToggleFavoritePokemon}
-                                            showOnlyFavorites={pokedex.pokedexShowOnlyFavorites}
-                                            setShowOnlyFavorites={pokedex.setPokedexShowOnlyFavorites}
-                                            db={db}
-                                            pokemonDetailsCache={pokemonDetailsCache}
-                                            setPokemonDetailsCache={setPokemonDetailsCache}
-                                        />
-                                    } />
-
-                                    <Route path="/pokemon/:idOrName" element={
-                                        <PokemonDetailView
-                                            colors={colors}
-                                            favoritePokemons={favoritePokemons}
-                                            onToggleFavoritePokemon={handleToggleFavoritePokemon}
-                                            onAdd={handleAddPokemon}
-                                            currentTeam={currentTeam}
-                                            db={db}
-                                            pokemonDetailsCache={pokemonDetailsCache}
-                                            setPokemonDetailsCache={setPokemonDetailsCache}
-                                        />
-                                    } />
-                                    <Route path="/moves" element={<MovesListView />} />
-                                    <Route path="/abilities" element={<AbilitiesListView />} />
-                                    <Route path="/items" element={<ItemsListView />} />
-                                    <Route path="/tournaments" element={
-                                        <TournamentsView db={db} onOpenTeam={handleEditTeam} />
-                                    } />
-                                    <Route path="/damage-calculator" element={
-                                        <DamageCalculatorView />
-                                    } />
-                                    <Route path="/speed-tiers" element={
-                                        <SpeedTiersView generations={generations} />
-                                    } />
-                                    <Route path="/favorites" element={
-                                        <FavoritesView
-                                            pokemonProps={{
-                                                allPokemons: pokedex.pokemons,
-                                                favoritePokemons,
-                                                onToggleFavoritePokemon: handleToggleFavoritePokemon,
-                                                showDetails,
-                                                colors,
-                                                onAddToTeam: handleAddPokemon,
-                                                isLoading: pokedex.isLoading,
-                                            }}
-                                            teamsProps={{
-                                                teams: savedTeams,
-                                                onEdit: handleEditTeam,
-                                                onExport: handleExportSavedTeamToShowdown,
-                                                onShare: handleShareSavedTeam,
-                                                requestDelete: (id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name }),
-                                                onToggleFavorite: handleToggleFavorite,
-                                                searchTerm: teamSearchTerm,
-                                                setSearchTerm: setTeamSearchTerm,
-                                                colors,
-                                                activeTeamId,
-                                                setActiveTeamId,
-                                            }}
-                                        />
-                                    } />
-                                    <Route path="/quiz" element={
-                                        <GenerationQuizView
-                                            showDetails={showDetails}
-                                            showToast={showToast}
-                                        />
-                                    } />
-                                    <Route path="/pokepuzzle" element={
-                                        <PokePuzzleView />
-                                    } />
-                                    {/* Saved Teams now lives as a tab inside /favorites. */}
-                                    <Route path="/teams" element={<Navigate to="/favorites?tab=teams" replace />} />
-                                    <Route path="/teams/:id" element={
-                                        <TeamDetailView
-                                            teams={savedTeams}
-                                            onEdit={handleEditTeam}
-                                            onShare={handleShareSavedTeam}
-                                            onExport={handleExportSavedTeamToShowdown}
-                                            requestDelete={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
-                                            onToggleFavorite={handleToggleFavorite}
-                                            activeTeamId={activeTeamId}
-                                            setActiveTeamId={setActiveTeamId}
-                                            colors={colors}
-                                            fetchPokemonDetails={fetchPokemonDetails}
-                                            showDetails={showDetails}
-                                        />
-                                    } />
-                                    <Route path="/generator" element={
-                                        <RandomGeneratorView
-                                            colors={colors}
-                                            generations={generations}
-                                            db={db}
-                                            userId={userId}
-                                        />
-                                    } />
-                                    <Route path="/profile" element={
-                                        <ProfileView
-                                            userEmail={userEmail}
-                                            userId={userId}
-                                            isAnonymous={isAnonymous}
-                                            theme={theme}
-                                            onChangeTheme={changeTheme}
-                                            language={language}
-                                            onChangeLanguage={(lang) => {
-                                                useLanguageStore.getState().setLanguage(lang);
-                                                useAuthStore.getState().savePreferences({ language: lang });
-                                            }}
-                                            displayName={displayName}
-                                            onChangeDisplayName={setDisplayName}
-                                            greetingPokemonId={greetingPokemonId}
-                                            greetingPokemonIsShiny={greetingPokemonIsShiny}
-                                            onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
-                                            streak={streak}
-                                            savedTeamsCount={savedTeams.length}
-                                            favoritePokemonsCount={favoritePokemons.size}
-                                            onOpenSignIn={() => setAuthModal({ open: true, mode: 'signIn' })}
-                                            onOpenSignUp={() => setAuthModal({ open: true, mode: 'signUp' })}
-                                            onSignOut={handleSignOut}
-                                            onResetSyncPrompt={handleResetSyncPrompt}
-                                            onClearLocalGreeting={() => setGreetingPokemon(null)}
-                                            db={db}
-                                        />
-                                    } />
-                                    {isAdmin && (
-                                        <Route path="/admin" element={
-                                            <AdminDashboardView
-                                                db={db}
-                                                auth={auth}
-                                                isAdmin={isAdmin}
+                                    <Routes>
+                                        <Route path="/" element={
+                                            <HomeView
                                                 colors={colors}
+                                                navigate={navigate}
+                                                savedTeams={savedTeams}
+                                                favoritePokemons={favoritePokemons}
+                                                allPokemons={pokedex.pokemons}
+                                                recentTeams={recentTeams}
+                                                showDetails={showDetails}
+                                                onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                                                handleEditTeam={handleEditTeam}
+                                                greetingPokemonId={greetingPokemonId}
+                                                greetingPokemonIsShiny={greetingPokemonIsShiny}
+                                                heroBackgroundId={homeWallpaperId}
+                                                onChangeHeroBackground={setHomeWallpaperPreference}
+                                                onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                                                db={db}
+                                                theme={theme}
+                                                onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
+                                                activeTeamId={activeTeamId}
+                                                setActiveTeamId={setActiveTeamId}
+                                            />
+                                        } />
+                                        <Route path="/feed" element={
+                                            <FeedView
+                                                colors={colors}
+                                                showToast={showToast}
+                                                navigate={navigate}
+                                            />
+                                        } />
+                                        <Route path="/builder" element={
+                                            <TeamBuilderView
+                                                currentTeam={currentTeam}
+                                                teamName={teamName}
+                                                setTeamName={setTeamName}
+                                                handleRemoveFromTeam={handleRemoveFromTeam}
+                                                handleReorderTeam={handleReorderTeam}
+                                                handleSaveTeam={() => handleSaveTeam(savedTeams)}
+                                                editingTeamId={editingTeamId}
+                                                activeTeamId={activeTeamId}
+                                                setActiveTeamId={setActiveTeamId}
+                                                handleClearTeam={handleClearTeam}
+                                                recentTeams={recentTeams}
+                                                onNavigateToTeams={() => navigate('/teams')}
+                                                handleToggleFavorite={handleToggleFavorite}
+                                                handleEditTeam={handleEditTeam}
+                                                requestDeleteTeam={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
+                                                handleShareTeam={handleShareTeam}
+                                                handleExportToShowdown={handleExportToShowdown}
+                                                teamAnalysis={teamAnalysis}
+                                                searchInput={pokedex.searchInput}
+                                                setSearchInput={pokedex.setSearchInput}
+                                                selectedGeneration={pokedex.selectedGeneration}
+                                                setSelectedGeneration={pokedex.setSelectedGeneration}
+                                                selectedGame={pokedex.selectedGame}
+                                                setSelectedGame={pokedex.setSelectedGame}
+                                                games={games}
+                                                generations={generations}
+                                                isInitialLoading={pokedex.isLoading}
+                                                availablePokemons={availablePokemons}
+                                                gamePokemonIds={pokedex.gamePokemonIds}
+                                                handleAddPokemonToTeam={handleAddPokemon}
+                                                handleRandomizeTeam={handleRandomizeTeam}
+                                                isRandomizing={isRandomizing}
+                                                lastPokemonElementRef={pokedex.lastPokemonElementRef}
+                                                isFetchingMore={pokedex.isFetchingMore}
+                                                selectedTypes={pokedex.selectedTypes}
+                                                handleTypeSelection={pokedex.handleTypeSelection}
+                                                showDetails={showDetails}
+                                                suggestedPokemonIds={suggestedPokemonIds}
+                                                colors={colors}
+                                                onEditTeamPokemon={handleEditTeamMember}
+                                                favoritePokemons={favoritePokemons}
+                                                onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                                                showOnlyFavorites={pokedex.showOnlyFavorites}
+                                                setShowOnlyFavorites={pokedex.setShowOnlyFavorites}
+                                                db={db}
+                                                fetchPokemonDetails={fetchPokemonDetails}
+                                                pokemonDetailsCache={pokemonDetailsCache}
+                                                setPokemonDetailsCache={setPokemonDetailsCache}
+                                            />
+                                        } />
+                                        <Route path="/pokedex" element={
+                                            <PokedexView
+                                                pokemons={pokedex.pokemons}
+                                                lastPokemonElementRef={pokedex.lastPokemonElementRef}
+                                                isFetchingMore={pokedex.isFetchingMore}
+                                                searchInput={pokedex.pokedexSearchInput}
+                                                setSearchInput={pokedex.setPokedexSearchInput}
+                                                selectedTypes={pokedex.pokedexSelectedTypes}
+                                                handleTypeSelection={pokedex.handlePokedexTypeSelection}
+                                                selectedGeneration={pokedex.pokedexSelectedGeneration}
+                                                setSelectedGeneration={pokedex.setPokedexSelectedGeneration}
+                                                generations={generations}
+                                                isInitialLoading={pokedex.isLoading}
+                                                colors={colors}
+                                                showDetails={showDetails}
+                                                favoritePokemons={favoritePokemons}
+                                                onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                                                showOnlyFavorites={pokedex.pokedexShowOnlyFavorites}
+                                                setShowOnlyFavorites={pokedex.setPokedexShowOnlyFavorites}
+                                                db={db}
+                                                pokemonDetailsCache={pokemonDetailsCache}
+                                                setPokemonDetailsCache={setPokemonDetailsCache}
+                                            />
+                                        } />
+
+                                        <Route path="/pokemon/:idOrName" element={
+                                            <PokemonDetailView
+                                                colors={colors}
+                                                favoritePokemons={favoritePokemons}
+                                                onToggleFavoritePokemon={handleToggleFavoritePokemon}
+                                                onAdd={handleAddPokemon}
+                                                currentTeam={currentTeam}
+                                                db={db}
+                                                pokemonDetailsCache={pokemonDetailsCache}
+                                                setPokemonDetailsCache={setPokemonDetailsCache}
+                                            />
+                                        } />
+                                        <Route path="/moves" element={<MovesListView />} />
+                                        <Route path="/abilities" element={<AbilitiesListView />} />
+                                        <Route path="/items" element={<ItemsListView />} />
+                                        <Route path="/tournaments" element={
+                                            <TournamentsView db={db} onOpenTeam={handleEditTeam} />
+                                        } />
+                                        <Route path="/damage-calculator" element={
+                                            <DamageCalculatorView />
+                                        } />
+                                        <Route path="/speed-tiers" element={
+                                            <SpeedTiersView generations={generations} />
+                                        } />
+                                        <Route path="/favorites" element={
+                                            <FavoritesView
+                                                pokemonProps={{
+                                                    allPokemons: pokedex.pokemons,
+                                                    favoritePokemons,
+                                                    onToggleFavoritePokemon: handleToggleFavoritePokemon,
+                                                    showDetails,
+                                                    colors,
+                                                    onAddToTeam: handleAddPokemon,
+                                                    isLoading: pokedex.isLoading,
+                                                }}
+                                                teamsProps={{
+                                                    teams: savedTeams,
+                                                    onEdit: handleEditTeam,
+                                                    onExport: handleExportSavedTeamToShowdown,
+                                                    onShare: handleShareSavedTeam,
+                                                    requestDelete: (id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name }),
+                                                    onToggleFavorite: handleToggleFavorite,
+                                                    searchTerm: teamSearchTerm,
+                                                    setSearchTerm: setTeamSearchTerm,
+                                                    colors,
+                                                    activeTeamId,
+                                                    setActiveTeamId,
+                                                }}
+                                            />
+                                        } />
+                                        <Route path="/quiz" element={
+                                            <GenerationQuizView
+                                                showDetails={showDetails}
                                                 showToast={showToast}
                                             />
                                         } />
-                                    )}
-                                    <Route path="*" element={<Navigate to="/" replace />} />
-                                </Routes>
+                                        <Route path="/pokepuzzle" element={
+                                            <PokePuzzleView />
+                                        } />
+                                        {/* Saved Teams now lives as a tab inside /favorites. */}
+                                        <Route path="/teams" element={<Navigate to="/favorites?tab=teams" replace />} />
+                                        <Route path="/teams/:id" element={
+                                            <TeamDetailView
+                                                teams={savedTeams}
+                                                onEdit={handleEditTeam}
+                                                onShare={handleShareSavedTeam}
+                                                onExport={handleExportSavedTeamToShowdown}
+                                                requestDelete={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
+                                                onToggleFavorite={handleToggleFavorite}
+                                                activeTeamId={activeTeamId}
+                                                setActiveTeamId={setActiveTeamId}
+                                                colors={colors}
+                                                fetchPokemonDetails={fetchPokemonDetails}
+                                                showDetails={showDetails}
+                                            />
+                                        } />
+                                        <Route path="/generator" element={
+                                            <RandomGeneratorView
+                                                colors={colors}
+                                                generations={generations}
+                                                db={db}
+                                                userId={userId}
+                                            />
+                                        } />
+                                        <Route path="/profile" element={
+                                            <ProfileView
+                                                userEmail={userEmail}
+                                                userId={userId}
+                                                isAnonymous={isAnonymous}
+                                                theme={theme}
+                                                onChangeTheme={changeTheme}
+                                                language={language}
+                                                onChangeLanguage={(lang) => {
+                                                    useLanguageStore.getState().setLanguage(lang);
+                                                    useAuthStore.getState().savePreferences({ language: lang });
+                                                }}
+                                                displayName={displayName}
+                                                onChangeDisplayName={setDisplayName}
+                                                greetingPokemonId={greetingPokemonId}
+                                                greetingPokemonIsShiny={greetingPokemonIsShiny}
+                                                onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                                                streak={streak}
+                                                savedTeamsCount={savedTeams.length}
+                                                favoritePokemonsCount={favoritePokemons.size}
+                                                onOpenSignIn={() => setAuthModal({ open: true, mode: 'signIn' })}
+                                                onOpenSignUp={() => setAuthModal({ open: true, mode: 'signUp' })}
+                                                onSignOut={handleSignOut}
+                                                onResetSyncPrompt={handleResetSyncPrompt}
+                                                onClearLocalGreeting={() => setGreetingPokemon(null)}
+                                                db={db}
+                                            />
+                                        } />
+                                        {isAdmin && (
+                                            <Route path="/admin" element={
+                                                <AdminDashboardView
+                                                    db={db}
+                                                    auth={auth}
+                                                    isAdmin={isAdmin}
+                                                    colors={colors}
+                                                    showToast={showToast}
+                                                />
+                                            } />
+                                        )}
+                                        <Route path="*" element={<Navigate to="/" replace />} />
+                                    </Routes>
                                 </Suspense>
                             </div>
                         ) : (

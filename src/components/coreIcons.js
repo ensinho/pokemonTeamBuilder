@@ -1,4 +1,4 @@
-import { Atom, CloudRain, Sun, Hourglass, Snowflake, Repeat, Wind, Brain, Zap } from 'lucide-react';
+import { Atom, CloudRain, Sun, Hourglass, Snowflake, Repeat, Wind, Brain, Zap, Leaf } from 'lucide-react';
 
 // Lucide icon per meta-core id — shared by the Meta Cores modal and the Team
 // Builder's "fits a core" chips so the icon set stays consistent.
@@ -11,6 +11,7 @@ export const CORE_ICONS = {
     tailwind: Wind,
     psyterrain: Brain,
     eleterrain: Zap,
+    grassyterrain: Leaf,
 };
 
 export const coreIconFor = (id) => CORE_ICONS[id] || Atom;
