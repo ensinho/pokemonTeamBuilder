@@ -406,16 +406,75 @@ export default function AppLayout() {
         return () => clearTimeout(timerId);
     }, [showInitialAuthSplash, splashMessages]);
 
-    // Check patch notes version
+    // Check patch notes version & clear caches + force a single reload on version bump
     useEffect(() => {
         const seenVersion = localStorage.getItem('patchNotesVersion');
-        if (seenVersion !== PATCH_NOTES_VERSION) {
-            setShowPatchNotes(true);
+        const showAfterReload = localStorage.getItem('showPatchNotesAfterReload') === '1';
+
+        if (seenVersion && seenVersion !== PATCH_NOTES_VERSION) {
+            // Version has been bumped!
+            
+            // Set flag to show patch notes after the reload
+            localStorage.setItem('showPatchNotesAfterReload', '1');
+            
+            // 1. Unregister all active service workers to clear PWA cache
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    for (const registration of registrations) {
+                        registration.unregister();
+                    }
+                }).catch(() => {});
+            }
+
+            // 2. Clear session storage completely
+            try { sessionStorage.clear(); } catch (e) {}
+
+            // 3. Clear non-essential localStorage keys
+            try {
+                const preservedKeys = [
+                    'theme',
+                    'language',
+                    'trainerStreak',
+                    'greetingPokemon',
+                    'ptbActiveTeamId',
+                    'syncPromptDismissed',
+                    'showPatchNotesAfterReload'
+                ];
+                const shouldPreserve = (key) => {
+                    if (preservedKeys.includes(key)) return true;
+                    if (key.startsWith('generationQuizRun:') || key.startsWith('generationQuizBest:')) return true;
+                    if (key.startsWith('ptb:pokepuzzle:')) return true;
+                    return false;
+                };
+
+                for (let i = localStorage.length - 1; i >= 0; i--) {
+                    const key = localStorage.key(i);
+                    if (key && !shouldPreserve(key)) {
+                        localStorage.removeItem(key);
+                    }
+                }
+            } catch (e) {}
+
+            // 4. Update version in localStorage to match the new one BEFORE reloading
+            localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
+
+            // 5. Force a single clean reload of the page
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+        } else {
+            // Same version, or first load. Show patch notes if flagged from a recent reload
+            if (showAfterReload) {
+                setShowPatchNotes(true);
+                localStorage.removeItem('showPatchNotesAfterReload');
+            }
+            if (!seenVersion) {
+                localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
+            }
         }
     }, []);
 
     const handleClosePatchNotes = useCallback(() => {
-        localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
         setShowPatchNotes(false);
     }, []);
 
