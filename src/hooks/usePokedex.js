@@ -58,6 +58,8 @@ export function usePokedex() {
 
     // Derived Set of Pokemon IDs for the selected game
     const gamePokemonIds = gameSets && game && game !== 'all' ? (gameSets.get(game)?.ids || null) : null;
+    // Ordered sub-dex sections for the selected game (Central/Coastal/Mountain…).
+    const gameDexes = gameSets && game && game !== 'all' ? (gameSets.get(game)?.dexes || null) : null;
 
     useEffect(() => {
         if (!isAuthReady) return;
@@ -124,7 +126,8 @@ export function usePokedex() {
         hasMore,
         lastPokemonElementRef,
         gamePokemonIds,
-        
+        gameDexes,
+
         // Builder filters & actions
         selectedGeneration,
         selectedGame,

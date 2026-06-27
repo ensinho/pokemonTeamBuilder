@@ -1181,6 +1181,7 @@ export default function AppLayout() {
                                                 isInitialLoading={pokedex.isLoading}
                                                 availablePokemons={availablePokemons}
                                                 gamePokemonIds={pokedex.gamePokemonIds}
+                                                gameDexes={pokedex.gameDexes}
                                                 handleAddPokemonToTeam={handleAddPokemon}
                                                 handleRandomizeTeam={handleRandomizeTeam}
                                                 isRandomizing={isRandomizing}

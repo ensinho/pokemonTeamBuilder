@@ -51,20 +51,29 @@ const fetchJson = async (pathOrUrl) => {
     return res.json();
 };
 
+const titleCase = (s = '') => s.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
 const pokedexCache = new Map();
-const getPokedexSpeciesIds = async (name) => {
-    if (pokedexCache.has(name)) return pokedexCache.get(name);
-    let ids = [];
+// Returns { name (display), ids: [species ids IN REGIONAL DEX ORDER] } so the
+// builder can render each sub-dex (e.g. Central/Coastal/Mountain Kalos) in the
+// real in-game order rather than sorted by national number.
+const getPokedex = async (key) => {
+    if (pokedexCache.has(key)) return pokedexCache.get(key);
+    let result = { name: titleCase(key), ids: [] };
     try {
-        const data = await fetchJson(`/pokedex/${name}`);
-        ids = (data.pokemon_entries || [])
+        const data = await fetchJson(`/pokedex/${key}`);
+        const enName = (data.names || []).find((n) => n.language?.name === 'en')?.name;
+        const ids = (data.pokemon_entries || [])
+            .slice()
+            .sort((a, b) => (a.entry_number || 0) - (b.entry_number || 0))
             .map((e) => parseId(e.pokemon_species?.url))
             .filter((id) => Number.isInteger(id) && id > 0 && id <= NATIONAL_DEX_MAX);
+        result = { name: enName || titleCase(key), ids: [...new Set(ids)] };
     } catch (_) {
-        console.warn(`  (skipped pokédex "${name}")`);
+        console.warn(`  (skipped pokédex "${key}")`);
     }
-    pokedexCache.set(name, ids);
-    return ids;
+    pokedexCache.set(key, result);
+    return result;
 };
 
 const main = async () => {
@@ -77,26 +86,30 @@ const main = async () => {
 
     const games = [];
     for (const game of GAMES) {
+        // One ordered section per regional Pokédex (kept SEPARATE + in order).
+        const dexes = [];
         const speciesIds = new Set();
-        for (const dex of game.pokedexes) {
-            for (const id of await getPokedexSpeciesIds(dex)) speciesIds.add(id);
+        for (const dexKey of game.pokedexes) {
+            const { name, ids } = await getPokedex(dexKey);
+            if (!ids.length) continue;
+            dexes.push({ key: dexKey, name, speciesIds: ids });
+            for (const id of ids) speciesIds.add(id);
         }
         if (speciesIds.size === 0) {
             console.warn(`No species found for ${game.key} — skipping.`);
             continue;
         }
 
-        // Add native form ids (regional variants / megas / gmax) for this game.
-        const formIds = new Set();
+        // Native battle-form ids (regional variants / megas / gmax). These are
+        // surfaced INLINE next to their base species in the app, so we only record
+        // their ids for membership/count here — not as a separate section. We drop
+        // hypothetical (non-official) megas: real PokéAPI megas are ids 10033–10090.
+        const formIds = [];
         for (const form of forms) {
-            for (const suffix of game.forms) {
-                if (FORM_SUFFIX_RE[suffix]?.test(form.apiName)) {
-                    // Only include a form whose base species is in this game's dex,
-                    // OR whose region matches (regional forms always belong here).
-                    formIds.add(form.id);
-                    break;
-                }
-            }
+            const matched = game.forms.some((suffix) => FORM_SUFFIX_RE[suffix]?.test(form.apiName));
+            if (!matched) continue;
+            if (/-mega(-[xy])?$/.test(form.apiName) && form.id > 10090) continue;
+            formIds.push(form.id);
         }
 
         const pokemonIds = [...new Set([...speciesIds, ...formIds])].sort((a, b) => a - b);
@@ -105,9 +118,11 @@ const main = async () => {
             label: game.label,
             generation: game.generation,
             count: pokemonIds.length,
+            formSuffixes: game.forms,
+            dexes,
             pokemonIds,
         });
-        console.log(`  ${game.label}: ${speciesIds.size} species + ${formIds.size} forms = ${pokemonIds.length}`);
+        console.log(`  ${game.label}: ${dexes.map((d) => `${d.name}(${d.speciesIds.length})`).join(', ')} + ${formIds.length} forms = ${pokemonIds.length}`);
     }
 
     await fs.mkdir(DATA_DIR, { recursive: true });

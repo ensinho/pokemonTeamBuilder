@@ -18,6 +18,7 @@ import { Atom } from 'lucide-react';
 import { coreIconFor } from '../coreIcons';
 import { detectTeamCores } from '../../utils/metaCores';
 import { buildSynergySuggestions } from '../../utils/synergySuggestions';
+import { buildGameSections } from '../../utils/gameDex';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
@@ -107,6 +108,7 @@ export function TeamBuilderView({
     isInitialLoading,
     availablePokemons,
     gamePokemonIds,
+    gameDexes,
     handleAddPokemonToTeam,
     handleRandomizeTeam,
     isRandomizing,
@@ -242,15 +244,30 @@ export function TeamBuilderView({
     }, [games, selectedGame, isGameFilterActive]);
     const gameLabel = selectedGameObj ? selectedGameObj.label : selectedGame;
 
-    const regionalPokemons = React.useMemo(() => {
-        if (!isGameFilterActive) return [];
-        return displayedPokemons.filter((p) => gamePokemonIds.has(p.id));
-    }, [displayedPokemons, isGameFilterActive, gamePokemonIds]);
+    // When a game is selected, show ONLY that game's obtainable Pokémon: its real
+    // sub-dexes in regional ORDER, each base species followed inline by its legal
+    // battle forms (Mega X/Y…), then a National Pokédex section. Resolved from the
+    // full index so the whole dex shows regardless of pagination; search / type /
+    // favourites still filter every entry.
+    const gameSections = React.useMemo(() => {
+        if (!isGameFilterActive || !gameDexes) return null;
+        const search = (searchInput || '').toLowerCase().trim();
+        const typeList = [...selectedTypes];
+        const matches = (entry) => {
+            if (!entry) return false;
+            if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
+            if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
+            if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
+            if (search && !entry.name.toLowerCase().includes(search)) return false;
+            return true;
+        };
+        return buildGameSections({ fullIndex: pokemonIndex, gameDexes, game: selectedGameObj, matches });
+    }, [isGameFilterActive, gameDexes, selectedGameObj, pokemonIndex, searchInput, selectedTypes, showOnlyFavorites, selectedGeneration, favoritePokemons]);
 
-    const nationalPokemons = React.useMemo(() => {
-        if (!isGameFilterActive) return [];
-        return displayedPokemons.filter((p) => !gamePokemonIds.has(p.id));
-    }, [displayedPokemons, isGameFilterActive, gamePokemonIds]);
+    const gameVisibleCount = React.useMemo(
+        () => (gameSections ? gameSections.reduce((n, s) => n + s.mons.length, 0) : 0),
+        [gameSections]
+    );
 
     // Picker cards open a detail MODAL (not the fullscreen page). Show immediately
     // with the list data, then enrich with full stats/abilities once they resolve.
@@ -297,6 +314,7 @@ export function TeamBuilderView({
                     isInitialLoading={isInitialLoading}
                     displayedPokemons={displayedPokemons}
                     gamePokemonIds={gamePokemonIds}
+                    gameDexes={gameDexes}
                     synergySuggestions={synergySuggestions}
                     addSuggestion={addSuggestion}
                     handleAddPokemonToTeam={handleAddPokemonToTeam}
@@ -546,7 +564,7 @@ export function TeamBuilderView({
                                 onOpen={() => setIsGamePickerOpen(true)}
                                 className="game-cover--compact"
                             />
-                            <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0">{displayedPokemons.length}</span>
+                            <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0">{isGameFilterActive ? gameVisibleCount : displayedPokemons.length}</span>
                         </div>
 
                         <div className="team-builder-filterbar mt-3">
@@ -657,83 +675,61 @@ export function TeamBuilderView({
                             ) : (
                                 <div className="team-builder-results__scroll custom-scrollbar">
                                     <div className="team-builder-results__grid grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 p-1 py-2">
-                                        {/* Synergy-only picks (not in the current filtered list) */}
-                                        {synergyOnlyCards.map((pokemon) => (
-                                            <PokemonCard
-                                                key={`syn-${pokemon.id}`}
-                                                details={pokemon}
-                                                onCardClick={openDetailModal}
-                                                onAddToTeam={handleAddPokemonToTeam}
-                                                synergyReason={pokemon.primary}
-                                                colors={colors}
-                                                isFavorite={favoritePokemons.has(pokemon.id)}
-                                                onToggleFavorite={onToggleFavoritePokemon}
-                                            />
-                                        ))}
                                         {isGameFilterActive ? (
-                                            <>
-                                                {regionalPokemons.length > 0 && (
-                                                    <>
-                                                        <h4 className="pokedex-section-title">
-                                                            {t('builder.regionalDex', { game: gameLabel })}
-                                                        </h4>
-                                                        {regionalPokemons.map((pokemon, index) => (
-                                                            <PokemonCard
-                                                                key={pokemon.id}
-                                                                details={pokemon}
-                                                                onCardClick={openDetailModal}
-                                                                onAddToTeam={handleAddPokemonToTeam}
-                                                                lastRef={index === regionalPokemons.length - 1 && nationalPokemons.length === 0 ? lastPokemonElementRef : null}
-                                                                synergyReason={synergyReasonById.get(pokemon.id)}
-                                                                isSuggested={synergyReasonById.has(pokemon.id)}
-                                                                colors={colors}
-                                                                isFavorite={favoritePokemons.has(pokemon.id)}
-                                                                onToggleFavorite={onToggleFavoritePokemon}
-                                                            />
-                                                        ))}
-                                                    </>
-                                                )}
-                                                {nationalPokemons.length > 0 && (
-                                                    <>
-                                                        <h4 className="pokedex-section-title pokedex-section-title--national">
-                                                            {t('builder.nationalDex')}
-                                                        </h4>
-                                                        {nationalPokemons.map((pokemon, index) => (
-                                                            <PokemonCard
-                                                                key={pokemon.id}
-                                                                details={pokemon}
-                                                                onCardClick={openDetailModal}
-                                                                onAddToTeam={handleAddPokemonToTeam}
-                                                                lastRef={index === nationalPokemons.length - 1 ? lastPokemonElementRef : null}
-                                                                synergyReason={synergyReasonById.get(pokemon.id)}
-                                                                isSuggested={synergyReasonById.has(pokemon.id)}
-                                                                colors={colors}
-                                                                isFavorite={favoritePokemons.has(pokemon.id)}
-                                                                onToggleFavorite={onToggleFavoritePokemon}
-                                                            />
-                                                        ))}
-                                                    </>
-                                                )}
-                                            </>
-                                        ) : (
-                                            displayedPokemons.map((pokemon, index) => (
-                                                <PokemonCard
-                                                    key={pokemon.id}
-                                                    details={pokemon}
-                                                    onCardClick={openDetailModal}
-                                                    onAddToTeam={handleAddPokemonToTeam}
-                                                    lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
-                                                    synergyReason={synergyReasonById.get(pokemon.id)}
-                                                    isSuggested={synergyReasonById.has(pokemon.id)}
-                                                    colors={colors}
-                                                    isFavorite={favoritePokemons.has(pokemon.id)}
-                                                    onToggleFavorite={onToggleFavoritePokemon}
-                                                />
+                                            (gameSections || []).map((section) => (
+                                                <React.Fragment key={section.key}>
+                                                    <h4 className={`pokedex-section-title ${section.key === 'national' ? 'pokedex-section-title--national' : ''}`}>
+                                                        {`${section.name} Pokédex`}
+                                                    </h4>
+                                                    {section.mons.map((pokemon) => (
+                                                        <PokemonCard
+                                                            key={pokemon.id}
+                                                            details={pokemon}
+                                                            onCardClick={openDetailModal}
+                                                            onAddToTeam={handleAddPokemonToTeam}
+                                                            synergyReason={synergyReasonById.get(pokemon.id)}
+                                                            isSuggested={synergyReasonById.has(pokemon.id)}
+                                                            colors={colors}
+                                                            isFavorite={favoritePokemons.has(pokemon.id)}
+                                                            onToggleFavorite={onToggleFavoritePokemon}
+                                                        />
+                                                    ))}
+                                                </React.Fragment>
                                             ))
+                                        ) : (
+                                            <>
+                                                {/* Synergy-only picks (not in the current filtered list) */}
+                                                {synergyOnlyCards.map((pokemon) => (
+                                                    <PokemonCard
+                                                        key={`syn-${pokemon.id}`}
+                                                        details={pokemon}
+                                                        onCardClick={openDetailModal}
+                                                        onAddToTeam={handleAddPokemonToTeam}
+                                                        synergyReason={pokemon.primary}
+                                                        colors={colors}
+                                                        isFavorite={favoritePokemons.has(pokemon.id)}
+                                                        onToggleFavorite={onToggleFavoritePokemon}
+                                                    />
+                                                ))}
+                                                {displayedPokemons.map((pokemon, index) => (
+                                                    <PokemonCard
+                                                        key={pokemon.id}
+                                                        details={pokemon}
+                                                        onCardClick={openDetailModal}
+                                                        onAddToTeam={handleAddPokemonToTeam}
+                                                        lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
+                                                        synergyReason={synergyReasonById.get(pokemon.id)}
+                                                        isSuggested={synergyReasonById.has(pokemon.id)}
+                                                        colors={colors}
+                                                        isFavorite={favoritePokemons.has(pokemon.id)}
+                                                        onToggleFavorite={onToggleFavoritePokemon}
+                                                    />
+                                                ))}
+                                            </>
                                         )}
                                     </div>
-                                    {isFetchingMore && <div className="team-builder-spinner-wrap py-4"><div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div></div>}
-                                    {displayedPokemons.length === 0 && !isInitialLoading && (
+                                    {!isGameFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div></div>}
+                                    {((isGameFilterActive && gameVisibleCount === 0 && pokemonIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && !isInitialLoading && (
                                         <div className="px-2 pb-4">
                                             <EmptyState
                                                 compact

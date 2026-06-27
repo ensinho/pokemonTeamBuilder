@@ -6,7 +6,7 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/p
 // Bump this version whenever the SHAPE of cached data changes (e.g. adding `types`
 // to pokemon-index.json). It invalidates all stale entries from older versions so
 // users never get a broken UI from a long-TTL cache of the old format.
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 
 // Unique per production build, injected by Vite (see vite.config define). Every
 // deploy gets a new id, so the static /data/*.json files are re-keyed in our Web
@@ -62,8 +62,10 @@ const getBasePath = () => {
 // cache hit; new build = new URL = guaranteed fresh download. It defeats the
 // browser HTTP cache even when (as on Vercel) the file's own headers say
 // `max-age=0, must-revalidate` but `force-cache` would otherwise serve it stale.
+// Fold CACHE_VERSION into the URL too, so bumping it busts the browser HTTP cache
+// (not just our Web Storage) even in dev where BUILD_ID is the constant 'dev'.
 const getStaticDataUrl = (path) =>
-    `${getBasePath()}data/${String(path).replace(/^\/+/, '')}?v=${BUILD_ID}`;
+    `${getBasePath()}data/${String(path).replace(/^\/+/, '')}?v=${BUILD_ID}-${CACHE_VERSION}`;
 
 const getStorage = (storage) => {
     if (typeof window === 'undefined') return null;

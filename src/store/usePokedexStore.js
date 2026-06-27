@@ -25,7 +25,8 @@ const getGameSets = () => {
             for (const g of games) {
                 map.set(g.key, {
                     ids: new Set(g.pokemonIds),
-                    generation: g.generation
+                    generation: g.generation,
+                    dexes: g.dexes || null,
                 });
             }
             return map;

@@ -27,7 +27,7 @@ export const useReferenceStore = create((set, get) => ({
                 generations: data.generations || [],
                 items: data.items || [],
                 natures: data.natures || [],
-                games: (games || []).map((g) => ({ key: g.key, label: g.label, generation: g.generation, count: g.count })),
+                games: (games || []).map((g) => ({ key: g.key, label: g.label, generation: g.generation, count: g.count, formSuffixes: g.formSuffixes || [] })),
                 isLoading: false
             });
         } catch (error) {
