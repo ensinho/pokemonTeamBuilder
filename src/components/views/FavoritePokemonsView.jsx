@@ -111,7 +111,7 @@ export function FavoritePokemonsView({
     const groupedByType = useMemo(() => {
         if (groupBy !== 'type') return null;
         const groups = {};
-        
+
         Object.keys(typeColors).forEach(type => {
             groups[type] = [];
         });
@@ -227,12 +227,12 @@ export function FavoritePokemonsView({
                                 <div className="flex flex-col gap-2 py-4">
                                     {groupedByGen.map(([groupName, pokemonList]) => (
                                         <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md">
-                                            <div className="flex items-center justify-between mb-4 border-b border-border/40 pb-2">
+                                            <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
                                                 <h3 className="text-base font-bold text-fg capitalize tracking-wide flex items-center gap-2">
                                                     <StarIcon className="w-4 h-4 text-warning shrink-0" />
                                                     <span>{groupName}</span>
                                                 </h3>
-                                                <span 
+                                                <span
                                                     className="text-xs font-mono px-2.5 py-0.5 rounded-full font-bold text-white shadow-sm transition-transform duration-300 hover:scale-105"
                                                     style={{ backgroundColor: colors.primary }}
                                                 >
@@ -258,19 +258,19 @@ export function FavoritePokemonsView({
                                 <div className="flex flex-col gap-2 py-4">
                                     {groupedByType.map(([groupName, pokemonList]) => (
                                         <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md">
-                                            <div className="flex items-center justify-between mb-4 border-b border-border/40 pb-2">
+                                            <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
                                                 <h3 className="text-base font-bold text-fg capitalize tracking-wide flex items-center gap-2">
                                                     {typeIcons[groupName] && (
-                                                        <img 
-                                                            src={typeIcons[groupName]} 
-                                                            alt={groupName} 
-                                                            className="w-5 h-5 shrink-0" 
+                                                        <img
+                                                            src={typeIcons[groupName]}
+                                                            alt={groupName}
+                                                            className="w-5 h-5 shrink-0"
                                                             style={{ filter: `drop-shadow(0 0 3px ${typeColors[groupName]}60)` }}
                                                         />
                                                     )}
                                                     <span>{t(`types.${groupName}`)}</span>
                                                 </h3>
-                                                <span 
+                                                <span
                                                     className="text-xs font-mono px-2.5 py-0.5 rounded-full font-bold text-white shadow-sm transition-transform duration-300 hover:scale-105"
                                                     style={{ backgroundColor: typeColors[groupName] || colors.primary }}
                                                 >

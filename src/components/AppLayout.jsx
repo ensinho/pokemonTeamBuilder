@@ -42,7 +42,7 @@ import {
     ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
-import { BoxIcon, Puzzle } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal } from 'lucide-react';
 
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -66,6 +66,7 @@ const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').t
 const SpeedTiersView = lazy(() => import('./views/SpeedTiersView').then((m) => ({ default: m.SpeedTiersView })));
 const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) => ({ default: m.TournamentsView })));
 const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => ({ default: m.TeamDetailView })));
+const GymsView = lazy(() => import('./views/GymsView').then((m) => ({ default: m.GymsView })));
 
 import '../styles/app-shell.css';
 
@@ -165,6 +166,7 @@ export default function AppLayout() {
         if (path.includes('/moves')) return 'moves';
         if (path.includes('/abilities')) return 'abilities';
         if (path.includes('/items')) return 'items';
+        if (path.includes('/gyms')) return 'gyms';
         if (path.includes('/tournaments')) return 'tournaments';
         if (path.includes('/damage-calculator')) return 'damageCalc';
         if (path.includes('/speed-tiers')) return 'speedTiers';
@@ -520,6 +522,7 @@ export default function AppLayout() {
                 title: t('nav.teamBuilding'),
                 items: [
                     { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
+                    { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms & Trainers', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                     { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
                     { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
                     { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
@@ -1245,6 +1248,9 @@ export default function AppLayout() {
                                         <Route path="/items" element={<ItemsListView />} />
                                         <Route path="/tournaments" element={
                                             <TournamentsView db={db} onOpenTeam={handleEditTeam} />
+                                        } />
+                                        <Route path="/gyms" element={
+                                            <GymsView showDetails={showDetails} onAddToTeam={handleAddPokemon} />
                                         } />
                                         <Route path="/damage-calculator" element={
                                             <DamageCalculatorView />
