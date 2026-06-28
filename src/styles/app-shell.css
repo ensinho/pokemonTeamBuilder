@@ -131,7 +131,6 @@
     width: 100%;
     margin-top: auto;
     padding: var(--app-shell-gutter) 0;
-    border-top: 1px solid var(--color-border);
 }
 
 .app-shell__sidebar-controls {
@@ -483,8 +482,15 @@
 }
 
 @keyframes app-shell-tooltip-in {
-    from { opacity: 0; transform: translateY(-50%) translateX(-3px); }
-    to { opacity: 1; transform: translateY(-50%) translateX(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-50%) translateX(-3px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(-50%) translateX(0);
+    }
 }
 
 .app-shell__account {
@@ -963,8 +969,15 @@
 }
 
 @keyframes footer-tooltip-fade-in {
-    from { opacity: 0; transform: translateY(2px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .animate-footer-tooltip {

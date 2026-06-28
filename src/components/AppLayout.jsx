@@ -979,27 +979,19 @@ export default function AppLayout() {
                                         </button>
                                     </div>
                                 )}
-                                <div className={`app-shell__sidebar-controls ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
-                                    <button
-                                        onClick={toggleTheme}
-                                        type="button"
-                                        aria-label={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })}
-                                        title={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })}
-                                        className="app-shell__icon-button"
-                                    >
-                                        {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                    </button>
-
-                                    <button
-                                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                                        type="button"
-                                        aria-label={isSidebarCollapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
-                                        title={isSidebarCollapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
-                                        className="app-shell__icon-button hidden lg:inline-flex"
-                                    >
-                                        {isSidebarCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}
-                                    </button>
-                                </div>
+                                {isSidebarCollapsed && (
+                                    <div className="app-shell__sidebar-controls is-collapsed">
+                                        <button
+                                            onClick={() => setIsSidebarCollapsed(false)}
+                                            type="button"
+                                            aria-label={t('layout.expandSidebar')}
+                                            title={t('layout.expandSidebar')}
+                                            className="app-shell__icon-button hidden lg:inline-flex"
+                                        >
+                                            <CollapseRightIcon />
+                                        </button>
+                                    </div>
+                                )}
 
                                 <div className={`app-shell__account ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
                                     {isAnonymous ? (
@@ -1048,6 +1040,18 @@ export default function AppLayout() {
                                 >
                                     {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
                                 </button>
+
+                                {!isSidebarCollapsed && (
+                                    <button
+                                        onClick={() => setIsSidebarCollapsed(true)}
+                                        type="button"
+                                        aria-label={t('layout.collapseSidebar')}
+                                        title={t('layout.collapseSidebar')}
+                                        className="app-shell__icon-button hidden lg:inline-flex"
+                                    >
+                                        <CollapseLeftIcon />
+                                    </button>
+                                )}
 
                                 <div className="app-shell__header-copy">
                                     <div className="app-shell__header-title-row">
