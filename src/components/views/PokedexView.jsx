@@ -325,7 +325,7 @@ export function PokedexView({
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
     // Moves State
-    const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [] });
+    const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [], other: [] });
     const [selectedMoveVersion, setSelectedMoveVersion] = useState('');
     const [isMovesLoading, setIsMovesLoading] = useState(false);
 
@@ -461,11 +461,16 @@ export function PokedexView({
                     if (!details) {
                         const apiData = await getPokemonApiData(selectedPokemon.id);
                         if (apiData) {
+                            // Carry stats + abilities so the Base Stats panel and the
+                            // abilities row render for forms/megas with no Firestore/static
+                            // doc (e.g. excadrill-mega) — otherwise those panels stay empty.
                             details = {
                                 id: apiData.id,
                                 name: displayNameFromApi(apiData),
-                                types: apiData.types?.map((t) => t.type?.name) || [],
+                                types: apiData.types?.map((t) => t.type?.name).filter(Boolean) || [],
                                 sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default,
+                                stats: apiData.stats?.map((s) => ({ name: s.stat?.name, base_stat: s.base_stat })).filter((s) => s.name) || [],
+                                abilities: apiData.abilities?.map((a) => ({ name: a.ability?.name, url: a.ability?.url, is_hidden: a.is_hidden })).filter((a) => a.name) || [],
                             };
                         }
                     }
@@ -482,8 +487,16 @@ export function PokedexView({
                 if (cancelled) return;
                 setFullApiData(apiData);
 
-                // Load Species Data
-                const specData = await getPokemonSpeciesData(selectedPokemon.id);
+                // Load Species Data. Forms/megas (id > 1025) have no species of their own —
+                // their `/pokemon` payload points at the BASE species (e.g. excadrill-mega →
+                // species 530), so /pokemon-species/{formId} 404s. Resolve via the reported
+                // species url and tolerate a miss so the rest of the panel still loads.
+                let specData = null;
+                try {
+                    specData = await getPokemonSpeciesData(apiData?.species?.url || selectedPokemon.id);
+                } catch (_) {
+                    specData = null;
+                }
                 if (cancelled) return;
                 setSpeciesData(specData);
 
@@ -616,7 +629,7 @@ export function PokedexView({
     // Fetch details for filtered moves
     useEffect(() => {
         if (!fullApiData || !selectedMoveVersion) {
-            setResolvedMoves({ levelUp: [], machine: [] });
+            setResolvedMoves({ levelUp: [], machine: [], other: [] });
             return;
         }
 
@@ -675,7 +688,15 @@ export function PokedexView({
                     .filter((m) => m.learnMethod === 'machine')
                     .sort((a, b) => a.name.localeCompare(b.name));
 
-                setResolvedMoves({ levelUp, machine });
+                // Catch-all for every other learn method (egg, tutor, and the "train"
+                // method the Champions/mega data uses). Without this, those moves were
+                // dropped — which is why mega forms with a train-only moveset showed
+                // "No Moves Found" despite the API returning a full list.
+                const other = resolved
+                    .filter((m) => m.learnMethod !== 'level-up' && m.learnMethod !== 'machine')
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                setResolvedMoves({ levelUp, machine, other });
             } catch (err) {
                 console.error('Failed to resolve moves', err);
             } finally {
@@ -1512,9 +1533,10 @@ export function PokedexView({
                         <div className="flex-1 flex items-center justify-center py-20">
                             <div className="team-builder-spinner" aria-hidden="true"></div>
                         </div>
-                    ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0) ? (
+                    ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0 || (resolvedMoves.other?.length > 0)) ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                             {/* Level Up Moves */}
+                            {resolvedMoves.levelUp.length > 0 && (
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border">
                                     <ChevronRight className="w-3.5 h-3.5 text-primary" />
@@ -1563,8 +1585,10 @@ export function PokedexView({
                                     </table>
                                 </div>
                             </div>
+                            )}
 
                             {/* TM Moves */}
+                            {resolvedMoves.machine.length > 0 && (
                             <div className="rounded-xl bg-surface p-4 border border-border">
                                 <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border">
                                     <ChevronRight className="w-3.5 h-3.5 text-primary" />
@@ -1615,6 +1639,59 @@ export function PokedexView({
                                     </table>
                                 </div>
                             </div>
+                            )}
+
+                            {/* Other Moves (egg / tutor / "train" — e.g. Champions mega data) */}
+                            {resolvedMoves.other?.length > 0 && (
+                            <div className="rounded-xl bg-surface p-4 border border-border">
+                                <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border">
+                                    <ChevronRight className="w-3.5 h-3.5 text-primary" />
+                                    <span>{language === 'pt' ? 'Outros Movimentos' : 'Other Moves'}</span>
+                                </h5>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs border-collapse pokedex-moves-table">
+                                        <thead>
+                                            <tr className="border-b border-border text-muted">
+                                                <th className="pb-2 font-bold w-12">{language === 'pt' ? 'Método' : 'Method'}</th>
+                                                <th className="pb-2 font-bold">{t('pokedex.movesHeaderName')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderType')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderClass')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderPower')}</th>
+                                                <th className="pb-2 font-bold text-center">{t('pokedex.movesHeaderAcc')}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {resolvedMoves.other.map((m, idx) => {
+                                                return (
+                                                    <tr key={idx} className="border-b border-border hover:bg-bg/10">
+                                                        <td className="py-2.5 font-bold font-mono text-muted capitalize">{m.learnMethod ? m.learnMethod.replace(/-/g, ' ') : '—'}</td>
+                                                        <td className="py-2.5 font-bold capitalize text-fg">{m.name.replace('-', ' ')}</td>
+                                                        <td className="py-2.5 text-center">
+                                                            <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider text-white" style={{ backgroundColor: typeColors[m.type] }}>
+                                                                {m.type.slice(0, 3)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2 text-center">
+                                                            <span title={m.damageClass} className="inline-flex items-center justify-center">
+                                                                {m.damageClass === 'physical' ? (
+                                                                    <PhysicalIcon />
+                                                                ) : m.damageClass === 'special' ? (
+                                                                    <SpecialIcon />
+                                                                ) : (
+                                                                    <StatusIcon />
+                                                                )}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.power ?? '—'}</td>
+                                                        <td className="py-2.5 text-center font-bold font-mono text-fg">{m.accuracy ? `${m.accuracy}%` : '—'}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            )}
                         </div>
                     ) : (
                         <div className="py-12 bg-surface border border-border rounded-xl text-center px-4">

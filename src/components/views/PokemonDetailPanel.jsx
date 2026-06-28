@@ -142,7 +142,7 @@ export function PokemonDetailPanel({
     const [forms, setForms] = useState([]);
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024);
 
-    const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [] });
+    const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [], other: [] });
     const [selectedMoveVersion, setSelectedMoveVersion] = useState('');
     const [isMovesLoading, setIsMovesLoading] = useState(false);
     const [customSelectedSprite, setCustomSelectedSprite] = useState(null);
@@ -191,11 +191,16 @@ export function PokemonDetailPanel({
                     if (!details) {
                         const apiData = await getPokemonApiData(selectedPokemon.id);
                         if (apiData) {
+                            // Carry stats + abilities so the Base Stats panel and the
+                            // abilities row render for forms/megas with no Firestore/static
+                            // doc (e.g. excadrill-mega) — otherwise those panels stay empty.
                             details = {
                                 id: apiData.id,
                                 name: displayNameFromApi(apiData),
-                                types: apiData.types?.map((ty) => ty.type?.name) || [],
+                                types: apiData.types?.map((ty) => ty.type?.name).filter(Boolean) || [],
                                 sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default,
+                                stats: apiData.stats?.map((s) => ({ name: s.stat?.name, base_stat: s.base_stat })).filter((s) => s.name) || [],
+                                abilities: apiData.abilities?.map((a) => ({ name: a.ability?.name, url: a.ability?.url, is_hidden: a.is_hidden })).filter((a) => a.name) || [],
                             };
                         }
                     }
@@ -209,7 +214,16 @@ export function PokemonDetailPanel({
                 if (cancelled) return;
                 setFullApiData(apiData);
 
-                const specData = await getPokemonSpeciesData(selectedPokemon.id);
+                // Forms/megas (id > 1025) have no species of their own — their `/pokemon`
+                // payload points at the BASE species (e.g. excadrill-mega → species 530).
+                // Fetching /pokemon-species/{formId} 404s, so resolve via the reported
+                // species url and tolerate a miss so the rest of the panel still loads.
+                let specData = null;
+                try {
+                    specData = await getPokemonSpeciesData(apiData?.species?.url || selectedPokemon.id);
+                } catch (_) {
+                    specData = null;
+                }
                 if (cancelled) return;
                 setSpeciesData(specData);
 
@@ -298,7 +312,7 @@ export function PokemonDetailPanel({
     }, [availableMoveVersions]);
 
     useEffect(() => {
-        if (!fullApiData || !selectedMoveVersion) { setResolvedMoves({ levelUp: [], machine: [] }); return undefined; }
+        if (!fullApiData || !selectedMoveVersion) { setResolvedMoves({ levelUp: [], machine: [], other: [] }); return undefined; }
         let cancelled = false;
         (async () => {
             setIsMovesLoading(true);
@@ -323,7 +337,12 @@ export function PokemonDetailPanel({
                 if (cancelled) return;
                 const levelUp = resolved.filter((m) => m.learnMethod === 'level-up').sort((a, b) => a.level - b.level);
                 const machine = resolved.filter((m) => m.learnMethod === 'machine').sort((a, b) => a.name.localeCompare(b.name));
-                setResolvedMoves({ levelUp, machine });
+                // Catch-all for every other learn method (egg, tutor, and the "train"
+                // method the Champions/mega data uses). Without this, those moves were
+                // dropped — which is why mega forms with a train-only moveset showed
+                // "No Moves Found" despite the API returning a full list.
+                const other = resolved.filter((m) => m.learnMethod !== 'level-up' && m.learnMethod !== 'machine').sort((a, b) => a.name.localeCompare(b.name));
+                setResolvedMoves({ levelUp, machine, other });
             } catch (err) {
                 console.error('Failed to resolve moves', err);
             } finally {
@@ -839,10 +858,11 @@ export function PokemonDetailPanel({
 
                     {isMovesLoading ? (
                         <div className="flex-1 flex items-center justify-center py-20"><div className="team-builder-spinner" aria-hidden="true"></div></div>
-                    ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0) ? (
+                    ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0 || (resolvedMoves.other?.length > 0)) ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                             {[{ key: 'levelUp', title: t('pokedex.movesLevelUp'), col: t('pokedex.movesHeaderLevel'), rows: resolvedMoves.levelUp },
-                            { key: 'machine', title: t('pokedex.movesMachine'), col: t('pokedex.movesHeaderTm'), rows: resolvedMoves.machine }].map((block) => (
+                            { key: 'machine', title: t('pokedex.movesMachine'), col: t('pokedex.movesHeaderTm'), rows: resolvedMoves.machine },
+                            { key: 'other', title: language === 'pt' ? 'Outros Movimentos' : 'Other Moves', col: language === 'pt' ? 'Método' : 'Method', rows: resolvedMoves.other || [] }].filter((block) => block.rows.length > 0).map((block) => (
                                 <div key={block.key} className="rounded-xl bg-surface p-4 border border-border">
                                     <h5 className="text-xs font-extrabold uppercase tracking-wider text-muted mb-3 flex items-center gap-1.5 pb-2 border-b border-border"><ChevronRight className="w-3.5 h-3.5 text-primary" /><span>{block.title}</span></h5>
                                     <div className="overflow-x-auto">
@@ -860,7 +880,7 @@ export function PokemonDetailPanel({
                                             <tbody>
                                                 {block.rows.map((m, idx) => (
                                                     <tr key={idx} className="border-b border-border hover:bg-bg/10">
-                                                        <td className="py-2.5 font-bold font-mono text-muted">{block.key === 'levelUp' ? m.level : (m.tmName ? formatTmName(m.tmName) : '—')}</td>
+                                                        <td className="py-2.5 font-bold font-mono text-muted">{block.key === 'levelUp' ? m.level : block.key === 'machine' ? (m.tmName ? formatTmName(m.tmName) : '—') : (m.learnMethod ? m.learnMethod.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '—')}</td>
                                                         <td className="py-2.5 font-bold capitalize text-fg">{m.name.replace('-', ' ')}</td>
                                                         <td className="py-2.5 text-center"><span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider text-white" style={{ backgroundColor: typeColors[m.type] }}>{m.type.slice(0, 3)}</span></td>
                                                         <td className="py-2 text-center"><span title={m.damageClass} className="inline-flex items-center justify-center">{m.damageClass === 'physical' ? <PhysicalIcon /> : m.damageClass === 'special' ? <SpecialIcon /> : <StatusIcon />}</span></td>

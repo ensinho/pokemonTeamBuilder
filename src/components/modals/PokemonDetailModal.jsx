@@ -148,7 +148,12 @@ export function PokemonDetailModal({
         let cancelled = false;
         (async () => {
             try {
-                const species = await getPokemonSpeciesData(pokemon.id);
+                // Forms/megas (id > 1025) have no species of their own — resolve via the
+                // `/pokemon` payload's species url (e.g. excadrill-mega → species 530) so
+                // /pokemon-species/{formId} doesn't 404 and the forms list still builds.
+                const apiData = await getPokemonApiData(pokemon.id);
+                if (cancelled) return;
+                const species = await getPokemonSpeciesData(apiData?.species?.url || pokemon.id);
                 if (cancelled || !species?.varieties?.length) return;
                 const built = await buildPokemonForms(species, { fetchPokemon: getPokemonApiData });
                 if (!cancelled) setForms(built);

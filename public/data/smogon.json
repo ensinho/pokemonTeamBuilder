@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T20:50:14.338Z",
+  "generatedAt": "2026-06-28T01:57:08.707Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -1628,56 +1628,9 @@
     },
     "45": {
       "name": "Vileplume",
-      "gen": "RU",
+      "gen": "PU",
       "overview": "",
       "sets": [
-        {
-          "name": "Physically Defensive",
-          "item": "leftovers",
-          "itemAlts": [
-            "heavy-duty-boots",
-            "rocky-helmet"
-          ],
-          "ability": "effect-spore",
-          "nature": "bold",
-          "tera": [
-            "fairy",
-            "water"
-          ],
-          "moves": [
-            [
-              "sludge-wave"
-            ],
-            [
-              "giga-drain"
-            ],
-            [
-              "strength-sap"
-            ],
-            [
-              "leech-seed"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
         {
           "name": "Physically Defensive",
           "item": "rocky-helmet",
@@ -3720,6 +3673,51 @@
           "source": "Battle Stadium"
         },
         {
+          "name": "Specially Defensive",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "careful",
+          "tera": [
+            "poison"
+          ],
+          "moves": [
+            [
+              "knock-off"
+            ],
+            [
+              "poison-jab",
+              "clear-smog"
+            ],
+            [
+              "rest"
+            ],
+            [
+              "pain-split",
+              "sleep-talk"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 4,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 252,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Possessing a unique typing and decent bulk, Alolan Muk is one of the best Calyrex-S checks on stall teams, particularly against Tera Fairy sets. Thanks to this typing and Fairy neutrality, Alolan Muk comfortably takes on Calyrex-S's STAB moves, along with checking Tera Fairy Calyrex-S better than other Dark-types like…",
+          "source": "Anything Goes"
+        },
+        {
           "name": "RestTalk",
           "item": "leftovers",
           "itemAlts": [],
@@ -3807,55 +3805,6 @@
           "level": null,
           "description": "",
           "source": "PU"
-        },
-        {
-          "name": "Defensive",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "sticky-hold",
-          "nature": "careful",
-          "tera": [
-            "dark",
-            "dragon"
-          ],
-          "moves": [
-            [
-              "poison-jab"
-            ],
-            [
-              "knock-off"
-            ],
-            [
-              "zen-headbutt",
-              "rest"
-            ],
-            [
-              "toxic",
-              "toxic-spikes",
-              "haze",
-              "protect",
-              "sleep-talk"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Muk is a good defensive Pokemon thanks to its great defensive typing and Special Defense, which allow it to act as a blanket check to a plethora of the tier's special attackers. Knock Off lets Muk cripple Pokemon reliant on their items, like Heavy-Duty Boots Sableye, Rocky Helmet Sandslash and Skuntank, and Leftovers…",
-          "source": "ZU"
         }
       ]
     },
@@ -4294,7 +4243,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nChoice Scarf Gengar is one of the fastest Pokemon in RU, leaving speed demons like Cyclizar and Barraskewda as well as Choice Scarf users like Mienshao and Gardevoir in the dust. Ghost / Poison is an excellent offensive typing that can hit most of the metagame for at least neutral damage, only resisted by…",
+          "description": "Set Details\nChoice Scarf Gengar is one of the fastest Pokemon in RU, leaving speed demons like Cyclizar and Barraskewda as well as Choice Scarf users like Krookodile and Gardevoir in the dust. Ghost / Poison is an excellent offensive typing that can hit most of the metagame for at least neutral damage, only resisted…",
           "source": "RU"
         }
       ]
@@ -5053,7 +5002,7 @@
     "113": {
       "name": "Chansey",
       "gen": "OU",
-      "overview": "Chansey is a premier special wall in the tier. Its massive HP stat, coupled with good Special Defense and Eviolite, allows Chansey to reliably shrug off almost any special attack from foes such as Basculegion-F, Choice Specs Hisuian Goodra, and non-Iron Defense Magnezone. It also has good utility, with access to an…",
+      "overview": "Chansey stands out as the ultimate special wall in the tier, with its gargantuan bulk further boosted by Eviolite allowing it to tank many special attacks from foes like Raikou, Munkidori, Chandelure, and non-Body Press Duraludon. Chansey is a key component on stall teams, as it tanks special moves for its teammates…",
       "sets": [
         {
           "name": "Defensive",
@@ -5108,51 +5057,6 @@
           "nature": "bold",
           "tera": [
             "dark",
-            "ghost"
-          ],
-          "moves": [
-            [
-              "seismic-toss"
-            ],
-            [
-              "soft-boiled"
-            ],
-            [
-              "stealth-rock",
-              "heal-bell"
-            ],
-            [
-              "thunder-wave"
-            ]
-          ],
-          "evs": {
-            "hp": 56,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 200,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nSeismic Toss is Chansey's best option for dealing reliable damage and not being completely passive. Soft-Boiled gives Chansey reliable recovery and makes it easier for Chansey to tank special attacks. Stealth Rock is a great move on Chansey, as it has a rather easy time setting up Stealth Rock against…",
-          "source": "RU"
-        },
-        {
-          "name": "Defensive",
-          "item": "eviolite",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "bold",
-          "tera": [
-            "dark",
             "fairy",
             "ghost"
           ],
@@ -5192,6 +5096,48 @@
           "level": null,
           "description": "Set Details\nSeismic Toss prevents Chansey from being completely passive by dealing reliable, consistent damage against non-Ghost-type targets. Heal Bell allows Chansey to cure status ailments for team members like Houndstone. Thunder Wave enables Chansey’s teammates like Basculegion-M and Flamigo to cripple faster…",
           "source": "NU"
+        },
+        {
+          "name": "Defensive",
+          "item": "eviolite",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "bold",
+          "tera": [],
+          "moves": [
+            [
+              "seismic-toss"
+            ],
+            [
+              "soft-boiled"
+            ],
+            [
+              "stealth-rock"
+            ],
+            [
+              "thunder-wave",
+              "healing-wish"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "This is the sample set before we work on new analyses. This will be updated as the metagame continues to develop. Stay tuned!",
+          "source": "Monotype"
         },
         {
           "name": "Little Pink Blob",
@@ -7702,7 +7648,7 @@
     "151": {
       "name": "Mew",
       "gen": "Doubles OU",
-      "overview": "Mew distinguishes itself from other common Psychic-types like Slowbro and Cresselia by virtue of its incredibly deep movepool, which, when combined with its rounded statline, lets it run a variety of viable sets. Mew can take advantage of common utility and defensive Pokemon like Cyclizar and Gastrodon, making…",
+      "overview": "",
       "sets": [
         {
           "name": "Support",
@@ -7804,84 +7750,33 @@
           "source": "UU"
         },
         {
-          "name": "Spikes Setter",
-          "item": "rocky-helmet",
+          "name": "Nasty Plot",
+          "item": "life-orb",
           "itemAlts": [],
           "ability": "",
-          "nature": "bold",
-          "tera": [
-            "fighting",
-            "ghost"
-          ],
-          "moves": [
-            [
-              "spikes"
-            ],
-            [
-              "body-press"
-            ],
-            [
-              "psychic-noise",
-              "knock-off",
-              "toxic",
-              "will-o-wisp"
-            ],
-            [
-              "volt-switch",
-              "taunt"
-            ]
-          ],
-          "evs": {
-            "hp": 240,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 16
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nMew sets itself apart from other Spikes users, namely Gastrodon and Chesnaught, thanks to its good Speed stat and incredible utility movepool. Body Press is a solid coverage move that lets Mew invest in bulk while also targeting Cyclizar, one of the tier's most common hazard removers. It also hits the…",
-          "source": "RU"
-        },
-        {
-          "name": "Nasty Plot",
-          "item": "leftovers",
-          "itemAlts": [
-            "life-orb"
-          ],
-          "ability": "",
           "nature": "timid",
-          "tera": [
-            "fairy"
-          ],
+          "tera": [],
           "moves": [
             [
               "nasty-plot"
             ],
             [
+              "vacuum-wave"
+            ],
+            [
+              "flamethrower"
+            ],
+            [
+              "ice-beam",
               "draining-kiss"
-            ],
-            [
-              "psyshock"
-            ],
-            [
-              "earth-power"
             ]
           ],
           "evs": {
-            "hp": 4,
+            "hp": 0,
             "attack": 0,
             "defense": 0,
             "special-attack": 252,
-            "special-defense": 0,
+            "special-defense": 4,
             "speed": 252
           },
           "ivs": {
@@ -7893,8 +7788,52 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nNasty Plot Mew stands as one of the most dangerous sweepers in the metagame with its combination of bulk and Speed and amazing coverage options. Psyshock is the STAB move of choice, allowing it to threaten Blissey and Cyclizar immediately after a boost without needing to terastallize. Draining Kiss allows…",
-          "source": "RU"
+          "description": "With Nasty Plot and a myriad of coverage options, Mew finds a solid place as a special wallbreaker for Psychic teams. Life Orb Vacuum Wave OHKOes Bisharp after Stealth Rock damage and, at +2, has a good chance to OHKO Meowscarada and Greninja. Flamethrower targets Steel- and Bug-types like Gholdengo, Scizor, and…",
+          "source": "Monotype"
+        },
+        {
+          "name": "Utility",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "bold",
+          "tera": [],
+          "moves": [
+            [
+              "will-o-wisp"
+            ],
+            [
+              "spikes",
+              "defog"
+            ],
+            [
+              "knock-off",
+              "psychic",
+              "night-shade"
+            ],
+            [
+              "soft-boiled"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 168,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 88
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Although it tends to underperform defensively due to the presence of dangerous threats such as Aegislash as well as competition with other Spikers like Skarmory, Mew still has great bulk for the tier and can sport a good amount of utility for teams with entry hazard setting or removal. Mew can easily set Spikes…",
+          "source": "Nat Dex UU"
         }
       ]
     },
@@ -9022,7 +8961,7 @@
     "197": {
       "name": "Umbreon",
       "gen": "VGC 2024",
-      "overview": "Umbreon provides tremendous value as a specially defensive wall that can support its teammates through Wish passing and status spreading. Umbreon is most often utilized in Wish passing to some of the tier's best Choice item wallbreakers such as Galarian Zapdos, Hisuian Goodra, and Basculegion-F. Similarly, Umbreon can…",
+      "overview": "Umbreon provides tremendous value as a specially defensive wall that can support its teammates through Wish passing and status spreading. Umbreon often provides Wish support to some of the tier's strong Choice item wallbreakers such as Yanmega, Hisuian Goodra, and Krookodile. Umbreon also props up balance and bulky…",
       "sets": [
         {
           "name": "Support",
@@ -9207,7 +9146,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFoul Play hits Jirachi and Dragon Dance Gyarados for large chunks of damage. Toxic helps Umbreon be less passive, threatening to secure a big poison on difficult-to-take-down Pokemon such as Slowbro and Wo-Chien. Protect is a valuable move on Umbreon to scout for Choice-locked attacks from wallbreakers…",
+          "description": "Set Details\nFoul Play hits Jirachi and Dragon Dance Necrozma for large chunks of damage. Toxic helps Umbreon be less passive, threatening to secure a big poison on difficult-to-take-down Pokemon such as Slowbro and Wo-Chien. Protect is a valuable move on Umbreon to scout for Choice-locked attacks from wallbreakers…",
           "source": "RU"
         }
       ]
@@ -23294,7 +23233,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFroslass is one of the many viable leads of RU due to its good Speed stat and access to Spikes and Taunt. Froslass can be powerful against slower teams, as they may have trouble stopping it from setting Spikes. Spikes allows offensive teammates, such as Bisharp and Toxtricity, to more easily break through…",
+          "description": "",
           "source": "RU"
         },
         {
@@ -23937,7 +23876,7 @@
     "482": {
       "name": "Azelf",
       "gen": "RU",
-      "overview": "Azelf's good Speed, good coverage, bevy of utility moves, and access to Nasty Plot carve it several modest niches as an offensive threat and lead. Azelf is one of the only relevant leads that can compress all of Stealth Rock, Taunt, and pivoting with Explosion onto one set, while opposing leads, such as Terrakion and…",
+      "overview": "",
       "sets": [
         {
           "name": "Lead",
@@ -23981,7 +23920,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nAzelf is the fastest relevant Stealth Rock and Taunt user in the metagame, giving it the edge against some opposing entry hazard leads like Terrakion. Additionally, Taunt prevents Defog users like Talonflame from removing Azelf's hazards. Explosion gets Azelf off the field quickly, letting a teammate take…",
+          "description": "",
           "source": "RU"
         },
         {
@@ -24031,7 +23970,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Azelf's good Special Attack and Speed make it a niche fast special attacker. Mystical Power can let Azelf snowball and punish Pokemon sacrifices, but Psychic offers more immediate power for wallbreaking and securing KOes so Azelf doesn't take retaliatory hits. For example, Psychic notably OHKOes uninvested Galarian…",
+          "description": "",
           "source": "RU"
         }
       ]
@@ -27479,7 +27418,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Krookodile solidifies its place in the metagame as the premier offensive Ground-type, with access to Stealth Rock and Intimidate giving it great utility for an offensive Pokemon. Krookodile has advantages over other Ground-type entry hazard setters like Flygon and Hippowdon because of its combination of good Speed and…",
+          "description": "Krookodile solidifies its place in the metagame as the premier offensive Ground-type, with access to Stealth Rock and Intimidate giving it great utility for an offensive Pokemon. Krookodile has advantages over other entry hazard setters like Registeel and Empoleon because of its combination of good Speed and access to…",
           "source": "RU"
         },
         {
@@ -30238,7 +30177,7 @@
     "620": {
       "name": "Mienshao",
       "gen": "VGC 2024",
-      "overview": "Mienshao's access to Knock Off, U-turn, a great ability in Regenerator, and strong coverage solidifies its place as one of the tier's best offensive pivots. Knock Off and U-turn are a tried-and-true combo at making progress by allowing Mienshao to remove items and pivot out on potential switch-ins to keep up momentum.…",
+      "overview": "",
       "sets": [
         {
           "name": "Offensive Utility",
@@ -30284,60 +30223,12 @@
           "source": "VGC 2024"
         },
         {
-          "name": "Choice Scarf",
-          "item": "choice-scarf",
-          "itemAlts": [],
-          "ability": "regenerator",
-          "nature": "jolly",
-          "tera": [
-            "fighting",
-            "dark"
-          ],
-          "moves": [
-            [
-              "close-combat"
-            ],
-            [
-              "knock-off"
-            ],
-            [
-              "ice-spinner",
-              "stone-edge"
-            ],
-            [
-              "u-turn"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nChoice Scarf allows Mienshao to outspeed the entirety of the unboosted metagame and common Choice Scarf users like Krookodile, Gardevoir, and Galarian Zapdos, making Mienshao a premier revenge killer. Knock Off punishes Close Combat switch-ins like Slowbro and Basculegion-F. Ice Spinner hits Flying- and…",
-          "source": "RU"
-        },
-        {
           "name": "Life Orb",
           "item": "life-orb",
           "itemAlts": [],
           "ability": "regenerator",
           "nature": "jolly",
-          "tera": [
-            "steel",
-            "dark"
-          ],
+          "tera": [],
           "moves": [
             [
               "close-combat"
@@ -30350,7 +30241,8 @@
             ],
             [
               "triple-axel",
-              "ice-spinner"
+              "poison-jab",
+              "fake-out"
             ]
           ],
           "evs": {
@@ -30370,8 +30262,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Life Orb Mienshao is a menacing threat in the metagame, capitalizing on Regenerator to mitigate the Life Orb recoil while hammering foes with hard-hitting attacks. Knock Off allows Mienshao to hit Ghost- and Psychic-types that attempt to switch in on Close Combat like Gengar, Armarouge, and Slowbro. U-turn helps it…",
-          "source": "RU"
+          "description": "Mienshao functions as an elite offensive pivot that can fire off its high-powered moves while being hard to chip down thanks to Regenerator offsetting Life Orb recoil. It brings value in threatening key Pokemon such as Rotom-W, Skarmory, and Hippowdon. Knock Off in conjunction with U-turn wears down checks such as…",
+          "source": "Nat Dex UU"
         },
         {
           "name": "Choice Scarf",
@@ -46624,7 +46516,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "With an outstanding Speed tier, fantastic natural bulk and the raw power to match, all-out attacking Heavy-Duty Boots Zamazenta is one of the tier's best natural forms of speed control for bulkier teamstyles while still being a great one-time check to some of the tier's most dominant physical threats like Kingambit…",
+          "description": "With an outstanding Speed tier, fantastic natural bulk, and the raw power to match, all-out attacking Heavy-Duty Boots Zamazenta is one of the tier's best natural forms of speed control for bulkier teamstyles while still being a great one-time check to some of the tier's most dominant physical threats like Kingambit…",
           "source": "OU"
         }
       ]
@@ -48096,7 +47988,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nSwords Dance threatens defensive leads such as Hippowdon and Gastrodon, and STAB X-Scissor will threaten to 2HKO them. This usually ends up with Hippowdon or Gastrodon weakened, which makes it easier for Kleavor's teammates to KO them. Close Combat allows Kleavor to hit Steel-types such as Hisuian Goodra,…",
+          "description": "Set Details\nSwords Dance threatens defensive leads such as Gastrodon, Registeel, and Kleavor will threaten to 2HKO them. This usually ends up with Gastrodon or Registeel weakened, which makes it easier for Kleavor's teammates to KO them. Close Combat allows Kleavor to hit Steel-types such as Hisuian Goodra, Empoleon,…",
           "source": "RU"
         },
         {
@@ -48799,7 +48691,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Overqwil is a ferocious wallbreaker that utilizes its ability Swift Swim in rain to outspeed the entire unboosted RU metagame. Rain-boosted Liquidation allows Overqwil to hit Pokemon such as Krookodile and Hippowdon for super effective damage, both of which would otherwise check it. Swords Dance allows Overqwil to…",
+          "description": "Overqwil is a ferocious wallbreaker that utilizes its ability Swift Swim in rain to outspeed the entire unboosted RU metagame. Rain-boosted Liquidation allows Overqwil to hit Pokemon such as Krookodile and Rhyperior for super effective damage, both of which would otherwise check it. Swords Dance allows Overqwil to…",
           "source": "RU"
         },
         {
@@ -52473,7 +52365,7 @@
           "source": "UU"
         },
         {
-          "name": "Sun Sweeper",
+          "name": "Choice Specs Sun Sweeper",
           "item": "choice-specs",
           "itemAlts": [],
           "ability": "",
@@ -52483,19 +52375,19 @@
           ],
           "moves": [
             [
-              "fire-blast"
+              "overheat"
             ],
             [
-              "overheat",
-              "giga-drain"
+              "fire-blast",
+              "solar-beam"
             ],
             [
               "flamethrower",
-              "giga-drain"
+              "solar-beam"
             ],
             [
-              "solar-beam",
-              "giga-drain"
+              "giga-drain",
+              "solar-beam"
             ]
           ],
           "evs": {
@@ -52515,8 +52407,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFire Blast can overwhelm most Pokemon in the tier with its sheer power. Overheat is Scovillain's single strongest attack in the sun at the cost of follow-up damage, securing the OHKO on Duraludon without Terastallizing and dealing massive amounts of damage to Goodra and Incineroar. Flamethrower is a safer…",
-          "source": "NU"
+          "description": "",
+          "source": "RU"
         }
       ]
     },
@@ -53803,22 +53695,25 @@
           "ability": "",
           "nature": "careful",
           "tera": [
+            "water",
+            "poison",
             "ghost"
           ],
           "moves": [
             [
-              "stealth-rock",
-              "coil"
-            ],
-            [
               "spikes",
-              "coil"
+              "stealth-rock"
             ],
             [
               "heavy-slam"
             ],
             [
               "body-press"
+            ],
+            [
+              "coil",
+              "iron-defense",
+              "stealth-rock"
             ]
           ],
           "evs": {
@@ -53839,7 +53734,7 @@
           },
           "level": null,
           "description": "",
-          "source": "PU"
+          "source": "NU"
         }
       ]
     },
