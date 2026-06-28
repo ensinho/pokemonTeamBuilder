@@ -213,7 +213,7 @@ export function TeamBuilderView({
             smogonById,
             usageById,
             popular,
-            limit: 15,
+            limit: 20,
         });
     }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular]);
 
