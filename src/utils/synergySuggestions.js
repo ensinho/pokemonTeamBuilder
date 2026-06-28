@@ -34,10 +34,12 @@ const bstOf = (entry) => entry ? Object.values(entry.baseStats || {}).reduce((a,
  * @param {Record<string,object>} ctx.usageById            - competitive-usage.json byId
  * @param {Array<{id:number,name:string,count:number}>} ctx.popular
  * @param {number} [ctx.limit=12]
+ * @param {Set<number>|null} [ctx.allowedIds] - when set (game filter active), only
+ *        Pokémon obtainable in the selected game are eligible to be suggested.
  * @returns {Array<{id,name,types,score,reasons,primary}>}
  */
 export function buildSynergySuggestions({
-    team = [], pokemonIndex = [], synergy = {}, smogonById = {}, usageById = {}, popular = [], limit = 15,
+    team = [], pokemonIndex = [], synergy = {}, smogonById = {}, usageById = {}, popular = [], limit = 15, allowedIds = null,
 } = {}) {
     const indexById = new Map(pokemonIndex.map((p) => [p.id, p]));
     const popularMap = new Map(popular.map((p) => [p.id, p.count]));
@@ -50,7 +52,7 @@ export function buildSynergySuggestions({
     if (team.length === 0) {
         const ranked = usage ? [...usage.entries()].sort((a, b) => b[1] - a[1]) : [];
         return ranked
-            .filter(([id]) => indexById.has(id))
+            .filter(([id]) => indexById.has(id) && (!allowedIds || allowedIds.has(id)))
             .slice(0, limit)
             .map(([id]) => ({ id, name: nameOf(id), types: typesOf(id), score: 0, reasons: [{ kind: 'meta', label: 'Top meta pick' }], primary: { kind: 'meta', label: 'Top meta pick' } }));
     }
@@ -58,6 +60,7 @@ export function buildSynergySuggestions({
     const cand = new Map(); // id -> { reasons: [], score }
     const add = (id, reason) => {
         if (teamIds.has(id) || !indexById.has(id)) return;
+        if (allowedIds && !allowedIds.has(id)) return; // game filter: keep suggestions obtainable
         if (!cand.has(id)) cand.set(id, { reasons: [], score: 0 });
         const c = cand.get(id);
         c.reasons.push(reason);

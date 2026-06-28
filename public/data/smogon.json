@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-28T03:42:15.012Z",
+  "generatedAt": "2026-06-28T19:35:31.716Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -22567,7 +22567,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Gliscor can set multiple layers of Spikes throughout a game, making it the preferred entry hazard to run, but it can also serve as a good Stealth Rock setter for offensive teams that aren't reliant on stacking multiple entry hazards to force progress or teams that prefers a different Spiker instead. Knock Off most…",
+          "description": "Gliscor can set multiple layers of Spikes throughout a game, making it the preferred entry hazard to run, but it can also serve as a good Stealth Rock setter for offensive teams that aren't reliant on stacking multiple entry hazards to force progress or teams that prefer a different Spiker instead. Knock Off most…",
           "source": "OU"
         },
         {
@@ -29726,6 +29726,52 @@
           },
           "level": null,
           "description": "Fire Blast is preferred to 2HKO Alolan Muk after a Calm Mind boost and deal greater damage to other special walls like Umbreon and Florges, but Flamethrower can be used for its accuracy. Energy Ball targets common Water-, Rock-, and Ground-type switch-ins like Vaporeon, Diancie, and Gastrodon. Flash Fire gives…",
+          "source": "NU"
+        },
+        {
+          "name": "Pain Split",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "flame-body",
+          "nature": "modest",
+          "tera": [
+            "water",
+            "fairy",
+            "dark"
+          ],
+          "moves": [
+            [
+              "pain-split"
+            ],
+            [
+              "calm-mind"
+            ],
+            [
+              "fire-blast",
+              "flamethrower"
+            ],
+            [
+              "shadow-ball"
+            ]
+          ],
+          "evs": {
+            "hp": 80,
+            "attack": 0,
+            "defense": 152,
+            "special-attack": 96,
+            "special-defense": 0,
+            "speed": 180
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "The EV spread lets Chandelure outpace Jolly Incineroar and survive bulky Incineroar's Knock Off into U-turn while maximizing offensive power.",
           "source": "NU"
         }
       ]
@@ -43728,10 +43774,8 @@
         {
           "name": "Shell Smash",
           "item": "white-herb",
-          "itemAlts": [
-            "loaded-dice"
-          ],
-          "ability": "strong-jaw",
+          "itemAlts": [],
+          "ability": "",
           "nature": "jolly",
           "tera": [
             "dark",
@@ -43743,16 +43787,15 @@
               "shell-smash"
             ],
             [
-              "liquidation"
-            ],
-            [
-              "stone-edge",
-              "rock-blast",
+              "liquidation",
               "ice-fang"
             ],
             [
-              "crunch",
+              "stone-edge",
               "earthquake"
+            ],
+            [
+              "crunch"
             ]
           ],
           "evs": {
@@ -43772,7 +43815,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nStone Edge can be used if Drednaw wants to free up its item slot, while Rock Blast in conjunction with Loaded Dice gives Drednaw a much more reliable STAB move, though at the cost of being revenge killed by priority moves from higher health ranges. Ice Fang hits Pokemon such as Amoonguss, Tsareena, and…",
+          "description": "Set Details\nLiquidation offers a powerful STAB move to get past foes like Rhyperior and Incineroar with ease, and Stone Edge being a non-contact as well as STAB-boosted move allows Drednaw to handle Houndstone with relative ease. However, Ice Fang + Earthquake can be run: Ice Fang hits Pokemon such as Amoonguss,…",
           "source": "NU"
         },
         {
@@ -44717,7 +44760,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Through a coveted combination of Healing Wish, an elite ability in Magic Bounce, and good defensive typing to check foes like Great Tusk and non-Heavy Slam Zamazenta, Hatterene can support its teammates in a way that cannot be fully replicated by anything else. Healing Wish is crucial, as it allows Hatterene to enable…",
+          "description": "Through a coveted combination of Healing Wish, an elite ability in Magic Bounce, and good defensive typing to check foes like Great Tusk and non-Heavy Slam Zamazenta, Hatterene can support its teammates in a way that cannot be fully replicated by anything else. Healing Wish is crucial, as it allows Hatterene to…",
           "source": "OU"
         }
       ]
@@ -55530,10 +55573,11 @@
           "source": "NU"
         },
         {
-          "name": "Stealth Rock Lead",
+          "name": "Glare",
           "item": "chople-berry",
           "itemAlts": [
-            "throat-spray"
+            "throat-spray",
+            "heavy-duty-boots"
           ],
           "ability": "rattled",
           "nature": "modest",
@@ -55543,7 +55587,7 @@
           ],
           "moves": [
             [
-              "stealth-rock"
+              "glare"
             ],
             [
               "boomburst"
@@ -55553,7 +55597,8 @@
               "earth-power"
             ],
             [
-              "glare"
+              "stealth-rock",
+              "roost"
             ]
           ],
           "evs": {
@@ -55573,7 +55618,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Dudunsparce is a reliable Stealth Rock lead on hyper offense that combines strong immediate pressure with good natural bulk. Glare cripples faster threats such as Munkidori, Flygon, and Scyther, allowing both Dudunsparce and its teammates to outspeed them. Hex takes advantage of this by heavily punishing paralyzed…",
+          "description": "Dudunsparce is a reliable Stealth Rock lead on hyper offense and paralysis-spreading wallbreaker on offensive builds that combines strong immediate pressure with good natural bulk. Glare cripples faster threats such as Munkidori, Flygon, and Scyther, allowing both Dudunsparce and its teammates to outspeed them. Hex…",
           "source": "NU"
         }
       ]

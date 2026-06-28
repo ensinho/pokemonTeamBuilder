@@ -823,6 +823,14 @@ export const TRANSLATIONS = {
                     'Every generation has 100% its own vibe. Which one is your favourite?'
                 ]
             },
+            feed: {
+                title: 'Feed',
+                tips: [
+                    'Talk shop with other trainers — share teams, ask for help, show off a clutch build.',
+                    'Attach one of your saved teams to a message so others can import it with one tap.',
+                    'Like the messages that help you, and keep it friendly — this space is for everyone.'
+                ]
+            },
             suggestionLabel: 'Have a suggestion about this page?',
             emailPlaceholder: 'Your email',
             ideaPlaceholder: 'Your idea...',
@@ -1656,6 +1664,14 @@ export const TRANSLATIONS = {
                 tips: [
                     'Selecione uma geração e tente adivinhar todos os Pokémon dela!',
                     'Cada geração tem 100% sua própria vibe. Qual é a sua favorita?'
+                ]
+            },
+            feed: {
+                title: 'Feed',
+                tips: [
+                    'Converse com outros treinadores — compartilhe times, peça ajuda, mostre uma build decisiva.',
+                    'Anexe um dos seus times salvos a uma mensagem para que outros possam importá-lo com um toque.',
+                    'Curta as mensagens que te ajudam e mantenha o clima amigável — este espaço é de todos.'
                 ]
             },
             suggestionLabel: 'Tem uma sugestão sobre esta página?',

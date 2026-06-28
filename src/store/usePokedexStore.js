@@ -39,11 +39,11 @@ const getGameSets = () => {
 };
 
 // Pure client-side filtering — mirrors what the old Firestore `where` clauses did.
-const filterPokemons = (all, { generation, types, search, gameIds, gameGen }) => {
+const filterPokemons = (all, { generation, types, search, gameIds, gameGen, restrict }) => {
     const searchTerm = (search || '').toLowerCase().trim();
     const typeList = Array.from(types || []);
 
-    const filtered = all.filter((p) => {
+    let filtered = all.filter((p) => {
         if (generation && generation !== 'all' && p.generation !== generation) return false;
         if (typeList.length > 0 && !typeList.some((t) => (p.types || []).includes(t))) return false;
         if (searchTerm && !p.name.toLowerCase().includes(searchTerm)) return false;
@@ -51,6 +51,11 @@ const filterPokemons = (all, { generation, types, search, gameIds, gameGen }) =>
     });
 
     if (gameIds) {
+        // `restrict` (Pokédex): keep ONLY the selected game's Pokémon.
+        // Otherwise (Builder): keep all, just float the game's Pokémon to the top.
+        if (restrict) {
+            filtered = filtered.filter((p) => gameIds.has(p.id));
+        }
         return [...filtered].sort((a, b) => {
             const aIn = gameIds.has(a.id);
             const bIn = gameIds.has(b.id);
@@ -145,6 +150,7 @@ export const usePokedexStore = create((set, get) => ({
                 search: isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm,
                 gameIds,
                 gameGen,
+                restrict: isPokedex,
             });
 
             set({

@@ -206,6 +206,9 @@ export function TeamBuilderView({
     // type coverage — ranked across the whole relevant dex, reactive to the team.
     const synergySuggestions = React.useMemo(() => {
         if (currentTeam.length >= 6) return [];
+        // When a game filter is active, keep suggestions to that game's obtainable
+        // Pokémon so they respect in-game availability (types/weather cores still rank).
+        const allowedIds = (selectedGame && selectedGame !== 'all' && gamePokemonIds) ? gamePokemonIds : null;
         return buildSynergySuggestions({
             team: currentTeam,
             pokemonIndex,
@@ -214,8 +217,9 @@ export function TeamBuilderView({
             usageById,
             popular,
             limit: 20,
+            allowedIds,
         });
-    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular]);
+    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, selectedGame, gamePokemonIds]);
 
     const suggestionIndexById = React.useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
     const addSuggestion = React.useCallback(

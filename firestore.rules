@@ -62,8 +62,24 @@ service cloud.firestore {
           allow read: if true;
           allow create: if isSignedIn()
             && request.resource.data.createdBy == request.auth.uid;
-          allow update, delete: if isAdmin()
+          allow update: if isAdmin()
+            || (isSignedIn() && resource.data.createdBy == request.auth.uid)
+            || (isSignedIn() && touchesOnlyOwnMessageLike());
+          allow delete: if isAdmin()
             || (isSignedIn() && resource.data.createdBy == request.auth.uid);
+
+          // Any signed-in user may add/remove only their own like, touching just
+          // the like fields — they cannot alter the message text or ownership.
+          function touchesOnlyOwnMessageLike() {
+            let affected = request.resource.data.diff(resource.data).affectedKeys();
+            let willHave = request.resource.data.get('likedBy', []);
+            let alreadyHas = resource.data.get('likedBy', []);
+            let added = willHave.removeAll(alreadyHas);
+            let removed = alreadyHas.removeAll(willHave);
+            return affected.hasOnly(['likedBy', 'likeCount'])
+              && added.hasOnly([request.auth.uid])
+              && removed.hasOnly([request.auth.uid]);
+          }
         }
       }
 

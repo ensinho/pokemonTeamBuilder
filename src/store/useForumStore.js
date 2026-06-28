@@ -8,7 +8,10 @@ import {
     onSnapshot,
     setDoc,
     updateDoc,
+    deleteDoc,
     increment,
+    arrayUnion,
+    arrayRemove,
     getDoc
 } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
@@ -212,6 +215,54 @@ export const useForumStore = create((set, get) => ({
         } catch (err) {
             console.error("Error sending message:", err);
             useToastStore.getState().showToast("Error sending message.", "error");
+            return false;
+        }
+    },
+
+    // Toggle the current user's like on a single message. Idempotent: the liked
+    // state is read from the live snapshot so the counter never drifts.
+    toggleMessageLike: async (topicId, messageId) => {
+        if (!db || !topicId || !messageId) return;
+        const authState = useAuthStore.getState();
+        const uid = authState.userId;
+        if (!uid) {
+            useToastStore.getState().showToast("You must be logged in to like messages.", "error");
+            return;
+        }
+
+        const msg = get().messages.find((m) => m.id === messageId);
+        const alreadyLiked = Array.isArray(msg?.likedBy) && msg.likedBy.includes(uid);
+
+        const messageRef = doc(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`, messageId);
+        try {
+            await updateDoc(messageRef, {
+                likedBy: alreadyLiked ? arrayRemove(uid) : arrayUnion(uid),
+                likeCount: increment(alreadyLiked ? -1 : 1),
+            });
+        } catch (err) {
+            console.error("Error toggling message like:", err);
+            useToastStore.getState().showToast("Could not update like.", "error");
+        }
+    },
+
+    // Delete a message. Firestore rules permit only the author or an admin.
+    deleteMessage: async (topicId, messageId) => {
+        if (!db || !topicId || !messageId) return false;
+        const authState = useAuthStore.getState();
+        if (!authState.userId) return false;
+
+        try {
+            await deleteDoc(doc(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`, messageId));
+            // Best-effort counter sync; the message is already gone if this fails.
+            try {
+                await updateDoc(doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId), {
+                    messageCount: increment(-1),
+                });
+            } catch (_) { /* non-critical */ }
+            return true;
+        } catch (err) {
+            console.error("Error deleting message:", err);
+            useToastStore.getState().showToast("Could not delete message.", "error");
             return false;
         }
     }

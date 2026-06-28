@@ -220,11 +220,21 @@ export default function AppLayout() {
 
     // UI Local States
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+        if (typeof window === 'undefined') return false;
+        try { return window.localStorage.getItem('ptb-sidebar-collapsed') === '1'; }
+        catch { return false; }
+    });
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
     const [showVersionModal, setShowVersionModal] = useState(false);
+
+    // Persist desktop sidebar collapse state so it survives reloads.
+    useEffect(() => {
+        try { window.localStorage.setItem('ptb-sidebar-collapsed', isSidebarCollapsed ? '1' : '0'); }
+        catch { /* ignore */ }
+    }, [isSidebarCollapsed]);
 
     // PWA SW registration & update prompt
     const {
@@ -1222,6 +1232,9 @@ export default function AppLayout() {
                                                 selectedGeneration={pokedex.pokedexSelectedGeneration}
                                                 setSelectedGeneration={pokedex.setPokedexSelectedGeneration}
                                                 generations={generations}
+                                                games={games}
+                                                selectedGame={pokedex.pokedexSelectedGame}
+                                                setSelectedGame={pokedex.setPokedexSelectedGame}
                                                 isInitialLoading={pokedex.isLoading}
                                                 colors={colors}
                                                 showDetails={showDetails}

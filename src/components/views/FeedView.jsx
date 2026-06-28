@@ -16,7 +16,9 @@ import {
     CloseIcon,
     GlobeIcon,
     StarIcon,
-    ClipIcon
+    ClipIcon,
+    HeartIcon,
+    TrashIcon
 } from '../icons';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import '../../styles/forum-view.css';
@@ -60,7 +62,9 @@ export function FeedView({ colors, showToast, navigate }) {
         initTopicsListener,
         cleanupTopicsListener,
         createTopic,
-        sendMessage
+        sendMessage,
+        toggleMessageLike,
+        deleteMessage
     } = useForumStore();
 
     const { userId, userEmail, isAdmin, greetingPokemonId, greetingPokemonIsShiny } = useAuthStore();
@@ -79,6 +83,7 @@ export function FeedView({ colors, showToast, navigate }) {
     const [attachedTeam, setAttachedTeam] = useState(null);
     const [isAttachDropdownOpen, setIsAttachDropdownOpen] = useState(false);
     const [selectedProfile, setSelectedProfile] = useState(null);
+    const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
 
     // Hover Popover for shared pokemon details
     const [hoveredSlot, setHoveredSlot] = useState(null);
@@ -221,6 +226,15 @@ export function FeedView({ colors, showToast, navigate }) {
             "success"
         );
         navigate('/builder');
+    };
+
+    // Confirm + delete a forum message (admin or author).
+    const handleConfirmDeleteMessage = async (messageId) => {
+        const ok = await deleteMessage(currentTopicId, messageId);
+        if (ok) {
+            showToast(language === 'pt' ? 'Mensagem excluída.' : 'Message deleted.', 'success');
+        }
+        setConfirmingDeleteId(null);
     };
 
     // Single popover anchor reference
@@ -482,6 +496,9 @@ export function FeedView({ colors, showToast, navigate }) {
                             ) : (
                                 messages.map((message) => {
                                     const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
+                                    const likeCount = message.likeCount || message.likedBy?.length || 0;
+                                    const likedByMe = !!userId && Array.isArray(message.likedBy) && message.likedBy.includes(userId);
+                                    const canDeleteMessage = isAdmin || (!!userId && message.createdBy === userId);
 
                                     return (
                                         <div key={message.id} className="forum-message-item">
@@ -587,6 +604,52 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         </div>
                                                     </div>
                                                 )}
+
+                                                {/* Message actions: like + (author/admin) delete */}
+                                                <div className="flex items-center gap-2 mt-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleMessageLike(currentTopicId, message.id)}
+                                                        disabled={!userId}
+                                                        aria-pressed={likedByMe}
+                                                        title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
+                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${likedByMe ? 'border-primary bg-primary text-white' : 'border-border bg-surface-raised text-muted hover:text-fg'}`}
+                                                    >
+                                                        <HeartIcon className="w-3.5 h-3.5 shrink-0" />
+                                                        {likeCount > 0 && <span>{likeCount}</span>}
+                                                    </button>
+
+                                                    {canDeleteMessage && (
+                                                        confirmingDeleteId === message.id ? (
+                                                            <span className="inline-flex items-center gap-1 text-[11px]">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleConfirmDeleteMessage(message.id)}
+                                                                    className="rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5 font-semibold text-red-500 transition-colors hover:bg-red-500/20"
+                                                                >
+                                                                    {language === 'pt' ? 'Excluir' : 'Delete'}
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setConfirmingDeleteId(null)}
+                                                                    className="rounded-full border border-border bg-surface-raised px-2 py-0.5 text-muted transition-colors hover:text-fg"
+                                                                >
+                                                                    {t('common.cancel')}
+                                                                </button>
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setConfirmingDeleteId(message.id)}
+                                                                title={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
+                                                                aria-label={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
+                                                                className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface-raised text-muted transition-colors hover:text-red-500"
+                                                            >
+                                                                <TrashIcon className="w-3.5 h-3.5" />
+                                                            </button>
+                                                        )
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
                                     );

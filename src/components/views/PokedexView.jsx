@@ -38,6 +38,7 @@ import { StarIcon } from '../icons';
 import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
 import { TypeBadge } from '../TypeBadge';
+import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 
@@ -297,6 +298,9 @@ export function PokedexView({
     selectedGeneration,
     setSelectedGeneration,
     generations,
+    games = [],
+    selectedGame,
+    setSelectedGame,
     isInitialLoading,
     colors,
     favoritePokemons,
@@ -323,6 +327,7 @@ export function PokedexView({
     const [evolutionDetails, setEvolutionDetails] = useState([]);
     const [forms, setForms] = useState([]);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+    const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
 
     // Moves State
     const [resolvedMoves, setResolvedMoves] = useState({ levelUp: [], machine: [], other: [] });
@@ -1961,6 +1966,14 @@ export function PokedexView({
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-[10px]">▼</span>
                         </div>
 
+                        {/* Game Filter Chip */}
+                        <GameFilterChip
+                            games={games}
+                            selectedGame={selectedGame}
+                            onOpen={() => setIsGamePickerOpen(true)}
+                            className="w-full"
+                        />
+
                         {/* Favorites Toggle Button */}
                         <button
                             type="button"
@@ -2039,6 +2052,14 @@ export function PokedexView({
                         </>
                     )}
                 </section>
+
+                <GamePickerModal
+                    isOpen={isGamePickerOpen}
+                    onClose={() => setIsGamePickerOpen(false)}
+                    games={games}
+                    selectedGame={selectedGame}
+                    onSelectGame={setSelectedGame}
+                />
             </div>
         );
     }
@@ -2115,6 +2136,12 @@ export function PokedexView({
                                 ))}
                             </select>
                         </div>
+
+                        <GameFilterChip
+                            games={games}
+                            selectedGame={selectedGame}
+                            onOpen={() => setIsGamePickerOpen(true)}
+                        />
 
                         <button
                             type="button"
@@ -2230,6 +2257,14 @@ export function PokedexView({
                     </section>
                 )}
             </div>
+
+            <GamePickerModal
+                isOpen={isGamePickerOpen}
+                onClose={() => setIsGamePickerOpen(false)}
+                games={games}
+                selectedGame={selectedGame}
+                onSelectGame={setSelectedGame}
+            />
         </main>
     );
 }
