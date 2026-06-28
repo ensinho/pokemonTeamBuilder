@@ -11174,6 +11174,781 @@
               ]
             }
           ]
+        },
+        {
+          "order": 9,
+          "name": "Aaron",
+          "sprite": "aaron",
+          "gym": "Elite Four",
+          "city": "Pokémon League",
+          "type": "bug",
+          "levelCap": 72,
+          "team": [
+            {
+              "name": "Yanmega",
+              "level": 71,
+              "item": "Wise Glasses",
+              "ability": "Speed Boost",
+              "moves": [
+                {
+                  "name": "Bug Buzz",
+                  "type": "bug"
+                },
+                {
+                  "name": "Hurricane",
+                  "type": "flying"
+                },
+                {
+                  "name": "Giga Drain",
+                  "type": "grass"
+                },
+                {
+                  "name": "Protect",
+                  "type": "normal"
+                }
+              ]
+            },
+            {
+              "name": "Scizor",
+              "level": 71,
+              "item": "Life Orb",
+              "ability": "Technician",
+              "moves": [
+                {
+                  "name": "Bug Bite",
+                  "type": "bug"
+                },
+                {
+                  "name": "Iron Head",
+                  "type": "steel"
+                },
+                {
+                  "name": "Bullet Punch",
+                  "type": "steel"
+                },
+                {
+                  "name": "U-turn",
+                  "type": "bug"
+                }
+              ]
+            },
+            {
+              "name": "Heracross",
+              "level": 71,
+              "item": "Choice Scarf",
+              "ability": "Guts",
+              "moves": [
+                {
+                  "name": "Megahorn",
+                  "type": "bug"
+                },
+                {
+                  "name": "Close Combat",
+                  "type": "fighting"
+                },
+                {
+                  "name": "Stone Edge",
+                  "type": "rock"
+                },
+                {
+                  "name": "Night Slash",
+                  "type": "dark"
+                }
+              ]
+            },
+            {
+              "name": "Vespiquen",
+              "level": 71,
+              "item": "Leftovers",
+              "ability": "Intimidate",
+              "moves": [
+                {
+                  "name": "Attack Order",
+                  "type": "bug"
+                },
+                {
+                  "name": "Defend Order",
+                  "type": "bug"
+                },
+                {
+                  "name": "Heal Order",
+                  "type": "bug"
+                },
+                {
+                  "name": "Hurricane",
+                  "type": "flying"
+                }
+              ]
+            },
+            {
+              "name": "Armaldo",
+              "level": 71,
+              "item": "Choice Band",
+              "ability": "Battle Armor",
+              "moves": [
+                {
+                  "name": "X-Scissor",
+                  "type": "bug"
+                },
+                {
+                  "name": "Stone Edge",
+                  "type": "rock"
+                },
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Aqua Tail",
+                  "type": "water"
+                }
+              ]
+            },
+            {
+              "name": "Drapion",
+              "level": 72,
+              "item": "Scope Lens",
+              "ability": "Sniper",
+              "moves": [
+                {
+                  "name": "Cross Poison",
+                  "type": "poison"
+                },
+                {
+                  "name": "Night Slash",
+                  "type": "dark"
+                },
+                {
+                  "name": "X-Scissor",
+                  "type": "bug"
+                },
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 10,
+          "name": "Bertha",
+          "sprite": "bertha",
+          "gym": "Elite Four",
+          "city": "Pokémon League",
+          "type": "ground",
+          "levelCap": 73,
+          "team": [
+            {
+              "name": "Hippowdon",
+              "level": 72,
+              "item": "Leftovers",
+              "ability": "Sand Stream",
+              "moves": [
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Crunch",
+                  "type": "dark"
+                },
+                {
+                  "name": "Stealth Rock",
+                  "type": "rock"
+                },
+                {
+                  "name": "Slack Off",
+                  "type": "normal"
+                }
+              ]
+            },
+            {
+              "name": "Whiscash",
+              "level": 72,
+              "item": "Life Orb",
+              "ability": "Oblivious",
+              "moves": [
+                {
+                  "name": "Aqua Tail",
+                  "type": "water"
+                },
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Bounce",
+                  "type": "flying"
+                },
+                {
+                  "name": "Dragon Dance",
+                  "type": "dragon"
+                }
+              ]
+            },
+            {
+              "name": "Gliscor",
+              "level": 72,
+              "item": "Toxic Orb",
+              "ability": "Poison Heal",
+              "moves": [
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Wing Attack",
+                  "type": "flying"
+                },
+                {
+                  "name": "Protect",
+                  "type": "normal"
+                },
+                {
+                  "name": "Roost",
+                  "type": "flying"
+                }
+              ]
+            },
+            {
+              "name": "Golem",
+              "level": 72,
+              "item": "Focus Sash",
+              "ability": "Rock Head",
+              "moves": [
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Stone Edge",
+                  "type": "rock"
+                },
+                {
+                  "name": "Thunder Punch",
+                  "type": "electric"
+                },
+                {
+                  "name": "Explosion",
+                  "type": "normal"
+                }
+              ]
+            },
+            {
+              "name": "Donphan",
+              "level": 72,
+              "item": "Rindo Berry",
+              "ability": "Sand Veil",
+              "moves": [
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Play Rough",
+                  "type": "fairy"
+                },
+                {
+                  "name": "Head Smash",
+                  "type": "rock"
+                },
+                {
+                  "name": "Superpower",
+                  "type": "fighting"
+                }
+              ]
+            },
+            {
+              "name": "Rhyperior",
+              "level": 73,
+              "item": "Choice Band",
+              "ability": "Solid Rock",
+              "moves": [
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Stone Edge",
+                  "type": "rock"
+                },
+                {
+                  "name": "Megahorn",
+                  "type": "bug"
+                },
+                {
+                  "name": "Ice Punch",
+                  "type": "ice"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 11,
+          "name": "Flint",
+          "sprite": "flint",
+          "gym": "Elite Four",
+          "city": "Pokémon League",
+          "type": "fire",
+          "levelCap": 74,
+          "team": [
+            {
+              "name": "Ninetales",
+              "level": 73,
+              "item": "White Herb",
+              "ability": "Drought",
+              "moves": [
+                {
+                  "name": "Overheat",
+                  "type": "fire"
+                },
+                {
+                  "name": "Solar Beam",
+                  "type": "grass"
+                },
+                {
+                  "name": "Moonblast",
+                  "type": "fairy"
+                },
+                {
+                  "name": "Confuse Ray",
+                  "type": "ghost"
+                }
+              ]
+            },
+            {
+              "name": "Houndoom",
+              "level": 73,
+              "item": "Choice Scarf",
+              "ability": "Intimidate",
+              "moves": [
+                {
+                  "name": "Fire Blast",
+                  "type": "fire"
+                },
+                {
+                  "name": "Dark Pulse",
+                  "type": "dark"
+                },
+                {
+                  "name": "Solar Beam",
+                  "type": "grass"
+                },
+                {
+                  "name": "Sludge Bomb",
+                  "type": "poison"
+                }
+              ]
+            },
+            {
+              "name": "Flareon",
+              "level": 73,
+              "item": "Choice Band",
+              "ability": "Flash Fire",
+              "moves": [
+                {
+                  "name": "Flare Blitz",
+                  "type": "fire"
+                },
+                {
+                  "name": "Play Rough",
+                  "type": "fairy"
+                },
+                {
+                  "name": "Wild Charge",
+                  "type": "electric"
+                },
+                {
+                  "name": "Close Combat",
+                  "type": "fighting"
+                }
+              ]
+            },
+            {
+              "name": "Rapidash",
+              "level": 73,
+              "item": "Power Herb",
+              "ability": "Flame Body",
+              "moves": [
+                {
+                  "name": "Flare Blitz",
+                  "type": "fire"
+                },
+                {
+                  "name": "Wild Charge",
+                  "type": "electric"
+                },
+                {
+                  "name": "Megahorn",
+                  "type": "bug"
+                },
+                {
+                  "name": "Drill Run",
+                  "type": "ground"
+                }
+              ]
+            },
+            {
+              "name": "Infernape",
+              "level": 73,
+              "item": "Expert Belt",
+              "ability": "Iron Fist",
+              "moves": [
+                {
+                  "name": "Flare Blitz",
+                  "type": "fire"
+                },
+                {
+                  "name": "Close Combat",
+                  "type": "fighting"
+                },
+                {
+                  "name": "Thunder Punch",
+                  "type": "electric"
+                },
+                {
+                  "name": "Grass Knot",
+                  "type": "normal"
+                }
+              ]
+            },
+            {
+              "name": "Magmortar",
+              "level": 74,
+              "item": "Life Orb",
+              "ability": "Flame Body",
+              "moves": [
+                {
+                  "name": "Fire Blast",
+                  "type": "fire"
+                },
+                {
+                  "name": "Thunderbolt",
+                  "type": "electric"
+                },
+                {
+                  "name": "Aura Sphere",
+                  "type": "fighting"
+                },
+                {
+                  "name": "Solar Beam",
+                  "type": "grass"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 12,
+          "name": "Lucian",
+          "sprite": "lucian",
+          "gym": "Elite Four",
+          "city": "Pokémon League",
+          "type": "psychic",
+          "levelCap": 75,
+          "team": [
+            {
+              "name": "Mr. Mime",
+              "level": 74,
+              "item": "Light Clay",
+              "ability": "Filter",
+              "moves": [
+                {
+                  "name": "Psychic",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Dazzling Gleam",
+                  "type": "fairy"
+                },
+                {
+                  "name": "Reflect",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Light Screen",
+                  "type": "psychic"
+                }
+              ]
+            },
+            {
+              "name": "Espeon",
+              "level": 74,
+              "item": "Wise Glasses",
+              "ability": "Synchronize",
+              "moves": [
+                {
+                  "name": "Psychic",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Dazzling Gleam",
+                  "type": "fairy"
+                },
+                {
+                  "name": "Aura Sphere",
+                  "type": "fighting"
+                },
+                {
+                  "name": "Power Gem",
+                  "type": "rock"
+                }
+              ]
+            },
+            {
+              "name": "Bronzong",
+              "level": 74,
+              "item": "Leftovers",
+              "ability": "Levitate",
+              "moves": [
+                {
+                  "name": "Zen Headbutt",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Gyro Ball",
+                  "type": "steel"
+                },
+                {
+                  "name": "Reflect",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Light Screen",
+                  "type": "psychic"
+                }
+              ]
+            },
+            {
+              "name": "Alakazam",
+              "level": 74,
+              "item": "Life Orb",
+              "ability": "Magic Guard",
+              "moves": [
+                {
+                  "name": "Psychic",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Shadow Ball",
+                  "type": "ghost"
+                },
+                {
+                  "name": "Energy Ball",
+                  "type": "grass"
+                },
+                {
+                  "name": "Aura Sphere",
+                  "type": "fighting"
+                }
+              ]
+            },
+            {
+              "name": "Metagross",
+              "level": 74,
+              "item": "Muscle Band",
+              "ability": "Iron Fist",
+              "moves": [
+                {
+                  "name": "Zen Headbutt",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Meteor Mash",
+                  "type": "steel"
+                },
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Explosion",
+                  "type": "normal"
+                }
+              ]
+            },
+            {
+              "name": "Gallade",
+              "level": 75,
+              "item": "Scope Lens",
+              "ability": "Steadfast",
+              "moves": [
+                {
+                  "name": "Psycho Cut",
+                  "type": "psychic"
+                },
+                {
+                  "name": "Close Combat",
+                  "type": "fighting"
+                },
+                {
+                  "name": "Leaf Blade",
+                  "type": "grass"
+                },
+                {
+                  "name": "Night Slash",
+                  "type": "dark"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "order": 13,
+          "name": "Cynthia",
+          "sprite": "cynthia",
+          "gym": "Champion",
+          "city": "Pokémon League",
+          "type": "dragon",
+          "levelCap": 78,
+          "team": [
+            {
+              "name": "Spiritomb",
+              "level": 77,
+              "item": "Lum Berry",
+              "ability": "Pressure",
+              "moves": [
+                {
+                  "name": "Dark Pulse",
+                  "type": "dark"
+                },
+                {
+                  "name": "Will-O-Wisp",
+                  "type": "fire"
+                },
+                {
+                  "name": "Confuse Ray",
+                  "type": "ghost"
+                },
+                {
+                  "name": "Rest",
+                  "type": "psychic"
+                }
+              ]
+            },
+            {
+              "name": "Roserade",
+              "level": 77,
+              "item": "White Herb",
+              "ability": "Technician",
+              "moves": [
+                {
+                  "name": "Leaf Storm",
+                  "type": "grass"
+                },
+                {
+                  "name": "Sludge Bomb",
+                  "type": "poison"
+                },
+                {
+                  "name": "Dazzling Gleam",
+                  "type": "fairy"
+                },
+                {
+                  "name": "Sleep Powder",
+                  "type": "grass"
+                }
+              ]
+            },
+            {
+              "name": "Togekiss",
+              "level": 77,
+              "item": "Sitrus Berry",
+              "ability": "Serene Grace",
+              "moves": [
+                {
+                  "name": "Air Slash",
+                  "type": "flying"
+                },
+                {
+                  "name": "Thunder Wave",
+                  "type": "electric"
+                },
+                {
+                  "name": "Roost",
+                  "type": "flying"
+                },
+                {
+                  "name": "Moonblast",
+                  "type": "fairy"
+                }
+              ]
+            },
+            {
+              "name": "Lucario",
+              "level": 77,
+              "item": "Life Orb",
+              "ability": "Adaptability",
+              "moves": [
+                {
+                  "name": "High Jump Kick",
+                  "type": "fighting"
+                },
+                {
+                  "name": "Meteor Mash",
+                  "type": "steel"
+                },
+                {
+                  "name": "Extreme Speed",
+                  "type": "normal"
+                },
+                {
+                  "name": "Ice Punch",
+                  "type": "ice"
+                }
+              ]
+            },
+            {
+              "name": "Milotic",
+              "level": 77,
+              "item": "Leftovers",
+              "ability": "Marvel Scale",
+              "moves": [
+                {
+                  "name": "Surf",
+                  "type": "water"
+                },
+                {
+                  "name": "Ice Beam",
+                  "type": "ice"
+                },
+                {
+                  "name": "Recover",
+                  "type": "normal"
+                },
+                {
+                  "name": "Hypnosis",
+                  "type": "psychic"
+                }
+              ]
+            },
+            {
+              "name": "Garchomp",
+              "level": 78,
+              "item": "Yache Berry",
+              "ability": "Rough Skin",
+              "moves": [
+                {
+                  "name": "Earthquake",
+                  "type": "ground"
+                },
+                {
+                  "name": "Outrage",
+                  "type": "dragon"
+                },
+                {
+                  "name": "Stone Edge",
+                  "type": "rock"
+                },
+                {
+                  "name": "Swords Dance",
+                  "type": "normal"
+                }
+              ]
+            }
+          ]
         }
       ]
     },
