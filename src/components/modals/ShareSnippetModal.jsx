@@ -13,17 +13,27 @@ import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
+import { useMegaStones, megaDisplayName } from '../../hooks/useMegaStones';
 
-const serializeTeamPokemon = (pokemon) => ({
-    id: pokemon.id,
-    name: pokemon.name,
-    sprite: pokemon.sprite || getPokemonArtworkSpriteUrl(pokemon.id),
-    shinySprite: pokemon.shinySprite || getPokemonArtworkSpriteUrl(pokemon.id, { shiny: true }),
-    animatedSprite: pokemon.animatedSprite || getPokemonFrontSpriteUrl(pokemon.id),
-    animatedShinySprite: pokemon.animatedShinySprite || getPokemonFrontSpriteUrl(pokemon.id, { shiny: true }),
-    instanceId: pokemon.instanceId,
-    customization: pokemon.customization || {},
-});
+const serializeTeamPokemon = (pokemon, megaStones = null) => {
+    const item = pokemon?.customization?.item;
+    const mega = (item && megaStones) ? megaStones[item] : null;
+    const isMega = mega && mega.baseId === pokemon.id;
+    
+    const spriteId = isMega ? mega.spriteId : pokemon.id;
+    const displayName = isMega ? megaDisplayName(mega.form) : pokemon.name;
+
+    return {
+        id: pokemon.id,
+        name: displayName,
+        sprite: getPokemonArtworkSpriteUrl(spriteId),
+        shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
+        animatedSprite: getPokemonFrontSpriteUrl(spriteId),
+        animatedShinySprite: getPokemonFrontSpriteUrl(spriteId, { shiny: true }),
+        instanceId: pokemon.instanceId,
+        customization: pokemon.customization || {},
+    };
+};
 
 // Author/brand link baked into every shared snippet.
 const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
@@ -281,6 +291,7 @@ export const ShareSnippetModal = ({
     showToast,
 }) => {
     const { t, language } = useTranslation();
+    const megaStones = useMegaStones();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const canvasRef = useRef(null);
     const [title, setTitle] = useState(defaultTitle || '');
@@ -490,7 +501,7 @@ export const ShareSnippetModal = ({
 
         setIsPosting(true);
         try {
-            const serializedPokemons = currentTeam.map(serializeTeamPokemon);
+            const serializedPokemons = currentTeam.map((p) => serializeTeamPokemon(p, megaStones));
             const forumTeamData = {
                 name: title || t('modals.shareModalDefaultTitle'),
                 pokemons: serializedPokemons
@@ -524,7 +535,7 @@ export const ShareSnippetModal = ({
         } finally {
             setIsPosting(false);
         }
-    }, [title, subtitle, onClose, showToast, t]);
+    }, [title, subtitle, onClose, showToast, t, megaStones]);
 
     if (!isOpen) return null;
 

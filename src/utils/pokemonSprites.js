@@ -41,8 +41,19 @@ export const getPokemonDisplaySprite = (pokemon, {
 } = {}) => {
     if (!pokemon) return POKEBALL_PLACEHOLDER_URL;
 
+    let resolvedId = toPokemonId(pokemon.id);
+    if (pokemon.name?.startsWith('Mega ') || pokemon.name?.includes('-Mega')) {
+        const spriteMatch = pokemon.sprite?.match(/\/(\d+)\.png/);
+        if (spriteMatch) {
+            const parsed = Number.parseInt(spriteMatch[1], 10);
+            if (Number.isInteger(parsed) && parsed > 0) {
+                resolvedId = parsed;
+            }
+        }
+    }
+
     if (preferArtwork) {
-        return getPokemonArtworkSpriteUrl(pokemon.id, { shiny });
+        return getPokemonArtworkSpriteUrl(resolvedId, { shiny });
     }
 
     // Default everywhere: pixel-art game sprite derived from the id.
@@ -51,7 +62,7 @@ export const getPokemonDisplaySprite = (pokemon, {
         const stored = shiny ? pokemon.animatedShinySprite : pokemon.animatedSprite;
         if (stored) return stored;
     }
-    return getPokemonFrontSpriteUrl(pokemon.id, { shiny });
+    return getPokemonFrontSpriteUrl(resolvedId, { shiny });
 };
 
 export const getTeamPokemonDisplaySprite = (pokemon, options = {}) => getPokemonDisplaySprite(pokemon, {

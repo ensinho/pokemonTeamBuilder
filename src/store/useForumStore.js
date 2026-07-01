@@ -17,9 +17,49 @@ import {
 import { appId } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
+import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
+import { megaDisplayName } from '../hooks/useMegaStones';
 
 let topicsUnsubscribe = null;
 let messagesUnsubscribe = null;
+
+let cachedMegaStones = null;
+const getMegaStones = async () => {
+    if (cachedMegaStones) return cachedMegaStones;
+    try {
+        const basePath = import.meta.env.BASE_URL || '/';
+        const url = `${basePath}data/mega-stones.json`.replace(/([^:])\/{2,}/g, '$1/');
+        const res = await fetch(url);
+        if (res.ok) {
+            const data = await res.json();
+            cachedMegaStones = data?.byStone || {};
+            return cachedMegaStones;
+        }
+    } catch (e) {
+        console.error("Failed to load mega stones in store", e);
+    }
+    return {};
+};
+
+const serializeTeamPokemon = (pokemon, megaStones = null) => {
+    const item = pokemon?.customization?.item;
+    const mega = (item && megaStones) ? megaStones[item] : null;
+    const isMega = mega && mega.baseId === pokemon.id;
+    
+    const spriteId = isMega ? mega.spriteId : pokemon.id;
+    const displayName = isMega ? megaDisplayName(mega.form) : pokemon.name;
+
+    return {
+        id: pokemon.id,
+        name: displayName,
+        sprite: getPokemonArtworkSpriteUrl(spriteId),
+        shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
+        animatedSprite: getPokemonFrontSpriteUrl(spriteId),
+        animatedShinySprite: getPokemonFrontSpriteUrl(spriteId, { shiny: true }),
+        instanceId: pokemon.instanceId,
+        customization: pokemon.customization || {},
+    };
+};
 
 export const useForumStore = create((set, get) => ({
     topics: [],
@@ -139,6 +179,15 @@ export const useForumStore = create((set, get) => ({
 
             const creatorName = authState.displayName || (authState.userEmail ? authState.userEmail.split('@')[0] : 'Guest Trainer');
 
+            let serializedAttachedTeam = null;
+            if (attachedTeam && attachedTeam.pokemons) {
+                const megaStones = await getMegaStones();
+                serializedAttachedTeam = {
+                    ...attachedTeam,
+                    pokemons: attachedTeam.pokemons.map(p => serializeTeamPokemon(p, megaStones))
+                };
+            }
+
             const topicData = {
                 title: cleanTitle,
                 category: category || 'general',
@@ -149,7 +198,7 @@ export const useForumStore = create((set, get) => ({
                 creatorAvatarIsShiny: authState.greetingPokemonIsShiny || false,
                 lastActivityAt: new Date().toISOString(),
                 messageCount: 1,
-                lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (attachedTeam ? `Shared team: ${attachedTeam.name}` : '')
+                lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : '')
             };
 
             await setDoc(newTopicRef, topicData);
@@ -162,7 +211,7 @@ export const useForumStore = create((set, get) => ({
                 creatorName: creatorName,
                 creatorAvatar: authState.greetingPokemonId || null,
                 creatorAvatarIsShiny: authState.greetingPokemonIsShiny || false,
-                sharedTeam: attachedTeam ? attachedTeam : null
+                sharedTeam: serializedAttachedTeam
             };
             await setDoc(firstMsgRef, firstMsgData);
 
@@ -192,6 +241,15 @@ export const useForumStore = create((set, get) => ({
             const creatorName = authState.displayName || (authState.userEmail ? authState.userEmail.split('@')[0] : 'Guest Trainer');
             const messageRef = doc(collection(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`));
 
+            let serializedAttachedTeam = null;
+            if (attachedTeam && attachedTeam.pokemons) {
+                const megaStones = await getMegaStones();
+                serializedAttachedTeam = {
+                    ...attachedTeam,
+                    pokemons: attachedTeam.pokemons.map(p => serializeTeamPokemon(p, megaStones))
+                };
+            }
+
             const messageData = {
                 text: cleanText,
                 createdAt: new Date().toISOString(),
@@ -199,7 +257,7 @@ export const useForumStore = create((set, get) => ({
                 creatorName: creatorName,
                 creatorAvatar: authState.greetingPokemonId || null,
                 creatorAvatarIsShiny: authState.greetingPokemonIsShiny || false,
-                sharedTeam: attachedTeam ? attachedTeam : null
+                sharedTeam: serializedAttachedTeam
             };
 
             await setDoc(messageRef, messageData);
@@ -208,7 +266,7 @@ export const useForumStore = create((set, get) => ({
             await updateDoc(topicDocRef, {
                 lastActivityAt: new Date().toISOString(),
                 messageCount: increment(1),
-                lastMessageText: cleanText ? cleanText.substring(0, 100) : `Shared team: ${attachedTeam.name}`
+                lastMessageText: cleanText ? cleanText.substring(0, 100) : `Shared team: ${serializedAttachedTeam.name}`
             });
 
             return true;

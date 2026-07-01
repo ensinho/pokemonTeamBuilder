@@ -11,6 +11,7 @@ import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
 import { usePokedexStore } from './usePokedexStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
+import { megaDisplayName } from '../hooks/useMegaStones';
 
 // Monotonic counter so instanceIds stay unique even when several members are
 // created within the same millisecond (e.g. the randomizer building 6 at once).
@@ -49,16 +50,43 @@ const createTeamMember = (fullPokemon, preset = null) => {
     };
 };
 
-const serializeTeamPokemon = (pokemon) => ({
-    id: pokemon.id,
-    name: pokemon.name,
-    sprite: pokemon.sprite || getPokemonArtworkSpriteUrl(pokemon.id),
-    shinySprite: pokemon.shinySprite || getPokemonArtworkSpriteUrl(pokemon.id, { shiny: true }),
-    animatedSprite: pokemon.animatedSprite || getPokemonFrontSpriteUrl(pokemon.id),
-    animatedShinySprite: pokemon.animatedShinySprite || getPokemonFrontSpriteUrl(pokemon.id, { shiny: true }),
-    instanceId: pokemon.instanceId,
-    customization: pokemon.customization,
-});
+let cachedMegaStones = null;
+const getMegaStones = async () => {
+    if (cachedMegaStones) return cachedMegaStones;
+    try {
+        const basePath = import.meta.env.BASE_URL || '/';
+        const url = `${basePath}data/mega-stones.json`.replace(/([^:])\/{2,}/g, '$1/');
+        const res = await fetch(url);
+        if (res.ok) {
+            const data = await res.json();
+            cachedMegaStones = data?.byStone || {};
+            return cachedMegaStones;
+        }
+    } catch (e) {
+        console.error("Failed to load mega stones in store", e);
+    }
+    return {};
+};
+
+const serializeTeamPokemon = (pokemon, megaStones = null) => {
+    const item = pokemon?.customization?.item;
+    const mega = (item && megaStones) ? megaStones[item] : null;
+    const isMega = mega && mega.baseId === pokemon.id;
+    
+    const spriteId = isMega ? mega.spriteId : pokemon.id;
+    const displayName = isMega ? megaDisplayName(mega.form) : pokemon.name;
+
+    return {
+        id: pokemon.id,
+        name: displayName,
+        sprite: getPokemonArtworkSpriteUrl(spriteId),
+        shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
+        animatedSprite: getPokemonFrontSpriteUrl(spriteId),
+        animatedShinySprite: getPokemonFrontSpriteUrl(spriteId, { shiny: true }),
+        instanceId: pokemon.instanceId,
+        customization: pokemon.customization || {},
+    };
+};
 
 export const useActiveTeamStore = create((set, get) => ({
     currentTeam: [],
@@ -219,11 +247,12 @@ export const useActiveTeamStore = create((set, get) => ({
             return;
         }
 
+        const megaStones = await getMegaStones();
         const teamId = editingTeamId || doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
         const existingTeam = savedTeams?.find(t => t.id === editingTeamId);
         const teamData = {
             name: teamName,
-            pokemons: currentTeam.map(serializeTeamPokemon),
+            pokemons: currentTeam.map(pokemon => serializeTeamPokemon(pokemon, megaStones)),
             isFavorite: existingTeam?.isFavorite || false,
             createdAt: existingTeam?.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString()
@@ -285,19 +314,30 @@ export const useActiveTeamStore = create((set, get) => ({
             return;
         }
 
+        const megaStones = await getMegaStones();
         const safeName = providedName || 'Unnamed Team';
-        const snippetPokemons = teamMembers.map((member) => ({
-            id: member.id,
-            name: member.name,
-            sprite: getTeamPokemonDisplaySprite(member) || '',
-        }));
+        const snippetPokemons = teamMembers.map((member) => {
+            const item = member?.customization?.item;
+            const mega = (item && megaStones) ? megaStones[item] : null;
+            const isMega = mega && mega.baseId === member.id;
+            const name = isMega ? megaDisplayName(mega.form) : member.name;
+            const spriteId = isMega ? mega.spriteId : member.id;
+
+            return {
+                id: member.id,
+                name: name,
+                sprite: isMega 
+                    ? getPokemonFrontSpriteUrl(spriteId, { shiny: member.customization?.isShiny || member.isShiny })
+                    : (getTeamPokemonDisplaySprite(member) || ''),
+            };
+        });
 
         set({ shareModal: { isOpen: true, shareUrl: '', pokemons: snippetPokemons, defaultTitle: safeName } });
 
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
         const teamData = {
             name: safeName,
-            pokemons: teamMembers.map(serializeTeamPokemon),
+            pokemons: teamMembers.map(pokemon => serializeTeamPokemon(pokemon, megaStones)),
             createdAt: new Date().toISOString(),
         };
 
