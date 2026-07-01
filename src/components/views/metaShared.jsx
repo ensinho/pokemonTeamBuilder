@@ -47,6 +47,40 @@ export function MoveChip({ name, type, className = '' }) {
 // Percentage of a count over a total, clamped to a whole number 0–100.
 export const pctOf = (count, total) => (total > 0 ? Math.round((count / total) * 100) : 0);
 
+// Format a compact usage EV spread ({hp,atk,def,spa,spd,spe}) → "4 HP / 252 Atk / 252 Spe".
+const EV_SHORT = { hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe' };
+const EV_KEYS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+export const formatUsageSpread = (evs = {}) =>
+    EV_KEYS.filter((k) => (evs[k] || 0) > 0).map((k) => `${evs[k]} ${EV_SHORT[k]}`).join(' / ');
+
+/**
+ * The regulation / format selector shown on the Meta pages. Groups options by
+ * their `group` (Smogon ladder family) via <optgroup>, so users can pick the
+ * exact ruleset the usage numbers are drawn from.
+ */
+export function RegulationSelect({ formats = [], value, onChange, pt = false, className = '' }) {
+    const groups = [];
+    for (const f of formats) {
+        let g = groups.find((x) => x.name === f.group);
+        if (!g) { g = { name: f.group, items: [] }; groups.push(g); }
+        g.items.push(f);
+    }
+    return (
+        <select
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            aria-label={pt ? 'Regulamento' : 'Regulation'}
+            className={`rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-fg focus:border-primary focus:outline-none ${className}`}
+        >
+            {groups.map((g) => (
+                <optgroup key={g.name} label={g.name}>
+                    {g.items.map((f) => <option key={f.id} value={f.id}>{f.label}</option>)}
+                </optgroup>
+            ))}
+        </select>
+    );
+}
+
 /**
  * A labelled horizontal percentage bar (pikalytics-style). `pct` drives the fill
  * width; `count` shows the raw frequency; `color` tints the fill. When used as a

@@ -37,7 +37,7 @@ import {
 
 import {
     GithubIcon, LinkedinIcon, CloseIcon, CollapseLeftIcon, CollapseRightIcon,
-    DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon, DiceIcon,
+    DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon,
     HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
     ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
@@ -46,7 +46,7 @@ import { BoxIcon, Puzzle, Medal, TrendingUp } from 'lucide-react';
 
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
-// the initial bundle — the heavy ones (Pokedex, PokePuzzle, RandomGenerator) dominate it.
+// the initial bundle — the heavy ones (Pokedex, PokePuzzle) dominate it.
 import { HomeView } from './views';
 
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
@@ -54,7 +54,6 @@ const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ 
 const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
 const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
-const RandomGeneratorView = lazy(() => import('./views/RandomGeneratorView').then((m) => ({ default: m.RandomGeneratorView })));
 const TeamBuilderView = lazy(() => import('./views/TeamBuilderView').then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
 const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
@@ -176,7 +175,6 @@ export default function AppLayout() {
         if (path.includes('/speed-tiers')) return 'speedTiers';
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/quiz')) return 'generationQuiz';
-        if (path.includes('/generator')) return 'randomGenerator';
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
         if (path.includes('/profile')) return 'profile';
@@ -502,7 +500,6 @@ export default function AppLayout() {
             'pokedex': { title: t('nav.pokedex'), subtitle: t('home.shortcutPokedexDesc') },
             'allTeams': { title: t('savedTeams.title'), subtitle: t('savedTeams.subtitle') },
             'generationQuiz': { title: t('quiz.title'), subtitle: t('quiz.subtitle') },
-            'randomGenerator': { title: t('generator.title'), subtitle: t('generator.subtitle') },
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
@@ -559,7 +556,6 @@ export default function AppLayout() {
                 items: [
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
-                    { key: 'randomGenerator', label: t('nav.generator'), path: '/generator', icon: <DiceIcon /> },
                 ]
             }
         ];
@@ -933,7 +929,7 @@ export default function AppLayout() {
                                         title={t('layout.goHome')}
                                     />
                                     <div className={`app-shell__brand-copy ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
-                                        <p className="app-shell__brand-label">Gengar</p>
+                                        <p className="app-shell__brand-label">Pokémon</p>
                                         <h2 className="app-shell__brand-title">Team Builder</h2>
                                     </div>
                                 </div>
@@ -1336,14 +1332,6 @@ export default function AppLayout() {
                                                 colors={colors}
                                                 fetchPokemonDetails={fetchPokemonDetails}
                                                 showDetails={showDetails}
-                                            />
-                                        } />
-                                        <Route path="/generator" element={
-                                            <RandomGeneratorView
-                                                colors={colors}
-                                                generations={generations}
-                                                db={db}
-                                                userId={userId}
                                             />
                                         } />
                                         <Route path="/profile" element={

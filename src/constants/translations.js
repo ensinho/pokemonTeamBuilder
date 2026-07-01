@@ -56,7 +56,6 @@ export const TRANSLATIONS = {
             savedTeams: 'Saved Teams',
             guessing: 'Guessing Games',
             quiz: 'Quiz',
-            generator: 'Generator',
             trainerProfile: 'Trainer Profile',
             profile: 'Profile',
             management: 'Management',
@@ -409,23 +408,6 @@ export const TRANSLATIONS = {
             emptyDesc: 'Start adding Pokémon to your favorites by clicking the star icon on any Pokémon card.',
             noMatchesTitle: 'No matches found',
             noMatchesDesc: 'Try adjusting your search or filter criteria.'
-        },
-        generator: {
-            title: 'Random Generator',
-            subtitle: 'Generate a fresh starting point',
-            genOptions: 'Generator Options',
-            generationLabel: 'Generation',
-            typeLabel: 'Primary Type',
-            amountLabel: 'Amount',
-            generateBtn: 'Generate Team',
-            addToTeamBtn: 'Add to Active Team',
-            regenBtn: 'Regenerate',
-            emptyStateTitle: 'Generate a fresh lineup',
-            emptyStateDesc: 'Set your preferences and generate a random Pokémon combination.',
-            allTypes: 'All Types',
-            allGens: 'All Generations',
-            successAdded: 'Generated Pokémon added to active team!',
-            typeDefenses: 'Type Weaknesses'
         },
         quiz: {
             title: 'Generation Quiz',
@@ -808,14 +790,6 @@ export const TRANSLATIONS = {
                     'See someone here you\'ve never actually used? Maybe it\'s time.'
                 ]
             },
-            randomGenerator: {
-                title: 'Random Generator',
-                tips: [
-                    'Let go of the plan. Some of the best teams happen by accident.',
-                    'That Pokémon you\'d never pick yourself? Give it a chance — it might be your next favourite.',
-                    '🎮 Nuzlocke Draft: generate 12, pick only 6 — and never reroll. Play with what fate gives you.'
-                ]
-            },
             generationQuiz: {
                 title: 'Generation Quiz',
                 tips: [
@@ -899,7 +873,6 @@ export const TRANSLATIONS = {
             savedTeams: 'Times Salvos',
             guessing: 'Adivinhação',
             quiz: 'Quiz',
-            generator: 'Gerador',
             trainerProfile: 'Perfil de Treinador',
             profile: 'Perfil',
             management: 'Gerenciamento',
@@ -1252,23 +1225,6 @@ export const TRANSLATIONS = {
             emptyDesc: 'Comece a adicionar Pokémon aos seus favoritos clicando no ícone de estrela em qualquer cartão de Pokémon.',
             noMatchesTitle: 'Nenhum resultado encontrado',
             noMatchesDesc: 'Tente ajustar os seus filtros ou o termo de pesquisa.'
-        },
-        generator: {
-            title: 'Gerador Aleatório',
-            subtitle: 'Gere um ponto de partida diferente',
-            genOptions: 'Opções do Gerador',
-            generationLabel: 'Geração',
-            typeLabel: 'Tipo Principal',
-            amountLabel: 'Quantidade',
-            generateBtn: 'Gerar Equipe',
-            addToTeamBtn: 'Adicionar ao Time Ativo',
-            regenBtn: 'Gerar Novamente',
-            emptyStateTitle: 'Gere um time aleatório',
-            emptyStateDesc: 'Defina suas preferências e gere uma combinação de Pokémon de forma aleatória.',
-            allTypes: 'Todos os Tipos',
-            allGens: 'Todas as Gerações',
-            successAdded: 'Pokémon gerados adicionados ao time ativo!',
-            typeDefenses: 'Fraquezas do Time'
         },
         quiz: {
             title: 'Quiz de Gerações',
@@ -1649,14 +1605,6 @@ export const TRANSLATIONS = {
                     'Este é o seu gosto — sem filtros. Cada estrela que você deu significou algo.',
                     'Navegue e note um padrão. Seu tipo favorito pode ser mais óbvio do que você imagina.',
                     'Viu alguém aqui que você nunca usou de verdade? Talvez seja a hora.'
-                ]
-            },
-            randomGenerator: {
-                title: 'Gerador Aleatório',
-                tips: [
-                    'Esqueça o plano. Alguns dos melhores times acontecem por acaso.',
-                    'Aquele Pokémon que você nunca escolheria? Dê uma chance — ele pode ser seu próximo favorito.',
-                    '🎮 Nuzlocke Draft: gere 12, escolha apenas 6 — e nunca recomece. Jogue com o que o destino te der.'
                 ]
             },
             generationQuiz: {

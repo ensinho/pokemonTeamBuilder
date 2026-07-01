@@ -25,6 +25,7 @@ import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useReferenceStore } from '../../store/useReferenceStore';
+import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
 import {
     ClearIcon,
     EditIcon,
@@ -236,11 +237,15 @@ export function TeamBuilderView({
     // enriched cards at the top of the grid so the user sees them immediately.
     const displayedIdSet = React.useMemo(() => new Set(displayedPokemons.map((p) => p.id)), [displayedPokemons]);
     const synergyOnlyCards = React.useMemo(() => {
-        if (!synergySuggestions.length) return [];
+        // While searching, surface the matching Pokémon first — don't prepend
+        // synergy suggestions ahead of the actual search results.
+        if (searchInput.trim() || !synergySuggestions.length) return [];
         return synergySuggestions
             .filter((s) => !displayedIdSet.has(s.id) && suggestionIndexById.has(s.id))
             .map((s) => ({ ...suggestionIndexById.get(s.id), ...s, _synergyOnly: true }));
-    }, [synergySuggestions, displayedIdSet, suggestionIndexById]);
+    }, [synergySuggestions, displayedIdSet, suggestionIndexById, searchInput]);
+
+    const megaStones = useMegaStones();
 
     const isGameFilterActive = !!(selectedGame && selectedGame !== 'all' && gamePokemonIds);
     const selectedGameObj = React.useMemo(() => {
@@ -405,7 +410,10 @@ export function TeamBuilderView({
                         </div>
 
                         <div className="team-builder-slots" aria-label="Current team slots">
-                            {currentTeam.map((pokemon, idx) => (
+                            {currentTeam.map((pokemon, idx) => {
+                                // A held mega stone morphs the slot into its Mega form (sprite/name/types).
+                                const mega = megaFormFor(pokemon, megaStones);
+                                return (
                                 <div
                                     key={pokemon.instanceId}
                                     className={`team-builder-slot group ${dragIndex === idx ? 'is-dragging' : ''}`}
@@ -443,10 +451,15 @@ export function TeamBuilderView({
                                     }}
                                     onDragEnd={() => setDragIndex(null)}
                                 >
-                                    <div className="team-builder-slot__media tb-type-disc" style={typeDiscStyle(pokemon)}>
-                                        <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="w-full h-full" />
+                                    <div className="team-builder-slot__media tb-type-disc" style={typeDiscStyle(mega ? { types: mega.types } : pokemon)}>
+                                        <Sprite
+                                            src={mega ? getPokemonFrontSpriteUrl(mega.spriteId) : getTeamPokemonDisplaySprite(pokemon, { animated: true })}
+                                            artworkSrc={getPokemonArtworkSpriteUrl(mega ? mega.spriteId : pokemon.id)}
+                                            alt={mega ? megaDisplayName(mega.form) : pokemon.name}
+                                            className="w-full h-full"
+                                        />
                                     </div>
-                                    <p className="team-builder-slot__name">{pokemon.name}</p>
+                                    <p className="team-builder-slot__name">{mega ? megaDisplayName(mega.form) : pokemon.name}</p>
 
                                     <button
                                         type="button"
@@ -472,7 +485,8 @@ export function TeamBuilderView({
                                         <TrashIcon />
                                     </button>
                                 </div>
-                            ))}
+                                );
+                            })}
 
                             {Array.from({ length: 6 - currentTeam.length }).map((_, index) => (
                                 <div key={index} className="team-builder-slot team-builder-slot--empty" aria-hidden="true">

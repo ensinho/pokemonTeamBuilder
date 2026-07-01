@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { TrendingUp, Search, Layers, X } from 'lucide-react';
 
 import { useTournamentData } from '../../hooks/useTournamentData';
+import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useTranslation } from '../../hooks/useTranslation';
 import { PokeballIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores } from '../../utils/metaUsage';
-import { MonSprite, pretty, SourceCredit } from './metaShared';
+import { MonSprite, pretty, SourceCredit, RegulationSelect } from './metaShared';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 function CoreRow({ core, rank, onOpenMon }) {
@@ -39,31 +40,38 @@ function CoreRow({ core, rank, onOpenMon }) {
 }
 
 /**
- * Meta & Usage — the competitive command centre. Ranks Pokémon by how often they
- * appear across recent tournament teams (usage %) and surfaces the most common
- * team cores. Clicking any Pokémon opens its focused usage page (what it runs).
+ * Meta & Usage — the competitive command centre. Ranks Pokémon by real Smogon
+ * ladder usage for the selected regulation (VGC / Pokémon Champions), and shows
+ * the most common tournament-team cores. Clicking a Pokémon opens its focused
+ * usage page (exactly what it runs) carrying the current regulation.
  */
 export function MetaUsageView() {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
     const navigate = useNavigate();
-    const { teams, status } = useTournamentData();
+    const [params, setParams] = useSearchParams();
+
+    const { formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
+    const fmtId = params.get('fmt') || defaultFormatId || '';
+    const { byId, format, totalBattles, status: fmtStatus } = useUsageFormat(fmtId);
+    const { teams } = useTournamentData();
+
     const [search, setSearch] = useState('');
-    const [format, setFormat] = useState('all');
 
-    const formats = useMemo(
-        () => [...new Set(teams.map((tm) => tm.format).filter(Boolean))],
-        [teams],
-    );
+    // Smogon usage ranking for the selected regulation (falls back to tournament
+    // appearance counts if the usage dataset isn't available).
+    const smogonRanked = useMemo(() => {
+        if (!byId) return [];
+        return Object.entries(byId)
+            .map(([id, e]) => ({ id: Number(id), name: e.name, pct: e.usage, count: e.rawCount }))
+            .sort((a, b) => b.pct - a.pct);
+    }, [byId]);
+    const usingSmogon = smogonRanked.length > 0;
+    const tournamentRanked = useMemo(() => rankUsage(teams), [teams]);
+    const ranked = usingSmogon ? smogonRanked : tournamentRanked;
 
-    const filteredTeams = useMemo(
-        () => (format === 'all' ? teams : teams.filter((tm) => tm.format === format)),
-        [teams, format],
-    );
-
-    const ranked = useMemo(() => rankUsage(filteredTeams), [filteredTeams]);
-    const cores2 = useMemo(() => commonCores(filteredTeams, 2, 6), [filteredTeams]);
-    const cores3 = useMemo(() => commonCores(filteredTeams, 3, 6), [filteredTeams]);
+    const cores2 = useMemo(() => commonCores(teams, 2, 6), [teams]);
+    const cores3 = useMemo(() => commonCores(teams, 3, 6), [teams]);
 
     const query = search.trim().toLowerCase();
     const visible = useMemo(
@@ -71,9 +79,11 @@ export function MetaUsageView() {
         [ranked, query],
     );
 
-    const openMon = (id) => navigate(`/meta/${id}`);
+    const setFmt = (id) => setParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', id); return p; }, { replace: true });
+    const openMon = (id) => navigate(fmtId ? `/meta/${id}?fmt=${fmtId}` : `/meta/${id}`);
 
-    if (status === 'loading') {
+    const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
+    if (loading && !ranked.length) {
         return (
             <div className="flex items-center justify-center" style={{ minHeight: '40vh', color: 'var(--color-primary)' }} role="status" aria-label="Loading">
                 <PokeballIcon className="w-14 h-14 animate-spin opacity-70" />
@@ -81,9 +91,11 @@ export function MetaUsageView() {
         );
     }
 
-    if (!teams.length) {
-        return <EmptyState title={pt ? 'Sem dados de meta' : 'No meta data'} message={pt ? 'Os dados de torneios ainda não carregaram.' : 'Tournament data has not loaded yet.'} />;
+    if (!ranked.length) {
+        return <EmptyState title={pt ? 'Sem dados de meta' : 'No meta data'} message={pt ? 'Os dados de uso ainda não carregaram.' : 'Usage data has not loaded yet.'} />;
     }
+
+    const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
 
     return (
         <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-5">
@@ -92,11 +104,15 @@ export function MetaUsageView() {
                     <TrendingUp className="h-6 w-6 text-primary" /> {pt ? 'Meta & Uso' : 'Meta & Usage'}
                 </h1>
                 <p className="mt-1 max-w-2xl text-sm text-muted">
-                    {pt
-                        ? `Pokémon mais usados em ${filteredTeams.length} times recentes de torneios — clique para ver exatamente o que estão rodando (itens, golpes, spreads e parceiros).`
-                        : `The most-used Pokémon across ${filteredTeams.length} recent tournament teams — click any to see exactly what they run (items, moves, spreads & partners).`}
+                    {usingSmogon && format
+                        ? (pt
+                            ? `Uso real de ${format.label} no ladder competitivo${battlesLabel ? ` (${battlesLabel} partidas${month ? `, ${month}` : ''})` : ''} — clique em um Pokémon para ver exatamente o que ele roda.`
+                            : `Real ${format.label} ladder usage${battlesLabel ? ` (${battlesLabel} games${month ? `, ${month}` : ''})` : ''} — click any Pokémon to see exactly what it runs (items, moves, spreads, Tera & partners).`)
+                        : (pt
+                            ? 'Pokémon mais usados nos times recentes de torneios — clique para ver o que estão rodando.'
+                            : 'Most-used Pokémon across recent tournament teams — click any to see what they run.')}
                 </p>
-                <SourceCredit pt={pt} sources={['vgcpastes', 'smogon', 'pikalytics']} className="mt-2.5" />
+                <SourceCredit pt={pt} sources={['smogon', 'vgcpastes', 'pikalytics']} className="mt-2.5" />
             </header>
 
             {/* Toolbar */}
@@ -116,16 +132,8 @@ export function MetaUsageView() {
                         </button>
                     )}
                 </div>
-                {formats.length > 1 && (
-                    <select
-                        value={format}
-                        onChange={(e) => setFormat(e.target.value)}
-                        className="rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-fg focus:border-primary focus:outline-none"
-                        aria-label={pt ? 'Formato' : 'Format'}
-                    >
-                        <option value="all">{pt ? 'Todos os formatos' : 'All formats'}</option>
-                        {formats.map((f) => <option key={f} value={f}>{f}</option>)}
-                    </select>
+                {formats.length > 0 && (
+                    <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} />
                 )}
             </div>
 
@@ -139,8 +147,8 @@ export function MetaUsageView() {
                         <EmptyState compact title={pt ? 'Nenhum resultado' : 'No matches'} message={pt ? 'Tente outra busca.' : 'Try another search.'} />
                     ) : (
                         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
-                            {visible.map((mon) => {
-                                const rank = ranked.indexOf(mon) + 1;
+                            {visible.map((mon, i) => {
+                                const rank = query ? ranked.indexOf(mon) + 1 : i + 1;
                                 return (
                                     <button
                                         key={mon.id}
@@ -155,7 +163,7 @@ export function MetaUsageView() {
                                             <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(mon.pct, 3)}%` }} />
                                         </div>
                                         <span className="mt-1 text-[10px] font-semibold tabular-nums text-muted">
-                                            {mon.pct}% · {mon.count} {pt ? 'times' : 'teams'}
+                                            {mon.pct}% {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
                                         </span>
                                     </button>
                                 );
@@ -164,7 +172,7 @@ export function MetaUsageView() {
                     )}
                 </section>
 
-                {/* Common team cores */}
+                {/* Common team cores (from real tournament teams) */}
                 <section className="space-y-5">
                     <div>
                         <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">

@@ -17,6 +17,7 @@ import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
+import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
     ClearIcon,
@@ -280,18 +281,21 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
 
 const MobileTeamSlot = ({ pokemon, index, onEdit, onRemove }) => {
     const { t } = useTranslation();
+    const megaStones = useMegaStones();
+    const mega = pokemon ? megaFormFor(pokemon, megaStones) : null;
+    const displayName = mega ? megaDisplayName(mega.form) : pokemon?.name;
     return (
         <div className="relative min-w-0">
             <button
                 type="button"
                 onClick={() => pokemon && onEdit?.(pokemon)}
                 className={`team-builder-mobile-slot ${pokemon ? 'is-filled tb-type-ring' : 'is-empty'}`}
-                style={pokemon ? typeVars(pokemon) : undefined}
-                aria-label={pokemon ? `${t('common.edit')} ${pokemon.name}` : `Empty team slot ${index + 1}`}
-                title={pokemon ? pokemon.name : `Empty slot ${index + 1}`}
+                style={pokemon ? typeVars(mega ? { types: mega.types } : pokemon) : undefined}
+                aria-label={pokemon ? `${t('common.edit')} ${displayName}` : `Empty team slot ${index + 1}`}
+                title={pokemon ? displayName : `Empty slot ${index + 1}`}
             >
                 {pokemon ? (
-                    <Sprite src={getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-9 w-9" />
+                    <Sprite src={mega ? getPokemonFrontSpriteUrl(mega.spriteId) : getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(mega ? mega.spriteId : pokemon.id)} alt={displayName} className="h-9 w-9" />
                 ) : (
                     <img
                         src={POKEBALL_PLACEHOLDER_URL}

@@ -206,7 +206,6 @@ export const pageGuideTips = {
     allTeams: true,
     pokedex: true,
     favorites: true,
-    randomGenerator: true,
     generationQuiz: true,
     feed: true,
 };

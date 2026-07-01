@@ -10,8 +10,11 @@ import { useModalA11y } from '../../hooks/useModalA11y';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
+import { useBattleItems } from '../../hooks/useBattleItems';
 import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
+import { natureLabel } from '../../constants/natures';
 import { UsageBar, pctOf, pretty } from '../views/metaShared';
+import { SpriteSelect } from '../SpriteSelect';
 import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
@@ -38,6 +41,7 @@ const STAT_COLOR_VAR = {
     'special-defense': '--stat-spd',
     speed: '--stat-spe',
 };
+const STAT_ABBR = { hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe' };
 
 export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => { } }) {
     const { t, language } = useTranslation();
@@ -46,8 +50,18 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     const { smogonFor } = useSmogonData();
     const { usageFor } = useCompetitiveUsage();
     const { typeForMove } = useMoveTypes();
+    const battleItems = useBattleItems();
     const smogonEntry = smogonFor(pokemon.id);
     const usage = usageFor(pokemon.id);
+
+    // Battle-relevant item options (with sprites). Falls back to the full reference
+    // item list if the baked battle-items dataset hasn't loaded.
+    const itemOptions = useMemo(
+        () => (battleItems.length
+            ? battleItems
+            : (items || []).map((it) => ({ slug: it.name, name: it.name.replace(/-/g, ' ') }))),
+        [battleItems, items],
+    );
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
@@ -288,16 +302,21 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                             <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-4">
                                 <div>
-                                    <label htmlFor="editor-item" className={fieldLabelClassName}>{t('modals.editorModalItemLabel')}</label>
-                                    <select id="editor-item" value={customization.item} onChange={(event) => handleCustomizationChange('item', event.target.value)} className={controlClassName}>
-                                        <option value="">{t('common.none')}</option>
-                                        {items.map((item) => <option key={item.name} value={item.name} className="capitalize">{item.name.replace(/-/g, ' ')}</option>)}
-                                    </select>
+                                    <span className={fieldLabelClassName}>{t('modals.editorModalItemLabel')}</span>
+                                    <SpriteSelect
+                                        value={customization.item}
+                                        onChange={(slug) => handleCustomizationChange('item', slug)}
+                                        options={itemOptions}
+                                        getSprite={itemSpriteUrl}
+                                        placeholder={t('common.none')}
+                                        noneLabel={t('common.none')}
+                                        searchPlaceholder={pt ? 'Buscar item…' : 'Search item…'}
+                                    />
                                 </div>
                                 <div>
                                     <label htmlFor="editor-nature" className={fieldLabelClassName}>{t('modals.editorModalNatureLabel')}</label>
                                     <select id="editor-nature" value={customization.nature} onChange={(event) => handleCustomizationChange('nature', event.target.value)} className={controlClassName}>
-                                        {natures.map((nature) => <option key={nature.name} value={nature.name} className="capitalize">{nature.name.replace(/-/g, ' ')}</option>)}
+                                        {natures.map((nature) => <option key={nature.name} value={nature.name}>{natureLabel(nature.name)}</option>)}
                                     </select>
                                 </div>
                                 <div>
@@ -430,34 +449,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     const baseStat = pokemon.stats?.[index]?.base_stat ?? 0;
                                     const ev = customization.evs[statName];
                                     const totalStat = calculateStat(baseStat, ev, statName);
-                                    const minTotal = calculateStat(baseStat, 0, statName);
-                                    const maxTotal = calculateStat(baseStat, 252, statName);
                                     const colorVar = STAT_COLOR_VAR[statName] ?? '--stat-hp';
-                                    const basePct = (minTotal / maxTotal) * 100;
-                                    const totalPct = (totalStat / maxTotal) * 100;
                                     const fillPct = (ev / 252) * 100;
                                     const statColor = `var(${colorVar})`;
 
+                                    // One clean row: stat · slider · EV · final stat.
                                     return (
-                                        <div key={statName} className="space-y-1.5">
-                                            <div className="flex items-baseline justify-between text-sm capitalize">
-                                                <span className="font-semibold text-fg">{statName.replace(/-/g, ' ')}</span>
-                                                <span className="flex items-baseline gap-2 text-muted">
-                                                    <span className="text-xs">{ev} EV</span>
-                                                    <span className="font-mono text-base font-bold text-fg">{totalStat}</span>
-                                                </span>
-                                            </div>
-                                            {/* Live total bar — the base segment is solid, the EV-added segment is striped and grows as you drag. */}
-                                            <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-surface-raised">
-                                                <div
-                                                    className="absolute inset-y-0 left-0 rounded-full transition-all duration-200"
-                                                    style={{ width: `${totalPct}%`, backgroundColor: statColor, opacity: 0.45 }}
-                                                />
-                                                <div
-                                                    className="absolute inset-y-0 left-0 rounded-full transition-all duration-200"
-                                                    style={{ width: `${basePct}%`, backgroundColor: statColor }}
-                                                />
-                                            </div>
+                                        <div key={statName} className="flex items-center gap-3">
+                                            <span className="w-10 shrink-0 text-xs font-bold uppercase tracking-wide" style={{ color: statColor }}>{STAT_ABBR[statName]}</span>
                                             <input
                                                 type="range"
                                                 min="0"
@@ -465,10 +464,12 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 value={ev}
                                                 step="4"
                                                 onChange={(event) => handleEvChange(statName, event.target.value)}
-                                                className="ev-slider"
+                                                className="ev-slider min-w-0 flex-1"
                                                 style={{ background: `linear-gradient(to right, ${statColor} 0%, ${statColor} ${fillPct}%, var(--color-surface-raised) ${fillPct}%, var(--color-surface-raised) 100%)` }}
                                                 aria-label={`${statName.replace(/-/g, ' ')} EV`}
                                             />
+                                            <span className="w-14 shrink-0 text-right text-[11px] tabular-nums text-muted">{ev} EV</span>
+                                            <span className="w-9 shrink-0 text-right font-mono text-sm font-bold tabular-nums text-fg" title={pt ? 'Total' : 'Total stat'}>{totalStat}</span>
                                         </div>
                                     );
                                 })}
