@@ -568,6 +568,7 @@
     max-height: 52vh;
     overflow-y: auto;
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
 }
 
 .team-builder-results__scroll {
@@ -575,6 +576,7 @@
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: 0 0.2rem;
     scrollbar-gutter: stable;
 }

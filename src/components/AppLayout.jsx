@@ -221,7 +221,12 @@ export default function AppLayout() {
     const { isInstallable, isIOS, handleInstall } = usePWAInstall();
 
     // UI Local States
-    const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return window.innerWidth >= 1024;
+        }
+        return false;
+    });
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         if (typeof window === 'undefined') return false;
         try { return window.localStorage.getItem('ptb-sidebar-collapsed') === '1'; }

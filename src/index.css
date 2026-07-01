@@ -243,6 +243,7 @@ html, body {
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     letter-spacing: -0.011em;
+    -webkit-tap-highlight-color: transparent;
 }
 
 html,

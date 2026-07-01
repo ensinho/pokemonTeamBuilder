@@ -15,6 +15,17 @@
     z-index: var(--z-overlay);
     background: rgba(0, 0, 0, 0.6);
     backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: app-shell-fade-in var(--duration-fast) var(--ease-smooth) forwards;
+}
+
+@keyframes app-shell-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .app-shell__sidebar {
@@ -236,6 +247,7 @@
 .app-shell__nav {
     flex: 1;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 0.6rem var(--app-shell-gutter);
     /* Firefox: thin, theme-tinted scrollbar instead of the default chunky one. */
     scrollbar-width: thin;
@@ -853,6 +865,7 @@
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
     background: var(--color-bg);
 }
 
