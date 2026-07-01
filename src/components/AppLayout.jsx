@@ -534,9 +534,8 @@ export default function AppLayout() {
                 title: t('nav.teamBuilding'),
                 items: [
                     { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
-                    { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms & Trainers', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
-                    { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
                     { key: 'meta', label: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
+                    { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
                     { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
                     { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
                 ]
@@ -545,6 +544,7 @@ export default function AppLayout() {
                 title: t('nav.database'),
                 items: [
                     { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
+                    { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                     { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <BoxIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
                     { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
