@@ -456,5 +456,18 @@
   "shore-up": "ground",
   "venoshock": "poison",
   "feather-dance": "flying",
-  "drill-peck": "flying"
+  "drill-peck": "flying",
+  "magnet-rise": "electric",
+  "speed-swap": "psychic",
+  "leaf-blade": "grass",
+  "synthesis": "grass",
+  "megahorn": "bug",
+  "sludge-wave": "poison",
+  "high-horsepower": "ground",
+  "brave-bird": "flying",
+  "skitter-smack": "bug",
+  "revelation-dance": "normal",
+  "grav-apple": "grass",
+  "horn-leech": "grass",
+  "liquidation": "water"
 }
