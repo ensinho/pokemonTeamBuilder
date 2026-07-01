@@ -7036,69 +7036,15 @@
           "team": [
             {
               "name": "Mankey",
-              "level": 14,
-              "moves": [
-                {
-                  "name": "pursuit",
-                  "type": "dark"
-                },
-                {
-                  "name": "karate-chop",
-                  "type": "fighting"
-                },
-                {
-                  "name": "fury-swipes",
-                  "type": "normal"
-                },
-                {
-                  "name": "covet",
-                  "type": "normal"
-                }
-              ]
+              "level": 14
             },
             {
               "name": "Makuhita",
-              "level": 14,
-              "moves": [
-                {
-                  "name": "force-palm",
-                  "type": "fighting"
-                },
-                {
-                  "name": "fake-out",
-                  "type": "normal"
-                },
-                {
-                  "name": "arm-thrust",
-                  "type": "fighting"
-                },
-                {
-                  "name": "sand-attack",
-                  "type": "ground"
-                }
-              ]
+              "level": 14
             },
             {
               "name": "Crabrawler",
-              "level": 15,
-              "moves": [
-                {
-                  "name": "pursuit",
-                  "type": "dark"
-                },
-                {
-                  "name": "leer",
-                  "type": "normal"
-                },
-                {
-                  "name": "rock-smash",
-                  "type": "fighting"
-                },
-                {
-                  "name": "bubble",
-                  "type": "water"
-                }
-              ]
+              "level": 15
             }
           ]
         },
@@ -7112,69 +7058,15 @@
           "team": [
             {
               "name": "Nosepass",
-              "level": 26,
-              "moves": [
-                {
-                  "name": "power-gem",
-                  "type": "rock"
-                },
-                {
-                  "name": "rock-slide",
-                  "type": "rock"
-                },
-                {
-                  "name": "spark",
-                  "type": "electric"
-                },
-                {
-                  "name": "rest",
-                  "type": "psychic"
-                }
-              ]
+              "level": 26
             },
             {
               "name": "Boldore",
-              "level": 26,
-              "moves": [
-                {
-                  "name": "smack-down",
-                  "type": "rock"
-                },
-                {
-                  "name": "iron-defense",
-                  "type": "steel"
-                },
-                {
-                  "name": "mud-slap",
-                  "type": "ground"
-                },
-                {
-                  "name": "rock-blast",
-                  "type": "rock"
-                }
-              ]
+              "level": 26
             },
             {
               "name": "Lycanroc",
-              "level": 27,
-              "moves": [
-                {
-                  "name": "roar",
-                  "type": "normal"
-                },
-                {
-                  "name": "rock-tomb",
-                  "type": "rock"
-                },
-                {
-                  "name": "odor-sleuth",
-                  "type": "normal"
-                },
-                {
-                  "name": "rock-throw",
-                  "type": "rock"
-                }
-              ]
+              "level": 27
             }
           ]
         },
@@ -7188,69 +7080,15 @@
           "team": [
             {
               "name": "Sableye",
-              "level": 38,
-              "moves": [
-                {
-                  "name": "power-gem",
-                  "type": "rock"
-                },
-                {
-                  "name": "zen-headbutt",
-                  "type": "psychic"
-                },
-                {
-                  "name": "confuse-ray",
-                  "type": "ghost"
-                },
-                {
-                  "name": "shadow-claw",
-                  "type": "ghost"
-                }
-              ]
+              "level": 38
             },
             {
               "name": "Krokorok",
-              "level": 38,
-              "moves": [
-                {
-                  "name": "scary-face",
-                  "type": "normal"
-                },
-                {
-                  "name": "dig",
-                  "type": "ground"
-                },
-                {
-                  "name": "crunch",
-                  "type": "dark"
-                },
-                {
-                  "name": "swagger",
-                  "type": "normal"
-                }
-              ]
+              "level": 38
             },
             {
               "name": "Persian",
-              "level": 39,
-              "moves": [
-                {
-                  "name": "slash",
-                  "type": "normal"
-                },
-                {
-                  "name": "power-gem",
-                  "type": "rock"
-                },
-                {
-                  "name": "taunt",
-                  "type": "dark"
-                },
-                {
-                  "name": "feint-attack",
-                  "type": "dark"
-                }
-              ]
+              "level": 39
             }
           ]
         },
@@ -7264,91 +7102,19 @@
           "team": [
             {
               "name": "Dugtrio",
-              "level": 47,
-              "moves": [
-                {
-                  "name": "earthquake",
-                  "type": "ground"
-                },
-                {
-                  "name": "slash",
-                  "type": "normal"
-                },
-                {
-                  "name": "dig",
-                  "type": "ground"
-                },
-                {
-                  "name": "earth-power",
-                  "type": "ground"
-                }
-              ]
+              "level": 47
             },
             {
               "name": "Gastrodon",
-              "level": 47,
-              "moves": [
-                {
-                  "name": "muddy-water",
-                  "type": "water"
-                },
-                {
-                  "name": "body-slam",
-                  "type": "normal"
-                },
-                {
-                  "name": "rain-dance",
-                  "type": "water"
-                },
-                {
-                  "name": "hidden-power",
-                  "type": "normal"
-                }
-              ]
+              "level": 47
             },
             {
               "name": "Flygon",
-              "level": 47,
-              "moves": [
-                {
-                  "name": "dragon-rush",
-                  "type": "dragon"
-                },
-                {
-                  "name": "hyper-beam",
-                  "type": "normal"
-                },
-                {
-                  "name": "uproar",
-                  "type": "normal"
-                },
-                {
-                  "name": "sandstorm",
-                  "type": "rock"
-                }
-              ]
+              "level": 47
             },
             {
               "name": "Mudsdale",
-              "level": 48,
-              "moves": [
-                {
-                  "name": "earthquake",
-                  "type": "ground"
-                },
-                {
-                  "name": "counter",
-                  "type": "fighting"
-                },
-                {
-                  "name": "heavy-slam",
-                  "type": "steel"
-                },
-                {
-                  "name": "iron-defense",
-                  "type": "steel"
-                }
-              ]
+              "level": 48
             }
           ]
         }
@@ -7372,69 +7138,15 @@
           "team": [
             {
               "name": "Machop",
-              "level": 15,
-              "moves": [
-                {
-                  "name": "seismic-toss",
-                  "type": "fighting"
-                },
-                {
-                  "name": "low-sweep",
-                  "type": "fighting"
-                },
-                {
-                  "name": "foresight",
-                  "type": "normal"
-                },
-                {
-                  "name": "karate-chop",
-                  "type": "fighting"
-                }
-              ]
+              "level": 15
             },
             {
               "name": "Makuhita",
-              "level": 15,
-              "moves": [
-                {
-                  "name": "force-palm",
-                  "type": "fighting"
-                },
-                {
-                  "name": "fake-out",
-                  "type": "normal"
-                },
-                {
-                  "name": "arm-thrust",
-                  "type": "fighting"
-                },
-                {
-                  "name": "sand-attack",
-                  "type": "ground"
-                }
-              ]
+              "level": 15
             },
             {
               "name": "Crabrawler",
-              "level": 16,
-              "moves": [
-                {
-                  "name": "pursuit",
-                  "type": "dark"
-                },
-                {
-                  "name": "leer",
-                  "type": "normal"
-                },
-                {
-                  "name": "rock-smash",
-                  "type": "fighting"
-                },
-                {
-                  "name": "bubble",
-                  "type": "water"
-                }
-              ]
+              "level": 16
             }
           ]
         },
@@ -7448,69 +7160,15 @@
           "team": [
             {
               "name": "Anorith",
-              "level": 27,
-              "moves": [
-                {
-                  "name": "bug-bite",
-                  "type": "bug"
-                },
-                {
-                  "name": "ancient-power",
-                  "type": "rock"
-                },
-                {
-                  "name": "metal-claw",
-                  "type": "steel"
-                },
-                {
-                  "name": "smack-down",
-                  "type": "rock"
-                }
-              ]
+              "level": 27
             },
             {
               "name": "Lileep",
-              "level": 27,
-              "moves": [
-                {
-                  "name": "giga-drain",
-                  "type": "grass"
-                },
-                {
-                  "name": "brine",
-                  "type": "water"
-                },
-                {
-                  "name": "ancient-power",
-                  "type": "rock"
-                },
-                {
-                  "name": "confuse-ray",
-                  "type": "ghost"
-                }
-              ]
+              "level": 27
             },
             {
               "name": "Lycanroc",
-              "level": 28,
-              "moves": [
-                {
-                  "name": "roar",
-                  "type": "normal"
-                },
-                {
-                  "name": "rock-tomb",
-                  "type": "rock"
-                },
-                {
-                  "name": "odor-sleuth",
-                  "type": "normal"
-                },
-                {
-                  "name": "rock-throw",
-                  "type": "rock"
-                }
-              ]
+              "level": 28
             }
           ]
         },
@@ -7524,69 +7182,15 @@
           "team": [
             {
               "name": "Sableye",
-              "level": 43,
-              "moves": [
-                {
-                  "name": "foul-play",
-                  "type": "dark"
-                },
-                {
-                  "name": "shadow-ball",
-                  "type": "ghost"
-                },
-                {
-                  "name": "power-gem",
-                  "type": "rock"
-                },
-                {
-                  "name": "zen-headbutt",
-                  "type": "psychic"
-                }
-              ]
+              "level": 43
             },
             {
               "name": "Krokorok",
-              "level": 43,
-              "moves": [
-                {
-                  "name": "foul-play",
-                  "type": "dark"
-                },
-                {
-                  "name": "scary-face",
-                  "type": "normal"
-                },
-                {
-                  "name": "dig",
-                  "type": "ground"
-                },
-                {
-                  "name": "crunch",
-                  "type": "dark"
-                }
-              ]
+              "level": 43
             },
             {
               "name": "Persian",
-              "level": 44,
-              "moves": [
-                {
-                  "name": "nasty-plot",
-                  "type": "dark"
-                },
-                {
-                  "name": "slash",
-                  "type": "normal"
-                },
-                {
-                  "name": "power-gem",
-                  "type": "rock"
-                },
-                {
-                  "name": "taunt",
-                  "type": "dark"
-                }
-              ]
+              "level": 44
             }
           ]
         },
@@ -7600,91 +7204,19 @@
           "team": [
             {
               "name": "Golurk",
-              "level": 53,
-              "moves": [
-                {
-                  "name": "curse",
-                  "type": "ghost"
-                },
-                {
-                  "name": "night-shade",
-                  "type": "ghost"
-                },
-                {
-                  "name": "dynamic-punch",
-                  "type": "fighting"
-                },
-                {
-                  "name": "magnitude",
-                  "type": "ground"
-                }
-              ]
+              "level": 53
             },
             {
               "name": "Gastrodon",
-              "level": 53,
-              "moves": [
-                {
-                  "name": "muddy-water",
-                  "type": "water"
-                },
-                {
-                  "name": "body-slam",
-                  "type": "normal"
-                },
-                {
-                  "name": "rain-dance",
-                  "type": "water"
-                },
-                {
-                  "name": "hidden-power",
-                  "type": "normal"
-                }
-              ]
+              "level": 53
             },
             {
               "name": "Flygon",
-              "level": 53,
-              "moves": [
-                {
-                  "name": "dragon-rush",
-                  "type": "dragon"
-                },
-                {
-                  "name": "hyper-beam",
-                  "type": "normal"
-                },
-                {
-                  "name": "uproar",
-                  "type": "normal"
-                },
-                {
-                  "name": "sandstorm",
-                  "type": "rock"
-                }
-              ]
+              "level": 53
             },
             {
               "name": "Mudsdale",
-              "level": 54,
-              "moves": [
-                {
-                  "name": "earthquake",
-                  "type": "ground"
-                },
-                {
-                  "name": "counter",
-                  "type": "fighting"
-                },
-                {
-                  "name": "heavy-slam",
-                  "type": "steel"
-                },
-                {
-                  "name": "iron-defense",
-                  "type": "steel"
-                }
-              ]
+              "level": 54
             }
           ]
         }

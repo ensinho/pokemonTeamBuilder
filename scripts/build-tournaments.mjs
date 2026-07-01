@@ -109,7 +109,22 @@ const itemSlug = (name = '') => name.toLowerCase().trim()
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
 
-// Parse one Showdown set block → { species, item, ability, tera, moves }.
+// Showdown EV/IV stat labels → our compact keys.
+const STAT_KEY = { HP: 'hp', Atk: 'atk', Def: 'def', SpA: 'spa', SpD: 'spd', Spe: 'spe' };
+
+// Parse "252 HP / 4 Def / 252 SpD" → { hp: 252, def: 4, spd: 252 } (only listed).
+const parseStatLine = (raw = '') => {
+    const out = {};
+    for (const part of raw.split('/')) {
+        const m = part.trim().match(/^(\d+)\s+(HP|Atk|Def|SpA|SpD|Spe)$/i);
+        if (!m) continue;
+        const label = Object.keys(STAT_KEY).find((s) => s.toLowerCase() === m[2].toLowerCase());
+        if (label) out[STAT_KEY[label]] = Number(m[1]);
+    }
+    return out;
+};
+
+// Parse one Showdown set block → full set incl. nature/EVs/IVs/level.
 const parseSet = (block) => {
     const lines = block.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
     if (!lines.length) return null;
@@ -133,10 +148,18 @@ const parseSet = (block) => {
 
     let ability = null;
     let tera = null;
+    let nature = null;
+    let level = null;
+    let evs = null;
+    let ivs = null;
     const moves = [];
     for (const l of lines.slice(1)) {
         if (/^Ability:/i.test(l)) ability = l.replace(/^Ability:/i, '').trim();
         else if (/^Tera Type:/i.test(l)) tera = l.replace(/^Tera Type:/i, '').trim();
+        else if (/^Level:/i.test(l)) { const n = parseInt(l.replace(/^Level:/i, ''), 10); if (Number.isFinite(n)) level = n; }
+        else if (/\bNature$/i.test(l)) nature = l.replace(/\s*Nature$/i, '').trim();
+        else if (/^EVs:/i.test(l)) { const e = parseStatLine(l.replace(/^EVs:/i, '')); if (Object.keys(e).length) evs = e; }
+        else if (/^IVs:/i.test(l)) { const iv = parseStatLine(l.replace(/^IVs:/i, '')); if (Object.keys(iv).length) ivs = iv; }
         else if (/^-\s*/.test(l)) moves.push(l.replace(/^-\s*/, '').trim());
     }
 
@@ -145,6 +168,10 @@ const parseSet = (block) => {
         item: item && !/^none$/i.test(item) ? item : null,
         ability: ability || null,
         tera: tera || null,
+        nature: nature || null,
+        level: level || null,
+        evs,
+        ivs,
         moves,
     };
 };
@@ -178,44 +205,100 @@ const topEntries = (map, limit) => [...map.entries()]
     .sort((a, b) => b[1] - a[1])
     .slice(0, limit);
 
-// Mine every team's pokepaste → { byId: { [speciesId]: { n, items, abilities, tera, moves } } }.
-const buildCompetitiveUsage = async (teams) => {
-    // id → { n, items:Map, abilities:Map, tera:Map, moves:Map }
-    const agg = new Map();
+// Build a team's roster from the sheet names, ENRICHED with the full competitive
+// set (item/ability/tera/nature/EVs/IVs/level/moves) mined from its pokepaste.
+// Names + order + ids stay exactly as before; sets are attached by matching the
+// resolved species id, so a click can show what the player actually ran.
+const buildEnrichedRoster = async (monNames, pokepaste) => {
+    // Resolve the authoritative sheet roster first (stable ids/names/order).
+    const roster = [];
+    for (const monName of monNames) {
+        const id = await resolveSpeciesId(monName);
+        if (id) roster.push({ id, name: monName });
+    }
+
+    // Parse the pokepaste and queue sets by species id (handles duplicates).
+    const sets = await fetchPaste(pokepaste);
+    const setsById = new Map();
+    for (const set of sets) {
+        const id = await resolveSpeciesId(set.species);
+        if (!id) continue;
+        if (!setsById.has(id)) setsById.set(id, []);
+        setsById.get(id).push(set);
+    }
+
+    // Merge each roster entry with its matching set.
+    const pokemons = roster.map((mon) => {
+        const queue = setsById.get(mon.id);
+        const set = queue && queue.length ? queue.shift() : null;
+        if (!set) return mon;
+        return {
+            ...mon,
+            item: set.item || undefined,
+            ability: set.ability || undefined,
+            tera: set.tera || undefined,
+            nature: set.nature || undefined,
+            level: set.level || undefined,
+            evs: set.evs || undefined,
+            ivs: set.ivs || undefined,
+            moves: set.moves.length ? set.moves : undefined,
+        };
+    });
+    return pokemons;
+};
+
+const spreadKey = (mon) => {
+    if (!mon.nature && !mon.evs) return null;
+    return JSON.stringify({ nature: mon.nature || null, evs: mon.evs || null });
+};
+
+// Aggregate per-species competitive usage from the ENRICHED tournament rosters:
+// real item/ability/tera/move/EV-spread frequencies + most-common teammates +
+// how many teams each species appears on (→ usage %). Pure over the baked data.
+const aggregateUsage = (teams) => {
     const bump = (m, k) => { if (k) m.set(k, (m.get(k) || 0) + 1); };
+    const agg = new Map();      // id → counters
+    const teammates = new Map(); // id → Map(otherId → count)
+    const nameById = new Map();
 
-    const pastes = [...new Set(teams.map((t) => t.pokepaste).filter(Boolean))];
-    console.log(`Mining ${pastes.length} pokepastes for real item/ability/tera usage…`);
-
-    let done = 0;
-    await mapPool(pastes, 6, async (url) => {
-        const sets = await fetchPaste(url);
-        for (const set of sets) {
-            const id = await resolveSpeciesId(set.species);
-            if (!id) continue;
-            if (!agg.has(id)) {
-                agg.set(id, { n: 0, items: new Map(), abilities: new Map(), tera: new Map(), moves: new Map() });
+    teams.forEach((team, ti) => {
+        const mons = team.pokemons || [];
+        const ids = [...new Set(mons.map((p) => p.id))];
+        for (const p of mons) {
+            nameById.set(p.id, p.name);
+            if (!agg.has(p.id)) {
+                agg.set(p.id, { n: 0, teams: new Set(), items: new Map(), abilities: new Map(), tera: new Map(), moves: new Map(), spreads: new Map() });
             }
-            const e = agg.get(id);
+            const e = agg.get(p.id);
             e.n += 1;
-            bump(e.items, set.item);
-            bump(e.abilities, set.ability);
-            bump(e.tera, set.tera);
-            for (const mv of set.moves) bump(e.moves, mv);
+            e.teams.add(ti);
+            bump(e.items, p.item);
+            bump(e.abilities, p.ability);
+            bump(e.tera, p.tera);
+            for (const mv of p.moves || []) bump(e.moves, mv);
+            const sk = spreadKey(p);
+            if (sk) e.spreads.set(sk, (e.spreads.get(sk) || 0) + 1);
         }
-        done += 1;
-        if (done % 25 === 0) console.log(`  …${done}/${pastes.length} pastes`);
+        for (const a of ids) {
+            if (!teammates.has(a)) teammates.set(a, new Map());
+            const tm = teammates.get(a);
+            for (const b of ids) if (a !== b) tm.set(b, (tm.get(b) || 0) + 1);
+        }
     });
 
     const byId = {};
     for (const [id, e] of agg) {
         if (e.n === 0) continue;
+        const tm = teammates.get(id) || new Map();
         byId[id] = {
             n: e.n,
-            items: topEntries(e.items, 4).map(([name, count]) => ({ name, slug: itemSlug(name), count })),
+            teams: e.teams.size,
+            items: topEntries(e.items, 5).map(([name, count]) => ({ name, slug: itemSlug(name), count })),
             abilities: topEntries(e.abilities, 3).map(([name, count]) => ({ name, count })),
-            tera: topEntries(e.tera, 4).map(([name, count]) => ({ name, count })),
-            moves: topEntries(e.moves, 8).map(([name, count]) => ({ name, count })),
+            tera: topEntries(e.tera, 5).map(([name, count]) => ({ name, count })),
+            moves: topEntries(e.moves, 12).map(([name, count]) => ({ name, count })),
+            spreads: topEntries(e.spreads, 3).map(([key, count]) => ({ ...JSON.parse(key), count })),
+            teammates: topEntries(tm, 8).map(([tid, count]) => ({ id: tid, name: nameById.get(tid) || `#${tid}`, count })),
         };
     }
     return byId;
@@ -287,18 +370,34 @@ const main = async () => {
         console.log(`Capping ${rawTeams.length} teams to the ${MAX_TEAMS} most recent.`);
     }
 
-    console.log(`Resolving species ids for ${capped.length} teams…`);
+    // Stable, unique, URL-safe team id (drives the /tournaments/team/:id route).
+    const usedIds = new Set();
+    const teamId = (tm, idx) => {
+        const pasteSlug = (tm.pokepaste || '').replace(/\/+$/, '').split('/').pop();
+        let base = pasteSlug && /^[a-z0-9]+$/i.test(pasteSlug)
+            ? pasteSlug
+            : itemSlug(`${tm.tournament}-${tm.player || tm.author}-${tm.date}`) || `team-${idx}`;
+        let id = base;
+        let n = 2;
+        while (usedIds.has(id)) id = `${base}-${n++}`;
+        usedIds.add(id);
+        return id;
+    };
+
+    console.log(`Resolving rosters + mining sets for ${capped.length} teams…`);
     const teams = [];
-    for (const tm of capped) {
-        const pokemons = [];
-        for (const monName of tm.monNames) {
-            const id = await resolveSpeciesId(monName);
-            if (id) pokemons.push({ id, name: monName });
-        }
-        if (pokemons.length < 4) continue; // skip teams we mostly couldn't resolve
+    let done = 0;
+    await mapPool(capped, 6, async (tm, idx) => {
+        const pokemons = await buildEnrichedRoster(tm.monNames, tm.pokepaste);
+        done += 1;
+        if (done % 25 === 0) console.log(`  …${done}/${capped.length} teams`);
+        if (pokemons.length < 4) return; // skip teams we mostly couldn't resolve
         const { monNames, medal, ...rest } = tm;
-        teams.push({ ...rest, featured: Boolean(medal), pokemons });
-    }
+        teams.push({ id: teamId(tm, idx), ...rest, featured: Boolean(medal), pokemons, _order: idx });
+    });
+    // mapPool completes out of order — restore the date-sorted order from `capped`.
+    teams.sort((a, b) => a._order - b._order);
+    for (const t of teams) delete t._order;
 
     // Never clobber a good dataset with an empty one (e.g. source briefly down).
     if (teams.length === 0) {
@@ -314,18 +413,19 @@ const main = async () => {
     );
     console.log(`Wrote ${teams.length} tournament teams to public/data/tournaments.json`);
 
-    // Mine the linked pokepastes for real per-species competitive usage. Never
+    // Aggregate per-species competitive usage from the enriched rosters (item /
+    // ability / tera / move / EV-spread frequencies + teammates + usage %). Never
     // let this fail the dataset write above — it's an enrichment, not a gate.
     try {
-        const byId = await buildCompetitiveUsage(teams);
+        const byId = aggregateUsage(teams);
         const speciesCount = Object.keys(byId).length;
         if (speciesCount > 0) {
             await fs.writeFile(
                 path.join(DATA_DIR, 'competitive-usage.json'),
-                `${JSON.stringify({ generatedAt, source: 'pokepaste sets from tournament teams', species: speciesCount, byId }, null, 2)}\n`,
+                `${JSON.stringify({ generatedAt, source: 'pokepaste sets from tournament teams', species: speciesCount, totalTeams: teams.length, byId }, null, 2)}\n`,
                 'utf8'
             );
-            console.log(`Wrote competitive usage for ${speciesCount} species to public/data/competitive-usage.json`);
+            console.log(`Wrote competitive usage for ${speciesCount} species (of ${teams.length} teams) to public/data/competitive-usage.json`);
         } else {
             console.warn('No competitive usage mined — keeping existing competitive-usage.json.');
         }

@@ -17,6 +17,7 @@ const staticUrl = () =>
  */
 export function useCompetitiveUsage() {
     const [byId, setById] = useState({});
+    const [totalTeams, setTotalTeams] = useState(0);
     const [status, setStatus] = useState('loading');
 
     useEffect(() => {
@@ -26,7 +27,10 @@ export function useCompetitiveUsage() {
                 const res = await fetch(staticUrl());
                 if (res.ok) {
                     const data = await res.json();
-                    if (!cancelled && data?.byId) setById(data.byId);
+                    if (!cancelled && data?.byId) {
+                        setById(data.byId);
+                        if (Number.isFinite(data.totalTeams)) setTotalTeams(data.totalTeams);
+                    }
                 }
             } catch (_) {
                 /* dataset optional — suggestions fall back to heuristics */
@@ -39,5 +43,5 @@ export function useCompetitiveUsage() {
 
     const usageFor = useMemo(() => (id) => byId[id] || null, [byId]);
 
-    return { byId, usageFor, status };
+    return { byId, usageFor, totalTeams, status };
 }

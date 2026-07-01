@@ -42,7 +42,7 @@ import {
     ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
-import { BoxIcon, Puzzle, Medal } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, TrendingUp } from 'lucide-react';
 
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -65,7 +65,10 @@ const PokemonDetailView = lazy(() => import('./views/PokemonDetailView').then((m
 const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').then((m) => ({ default: m.DamageCalculatorView })));
 const SpeedTiersView = lazy(() => import('./views/SpeedTiersView').then((m) => ({ default: m.SpeedTiersView })));
 const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) => ({ default: m.TournamentsView })));
+const TournamentTeamView = lazy(() => import('./views/TournamentTeamView').then((m) => ({ default: m.TournamentTeamView })));
 const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => ({ default: m.TeamDetailView })));
+const MetaUsageView = lazy(() => import('./views/MetaUsageView').then((m) => ({ default: m.MetaUsageView })));
+const PokemonUsageView = lazy(() => import('./views/PokemonUsageView').then((m) => ({ default: m.PokemonUsageView })));
 const GymsView = lazy(() => import('./views/GymsView').then((m) => ({ default: m.GymsView })));
 
 import '../styles/app-shell.css';
@@ -168,6 +171,7 @@ export default function AppLayout() {
         if (path.includes('/items')) return 'items';
         if (path.includes('/gyms')) return 'gyms';
         if (path.includes('/tournaments')) return 'tournaments';
+        if (path.includes('/meta')) return 'meta';
         if (path.includes('/damage-calculator')) return 'damageCalc';
         if (path.includes('/speed-tiers')) return 'speedTiers';
         if (path.includes('/teams')) return 'allTeams';
@@ -508,6 +512,7 @@ export default function AppLayout() {
             'abilities': { title: t('nav.abilities'), subtitle: t('db.abilitiesSubtitle') },
             'items': { title: t('nav.items'), subtitle: t('db.itemsSubtitle') },
             'tournaments': { title: t('nav.tournaments'), subtitle: t('tools.tournamentsSubtitle') },
+            'meta': { title: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
             'damageCalc': { title: t('nav.damageCalc'), subtitle: t('tools.damageSubtitle') },
             'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
         };
@@ -534,6 +539,7 @@ export default function AppLayout() {
                     { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
                     { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms & Trainers', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                     { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
+                    { key: 'meta', label: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
                     { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
                     { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
                 ]
@@ -1266,6 +1272,11 @@ export default function AppLayout() {
                                         <Route path="/tournaments" element={
                                             <TournamentsView db={db} onOpenTeam={handleEditTeam} />
                                         } />
+                                        <Route path="/tournaments/team/:id" element={
+                                            <TournamentTeamView onImport={handleEditTeam} colors={colors} />
+                                        } />
+                                        <Route path="/meta" element={<MetaUsageView />} />
+                                        <Route path="/meta/:idOrName" element={<PokemonUsageView />} />
                                         <Route path="/gyms" element={
                                             <GymsView showDetails={showDetails} onAddToTeam={handleAddPokemon} />
                                         } />

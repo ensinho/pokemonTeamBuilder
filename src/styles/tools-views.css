@@ -375,6 +375,8 @@ input[type="number"] {
     transition: border-color 0.15s ease, transform 0.15s ease;
 }
 .trn-card:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+.trn-card--clickable { cursor: pointer; }
+.trn-card--clickable:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .trn-card__head { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; }
 .trn-card__name { font-weight: 700; line-height: 1.2; }
 .trn-card__meta { font-size: 0.75rem; color: var(--color-muted); margin-top: 0.15rem; }

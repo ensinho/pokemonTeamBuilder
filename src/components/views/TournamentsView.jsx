@@ -18,10 +18,19 @@ function teamMatches(team, q) {
     return haystack.some((v) => typeof v === 'string' && v.toLowerCase().includes(q));
 }
 
-function TeamCard({ team, onOpen, navigate, t }) {
+function TeamCard({ team, onOpen, navigate, t, pt }) {
     const roster = Array.isArray(team.pokemons) ? team.pokemons.slice(0, 6) : [];
+    const openDetail = () => { if (team.id) navigate(`/tournaments/team/${team.id}`); };
+    const stop = (e) => e.stopPropagation();
     return (
-        <article className="trn-card">
+        <article
+            className="trn-card trn-card--clickable"
+            role={team.id ? 'button' : undefined}
+            tabIndex={team.id ? 0 : undefined}
+            onClick={team.id ? openDetail : undefined}
+            onKeyDown={team.id ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(); } } : undefined}
+            title={team.id ? (pt ? 'Ver detalhes do time' : 'View team details') : undefined}
+        >
             <div className="trn-card__head">
                 <div>
                     <div className="trn-card__name">{team.title || team.player || 'Tournament Team'}</div>
@@ -39,7 +48,7 @@ function TeamCard({ team, onOpen, navigate, t }) {
                         type="button"
                         className="trn-card__mon-btn"
                         title={(mon.name || '').replace(/-/g, ' ')}
-                        onClick={() => navigate(`/pokemon/${mon.id}`)}
+                        onClick={(e) => { stop(e); navigate(`/meta/${mon.id}`); }}
                     >
                         <img
                             src={getPokemonFrontSpriteUrl(mon.id)}
@@ -56,7 +65,7 @@ function TeamCard({ team, onOpen, navigate, t }) {
                 <button
                     type="button"
                     className="trn-card__btn trn-card__btn--primary"
-                    onClick={() => onOpen({ name: team.title || team.player || 'Tournament Team', pokemons: team.pokemons || [] })}
+                    onClick={(e) => { stop(e); onOpen({ name: team.title || team.player || 'Tournament Team', pokemons: team.pokemons || [] }); }}
                 >
                     <ShowdownIcon /> {t('tools.importToBuilder')}
                 </button>
@@ -67,6 +76,7 @@ function TeamCard({ team, onOpen, navigate, t }) {
                         rel="noopener noreferrer"
                         className="trn-card__btn trn-card__btn--ghost"
                         title={team.pokepaste ? 'Poképaste' : 'Source'}
+                        onClick={stop}
                     >
                         <ShareIcon className="w-4 h-4" />
                     </a>
@@ -77,7 +87,8 @@ function TeamCard({ team, onOpen, navigate, t }) {
 }
 
 export function TournamentsView({ onOpenTeam }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
+    const pt = language === 'pt';
     const navigate = useNavigate();
     const { teams, status } = useTournamentData();
     const [search, setSearch] = useState('');
@@ -135,7 +146,7 @@ export function TournamentsView({ onOpenTeam }) {
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.featuredTeams')}</h2>
                     <div className="trn-grid">
-                        {featured.map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} t={t} />)}
+                        {featured.map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} t={t} pt={pt} />)}
                     </div>
                 </section>
             )}
@@ -144,7 +155,7 @@ export function TournamentsView({ onOpenTeam }) {
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.tournamentTeams')}</h2>
                     <div className="trn-grid">
-                        {tournament.map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} t={t} />)}
+                        {tournament.map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} t={t} pt={pt} />)}
                     </div>
                 </section>
             )}
