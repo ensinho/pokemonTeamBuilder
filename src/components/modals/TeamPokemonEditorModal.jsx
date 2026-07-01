@@ -1,16 +1,33 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, Package, Swords, Zap, TrendingUp, ArrowUpRight, Plus, Check } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
 import { getMoveDetails } from '../../services/pokemonDataCache';
 import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useSmogonData } from '../../hooks/useSmogonData';
+import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
+import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
+import { UsageBar, pctOf, pretty } from '../views/metaShared';
 import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
+
+// Slugify a display name ("Rock Slide" → "rock-slide") to match the slugs used
+// by the move/ability selects and the Showdown export.
+const toSlug = (s = '') => s.toLowerCase().replace(/[’'.]/g, '').replace(/\s+/g, '-');
+
+// Collapse the tournament EV/nature spreads (EVs unreliable in this dataset) to
+// a nature frequency list, most common first.
+function natureBreakdown(spreads = []) {
+    const m = new Map();
+    for (const s of spreads) if (s.nature) m.set(s.nature, (m.get(s.nature) || 0) + s.count);
+    return [...m.entries()].map(([nature, count]) => ({ nature, count })).sort((a, b) => b.count - a.count);
+}
 
 // Canonical, theme-independent stat colors (defined in index.css :root).
 const STAT_COLOR_VAR = {
@@ -25,8 +42,12 @@ const STAT_COLOR_VAR = {
 export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => { } }) {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
+    const navigate = useNavigate();
     const { smogonFor } = useSmogonData();
+    const { usageFor } = useCompetitiveUsage();
+    const { typeForMove } = useMoveTypes();
     const smogonEntry = smogonFor(pokemon.id);
+    const usage = usageFor(pokemon.id);
     const [customization, setCustomization] = useState(pokemon.customization);
     const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
@@ -91,6 +112,22 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         });
     };
 
+    // ── One-click "apply from usage" helpers — mutate the live build, matching
+    // the display-cased usage data back onto the slugs the selects/export expect.
+    const applyItemSlug = (slug) => handleCustomizationChange('item', slug);
+    const applyNatureName = (name) => handleCustomizationChange('nature', name.toLowerCase());
+    const applyTeraSlug = (slug) => handleCustomizationChange('teraType', slug);
+    const applyAbilityName = (name) => {
+        const slug = toSlug(name);
+        const match = (pokemon.abilities || []).find((a) => toSlug(a.name) === slug);
+        handleCustomizationChange('ability', match ? match.name : slug);
+    };
+    const applyMoveName = (name) => {
+        const slug = toSlug(name);
+        const match = (pokemon.moves || []).find((mv) => toSlug(mv.name) === slug);
+        handleMoveToggle(match ? match.name : slug);
+    };
+
     const calculateStat = (base, ev, statName) => {
         if (statName === 'hp') {
             return Math.floor(base * 2 + 31 + Math.floor(ev / 4)) + 110;
@@ -114,9 +151,23 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
     if (!pokemon) return null;
 
+    // Competitive usage (what tournament teams actually run). EVs in this dataset
+    // are unreliable, so Tera falls back to the Smogon sets' Tera types.
+    const usageN = usage?.n || 0;
+    const hasUsage = usageN > 0;
+    const usageNatures = natureBreakdown(usage?.spreads);
+    const teraList = usage?.tera?.length
+        ? usage.tera.map((tt) => ({ name: tt.name, count: tt.count }))
+        : (() => {
+            const m = new Map();
+            for (const s of smogonEntry?.sets || []) for (const tt of s.tera || []) m.set(tt, (m.get(tt) || 0) + 1);
+            return [...m.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
+        })();
+
     const tabs = [
         { id: 'build', label: t('modals.editorModalTabBuild') },
         { id: 'stats', label: t('modals.editorModalTabStats') },
+        ...(hasUsage ? [{ id: 'usage', label: pt ? 'Uso competitivo' : 'Competitive usage' }] : []),
     ];
 
     const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm capitalize text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary';
@@ -421,6 +472,139 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         </div>
                                     );
                                 })}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'usage' && (
+                        <div role="tabpanel" id="panel-usage" aria-labelledby="tab-usage" className="space-y-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="text-[13px] text-muted">
+                                    {pt
+                                        ? <>O que os melhores jogadores usam em <span className="font-bold text-fg">{usageN}</span> times — clique para aplicar.</>
+                                        : <>What top players run across <span className="font-bold text-fg">{usageN}</span> teams — click to apply.</>}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => { onClose(); navigate(`/meta/${pokemon.id}`); }}
+                                    className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2.5 py-1 text-[11px] font-semibold text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                    <TrendingUp className="h-3.5 w-3.5" /> {pt ? 'Página completa' : 'Full usage page'} <ArrowUpRight className="h-3 w-3" />
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                {usage?.items?.length > 0 && (
+                                    <section className="rounded-xl border border-border bg-bg p-3">
+                                        <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <Package className="h-3.5 w-3.5 text-primary" /> {pt ? 'Itens' : 'Held items'}
+                                        </h3>
+                                        <div className="space-y-1.5">
+                                            {usage.items.slice(0, 6).map((it) => {
+                                                const active = customization.item === it.slug;
+                                                return (
+                                                    <UsageBar
+                                                        key={it.slug}
+                                                        label={pretty(it.name)}
+                                                        icon={<img src={itemSpriteUrl(it.slug)} alt="" className="h-4 w-4 image-pixelated" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />}
+                                                        pct={pctOf(it.count, usageN)}
+                                                        count={it.count}
+                                                        active={active}
+                                                        trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className="h-3.5 w-3.5 text-muted" />}
+                                                        onClick={() => applyItemSlug(it.slug)}
+                                                        title={pt ? `Usar ${pretty(it.name)}` : `Use ${pretty(it.name)}`}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {usage?.moves?.length > 0 && (
+                                    <section className="rounded-xl border border-border bg-bg p-3">
+                                        <h3 className="mb-2 flex items-center justify-between gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <span className="flex items-center gap-1.5"><Swords className="h-3.5 w-3.5 text-primary" /> {pt ? 'Golpes' : 'Moves'}</span>
+                                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${customization.moves.length === 4 ? 'bg-success/15 text-success' : 'bg-surface-raised text-muted'}`}>{customization.moves.length}/4</span>
+                                        </h3>
+                                        <div className="space-y-1.5">
+                                            {usage.moves.slice(0, 10).map((mv) => {
+                                                const mt = typeForMove(mv.name);
+                                                const active = customization.moves.some((m) => toSlug(m) === toSlug(mv.name));
+                                                const full = customization.moves.length >= 4;
+                                                return (
+                                                    <UsageBar
+                                                        key={mv.name}
+                                                        label={pretty(mv.name)}
+                                                        icon={mt && typeIcons[mt] ? <img src={typeIcons[mt]} alt="" className="h-4 w-4" /> : undefined}
+                                                        pct={pctOf(mv.count, usageN)}
+                                                        count={mv.count}
+                                                        color={mt ? (typeColors[mt] || 'var(--color-success)') : 'var(--color-success)'}
+                                                        active={active}
+                                                        trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className={`h-3.5 w-3.5 ${full ? 'text-muted/40' : 'text-muted'}`} />}
+                                                        onClick={() => applyMoveName(mv.name)}
+                                                        title={active ? (pt ? 'Remover golpe' : 'Remove move') : (pt ? 'Adicionar golpe' : 'Add move')}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {(usage?.abilities?.length > 0 || usageNatures.length > 0) && (
+                                    <section className="rounded-xl border border-border bg-bg p-3">
+                                        <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <Zap className="h-3.5 w-3.5 text-primary" /> {pt ? 'Habilidades' : 'Abilities'}
+                                        </h3>
+                                        <div className="space-y-1.5">
+                                            {(usage?.abilities || []).slice(0, 4).map((ab) => {
+                                                const active = toSlug(customization.ability) === toSlug(ab.name);
+                                                return (
+                                                    <UsageBar key={ab.name} label={pretty(ab.name)} pct={pctOf(ab.count, usageN)} count={ab.count} color="var(--color-accent)" active={active} trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className="h-3.5 w-3.5 text-muted" />} onClick={() => applyAbilityName(ab.name)} />
+                                                );
+                                            })}
+                                            {usageNatures.length > 0 && (
+                                                <>
+                                                    <p className="pt-1.5 text-[10px] font-bold uppercase tracking-wide text-muted">{pt ? 'Naturezas' : 'Natures'}</p>
+                                                    {usageNatures.slice(0, 4).map((nat) => {
+                                                        const active = customization.nature === nat.nature.toLowerCase();
+                                                        return (
+                                                            <UsageBar key={nat.nature} label={nat.nature} pct={pctOf(nat.count, usageN)} count={nat.count} color="var(--color-info)" active={active} trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className="h-3.5 w-3.5 text-muted" />} onClick={() => applyNatureName(nat.nature)} />
+                                                        );
+                                                    })}
+                                                </>
+                                            )}
+                                        </div>
+                                    </section>
+                                )}
+
+                                {teraList.length > 0 && (
+                                    <section className="rounded-xl border border-border bg-bg p-3">
+                                        <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <Sparkles className="h-3.5 w-3.5 text-primary" /> {pt ? 'Tipo Tera' : 'Tera type'}
+                                        </h3>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {teraList.slice(0, 8).map((tt) => {
+                                                const slug = tt.name?.toLowerCase();
+                                                const c = typeColors[slug] || 'var(--color-muted)';
+                                                const active = customization.teraType === slug;
+                                                return (
+                                                    <button
+                                                        key={tt.name}
+                                                        type="button"
+                                                        onClick={() => applyTeraSlug(slug)}
+                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'ring-1 ring-primary' : ''}`}
+                                                        style={{ color: c, backgroundColor: `${c}1f`, borderColor: active ? c : `${c}55` }}
+                                                    >
+                                                        {typeIcons[slug] && <img src={typeIcons[slug]} alt="" className="h-3 w-3" />}
+                                                        {tt.name}
+                                                        {active && <Check className="h-3 w-3" />}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <p className="mt-2 text-[10px] text-muted">{pt ? 'EVs confiáveis estão nos conjuntos Smogon (aba Build).' : 'Reliable EV spreads live in the Smogon sets (Build tab).'}</p>
+                                    </section>
+                                )}
                             </div>
                         </div>
                     )}

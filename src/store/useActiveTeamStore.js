@@ -6,6 +6,8 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDis
 import { resolvePokemonDetail } from '../services/pokemonDataCache';
 import { analyzeTeam } from '../utils/teamAnalysis';
 import { buildShowdownExportText as buildShowdownText } from '../utils/showdownExport';
+import { applySmogonSet } from '../utils/smogonSets';
+import { topSmogonSet } from '../utils/loadSmogon';
 import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
 import { usePokedexStore } from './usePokedexStore';
@@ -15,12 +17,12 @@ import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 // created within the same millisecond (e.g. the randomizer building 6 at once).
 let teamMemberSeq = 0;
 
-// Build a fully-formed team member (with default customization) from a resolved
-// Pokémon record. Shared by handleAddPokemon and handleRandomizeTeam.
-const createTeamMember = (fullPokemon) => ({
-    ...fullPokemon,
-    instanceId: `${fullPokemon.id}-${Date.now()}-${teamMemberSeq++}`,
-    customization: {
+// Build a fully-formed team member from a resolved Pokémon record. When a Smogon
+// `set` is supplied, the member arrives pre-filled with that competitive build
+// (item / ability / nature / Tera / moves / EVs); otherwise it gets the blank
+// default. Shared by handleAddPokemon and handleRandomizeTeam.
+const createTeamMember = (fullPokemon, set = null) => {
+    const baseCustomization = {
         item: '',
         nature: 'serious',
         teraType: fullPokemon.types?.[0] || 'normal',
@@ -29,8 +31,13 @@ const createTeamMember = (fullPokemon) => ({
         moves: [],
         evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
         ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
-    },
-});
+    };
+    return {
+        ...fullPokemon,
+        instanceId: `${fullPokemon.id}-${Date.now()}-${teamMemberSeq++}`,
+        customization: set ? applySmogonSet(set, baseCustomization) : baseCustomization,
+    };
+};
 
 const serializeTeamPokemon = (pokemon) => ({
     id: pokemon.id,
@@ -78,6 +85,10 @@ export const useActiveTeamStore = create((set, get) => ({
             return;
         }
 
+        // Kick off the competitive-set lookup in parallel with the detail resolve
+        // so a freshly added member arrives pre-filled with the most-used build.
+        const setPromise = topSmogonSet(pokemon.id);
+
         // The Pokédex/Team Builder list now carries only lightweight index data
         // (no abilities/moves/stats). Lazily resolve the full record on add so the
         // member — and the editor modal — have everything they need.
@@ -92,7 +103,8 @@ export const useActiveTeamStore = create((set, get) => ({
             fullPokemon = { ...pokemon, ...resolved };
         }
 
-        set({ currentTeam: [...currentTeam, createTeamMember(fullPokemon)] });
+        const set_ = await setPromise;
+        set({ currentTeam: [...currentTeam, createTeamMember(fullPokemon, set_)] });
         get().recalculateAnalysis();
     },
 
@@ -124,12 +136,13 @@ export const useActiveTeamStore = create((set, get) => ({
         set({ isRandomizing: true });
         try {
             const resolved = await Promise.all(picks.map(async (pokemon) => {
+                const setPromise = topSmogonSet(pokemon.id);
                 let full = pokemon;
                 if (!pokemon.abilities?.length || !pokemon.moves?.length) {
                     const detail = await resolvePokemonDetail(pokemon.id);
                     if (detail) full = { ...pokemon, ...detail };
                 }
-                return createTeamMember(full);
+                return createTeamMember(full, await setPromise);
             }));
             set({ currentTeam: resolved, editingTeamId: null });
             get().recalculateAnalysis();

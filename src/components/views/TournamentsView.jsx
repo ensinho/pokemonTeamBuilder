@@ -5,6 +5,7 @@ import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyState } from '../EmptyState';
+import { SourceCredit } from './metaShared';
 import { PokeballIcon, TrophyIcon, ShowdownIcon, ShareIcon, ClearIcon } from '../icons';
 
 // Match a team against the search term across its Pokémon, title/player,
@@ -159,6 +160,8 @@ export function TournamentsView({ onOpenTeam }) {
                     </div>
                 </section>
             )}
+
+            <SourceCredit pt={pt} sources={['vgcpastes', 'limitless']} className="mt-6 px-1 pb-2" />
         </div>
     );
 }

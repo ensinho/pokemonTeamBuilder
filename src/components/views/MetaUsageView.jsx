@@ -7,7 +7,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { PokeballIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores } from '../../utils/metaUsage';
-import { MonSprite, pretty } from './metaShared';
+import { MonSprite, pretty, SourceCredit } from './metaShared';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 function CoreRow({ core, rank, onOpenMon }) {
@@ -96,6 +96,7 @@ export function MetaUsageView() {
                         ? `Pokémon mais usados em ${filteredTeams.length} times recentes de torneios — clique para ver exatamente o que estão rodando (itens, golpes, spreads e parceiros).`
                         : `The most-used Pokémon across ${filteredTeams.length} recent tournament teams — click any to see exactly what they run (items, moves, spreads & partners).`}
                 </p>
+                <SourceCredit pt={pt} sources={['vgcpastes', 'smogon', 'pikalytics']} className="mt-2.5" />
             </header>
 
             {/* Toolbar */}

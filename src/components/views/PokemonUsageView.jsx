@@ -16,7 +16,7 @@ import { useSmogonData } from '../../hooks/useSmogonData';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useTranslation } from '../../hooks/useTranslation';
 import { EmptyState } from '../EmptyState';
-import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf } from './metaShared';
+import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, SourceCredit, useSmartBack } from './metaShared';
 
 const slugify = (s = '') => s.toLowerCase().trim().replace(/[.'’:]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
@@ -49,6 +49,7 @@ function MetricTile({ icon, value, label, accent }) {
 export function PokemonUsageView() {
     const { idOrName } = useParams();
     const navigate = useNavigate();
+    const goBack = useSmartBack('/meta');
     const { language } = useTranslation();
     const pt = language === 'pt';
 
@@ -99,8 +100,8 @@ export function PokemonUsageView() {
     if (pokemonIndex.length && !entry) {
         return (
             <main className="mx-auto max-w-5xl px-4 py-10">
-                <button type="button" onClick={() => navigate('/meta')} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-                    <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar ao meta' : 'Back to meta'}
+                <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
+                    <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
                 </button>
                 <EmptyState title={pt ? 'Pokémon não encontrado' : 'Pokémon not found'} message={pt ? 'Verifique o endereço.' : 'Check the URL.'} />
             </main>
@@ -118,8 +119,8 @@ export function PokemonUsageView() {
 
     return (
         <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
-            <button type="button" onClick={() => navigate('/meta')} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-                <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar ao meta' : 'Back to meta'}
+            <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
+                <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
             </button>
 
             {/* Header */}
@@ -163,7 +164,8 @@ export function PokemonUsageView() {
 
             {/* Usage breakdowns */}
             {hasUsage && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     <Panel title={pt ? 'Itens' : 'Held items'} icon={<Package className="h-4 w-4 text-primary" />}>
                         <div className="space-y-1.5">
                             {usage.items.map((it) => (
@@ -211,6 +213,7 @@ export function PokemonUsageView() {
                             )}
                         </div>
                     </Panel>
+                    </div>
 
                     <Panel title={pt ? 'Tera & Parceiros' : 'Tera & Teammates'} icon={<Sparkles className="h-4 w-4 text-primary" />}>
                         {teraList.length > 0 && (
@@ -227,7 +230,7 @@ export function PokemonUsageView() {
                             </div>
                         )}
                         {usage.teammates?.length > 0 ? (
-                            <div className="grid grid-cols-4 gap-1.5">
+                            <div className="grid grid-cols-4 gap-1.5 sm:grid-cols-6 lg:grid-cols-8">
                                 {usage.teammates.slice(0, 8).map((tm) => (
                                     <button
                                         key={tm.id}
@@ -320,6 +323,8 @@ export function PokemonUsageView() {
                     </div>
                 </div>
             )}
+
+            <SourceCredit pt={pt} sources={['vgcpastes', 'smogon', 'pikalytics']} className="mt-8 border-t border-border pt-4" />
         </main>
     );
 }

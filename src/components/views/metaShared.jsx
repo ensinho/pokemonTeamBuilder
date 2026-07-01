@@ -1,10 +1,27 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ArrowUpRight, Info } from 'lucide-react';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 
 // Pretty-print a Showdown/slug name for display.
 export const pretty = (s = '') => String(s).replace(/-/g, ' ');
+
+/**
+ * A "back" handler that returns to wherever the user actually came from. If this
+ * page is the first entry in the history stack (a deep link / fresh load, where
+ * router `location.key` is the sentinel 'default'), it falls back to `fallback`
+ * so the button never dead-ends or leaves the app.
+ */
+export function useSmartBack(fallback) {
+    const navigate = useNavigate();
+    const location = useLocation();
+    return React.useCallback(() => {
+        if (location.key && location.key !== 'default') navigate(-1);
+        else navigate(fallback);
+    }, [navigate, location.key, fallback]);
+}
 
 /**
  * A move name rendered as a compact chip, tinted by its type (with the type
@@ -32,16 +49,19 @@ export const pctOf = (count, total) => (total > 0 ? Math.round((count / total) *
 
 /**
  * A labelled horizontal percentage bar (pikalytics-style). `pct` drives the fill
- * width; `count` shows the raw frequency; `color` tints the fill.
+ * width; `count` shows the raw frequency; `color` tints the fill. When used as a
+ * button, `active` highlights the current selection and `trailing` renders an
+ * affordance (e.g. a + / ✓ icon) at the end.
  */
-export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary)', onClick, title }) {
+export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary)', onClick, title, active = false, trailing }) {
     const Comp = onClick ? 'button' : 'div';
     return (
         <Comp
             type={onClick ? 'button' : undefined}
             onClick={onClick}
             title={title}
-            className={`group relative flex w-full items-center gap-2 overflow-hidden rounded-lg border border-border bg-surface px-2.5 py-1.5 text-left ${onClick ? 'transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''}`}
+            aria-pressed={onClick ? active : undefined}
+            className={`group relative flex w-full items-center gap-2 overflow-hidden rounded-lg border bg-surface px-2.5 py-1.5 text-left ${active ? 'border-primary ring-1 ring-primary/40' : 'border-border'} ${onClick ? 'transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''}`}
         >
             <span
                 className="absolute inset-y-0 left-0 rounded-lg opacity-15 transition-all"
@@ -52,7 +72,44 @@ export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary
             <span className="relative z-10 min-w-0 flex-1 truncate text-[12px] font-semibold capitalize text-fg">{label}</span>
             <span className="relative z-10 shrink-0 text-[11px] font-bold tabular-nums" style={{ color }}>{pct}%</span>
             {count != null && <span className="relative z-10 shrink-0 text-[10px] tabular-nums text-muted">{count}</span>}
+            {trailing && <span className="relative z-10 flex shrink-0 items-center justify-center">{trailing}</span>}
         </Comp>
+    );
+}
+
+// Canonical credit links for the competitive datasets + design inspirations.
+export const SOURCE_LINKS = {
+    vgcpastes: { label: 'VGCPastes', url: 'https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw' },
+    limitless: { label: 'Limitless TCG', url: 'https://play.limitlesstcg.com/tournaments' },
+    smogon: { label: 'Smogon', url: 'https://www.smogon.com/' },
+    pikalytics: { label: 'Pikalytics', url: 'https://www.pikalytics.com/' },
+};
+
+/**
+ * A subtle, inline credit strip linking out to the data sources / inspirations.
+ * `sources` picks which links to show (defaults to all).
+ */
+export function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'limitless', 'pikalytics'], className = '' }) {
+    const links = sources.map((k) => SOURCE_LINKS[k]).filter(Boolean);
+    return (
+        <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted ${className}`}>
+            <span className="inline-flex items-center gap-1 font-semibold uppercase tracking-wide opacity-70">
+                <Info className="h-3 w-3" /> {pt ? 'Fontes' : 'Sources'}
+            </span>
+            {links.map((s, i) => (
+                <React.Fragment key={s.url}>
+                    {i > 0 && <span className="opacity-40" aria-hidden="true">·</span>}
+                    <a
+                        href={s.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-0.5 underline-offset-2 transition-colors hover:text-primary hover:underline"
+                    >
+                        {s.label}<ArrowUpRight className="h-2.5 w-2.5" />
+                    </a>
+                </React.Fragment>
+            ))}
+        </div>
     );
 }
 

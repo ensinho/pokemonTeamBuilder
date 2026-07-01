@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import {
     ChevronLeft, Shield, Swords, AlertTriangle, Sparkles, ExternalLink, Medal,
 } from 'lucide-react';
@@ -14,7 +14,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { EmptyState } from '../EmptyState';
 import { ShowdownIcon } from '../icons';
-import { MoveChip, pretty } from './metaShared';
+import { MoveChip, pretty, useSmartBack } from './metaShared';
 
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 const EV_LABEL = { hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe' };
@@ -46,7 +46,7 @@ function TypeChip({ type, count, danger }) {
  */
 export function TournamentTeamView({ onImport, colors }) {
     const { id } = useParams();
-    const navigate = useNavigate();
+    const goBack = useSmartBack('/tournaments');
     const { language } = useTranslation();
     const pt = language === 'pt';
 
@@ -76,8 +76,8 @@ export function TournamentTeamView({ onImport, colors }) {
     if (!team) {
         return (
             <main className="mx-auto max-w-5xl px-4 py-10">
-                <button type="button" onClick={() => navigate('/tournaments')} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-                    <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar aos torneios' : 'Back to tournaments'}
+                <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
+                    <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
                 </button>
                 <EmptyState title={pt ? 'Time não encontrado' : 'Team not found'} message={pt ? 'Este time pode não estar mais no conjunto de dados.' : 'This team may no longer be in the dataset.'} />
             </main>
@@ -86,8 +86,8 @@ export function TournamentTeamView({ onImport, colors }) {
 
     return (
         <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
-            <button type="button" onClick={() => navigate('/tournaments')} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-                <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar aos torneios' : 'Back to tournaments'}
+            <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
+                <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
             </button>
 
             {/* Header */}
