@@ -1,6 +1,7 @@
 import React from 'react';
 import '../styles/home-dashboard.css';
 import { useTournamentData } from '../hooks/useTournamentData';
+import { useMetaUsage } from '../hooks/useMetaUsage';
 import { useTranslation } from '../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { Flame, Puzzle } from 'lucide-react';
@@ -60,9 +61,13 @@ const UTILITY_SHORTCUTS = [
 export function HomeDashboard({ navigate, puzzleCard }) {
     const { t, language } = useTranslation();
     const { popular, recent, status } = useTournamentData();
+    // Rank the popular row by real Smogon ladder usage for the current regulation
+    // (same source as the Meta page), falling back to tournament counts while it loads.
+    const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
     const [activePokemonId, setActivePokemonId] = React.useState(null);
 
-    const topPopular = popular.slice(0, 15);
+    const usingMeta = metaRanked.length > 0;
+    const topPopular = (usingMeta ? metaRanked : popular).slice(0, 15);
     const isLoading = status === 'loading';
 
     const handleMouseEnterMon = (id) => {
@@ -177,6 +182,7 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                                 {language === 'pt' ? 'Pokémon Populares ' : 'Popular Pokémon '}
                                 <span className="hidden sm:inline">{language === 'pt' ? '(Passe o mouse para filtrar)' : '(Hover to filter)'}</span>
                                 <span className="sm:hidden">{language === 'pt' ? '(Toque para filtrar)' : '(Tap to filter)'}</span>
+                                {usingMeta && metaFormat?.label && <span className="ml-1 normal-case text-primary">· {metaFormat.label}</span>}
                             </p>
                             <div className="hd-meta-mons-grid">
                                 {topPopular.slice(0, 10).map((mon) => (
@@ -190,7 +196,7 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                                     >
                                         <div className="hd-meta-mon-icon-wrap">
                                             <img src={getPokemonFrontSpriteUrl(mon.id)} alt="" aria-hidden="true" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                                            <span className="hd-meta-mon-badge">{mon.count}</span>
+                                            <span className="hd-meta-mon-badge" title={usingMeta ? (language === 'pt' ? 'uso no ladder' : 'ladder usage') : (language === 'pt' ? 'aparições' : 'appearances')}>{usingMeta ? `${mon.count}%` : mon.count}</span>
                                         </div>
                                         <span className="hd-meta-mon-name">{(mon.name || '').replace(/-/g, ' ')}</span>
                                     </button>
@@ -205,8 +211,8 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                                     {activePokemonId ? (
                                         <span>
                                             {language === 'pt' 
-                                                ? `Equipes com ${formatPokemonDisplayName(popular.find(p => p.id === activePokemonId)?.name)}` 
-                                                : `Teams with ${formatPokemonDisplayName(popular.find(p => p.id === activePokemonId)?.name)}`
+                                                ? `Equipes com ${formatPokemonDisplayName((topPopular.find(p => p.id === activePokemonId) || popular.find(p => p.id === activePokemonId))?.name)}` 
+                                                : `Teams with ${formatPokemonDisplayName((topPopular.find(p => p.id === activePokemonId) || popular.find(p => p.id === activePokemonId))?.name)}`
                                             }
                                         </span>
                                     ) : (

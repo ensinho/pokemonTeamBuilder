@@ -39,10 +39,12 @@ const bstOf = (entry) => entry ? Object.values(entry.baseStats || {}).reduce((a,
  * @returns {Array<{id,name,types,score,reasons,primary}>}
  */
 export function buildSynergySuggestions({
-    team = [], pokemonIndex = [], synergy = {}, smogonById = {}, usageById = {}, popular = [], limit = 15, allowedIds = null,
+    team = [], pokemonIndex = [], synergy = {}, smogonById = {}, usageById = {}, popular = [], metaUsage = null, limit = 15, allowedIds = null,
 } = {}) {
     const indexById = new Map(pokemonIndex.map((p) => [p.id, p]));
-    const popularMap = new Map(popular.map((p) => [p.id, p.count]));
+    // Prefer the real Smogon ladder usage (metaUsage) for every "how meta is this"
+    // signal; fall back to the tournament popular counts when it's unavailable.
+    const popularMap = (metaUsage && metaUsage.size) ? metaUsage : new Map(popular.map((p) => [p.id, p.count]));
     const teamIds = new Set(team.map((p) => p.id));
     const { co, usage } = synergy || {};
     const nameOf = (id) => indexById.get(id)?.name || `#${id}`;
@@ -50,7 +52,9 @@ export function buildSynergySuggestions({
 
     // Empty team → the meta's most-used Pokémon as a starting point.
     if (team.length === 0) {
-        const ranked = usage ? [...usage.entries()].sort((a, b) => b[1] - a[1]) : [];
+        const ranked = (metaUsage && metaUsage.size)
+            ? [...metaUsage.entries()].sort((a, b) => b[1] - a[1])
+            : (usage ? [...usage.entries()].sort((a, b) => b[1] - a[1]) : []);
         return ranked
             .filter(([id]) => indexById.has(id) && (!allowedIds || allowedIds.has(id)))
             .slice(0, limit)
@@ -111,7 +115,7 @@ export function buildSynergySuggestions({
         if (weak >= Math.ceil(team.length / 2) && weak > res) weakTypes.push(atk);
     }
     if (weakTypes.length) {
-        const relevant = new Set([...Object.keys(smogonById).map(Number), ...(usage ? [...usage.keys()] : [])]);
+        const relevant = new Set([...Object.keys(smogonById).map(Number), ...(usage ? [...usage.keys()] : []), ...popularMap.keys()]);
         for (const id of relevant) {
             if (teamIds.has(id) || !indexById.has(id)) continue;
             const entry = indexById.get(id);

@@ -395,11 +395,12 @@ export const MobileTeamBuilderView = ({
         return m;
     }, [displayedPokemons]);
     const synergyOnlyCards = React.useMemo(() => {
-        if (!synergySuggestions.length) return [];
+        // While searching, show the matching Pokémon first (no synergy prepend).
+        if (searchInput.trim() || !synergySuggestions.length) return [];
         return synergySuggestions
             .filter((s) => !displayedIdSet.has(s.id))
             .map((s) => ({ ...s, _synergyOnly: true }));
-    }, [synergySuggestions, displayedIdSet]);
+    }, [synergySuggestions, displayedIdSet, searchInput]);
 
     React.useEffect(() => {
         if (selectedTypes.size <= 1) return;

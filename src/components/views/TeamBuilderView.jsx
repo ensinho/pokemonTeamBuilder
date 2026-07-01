@@ -26,6 +26,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
+import { useMetaUsage } from '../../hooks/useMetaUsage';
 import {
     ClearIcon,
     EditIcon,
@@ -194,6 +195,8 @@ export function TeamBuilderView({
     const { partnersFor, status: tournamentStatus, popular, synergy } = useTournamentData();
     const { byId: smogonById } = useSmogonData();
     const { byId: usageById } = useCompetitiveUsage();
+    // Real Smogon ladder usage for the current regulation — drives the "meta" signal.
+    const { ranked: metaRanked, usageMap: metaUsageMap } = useMetaUsage();
 
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
 
@@ -216,11 +219,12 @@ export function TeamBuilderView({
             synergy,
             smogonById,
             usageById,
-            popular,
+            popular: metaRanked.length ? metaRanked : popular,
+            metaUsage: metaUsageMap,
             limit: 20,
             allowedIds,
         });
-    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, selectedGame, gamePokemonIds]);
+    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds]);
 
     const suggestionIndexById = React.useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
     const addSuggestion = React.useCallback(
