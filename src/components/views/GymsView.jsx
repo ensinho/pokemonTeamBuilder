@@ -293,7 +293,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
             onClick={handleMonClick}
             disabled={!id}
             title={pretty(mon.name)}
-            className="group flex flex-col items-center gap-2 rounded-xl border border-transparent bg-transparent p-2 text-center transition-all hover:bg-surface-raised/55 hover:border-primary/20 disabled:opacity-60 disabled:hover:translate-y-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
+            className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-raised/60 hover:border-primary/30 p-3 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
         >
             <div className="relative">
                 <div
@@ -311,49 +311,30 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
                         loading="lazy"
                     />
                 </div>
-                <span className="absolute -right-1.5 -top-1.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: accent }}>
+                <span className="absolute -right-1.5 -top-1.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: accent }}>
                     Lv{mon.level || levelCap || '?'}
                 </span>
             </div>
-            
-            <div className="flex flex-col items-center min-w-0 w-full mt-1">
+
+            <div className="flex flex-col items-center min-w-0 w-full mt-1.5">
                 <span className="w-full truncate text-xs font-extrabold capitalize text-fg leading-tight">{pretty(mon.name)}</span>
-                <div className="flex flex-wrap justify-center gap-0.5 mt-1">
+                <div className="flex flex-wrap justify-center gap-1 mt-1.5">
                     {types.map((tp) => (
-                        <img key={tp} src={typeIcons[tp]} alt={tp} title={tp} className="h-3.5 w-3.5 object-contain" />
+                        <span
+                            key={tp}
+                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[8px] font-extrabold capitalize border"
+                            style={{
+                                color: typeColors[tp],
+                                backgroundColor: `${typeColors[tp]}15`,
+                                borderColor: `${typeColors[tp]}30`
+                            }}
+                        >
+                            {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-2.5 w-2.5 shrink-0 object-contain" />}
+                            {tp.slice(0, 3)}
+                        </span>
                     ))}
                 </div>
-                {mon.ability && (
-                    <span className="w-full truncate text-[10px] font-bold text-muted capitalize mt-1.5 leading-none" title={pretty(mon.ability)}>
-                        {pretty(mon.ability)}
-                    </span>
-                )}
             </div>
-
-            {Array.isArray(mon.moves) && mon.moves.length > 0 && (
-                <div className="mt-2.5 grid grid-cols-2 gap-1 w-full shrink-0">
-                    {mon.moves.slice(0, 4).map((mv, idx) => {
-                        const name = typeof mv === 'string' ? mv : mv.name;
-                        const type = typeof mv === 'string' ? 'normal' : (mv.type || 'normal');
-                        const color = typeColors[type] || 'var(--color-primary)';
-                        return (
-                            <span
-                                key={`${name}-${idx}`}
-                                className="truncate rounded px-1 py-0.5 text-[8px] font-bold capitalize text-center border flex items-center justify-center gap-0.5 leading-none min-h-[16px]"
-                                style={{
-                                    color,
-                                    borderColor: `${color}28`,
-                                    backgroundColor: `${color}0a`
-                                }}
-                                title={pretty(name)}
-                            >
-                                {typeIcons[type] && <img src={typeIcons[type]} alt="" className="h-2 w-2 shrink-0 object-contain" />}
-                                <span className="truncate">{pretty(name)}</span>
-                            </span>
-                        );
-                    })}
-                </div>
-            )}
         </button>
     );
 }
@@ -375,6 +356,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
     const selectedKey = searchParams.get('game') || (games[0]?.key || null);
     const [pickerOpen, setPickerOpen] = useState(false);
     const [modalLeader, setModalLeader] = useState(null);
+    const [activeLeaderId, setActiveLeaderId] = useState(null);
 
     React.useEffect(() => {
         if (status === 'ready' && games.length > 0 && !searchParams.get('game')) {
@@ -404,6 +386,54 @@ export function GymsView({ showDetails, onAddToTeam }) {
     const hacks = games.filter((g) => g.kind === 'hackrom');
     const selected = games.find((g) => g.key === selectedKey) || games[0] || null;
 
+    // Initialize active leader sidebar element
+    React.useEffect(() => {
+        if (selected && selected.leaders && selected.leaders.length > 0) {
+            const first = selected.leaders[0];
+            setActiveLeaderId(`leader-${first.order}-${slugify(first.name)}`);
+        } else {
+            setActiveLeaderId(null);
+        }
+    }, [selected]);
+
+    // Scrollspy effect
+    React.useEffect(() => {
+        if (status !== 'ready' || !selected || !selected.leaders || !selected.leaders.length) return;
+
+        const observerOptions = {
+            root: null,
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0,
+        };
+
+        const observerCallback = (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveLeaderId(entry.target.id);
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+        selected.leaders.forEach((leader) => {
+            const id = `leader-${leader.order}-${slugify(leader.name)}`;
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+
+        return () => observer.disconnect();
+    }, [selected, status]);
+
+    const scrollToLeader = (leader) => {
+        const id = `leader-${leader.order}-${slugify(leader.name)}`;
+        const el = document.getElementById(id);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            setActiveLeaderId(id);
+        }
+    };
+
     const buildTeam = (leader) => {
         if (!onAddToTeam) return;
         for (const mon of leader.team.slice(0, 6)) {
@@ -412,12 +442,109 @@ export function GymsView({ showDetails, onAddToTeam }) {
         }
     };
 
-    if (status !== 'ready' && games.length === 0) {
-        return <div className="mx-auto max-w-6xl px-4 py-16 text-center text-sm text-muted">{pt ? 'Carregando ginásios…' : 'Loading gyms…'}</div>;
-    }
+    const gymLeaders = selected ? selected.leaders.filter(l => l.gym !== 'Elite Four' && l.gym !== 'Champion') : [];
+    const eliteFourAndChamp = selected ? selected.leaders.filter(l => l.gym === 'Elite Four' || l.gym === 'Champion') : [];
+
+    const renderLeaderCard = (leader) => {
+        const accent = typeColors[leader.type] || 'var(--color-primary)';
+        const isChamp = leader.gym === 'Champion';
+        const active = activeLeaderId === `leader-${leader.order}-${slugify(leader.name)}`;
+
+        return (
+            <article
+                key={`${leader.order}-${leader.name}`}
+                id={`leader-${leader.order}-${slugify(leader.name)}`}
+                onClick={() => setModalLeader(leader)}
+                className={`team-builder-panel p-4 flex flex-col gap-4 border border-border border-l-4 transition-all duration-200 cursor-pointer shadow-sm relative overflow-hidden group/card animate-fade-in-up ${isChamp
+                        ? active
+                            ? 'border-yellow-500 shadow-yellow-500/10'
+                            : 'hover:border-yellow-500/50'
+                        : active
+                            ? 'border-primary shadow-primary/10'
+                            : 'hover:border-primary/50'
+                    }`}
+                style={{
+                    borderLeftColor: isChamp ? '#eab308' : accent,
+                    background: isChamp
+                        ? 'linear-gradient(135deg, var(--color-surface) 75%, rgba(234, 179, 8, 0.04) 100%)'
+                        : 'var(--color-surface)',
+                    scrollMarginTop: '1.5rem',
+                }}
+            >
+                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                    <div className="flex items-center gap-3">
+                        <TrainerAvatar sprite={leader.sprite} type={leader.type} order={isChamp ? '★' : leader.order} accent={isChamp ? '#eab308' : accent} />
+                        <div className="min-w-0">
+                            <h2 className="text-lg font-extrabold text-fg leading-none flex items-center gap-1.5">
+                                {leader.name}
+                                {isChamp && <Sparkles className="h-4 w-4 text-yellow-500 animate-pulse shrink-0" />}
+                            </h2>
+                            <p className="text-xs text-muted mt-1.5">
+                                {[leader.gym, leader.city].filter(Boolean).join(' · ')}
+                            </p>
+                        </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className={`opacity-0 group-hover/card:opacity-100 transition-opacity text-xs font-bold mr-1 hidden sm:inline ${isChamp ? 'text-yellow-500' : 'text-primary'}`}>
+                            {pt ? 'Ver time completo' : 'View full team'} ➔
+                        </span>
+                        <span
+                            className="inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-[11px] font-bold capitalize"
+                            style={{
+                                color: isChamp ? '#eab308' : accent,
+                                borderColor: 'currentColor',
+                                backgroundColor: 'transparent'
+                            }}
+                        >
+                            {typeIcons[leader.type] && <img src={typeIcons[leader.type]} alt="" className="h-3.5 w-3.5 object-contain" />}
+                            {isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
+                        </span>
+                        {leader.badge && (
+                            <span className="rounded-xl border border-border bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{leader.badge}</span>
+                        )}
+                        {leader.levelCap && (
+                            <span className="rounded-xl border border-border bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} {leader.levelCap}</span>
+                        )}
+                        {onAddToTeam && (
+                            <button
+                                type="button"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    buildTeam(leader);
+                                }}
+                                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[11px] font-extrabold transition-all duration-200 bg-transparent ${isChamp
+                                        ? 'border-yellow-500/40 text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500'
+                                        : 'border-primary/40 text-primary hover:bg-primary hover:text-white hover:border-primary'
+                                    }`}
+                                title={pt ? 'Montar este time no construtor' : 'Build this team in the builder'}
+                            >
+                                <Swords className="h-3 w-3" /> {pt ? 'Usar time' : 'Use team'}
+                            </button>
+                        )}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-1">
+                    {leader.team.map((mon, i) => {
+                        const entry = resolve(mon.name);
+                        return (
+                            <TeamMon
+                                key={`${mon.name}-${i}`}
+                                mon={mon}
+                                entry={entry}
+                                accent={isChamp ? '#eab308' : accent}
+                                levelCap={leader.levelCap}
+                                onClick={() => entry && showDetails?.({ id: entry.id, name: entry.name })}
+                            />
+                        );
+                    })}
+                </div>
+            </article>
+        );
+    };
 
     return (
-        <div className="mx-auto max-w-6xl px-3 py-5 sm:px-5">
+        <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-5">
             <header className="mb-5">
                 <h1 className="flex items-center gap-2 text-2xl font-extrabold text-fg sm:text-3xl">
                     <Swords className="h-6 w-6 text-primary" /> {pt ? 'Ginásios & Treinadores' : 'Gyms & Trainers'}
@@ -429,29 +556,6 @@ export function GymsView({ showDetails, onAddToTeam }) {
                 </p>
             </header>
 
-            {/* Logo game selector — opens the cover-art picker modal */}
-            {selected && (
-                <button
-                    type="button"
-                    onClick={() => setPickerOpen(true)}
-                    className="game-cover"
-                    style={{ '--cover-accent': accentFor(selected) }}
-                    aria-haspopup="dialog"
-                    title={pt ? 'Trocar jogo' : 'Change game'}
-                >
-                    <span className="game-cover__art">
-                        <img src={logoFor(selected)} alt="" className="game-cover__logo" />
-                    </span>
-                    <span className="game-cover__meta">
-                        <span className="game-cover__eyebrow">
-                            {selected.kind === 'hackrom' ? (pt ? 'Hack ROM' : 'Hack ROM') : (pt ? 'Jogo' : 'Game')} · {selected.region}
-                        </span>
-                        <span className="game-cover__label">{selected.label}</span>
-                        <span className="game-cover__hint">{pt ? 'Trocar jogo' : 'Change game'}</span>
-                    </span>
-                </button>
-            )}
-
             <GymGamePickerModal
                 open={pickerOpen}
                 onClose={() => setPickerOpen(false)}
@@ -462,88 +566,183 @@ export function GymsView({ showDetails, onAddToTeam }) {
                 pt={pt}
             />
 
-            {/* Leaders */}
-            {selected && (
-                <div className="mt-6 space-y-4">
-                    {selected.leaders.map((leader) => {
-                        const accent = typeColors[leader.type] || 'var(--color-primary)';
-                        return (
-                            <article
-                                key={`${leader.order}-${leader.name}`}
-                                onClick={() => setModalLeader(leader)}
-                                className="team-builder-panel p-4 flex flex-col gap-4 hover:border-primary/50 transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md relative overflow-hidden group/card animate-fade-in-up"
-                                style={{
-                                    borderTopColor: accent,
-                                    borderTopWidth: 3,
-                                    background: 'var(--color-surface)'
-                                }}
-                            >
-                                <div className="flex flex-wrap items-center justify-between gap-3">
-                                    <div className="flex items-center gap-3">
-                                        <TrainerAvatar sprite={leader.sprite} type={leader.type} order={leader.order} accent={accent} />
-                                        <div className="min-w-0">
-                                            <h2 className="text-lg font-extrabold text-fg leading-snug">{leader.name}</h2>
-                                            <p className="text-xs text-muted mt-0.5">
-                                                {[leader.gym, leader.city].filter(Boolean).join(' · ')}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-1.5">
-                                        <span className="opacity-0 group-hover/card:opacity-100 transition-opacity text-xs font-bold text-primary mr-1">
-                                            {pt ? 'Ver detalhes' : 'View details'} ➔
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold capitalize" style={{ color: accent, backgroundColor: `${accent}1f` }}>
-                                            {typeIcons[leader.type] && <img src={typeIcons[leader.type]} alt="" className="h-3.5 w-3.5 object-contain" />}
-                                            {cap(leader.type)}
-                                        </span>
-                                        {leader.badge && (
-                                            <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-[11px] font-semibold text-muted">{leader.badge}</span>
-                                        )}
-                                        {leader.levelCap && (
-                                            <span className="rounded-full bg-surface-raised px-2.5 py-0.5 text-[11px] font-semibold text-muted">{pt ? 'Nível máx' : 'Lv cap'} {leader.levelCap}</span>
-                                        )}
-                                        {onAddToTeam && (
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    buildTeam(leader);
-                                                }}
-                                                className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-[11px] font-bold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
-                                                title={pt ? 'Montar este time no construtor' : 'Build this team in the builder'}
-                                            >
-                                                <Swords className="h-3 w-3" /> {pt ? 'Usar time' : 'Use team'}
-                                            </button>
-                                        )}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+                {/* Left Column: Sticky Navigation Sidebar */}
+                <aside className="lg:col-span-3 space-y-4 lg:sticky lg:top-5 lg:self-start max-h-[calc(100vh-40px)] overflow-y-auto pr-1 custom-scrollbar">
+                    {/* Game Cover Card */}
+                    {selected && (
+                        <button
+                            type="button"
+                            onClick={() => setPickerOpen(true)}
+                            className="game-cover w-full m-0"
+                            style={{ '--cover-accent': accentFor(selected) }}
+                            aria-haspopup="dialog"
+                            title={pt ? 'Trocar jogo' : 'Change game'}
+                        >
+                            <span className="game-cover__art">
+                                <img src={logoFor(selected)} alt="" className="game-cover__logo" />
+                            </span>
+                            <span className="game-cover__meta">
+                                <span className="game-cover__eyebrow">
+                                    {selected.kind === 'hackrom' ? (pt ? 'Hack ROM' : 'Hack ROM') : (pt ? 'Jogo' : 'Game')} · {selected.region}
+                                </span>
+                                <span className="game-cover__label text-left">{selected.label}</span>
+                                <span className="game-cover__hint text-left">{pt ? 'Trocar jogo' : 'Change game'}</span>
+                            </span>
+                        </button>
+                    )}
+
+                    {/* Timeline Navigation */}
+                    {selected && selected.leaders && selected.leaders.length > 0 && (
+                        <nav className="team-builder-panel p-3.5 space-y-4">
+                            {gymLeaders.length > 0 && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted px-2.5 mb-2.5">
+                                        {pt ? 'Líderes de Ginásio' : 'Gym Leaders'}
+                                    </p>
+                                    <div className="space-y-1">
+                                        {gymLeaders.map((leader) => {
+                                            const leaderId = `leader-${leader.order}-${slugify(leader.name)}`;
+                                            const active = activeLeaderId === leaderId;
+                                            const accent = typeColors[leader.type] || 'var(--color-primary)';
+                                            return (
+                                                <button
+                                                    key={`${leader.order}-${leader.name}`}
+                                                    type="button"
+                                                    onClick={() => scrollToLeader(leader)}
+                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-all duration-200 ${active
+                                                            ? 'bg-surface-raised border border-primary text-fg shadow-sm font-extrabold'
+                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-raised'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <span
+                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-[9px] font-extrabold ${active
+                                                                    ? 'bg-primary text-white font-black'
+                                                                    : 'bg-surface-raised border border-border text-muted font-bold'
+                                                                }`}
+                                                        >
+                                                            {leader.order}
+                                                        </span>
+                                                        <span className="truncate text-xs capitalize leading-tight">{leader.name}</span>
+                                                    </div>
+                                                    <span
+                                                        className="h-2 w-2 shrink-0 rounded-full transition-all duration-200"
+                                                        style={{
+                                                            backgroundColor: accent,
+                                                            transform: active ? 'scale(1.2)' : 'none'
+                                                        }}
+                                                        title={cap(leader.type)}
+                                                    />
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
+                            )}
 
-                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-1">
-                                    {leader.team.map((mon, i) => {
-                                        const entry = resolve(mon.name);
-                                        return (
-                                            <TeamMon
-                                                key={`${mon.name}-${i}`}
-                                                mon={mon}
-                                                entry={entry}
-                                                accent={accent}
-                                                levelCap={leader.levelCap}
-                                                onClick={() => entry && showDetails?.({ id: entry.id, name: entry.name })}
-                                            />
-                                        );
-                                    })}
+                            {eliteFourAndChamp.length > 0 && (
+                                <div>
+                                    <p className="text-[10px] font-bold uppercase tracking-wider text-primary px-2.5 mb-2.5 flex items-center gap-1.5">
+                                        <Trophy className="h-3.5 w-3.5 text-primary" />
+                                        <span>{pt ? 'Liga Pokémon' : 'Pokémon League'}</span>
+                                    </p>
+                                    <div className="space-y-1">
+                                        {eliteFourAndChamp.map((leader) => {
+                                            const leaderId = `leader-${leader.order}-${slugify(leader.name)}`;
+                                            const active = activeLeaderId === leaderId;
+                                            const accent = typeColors[leader.type] || 'var(--color-primary)';
+                                            const isChamp = leader.gym === 'Champion';
+                                            return (
+                                                <button
+                                                    key={`${leader.order}-${leader.name}`}
+                                                    type="button"
+                                                    onClick={() => scrollToLeader(leader)}
+                                                    className={`w-full flex items-center justify-between gap-2 px-3 py-2 rounded-xl text-left transition-all duration-200 ${active
+                                                            ? isChamp
+                                                                ? 'bg-surface-raised border border-yellow-500 text-fg shadow-sm font-extrabold'
+                                                                : 'bg-surface-raised border border-primary text-fg shadow-sm font-extrabold'
+                                                            : 'border border-transparent text-muted hover:text-fg hover:bg-surface-raised'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                        <span
+                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-[9px] font-extrabold ${active
+                                                                    ? isChamp
+                                                                        ? 'bg-yellow-500 text-white font-black'
+                                                                        : 'bg-primary text-white font-black'
+                                                                    : 'bg-surface-raised border border-border text-muted font-bold'
+                                                                }`}
+                                                        >
+                                                            {isChamp ? '★' : leader.order}
+                                                        </span>
+                                                        <span className="truncate text-xs capitalize leading-tight flex items-center gap-1">
+                                                            {leader.name}
+                                                            {isChamp && <Sparkles className="h-3 w-3 text-yellow-500 shrink-0" />}
+                                                        </span>
+                                                    </div>
+                                                    <span
+                                                        className="h-2 w-2 shrink-0 rounded-full transition-all duration-200"
+                                                        style={{
+                                                            backgroundColor: isChamp ? '#eab308' : accent,
+                                                            transform: active ? 'scale(1.2)' : 'none'
+                                                        }}
+                                                        title={isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
+                                                    />
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
-                            </article>
-                        );
-                    })}
+                            )}
+                        </nav>
+                    )}
+                </aside>
 
-                    {selected.source && (
+                {/* Right Column: Gym Leaders Stack */}
+                <main className="lg:col-span-9 space-y-8">
+                    {selected && (
+                        <>
+                            {/* Gym Leaders Section */}
+                            {gymLeaders.length > 0 && (
+                                <div className="space-y-4">
+                                    <div className="border-b border-border pb-2">
+                                        <h2 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
+                                            <span>{pt ? 'Líderes de Ginásio' : 'Gym Leaders'}</span>
+                                            <span className="text-xs font-normal text-muted/60">({gymLeaders.length})</span>
+                                        </h2>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {gymLeaders.map((leader) => renderLeaderCard(leader))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Pokémon League Section */}
+                            {eliteFourAndChamp.length > 0 && (
+                                <div className="space-y-4 pt-4">
+                                    <div className="border-b border-border pb-2">
+                                        <h2 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                                            <Trophy className="h-4 w-4 text-primary" />
+                                            <span>{pt ? 'Elite dos Quatro & Campeão' : 'Elite Four & Champion'}</span>
+                                            <span className="text-xs font-normal text-primary/60">({eliteFourAndChamp.length})</span>
+                                        </h2>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {eliteFourAndChamp.map((leader) => renderLeaderCard(leader))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {selected?.source && (
                         <p className="flex items-center gap-1 text-[11px] text-muted">
                             <ChevronRight className="h-3 w-3" /> {pt ? 'Fonte' : 'Source'}: {selected.source}
                         </p>
                     )}
-                </div>
-            )}
+                </main>
+            </div>
 
             <LeaderTeamModal
                 open={!!modalLeader}

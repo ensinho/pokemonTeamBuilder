@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-28T19:35:31.716Z",
+  "generatedAt": "2026-07-01T18:37:01.508Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -6751,102 +6751,6 @@
           "source": "VGC 2024"
         },
         {
-          "name": "Calm Mind",
-          "item": "heavy-duty-boots",
-          "itemAlts": [
-            "grassy-seed",
-            "weakness-policy"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "steel",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "calm-mind"
-            ],
-            [
-              "recover",
-              "agility"
-            ],
-            [
-              "hurricane",
-              "air-slash"
-            ],
-            [
-              "psyshock",
-              "psychic-noise",
-              "stored-power"
-            ]
-          ],
-          "evs": {
-            "hp": 248,
-            "attack": 0,
-            "defense": 8,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nOn more balanced teams, Galarian Articuno prefers a moveset of Calm Mind / Recover / Hurricane or Air Slash / Psyshock. However, on more offensive or hyper offense builds, it can opt for other moves like Agility and Stored Power. Recover allows Galarian Articuno to repeatedly set up throughout the course…",
-          "source": "NU"
-        },
-        {
-          "name": "Future Sight Pivot",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "fairy",
-            "steel",
-            "ground"
-          ],
-          "moves": [
-            [
-              "future-sight"
-            ],
-            [
-              "hurricane"
-            ],
-            [
-              "u-turn"
-            ],
-            [
-              "recover"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 4,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nTera Fairy gifts Galarian Articuno an amazing defensive profile, letting it take on Scrafty, Flygon, and, in a pinch, Toxicroak. Alternatively, Tera Steel lets Galarian Articuno take on powerful special wallbreakers like Sylveon, Porygon-Z, and Munkidori. Tera Ground lets Galarian Articuno become immune to…",
-          "source": "NU"
-        },
-        {
           "name": "Wall",
           "item": "heavy-duty-boots",
           "itemAlts": [],
@@ -6890,6 +6794,48 @@
           "level": null,
           "description": "Articuno's amazing bulk and reliable recovery make it a solid wall against special attackers like Tatsugiri, Venusaur, and Shaymin in spite of its bad typing, differentiating it from more popular walls like Milotic and Snorlax. Freeze-Dry has the best combination of coverage and power of any of Articuno's attacks,…",
           "source": "PU"
+        },
+        {
+          "name": "Specially Defensive (Flying)",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "calm",
+          "tera": [],
+          "moves": [
+            [
+              "freeze-dry"
+            ],
+            [
+              "roost"
+            ],
+            [
+              "substitute",
+              "u-turn"
+            ],
+            [
+              "haze"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 208,
+            "speed": 52
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Articuno's special bulk lets it serve as a special wall on Flying teams, dealing with threatening foes such as Kyurem, Greninja, and Galarian Moltres. Freeze-Dry lets Articuno handle Dragon-, Ground-, and Water-types such as Choice Specs Dragapult, Gastrodon, Landorus, Toxapex, and Primarina. Futhermore, it can be…",
+          "source": "Monotype"
         }
       ]
     },
@@ -16207,53 +16153,9 @@
     },
     "350": {
       "name": "Milotic",
-      "gen": "RU",
-      "overview": "Milotic is a niche option for a bulky Water-type thanks to its solid mixed bulk, ability to disrupt setup sweepers with Dragon Tail or Haze, and access to a pivoting move in Flip Turn as well as reliable recovery. It can serve as a blanket check to a variety of threats, such as Krookodile, Entei, and Jirachi, and it…",
+      "gen": "PU",
+      "overview": "",
       "sets": [
-        {
-          "name": "Defensive Utility",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "calm",
-          "tera": [
-            "poison"
-          ],
-          "moves": [
-            [
-              "scald"
-            ],
-            [
-              "dragon-tail",
-              "haze"
-            ],
-            [
-              "flip-turn"
-            ],
-            [
-              "recover"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nDragon Tail lets Milotic phaze setup sweepers without being blocked by Taunt, while Haze bypasses Substitute and can clear boosts from Tera Fairy Pokemon like Slowbro. Flip Turn lets Milotic act as a slow pivot by soaking up a hit for a teammate and safely bringing it in. Marvel Scale lets Milotic absorb…",
-          "source": "RU"
-        },
         {
           "name": "Physically Defensive",
           "item": "heavy-duty-boots",
@@ -29588,7 +29490,7 @@
     "609": {
       "name": "Chandelure",
       "gen": "NU",
-      "overview": "With Chandelure's tremendous Special Attack and STAB attacks, it can hit the entire tier for at least neutral damage, barring Incineroar. Chandelure, donning a Choice Specs, easily breaks through would-be checks like Diancie and Alolan Muk. However, with Choice Scarf, it becomes a dangerous revenge killer that’s able…",
+      "overview": "With Chandelure's tremendous Special Attack and STAB attacks, it can hit the entire tier for at least neutral damage, barring Incineroar. Chandelure, donning a Choice Specs, easily breaks through would-be checks like Rhyperior and Goodra. However, with Choice Scarf, it becomes a dangerous revenge killer that’s able to…",
       "sets": [
         {
           "name": "Choice Specs",
@@ -29609,7 +29511,8 @@
               "shadow-ball"
             ],
             [
-              "energy-ball"
+              "energy-ball",
+              "overheat"
             ],
             [
               "trick",
@@ -29633,7 +29536,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFire Blast is preferred to 2HKO Alolan Muk as to not let it switch in safely, but Flamethrower can be used to be more accurate. Energy Ball hits Fire-type checks such as Swampert and Diancie. Trick cripples walls like Umbreon and Incineroar, but Overheat allows Chandelure to overwhelm Incineroar and…",
+          "description": "Set Details\nFire Blast is preferred for better damage rolls against Goodra and Incineroar as to not let them switch in safely, but Flamethrower can be used to be more accurate. Energy Ball hits Fire-type checks such as Swampert and Rhyperior. Trick cripples walls like Vaporeon and Incineroar, but Overheat allows…",
           "source": "NU"
         },
         {
@@ -29678,7 +29581,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFire Blast gives Chandelure a powerful STAB Fire-type attack, but Flamethrower can be run for a more accurate move. Energy Ball hits Fire-resistant Pokemon like Diancie, Vaporeon, and Swampert. Trick cripples walls and bulky setup sweepers like Alolan Muk and Scrafty. When backed into a corner, Tera Grass…",
+          "description": "Set Details\nFire Blast gives Chandelure a powerful STAB Fire-type attack, but Flamethrower can be run for a more accurate move. Energy Ball hits Fire-resistant Pokemon like Rhyperior, Vaporeon, and Swampert. Trick cripples walls and bulky setup sweepers like Incineroar and Scrafty. When backed into a corner, Tera…",
           "source": "NU"
         },
         {
@@ -29691,7 +29594,9 @@
           "nature": "timid",
           "tera": [
             "grass",
-            "fairy"
+            "fairy",
+            "water",
+            "dark"
           ],
           "moves": [
             [
@@ -29705,16 +29610,17 @@
               "shadow-ball"
             ],
             [
-              "energy-ball"
+              "energy-ball",
+              "pain-split"
             ]
           ],
           "evs": {
             "hp": 0,
             "attack": 0,
             "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 0
           },
           "ivs": {
             "hp": 31,
@@ -29725,53 +29631,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Fire Blast is preferred to 2HKO Alolan Muk after a Calm Mind boost and deal greater damage to other special walls like Umbreon and Florges, but Flamethrower can be used for its accuracy. Energy Ball targets common Water-, Rock-, and Ground-type switch-ins like Vaporeon, Diancie, and Gastrodon. Flash Fire gives…",
-          "source": "NU"
-        },
-        {
-          "name": "Pain Split",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "flame-body",
-          "nature": "modest",
-          "tera": [
-            "water",
-            "fairy",
-            "dark"
-          ],
-          "moves": [
-            [
-              "pain-split"
-            ],
-            [
-              "calm-mind"
-            ],
-            [
-              "fire-blast",
-              "flamethrower"
-            ],
-            [
-              "shadow-ball"
-            ]
-          ],
-          "evs": {
-            "hp": 80,
-            "attack": 0,
-            "defense": 152,
-            "special-attack": 96,
-            "special-defense": 0,
-            "speed": 180
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "The EV spread lets Chandelure outpace Jolly Incineroar and survive bulky Incineroar's Knock Off into U-turn while maximizing offensive power.",
+          "description": "Fire Blast is preferred for improved damage rolls after a Calm Mind boost and deal greater damage to other special walls like Incineroar and Sylveon, but Flamethrower can be used for its accuracy. Energy Ball targets common Water-, Rock-, and Ground-type switch-ins like Vaporeon, Rhyperior, and Swampert. However, Pain…",
           "source": "NU"
         }
       ]
@@ -37227,7 +37087,7 @@
     "727": {
       "name": "Incineroar",
       "gen": "VGC 2025",
-      "overview": "The combination of Knock Off, good typing, and Intimidate makes Incineroar a great wallbreaker while being a solid defensive Pokemon. Sword Dance sets can make Incineroar into a great wallbreaker, since many defensive staples like Amoonguss, Galarian Slowbro, and Registeel just drop to its Swords Dance-boosted STAB…",
+      "overview": "The combination of Knock Off, good typing, and Intimidate makes Incineroar a great wallbreaker while being a solid defensive Pokemon. Sword Dance sets can make Incineroar into a great wallbreaker, since many defensive staples like Amoonguss, Galarian Slowbro, and Copperajah just drop to its Swords Dance-boosted STAB…",
       "sets": [
         {
           "name": "Bulky Support",
@@ -37910,6 +37770,100 @@
           "source": "UU"
         },
         {
+          "name": "Bulky Quiver Dance Sweeper",
+          "item": "heavy-duty-boots",
+          "itemAlts": [
+            "kee-berry"
+          ],
+          "ability": "",
+          "nature": "timid",
+          "tera": [
+            "fairy",
+            "steel"
+          ],
+          "moves": [
+            [
+              "revelation-dance",
+              "air-slash",
+              "hurricane"
+            ],
+            [
+              "quiver-dance"
+            ],
+            [
+              "roost"
+            ],
+            [
+              "taunt"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 216,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 44
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "44 Speed EVs ensure that Oricorio will outpace Kilowattrel after a Quiver Dance.",
+          "source": "RU"
+        },
+        {
+          "name": "Offensive Quiver Dance",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "timid",
+          "tera": [
+            "fighting",
+            "fairy"
+          ],
+          "moves": [
+            [
+              "revelation-dance",
+              "air-slash"
+            ],
+            [
+              "quiver-dance"
+            ],
+            [
+              "taunt",
+              "air-slash"
+            ],
+            [
+              "roost"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
+        {
           "name": "Offensive Quiver Dance",
           "item": "heavy-duty-boots",
           "itemAlts": [],
@@ -37940,97 +37894,6 @@
             "special-attack": 252,
             "special-defense": 4,
             "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "PU"
-        },
-        {
-          "name": "Bulky Quiver Dance",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "fairy"
-          ],
-          "moves": [
-            [
-              "quiver-dance"
-            ],
-            [
-              "revelation-dance"
-            ],
-            [
-              "taunt"
-            ],
-            [
-              "roost"
-            ]
-          ],
-          "evs": {
-            "hp": 248,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 8,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "PU"
-        },
-        {
-          "name": "Quiver Dance",
-          "item": "heavy-duty-boots",
-          "itemAlts": [
-            "grassy-seed"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "fighting",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "quiver-dance"
-            ],
-            [
-              "hurricane",
-              "air-slash"
-            ],
-            [
-              "revelation-dance",
-              "taunt"
-            ],
-            [
-              "roost"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 0
           },
           "ivs": {
             "hp": 31,
@@ -39446,9 +39309,103 @@
     },
     "763": {
       "name": "Tsareena",
-      "gen": "NU",
+      "gen": "RU",
       "overview": "Tsareena is NU's best entry hazard remover, and for good reason: it easily beats the plethora of Grass-weak hazard setters like Rhyperior, Swampert, and Diancie, and even Steel-types such as Klefki and Registeel are inconsistent at beating it one-on-one. While offensive Tsareena profiles as a solid wallbreaker that…",
       "sets": [
+        {
+          "name": "Offensive Spinner",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "queenly-majesty",
+          "nature": "jolly",
+          "tera": [
+            "steel",
+            "dragon"
+          ],
+          "moves": [
+            [
+              "power-whip"
+            ],
+            [
+              "rapid-spin"
+            ],
+            [
+              "knock-off",
+              "high-jump-kick",
+              "low-kick",
+              "u-turn"
+            ],
+            [
+              "triple-axel",
+              "high-jump-kick",
+              "low-kick",
+              "u-turn"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "RU"
+        },
+        {
+          "name": "Defensive Spinner",
+          "item": "heavy-duty-boots",
+          "itemAlts": [],
+          "ability": "queenly-majesty",
+          "nature": "impish",
+          "tera": [
+            "steel",
+            "dragon"
+          ],
+          "moves": [
+            [
+              "power-whip"
+            ],
+            [
+              "rapid-spin"
+            ],
+            [
+              "synthesis"
+            ],
+            [
+              "knock-off"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 136,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 120
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "120 Speed EVs allow Tsareena to outpace Adamant Crawdaunt and Golurk.",
+          "source": "RU"
+        },
         {
           "name": "Offensive",
           "item": "heavy-duty-boots",
@@ -45942,7 +45899,7 @@
           "item": "eviolite",
           "itemAlts": [],
           "ability": "",
-          "nature": "calm",
+          "nature": "modest",
           "tera": [
             "fairy",
             "ghost",
@@ -45967,11 +45924,11 @@
             ]
           ],
           "evs": {
-            "hp": 0,
+            "hp": 160,
             "attack": 0,
             "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
+            "special-attack": 96,
+            "special-defense": 252,
             "speed": 0
           },
           "ivs": {
