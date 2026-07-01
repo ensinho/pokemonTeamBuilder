@@ -117,11 +117,15 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     const handleMoveToggle = (moveName) => {
         setCustomization((prev) => {
             const currentMoves = prev.moves;
-            const newMoves = currentMoves.includes(moveName)
-                ? currentMoves.filter((move) => move !== moveName)
-                : [...currentMoves, moveName];
+            const isAdding = !currentMoves.includes(moveName);
+            const newMoves = isAdding
+                ? [...currentMoves, moveName]
+                : currentMoves.filter((move) => move !== moveName);
 
             if (newMoves.length > 4) return prev;
+            if (isAdding) {
+                setMoveSearch('');
+            }
             return { ...prev, moves: newMoves };
         });
     };

@@ -132,6 +132,10 @@ export function TeamBuilderView({
     setPokemonDetailsCache,
 }) {
     const { t, language } = useTranslation();
+    const handleAddPokemonWithClear = React.useCallback((pokemon) => {
+        handleAddPokemonToTeam(pokemon);
+        setSearchInput('');
+    }, [handleAddPokemonToTeam, setSearchInput]);
     const [dragIndex, setDragIndex] = React.useState(null);
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
@@ -228,8 +232,8 @@ export function TeamBuilderView({
 
     const suggestionIndexById = React.useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
     const addSuggestion = React.useCallback(
-        (s) => handleAddPokemonToTeam(suggestionIndexById.get(s.id) || s),
-        [handleAddPokemonToTeam, suggestionIndexById]
+        (s) => handleAddPokemonWithClear(suggestionIndexById.get(s.id) || s),
+        [handleAddPokemonWithClear, suggestionIndexById]
     );
     // Map synergy id → primary reason for in-grid border/icon rendering.
     const synergyReasonById = React.useMemo(
@@ -330,7 +334,7 @@ export function TeamBuilderView({
                     gameDexes={gameDexes}
                     synergySuggestions={synergySuggestions}
                     addSuggestion={addSuggestion}
-                    handleAddPokemonToTeam={handleAddPokemonToTeam}
+                    handleAddPokemonToTeam={handleAddPokemonWithClear}
                     handleRandomizeTeam={handleRandomizeTeam}
                     isRandomizing={isRandomizing}
                     lastPokemonElementRef={lastPokemonElementRef}
@@ -708,7 +712,7 @@ export function TeamBuilderView({
                                                             key={pokemon.id}
                                                             details={pokemon}
                                                             onCardClick={openDetailModal}
-                                                            onAddToTeam={handleAddPokemonToTeam}
+                                                            onAddToTeam={handleAddPokemonWithClear}
                                                             synergyReason={synergyReasonById.get(pokemon.id)}
                                                             isSuggested={synergyReasonById.has(pokemon.id)}
                                                             colors={colors}
@@ -726,7 +730,7 @@ export function TeamBuilderView({
                                                         key={`syn-${pokemon.id}`}
                                                         details={pokemon}
                                                         onCardClick={openDetailModal}
-                                                        onAddToTeam={handleAddPokemonToTeam}
+                                                        onAddToTeam={handleAddPokemonWithClear}
                                                         synergyReason={pokemon.primary}
                                                         colors={colors}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
@@ -738,7 +742,7 @@ export function TeamBuilderView({
                                                         key={pokemon.id}
                                                         details={pokemon}
                                                         onCardClick={openDetailModal}
-                                                        onAddToTeam={handleAddPokemonToTeam}
+                                                        onAddToTeam={handleAddPokemonWithClear}
                                                         lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
                                                         synergyReason={synergyReasonById.get(pokemon.id)}
                                                         isSuggested={synergyReasonById.has(pokemon.id)}
@@ -832,18 +836,18 @@ export function TeamBuilderView({
             />
 
             {isCoresOpen && (
-                <MetaCoresModal
-                    onClose={() => setIsCoresOpen(false)}
-                    currentTeam={currentTeam}
-                    onAddToTeam={handleAddPokemonToTeam}
-                />
-            )}
-
-            {detailPokemon && (
-                <PokemonDetailModal
-                    pokemon={detailPokemon}
-                    onClose={() => setDetailPokemon(null)}
-                    onAdd={handleAddPokemonToTeam}
+                                <MetaCoresModal
+                                    onClose={() => setIsCoresOpen(false)}
+                                    currentTeam={currentTeam}
+                                    onAddToTeam={handleAddPokemonWithClear}
+                                />
+                            )}
+                
+                            {detailPokemon && (
+                                <PokemonDetailModal
+                                    pokemon={detailPokemon}
+                                    onClose={() => setDetailPokemon(null)}
+                                    onAdd={handleAddPokemonWithClear}
                     currentTeam={currentTeam}
                     colors={colors}
                     showPokemonDetails={openDetailModal}
