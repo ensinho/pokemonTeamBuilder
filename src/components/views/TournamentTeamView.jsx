@@ -5,7 +5,8 @@ import {
 } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
-import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonFrontSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
+import { useMegaStones } from '../../hooks/useMegaStones';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { analyzeTeam } from '../../utils/teamAnalysis';
 import { useReferenceStore } from '../../store/useReferenceStore';
@@ -52,6 +53,7 @@ export function TournamentTeamView({ onImport, colors }) {
 
     const { teams, status } = useTournamentData();
     const { typeForMove } = useMoveTypes();
+    const byStone = useMegaStones();
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
@@ -60,8 +62,17 @@ export function TournamentTeamView({ onImport, colors }) {
 
     const indexById = useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
     const members = useMemo(
-        () => (team?.pokemons || []).map((p) => ({ ...p, types: indexById.get(p.id)?.types || p.types || [] })),
-        [team, indexById],
+        () => (team?.pokemons || []).map((p) => {
+            const resolved = resolveMegaPokemonEntry(p, pokemonIndex, byStone);
+            const indexEntry = indexById.get(resolved.spriteId) || indexById.get(p.id);
+            return {
+                ...p,
+                resolvedId: resolved.spriteId,
+                resolvedName: resolved.name,
+                types: indexEntry?.types || p.types || []
+            };
+        }),
+        [team, pokemonIndex, indexById, byStone],
     );
 
     const { teamAnalysis } = useMemo(() => analyzeTeam(members, pokemonIndex), [members, pokemonIndex]);
@@ -86,110 +97,174 @@ export function TournamentTeamView({ onImport, colors }) {
 
     return (
         <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
-            <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
+            <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-fg transition-colors">
                 <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
             </button>
 
             {/* Header */}
-            <section className="mb-5 rounded-2xl border border-border bg-surface p-4 sm:p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3">
+            <section
+                className="mb-6 rounded-2xl border border-border bg-surface p-5 sm:p-6 shadow-md transition-all"
+                style={{ background: 'radial-gradient(100% 100% at 0% 0%, var(--color-primary-soft), transparent 60%), var(--color-surface)' }}
+            >
+                <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <h1 className="text-xl font-extrabold text-fg sm:text-2xl">{team.tournament || team.title || (pt ? 'Time de torneio' : 'Tournament team')}</h1>
-                            {team.featured && <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-bold text-accent"><Medal className="h-3 w-3" /> {pt ? 'Destaque' : 'Featured'}</span>}
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            <h1 className="text-xl font-extrabold tracking-tight text-fg sm:text-3xl">{team.tournament || team.title || (pt ? 'Time de torneio' : 'Tournament team')}</h1>
+                            {team.featured && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-0.5 text-[11px] font-bold text-accent">
+                                    <Medal className="h-3 w-3" /> {pt ? 'Destaque' : 'Featured'}
+                                </span>
+                            )}
                         </div>
-                        <p className="mt-1 text-sm text-muted">
+                        <p className="mt-1.5 text-sm font-medium text-muted">
                             {[team.placement, team.player && `${pt ? 'por' : 'by'} ${team.player}`, team.date].filter(Boolean).join(' · ')}
                         </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
-                        {team.format && <span className="rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-bold text-primary">{team.format}</span>}
+                        {team.format && (
+                            <span className="rounded-full bg-primary-soft px-3 py-1 text-[11px] font-bold text-primary">
+                                {team.format}
+                            </span>
+                        )}
                         {onImport && (
                             <button
                                 type="button"
                                 onClick={() => onImport({ name: team.title || team.tournament || 'Tournament Team', pokemons: team.pokemons || [] })}
-                                className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-bold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1 text-[12px] font-bold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                             >
                                 <ShowdownIcon className="h-4 w-4" /> {pt ? 'Importar' : 'Import to builder'}
                             </button>
                         )}
                         {(team.pokepaste || team.sourceUrl) && (
-                            <a href={team.pokepaste || team.sourceUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-3 py-1.5 text-[12px] font-semibold text-fg transition-colors hover:border-primary" title={team.pokepaste ? 'Poképaste' : (pt ? 'Fonte' : 'Source')}>
+                            <a
+                                href={team.pokepaste || team.sourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3.5 py-1 text-[12px] font-bold text-fg transition-all hover:border-primary active:scale-95"
+                                title={team.pokepaste ? 'Poképaste' : (pt ? 'Fonte' : 'Source')}
+                            >
                                 <ExternalLink className="h-3.5 w-3.5" /> {team.pokepaste ? 'Poképaste' : (pt ? 'Fonte' : 'Source')}
                             </a>
                         )}
                     </div>
                 </div>
-
-                {/* Coverage */}
-                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                    <div>
-                        <h3 className="mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-success"><Swords className="h-3.5 w-3.5" /> {pt ? 'Ofensa' : 'Offense'}</h3>
-                        <div className="flex flex-wrap gap-1">
+                {/* Coverage Panel */}
+                <div className="mt-5 space-y-3 border-t border-border pt-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-success w-24 shrink-0">
+                            <Swords className="h-3.5 w-3.5" /> {pt ? 'Ofensa' : 'Offense'}
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
                             {offense.length ? offense.map((tp) => <TypeChip key={tp} type={tp} />) : <span className="text-[11px] text-muted">—</span>}
                         </div>
                     </div>
-                    <div>
-                        <h3 className="mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-primary"><Shield className="h-3.5 w-3.5" /> {pt ? 'Resistências' : 'Resists'}</h3>
-                        <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-primary w-24 shrink-0">
+                            <Shield className="h-3.5 w-3.5" /> {pt ? 'Resistências' : 'Resists'}
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
                             {resists.length ? resists.map(([tp, c]) => <TypeChip key={tp} type={tp} count={c} />) : <span className="text-[11px] text-muted">—</span>}
                         </div>
                     </div>
-                    <div>
-                        <h3 className="mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-danger"><AlertTriangle className="h-3.5 w-3.5" /> {pt ? 'Fraquezas' : 'Weaknesses'}</h3>
-                        <div className="flex flex-wrap gap-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-xs">
+                        <span className="inline-flex items-center gap-1.5 font-bold uppercase tracking-wider text-danger w-24 shrink-0">
+                            <AlertTriangle className="h-3.5 w-3.5" /> {pt ? 'Fraquezas' : 'Weaknesses'}
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
                             {weaknesses.length ? weaknesses.map(([tp, c]) => <TypeChip key={tp} type={tp} count={c} danger />) : <span className="text-[11px] text-muted">—</span>}
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Members with full sets */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {/* Roster Grid */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {members.map((m, i) => {
                     const accent = typeColors[m.types?.[0]] || 'var(--color-primary)';
                     const evs = formatEvs(m.evs);
                     return (
-                        <article key={`${m.id}-${i}`} className="rounded-2xl border border-border bg-surface p-3.5" style={{ borderLeftColor: accent, borderLeftWidth: 3 }}>
-                            <div className="flex items-center gap-3">
-                                <Link to={`/pokemon/${m.id}`} title={pretty(m.name)}>
-                                    <img src={getPokemonArtworkSpriteUrl(m.id)} alt={m.name} className="h-14 w-14 shrink-0 object-contain" onError={(e) => { e.currentTarget.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; }} />
+                        <article
+                            key={`${m.id}-${i}`}
+                            className="group rounded-2xl border border-border bg-surface p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                            style={{
+                                borderTop: `3px solid ${accent}`,
+                                background: `linear-gradient(180deg, ${accent}04, var(--color-surface) 40%), var(--color-surface)`
+                            }}
+                        >
+                            <div className="flex items-center gap-4">
+                                <Link
+                                    to={`/pokemon/${m.resolvedId || m.id}`}
+                                    title={pretty(m.resolvedName || m.name)}
+                                    className="relative flex items-center justify-center p-1.5 rounded-xl bg-surface-raised/80 group-hover:bg-surface-raised transition-colors shrink-0"
+                                >
+                                    <img
+                                        src={getPokemonFrontSpriteUrl(m.resolvedId || m.id)}
+                                        alt={m.resolvedName || m.name}
+                                        className="h-14 w-14 image-pixelated shrink-0 object-contain transition-transform duration-300 group-hover:scale-110"
+                                        onError={(e) => { e.currentTarget.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; }}
+                                    />
                                 </Link>
                                 <div className="min-w-0 flex-1">
                                     <div className="flex items-center gap-2">
-                                        <Link to={`/meta/${m.id}`} className="truncate text-[14px] font-extrabold capitalize text-fg hover:text-primary">{pretty(m.name)}</Link>
-                                        {m.level && <span className="shrink-0 text-[10px] font-semibold text-muted">Lv{m.level}</span>}
+                                        <Link
+                                            to={`/meta/${m.resolvedId || m.id}`}
+                                            className="truncate text-base font-extrabold capitalize text-fg hover:text-primary transition-colors"
+                                        >
+                                            {pretty(m.resolvedName || m.name)}
+                                        </Link>
+                                        {m.level && (
+                                            <span className="shrink-0 rounded bg-surface-raised px-1.5 py-0.5 text-[9px] font-bold text-muted">
+                                                Lv{m.level}
+                                            </span>
+                                        )}
                                     </div>
-                                    <div className="mt-0.5 flex flex-wrap gap-1">
+                                    <div className="mt-1 flex flex-wrap gap-1.5">
                                         {(m.types || []).map((tp) => (
-                                            <span key={tp} className="inline-flex items-center gap-0.5 text-[10px] font-bold capitalize" style={{ color: typeColors[tp] }}>
-                                                {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3 w-3" />}{cap(tp)}
+                                            <span key={tp} className="inline-flex items-center gap-1 text-[10px] font-bold capitalize" style={{ color: typeColors[tp] }}>
+                                                {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3.5 w-3.5" />}{cap(tp)}
                                             </span>
                                         ))}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-2.5 flex flex-wrap gap-1.5 text-[11px]">
+                            {/* Build info pills */}
+                            <div className="mt-3.5 flex flex-wrap gap-1.5 text-[11px] font-semibold text-fg">
                                 {m.item && (
-                                    <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg">
-                                        <img src={itemSpriteUrl((m.item || '').toLowerCase().replace(/[.'’:]/g, '').replace(/\s+/g, '-'))} alt="" className="h-4 w-4 image-pixelated" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                                    <span className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-0.75 capitalize text-fg border border-border">
+                                        <img src={itemSpriteUrl((m.item || '').toLowerCase().replace(/[.'’:]/g, '').replace(/\s+/g, '-'))} alt="" className="h-3.5 w-3.5 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                         {pretty(m.item)}
                                     </span>
                                 )}
-                                {m.ability && <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg">{pretty(m.ability)}</span>}
-                                {m.nature && <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 text-fg">{m.nature}</span>}
+                                {m.ability && (
+                                    <span className="inline-flex items-center rounded-md bg-surface-raised px-2 py-0.75 capitalize text-fg border border-border" title={pt ? 'Habilidade' : 'Ability'}>
+                                        {pretty(m.ability)}
+                                    </span>
+                                )}
+                                {m.nature && (
+                                    <span className="inline-flex items-center rounded-md bg-surface-raised px-2 py-0.75 text-fg border border-border" title={pt ? 'Natureza' : 'Nature'}>
+                                        {m.nature}
+                                    </span>
+                                )}
                                 {m.tera && (
-                                    <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold" style={{ color: typeColors[m.tera?.toLowerCase()] || 'var(--color-primary)', backgroundColor: `${typeColors[m.tera?.toLowerCase()] || '#888'}1f` }}>
-                                        <Sparkles className="h-3 w-3" /> {pt ? 'Tera' : 'Tera'} {m.tera}
+                                    <span className="inline-flex items-center gap-1 rounded-md px-2 py-0.75 font-bold border" style={{ color: typeColors[m.tera?.toLowerCase()] || 'var(--color-primary)', borderColor: `${typeColors[m.tera?.toLowerCase()] || '#888'}33`, backgroundColor: `${typeColors[m.tera?.toLowerCase()] || '#888'}12` }}>
+                                        <Sparkles className="h-3 w-3 shrink-0" />
+                                        {m.tera}
                                     </span>
                                 )}
                             </div>
 
-                            {evs && <p className="mt-2 text-[11px] text-muted"><span className="font-semibold text-fg">EVs:</span> {evs}</p>}
+                            {/* EVs display */}
+                            {evs && (
+                                <div className="mt-3 text-[10px] text-muted font-medium">
+                                    <span className="font-bold text-fg uppercase mr-1.5">EVs:</span>
+                                    {evs}
+                                </div>
+                            )}
 
+                            {/* Moves display */}
                             {Array.isArray(m.moves) && m.moves.length > 0 && (
-                                <div className="mt-2 flex flex-wrap gap-1">
+                                <div className="mt-3.5 flex flex-wrap gap-1.5">
                                     {m.moves.slice(0, 4).map((mv, mi) => (
                                         <MoveChip key={`${mv}-${mi}`} name={mv} type={typeForMove(mv)} />
                                     ))}

@@ -1,7 +1,9 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowUpRight, Info } from 'lucide-react';
-import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonFrontSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
+import { useReferenceStore } from '../../store/useReferenceStore';
+import { useMegaStones } from '../../hooks/useMegaStones';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 
@@ -148,10 +150,19 @@ export function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'li
 }
 
 // A compact pixel sprite for a species id, with pokéball fallback.
-export function MonSprite({ id, name, className = 'h-12 w-12 image-pixelated' }) {
+export function MonSprite({ id, name, item, className = 'h-12 w-12 image-pixelated' }) {
+    const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
+    const byStone = useMegaStones();
+    
+    let resolvedId = id;
+    if (name || item) {
+        const resolved = resolveMegaPokemonEntry({ id, name, item }, pokemonIndex, byStone);
+        resolvedId = resolved.spriteId;
+    }
+
     return (
         <img
-            src={getPokemonFrontSpriteUrl(id)}
+            src={getPokemonFrontSpriteUrl(resolvedId)}
             onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
             alt={name || ''}
             loading="lazy"

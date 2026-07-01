@@ -69,3 +69,52 @@ export const getTeamPokemonDisplaySprite = (pokemon, options = {}) => getPokemon
     ...options,
     shiny: getPokemonSavedShinyState(pokemon),
 });
+
+/**
+ * Resolves the correct Mega Form/Evolution details (including ID) for a given Pokémon,
+ * utilizing its base ID, name, held item, the pokemon index, and the mega stones map.
+ */
+export function resolveMegaPokemonEntry(p, pokemonIndex, byStone) {
+    if (!p) return { id: null, name: '', spriteId: null };
+
+    const baseId = Number(p.id || p.baseId);
+    let resolvedId = baseId;
+    let displayName = p.name || '';
+
+    // 1. Resolve by Item (Mega Stone)
+    if (p.item && byStone) {
+        const itemKey = String(p.item).toLowerCase().replace(/[.'’:]/g, '').replace(/\s+/g, '-').trim();
+        const stoneMega = byStone[itemKey];
+        if (stoneMega && stoneMega.baseId === baseId) {
+            resolvedId = stoneMega.spriteId || baseId;
+            displayName = stoneMega.form || displayName;
+            return { id: baseId, name: displayName, spriteId: resolvedId };
+        }
+    }
+
+    // 2. Resolve by Name (e.g. Froslass-Mega)
+    const cleanName = String(p.name || '').toLowerCase().replace(/[.'’:]/g, '').replace(/\s+/g, '-').trim();
+    if (cleanName.includes('mega') && pokemonIndex && pokemonIndex.length) {
+        // Try exact match on apiName or name
+        let matched = pokemonIndex.find(idx => 
+            idx.apiName?.toLowerCase() === cleanName || 
+            idx.name?.toLowerCase() === cleanName || 
+            idx.name?.toLowerCase().replace(/\s+/g, '-') === cleanName
+        );
+        if (!matched) {
+            // Try matching form by baseId and has "mega" in apiName
+            matched = pokemonIndex.find(idx => 
+                idx.baseId === baseId && 
+                idx.isForm && 
+                idx.apiName?.toLowerCase().includes('mega')
+            );
+        }
+        if (matched) {
+            resolvedId = matched.id;
+            displayName = matched.name;
+            return { id: baseId, name: displayName, spriteId: resolvedId };
+        }
+    }
+
+    return { id: baseId, name: displayName, spriteId: resolvedId };
+}
