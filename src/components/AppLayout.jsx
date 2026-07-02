@@ -69,6 +69,7 @@ const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => (
 const MetaUsageView = lazy(() => import('./views/MetaUsageView').then((m) => ({ default: m.MetaUsageView })));
 const PokemonUsageView = lazy(() => import('./views/PokemonUsageView').then((m) => ({ default: m.PokemonUsageView })));
 const GymsView = lazy(() => import('./views/GymsView').then((m) => ({ default: m.GymsView })));
+const NotFoundView = lazy(() => import('./views/NotFoundView').then((m) => ({ default: m.NotFoundView })));
 
 import '../styles/app-shell.css';
 
@@ -161,6 +162,7 @@ export default function AppLayout() {
     // Derive current page routing
     const currentPage = useMemo(() => {
         const path = location.pathname;
+        if (path === '/') return 'home';
         if (path.includes('/feed')) return 'feed';
         if (path.includes('/pokedex')) return 'pokedex';
         if (path.includes('/pokemon/')) return 'pokemonDetail';
@@ -179,7 +181,7 @@ export default function AppLayout() {
         if (path.includes('/builder')) return 'builder';
         if (path.includes('/profile')) return 'profile';
         if (path.includes('/admin')) return 'admin';
-        return 'home';
+        return 'notFound';
     }, [location.pathname]);
 
     // Zustand Stores
@@ -517,6 +519,7 @@ export default function AppLayout() {
             'meta': { title: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
             'damageCalc': { title: t('nav.damageCalc'), subtitle: t('tools.damageSubtitle') },
             'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
+            'notFound': { title: '404', subtitle: '' },
         };
         return pages[currentPage] || pages['home'];
     }, [currentPage, t]);
@@ -1378,7 +1381,7 @@ export default function AppLayout() {
                                                 />
                                             } />
                                         )}
-                                        <Route path="*" element={<Navigate to="/" replace />} />
+                                        <Route path="*" element={<NotFoundView colors={colors} navigate={navigate} />} />
                                     </Routes>
                                 </Suspense>
                             </div>
