@@ -5,6 +5,7 @@ import '../../styles/generation-quiz-view.css';
 
 import { GENERATION_RANGES } from '../../constants/pokemon';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import {
     buildPokemonQuizNameAliases,
     getPokemonApiData,
@@ -94,6 +95,11 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const inputRef = useRef(null);
     const detailCacheRef = useRef({});
     const { t, language } = useTranslation();
+    useDocumentMeta({
+        title: 'Generation Quiz',
+        description: 'Guess which generation a Pokémon is from and test your Pokédex knowledge.',
+        path: '/quiz',
+    });
 
     const [pokemonIndex, setPokemonIndex] = useState([]);
     const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);

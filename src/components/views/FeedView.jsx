@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { UserProfileModal } from '../modals/UserProfileModal';
@@ -52,6 +53,11 @@ const formatRelativeTime = (isoString, language = 'en') => {
 
 export function FeedView({ colors, showToast, navigate }) {
     const { t, language } = useTranslation();
+    useDocumentMeta({
+        title: 'Community Feed',
+        description: 'See what the community is building and sharing on Pokémon Team Builder.',
+        path: '/feed',
+    });
     const {
         topics,
         currentTopicId,

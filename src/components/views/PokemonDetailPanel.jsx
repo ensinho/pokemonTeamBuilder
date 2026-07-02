@@ -551,17 +551,6 @@ export function PokemonDetailPanel({
                                 <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                                     {selectedPokemonDetails.types?.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                                 </div>
-                                {onAdd && (
-                                    <div className="mt-4 w-full px-1">
-                                        {isOnTeam ? (
-                                            <span className="block text-center text-xs font-bold text-muted bg-surface-raised border border-border rounded-lg py-2">{t('builder.onTeam', { defaultValue: 'On your team' })}</span>
-                                        ) : (
-                                            <button type="button" onClick={() => onAdd(selectedPokemonDetails)} className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary text-white font-bold py-2 hover:opacity-90 transition-opacity">
-                                                <Plus className="w-4 h-4" /> {t('pdetail.addToTeam')}
-                                            </button>
-                                        )}
-                                    </div>
-                                )}
                             </div>
                         </div>
 

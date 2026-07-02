@@ -6,6 +6,7 @@ import { typeColors, typeIcons } from '../../constants/types';
 import { useGymLeaders } from '../../hooks/useGymLeaders';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
@@ -347,6 +348,11 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
 export function GymsView({ showDetails, onAddToTeam }) {
     const { language } = useTranslation();
     const pt = language === 'pt';
+    useDocumentMeta({
+        title: 'Gym Leaders',
+        description: 'Gym leaders and their teams across every Pokémon game, region by region.',
+        path: '/gyms',
+    });
     const { games, status } = useGymLeaders();
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);

@@ -7,6 +7,7 @@ import { useReferenceList } from '../../hooks/useReferenceList';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNames';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { TypeBadge } from '../TypeBadge';
 import { PokemonLinkChips } from '../PokemonLinkChips';
@@ -24,6 +25,11 @@ const CATEGORY_CLASS = {
 
 export function MovesListView() {
     const { t } = useTranslation();
+    useDocumentMeta({
+        title: 'Move List',
+        description: 'Every Pokémon move with type, category, power, accuracy, and PP.',
+        path: '/moves',
+    });
     const [openName, setOpenName] = useState(null);
     const [typeFilter, setTypeFilter] = useState('all');
     const [categoryFilter, setCategoryFilter] = useState('all');

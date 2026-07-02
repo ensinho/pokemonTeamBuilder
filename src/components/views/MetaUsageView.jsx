@@ -5,6 +5,7 @@ import { TrendingUp, Search, Layers, X } from 'lucide-react';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { PokeballIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores } from '../../utils/metaUsage';
@@ -48,6 +49,11 @@ function CoreRow({ core, rank, onOpenMon }) {
 export function MetaUsageView() {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
+    useDocumentMeta({
+        title: 'Meta & Usage',
+        description: 'Competitive VGC usage stats by regulation: top Pokémon, items, moves, spreads, and Tera types from real ladder data.',
+        path: '/meta',
+    });
     const navigate = useNavigate();
     const [params, setParams] = useSearchParams();
 

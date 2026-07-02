@@ -6,16 +6,17 @@ import {
 } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
-import { getPokemonFrontSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
+import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
-import { formatEvSpread, primaryMoves } from '../../utils/smogonSets';
+import { formatEvSpread, primaryMoves, titleCaseSlug } from '../../utils/smogonSets';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, formatUsageSpread, SourceCredit, RegulationSelect, useSmartBack } from './metaShared';
 
@@ -102,6 +103,15 @@ export function PokemonUsageView() {
     }, [usage, smogon]);
 
     const setFmt = (val) => setParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', val); return p; }, { replace: true });
+
+    const displayName = entry ? titleCaseSlug(entry.name) : '';
+    useDocumentMeta(entry ? {
+        title: `${displayName} Usage & Sets`,
+        description: `${displayName} competitive usage, items, EV spreads, and top teammates${format?.name ? ` in ${format.name}` : ''}${usage?.usage ? ` — ${usage.usage.toFixed(1)}% usage` : ''} on Pokémon Team Builder.`,
+        image: getPokemonArtworkSpriteUrl(entry.id),
+        // Always canonicalize to the name slug so /meta/25 and /meta/raichu consolidate.
+        path: `/meta/${entry.name}`,
+    } : undefined);
 
     if (pokemonIndex.length && !entry) {
         return (

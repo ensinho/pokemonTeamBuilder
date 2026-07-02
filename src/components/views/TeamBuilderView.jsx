@@ -5,6 +5,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
 import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
 import { Dices } from 'lucide-react';
@@ -132,6 +133,11 @@ export function TeamBuilderView({
     setPokemonDetailsCache,
 }) {
     const { t, language } = useTranslation();
+    useDocumentMeta({
+        title: 'Team Builder',
+        description: 'Build your competitive Pokémon team with live type coverage, speed checks, damage previews, and Smogon set suggestions.',
+        path: '/builder',
+    });
     const handleAddPokemonWithClear = React.useCallback((pokemon) => {
         handleAddPokemonToTeam(pokemon);
         setSearchInput('');

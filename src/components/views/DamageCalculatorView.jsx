@@ -4,6 +4,7 @@ import { resolvePokemonDetail, getMoveDetails } from '../../services/pokemonData
 import { calcDamage, calcStat, NATURE_MODIFIERS, natureMultiplier } from '../../utils/damageCalc';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { PokemonPicker } from '../PokemonPicker';
 import { useToastStore } from '../../store/useToastStore';
 import { TypeBadge } from '../TypeBadge';
@@ -179,6 +180,11 @@ const initialPokemonState = (isAttacker) => ({
 
 export function DamageCalculatorView() {
     const { t } = useTranslation();
+    useDocumentMeta({
+        title: 'Damage Calculator',
+        description: 'Calculate exact Pokémon damage ranges for any matchup, factoring stats, items, abilities, weather, and Tera type.',
+        path: '/damage-calculator',
+    });
     const allPokemons = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
     const items = useReferenceStore((s) => s.items);

@@ -4,9 +4,12 @@ import '../../styles/pokemon-detail-view.css';
 
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { PokeballIcon } from '../icons';
 import { PokemonDetailPanel } from './PokemonDetailPanel';
+import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { titleCaseSlug } from '../../utils/smogonSets';
 
 export function PokemonDetailView({
     colors,
@@ -46,6 +49,7 @@ export function PokemonDetailView({
     };
     const backLabel = useMemo(() => {
         if (fromPath.startsWith('/teams')) return pt ? 'Voltar ao time' : 'Back to team';
+        if (fromPath.startsWith('/pokedex')) return pt ? 'Voltar à Pokédex' : 'Back to Pokédex';
         if (fromPath.startsWith('/builder')) return pt ? 'Voltar ao construtor' : 'Back to builder';
         if (fromPath.startsWith('/favorites')) return pt ? 'Voltar aos favoritos' : 'Back to favorites';
         if (fromPath === '/' || fromPath.startsWith('/home')) return pt ? 'Voltar ao início' : 'Back to home';
@@ -55,6 +59,17 @@ export function PokemonDetailView({
     // Navigating to an evolution / form / etc. keeps the original origin so the
     // back button stays meaningful through the chain.
     const handleNavigate = (id) => navigate(`/pokemon/${id}`, { state: location.state });
+
+    const displayName = indexEntry ? titleCaseSlug(indexEntry.name) : '';
+    const typeLabel = indexEntry?.types?.map(titleCaseSlug).join('/') || '';
+    useDocumentMeta(indexEntry ? {
+        title: displayName,
+        description: `${displayName}${typeLabel ? ` (${typeLabel})` : ''} — base stats, abilities, moves, evolutions, and competitive movesets in Pokémon Team Builder.`,
+        image: getPokemonArtworkSpriteUrl(indexEntry.id),
+        // Always canonicalize to the name slug (not whatever id/name variant was
+        // actually visited) so /pokemon/25 and /pokemon/raichu consolidate to one URL.
+        path: `/pokemon/${indexEntry.name}`,
+    } : undefined);
 
     // A name route (e.g. /pokemon/garchomp) can't resolve until the index loads —
     // show a spinner rather than flashing "not found".

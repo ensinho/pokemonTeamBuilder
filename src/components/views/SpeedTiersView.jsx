@@ -6,6 +6,7 @@ import { calcStat } from '../../utils/damageCalc';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { TypeBadge } from '../TypeBadge';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
@@ -29,6 +30,11 @@ const computeSpeed = (base, spread) => {
 
 export function SpeedTiersView({ generations = [] }) {
     const { t } = useTranslation();
+    useDocumentMeta({
+        title: 'Speed Tiers',
+        description: 'Competitive Pokémon speed tiers by stat and common EV spreads, so you know what outspeeds what.',
+        path: '/speed-tiers',
+    });
     const navigate = useNavigate();
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const isIndexLoading = useReferenceStore((s) => s.isIndexLoading);

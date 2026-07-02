@@ -6,6 +6,7 @@ import { useReferenceList } from '../../hooks/useReferenceList';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNames';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
 import { ClearIcon } from '../icons';
@@ -15,6 +16,11 @@ const prettify = (name = '') => name.replace(/-/g, ' ');
 
 export function AbilitiesListView() {
     const { t } = useTranslation();
+    useDocumentMeta({
+        title: 'Abilities List',
+        description: 'Every Pokémon ability explained, with its effect and which Pokémon can have it.',
+        path: '/abilities',
+    });
     const [openName, setOpenName] = useState(null);
 
     // Lets a search for a Pokémon name surface that Pokémon's abilities.

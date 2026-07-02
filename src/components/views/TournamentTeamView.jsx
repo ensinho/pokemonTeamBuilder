@@ -5,13 +5,15 @@ import {
 } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
-import { getPokemonFrontSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
+import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
+import { titleCaseSlug } from '../../utils/smogonSets';
 import { analyzeTeam } from '../../utils/teamAnalysis';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { EmptyState } from '../EmptyState';
 import { ShowdownIcon } from '../icons';
@@ -79,6 +81,14 @@ export function TournamentTeamView({ onImport, colors }) {
     const offense = useMemo(() => Array.from(teamAnalysis.strengths || []).sort(), [teamAnalysis]);
     const resists = useMemo(() => Object.entries(teamAnalysis.defensiveCoverage || {}).sort(([, a], [, b]) => b - a), [teamAnalysis]);
     const weaknesses = useMemo(() => Object.entries(teamAnalysis.weaknesses || {}).sort(([, a], [, b]) => b - a), [teamAnalysis]);
+
+    const memberNames = useMemo(() => members.map((m) => titleCaseSlug(m.resolvedName || m.name)), [members]);
+    useDocumentMeta(team ? {
+        title: team.title,
+        description: `${team.placement ? `${team.placement} at ` : ''}${team.tournament}${team.format ? ` (${team.format})` : ''} — team featuring ${memberNames.slice(0, 6).join(', ')}. Import it into Pokémon Team Builder.`,
+        image: members[0] ? getPokemonArtworkSpriteUrl(members[0].resolvedId) : undefined,
+        path: `/tournaments/team/${id}`,
+    } : undefined);
 
     if (status === 'loading' && !team) {
         return <div className="mx-auto max-w-5xl px-4 py-16 text-center text-sm text-muted">{pt ? 'Carregando…' : 'Loading…'}</div>;

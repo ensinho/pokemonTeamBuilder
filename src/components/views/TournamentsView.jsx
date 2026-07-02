@@ -4,6 +4,7 @@ import '../../styles/tools-views.css';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { SourceCredit } from './metaShared';
 import { PokeballIcon, TrophyIcon, ShowdownIcon, ShareIcon, ClearIcon } from '../icons';
@@ -90,6 +91,11 @@ function TeamCard({ team, onOpen, navigate, t, pt }) {
 export function TournamentsView({ onOpenTeam }) {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
+    useDocumentMeta({
+        title: 'Tournament Teams',
+        description: 'Real teams from recent VGC tournaments with placements, full sets, and one-click import into the builder.',
+        path: '/tournaments',
+    });
     const navigate = useNavigate();
     const { teams, status } = useTournamentData();
     const [search, setSearch] = useState('');

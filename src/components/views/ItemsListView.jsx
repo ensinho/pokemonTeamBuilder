@@ -6,6 +6,7 @@ import { getItemDetails } from '../../services/pokemonDataCache';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useReferenceList } from '../../hooks/useReferenceList';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
 
@@ -14,6 +15,11 @@ const loadDetail = (entry) => getItemDetails(entry);
 
 export function ItemsListView() {
     const { t } = useTranslation();
+    useDocumentMeta({
+        title: 'Items List',
+        description: 'Held items, berries, and battle items for competitive Pokémon teams, with full effect descriptions.',
+        path: '/items',
+    });
     const items = useReferenceStore((s) => s.items);
     const [openName, setOpenName] = useState(null);
 

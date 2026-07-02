@@ -3,6 +3,7 @@ import { useSessionGame } from '../../hooks/useSessionGame';
 import { usePokePuzzleHistory } from '../../hooks/usePokePuzzleHistory';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useToastStore } from '../../store/useToastStore';
 import { useThemeStore } from '../../store/useThemeStore';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
@@ -151,6 +152,11 @@ const HistoryIcon = () => (
 
 export default function PokePuzzleView() {
     const { t, language } = useTranslation();
+    useDocumentMeta({
+        title: 'PokéPuzzle',
+        description: 'A daily sliding Pokémon sprite puzzle.',
+        path: '/pokepuzzle',
+    });
     const showToast = useToastStore(state => state.showToast);
     const { colors } = useThemeStore();
     const navigate = useNavigate();
