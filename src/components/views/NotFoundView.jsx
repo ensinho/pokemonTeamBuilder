@@ -3,8 +3,11 @@ import { HomeIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 
-export function NotFoundView({ colors, navigate }) {
+const LIGHT_THEMES = new Set(['light', 'daybreak', 'solar']);
+
+export function NotFoundView({ colors, navigate, theme }) {
     const { t } = useTranslation();
+    const isLightTheme = LIGHT_THEMES.has(theme);
 
     useDocumentMeta({ title: '404' });
 
@@ -25,7 +28,7 @@ export function NotFoundView({ colors, navigate }) {
             style={{ minHeight: '60vh' }}
         >
             <img
-                src={import.meta.env.BASE_URL + 'gengarcute404.png'}
+                src={import.meta.env.BASE_URL + (isLightTheme ? 'logo404light.png' : 'gengarcute404.png')}
                 alt="Gengar looking confused"
                 className="w-56 h-auto max-w-full mb-6 select-none"
                 draggable="false"

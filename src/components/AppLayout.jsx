@@ -1381,7 +1381,7 @@ export default function AppLayout() {
                                                 />
                                             } />
                                         )}
-                                        <Route path="*" element={<NotFoundView colors={colors} navigate={navigate} />} />
+                                        <Route path="*" element={<NotFoundView colors={colors} navigate={navigate} theme={theme} />} />
                                     </Routes>
                                 </Suspense>
                             </div>
