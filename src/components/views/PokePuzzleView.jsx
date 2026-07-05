@@ -209,8 +209,9 @@ export default function PokePuzzleView() {
         revision: `${session.guesses.length}:${session.gameStatus}:${pokePuzzleMigrationTick}:${historyRefresh}`,
     });
 
-    // Active tip tab: 'description', 'types', 'silhouette'
-    const [activeTipTab, setActiveTipTab] = useState('description');
+    // Active tip tab: 'types', 'description', 'silhouette'
+    // Types is always visible from the start — it's the first clue, not a tip.
+    const [activeTipTab, setActiveTipTab] = useState('types');
 
     // Input autocomplete suggestions
     const [inputValue, setInputValue] = useState('');
@@ -294,16 +295,14 @@ export default function PokePuzzleView() {
         }
     }, [mode, selectedDate]);
 
-    // Auto-select unlocked tip tab
+    // Auto-select unlocked tip tab (types is always shown, so it's the default)
     useEffect(() => {
         if (guesses.length >= 7) {
             setActiveTipTab('silhouette');
-        } else if (guesses.length >= 5) {
-            setActiveTipTab('types');
         } else if (guesses.length >= 3) {
             setActiveTipTab('description');
         } else {
-            setActiveTipTab('description');
+            setActiveTipTab('types');
         }
     }, [guesses.length]);
 
@@ -755,9 +754,8 @@ export default function PokePuzzleView() {
     }, [guesses, currentGuessLetters, targetLength, targetNormalized, gameStatus]);
 
 
-    // Progressive tip unlock status flags
+    // Progressive tip unlock status flags (types is always visible)
     const showPokedexEntry = guesses.length >= 3 || gameStatus !== 'IN_PROGRESS' || unlockedTips.description;
-    const showTypes = guesses.length >= 5 || gameStatus !== 'IN_PROGRESS' || unlockedTips.types;
     const showSilhouette = guesses.length >= 7 || gameStatus !== 'IN_PROGRESS' || unlockedTips.silhouette;
 
 
@@ -1114,21 +1112,20 @@ export default function PokePuzzleView() {
                                 <div className="pokepuzzle-tip-tabs">
                                     <button
                                         type="button"
+                                        onClick={() => setActiveTipTab('types')}
+                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'types' ? 'is-active' : ''}`}
+                                    >
+                                        <Layers className="w-3.5 h-3.5" />
+                                        <span>{language === 'pt' ? 'Tipos' : 'Types'}</span>
+                                    </button>
+                                    <button
+                                        type="button"
                                         onClick={() => setActiveTipTab('description')}
                                         className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''} ${!showPokedexEntry ? 'is-locked' : ''}`}
                                     >
                                         <FileText className="w-3.5 h-3.5" />
                                         <span>{language === 'pt' ? 'Descrição' : 'Description'}</span>
                                         {!showPokedexEntry && <Lock className="w-3 h-3 text-muted shrink-0" />}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setActiveTipTab('types')}
-                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'types' ? 'is-active' : ''} ${!showTypes ? 'is-locked' : ''}`}
-                                    >
-                                        <Layers className="w-3.5 h-3.5" />
-                                        <span>{language === 'pt' ? 'Tipos' : 'Types'}</span>
-                                        {!showTypes && <Lock className="w-3 h-3 text-muted shrink-0" />}
                                     </button>
                                     <button
                                         type="button"
@@ -1143,6 +1140,27 @@ export default function PokePuzzleView() {
 
                                 {/* Active tip card content */}
                                 <div className="pokepuzzle-tip-card-wrapper w-full">
+                                    {activeTipTab === 'types' && (
+                                        <div className="pokepuzzle-tip-card">
+                                            <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipTypes')}</span>
+                                            <div className="pokepuzzle-tip-content pokepuzzle-clue-types">
+                                                {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                                    <span
+                                                        key={type}
+                                                        className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded"
+                                                        style={{
+                                                            backgroundColor: `${typeColors[type]}18`,
+                                                            borderColor: `${typeColors[type]}35`,
+                                                            color: typeColors[type],
+                                                        }}
+                                                    >
+                                                        {type}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {activeTipTab === 'description' && (
                                         <div className={`pokepuzzle-tip-card ${!showPokedexEntry ? 'is-locked' : ''}`}>
                                             <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipEntry')}</span>
@@ -1161,46 +1179,6 @@ export default function PokePuzzleView() {
                                                     <button
                                                         type="button"
                                                         onClick={() => unlockTip('description')}
-                                                        className="pokepuzzle-unlock-btn"
-                                                    >
-                                                        <Sparkles className="w-3.5 h-3.5 text-primary" />
-                                                        <span>{language === 'pt' ? 'Revelar Dica Cedo' : 'Reveal Tip Early'}</span>
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {activeTipTab === 'types' && (
-                                        <div className={`pokepuzzle-tip-card ${!showTypes ? 'is-locked' : ''}`}>
-                                            <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipTypes')}</span>
-                                            {showTypes ? (
-                                                <div className="pokepuzzle-tip-content pokepuzzle-clue-types">
-                                                    {isLoadingDetails ? '...' : targetDetails.types.map(type => (
-                                                        <span
-                                                            key={type}
-                                                            className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded"
-                                                            style={{
-                                                                backgroundColor: `${typeColors[type]}18`,
-                                                                borderColor: `${typeColors[type]}35`,
-                                                                color: typeColors[type],
-                                                            }}
-                                                        >
-                                                            {type}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="flex flex-col items-center justify-center gap-1.5 py-1">
-                                                    <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
-                                                        <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
-                                                    </span>
-                                                    <span className="text-[10px] text-muted opacity-75">
-                                                        {language === 'pt' ? 'Desbloqueia na 5ª tentativa' : 'Unlocks at 5 attempts'}
-                                                    </span>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => unlockTip('types')}
                                                         className="pokepuzzle-unlock-btn"
                                                     >
                                                         <Sparkles className="w-3.5 h-3.5 text-primary" />
