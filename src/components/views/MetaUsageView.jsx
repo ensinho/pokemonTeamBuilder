@@ -64,7 +64,13 @@ export function MetaUsageView() {
     const { teams } = useTournamentData();
 
     const [search, setSearch] = useState('');
-    const [tab, setTab] = useState('usage');
+    // Active tab lives in the URL (?tab=teams) so it's shareable and survives back-nav.
+    const tab = params.get('tab') === 'teams' ? 'teams' : 'usage';
+    const setTab = (id) => setParams((prev) => {
+        const p = new URLSearchParams(prev);
+        if (id === 'usage') p.delete('tab'); else p.set('tab', id);
+        return p;
+    });
 
     // Tournament teams for the selected regulation (derive a "Reg X" token from the
     // Smogon format label and match tournament `format`). Falls back to all teams
