@@ -158,7 +158,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                             return (
                                 <div
                                     key={`${mon.name}-${i}`}
-                                    className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/50 relative overflow-hidden"
+                                    className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 transition-all hover:border-border relative overflow-hidden"
                                 >
                                     {/* Level badge */}
                                     <div className="absolute right-3 top-3 rounded-md px-2 py-0.5 text-xs font-bold text-white shadow-sm" style={{ backgroundColor: accent }}>
@@ -304,7 +304,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
             onClick={handleMonClick}
             disabled={!id}
             title={pretty(mon.name)}
-            className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-raised/60 hover:border-primary/30 p-3 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
+            className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-raised/60 hover:border-border p-3 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
         >
             <div className="relative">
                 <div
@@ -477,7 +477,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             : 'hover:border-yellow-500/50'
                         : active
                             ? 'border-primary shadow-primary/10'
-                            : 'hover:border-primary/50'
+                            : 'hover:border-border'
                     }`}
                 style={{
                     borderLeftColor: isChamp ? '#eab308' : accent,
@@ -530,7 +530,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                 }}
                                 className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[11px] font-extrabold transition-all duration-200 bg-transparent ${isChamp
                                         ? 'border-yellow-500/40 text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500'
-                                        : 'border-primary/40 text-primary hover:bg-primary hover:text-white hover:border-primary'
+                                        : 'border-border text-primary hover:bg-primary hover:text-white hover:border-primary'
                                     }`}
                                 title={pt ? 'Montar este time no construtor' : 'Build this team in the builder'}
                             >

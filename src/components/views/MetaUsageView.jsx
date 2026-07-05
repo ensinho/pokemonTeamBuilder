@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { TrendingUp, Search, Layers, X } from 'lucide-react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { TrendingUp, Search, Layers, X, Users, ArrowUpRight } from 'lucide-react';
 
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
@@ -8,7 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { PokeballIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
-import { rankUsage, commonCores } from '../../utils/metaUsage';
+import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
 import { MonSprite, pretty, SourceCredit, RegulationSelect } from './metaShared';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
@@ -55,6 +55,7 @@ export function MetaUsageView() {
         path: '/meta',
     });
     const navigate = useNavigate();
+    const location = useLocation();
     const [params, setParams] = useSearchParams();
 
     const { formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
@@ -63,6 +64,18 @@ export function MetaUsageView() {
     const { teams } = useTournamentData();
 
     const [search, setSearch] = useState('');
+    const [tab, setTab] = useState('usage');
+
+    // Tournament teams for the selected regulation (derive a "Reg X" token from the
+    // Smogon format label and match tournament `format`). Falls back to all teams
+    // when that regulation has no tournament teams baked yet (e.g. a brand-new reg).
+    const regToken = (format?.label || '').replace(/vgc/i, '').replace(/\b\d{4}\b/, '').replace(/\s+/g, ' ').trim();
+    const { teamsForReg, regHasTeams } = useMemo(() => {
+        if (!regToken) return { teamsForReg: teams, regHasTeams: true };
+        const matched = teams.filter((tm) => (tm.format || '').toLowerCase() === regToken.toLowerCase());
+        return matched.length ? { teamsForReg: matched, regHasTeams: true } : { teamsForReg: teams, regHasTeams: false };
+    }, [teams, regToken]);
+    const teamCompositions = useMemo(() => commonTeams(teamsForReg, 24), [teamsForReg]);
 
     // Smogon usage ranking for the selected regulation (falls back to tournament
     // appearance counts if the usage dataset isn't available).
@@ -86,7 +99,8 @@ export function MetaUsageView() {
     );
 
     const setFmt = (id) => setParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', id); return p; }, { replace: true });
-    const openMon = (id) => navigate(fmtId ? `/meta/${id}?fmt=${fmtId}` : `/meta/${id}`);
+    const openMon = (id) => navigate(fmtId ? `/meta/${id}?fmt=${fmtId}` : `/meta/${id}`, { state: { from: location.pathname + location.search } });
+    const openTeam = (teamId) => navigate(`/tournaments/team/${teamId}`, { state: { from: location.pathname + location.search } });
 
     const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
     if (loading && !ranked.length) {
@@ -121,28 +135,96 @@ export function MetaUsageView() {
                 <SourceCredit pt={pt} sources={['smogon', 'vgcpastes', 'pikalytics']} className="mt-2.5" />
             </header>
 
+            {/* Tabs */}
+            <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className="mb-4 flex gap-1 border-b border-border">
+                {[
+                    { id: 'usage', label: pt ? 'Uso' : 'Usage' },
+                    { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
+                ].map((tb) => (
+                    <button
+                        key={tb.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={tab === tb.id}
+                        onClick={() => setTab(tb.id)}
+                        className={`rounded-t-lg border-b-2 px-4 py-2 text-sm font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === tb.id ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-fg'}`}
+                    >
+                        {tb.label}
+                    </button>
+                ))}
+            </div>
+
             {/* Toolbar */}
             <div className="mb-5 flex flex-wrap items-center gap-2">
-                <div className="relative min-w-0 flex-1">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder={pt ? 'Buscar Pokémon…' : 'Search Pokémon…'}
-                        className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-9 text-sm text-fg focus:border-primary focus:outline-none"
-                    />
-                    {search && (
-                        <button type="button" onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-fg" aria-label={t('common.clear')}>
-                            <X className="h-4 w-4" />
-                        </button>
-                    )}
-                </div>
+                {tab === 'usage' && (
+                    <div className="relative min-w-0 flex-1">
+                        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder={pt ? 'Buscar Pokémon…' : 'Search Pokémon…'}
+                            className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-9 text-sm text-fg focus:border-primary focus:outline-none"
+                        />
+                        {search && (
+                            <button type="button" onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-fg" aria-label={t('common.clear')}>
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
+                )}
                 {formats.length > 0 && (
-                    <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} />
+                    <div className="ml-auto">
+                        <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} />
+                    </div>
                 )}
             </div>
 
+            {tab === 'teams' ? (
+                <section>
+                    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">
+                            <Users className="h-4 w-4" /> {pt ? 'Times mais usados' : 'Most-used teams'}
+                        </h2>
+                        {!regHasTeams && format && (
+                            <span className="text-[11px] text-muted">
+                                {pt ? '(todas as regulações — sem times de torneio nesta ainda)' : '(all regulations — no tournament teams in this one yet)'}
+                            </span>
+                        )}
+                    </div>
+                    {teamCompositions.length === 0 ? (
+                        <EmptyState compact title={pt ? 'Sem times' : 'No teams'} message={pt ? 'Sem dados de times de torneio.' : 'No tournament team data available.'} />
+                    ) : (
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                            {teamCompositions.map((tm, i) => (
+                                <button
+                                    key={tm.ids.join('-')}
+                                    type="button"
+                                    onClick={() => openTeam(tm.teamId)}
+                                    className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                >
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-[10px] font-bold text-muted">#{i + 1}</span>
+                                        <span className="text-right">
+                                            <span className="text-sm font-extrabold tabular-nums text-primary">{tm.count}</span>
+                                            <span className="ml-1 text-[11px] text-muted">{tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team')} · {tm.pct}%</span>
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {tm.ids.map((id, j) => (
+                                            <MonSprite key={`${id}-${j}`} id={id} name={tm.names[j]} className="h-12 w-12 image-pixelated" />
+                                        ))}
+                                    </div>
+                                    <div className="flex items-center justify-between gap-2">
+                                        <span className="min-w-0 truncate text-[11px] text-muted">{[tm.tournament, tm.placement].filter(Boolean).join(' · ')}</span>
+                                        <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-primary" />
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </section>
+            ) : (
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* Ranked usage grid */}
                 <section className="lg:col-span-2">
@@ -202,6 +284,7 @@ export function MetaUsageView() {
                     )}
                 </section>
             </div>
+            )}
         </div>
     );
 }

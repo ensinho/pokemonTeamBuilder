@@ -81,6 +81,25 @@ const STAT_LABELS = {
 const capitalize = (s = '') => s.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
 const prettify = (s = '') => s.replace(/-/g, ' ');
 
+const NATURE_OPTIONS = NATURES.map((n) => {
+    const mod = NATURE_MODIFIERS[n];
+    const label = mod.plus
+        ? `${capitalize(n)} (+${STAT_LABELS[mod.plus]} / −${STAT_LABELS[mod.minus]})`
+        : `${capitalize(n)} (Neutral)`;
+    return { value: n, label };
+}).sort((a, b) => a.label.localeCompare(b.label));
+
+const SESSION_KEY = 'damage-calc-state';
+
+const loadSessionState = () => {
+    try {
+        const raw = sessionStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch {
+        return null;
+    }
+};
+
 const ToggleSwitch = ({ checked, onChange, label, activeColor = 'bg-primary' }) => {
     return (
         <button
@@ -195,11 +214,12 @@ export function DamageCalculatorView() {
         fetchReferenceData();
     }, [fetchPokemonIndex, fetchReferenceData]);
 
-    const [p1, setP1] = useState(() => initialPokemonState(true));
-    const [p2, setP2] = useState(() => initialPokemonState(false));
+    const [restored] = useState(loadSessionState);
+    const [p1, setP1] = useState(() => (restored?.p1 ? { ...initialPokemonState(true), ...restored.p1 } : initialPokemonState(true)));
+    const [p2, setP2] = useState(() => (restored?.p2 ? { ...initialPokemonState(false), ...restored.p2 } : initialPokemonState(false)));
     const [activeTab, setActiveTab] = useState('pokemon1'); // mobile layout tabs: 'pokemon1' | 'field' | 'pokemon2'
 
-    const [field, setField] = useState({
+    const initialFieldState = {
         format: 'singles',
         weather: 'none',
         terrain: 'none',
@@ -218,7 +238,38 @@ export function DamageCalculatorView() {
             stealthRock: false,
             spikes: 0,
         }
-    });
+    };
+    const [field, setField] = useState(() => (restored?.field ? { ...initialFieldState, ...restored.field } : initialFieldState));
+
+    // Persist the current calculation setup for the session. movesPool is
+    // dropped (it can be huge and is re-hydrated from the data cache below).
+    useEffect(() => {
+        try {
+            const strip = ({ movesPool: _pool, ...rest }) => rest;
+            sessionStorage.setItem(SESSION_KEY, JSON.stringify({ p1: strip(p1), p2: strip(p2), field }));
+        } catch {
+            // storage full/unavailable — persistence is best-effort
+        }
+    }, [p1, p2, field]);
+
+    // Restore the moves pool for Pokémon revived from the session snapshot.
+    useEffect(() => {
+        const rehydratePool = async (pState, setP) => {
+            if (!pState.pokemon || pState.movesPool?.length) return;
+            const detail = await resolvePokemonDetail(pState.pokemon.id);
+            if (!detail) return;
+            const sortedMoves = [...(detail.moves || [])].sort((a, b) => a.name.localeCompare(b.name));
+            setP(prev => ({
+                ...prev,
+                abilitiesList: detail.abilities?.length ? detail.abilities : prev.abilitiesList,
+                movesPool: sortedMoves,
+            }));
+        };
+        rehydratePool(p1, setP1);
+        rehydratePool(p2, setP2);
+        // mount-only: re-runs are driven by handleSelectPokemon, not state changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Merge API items list
     const itemsList = useMemo(() => {
@@ -330,13 +381,12 @@ export function DamageCalculatorView() {
     const handleResetAll = () => {
         setP1(initialPokemonState(true));
         setP2(initialPokemonState(false));
-        setField({
-            format: 'singles',
-            weather: 'none',
-            terrain: 'none',
-            attackerSide: { helpingHand: false, tailwind: false, battery: false, powerSpot: false, steelySpirit: false },
-            defenderSide: { reflect: false, lightScreen: false, auroraVeil: false, friendGuard: false, stealthRock: false, spikes: 0 }
-        });
+        setField(initialFieldState);
+        try {
+            sessionStorage.removeItem(SESSION_KEY);
+        } catch {
+            // ignore storage errors
+        }
         useToastStore.getState().showToast('Reset all values.', 'info');
     };
 
@@ -407,7 +457,12 @@ export function DamageCalculatorView() {
         const weatherStr = field.weather !== 'none' ? ` in ${capitalize(field.weather)}` : '';
         const terrainStr = field.terrain !== 'none' ? ` on ${capitalize(field.terrain)} Terrain` : '';
 
-        return `${p1.level} Lvl ${capitalize(p1.pokemon.name)} ${atkVal} ${atkStatName} ${capitalize(activeMove.name)} vs. ${p2.evs.hp || 0} HP / ${defVal} ${defStatName} ${capitalize(p2.pokemon.name)}${weatherStr}${terrainStr}: ${result.minDamage}-${result.maxDamage} (${result.minPct}% - ${result.maxPct}%) -- ${result.koText}`;
+        const atkNatureMod = natureMultiplier(p1.nature, activeMove.category === 'physical' ? 'attack' : 'special-attack');
+        const defNatureMod = natureMultiplier(p2.nature, activeMove.category === 'physical' ? 'defense' : 'special-defense');
+        const atkSign = atkNatureMod > 1 ? '+' : (atkNatureMod < 1 ? '-' : '');
+        const defSign = defNatureMod > 1 ? '+' : (defNatureMod < 1 ? '-' : '');
+
+        return `${p1.level} Lvl ${capitalize(p1.nature)} ${capitalize(p1.pokemon.name)} ${atkVal}${atkSign} ${atkStatName} ${capitalize(activeMove.name)} vs. ${p2.evs.hp || 0} HP / ${defVal}${defSign} ${defStatName} ${capitalize(p2.nature)} ${capitalize(p2.pokemon.name)}${weatherStr}${terrainStr}: ${result.minDamage}-${result.maxDamage} (${result.minPct}% - ${result.maxPct}%) -- ${result.koText}`;
     }, [result, p1, p2, activeMove, field]);
 
     const handleCopyResult = () => {
@@ -537,8 +592,16 @@ export function DamageCalculatorView() {
                     </button>
                     <button
                         onClick={handleResetAll}
-                        className="btn btn-outline text-xs h-8 px-3 w-full justify-center md:w-28 hover:text-danger hover:border-danger/30"
+                        className="btn btn-outline flex items-center gap-1.5 text-xs h-8 px-3 w-full justify-center md:w-28 hover:text-danger hover:border-danger/30"
+                        title="Clear all Pokémon, moves and field settings"
                     >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M3 6h18" />
+                            <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
+                            <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                            <line x1="10" x2="10" y1="11" y2="17" />
+                            <line x1="14" x2="14" y1="11" y2="17" />
+                        </svg>
                         Reset All
                     </button>
                 </div>
@@ -693,6 +756,16 @@ export function DamageCalculatorView() {
 
                     {/* Stats Table */}
                     <div className="bg-bg/25 p-2 rounded-lg border border-border">
+                        <div className="flex items-center justify-between gap-2 pb-2 mb-1 border-b border-border">
+                            <label className="dmg-field__label mb-0 shrink-0">Nature</label>
+                            <select
+                                className="dmg-select text-xs py-1 max-w-48"
+                                value={p1.nature}
+                                onChange={(e) => setP1(prev => ({ ...prev, nature: e.target.value }))}
+                            >
+                                {NATURE_OPTIONS.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+                            </select>
+                        </div>
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-border text-[10px] text-muted uppercase tracking-wider font-semibold">
@@ -760,7 +833,7 @@ export function DamageCalculatorView() {
                                         key={idx}
                                         onClick={() => setP1(prev => ({ ...prev, activeMoveIndex: idx }))}
                                         className={`p-3.5 rounded-xl border text-left cursor-pointer transition-all relative group ${isActive
-                                            ? 'bg-primary-soft/30 border-primary ring-1 ring-primary shadow-sm'
+                                            ? 'bg-primary-soft/30 border-border ring-1 ring-primary shadow-sm'
                                             : 'bg-bg/15 border-border hover:bg-bg/30 hover:border-border-hover'
                                             }`}
                                     >
@@ -954,7 +1027,7 @@ export function DamageCalculatorView() {
                                 <button
                                     key={w.val}
                                     onClick={() => setField(prev => ({ ...prev, weather: w.val }))}
-                                    className={`py-1 rounded border border-transparent transition-all ${w.color} ${field.weather === w.val ? 'bg-primary/20 text-primary border-primary/30 font-bold scale-[1.03]' : 'text-muted'
+                                    className={`py-1 rounded border border-transparent transition-all ${w.color} ${field.weather === w.val ? 'bg-primary/20 text-primary border-border font-bold scale-[1.03]' : 'text-muted'
                                         }`}
                                 >
                                     {w.label}
@@ -977,7 +1050,7 @@ export function DamageCalculatorView() {
                                 <button
                                     key={t.val}
                                     onClick={() => setField(prev => ({ ...prev, terrain: t.val }))}
-                                    className={`py-1 rounded border border-transparent transition-all ${t.color} ${field.terrain === t.val ? 'bg-primary/20 text-primary border-primary/30 font-bold scale-[1.03]' : 'text-muted'
+                                    className={`py-1 rounded border border-transparent transition-all ${t.color} ${field.terrain === t.val ? 'bg-primary/20 text-primary border font-bold scale-[1.03]' : 'text-muted'
                                         }`}
                                 >
                                     {t.label}
@@ -1172,6 +1245,16 @@ export function DamageCalculatorView() {
 
                     {/* Stats Table */}
                     <div className="bg-bg/25 p-2 rounded-lg border border-border">
+                        <div className="flex items-center justify-between gap-2 pb-2 mb-1 border-b border-border">
+                            <label className="dmg-field__label mb-0 shrink-0">Nature</label>
+                            <select
+                                className="dmg-select text-xs py-1 max-w-48"
+                                value={p2.nature}
+                                onChange={(e) => setP2(prev => ({ ...prev, nature: e.target.value }))}
+                            >
+                                {NATURE_OPTIONS.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
+                            </select>
+                        </div>
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-border text-[10px] text-muted uppercase tracking-wider font-semibold">

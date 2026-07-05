@@ -7,23 +7,29 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
+import { backLabelFor } from '../../utils/backNavigation';
 
 // Pretty-print a Showdown/slug name for display.
 export const pretty = (s = '') => String(s).replace(/-/g, ' ');
 
 /**
- * A "back" handler that returns to wherever the user actually came from. If this
- * page is the first entry in the history stack (a deep link / fresh load, where
- * router `location.key` is the sentinel 'default'), it falls back to `fallback`
- * so the button never dead-ends or leaves the app.
+ * A "back" handler that returns to wherever the user actually came from — the
+ * same pattern as the move/ability/Pokémon detail pages. Prefers the origin URL
+ * stashed in `location.state.from` (set by useEntityNavigate and detail links),
+ * then plain history, and finally `fallback` on a cold deep link (router
+ * `location.key` is the sentinel 'default') so the button never dead-ends.
+ * Returns `{ goBack, backLabel }` — `backLabel` names the origin when known.
  */
-export function useSmartBack(fallback) {
+export function useSmartBack(fallback, pt = false) {
     const navigate = useNavigate();
     const location = useLocation();
-    return React.useCallback(() => {
-        if (location.key && location.key !== 'default') navigate(-1);
+    const fromPath = location.state?.from || '';
+    const goBack = React.useCallback(() => {
+        if (fromPath) navigate(fromPath);
+        else if (location.key && location.key !== 'default') navigate(-1);
         else navigate(fallback);
-    }, [navigate, location.key, fallback]);
+    }, [navigate, fromPath, location.key, fallback]);
+    return { goBack, backLabel: backLabelFor(fromPath, pt) };
 }
 
 /**

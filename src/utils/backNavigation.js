@@ -8,6 +8,8 @@ export function backLabelFor(fromPath = '', pt = false, fallback = '') {
     if (fromPath.startsWith('/moves')) return pt ? 'Todos os movimentos' : 'All moves';
     if (fromPath.startsWith('/abilities/')) return pt ? 'Voltar à habilidade' : 'Back to ability';
     if (fromPath.startsWith('/abilities')) return pt ? 'Todas as habilidades' : 'All abilities';
+    if (fromPath.startsWith('/items/')) return pt ? 'Voltar ao item' : 'Back to item';
+    if (fromPath.startsWith('/items')) return pt ? 'Todos os itens' : 'All items';
     if (fromPath.startsWith('/meta')) return pt ? 'Voltar ao Meta & Uso' : 'Back to Meta & Usage';
     if (fromPath.startsWith('/tournaments/team')) return pt ? 'Voltar ao time' : 'Back to team';
     if (fromPath.startsWith('/tournaments')) return pt ? 'Voltar aos torneios' : 'Back to tournaments';

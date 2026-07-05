@@ -217,7 +217,7 @@ const DisclaimerModal = ({ onClose }) => {
                 </div>
 
                 <div className="space-y-3 text-sm text-muted leading-relaxed max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
-                    <p className="border-l-2 border-primary/30 pl-3 italic bg-primary-soft/20 py-1.5 rounded-r text-fg">
+                    <p className="border-l-2 border-border pl-3 italic bg-primary-soft/20 py-1.5 rounded-r text-fg">
                         {t('layout.disclaimerParagraph3')}
                     </p>
                     <p>

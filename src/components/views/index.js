@@ -14,6 +14,7 @@ export { default as PokePuzzleView } from './PokePuzzleView';
 export { MovesListView } from './MovesListView';
 export { AbilitiesListView } from './AbilitiesListView';
 export { ItemsListView } from './ItemsListView';
+export { ItemDetailView } from './ItemDetailView';
 export { PokemonDetailView } from './PokemonDetailView';
 export { DamageCalculatorView } from './DamageCalculatorView';
 export { SpeedTiersView } from './SpeedTiersView';

@@ -107,6 +107,10 @@ export const TRANSLATIONS = {
             usedBy: 'Pokémon with this ability',
             abilityTag: 'Ability',
             moveTag: 'Move',
+            itemTag: 'Item',
+            heldByWild: 'Held by wild Pokémon',
+            flingPower: 'Fling power',
+            category: 'Category',
             generationLabel: 'Generation {{num}}',
             effectHeading: 'Effect',
             gameDescriptions: 'Game descriptions',
@@ -117,6 +121,7 @@ export const TRANSLATIONS = {
             target: 'Target',
             backToAbilities: 'All abilities',
             backToMoves: 'All moves',
+            backToItems: 'All items',
             detailNotFoundDesc: "This entry doesn't exist or couldn't be loaded."
         },
         pdetail: {
@@ -939,6 +944,10 @@ export const TRANSLATIONS = {
             usedBy: 'Pokémon com esta habilidade',
             abilityTag: 'Habilidade',
             moveTag: 'Movimento',
+            itemTag: 'Item',
+            heldByWild: 'Segurado por Pokémon selvagens',
+            flingPower: 'Poder de Fling',
+            category: 'Categoria',
             generationLabel: 'Geração {{num}}',
             effectHeading: 'Efeito',
             gameDescriptions: 'Descrições nos jogos',
@@ -949,6 +958,7 @@ export const TRANSLATIONS = {
             target: 'Alvo',
             backToAbilities: 'Todas as habilidades',
             backToMoves: 'Todos os movimentos',
+            backToItems: 'Todos os itens',
             detailNotFoundDesc: 'Esta entrada não existe ou não pôde ser carregada.'
         },
         pdetail: {

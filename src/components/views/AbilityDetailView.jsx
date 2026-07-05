@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { ChevronLeft } from 'lucide-react';
 import '../../styles/entity-detail-view.css';
 import '../../styles/reference-views.css';
 
@@ -76,7 +77,7 @@ export function AbilityDetailView() {
     return (
         <div className="edv">
             <button type="button" className="edv-back" onClick={handleBack}>
-                ← {backLabel}
+                <ChevronLeft className="h-4 w-4" /> {backLabel}
             </button>
 
             <div className={`edv-main ${hasDescriptions ? '' : 'edv-main--single'}`}>

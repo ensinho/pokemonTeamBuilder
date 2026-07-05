@@ -10,6 +10,7 @@ import { PokeballIcon } from '../icons';
 import { PokemonDetailPanel } from './PokemonDetailPanel';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { titleCaseSlug } from '../../utils/smogonSets';
+import { backLabelFor } from '../../utils/backNavigation';
 
 export function PokemonDetailView({
     colors,
@@ -47,14 +48,7 @@ export function PokemonDetailView({
         else if (location.key !== 'default') navigate(-1);
         else navigate('/pokedex');
     };
-    const backLabel = useMemo(() => {
-        if (fromPath.startsWith('/teams')) return pt ? 'Voltar ao time' : 'Back to team';
-        if (fromPath.startsWith('/pokedex')) return pt ? 'Voltar à Pokédex' : 'Back to Pokédex';
-        if (fromPath.startsWith('/builder')) return pt ? 'Voltar ao construtor' : 'Back to builder';
-        if (fromPath.startsWith('/favorites')) return pt ? 'Voltar aos favoritos' : 'Back to favorites';
-        if (fromPath === '/' || fromPath.startsWith('/home')) return pt ? 'Voltar ao início' : 'Back to home';
-        return pt ? 'Voltar' : 'Back';
-    }, [fromPath, pt]);
+    const backLabel = useMemo(() => backLabelFor(fromPath, pt), [fromPath, pt]);
 
     // Navigating to an evolution / form / etc. keeps the original origin so the
     // back button stays meaningful through the chain.

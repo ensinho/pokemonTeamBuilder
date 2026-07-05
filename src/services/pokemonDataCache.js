@@ -513,6 +513,36 @@ export const getMovePageData = async (moveName) => {
     };
 };
 
+// Full record for the /items/:name detail page. Reuses the list fetcher's raw
+// cache key, so visiting a page after browsing the list costs no extra request.
+// Item flavor entries name their text field `text` (not `flavor_text`), so they
+// are normalized before the shared grouper.
+export const getItemPageData = async (itemName) => {
+    const name = getNamedResourceName(itemName);
+    if (!name) return null;
+    const data = await fetchPokeApiJson(`/item/${name}`, {
+        cacheKey: `item-detail:${name}`,
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
+    return {
+        name: data.name,
+        id: data.id,
+        sprite: data.sprites?.default || null,
+        category: data.category?.name || null,
+        cost: data.cost ?? 0,
+        flingPower: data.fling_power ?? null,
+        effect: pickEnglish(data.effect_entries, 'short_effect') || '',
+        effectLong: pickEnglish(data.effect_entries, 'effect') || '',
+        flavorTexts: groupFlavorTexts((data.flavor_text_entries || []).map((entry) => ({ ...entry, flavor_text: entry.text }))),
+        // Wild Pokémon that can hold this item (for cross-linking).
+        heldBy: (data.held_by_pokemon || []).map((entry) => ({
+            name: entry.pokemon?.name,
+            id: getIdFromResource(entry.pokemon),
+        })).filter((p) => p.name && Number.isInteger(p.id)),
+    };
+};
+
 export const getItemDetails = async (item) => {
     const name = getNamedResourceName(item, item?.url);
     if (!name) return null;
@@ -615,9 +645,17 @@ const normalizePokemonApiData = (apiData) => ({
  * @param {number|string} pokemonId
  * @returns {Promise<object|null>} a fat pokémon object, or null if unresolvable
  */
+// Battle tooling (damage calc, team editor) needs moves as [{name, url}, …].
+// Some mirror/static docs only carry stats + abilities, or store moves as
+// plain strings — those are "partial" and must not short-circuit the cascade.
+const hasUsableMoves = (detail) =>
+    Array.isArray(detail?.moves) && detail.moves.length > 0 && Boolean(detail.moves[0]?.name);
+
 export const resolvePokemonDetail = async (pokemonId) => {
     const id = Number.parseInt(pokemonId, 10);
     if (!Number.isInteger(id) || id <= 0) return null;
+
+    let partialDetail = null;
 
     // 1) Firestore mirror (already-baked fat doc) — same source the detail panel prefers.
     if (db) {
@@ -625,7 +663,10 @@ export const resolvePokemonDetail = async (pokemonId) => {
             const snap = await getDoc(doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(id)));
             if (snap.exists()) {
                 const data = snap.data();
-                if (data?.abilities?.length) return data;
+                if (data?.abilities?.length) {
+                    if (hasUsableMoves(data)) return data;
+                    partialDetail = data;
+                }
             }
         } catch (_) {
             // Permission/network issue — fall through to static/PokéAPI.
@@ -634,11 +675,18 @@ export const resolvePokemonDetail = async (pokemonId) => {
 
     // 2) Pre-baked static detail file (if generated).
     const staticDetail = await getStaticPokemonDetail(id);
-    if (staticDetail?.abilities?.length) return staticDetail;
+    if (staticDetail?.abilities?.length) {
+        if (hasUsableMoves(staticDetail)) return staticDetail;
+        partialDetail = partialDetail || staticDetail;
+    }
 
-    // 3) Live PokéAPI, normalized to the fat shape.
-    const apiData = await getPokemonApiData(id);
-    if (apiData) return normalizePokemonApiData(apiData);
+    // 3) Live PokéAPI, normalized to the fat shape (always includes moves).
+    try {
+        const apiData = await getPokemonApiData(id);
+        if (apiData) return normalizePokemonApiData(apiData);
+    } catch (_) {
+        // Offline / API down — a moveless doc is still better than nothing.
+    }
 
-    return null;
+    return partialDetail;
 };

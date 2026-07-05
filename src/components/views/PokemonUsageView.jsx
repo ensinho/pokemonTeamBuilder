@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import '../../styles/entity-detail-view.css';
 import {
     ChevronLeft, TrendingUp, Users, Swords, Sparkles, Package,
     Zap, BookOpen, Trophy, ArrowUpRight,
@@ -45,10 +46,10 @@ export function PokemonUsageView() {
     const { idOrName } = useParams();
     const navigate = useNavigate();
     const [params, setParams] = useSearchParams();
-    const goBack = useSmartBack('/meta');
     const { language } = useTranslation();
-    const { goToMove, goToAbility } = useEntityNavigate();
+    const { goToMove, goToAbility, goToItem, from } = useEntityNavigate();
     const pt = language === 'pt';
+    const { goBack, backLabel } = useSmartBack('/meta', pt);
 
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
@@ -118,8 +119,8 @@ export function PokemonUsageView() {
     if (pokemonIndex.length && !entry) {
         return (
             <main className="mx-auto max-w-5xl px-4 py-10">
-                <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-                    <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
+                <button type="button" onClick={goBack} className="edv-back mb-4">
+                    <ChevronLeft className="h-4 w-4" /> {backLabel}
                 </button>
                 <EmptyState title={pt ? 'Pokémon não encontrado' : 'Pokémon not found'} message={pt ? 'Verifique o endereço.' : 'Check the URL.'} />
             </main>
@@ -139,8 +140,8 @@ export function PokemonUsageView() {
     return (
         <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <button type="button" onClick={goBack} className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-fg transition-colors">
-                    <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
+                <button type="button" onClick={goBack} className="edv-back">
+                    <ChevronLeft className="h-4 w-4" /> {backLabel}
                 </button>
                 {formats.length > 0 && (
                     <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} className="py-1.5 text-[13px]" />
@@ -178,7 +179,7 @@ export function PokemonUsageView() {
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <Link to={`/pokemon/${id}`} className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all hover:border-primary active:scale-95">
+                            <Link to={`/pokemon/${id}`} state={{ from }} className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all hover:border-primary active:scale-95">
                                 <BookOpen className="h-3.5 w-3.5" /> {pt ? 'Ficha completa' : 'Full Pokédex entry'}
                             </Link>
                             {format && <span className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-[11px] font-semibold text-muted">{format.label}{format.cutoff ? ` · ${format.cutoff}+` : ''}</span>}
@@ -216,6 +217,7 @@ export function PokemonUsageView() {
                                         icon={<img src={itemSpriteUrl(it.slug)} alt="" className="h-4 w-4 image-pixelated" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />}
                                         pct={pctOf(it.count, n)}
                                         count={it.count}
+                                        onClick={(e) => goToItem(it.slug, e)}
                                     />
                                 ))}
                             </div>
@@ -257,7 +259,7 @@ export function PokemonUsageView() {
                                     {usage.spreads.slice(0, 6).map((sp, i) => {
                                         const spread = formatUsageSpread(sp.evs);
                                         return (
-                                            <div key={`${sp.nature}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2 hover:border-primary/30 transition-colors">
+                                            <div key={`${sp.nature}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2 hover:border-border transition-colors">
                                                 <span className="shrink-0 rounded bg-surface-raised px-2 py-0.5 text-[11px] font-bold text-fg">{sp.nature}</span>
                                                 <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted">{spread || (pt ? 'sem EVs' : 'no EVs')}</span>
                                                 <span className="shrink-0 text-[11px] font-bold tabular-nums text-primary">{pctOf(sp.count, n)}%</span>
@@ -290,9 +292,9 @@ export function PokemonUsageView() {
                                             <button
                                                 key={tm.id}
                                                 type="button"
-                                                onClick={() => navigate(fmtId ? `/meta/${resolvedTeam.spriteId}?fmt=${fmtId}` : `/meta/${resolvedTeam.spriteId}`)}
+                                                onClick={() => navigate(fmtId ? `/meta/${resolvedTeam.spriteId}?fmt=${fmtId}` : `/meta/${resolvedTeam.spriteId}`, { state: { from } })}
                                                 title={`${pretty(resolvedTeam.name)} · ${pctOf(tm.count, n)}%`}
-                                                className="group flex flex-col items-center gap-1 rounded-xl border border-border bg-surface p-2 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md"
+                                                className="group flex flex-col items-center gap-1 rounded-xl border border-border bg-surface p-2 transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
                                             >
                                                 <img
                                                     src={getPokemonFrontSpriteUrl(resolvedTeam.spriteId)}
@@ -326,7 +328,7 @@ export function PokemonUsageView() {
                             return (
                                 <article
                                     key={`${set.name}-${i}`}
-                                    className="group rounded-2xl border border-border bg-surface p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg"
+                                    className="group rounded-2xl border border-border bg-surface p-4 transition-all duration-300 hover:-translate-y-1 hover:border-border hover:shadow-lg"
                                     style={{ borderTop: `4px solid ${accent}`, background: `linear-gradient(135deg, ${accent}04, var(--color-surface) 40%), var(--color-surface)` }}
                                 >
                                     <div className="mb-2.5 flex items-center justify-between gap-2">
@@ -335,10 +337,10 @@ export function PokemonUsageView() {
                                     </div>
                                     <div className="mb-3 flex flex-wrap gap-1.5 text-[11px]">
                                         {set.item && (
-                                            <span className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg">
+                                            <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                                 <img src={itemSpriteUrl(slugify(set.item))} alt="" className="h-4 w-4 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                                 {pretty(set.item)}
-                                            </span>
+                                            </button>
                                         )}
                                         {set.ability && (
                                             <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
@@ -355,7 +357,7 @@ export function PokemonUsageView() {
                                     {spread && <p className="mb-3 text-[11px] text-muted"><span className="font-semibold text-fg">EVs:</span> {spread}</p>}
                                     <div className="grid grid-cols-2 gap-1.5">
                                         {primaryMoves(set).map((mv) => (
-                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg border border-border bg-surface-raised/20 text-[10px] hover:border-primary/30 transition-colors" />
+                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg border border-border bg-surface-raised/20 text-[10px] hover:border-border transition-colors" />
                                         ))}
                                     </div>
                                 </article>
@@ -376,7 +378,7 @@ export function PokemonUsageView() {
                             <button
                                 key={tm.id}
                                 type="button"
-                                onClick={() => navigate(`/tournaments/team/${tm.id}`)}
+                                onClick={() => navigate(`/tournaments/team/${tm.id}`, { state: { from } })}
                                 className="group flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                                 <div className="flex shrink-0 -space-x-2">

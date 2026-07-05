@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import '../../styles/entity-detail-view.css';
 import {
     ChevronLeft, Shield, Swords, AlertTriangle, Sparkles, ExternalLink, Medal,
 } from 'lucide-react';
@@ -50,10 +51,10 @@ function TypeChip({ type, count, danger }) {
  */
 export function TournamentTeamView({ onImport, colors }) {
     const { id } = useParams();
-    const goBack = useSmartBack('/tournaments');
     const { language } = useTranslation();
-    const { goToAbility } = useEntityNavigate();
+    const { goToAbility, from } = useEntityNavigate();
     const pt = language === 'pt';
+    const { goBack, backLabel } = useSmartBack('/tournaments', pt);
 
     const { teams, status } = useTournamentData();
     const { typeForMove } = useMoveTypes();
@@ -99,8 +100,8 @@ export function TournamentTeamView({ onImport, colors }) {
     if (!team) {
         return (
             <main className="mx-auto max-w-5xl px-4 py-10">
-                <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-                    <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
+                <button type="button" onClick={goBack} className="edv-back mb-4">
+                    <ChevronLeft className="h-4 w-4" /> {backLabel}
                 </button>
                 <EmptyState title={pt ? 'Time não encontrado' : 'Team not found'} message={pt ? 'Este time pode não estar mais no conjunto de dados.' : 'This team may no longer be in the dataset.'} />
             </main>
@@ -109,8 +110,8 @@ export function TournamentTeamView({ onImport, colors }) {
 
     return (
         <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
-            <button type="button" onClick={goBack} className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-fg transition-colors">
-                <ChevronLeft className="h-4 w-4" /> {pt ? 'Voltar' : 'Back'}
+            <button type="button" onClick={goBack} className="edv-back mb-4">
+                <ChevronLeft className="h-4 w-4" /> {backLabel}
             </button>
 
             {/* Header */}
@@ -197,7 +198,7 @@ export function TournamentTeamView({ onImport, colors }) {
                     return (
                         <article
                             key={`${m.id}-${i}`}
-                            className="group rounded-2xl border border-border bg-surface p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                            className="group rounded-2xl border border-border bg-surface p-4 transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
                             style={{
                                 borderTop: `3px solid ${accent}`,
                                 background: `linear-gradient(180deg, ${accent}04, var(--color-surface) 40%), var(--color-surface)`
@@ -206,6 +207,7 @@ export function TournamentTeamView({ onImport, colors }) {
                             <div className="flex items-center gap-4">
                                 <Link
                                     to={`/pokemon/${m.resolvedId || m.id}`}
+                                    state={{ from }}
                                     title={pretty(m.resolvedName || m.name)}
                                     className="relative flex items-center justify-center p-1.5 rounded-xl bg-surface-raised/80 group-hover:bg-surface-raised transition-colors shrink-0"
                                 >
@@ -220,6 +222,7 @@ export function TournamentTeamView({ onImport, colors }) {
                                     <div className="flex items-center gap-2">
                                         <Link
                                             to={`/meta/${m.resolvedId || m.id}`}
+                                            state={{ from }}
                                             className="truncate text-base font-extrabold capitalize text-fg hover:text-primary transition-colors"
                                         >
                                             {pretty(m.resolvedName || m.name)}

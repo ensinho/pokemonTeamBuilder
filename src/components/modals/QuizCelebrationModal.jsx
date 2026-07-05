@@ -121,7 +121,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                 aria-modal="true"
                 aria-labelledby="celebration-title"
                 tabIndex={-1}
-                className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-primary/20 bg-surface/90 shadow-elevation-3 p-8 focus:outline-none text-center select-none backdrop-saturate-150 animate-scale-in"
+                className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-surface/90 shadow-elevation-3 p-8 focus:outline-none text-center select-none backdrop-saturate-150 animate-scale-in"
                 style={{
                     background: 'radial-gradient(circle at center, rgba(125, 101, 225, 0.08) 0%, var(--color-surface) 100%)',
                 }}
@@ -150,7 +150,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                         <div className="relative group my-4 mx-auto w-40 h-40 flex items-center justify-center rounded-2xl bg-surface-raised/40 border border-border p-4 shadow-lg overflow-visible">
                             {/* Pulsing ring animation */}
                             <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-primary-soft/40 to-accent-soft/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                            <div className="absolute w-32 h-32 border-2 border-dashed border-primary/20 rounded-full animate-spin pointer-events-none" style={{ animationDuration: '25s' }} />
+                            <div className="absolute w-32 h-32 border-2 border-dashed border-border rounded-full animate-spin pointer-events-none" style={{ animationDuration: '25s' }} />
                             <div className="absolute w-28 h-28 border border-dotted border-accent/30 rounded-full animate-spin pointer-events-none" style={{ animationDuration: '12s', animationDirection: 'reverse' }} />
 
                             <img

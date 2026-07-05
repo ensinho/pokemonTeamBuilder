@@ -30,6 +30,43 @@ export function rankUsage(teams = []) {
         .sort((a, b) => b.count - a.count || a.id - b.id);
 }
 
+/**
+ * Most-used full teams — tournament teams grouped by their exact 6-Pokémon
+ * composition, so repeated archetypes rise to the top. Returns
+ * [{ ids, names, count, pct, teamId, tournament, placement, format }] sorted by
+ * frequency; `teamId` points at a representative (podium-preferred) team to open.
+ */
+export function commonTeams(teams = [], limit = 24) {
+    const groups = new Map();
+    for (const team of teams) {
+        const species = teamSpecies(team);
+        if (species.size < 5) continue; // skip incomplete rosters
+        const ids = [...species.keys()].sort((a, b) => a - b);
+        const key = ids.join('-');
+        let g = groups.get(key);
+        if (!g) {
+            g = { ids, names: ids.map((id) => species.get(id)), count: 0, sample: team };
+            groups.set(key, g);
+        }
+        g.count += 1;
+        if (team.featured && !g.sample.featured) g.sample = team; // prefer a podium team to link
+    }
+    const total = teams.length || 1;
+    return [...groups.values()]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, limit)
+        .map((g) => ({
+            ids: g.ids,
+            names: g.names,
+            count: g.count,
+            pct: Math.round((g.count / total) * 100),
+            teamId: g.sample.id,
+            tournament: g.sample.tournament || g.sample.title,
+            placement: g.sample.placement,
+            format: g.sample.format,
+        }));
+}
+
 // All size-combinations of a sorted array (n is tiny — ≤6 — so this is cheap).
 function combinations(arr, size) {
     if (size > arr.length) return [];

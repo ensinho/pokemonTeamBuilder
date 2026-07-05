@@ -39,7 +39,7 @@ function LiveUsageBlock({ pokemonId }) {
     const { defaultFormatId } = useUsageIndex();
     const { byId, format } = useUsageFormat(defaultFormatId);
     const { typeForMove } = useMoveTypes();
-    const { goToMove, goToAbility } = useEntityNavigate();
+    const { goToMove, goToAbility, goToItem, from } = useEntityNavigate();
 
     const usage = pokemonId ? byId?.[pokemonId] : null;
     const rank = useMemo(() => {
@@ -62,7 +62,7 @@ function LiveUsageBlock({ pokemonId }) {
                     <span className="font-bold text-fg">{usage.usage}%</span>
                     <span className="text-muted">{pt ? 'uso' : 'usage'}</span>
                     {rank && <span className="rounded bg-surface-raised px-1.5 py-0.5 font-bold text-muted">#{rank}</span>}
-                    <Link to={`/meta/${pokemonId}`} className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 font-semibold text-fg transition-colors hover:border-primary hover:text-primary">
+                    <Link to={`/meta/${pokemonId}`} state={{ from }} className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 font-semibold text-fg transition-colors hover:border-primary hover:text-primary">
                         {pt ? 'Ver tudo' : 'Full breakdown'} <ArrowUpRight className="w-3 h-3" />
                     </Link>
                 </div>
@@ -79,6 +79,7 @@ function LiveUsageBlock({ pokemonId }) {
                                 icon={<img src={itemSpriteUrl(it.slug)} alt="" className="h-4 w-4 image-pixelated" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />}
                                 pct={pctOf(it.count, n)}
                                 count={it.count}
+                                onClick={(e) => goToItem(it.slug, e)}
                             />
                         ))}
                     </div>
@@ -137,6 +138,7 @@ function LiveUsageBlock({ pokemonId }) {
 function RecentTournamentTeams({ pokemonId }) {
     const { language } = useTranslation();
     const pt = language === 'pt';
+    const { from } = useEntityNavigate();
     const { teams } = useTournamentData();
 
     const featured = useMemo(
@@ -163,6 +165,7 @@ function RecentTournamentTeams({ pokemonId }) {
                     <Link
                         key={tm.id}
                         to={`/tournaments/team/${tm.id}`}
+                        state={{ from }}
                         className="group flex items-center gap-3 rounded-lg border border-border bg-surface-raised p-2 transition-colors hover:border-primary"
                     >
                         <div className="flex shrink-0 -space-x-2">
@@ -189,7 +192,7 @@ function RecentTournamentTeams({ pokemonId }) {
  */
 export function SmogonCompetitivePanel({ pokemonId }) {
     const { language } = useTranslation();
-    const { goToMove, goToAbility } = useEntityNavigate();
+    const { goToMove, goToAbility, goToItem } = useEntityNavigate();
     const { smogonFor, status } = useSmogonData();
     const { defaultFormatId } = useUsageIndex();
     const { byId: usageById } = useUsageFormat(defaultFormatId);
@@ -237,7 +240,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
                     </div>
 
                     {entry.overview && (
-                        <p className="text-sm leading-relaxed text-fg whitespace-pre-line border-l-2 border-primary/40 pl-3">
+                        <p className="text-sm leading-relaxed text-fg whitespace-pre-line border-l-2 border-border pl-3">
                             {entry.overview}
                         </p>
                     )}
@@ -264,10 +267,17 @@ export function SmogonCompetitivePanel({ pokemonId }) {
                                         {set.item && (
                                             <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-raised px-2.5 py-1 text-xs font-semibold text-fg">
                                                 <img src={itemSpriteUrl(set.item)} alt="" className="w-4 h-4 image-pixelated" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                                                <span className="capitalize">{pretty(set.item)}</span>
-                                                {set.itemAlts?.length > 0 && (
-                                                    <span className="text-muted normal-case">/ {set.itemAlts.map(pretty).join(' / ')}</span>
-                                                )}
+                                                <button type="button" onClick={(e) => goToItem(set.item, e)} className="capitalize transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+                                                    {pretty(set.item)}
+                                                </button>
+                                                {set.itemAlts?.length > 0 && set.itemAlts.map((alt) => (
+                                                    <React.Fragment key={alt}>
+                                                        <span className="text-muted" aria-hidden="true">/</span>
+                                                        <button type="button" onClick={(e) => goToItem(alt, e)} className="capitalize text-muted transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+                                                            {pretty(alt)}
+                                                        </button>
+                                                    </React.Fragment>
+                                                ))}
                                             </span>
                                         )}
                                         <MetaPill icon={<Shield className="w-3.5 h-3.5 text-muted" />} label={pt ? 'Hab.' : 'Ability'} value={set.ability && pretty(set.ability)} onClick={set.ability ? (e) => goToAbility(set.ability, e) : undefined} />

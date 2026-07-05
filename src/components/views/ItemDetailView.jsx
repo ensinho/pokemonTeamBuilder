@@ -4,61 +4,52 @@ import { ChevronLeft } from 'lucide-react';
 import '../../styles/entity-detail-view.css';
 import '../../styles/reference-views.css';
 
-import { getMovePageData } from '../../services/pokemonDataCache';
+import { getItemPageData } from '../../services/pokemonDataCache';
 import { useEntityPageData } from '../../hooks/useEntityPageData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { formatVersionGroup, generationNumeral } from '../../utils/gameVersions';
+import { formatVersionGroup } from '../../utils/gameVersions';
 import { backLabelFor } from '../../utils/backNavigation';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
-import { TypeBadge } from '../TypeBadge';
 import { PokeballIcon } from '../icons';
 
-const CATEGORY_CLASS = {
-    physical: 'ref-cat--physical',
-    special: 'ref-cat--special',
-    status: 'ref-cat--status',
-};
+const prettify = (name = '') => String(name).replace(/-/g, ' ');
 
 /**
- * Bulbapedia-style reference page for a single move (/moves/:name): battle
- * data, effect, per-game descriptions, and every Pokémon that learns it.
+ * Bulbapedia-style reference page for a single item (/items/:name): effect,
+ * category / cost / Fling power, per-game descriptions, and the wild Pokémon
+ * that can hold it. Mirrors the move & ability detail pages.
  */
-export function MoveDetailView() {
+export function ItemDetailView() {
     const { name } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
     const { t, language } = useTranslation();
 
     const slug = String(name || '').toLowerCase();
-    const { status, data } = useEntityPageData(slug, getMovePageData);
+    const { status, data } = useEntityPageData(slug, getItemPageData);
 
     const displayName = titleCaseSlug(slug);
     useDocumentMeta({
-        title: `${displayName} (${t('db.moveTag')})`,
-        description: data
-            ? [
-                `${displayName} — ${data.type ? `${titleCaseSlug(data.type)}-type ` : ''}${data.damage_class || ''} move.`,
-                typeof data.power === 'number' ? `${data.power} power.` : '',
-                typeof data.accuracy === 'number' ? `${data.accuracy}% accuracy.` : '',
-                data.effect,
-            ].filter(Boolean).join(' ')
-            : `${displayName} — move data, effect, game descriptions, and every Pokémon that learns it.`,
-        path: `/moves/${slug}`,
+        title: `${displayName} (${t('db.itemTag')})`,
+        description: data?.effect
+            ? `${displayName} — ${data.effect}`
+            : `${displayName} — item effect, game descriptions, and which Pokémon hold it.`,
+        path: `/items/${slug}`,
     });
 
-    // Dynamic "go back": return to wherever the move was clicked (a Pokémon
-    // page, a tournament team, the meta view, …), falling back to history and
-    // finally the moves list on a cold deep link.
+    // Dynamic "go back": return to wherever the item was clicked (a Pokémon
+    // page, the meta view, a tournament team, …), falling back to history and
+    // finally the items list on a cold deep link.
     const fromPath = location.state?.from || '';
     const handleBack = () => {
         if (fromPath) navigate(fromPath);
         else if (location.key && location.key !== 'default') navigate(-1);
-        else navigate('/moves');
+        else navigate('/items');
     };
-    const backLabel = backLabelFor(fromPath, language === 'pt', t('db.backToMoves'));
+    const backLabel = backLabelFor(fromPath, language === 'pt', t('db.backToItems'));
 
     if (status === 'loading') {
         return (
@@ -78,14 +69,6 @@ export function MoveDetailView() {
         );
     }
 
-    const stats = [
-        { label: t('db.colPower'), value: data.power ?? '—' },
-        { label: t('db.colAccuracy'), value: typeof data.accuracy === 'number' ? `${data.accuracy}%` : '—' },
-        { label: t('db.colPP'), value: data.pp ?? '—' },
-        { label: t('db.priority'), value: data.priority > 0 ? `+${data.priority}` : data.priority },
-        { label: t('db.target'), value: data.target ? data.target.replace(/-/g, ' ') : '—' },
-    ];
-
     const hasDescriptions = data.flavorTexts.length > 0;
 
     return (
@@ -98,29 +81,25 @@ export function MoveDetailView() {
                 <div className="edv-col">
                     <header className="edv-header">
                         <div className="edv-kicker">
-                            <span>{t('db.moveTag')}</span>
-                            {data.generation && <span>· {t('db.generationLabel', { num: generationNumeral(data.generation) })}</span>}
+                            <span>{t('db.itemTag')}</span>
+                            {data.category && <span className="capitalize">· {prettify(data.category)}</span>}
                         </div>
-                        <h1 className="edv-title">{displayName}</h1>
+                        <h1 className="edv-title flex items-center gap-2">
+                            {data.sprite && <img src={data.sprite} alt="" aria-hidden="true" className="w-9 h-9 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                            {displayName}
+                        </h1>
                         {data.effect && <p className="edv-lead">{data.effect}</p>}
-                        <div className="edv-badges">
-                            {data.type && <TypeBadge type={data.type} />}
-                            {data.damage_class && (
-                                <span className={`ref-cat ${CATEGORY_CLASS[data.damage_class] || ''}`}>
-                                    {t(`db.${data.damage_class}`)}
+                        <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
+                            <span className="rounded-md border border-border bg-surface-raised px-2 py-0.5 text-fg">
+                                <span className="text-muted">{t('db.colCost')}:</span> {data.cost > 0 ? data.cost : '—'}
+                            </span>
+                            {data.flingPower != null && (
+                                <span className="rounded-md border border-border bg-surface-raised px-2 py-0.5 text-fg">
+                                    <span className="text-muted">{t('db.flingPower')}:</span> {data.flingPower}
                                 </span>
                             )}
                         </div>
                     </header>
-
-                    <div className="edv-stats">
-                        {stats.map((s) => (
-                            <div key={s.label} className="edv-stat">
-                                <span className="edv-stat__label">{s.label}</span>
-                                <span className="edv-stat__value">{s.value}</span>
-                            </div>
-                        ))}
-                    </div>
 
                     {data.effectLong && data.effectLong !== data.effect && (
                         <section className="edv-section">
@@ -159,10 +138,10 @@ export function MoveDetailView() {
                 )}
             </div>
 
-            {data.learnedBy.length > 0 && (
+            {data.heldBy.length > 0 && (
                 <section className="edv-section">
-                    <h2 className="edv-section__title">{t('db.learnedBy')} · {data.learnedBy.length}</h2>
-                    <PokemonLinkChips pokemons={data.learnedBy} cap={60} />
+                    <h2 className="edv-section__title">{t('db.heldByWild')} · {data.heldBy.length}</h2>
+                    <PokemonLinkChips pokemons={data.heldBy} cap={60} />
                 </section>
             )}
         </div>

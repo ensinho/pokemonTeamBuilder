@@ -80,7 +80,7 @@ export function TeamDetailView({
     const { id } = useParams();
     const navigate = useNavigate();
     const { t, language } = useTranslation();
-    const { goToMove, goToAbility } = useEntityNavigate();
+    const { goToMove, goToAbility, goToItem } = useEntityNavigate();
     const pt = language === 'pt';
 
     const team = React.useMemo(() => teams.find((tm) => tm.id === id) || null, [teams, id]);
@@ -428,7 +428,7 @@ export function TeamDetailView({
                                                 <button
                                                     key={it.slug}
                                                     type="button"
-                                                    onClick={() => navigate(`/items?q=${encodeURIComponent(it.slug)}`)}
+                                                    onClick={() => goToItem(it.slug)}
                                                     className="team-detail-item"
                                                     title={pt ? `Ver ${it.label} no banco de itens` : `View ${it.label} in the items database`}
                                                 >
