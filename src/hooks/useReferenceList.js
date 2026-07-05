@@ -26,15 +26,38 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
     const [details, setDetails] = useState({});
     const requested = useRef(new Set());
 
-    // Load the index once.
+    // Tracks mount status so late-arriving fetches never setState on an
+    // unmounted hook, while still being applied across re-renders.
+    const mounted = useRef(true);
+    useEffect(() => {
+        mounted.current = true;
+        return () => { mounted.current = false; };
+    }, []);
+
+    // Load the index once, retrying a couple of times on transient failures.
     useEffect(() => {
         let cancelled = false;
+        let timer;
+        const attempt = (retriesLeft) => {
+            Promise.resolve(loadIndex())
+                .then((list) => {
+                    if (cancelled) return;
+                    setIndex(Array.isArray(list) ? list : []);
+                    setIsLoadingIndex(false);
+                })
+                .catch(() => {
+                    if (cancelled) return;
+                    if (retriesLeft > 0) {
+                        timer = setTimeout(() => attempt(retriesLeft - 1), 1500);
+                    } else {
+                        setIndex([]);
+                        setIsLoadingIndex(false);
+                    }
+                });
+        };
         setIsLoadingIndex(true);
-        Promise.resolve(loadIndex())
-            .then((list) => { if (!cancelled) setIndex(Array.isArray(list) ? list : []); })
-            .catch(() => { if (!cancelled) setIndex([]); })
-            .finally(() => { if (!cancelled) setIsLoadingIndex(false); });
-        return () => { cancelled = true; };
+        attempt(2);
+        return () => { cancelled = true; clearTimeout(timer); };
     }, [loadIndex]);
 
     const normalized = search.trim().toLowerCase().replace(/\s+/g, '-');
@@ -74,30 +97,29 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
 
     const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
-    // Lazily resolve details for the visible window.
+    // Lazily resolve details for the visible window. Results are keyed by name
+    // and remain valid no matter how the window has shifted since the fetch
+    // started, so they are applied even if `visible` changed mid-flight (e.g.
+    // the user kept typing) — discarding them here while leaving the name in
+    // `requested` would leave rows as permanent skeletons. Each detail lands
+    // as soon as it resolves instead of waiting on the slowest of the batch.
     useEffect(() => {
-        let cancelled = false;
         const pending = visible.filter((entry) => !requested.current.has(entry.name));
-        if (pending.length === 0) return undefined;
+        if (pending.length === 0) return;
         pending.forEach((entry) => requested.current.add(entry.name));
 
-        Promise.all(pending.map(async (entry) => {
-            try {
-                const detail = await loadDetail(entry);
-                return [entry.name, detail];
-            } catch (_) {
-                return [entry.name, null];
-            }
-        })).then((pairs) => {
-            if (cancelled) return;
-            setDetails((prev) => {
-                const next = { ...prev };
-                for (const [name, detail] of pairs) next[name] = detail;
-                return next;
-            });
+        pending.forEach((entry) => {
+            Promise.resolve(loadDetail(entry))
+                .then((detail) => {
+                    if (!mounted.current) return;
+                    setDetails((prev) => ({ ...prev, [entry.name]: detail ?? null }));
+                })
+                .catch(() => {
+                    // Un-mark so the row is refetched the next time it is on
+                    // screen, instead of caching the failure forever.
+                    requested.current.delete(entry.name);
+                });
         });
-
-        return () => { cancelled = true; };
     }, [visible, loadDetail]);
 
     const loadMore = useCallback(() => {
