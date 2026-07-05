@@ -10,17 +10,20 @@ import { useTournamentData } from '../../hooks/useTournamentData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { formatEvSpread, formatIvNotes } from '../../utils/smogonSets';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { UsageBar, MonSprite, pctOf } from './metaShared';
 
 const pretty = (slug = '') => String(slug).replace(/-/g, ' ');
 
-function MetaPill({ icon, label, value, style }) {
+function MetaPill({ icon, label, value, style, onClick }) {
     if (!value) return null;
     return (
         <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-raised px-2.5 py-1 text-xs font-semibold text-fg" style={style}>
             {icon}
             <span className="text-[10px] uppercase tracking-[0.06em] text-muted">{label}</span>
-            <span className="capitalize">{value}</span>
+            {onClick
+                ? <button type="button" onClick={onClick} className="capitalize transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">{value}</button>
+                : <span className="capitalize">{value}</span>}
         </span>
     );
 }
@@ -36,6 +39,7 @@ function LiveUsageBlock({ pokemonId }) {
     const { defaultFormatId } = useUsageIndex();
     const { byId, format } = useUsageFormat(defaultFormatId);
     const { typeForMove } = useMoveTypes();
+    const { goToMove, goToAbility } = useEntityNavigate();
 
     const usage = pokemonId ? byId?.[pokemonId] : null;
     const rank = useMemo(() => {
@@ -92,6 +96,7 @@ function LiveUsageBlock({ pokemonId }) {
                                     pct={pctOf(mv.count, n)}
                                     count={mv.count}
                                     color={mt ? (typeColors[mt] || 'var(--color-success)') : 'var(--color-success)'}
+                                    onClick={(e) => goToMove(mv.name, e)}
                                 />
                             );
                         })}
@@ -102,9 +107,14 @@ function LiveUsageBlock({ pokemonId }) {
             {(usage.abilities?.length > 0 || usage.tera?.length > 0) && (
                 <div className="flex flex-wrap items-center gap-1.5">
                     {usage.abilities.slice(0, 2).map((ab) => (
-                        <span key={ab.name} className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 text-[11px] font-semibold capitalize text-fg">
+                        <button
+                            key={ab.name}
+                            type="button"
+                            onClick={(e) => goToAbility(ab.name, e)}
+                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 text-[11px] font-semibold capitalize text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        >
                             <Zap className="w-3 h-3 text-accent" /> {pretty(ab.name)} <span className="text-muted">{pctOf(ab.count, n)}%</span>
-                        </span>
+                        </button>
                     ))}
                     {usage.tera.slice(0, 3).map((tt) => {
                         const c = typeColors[tt.name?.toLowerCase()] || 'var(--color-muted)';
@@ -179,6 +189,7 @@ function RecentTournamentTeams({ pokemonId }) {
  */
 export function SmogonCompetitivePanel({ pokemonId }) {
     const { language } = useTranslation();
+    const { goToMove, goToAbility } = useEntityNavigate();
     const { smogonFor, status } = useSmogonData();
     const { defaultFormatId } = useUsageIndex();
     const { byId: usageById } = useUsageFormat(defaultFormatId);
@@ -259,7 +270,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
                                                 )}
                                             </span>
                                         )}
-                                        <MetaPill icon={<Shield className="w-3.5 h-3.5 text-muted" />} label={pt ? 'Hab.' : 'Ability'} value={set.ability && pretty(set.ability)} />
+                                        <MetaPill icon={<Shield className="w-3.5 h-3.5 text-muted" />} label={pt ? 'Hab.' : 'Ability'} value={set.ability && pretty(set.ability)} onClick={set.ability ? (e) => goToAbility(set.ability, e) : undefined} />
                                         <MetaPill icon={<Zap className="w-3.5 h-3.5 text-muted" />} label={pt ? 'Natureza' : 'Nature'} value={set.nature} />
                                     </div>
 
@@ -274,7 +285,14 @@ export function SmogonCompetitivePanel({ pokemonId }) {
                                         {set.moves.map((slot, j) => (
                                             <span key={j} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-raised px-2 py-1 text-xs font-semibold capitalize text-fg">
                                                 <Swords className="w-3 h-3 text-muted" />
-                                                {slot.map(pretty).join(' / ')}
+                                                {slot.map((mv, k) => (
+                                                    <React.Fragment key={mv}>
+                                                        {k > 0 && <span className="text-muted" aria-hidden="true">/</span>}
+                                                        <button type="button" onClick={(e) => goToMove(mv, e)} className="capitalize transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
+                                                            {pretty(mv)}
+                                                        </button>
+                                                    </React.Fragment>
+                                                ))}
                                             </span>
                                         ))}
                                     </div>

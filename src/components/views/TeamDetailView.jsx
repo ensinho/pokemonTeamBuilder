@@ -15,6 +15,7 @@ import { TypeBadge } from '../TypeBadge';
 import { ShowdownIcon } from '../icons';
 import { CompactStatBar, getPokemonWeaknessEntries, WeaknessBadge } from '../modals/pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
@@ -79,6 +80,7 @@ export function TeamDetailView({
     const { id } = useParams();
     const navigate = useNavigate();
     const { t, language } = useTranslation();
+    const { goToMove, goToAbility } = useEntityNavigate();
     const pt = language === 'pt';
 
     const team = React.useMemo(() => teams.find((tm) => tm.id === id) || null, [teams, id]);
@@ -368,7 +370,9 @@ export function TeamDetailView({
                                         </span>
                                     )}
                                     {cz.ability && cz.ability !== 'unknown' && (
-                                        <span className="team-detail-build-pill capitalize">{cz.ability.replace(/-/g, ' ')}</span>
+                                        <button type="button" onClick={(e) => goToAbility(cz.ability, e)} className="team-detail-build-pill capitalize cursor-pointer transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                            {cz.ability.replace(/-/g, ' ')}
+                                        </button>
                                     )}
                                     {cz.teraType && (
                                         <span className="team-detail-build-pill team-detail-build-pill--tera" style={{ color: typeColors[cz.teraType] }}>
@@ -390,7 +394,9 @@ export function TeamDetailView({
                                 {moves.length > 0 && (
                                     <div className="team-detail-member__moves">
                                         {moves.map((mv) => (
-                                            <span key={mv} className="team-detail-move capitalize">{mv.replace(/-/g, ' ')}</span>
+                                            <button key={mv} type="button" onClick={(e) => goToMove(mv, e)} className="team-detail-move capitalize cursor-pointer transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                                {mv.replace(/-/g, ' ')}
+                                            </button>
                                         ))}
                                     </div>
                                 )}

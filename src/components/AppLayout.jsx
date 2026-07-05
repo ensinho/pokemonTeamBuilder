@@ -58,7 +58,9 @@ const TeamBuilderView = lazy(() => import('./views/TeamBuilderView').then((m) =>
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
 const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
 const MovesListView = lazy(() => import('./views/MovesListView').then((m) => ({ default: m.MovesListView })));
+const MoveDetailView = lazy(() => import('./views/MoveDetailView').then((m) => ({ default: m.MoveDetailView })));
 const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m) => ({ default: m.AbilitiesListView })));
+const AbilityDetailView = lazy(() => import('./views/AbilityDetailView').then((m) => ({ default: m.AbilityDetailView })));
 const ItemsListView = lazy(() => import('./views/ItemsListView').then((m) => ({ default: m.ItemsListView })));
 const PokemonDetailView = lazy(() => import('./views/PokemonDetailView').then((m) => ({ default: m.PokemonDetailView })));
 const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').then((m) => ({ default: m.DamageCalculatorView })));
@@ -1271,7 +1273,9 @@ export default function AppLayout() {
                                             />
                                         } />
                                         <Route path="/moves" element={<MovesListView />} />
+                                        <Route path="/moves/:name" element={<MoveDetailView />} />
                                         <Route path="/abilities" element={<AbilitiesListView />} />
+                                        <Route path="/abilities/:name" element={<AbilityDetailView />} />
                                         <Route path="/items" element={<ItemsListView />} />
                                         <Route path="/tournaments" element={
                                             <TournamentsView db={db} onOpenTeam={handleEditTeam} />

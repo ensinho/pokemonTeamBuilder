@@ -7,6 +7,7 @@ import { useGymLeaders } from '../../hooks/useGymLeaders';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
@@ -100,6 +101,7 @@ function GymGamePickerModal({ open, onClose, official, hacks, selectedKey, onSel
 // Detailed team modal showing all details (sprite, name, types, level, ability, held item, and moves).
 function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, showDetails, pt }) {
     const dialogRef = useModalA11y(open ? onClose : undefined);
+    const { goToMove, goToAbility } = useEntityNavigate();
     if (!open || !leader) return null;
 
     return (
@@ -204,7 +206,13 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                     <div className="space-y-1 bg-surface-raised/40 p-2 rounded-lg text-xs border border-border">
                                         <div className="flex justify-between gap-2">
                                             <span className="text-muted">{pt ? 'Habilidade' : 'Ability'}:</span>
-                                            <span className="font-semibold text-fg capitalize truncate" title={pretty(mon.ability)}>{pretty(mon.ability) || '-'}</span>
+                                            {mon.ability ? (
+                                                <button type="button" onClick={(e) => { onClose(); goToAbility(mon.ability, e); }} className="font-semibold text-fg capitalize truncate transition-colors hover:text-primary focus:outline-none" title={pretty(mon.ability)}>
+                                                    {pretty(mon.ability)}
+                                                </button>
+                                            ) : (
+                                                <span className="font-semibold text-fg">-</span>
+                                            )}
                                         </div>
                                         <div className="flex justify-between gap-2">
                                             <span className="text-muted">{pt ? 'Item' : 'Item'}:</span>
@@ -222,9 +230,11 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                                     const type = typeof mv === 'string' ? 'normal' : (mv.type || 'normal');
                                                     const color = typeColors[type] || 'var(--color-primary)';
                                                     return (
-                                                        <span
+                                                        <button
                                                             key={`${name}-${idx}`}
-                                                            className="truncate rounded-md border px-2 py-1 text-center text-[10px] font-medium capitalize flex items-center justify-center gap-1 leading-tight min-h-[22px]"
+                                                            type="button"
+                                                            onClick={(e) => { onClose(); goToMove(name, e); }}
+                                                            className="truncate cursor-pointer rounded-md border px-2 py-1 text-center text-[10px] font-medium capitalize flex items-center justify-center gap-1 leading-tight min-h-[22px] transition-opacity hover:opacity-75 focus:outline-none"
                                                             style={{
                                                                 color,
                                                                 borderColor: `${color}40`,
@@ -234,7 +244,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                                         >
                                                             {typeIcons[type] && <img src={typeIcons[type]} alt="" className="h-3.5 w-3.5 shrink-0 object-contain" />}
                                                             <span className="truncate">{pretty(name)}</span>
-                                                        </span>
+                                                        </button>
                                                     );
                                                 })
                                             ) : (

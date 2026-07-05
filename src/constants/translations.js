@@ -104,7 +104,20 @@ export const TRANSLATIONS = {
             loadMore: 'Load more',
             more: 'more',
             learnedBy: 'Learned by',
-            usedBy: 'Pokémon with this ability'
+            usedBy: 'Pokémon with this ability',
+            abilityTag: 'Ability',
+            moveTag: 'Move',
+            generationLabel: 'Generation {{num}}',
+            effectHeading: 'Effect',
+            gameDescriptions: 'Game descriptions',
+            colGames: 'Games',
+            colDescription: 'Description',
+            hiddenAbilityHolders: 'As a hidden ability',
+            priority: 'Priority',
+            target: 'Target',
+            backToAbilities: 'All abilities',
+            backToMoves: 'All moves',
+            detailNotFoundDesc: "This entry doesn't exist or couldn't be loaded."
         },
         pdetail: {
             usageTab: 'Overview',
@@ -923,7 +936,20 @@ export const TRANSLATIONS = {
             loadMore: 'Carregar mais',
             more: 'mais',
             learnedBy: 'Aprendido por',
-            usedBy: 'Pokémon com esta habilidade'
+            usedBy: 'Pokémon com esta habilidade',
+            abilityTag: 'Habilidade',
+            moveTag: 'Movimento',
+            generationLabel: 'Geração {{num}}',
+            effectHeading: 'Efeito',
+            gameDescriptions: 'Descrições nos jogos',
+            colGames: 'Jogos',
+            colDescription: 'Descrição',
+            hiddenAbilityHolders: 'Como habilidade oculta',
+            priority: 'Prioridade',
+            target: 'Alvo',
+            backToAbilities: 'Todas as habilidades',
+            backToMoves: 'Todos os movimentos',
+            detailNotFoundDesc: 'Esta entrada não existe ou não pôde ser carregada.'
         },
         pdetail: {
             usageTab: 'Visão geral',

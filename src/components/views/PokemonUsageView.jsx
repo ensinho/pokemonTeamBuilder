@@ -9,7 +9,7 @@ import { typeColors, typeIcons } from '../../constants/types';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
-import { formatEvSpread, primaryMoves, titleCaseSlug } from '../../utils/smogonSets';
+import { formatEvSpread, primaryMoves, titleCaseSlug, toApiSlug } from '../../utils/smogonSets';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
@@ -17,10 +17,11 @@ import { useSmogonData } from '../../hooks/useSmogonData';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { EmptyState } from '../EmptyState';
 import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, formatUsageSpread, SourceCredit, RegulationSelect, useSmartBack } from './metaShared';
 
-const slugify = (s = '') => s.toLowerCase().trim().replace(/[.'’:]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+const slugify = toApiSlug;
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 
 function MetricTile({ icon, value, label, accent }) {
@@ -46,6 +47,7 @@ export function PokemonUsageView() {
     const [params, setParams] = useSearchParams();
     const goBack = useSmartBack('/meta');
     const { language } = useTranslation();
+    const { goToMove, goToAbility } = useEntityNavigate();
     const pt = language === 'pt';
 
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
@@ -231,6 +233,7 @@ export function PokemonUsageView() {
                                             pct={pctOf(mv.count, n)}
                                             count={mv.count}
                                             color={mt ? (typeColors[mt] || 'var(--color-success)') : 'var(--color-success)'}
+                                            onClick={(e) => goToMove(mv.name, e)}
                                         />
                                     );
                                 })}
@@ -240,7 +243,7 @@ export function PokemonUsageView() {
                         <Panel title={pt ? 'Habilidades' : 'Abilities'} icon={<Zap className="h-4 w-4 text-primary" />}>
                             <div className="space-y-1.5">
                                 {usage.abilities.map((ab) => (
-                                    <UsageBar key={ab.name} label={pretty(ab.name)} pct={pctOf(ab.count, n)} count={ab.count} color="var(--color-accent)" />
+                                    <UsageBar key={ab.name} label={pretty(ab.name)} pct={pctOf(ab.count, n)} count={ab.count} color="var(--color-accent)" onClick={(e) => goToAbility(ab.name, e)} />
                                 ))}
                             </div>
                         </Panel>
@@ -337,7 +340,11 @@ export function PokemonUsageView() {
                                                 {pretty(set.item)}
                                             </span>
                                         )}
-                                        {set.ability && <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg">{pretty(set.ability)}</span>}
+                                        {set.ability && (
+                                            <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                                {pretty(set.ability)}
+                                            </button>
+                                        )}
                                         {set.nature && <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 text-fg">{set.nature}</span>}
                                         {set.tera?.length > 0 && (
                                             <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold" style={{ color: typeColors[set.tera[0]?.toLowerCase()] || 'var(--color-primary)', backgroundColor: `${typeColors[set.tera[0]?.toLowerCase()] || '#888'}1f` }}>

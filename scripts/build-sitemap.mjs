@@ -78,6 +78,27 @@ const main = async () => {
         if (team?.id) entries.push({ loc: `/tournaments/team/${team.id}`, changefreq: 'monthly', priority: '0.5' });
     }
 
+    // /moves/:name and /abilities/:name detail pages. There is no local index
+    // with the API name slugs (move-types.json keys are normalized), so ask
+    // PokéAPI for the lists directly; skip silently when offline — the script
+    // is failure-safe and the rest of the sitemap still gets written.
+    const fetchApiNames = async (url) => {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) return [];
+            const data = await res.json();
+            return (data?.results || []).map((r) => r?.name).filter(Boolean);
+        } catch {
+            return [];
+        }
+    };
+    for (const name of await fetchApiNames('https://pokeapi.co/api/v2/move?limit=1000')) {
+        entries.push({ loc: `/moves/${name}`, changefreq: 'monthly', priority: '0.5' });
+    }
+    for (const name of await fetchApiNames('https://pokeapi.co/api/v2/ability?limit=500')) {
+        entries.push({ loc: `/abilities/${name}`, changefreq: 'monthly', priority: '0.5' });
+    }
+
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries.map(urlEntry).join('\n')}

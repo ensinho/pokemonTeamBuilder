@@ -12,6 +12,7 @@ import { TypeBadge } from '../TypeBadge';
 import { StatBar } from '../StatBar';
 import { AbilityChip } from '../AbilityChip';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import {
     getPokemonEncountersData,
     getStaticPokemonDetail,
@@ -128,6 +129,7 @@ export function PokemonDetailPanel({
     onBack,
 }) {
     const { t, language } = useTranslation();
+    const { goToMove } = useEntityNavigate();
 
     const [selectedPokemon, setSelectedPokemon] = useState(pokemonId ? { id: pokemonId } : null);
     const [selectedPokemonDetails, setSelectedPokemonDetails] = useState(null);
@@ -870,7 +872,15 @@ export function PokemonDetailPanel({
                                                 {block.rows.map((m, idx) => (
                                                     <tr key={idx} className="border-b border-border hover:bg-bg/10">
                                                         <td className="py-2.5 font-bold font-mono text-muted">{block.key === 'levelUp' ? m.level : block.key === 'machine' ? (m.tmName ? formatTmName(m.tmName) : '—') : (m.learnMethod ? m.learnMethod.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : '—')}</td>
-                                                        <td className="py-2.5 font-bold capitalize text-fg">{m.name.replace('-', ' ')}</td>
+                                                        <td className="py-2.5 font-bold capitalize text-fg">
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => goToMove(m.name, e)}
+                                                                className="capitalize font-bold text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded"
+                                                            >
+                                                                {m.name.replace(/-/g, ' ')}
+                                                            </button>
+                                                        </td>
                                                         <td className="py-2.5 text-center"><span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider text-white" style={{ backgroundColor: typeColors[m.type] }}>{m.type.slice(0, 3)}</span></td>
                                                         <td className="py-2 text-center"><span title={m.damageClass} className="inline-flex items-center justify-center">{m.damageClass === 'physical' ? <PhysicalIcon /> : m.damageClass === 'special' ? <SpecialIcon /> : <StatusIcon />}</span></td>
                                                         <td className="py-2.5 text-center font-bold font-mono text-fg">{m.power ?? '—'}</td>

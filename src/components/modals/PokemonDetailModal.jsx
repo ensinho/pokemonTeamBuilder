@@ -318,11 +318,11 @@ export function PokemonDetailModal({
                                                     <div key={idx} className="capitalize text-xs">
                                                         {isHidden ? (
                                                             <span className="text-muted font-normal text-[11px] inline-flex items-center gap-1">
-                                                                <AbilityChip ability={ab} /> <span className="text-[10px] text-muted">{language === 'pt' ? '(oculta)' : '(hidden)'}</span>
+                                                                <AbilityChip ability={ab} onBeforeNavigate={onClose} /> <span className="text-[10px] text-muted">{language === 'pt' ? '(oculta)' : '(hidden)'}</span>
                                                             </span>
                                                         ) : (
                                                             <span className="inline-block">
-                                                                <AbilityChip ability={ab} />
+                                                                <AbilityChip ability={ab} onBeforeNavigate={onClose} />
                                                             </span>
                                                         )}
                                                     </div>

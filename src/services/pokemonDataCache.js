@@ -423,6 +423,96 @@ export const getAbilityDetails = async (ability) => {
     };
 };
 
+// English flavor texts ("game descriptions"), grouped by identical text so the
+// detail pages can render one Bulbapedia-style row per wording with the list of
+// version groups that share it. Preserves the API's version order.
+const groupFlavorTexts = (entries = []) => {
+    const groups = [];
+    const byText = new Map();
+    for (const entry of entries) {
+        if (entry?.language?.name !== 'en') continue;
+        // Old-gen texts carry soft-hyphen line breaks (U+00AD + newline mid-
+        // word) — rejoin the word before collapsing remaining breaks to spaces.
+        const text = String(entry.flavor_text || '')
+            .replace(/\u00ad\s*/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+        const version = entry.version_group?.name;
+        if (!text || !version) continue;
+        let group = byText.get(text);
+        if (!group) {
+            group = { text, versions: [] };
+            byText.set(text, group);
+            groups.push(group);
+        }
+        if (!group.versions.includes(version)) group.versions.push(version);
+    }
+    return groups;
+};
+
+// ── DETAIL page endpoints (/abilities/:name and /moves/:name) ───────────────
+// Fuller records than the list-row fetchers above: long effect text plus the
+// per-game flavor descriptions. They reuse the same cache keys as the list
+// fetchers, so visiting a page after browsing the list costs no extra request.
+
+export const getAbilityPageData = async (abilityName) => {
+    const name = getNamedResourceName(abilityName);
+    if (!name) return null;
+    const data = await fetchPokeApiJson(`/ability/${name}`, {
+        cacheKey: `ability-detail:${name}`,
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
+    const holders = Array.isArray(data.pokemon) ? data.pokemon : [];
+    return {
+        name: data.name,
+        id: data.id,
+        effect: pickEnglish(data.effect_entries, 'short_effect')
+            || pickEnglish(data.effect_entries, 'effect')
+            || '',
+        effectLong: pickEnglish(data.effect_entries, 'effect') || '',
+        generation: data.generation?.name || null,
+        flavorTexts: groupFlavorTexts(data.flavor_text_entries),
+        pokemon: holders.map((entry) => ({
+            name: entry.pokemon?.name,
+            id: getIdFromResource(entry.pokemon),
+            isHidden: entry.is_hidden,
+        })).filter((p) => p.name && Number.isInteger(p.id)),
+    };
+};
+
+export const getMovePageData = async (moveName) => {
+    const name = getNamedResourceName(moveName);
+    if (!name) return null;
+    const data = await fetchPokeApiJson(`/move/${name}`, {
+        cacheKey: `move:${name}`,
+        ttlMs: REFERENCE_TTL_MS,
+        storage: 'local',
+    });
+    // Effect entries embed "$effect_chance" placeholders (e.g. "Has a
+    // $effect_chance% chance to paralyze").
+    const fillChance = (text = '') => text.replace(/\$effect_chance/g, data.effect_chance ?? '');
+    return {
+        name: data.name,
+        id: data.id,
+        type: data.type?.name || null,
+        damage_class: data.damage_class?.name || null,
+        power: data.power,
+        accuracy: data.accuracy,
+        pp: data.pp,
+        priority: data.priority ?? 0,
+        target: data.target?.name || null,
+        generation: data.generation?.name || null,
+        effect: fillChance(pickEnglish(data.effect_entries, 'short_effect') || ''),
+        effectLong: fillChance(pickEnglish(data.effect_entries, 'effect') || ''),
+        flavorTexts: groupFlavorTexts(data.flavor_text_entries),
+        learnedBy: (data.learned_by_pokemon || []).map((p) => ({
+            name: p.name,
+            id: getIdFromResource(p),
+        })).filter((p) => p.name && Number.isInteger(p.id)),
+    };
+};
+
 export const getItemDetails = async (item) => {
     const name = getNamedResourceName(item, item?.url);
     if (!name) return null;

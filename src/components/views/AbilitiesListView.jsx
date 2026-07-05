@@ -1,4 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
 import { getAbilitiesList, getAbilityDetails, resolvePokemonDetail } from '../../services/pokemonDataCache';
@@ -8,7 +9,6 @@ import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNam
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
-import { PokemonLinkChips } from '../PokemonLinkChips';
 import { ClearIcon } from '../icons';
 
 const loadDetail = (entry) => getAbilityDetails(entry);
@@ -21,7 +21,7 @@ export function AbilitiesListView() {
         description: 'Every Pokémon ability explained, with its effect and which Pokémon can have it.',
         path: '/abilities',
     });
-    const [openName, setOpenName] = useState(null);
+    const navigate = useNavigate();
 
     // Lets a search for a Pokémon name surface that Pokémon's abilities.
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
@@ -35,9 +35,11 @@ export function AbilitiesListView() {
     const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
         useReferenceList({ loadIndex: getAbilitiesList, loadDetail, getRelatedNames });
 
-    const toggle = useCallback((name) => {
-        setOpenName((prev) => (prev === name ? null : name));
-    }, []);
+    // Each row is a link to that ability's own page; the origin is stashed so
+    // the detail page's back button returns here.
+    const openDetail = useCallback((name) => {
+        navigate(`/abilities/${name}`, { state: { from: '/abilities' } });
+    }, [navigate]);
 
     return (
         <div className="ref-view">
@@ -80,33 +82,22 @@ export function AbilitiesListView() {
 
                     {visible.map((entry) => {
                         const d = details[entry.name];
-                        const isOpen = openName === entry.name;
                         return (
                             <div
                                 key={entry.name}
-                                role="button"
+                                role="link"
                                 tabIndex={0}
-                                onClick={() => toggle(entry.name)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(entry.name); } }}
-                                aria-expanded={isOpen}
-                                className={`ref-row ref-row--abilities ${isOpen ? 'is-open' : ''}`}
+                                onClick={() => openDetail(entry.name)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(entry.name); } }}
+                                className="ref-row ref-row--abilities"
                             >
                                 <span className="ref-row__name">{prettify(entry.name)}</span>
 
-                                {isOpen
-                                    ? <span className="ref-row__effect" style={{ WebkitLineClamp: 'unset', display: 'block' }}>{d ? d.effect : t('db.loadingDetails')}</span>
-                                    : <span className="ref-row__effect">{d ? d.effect : <span className="ref-skeleton ref-skeleton--wide" />}</span>}
+                                <span className="ref-row__effect">{d ? d.effect : <span className="ref-skeleton ref-skeleton--wide" />}</span>
 
                                 <span className="ref-num ref-num--muted ref-col-holders">
                                     {d ? d.pokemonCount : ''}
                                 </span>
-
-                                {isOpen && d?.pokemon?.length > 0 && (
-                                    <>
-                                        <span className="ref-mons-label">{t('db.usedBy')} · {d.pokemon.length}</span>
-                                        <PokemonLinkChips pokemons={d.pokemon} />
-                                    </>
-                                )}
                             </div>
                         );
                     })}

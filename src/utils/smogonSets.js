@@ -14,6 +14,17 @@ const MAX_IVS = { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'specia
 export const titleCaseSlug = (slug = '') =>
     slug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
+// Inverse of titleCaseSlug: any display name — Showdown ("Will-O-Wisp",
+// "King's Shield") or already-slugged — to the PokéAPI slug used by the
+// /moves/:name and /abilities/:name routes.
+export const toApiSlug = (name = '') => String(name)
+    .toLowerCase()
+    .trim()
+    .replace(/[.'’:,%]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-');
+
 // "4 HP / 252 SpA / 252 Spe" — only the invested stats, in canonical order.
 export function formatEvSpread(evs = {}) {
     const parts = EV_ORDER.filter((k) => (evs[k] || 0) > 0).map((k) => `${evs[k]} ${STAT_SHORT[k]}`);

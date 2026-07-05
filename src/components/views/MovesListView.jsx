@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/team-builder-view.css';
 import '../../styles/reference-views.css';
 import { typeColors } from '../../constants/types';
@@ -10,7 +11,6 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { TypeBadge } from '../TypeBadge';
-import { PokemonLinkChips } from '../PokemonLinkChips';
 import { ClearIcon } from '../icons';
 
 const loadDetail = (entry) => getMoveDetails(entry.url, entry.name);
@@ -30,7 +30,7 @@ export function MovesListView() {
         description: 'Every Pokémon move with type, category, power, accuracy, and PP.',
         path: '/moves',
     });
-    const [openName, setOpenName] = useState(null);
+    const navigate = useNavigate();
     const [typeFilter, setTypeFilter] = useState('all');
     const [categoryFilter, setCategoryFilter] = useState('all');
 
@@ -59,9 +59,11 @@ export function MovesListView() {
         });
     }, [visible, details, typeFilter, categoryFilter]);
 
-    const toggle = useCallback((name) => {
-        setOpenName((prev) => (prev === name ? null : name));
-    }, []);
+    // Each row is a link to that move's own page; the origin is stashed so the
+    // detail page's back button returns here.
+    const openDetail = useCallback((name) => {
+        navigate(`/moves/${name}`, { state: { from: '/moves' } });
+    }, [navigate]);
 
     return (
         <div className="ref-view">
@@ -136,16 +138,14 @@ export function MovesListView() {
 
                     {rows.map((entry) => {
                         const d = details[entry.name];
-                        const isOpen = openName === entry.name;
                         return (
                             <div
                                 key={entry.name}
-                                role="button"
+                                role="link"
                                 tabIndex={0}
-                                onClick={() => toggle(entry.name)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(entry.name); } }}
-                                aria-expanded={isOpen}
-                                className={`ref-row ref-row--moves ${isOpen ? 'is-open' : ''}`}
+                                onClick={() => openDetail(entry.name)}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(entry.name); } }}
+                                className="ref-row ref-row--moves"
                             >
                                 <span className="ref-row__name">{prettify(entry.name)}</span>
 
@@ -162,20 +162,6 @@ export function MovesListView() {
                                 <span className="ref-num">{d ? (d.power ?? '—') : <span className="ref-skeleton" />}</span>
                                 <span className="ref-num ref-num--muted ref-col-acc">{d ? (d.accuracy ?? '—') : ''}</span>
                                 <span className="ref-num ref-num--muted ref-col-pp">{d ? (d.pp ?? '—') : ''}</span>
-
-                                {isOpen && (
-                                    <span className="ref-effect">
-                                        {d
-                                            ? <><strong className="capitalize">{prettify(entry.name)}</strong>{d.type ? ` · ${t(`types.${d.type}`)}` : ''}{typeof d.power === 'number' ? ` · ${t('db.colPower')} ${d.power}` : ''}{typeof d.accuracy === 'number' ? ` · ${d.accuracy}% ${t('db.colAccuracy')}` : ''}{typeof d.pp === 'number' ? ` · ${d.pp} PP` : ''}</>
-                                            : t('db.loadingDetails')}
-                                    </span>
-                                )}
-                                {isOpen && d?.learnedBy?.length > 0 && (
-                                    <>
-                                        <span className="ref-mons-label">{t('db.learnedBy')} · {d.learnedBy.length}</span>
-                                        <PokemonLinkChips pokemons={d.learnedBy} />
-                                    </>
-                                )}
                             </div>
                         );
                     })}

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowUpRight, Info } from 'lucide-react';
 import { getPokemonFrontSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
@@ -28,21 +29,25 @@ export function useSmartBack(fallback) {
 /**
  * A move name rendered as a compact chip, tinted by its type (with the type
  * icon) when a type is known. Falls back to a neutral chip otherwise.
+ * Clicking opens the move's detail page (accepts slugs or Showdown names).
  */
 export function MoveChip({ name, type, className = '' }) {
+    const { goToMove } = useEntityNavigate();
     const color = type ? (typeColors[type] || null) : null;
     const style = color
         ? { color, backgroundColor: `${color}1a`, borderColor: `${color}55` }
         : undefined;
     return (
-        <span
-            className={`inline-flex min-w-0 items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold capitalize ${color ? '' : 'border-border bg-surface-raised text-fg'} ${className}`}
+        <button
+            type="button"
+            onClick={(e) => goToMove(name, e)}
+            className={`inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold capitalize transition-opacity hover:opacity-75 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${color ? '' : 'border-border bg-surface-raised text-fg'} ${className}`}
             style={style}
             title={pretty(name)}
         >
             {type && typeIcons[type] && <img src={typeIcons[type]} alt="" className="h-3 w-3 shrink-0" aria-hidden="true" />}
             <span className="truncate">{pretty(name)}</span>
-        </span>
+        </button>
     );
 }
 

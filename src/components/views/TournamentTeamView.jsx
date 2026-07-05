@@ -18,6 +18,7 @@ import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { EmptyState } from '../EmptyState';
 import { ShowdownIcon } from '../icons';
 import { MoveChip, pretty, useSmartBack } from './metaShared';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 const EV_LABEL = { hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe' };
@@ -51,6 +52,7 @@ export function TournamentTeamView({ onImport, colors }) {
     const { id } = useParams();
     const goBack = useSmartBack('/tournaments');
     const { language } = useTranslation();
+    const { goToAbility } = useEntityNavigate();
     const pt = language === 'pt';
 
     const { teams, status } = useTournamentData();
@@ -247,9 +249,9 @@ export function TournamentTeamView({ onImport, colors }) {
                                     </span>
                                 )}
                                 {m.ability && (
-                                    <span className="inline-flex items-center rounded-md bg-surface-raised px-2 py-0.75 capitalize text-fg border border-border" title={pt ? 'Habilidade' : 'Ability'}>
+                                    <button type="button" onClick={(e) => goToAbility(m.ability, e)} className="inline-flex cursor-pointer items-center rounded-md bg-surface-raised px-2 py-0.75 capitalize text-fg border border-border transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" title={pt ? 'Habilidade' : 'Ability'}>
                                         {pretty(m.ability)}
-                                    </span>
+                                    </button>
                                 )}
                                 {m.nature && (
                                     <span className="inline-flex items-center rounded-md bg-surface-raised px-2 py-0.75 text-fg border border-border" title={pt ? 'Natureza' : 'Nature'}>
