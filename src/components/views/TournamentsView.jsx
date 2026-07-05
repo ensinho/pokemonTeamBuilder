@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/tools-views.css';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useTournamentData } from '../../hooks/useTournamentData';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
@@ -20,9 +21,9 @@ function teamMatches(team, q) {
     return haystack.some((v) => typeof v === 'string' && v.toLowerCase().includes(q));
 }
 
-function TeamCard({ team, onOpen, navigate, from, t, pt }) {
+function TeamCard({ team, onOpen, navigate, linkState, t, pt }) {
     const roster = Array.isArray(team.pokemons) ? team.pokemons.slice(0, 6) : [];
-    const openDetail = () => { if (team.id) navigate(`/tournaments/team/${team.id}`, { state: { from } }); };
+    const openDetail = () => { if (team.id) navigate(`/tournaments/team/${team.id}`, { state: linkState }); };
     const stop = (e) => e.stopPropagation();
     return (
         <article
@@ -50,7 +51,7 @@ function TeamCard({ team, onOpen, navigate, from, t, pt }) {
                         type="button"
                         className="trn-card__mon-btn"
                         title={(mon.name || '').replace(/-/g, ' ')}
-                        onClick={(e) => { stop(e); navigate(`/meta/${mon.id}`, { state: { from } }); }}
+                        onClick={(e) => { stop(e); navigate(`/meta/${mon.id}`, { state: linkState }); }}
                     >
                         <img
                             src={getPokemonFrontSpriteUrl(mon.id)}
@@ -97,8 +98,7 @@ export function TournamentsView({ onOpenTeam }) {
         path: '/tournaments',
     });
     const navigate = useNavigate();
-    const location = useLocation();
-    const from = location.pathname + location.search;
+    const { linkState } = useEntityNavigate();
     const { teams, status } = useTournamentData();
     const [search, setSearch] = useState('');
 
@@ -155,7 +155,7 @@ export function TournamentsView({ onOpenTeam }) {
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.featuredTeams')}</h2>
                     <div className="trn-grid">
-                        {featured.map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} from={from} t={t} pt={pt} />)}
+                        {featured.map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                 </section>
             )}
@@ -164,7 +164,7 @@ export function TournamentsView({ onOpenTeam }) {
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.tournamentTeams')}</h2>
                     <div className="trn-grid">
-                        {tournament.map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} from={from} t={t} pt={pt} />)}
+                        {tournament.map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                 </section>
             )}

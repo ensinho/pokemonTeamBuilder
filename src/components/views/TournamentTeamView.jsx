@@ -52,7 +52,7 @@ function TypeChip({ type, count, danger }) {
 export function TournamentTeamView({ onImport, colors }) {
     const { id } = useParams();
     const { language } = useTranslation();
-    const { goToAbility, from } = useEntityNavigate();
+    const { goToAbility, linkState } = useEntityNavigate();
     const pt = language === 'pt';
     const { goBack, backLabel } = useSmartBack('/tournaments', pt);
 
@@ -207,7 +207,7 @@ export function TournamentTeamView({ onImport, colors }) {
                             <div className="flex items-center gap-4">
                                 <Link
                                     to={`/pokemon/${m.resolvedId || m.id}`}
-                                    state={{ from }}
+                                    state={linkState}
                                     title={pretty(m.resolvedName || m.name)}
                                     className="relative flex items-center justify-center p-1.5 rounded-xl bg-surface-raised/80 group-hover:bg-surface-raised transition-colors shrink-0"
                                 >
@@ -222,7 +222,7 @@ export function TournamentTeamView({ onImport, colors }) {
                                     <div className="flex items-center gap-2">
                                         <Link
                                             to={`/meta/${m.resolvedId || m.id}`}
-                                            state={{ from }}
+                                            state={linkState}
                                             className="truncate text-base font-extrabold capitalize text-fg hover:text-primary transition-colors"
                                         >
                                             {pretty(m.resolvedName || m.name)}

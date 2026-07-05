@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { TrendingUp, Search, Layers, X, Users, ArrowUpRight } from 'lucide-react';
 
 import { useTournamentData } from '../../hooks/useTournamentData';
@@ -10,6 +10,7 @@ import { PokeballIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
 import { MonSprite, pretty, SourceCredit, RegulationSelect } from './metaShared';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 function CoreRow({ core, rank, onOpenMon }) {
@@ -55,7 +56,7 @@ export function MetaUsageView() {
         path: '/meta',
     });
     const navigate = useNavigate();
-    const location = useLocation();
+    const { linkState } = useEntityNavigate();
     const [params, setParams] = useSearchParams();
 
     const { formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
@@ -105,8 +106,8 @@ export function MetaUsageView() {
     );
 
     const setFmt = (id) => setParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', id); return p; }, { replace: true });
-    const openMon = (id) => navigate(fmtId ? `/meta/${id}?fmt=${fmtId}` : `/meta/${id}`, { state: { from: location.pathname + location.search } });
-    const openTeam = (teamId) => navigate(`/tournaments/team/${teamId}`, { state: { from: location.pathname + location.search } });
+    const openMon = (id) => navigate(fmtId ? `/meta/${id}?fmt=${fmtId}` : `/meta/${id}`, { state: linkState });
+    const openTeam = (teamId) => navigate(`/tournaments/team/${teamId}`, { state: linkState });
 
     const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
     if (loading && !ranked.length) {

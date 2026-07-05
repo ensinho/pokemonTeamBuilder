@@ -10,7 +10,7 @@ import { PokeballIcon } from '../icons';
 import { PokemonDetailPanel } from './PokemonDetailPanel';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { titleCaseSlug } from '../../utils/smogonSets';
-import { backLabelFor } from '../../utils/backNavigation';
+import { useSmartBack } from '../../hooks/useEntityNavigate';
 
 export function PokemonDetailView({
     colors,
@@ -40,15 +40,10 @@ export function PokemonDetailView({
     const resolvedId = indexEntry?.id ?? Number.parseInt(idOrName, 10);
     const validId = Number.isInteger(resolvedId) && resolvedId > 0;
 
-    // Dynamic "go back": return to wherever the user opened this page from
-    // (team detail, builder, favorites, …), falling back to history then /pokedex.
-    const fromPath = location.state?.from || '';
-    const handleBack = () => {
-        if (fromPath) navigate(fromPath);
-        else if (location.key !== 'default') navigate(-1);
-        else navigate('/pokedex');
-    };
-    const backLabel = useMemo(() => backLabelFor(fromPath, pt), [fromPath, pt]);
+    // Breadcrumb-trail back: returns to wherever the user opened this page from
+    // (team detail, meta, favorites, …) without breaking that page's own back
+    // button; falls back to history then /pokedex on a cold deep link.
+    const { goBack: handleBack, backLabel } = useSmartBack('/pokedex', pt);
 
     // Navigating to an evolution / form / etc. keeps the original origin so the
     // back button stays meaningful through the chain.

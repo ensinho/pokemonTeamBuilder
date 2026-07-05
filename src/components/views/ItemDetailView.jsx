@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import '../../styles/entity-detail-view.css';
 import '../../styles/reference-views.css';
@@ -9,7 +9,7 @@ import { useEntityPageData } from '../../hooks/useEntityPageData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { formatVersionGroup } from '../../utils/gameVersions';
-import { backLabelFor } from '../../utils/backNavigation';
+import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
@@ -24,8 +24,6 @@ const prettify = (name = '') => String(name).replace(/-/g, ' ');
  */
 export function ItemDetailView() {
     const { name } = useParams();
-    const navigate = useNavigate();
-    const location = useLocation();
     const { t, language } = useTranslation();
 
     const slug = String(name || '').toLowerCase();
@@ -40,16 +38,10 @@ export function ItemDetailView() {
         path: `/items/${slug}`,
     });
 
-    // Dynamic "go back": return to wherever the item was clicked (a Pokémon
-    // page, the meta view, a tournament team, …), falling back to history and
-    // finally the items list on a cold deep link.
-    const fromPath = location.state?.from || '';
-    const handleBack = () => {
-        if (fromPath) navigate(fromPath);
-        else if (location.key && location.key !== 'default') navigate(-1);
-        else navigate('/items');
-    };
-    const backLabel = backLabelFor(fromPath, language === 'pt', t('db.backToItems'));
+    // Breadcrumb-trail back: returns to wherever the item was clicked (a
+    // Pokémon page, the meta view, a tournament team, …) without breaking that
+    // page's own back button; falls back to the items list on a deep link.
+    const { goBack: handleBack, backLabel } = useSmartBack('/items', language === 'pt', t('db.backToItems'));
 
     if (status === 'loading') {
         return (

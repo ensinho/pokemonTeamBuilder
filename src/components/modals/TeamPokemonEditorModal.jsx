@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Sparkles, Package, Swords, Zap, TrendingUp, ArrowUpRight, Plus, Check } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
@@ -8,6 +8,7 @@ import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useSmogonData } from '../../hooks/useSmogonData';
+import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useBattleItems } from '../../hooks/useBattleItems';
@@ -47,7 +48,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     const { t, language } = useTranslation();
     const pt = language === 'pt';
     const navigate = useNavigate();
-    const location = useLocation();
+    const { linkState } = useEntityNavigate();
     const { smogonFor } = useSmogonData();
     const { formats, defaultFormatId } = useUsageIndex();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -505,7 +506,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     )}
                                     <button
                                         type="button"
-                                        onClick={() => { onClose(); navigate(fmtId ? `/meta/${pokemon.id}?fmt=${fmtId}` : `/meta/${pokemon.id}`, { state: { from: location.pathname + location.search } }); }}
+                                        onClick={() => { onClose(); navigate(fmtId ? `/meta/${pokemon.id}?fmt=${fmtId}` : `/meta/${pokemon.id}`, { state: linkState }); }}
                                         className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2.5 py-1 text-[11px] font-semibold text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8"
                                     >
                                         <TrendingUp className="h-3.5 w-3.5" /> {pt ? 'Página completa' : 'Full usage page'} <ArrowUpRight className="h-3 w-3" />

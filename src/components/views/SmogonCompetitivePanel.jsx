@@ -39,7 +39,7 @@ function LiveUsageBlock({ pokemonId }) {
     const { defaultFormatId } = useUsageIndex();
     const { byId, format } = useUsageFormat(defaultFormatId);
     const { typeForMove } = useMoveTypes();
-    const { goToMove, goToAbility, goToItem, from } = useEntityNavigate();
+    const { goToMove, goToAbility, goToItem, linkState } = useEntityNavigate();
 
     const usage = pokemonId ? byId?.[pokemonId] : null;
     const rank = useMemo(() => {
@@ -62,7 +62,7 @@ function LiveUsageBlock({ pokemonId }) {
                     <span className="font-bold text-fg">{usage.usage}%</span>
                     <span className="text-muted">{pt ? 'uso' : 'usage'}</span>
                     {rank && <span className="rounded bg-surface-raised px-1.5 py-0.5 font-bold text-muted">#{rank}</span>}
-                    <Link to={`/meta/${pokemonId}`} state={{ from }} className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 font-semibold text-fg transition-colors hover:border-primary hover:text-primary">
+                    <Link to={`/meta/${pokemonId}`} state={linkState} className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 font-semibold text-fg transition-colors hover:border-primary hover:text-primary">
                         {pt ? 'Ver tudo' : 'Full breakdown'} <ArrowUpRight className="w-3 h-3" />
                     </Link>
                 </div>
@@ -138,7 +138,7 @@ function LiveUsageBlock({ pokemonId }) {
 function RecentTournamentTeams({ pokemonId }) {
     const { language } = useTranslation();
     const pt = language === 'pt';
-    const { from } = useEntityNavigate();
+    const { linkState } = useEntityNavigate();
     const { teams } = useTournamentData();
 
     const featured = useMemo(
@@ -165,7 +165,7 @@ function RecentTournamentTeams({ pokemonId }) {
                     <Link
                         key={tm.id}
                         to={`/tournaments/team/${tm.id}`}
-                        state={{ from }}
+                        state={linkState}
                         className="group flex items-center gap-3 rounded-lg border border-border bg-surface-raised p-2 transition-colors hover:border-primary"
                     >
                         <div className="flex shrink-0 -space-x-2">

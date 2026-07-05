@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import '../../styles/entity-detail-view.css';
 import '../../styles/reference-views.css';
@@ -9,7 +9,7 @@ import { useEntityPageData } from '../../hooks/useEntityPageData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { formatVersionGroup, generationNumeral } from '../../utils/gameVersions';
-import { backLabelFor } from '../../utils/backNavigation';
+import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
@@ -28,8 +28,6 @@ const CATEGORY_CLASS = {
  */
 export function MoveDetailView() {
     const { name } = useParams();
-    const navigate = useNavigate();
-    const location = useLocation();
     const { t, language } = useTranslation();
 
     const slug = String(name || '').toLowerCase();
@@ -49,16 +47,10 @@ export function MoveDetailView() {
         path: `/moves/${slug}`,
     });
 
-    // Dynamic "go back": return to wherever the move was clicked (a Pokémon
-    // page, a tournament team, the meta view, …), falling back to history and
-    // finally the moves list on a cold deep link.
-    const fromPath = location.state?.from || '';
-    const handleBack = () => {
-        if (fromPath) navigate(fromPath);
-        else if (location.key && location.key !== 'default') navigate(-1);
-        else navigate('/moves');
-    };
-    const backLabel = backLabelFor(fromPath, language === 'pt', t('db.backToMoves'));
+    // Breadcrumb-trail back: returns to wherever the move was clicked (a Pokémon
+    // page, a tournament team, the meta view, …) without breaking that page's
+    // own back button; falls back to the moves list on a cold deep link.
+    const { goBack: handleBack, backLabel } = useSmartBack('/moves', language === 'pt', t('db.backToMoves'));
 
     if (status === 'loading') {
         return (

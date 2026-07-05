@@ -47,7 +47,7 @@ export function PokemonUsageView() {
     const navigate = useNavigate();
     const [params, setParams] = useSearchParams();
     const { language } = useTranslation();
-    const { goToMove, goToAbility, goToItem, from } = useEntityNavigate();
+    const { goToMove, goToAbility, goToItem, linkState } = useEntityNavigate();
     const pt = language === 'pt';
     const { goBack, backLabel } = useSmartBack('/meta', pt);
 
@@ -179,7 +179,7 @@ export function PokemonUsageView() {
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <Link to={`/pokemon/${id}`} state={{ from }} className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all hover:border-primary active:scale-95">
+                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all hover:border-primary active:scale-95">
                                 <BookOpen className="h-3.5 w-3.5" /> {pt ? 'Ficha completa' : 'Full Pokédex entry'}
                             </Link>
                             {format && <span className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-[11px] font-semibold text-muted">{format.label}{format.cutoff ? ` · ${format.cutoff}+` : ''}</span>}
@@ -292,7 +292,7 @@ export function PokemonUsageView() {
                                             <button
                                                 key={tm.id}
                                                 type="button"
-                                                onClick={() => navigate(fmtId ? `/meta/${resolvedTeam.spriteId}?fmt=${fmtId}` : `/meta/${resolvedTeam.spriteId}`, { state: { from } })}
+                                                onClick={() => navigate(fmtId ? `/meta/${resolvedTeam.spriteId}?fmt=${fmtId}` : `/meta/${resolvedTeam.spriteId}`, { state: linkState })}
                                                 title={`${pretty(resolvedTeam.name)} · ${pctOf(tm.count, n)}%`}
                                                 className="group flex flex-col items-center gap-1 rounded-xl border border-border bg-surface p-2 transition-all duration-300 hover:-translate-y-0.5 hover:border-border hover:shadow-md"
                                             >
@@ -378,7 +378,7 @@ export function PokemonUsageView() {
                             <button
                                 key={tm.id}
                                 type="button"
-                                onClick={() => navigate(`/tournaments/team/${tm.id}`, { state: { from } })}
+                                onClick={() => navigate(`/tournaments/team/${tm.id}`, { state: linkState })}
                                 className="group flex items-center gap-3 rounded-2xl border border-border bg-surface p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-primary hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                             >
                                 <div className="flex shrink-0 -space-x-2">
