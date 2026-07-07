@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-02T02:09:30.962Z",
+  "generatedAt": "2026-07-07T22:20:18.901Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -7594,7 +7594,7 @@
     "151": {
       "name": "Mew",
       "gen": "Doubles OU",
-      "overview": "",
+      "overview": "Mew distinguishes itself from other common Psychic-types like Slowbro and Cresselia by virtue of its incredibly deep movepool, which, when combined with its rounded statline, lets it run a variety of viable sets. Mew can take advantage of common utility and defensive Pokemon like Cyclizar and Gastrodon, making…",
       "sets": [
         {
           "name": "Support",
@@ -7696,33 +7696,84 @@
           "source": "UU"
         },
         {
-          "name": "Nasty Plot",
-          "item": "life-orb",
+          "name": "Spikes Setter",
+          "item": "rocky-helmet",
           "itemAlts": [],
           "ability": "",
+          "nature": "bold",
+          "tera": [
+            "fighting",
+            "ghost"
+          ],
+          "moves": [
+            [
+              "spikes"
+            ],
+            [
+              "body-press"
+            ],
+            [
+              "psychic-noise",
+              "knock-off",
+              "toxic",
+              "will-o-wisp"
+            ],
+            [
+              "volt-switch",
+              "taunt"
+            ]
+          ],
+          "evs": {
+            "hp": 240,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 16
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Set Details\nMew sets itself apart from other Spikes users, namely Gastrodon and Chesnaught, thanks to its good Speed stat and incredible utility movepool. Body Press is a solid coverage move that lets Mew invest in bulk while also targeting Cyclizar, one of the tier's most common hazard removers. It also hits the…",
+          "source": "RU"
+        },
+        {
+          "name": "Nasty Plot",
+          "item": "leftovers",
+          "itemAlts": [
+            "life-orb"
+          ],
+          "ability": "",
           "nature": "timid",
-          "tera": [],
+          "tera": [
+            "fairy"
+          ],
           "moves": [
             [
               "nasty-plot"
             ],
             [
-              "vacuum-wave"
-            ],
-            [
-              "flamethrower"
-            ],
-            [
-              "ice-beam",
               "draining-kiss"
+            ],
+            [
+              "psyshock"
+            ],
+            [
+              "earth-power"
             ]
           ],
           "evs": {
-            "hp": 0,
+            "hp": 4,
             "attack": 0,
             "defense": 0,
             "special-attack": 252,
-            "special-defense": 4,
+            "special-defense": 0,
             "speed": 252
           },
           "ivs": {
@@ -7734,52 +7785,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "With Nasty Plot and a myriad of coverage options, Mew finds a solid place as a special wallbreaker for Psychic teams. Life Orb Vacuum Wave OHKOes Bisharp after Stealth Rock damage and, at +2, has a good chance to OHKO Meowscarada and Greninja. Flamethrower targets Steel- and Bug-types like Gholdengo, Scizor, and…",
-          "source": "Monotype"
-        },
-        {
-          "name": "Utility",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "bold",
-          "tera": [],
-          "moves": [
-            [
-              "will-o-wisp"
-            ],
-            [
-              "spikes",
-              "defog"
-            ],
-            [
-              "knock-off",
-              "psychic",
-              "night-shade"
-            ],
-            [
-              "soft-boiled"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 168,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 88
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Although it tends to underperform defensively due to the presence of dangerous threats such as Aegislash as well as competition with other Spikers like Skarmory, Mew still has great bulk for the tier and can sport a good amount of utility for teams with entry hazard setting or removal. Mew can easily set Spikes…",
-          "source": "Nat Dex UU"
+          "description": "Set Details\nNasty Plot Mew stands as one of the most dangerous sweepers in the metagame with its combination of bulk and Speed and amazing coverage options. Psyshock is the STAB move of choice, allowing it to threaten Blissey and Cyclizar immediately after a boost without needing to terastallize. Draining Kiss allows…",
+          "source": "RU"
         }
       ]
     },
@@ -23489,9 +23496,7 @@
         {
           "name": "Nasty Plot",
           "item": "leftovers",
-          "itemAlts": [
-            "grassy-seed"
-          ],
+          "itemAlts": [],
           "ability": "",
           "nature": "timid",
           "tera": [
@@ -23530,7 +23535,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nPsychic Noise helps Uxie suffocate walls like Milotic, Gastrodon, and Vaporeon, somewhat compensating for its passivity. Draining Kiss covers Dark-types, but it's primarily used in tandem with Terastallization to increase Uxie's longevity. Encore can shut down walls and utility Pokemon like Bronzong and…",
+          "description": "Set Details\nPsychic Noise helps Uxie suffocate walls like Sylveon, Tera Steel Wo-Chien, and Vaporeon, somewhat compensating for its passivity. Draining Kiss covers Dark-types, but it's primarily used in tandem with Terastallization to increase Uxie's longevity. Encore can shut down walls and utility Pokemon like…",
           "source": "NU"
         },
         {
@@ -23578,7 +23583,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nUxie is a decent bulky pivot capable of compressing plenty of utility onto one set. As Uxie isn't an especially strong attacker, Psychic Noise is helpful to smother bulkier Pokemon with recovery moves, such as Vaporeon and Gastrodon. Knock Off punishes Pokemon that depend on their items, such as Gligar,…",
+          "description": "Set Details\nUxie is a decent bulky pivot capable of compressing plenty of utility onto one set. As Uxie isn't an especially strong attacker, Psychic Noise is helpful to smother bulkier Pokemon with recovery moves, such as Vaporeon and Bellibolt. Knock Off punishes Pokemon that depend on their items, such as Gligar,…",
           "source": "NU"
         }
       ]
@@ -43415,7 +43420,7 @@
     "818": {
       "name": "Inteleon",
       "gen": "NU",
-      "overview": "Inteleon's Speed tier and sky-high Special Attack make it a formidable threat in NU. Not only is it blazing fast, but with Choice Specs, it's also quite powerful and can 2HKO many common special walls like Alolan Muk, Copperajah, and Assault Vest Galarian Slowbro on the switch with Hydro Pump. Even when facing…",
+      "overview": "Inteleon's Speed tier and sky-high Special Attack make it a formidable threat in NU. Not only is it blazing fast, but with Choice Specs, it's also quite powerful and can 2HKO many common special walls like Scrafty, Copperajah, and Assault Vest Galarian Slowbro on the switch with Hydro Pump. Even when facing…",
       "sets": [
         {
           "name": "Choice Specs",
@@ -43459,7 +43464,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nHydro Pump is the preferred STAB option due to its power, but it can be unreliable at times. Alternatively, Surf can be run for accuracy in exchange for power. Ice Beam complements Inteleon's Water-type STAB move really well by hitting Grass- and Dragon-types like Decidueye, Vileplume, and Goodra super…",
+          "description": "Set Details\nHydro Pump is the preferred STAB option due to its power, but it can be unreliable at times. Alternatively, Surf can be run for accuracy in exchange for power. Ice Beam complements Inteleon's Water-type STAB move really well by hitting Grass- and Dragon-types like Decidueye, Wo-Chien, and Goodra super…",
           "source": "NU"
         }
       ]

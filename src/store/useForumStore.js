@@ -224,7 +224,7 @@ export const useForumStore = create((set, get) => ({
         }
     },
 
-    sendMessage: async (topicId, text, attachedTeam = null) => {
+    sendMessage: async (topicId, text, attachedTeam = null, replyTo = null) => {
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -250,6 +250,17 @@ export const useForumStore = create((set, get) => ({
                 };
             }
 
+            // Quoted reply reference (optional). Kept as a compact snapshot so the
+            // quote still renders even if the original is later deleted.
+            let replyRef = null;
+            if (replyTo && replyTo.messageId) {
+                replyRef = {
+                    messageId: replyTo.messageId,
+                    creatorName: replyTo.creatorName || 'Trainer',
+                    textSnippet: (replyTo.textSnippet || '').substring(0, 120),
+                };
+            }
+
             const messageData = {
                 text: cleanText,
                 createdAt: new Date().toISOString(),
@@ -257,7 +268,8 @@ export const useForumStore = create((set, get) => ({
                 creatorName: creatorName,
                 creatorAvatar: authState.greetingPokemonId || null,
                 creatorAvatarIsShiny: authState.greetingPokemonIsShiny || false,
-                sharedTeam: serializedAttachedTeam
+                sharedTeam: serializedAttachedTeam,
+                replyTo: replyRef
             };
 
             await setDoc(messageRef, messageData);

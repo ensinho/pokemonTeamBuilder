@@ -19,7 +19,8 @@ import {
     StarIcon,
     ClipIcon,
     HeartIcon,
-    TrashIcon
+    TrashIcon,
+    ReplyIcon
 } from '../icons';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import '../../styles/forum-view.css';
@@ -90,6 +91,7 @@ export function FeedView({ colors, showToast, navigate }) {
     const [isAttachDropdownOpen, setIsAttachDropdownOpen] = useState(false);
     const [selectedProfile, setSelectedProfile] = useState(null);
     const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
+    const [replyingTo, setReplyingTo] = useState(null);
 
     // Hover Popover for shared pokemon details
     const [hoveredSlot, setHoveredSlot] = useState(null);
@@ -97,6 +99,7 @@ export function FeedView({ colors, showToast, navigate }) {
 
     const messageListRef = useRef(null);
     const messageListEndRef = useRef(null);
+    const replyInputRef = useRef(null);
     const prevTopicIdRef = useRef(currentTopicId);
     const prevMessagesLengthRef = useRef(messages.length);
 
@@ -143,6 +146,12 @@ export function FeedView({ colors, showToast, navigate }) {
         prevTopicIdRef.current = currentTopicId;
         prevMessagesLengthRef.current = messages.length;
     }, [messages, currentTopicId, userId]);
+
+    // Drop a pending reply/attachment when the user switches topics.
+    useEffect(() => {
+        setReplyingTo(null);
+        setConfirmingDeleteId(null);
+    }, [currentTopicId]);
 
     // Filter topics by category
     const filteredTopics = useMemo(() => {
@@ -203,10 +212,32 @@ export function FeedView({ colors, showToast, navigate }) {
         e.preventDefault();
         if (!replyText.trim() && !attachedTeam) return;
 
-        const success = await sendMessage(currentTopicId, replyText, attachedTeam);
+        const success = await sendMessage(currentTopicId, replyText, attachedTeam, replyingTo);
         if (success) {
             setReplyText('');
             setAttachedTeam(null);
+            setReplyingTo(null);
+        }
+    };
+
+    // Begin replying to a specific message: capture a compact snapshot for the
+    // quote and focus the composer.
+    const handleStartReply = (message) => {
+        setReplyingTo({
+            messageId: message.id,
+            creatorName: message.creatorName || 'Trainer',
+            textSnippet: message.text || (message.sharedTeam ? `📋 ${message.sharedTeam.name}` : ''),
+        });
+        replyInputRef.current?.focus();
+    };
+
+    // Scroll the thread to the original message a reply quotes, and flash it.
+    const scrollToMessage = (messageId) => {
+        const el = document.getElementById(`forum-msg-${messageId}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('forum-message-item--flash');
+            setTimeout(() => el.classList.remove('forum-message-item--flash'), 1200);
         }
     };
 
@@ -507,7 +538,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                     const canDeleteMessage = isAdmin || (!!userId && message.createdBy === userId);
 
                                     return (
-                                        <div key={message.id} className="forum-message-item">
+                                        <div key={message.id} id={`forum-msg-${message.id}`} className="forum-message-item">
                                             <div className="forum-message-avatar-wrap">
                                                 <div
                                                     className="forum-message-avatar cursor-pointer"
@@ -554,6 +585,22 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         {formatRelativeTime(message.createdAt, language)}
                                                     </span>
                                                 </div>
+
+                                                {/* Quoted reply reference */}
+                                                {message.replyTo && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => scrollToMessage(message.replyTo.messageId)}
+                                                        className="forum-message-quote"
+                                                        title={language === 'pt' ? 'Ir para a mensagem original' : 'Jump to original message'}
+                                                    >
+                                                        <ReplyIcon className="w-3 h-3 shrink-0" />
+                                                        <span className="forum-message-quote__author">@{message.replyTo.creatorName}</span>
+                                                        <span className="forum-message-quote__text">
+                                                            {message.replyTo.textSnippet || (language === 'pt' ? 'mensagem' : 'message')}
+                                                        </span>
+                                                    </button>
+                                                )}
 
                                                 {message.text && (
                                                     <p className="forum-message-text">{message.text}</p>
@@ -625,6 +672,16 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         {likeCount > 0 && <span>{likeCount}</span>}
                                                     </button>
 
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleStartReply(message)}
+                                                        title={language === 'pt' ? 'Responder' : 'Reply'}
+                                                        className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-muted transition-colors hover:text-fg"
+                                                    >
+                                                        <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
+                                                        <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
+                                                    </button>
+
                                                     {canDeleteMessage && (
                                                         confirmingDeleteId === message.id ? (
                                                             <span className="inline-flex items-center gap-1 text-[11px]">
@@ -666,6 +723,19 @@ export function FeedView({ colors, showToast, navigate }) {
 
                         {/* Editor reply input at bottom */}
                         <form onSubmit={handleSendMessageSubmit} className="forum-editor">
+                            {replyingTo && (
+                                <div className="forum-replying-banner">
+                                    <ReplyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                    <span className="forum-replying-banner__label">
+                                        {language === 'pt' ? 'Respondendo a' : 'Replying to'} <b>@{replyingTo.creatorName}</b>
+                                        {replyingTo.textSnippet && <span className="forum-replying-banner__snippet">: {replyingTo.textSnippet}</span>}
+                                    </span>
+                                    <button type="button" onClick={() => setReplyingTo(null)} aria-label={t('common.cancel')}>
+                                        <CloseIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
+
                             {attachedTeam && (
                                 <div className="forum-attached-team-preview flex items-center mb-2">
                                     <ClipIcon className="w-3.5 h-3.5 text-success shrink-0" />
@@ -722,10 +792,13 @@ export function FeedView({ colors, showToast, navigate }) {
                                 </div>
 
                                 <textarea
+                                    ref={replyInputRef}
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
                                     onKeyDown={handleKeyDown}
-                                    placeholder={language === 'pt' ? "Envie uma resposta pública..." : "Send a public reply..."}
+                                    placeholder={replyingTo
+                                        ? (language === 'pt' ? `Respondendo a @${replyingTo.creatorName}...` : `Replying to @${replyingTo.creatorName}...`)
+                                        : (language === 'pt' ? "Envie uma resposta pública..." : "Send a public reply...")}
                                     className="forum-chat-input-field forum-chat-textarea custom-scrollbar"
                                 />
 
