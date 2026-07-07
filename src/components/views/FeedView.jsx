@@ -8,6 +8,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { UserProfileModal } from '../modals/UserProfileModal';
+import { TeamsTopicNotice } from '../TeamsTopicNotice';
 import {
     MessageIcon,
     PlusIcon,
@@ -368,6 +369,8 @@ export function FeedView({ colors, showToast, navigate }) {
                             </button>
                         ))
                     )}
+
+                    <TeamsTopicNotice language={language} />
                 </div>
             </aside>
 

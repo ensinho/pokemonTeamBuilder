@@ -327,6 +327,57 @@
     white-space: pre-wrap;
 }
 
+/* Cute, self-dismissing heads-up about the Teams topic reset (sits in the
+   forum's left sidebar / top of the home timeline). */
+.teams-topic-notice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.35rem;
+    margin: 0.5rem 0;
+    padding: 0.85rem 0.8rem 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+    border-radius: 0.9rem;
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--color-primary) 12%, transparent);
+    animation: teams-notice-pop var(--duration-fast, 150ms) var(--ease-smooth, ease-out);
+}
+.teams-topic-notice__emote {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-primary);
+    letter-spacing: 0.02em;
+    animation: teams-notice-bob 2.4s ease-in-out infinite;
+}
+.teams-topic-notice__text {
+    font-size: 0.72rem;
+    line-height: 1.45;
+    color: var(--color-fg);
+}
+.teams-topic-notice__close {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+.teams-topic-notice__close:hover { color: var(--color-fg); }
+
+@keyframes teams-notice-pop {
+    from { opacity: 0; transform: scale(0.94) translateY(4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes teams-notice-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+}
+
 /* Quoted reply reference shown at the top of a message that replies to another */
 .forum-message-quote {
     display: flex;

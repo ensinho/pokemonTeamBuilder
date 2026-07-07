@@ -24,6 +24,7 @@ import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtwork
 import { EmptyState } from '../EmptyState';
 import { HomeDashboard } from '../HomeDashboard';
 import { UserProfileModal } from '../modals/UserProfileModal';
+import { TeamsTopicNotice } from '../TeamsTopicNotice';
 import {
     AccountIcon,
     CloseIcon,
@@ -1017,6 +1018,7 @@ export function HomeView({
                         </div>
 
                         <div ref={messageListRef} className="home-forum-chat-messages home-timeline-container custom-scrollbar px-4 py-4">
+                            <TeamsTopicNotice language={language} />
                             {messages.length === 0 ? (
                                 <div className="text-center py-12 text-muted text-xs font-mono">
                                     {language === 'pt' ? 'Nenhuma atividade registrada.' : 'No activity logged.'}
