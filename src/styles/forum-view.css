@@ -354,6 +354,23 @@
     min-width: 0;
 }
 
+/* Mini team preview inside a quoted reply / composer banner */
+.forum-message-quote__team,
+.forum-replying-banner__team {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    flex-shrink: 0;
+}
+.forum-message-quote__sprite {
+    width: 1.15rem;
+    height: 1.15rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+    border-radius: 0.25rem;
+    background: var(--color-surface);
+}
+
 /* Brief highlight when jumping to a quoted message */
 .forum-message-item--flash {
     animation: forum-quote-flash 1.2s ease-out;

@@ -5,7 +5,7 @@ import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useToastStore } from '../../store/useToastStore';
 import { AnchoredPopover } from '../AnchoredPopover';
-import { MessageIcon, PlusIcon, ClipIcon } from '../icons';
+import { MessageIcon, PlusIcon, ClipIcon, HeartIcon, ReplyIcon } from '../icons';
 import { doc, getDoc } from 'firebase/firestore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { TRANSLATIONS } from '../../constants/translations';
@@ -218,7 +218,11 @@ export function HomeView({
         setCurrentTopicId,
         initTopicsListener,
         sendMessage,
+        toggleMessageLike,
     } = useForumStore();
+
+    // The Home timeline is a dedicated "teams" feed (distinct from the general chat).
+    const TIMELINE_TOPIC_ID = 'teams';
 
     const { userId, isAnonymous, displayName, streak, userEmail } = useAuthStore();
     const resolvedDisplayName = displayName || userEmail?.split('@')[0] || 'Trainer';
@@ -232,6 +236,7 @@ export function HomeView({
     const [isAttachDropdownOpen, setIsAttachDropdownOpen] = useState(false);
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const [selectedProfile, setSelectedProfile] = useState(null);
+    const [replyingTo, setReplyingTo] = useState(null);
 
     // Setup Daily PokéPuzzle states for HomeView
     const [dailyPokePuzzleSummary, setDailyPokePuzzleSummary] = useState(null);
@@ -312,7 +317,7 @@ export function HomeView({
 
     useEffect(() => {
         initTopicsListener();
-        setCurrentTopicId('general');
+        setCurrentTopicId(TIMELINE_TOPIC_ID);
     }, [initTopicsListener, setCurrentTopicId]);
 
     // Auto-scroll messages container to bottom conditionally (WITHOUT scrolling the screen)
@@ -341,10 +346,36 @@ export function HomeView({
         e.preventDefault();
         if (!replyText.trim() && !attachedTeam) return;
 
-        const success = await sendMessage('general', replyText, attachedTeam);
+        const success = await sendMessage(TIMELINE_TOPIC_ID, replyText, attachedTeam, replyingTo);
         if (success) {
             setReplyText('');
             setAttachedTeam(null);
+            setReplyingTo(null);
+        }
+    };
+
+    // Begin replying to a specific timeline message (captures a compact quote).
+    const handleStartReply = (message) => {
+        const team = message.sharedTeam;
+        const teamSprites = team?.pokemons
+            ? team.pokemons.filter(Boolean).map((pk) => getTeamPokemonDisplaySprite(pk)).filter(Boolean)
+            : null;
+        setReplyingTo({
+            messageId: message.id,
+            creatorName: message.creatorName || 'Trainer',
+            textSnippet: message.text || (team ? team.name : ''),
+            teamName: team?.name || null,
+            teamSprites,
+        });
+    };
+
+    // Scroll the timeline to a quoted message and briefly flash it.
+    const scrollToMessage = (messageId) => {
+        const el = document.getElementById(`home-msg-${messageId}`);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.add('forum-message-item--flash');
+            setTimeout(() => el.classList.remove('forum-message-item--flash'), 1200);
         }
     };
 
@@ -980,9 +1011,11 @@ export function HomeView({
                             ) : (
                                 messages.map((message) => {
                                     const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
+                                    const likeCount = message.likeCount || message.likedBy?.length || 0;
+                                    const likedByMe = !!userId && Array.isArray(message.likedBy) && message.likedBy.includes(userId);
 
                                     return (
-                                        <div key={message.id} className="home-timeline-item">
+                                        <div key={message.id} id={`home-msg-${message.id}`} className="home-timeline-item">
                                             {/* Timeline axis point & avatar */}
                                             <div className="home-timeline-avatar-wrap">
                                                 <div
@@ -1008,6 +1041,36 @@ export function HomeView({
 
                                             {/* Speech bubble or PR Card */}
                                             <div className="home-timeline-content-wrap">
+                                                {/* Quoted reply reference */}
+                                                {message.replyTo && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => scrollToMessage(message.replyTo.messageId)}
+                                                        className="forum-message-quote mb-1.5"
+                                                        title={language === 'pt' ? 'Ir para a mensagem original' : 'Jump to original message'}
+                                                    >
+                                                        <ReplyIcon className="w-3 h-3 shrink-0" />
+                                                        <span className="forum-message-quote__author">@{message.replyTo.creatorName}</span>
+                                                        {message.replyTo.teamSprites?.length > 0 && (
+                                                            <span className="forum-message-quote__team">
+                                                                {message.replyTo.teamSprites.map((url, i) => (
+                                                                    <img
+                                                                        key={i}
+                                                                        src={url}
+                                                                        alt=""
+                                                                        aria-hidden="true"
+                                                                        className="forum-message-quote__sprite"
+                                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                    />
+                                                                ))}
+                                                            </span>
+                                                        )}
+                                                        <span className="forum-message-quote__text">
+                                                            {message.replyTo.textSnippet || (language === 'pt' ? 'mensagem' : 'message')}
+                                                        </span>
+                                                    </button>
+                                                )}
+
                                                 {message.sharedTeam ? (
                                                     /* Pull Request Styled Merge Card */
                                                     <div className="github-pr-card">
@@ -1101,6 +1164,30 @@ export function HomeView({
                                                         </div>
                                                     </div>
                                                 )}
+
+                                                {/* Like + reply actions */}
+                                                <div className="flex items-center gap-2 mt-1.5">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleMessageLike(TIMELINE_TOPIC_ID, message.id)}
+                                                        disabled={!userId}
+                                                        aria-pressed={likedByMe}
+                                                        title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
+                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${likedByMe ? 'border-primary bg-primary text-white' : 'border-border bg-surface-raised text-muted hover:text-fg'}`}
+                                                    >
+                                                        <HeartIcon className="w-3 h-3 shrink-0" />
+                                                        {likeCount > 0 && <span>{likeCount}</span>}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleStartReply(message)}
+                                                        title={language === 'pt' ? 'Responder' : 'Reply'}
+                                                        className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised px-2 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:text-fg"
+                                                    >
+                                                        <ReplyIcon className="w-3 h-3 shrink-0" />
+                                                        <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     );
@@ -1110,6 +1197,33 @@ export function HomeView({
                         </div>
 
                         <form onSubmit={handleSendMessageSubmit} className="forum-editor px-4 py-3 border-t border-border">
+                            {replyingTo && (
+                                <div className="forum-replying-banner">
+                                    <ReplyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                    <span className="forum-replying-banner__label">
+                                        {language === 'pt' ? 'Respondendo a' : 'Replying to'} <b>@{replyingTo.creatorName}</b>
+                                        {replyingTo.textSnippet && <span className="forum-replying-banner__snippet">: {replyingTo.textSnippet}</span>}
+                                    </span>
+                                    {replyingTo.teamSprites?.length > 0 && (
+                                        <span className="forum-replying-banner__team">
+                                            {replyingTo.teamSprites.map((url, i) => (
+                                                <img
+                                                    key={i}
+                                                    src={url}
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    className="forum-message-quote__sprite"
+                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                />
+                                            ))}
+                                        </span>
+                                    )}
+                                    <button type="button" onClick={() => setReplyingTo(null)} aria-label={t('common.cancel')}>
+                                        <CloseIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
+
                             {attachedTeam && (
                                 <div className="forum-attached-team-preview py-1.5 px-2.5 text-[11px] gap-1.5 flex items-center mb-2 bg-surface-raised border border-border rounded-lg">
                                     <ClipIcon className="w-3 h-3 text-success shrink-0" />
@@ -1169,7 +1283,9 @@ export function HomeView({
                                     type="text"
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}
-                                    placeholder={language === 'pt' ? "Comente na linha do tempo..." : "Post to the timeline..."}
+                                    placeholder={replyingTo
+                                        ? (language === 'pt' ? `Respondendo a @${replyingTo.creatorName}...` : `Replying to @${replyingTo.creatorName}...`)
+                                        : (language === 'pt' ? "Comente na linha do tempo..." : "Post to the timeline...")}
                                     className="forum-chat-input-field text-xs"
                                 />
 

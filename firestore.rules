@@ -43,8 +43,13 @@ service cloud.firestore {
 
       match /public/data/forumTopics/{topicId} {
         allow read: if true;
+        // Normal topics are owned by their creator. The two canonical base
+        // topics (general chat + teams feed) may be seeded by any signed-in
+        // user with the 'system' author, so the app can self-heal them.
         allow create: if isSignedIn()
-          && request.resource.data.createdBy == request.auth.uid;
+          && (request.resource.data.createdBy == request.auth.uid
+            || (topicId in ['general', 'teams']
+              && request.resource.data.createdBy == 'system'));
         allow update: if isAdmin()
           || (isSignedIn() && resource.data.createdBy == request.auth.uid)
           || (isSignedIn() && onlyTouchesActivityFields());

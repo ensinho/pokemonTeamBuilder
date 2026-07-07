@@ -223,10 +223,16 @@ export function FeedView({ colors, showToast, navigate }) {
     // Begin replying to a specific message: capture a compact snapshot for the
     // quote and focus the composer.
     const handleStartReply = (message) => {
+        const team = message.sharedTeam;
+        const teamSprites = team?.pokemons
+            ? team.pokemons.filter(Boolean).map((pk) => getTeamPokemonDisplaySprite(pk)).filter(Boolean)
+            : null;
         setReplyingTo({
             messageId: message.id,
             creatorName: message.creatorName || 'Trainer',
-            textSnippet: message.text || (message.sharedTeam ? `📋 ${message.sharedTeam.name}` : ''),
+            textSnippet: message.text || (team ? team.name : ''),
+            teamName: team?.name || null,
+            teamSprites,
         });
         replyInputRef.current?.focus();
     };
@@ -596,6 +602,20 @@ export function FeedView({ colors, showToast, navigate }) {
                                                     >
                                                         <ReplyIcon className="w-3 h-3 shrink-0" />
                                                         <span className="forum-message-quote__author">@{message.replyTo.creatorName}</span>
+                                                        {message.replyTo.teamSprites?.length > 0 && (
+                                                            <span className="forum-message-quote__team">
+                                                                {message.replyTo.teamSprites.map((url, i) => (
+                                                                    <img
+                                                                        key={i}
+                                                                        src={url}
+                                                                        alt=""
+                                                                        aria-hidden="true"
+                                                                        className="forum-message-quote__sprite"
+                                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                                    />
+                                                                ))}
+                                                            </span>
+                                                        )}
                                                         <span className="forum-message-quote__text">
                                                             {message.replyTo.textSnippet || (language === 'pt' ? 'mensagem' : 'message')}
                                                         </span>
@@ -730,6 +750,20 @@ export function FeedView({ colors, showToast, navigate }) {
                                         {language === 'pt' ? 'Respondendo a' : 'Replying to'} <b>@{replyingTo.creatorName}</b>
                                         {replyingTo.textSnippet && <span className="forum-replying-banner__snippet">: {replyingTo.textSnippet}</span>}
                                     </span>
+                                    {replyingTo.teamSprites?.length > 0 && (
+                                        <span className="forum-replying-banner__team">
+                                            {replyingTo.teamSprites.map((url, i) => (
+                                                <img
+                                                    key={i}
+                                                    src={url}
+                                                    alt=""
+                                                    aria-hidden="true"
+                                                    className="forum-message-quote__sprite"
+                                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                />
+                                            ))}
+                                        </span>
+                                    )}
                                     <button type="button" onClick={() => setReplyingTo(null)} aria-label={t('common.cancel')}>
                                         <CloseIcon className="w-3.5 h-3.5" />
                                     </button>

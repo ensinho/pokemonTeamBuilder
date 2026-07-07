@@ -23,6 +23,23 @@ import { megaDisplayName } from '../hooks/useMegaStones';
 let topicsUnsubscribe = null;
 let messagesUnsubscribe = null;
 
+// Canonical, always-present topics the app seeds automatically. `general` backs
+// the forum chat; `teams` backs the Home timeline (a team-sharing feed). Both
+// are authored by 'system' (Professor Oak) — see the firestore.rules exception
+// that lets any signed-in user seed these two ids.
+const BASE_TOPICS = {
+    general: {
+        title: 'Chat',
+        category: 'general',
+        lastMessageText: 'Welcome to Gengar Forum! Share your teams and chat with other trainers here.',
+    },
+    teams: {
+        title: 'Team Showcase',
+        category: 'teams',
+        lastMessageText: 'Share the teams you are building and give feedback to other trainers!',
+    },
+};
+
 let cachedMegaStones = null;
 const getMegaStones = async () => {
     if (cachedMegaStones) return cachedMegaStones;
@@ -91,26 +108,30 @@ export const useForumStore = create((set, get) => ({
             const topicsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             set({ topics: topicsList, isInitialLoadingTopics: false });
 
-            // Ensure the general chat topic exists if it is not in the list
-            const hasGeneral = topicsList.some(t => t.id === 'general');
-            if (!hasGeneral) {
-                get().ensureGeneralTopicExists();
-            }
+            // Seed any canonical topic that isn't present yet (general chat + teams feed)
+            Object.keys(BASE_TOPICS).forEach((topicId) => {
+                if (!topicsList.some(t => t.id === topicId)) {
+                    get().ensureBaseTopicExists(topicId);
+                }
+            });
         }, (error) => {
             console.error("Error loading forum topics:", error);
             set({ isInitialLoadingTopics: false });
         });
     },
 
-    ensureGeneralTopicExists: async () => {
+    // Create a canonical base topic (general/teams) if missing. Idempotent.
+    ensureBaseTopicExists: async (topicId) => {
         if (!db) return;
-        const docRef = doc(db, `artifacts/${appId}/public/data/forumTopics`, 'general');
+        const config = BASE_TOPICS[topicId];
+        if (!config) return;
+        const docRef = doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId);
         try {
             const snap = await getDoc(docRef);
             if (!snap.exists()) {
                 await setDoc(docRef, {
-                    title: 'Chat',
-                    category: 'general',
+                    title: config.title,
+                    category: config.category,
                     createdAt: new Date().toISOString(),
                     createdBy: 'system',
                     creatorName: 'Professor Oak',
@@ -118,11 +139,11 @@ export const useForumStore = create((set, get) => ({
                     creatorAvatarIsShiny: false,
                     lastActivityAt: new Date().toISOString(),
                     messageCount: 0,
-                    lastMessageText: 'Welcome to Gengar Forum! Share your teams and chat with other trainers here.'
+                    lastMessageText: config.lastMessageText,
                 });
             }
         } catch (err) {
-            console.error("Error ensuring general topic exists:", err);
+            console.error(`Error ensuring base topic '${topicId}' exists:`, err);
         }
     },
 
@@ -258,6 +279,10 @@ export const useForumStore = create((set, get) => ({
                     messageId: replyTo.messageId,
                     creatorName: replyTo.creatorName || 'Trainer',
                     textSnippet: (replyTo.textSnippet || '').substring(0, 120),
+                    // Compact team preview (sprite URLs) when quoting a shared team,
+                    // so the quote renders mini icons instead of just a name.
+                    teamName: replyTo.teamName || null,
+                    teamSprites: Array.isArray(replyTo.teamSprites) ? replyTo.teamSprites.slice(0, 6) : null,
                 };
             }
 
