@@ -24,19 +24,12 @@ let topicsUnsubscribe = null;
 let messagesUnsubscribe = null;
 
 // Canonical, always-present topics the app seeds automatically. `general` backs
-// the forum chat; `teams` backs the Home timeline (a team-sharing feed). Both
-// are authored by 'system' (Professor Oak) — see the firestore.rules exception
-// that lets any signed-in user seed these two ids.
+// the forum chat. Authored by 'system' (Professor Oak).
 const BASE_TOPICS = {
     general: {
         title: 'Chat',
         category: 'general',
         lastMessageText: 'Welcome to Gengar Forum! Share your teams and chat with other trainers here.',
-    },
-    teams: {
-        title: 'Team Showcase',
-        category: 'teams',
-        lastMessageText: 'Share the teams you are building and give feedback to other trainers!',
     },
 };
 

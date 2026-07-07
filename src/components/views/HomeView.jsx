@@ -213,6 +213,7 @@ export function HomeView({
 
     // Setup forum states on Home
     const {
+        topics,
         messages,
         currentTopicId,
         setCurrentTopicId,
@@ -221,8 +222,15 @@ export function HomeView({
         toggleMessageLike,
     } = useForumStore();
 
-    // The Home timeline is a dedicated "teams" feed (distinct from the general chat).
-    const TIMELINE_TOPIC_ID = 'teams';
+    // The Home timeline mirrors the existing "Teams" forum topic. Resolve it from
+    // the live topics list (by title, then category) so we reuse the real topic
+    // instead of creating/pinning a hardcoded id.
+    const timelineTopicId = useMemo(() => {
+        const byTitle = topics.find(tp => (tp.title || '').trim().toLowerCase() === 'teams');
+        if (byTitle) return byTitle.id;
+        const byCategory = topics.find(tp => tp.category === 'teams');
+        return byCategory ? byCategory.id : null;
+    }, [topics]);
 
     const { userId, isAnonymous, displayName, streak, userEmail } = useAuthStore();
     const resolvedDisplayName = displayName || userEmail?.split('@')[0] || 'Trainer';
@@ -317,8 +325,12 @@ export function HomeView({
 
     useEffect(() => {
         initTopicsListener();
-        setCurrentTopicId(TIMELINE_TOPIC_ID);
-    }, [initTopicsListener, setCurrentTopicId]);
+    }, [initTopicsListener]);
+
+    // Subscribe to the resolved "Teams" topic once the topics list has loaded.
+    useEffect(() => {
+        if (timelineTopicId) setCurrentTopicId(timelineTopicId);
+    }, [timelineTopicId, setCurrentTopicId]);
 
     // Auto-scroll messages container to bottom conditionally (WITHOUT scrolling the screen)
     useEffect(() => {
@@ -345,8 +357,9 @@ export function HomeView({
     const handleSendMessageSubmit = async (e) => {
         e.preventDefault();
         if (!replyText.trim() && !attachedTeam) return;
+        if (!currentTopicId) return;
 
-        const success = await sendMessage(TIMELINE_TOPIC_ID, replyText, attachedTeam, replyingTo);
+        const success = await sendMessage(currentTopicId, replyText, attachedTeam, replyingTo);
         if (success) {
             setReplyText('');
             setAttachedTeam(null);
@@ -1169,7 +1182,7 @@ export function HomeView({
                                                 <div className="flex items-center gap-2 mt-1.5">
                                                     <button
                                                         type="button"
-                                                        onClick={() => toggleMessageLike(TIMELINE_TOPIC_ID, message.id)}
+                                                        onClick={() => toggleMessageLike(currentTopicId, message.id)}
                                                         disabled={!userId}
                                                         aria-pressed={likedByMe}
                                                         title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
