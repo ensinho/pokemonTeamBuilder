@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-06-21T19:13:28.791Z",
+  "generatedAt": "2026-07-09T01:14:23.125Z",
   "source": "https://pokeapi.co/api/v2/pokemon?limit=100000",
   "baseCount": 1025,
-  "formCount": 183,
+  "formCount": 188,
   "pokemons": [
     {
       "id": 1,
@@ -17956,6 +17956,26 @@
       }
     },
     {
+      "id": 10025,
+      "name": "Meowstic Female",
+      "apiName": "meowstic-female",
+      "url": "https://pokeapi.co/api/v2/pokemon/10025/",
+      "types": [
+        "psychic"
+      ],
+      "generation": "generation-vi",
+      "baseId": 678,
+      "isForm": true,
+      "baseStats": {
+        "hp": 74,
+        "attack": 48,
+        "defense": 76,
+        "special-attack": 83,
+        "special-defense": 81,
+        "speed": 104
+      }
+    },
+    {
       "id": 10033,
       "name": "Mega Venusaur",
       "apiName": "venusaur-mega",
@@ -19764,6 +19784,27 @@
       }
     },
     {
+      "id": 10186,
+      "name": "Indeedee Female",
+      "apiName": "indeedee-female",
+      "url": "https://pokeapi.co/api/v2/pokemon/10186/",
+      "types": [
+        "psychic",
+        "normal"
+      ],
+      "generation": "generation-viii",
+      "baseId": 876,
+      "isForm": true,
+      "baseStats": {
+        "hp": 70,
+        "attack": 55,
+        "defense": 65,
+        "special-attack": 95,
+        "special-defense": 105,
+        "speed": 85
+      }
+    },
+    {
       "id": 10195,
       "name": "Gigantamax Venusaur",
       "apiName": "venusaur-gmax",
@@ -20799,6 +20840,27 @@
       }
     },
     {
+      "id": 10248,
+      "name": "Basculegion Female",
+      "apiName": "basculegion-female",
+      "url": "https://pokeapi.co/api/v2/pokemon/10248/",
+      "types": [
+        "water",
+        "ghost"
+      ],
+      "generation": "generation-viii",
+      "baseId": 902,
+      "isForm": true,
+      "baseStats": {
+        "hp": 120,
+        "attack": 92,
+        "defense": 65,
+        "special-attack": 100,
+        "special-defense": 75,
+        "speed": 78
+      }
+    },
+    {
       "id": 10253,
       "name": "Paldean Wooper",
       "apiName": "wooper-paldea",
@@ -20817,6 +20879,26 @@
         "special-attack": 25,
         "special-defense": 25,
         "speed": 15
+      }
+    },
+    {
+      "id": 10254,
+      "name": "Oinkologne Female",
+      "apiName": "oinkologne-female",
+      "url": "https://pokeapi.co/api/v2/pokemon/10254/",
+      "types": [
+        "normal"
+      ],
+      "generation": "generation-ix",
+      "baseId": 916,
+      "isForm": true,
+      "baseStats": {
+        "hp": 115,
+        "attack": 90,
+        "defense": 70,
+        "special-attack": 59,
+        "special-defense": 90,
+        "speed": 65
       }
     },
     {
@@ -21508,8 +21590,8 @@
     },
     {
       "id": 10314,
-      "name": "Mega Meowstic",
-      "apiName": "meowstic-mega",
+      "name": "Mega Meowstic Male",
+      "apiName": "meowstic-male-mega",
       "url": "https://pokeapi.co/api/v2/pokemon/10314/",
       "types": [
         "psychic"
@@ -21754,6 +21836,26 @@
         "special-attack": 105,
         "special-defense": 101,
         "speed": 87
+      }
+    },
+    {
+      "id": 10326,
+      "name": "Mega Meowstic Female",
+      "apiName": "meowstic-female-mega",
+      "url": "https://pokeapi.co/api/v2/pokemon/10326/",
+      "types": [
+        "psychic"
+      ],
+      "generation": "generation-vi",
+      "baseId": 678,
+      "isForm": true,
+      "baseStats": {
+        "hp": 74,
+        "attack": 48,
+        "defense": 76,
+        "special-attack": 143,
+        "special-defense": 101,
+        "speed": 124
       }
     }
   ]
