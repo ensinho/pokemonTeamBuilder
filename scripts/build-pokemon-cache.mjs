@@ -216,7 +216,7 @@ const buildEnrichedIndex = async (rawResults, { concurrency = 10, delayMs = 100 
 // megas, primals, regional variants and gigantamax. We deliberately EXCLUDE purely
 // cosmetic formes (Pikachu caps, Alcremie creams, Vivillon patterns, Rotom appliances,
 // Deoxys/Wormadam formes…) which would just clutter the dex with near-duplicates.
-const BATTLE_FORM_SUFFIX = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax)$/;
+const BATTLE_FORM_SUFFIX = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax|female)$/;
 const isBattleForm = (name) => BATTLE_FORM_SUFFIX.test(name);
 
 // Build lightweight index entries for battle forms so they appear in the Pokédex /
