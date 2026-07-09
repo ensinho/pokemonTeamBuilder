@@ -1,7 +1,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { POKEAPI_BASE_URL } from '../constants/firebase';
 import { db } from './firebase';
-import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
+import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, sanitizeSpriteUrl } from '../utils/pokemonSprites';
 
 // Bump this version whenever the SHAPE of cached data changes (e.g. adding `types`
 // to pokemon-index.json). It invalidates all stale entries from older versions so
@@ -554,12 +554,12 @@ export const getItemDetails = async (item) => {
     return {
         name: data.name,
         id: data.id,
-        sprite: data.sprites?.default || null,
+        sprite: sanitizeSpriteUrl(data.sprites?.default || null),
         category: data.category?.name || null,
         cost: data.cost ?? 0,
         flingPower: data.fling_power ?? null,
         effect: pickEnglish(data.effect_entries, 'short_effect')
-            || pickEnglish(data.flavor_text_entries, 'text')
+            || pickEnglish(data.effect_entries, 'effect')
             || 'No description available.',
     };
 };
@@ -620,19 +620,29 @@ export const getPokemonEncountersData = (pokemonId) => fetchPokeApiJson(
 
 // Normalize a raw PokéAPI `/pokemon` response into the "fat" shape the Team Builder
 // and editor modal expect (abilities[].name, moves[].name, types[], stats[]).
-const normalizePokemonApiData = (apiData) => ({
-    id: apiData.id,
-    name: apiData.name,
-    types: apiData.types?.map((t) => t.type?.name).filter(Boolean) || [],
-    abilities: apiData.abilities?.map((a) => ({
-        name: a.ability?.name,
-        url: a.ability?.url,
-        is_hidden: a.is_hidden,
-    })).filter((a) => a.name) || [],
-    moves: apiData.moves?.map((m) => ({ name: m.move?.name, url: m.move?.url })).filter((m) => m.name) || [],
-    stats: apiData.stats?.map((s) => ({ name: s.stat?.name, base_stat: s.base_stat })).filter((s) => s.name) || [],
-    sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default || null,
-});
+const normalizePokemonApiData = (apiData) => {
+    const rawSprite = apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default || null;
+    const rawShiny = apiData.sprites?.other?.['official-artwork']?.front_shiny || apiData.sprites?.front_shiny || null;
+    const rawAnimated = apiData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default || apiData.sprites?.front_default || null;
+    const rawAnimatedShiny = apiData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_shiny || apiData.sprites?.front_shiny || null;
+
+    return {
+        id: apiData.id,
+        name: apiData.name,
+        types: apiData.types?.map((t) => t.type?.name).filter(Boolean) || [],
+        abilities: apiData.abilities?.map((a) => ({
+            name: a.ability?.name,
+            url: a.ability?.url,
+            is_hidden: a.is_hidden,
+        })).filter((a) => a.name) || [],
+        moves: apiData.moves?.map((m) => ({ name: m.move?.name, url: m.move?.url })).filter((m) => m.name) || [],
+        stats: apiData.stats?.map((s) => ({ name: s.stat?.name, base_stat: s.base_stat })).filter((s) => s.name) || [],
+        sprite: sanitizeSpriteUrl(rawSprite),
+        shinySprite: sanitizeSpriteUrl(rawShiny),
+        animatedSprite: sanitizeSpriteUrl(rawAnimated),
+        animatedShinySprite: sanitizeSpriteUrl(rawAnimatedShiny),
+    };
+};
 
 /**
  * Resolve a Pokémon's full detail (abilities, moves, stats, types) by id.

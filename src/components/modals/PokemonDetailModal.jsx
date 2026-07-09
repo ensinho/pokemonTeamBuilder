@@ -5,6 +5,7 @@ import { Sparkles, Database, ChevronRight } from 'lucide-react';
 
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
+import { sanitizeSpriteUrl } from '../../utils/pokemonSprites';
 import { getEvolutionChainData, getStaticPokemonDetail, getPokemonSpeciesData, getPokemonApiData } from '../../services/pokemonDataCache';
 import { buildPokemonForms } from '../../utils/pokemonForms';
 import { useModalA11y } from '../../hooks/useModalA11y';
@@ -167,9 +168,11 @@ export function PokemonDetailModal({
     if (!pokemon) return null;
 
     const isAlreadyOnTeam = currentTeam.some((member) => member.id === pokemon.id);
-    const spriteToShow = showShiny
-        ? (pokemon.animatedShinySprite || pokemon.shinySprite)
-        : (pokemon.animatedSprite || pokemon.sprite);
+    const spriteToShow = sanitizeSpriteUrl(
+        showShiny
+            ? (pokemon.animatedShinySprite || pokemon.shinySprite || pokemon.sprite)
+            : (pokemon.animatedSprite || pokemon.sprite)
+    );
 
     const selectedForm = forms.find((f) => f.id === selectedFormId) || null;
     const entityToAdd = selectedForm

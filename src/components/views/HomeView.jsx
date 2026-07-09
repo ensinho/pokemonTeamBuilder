@@ -20,7 +20,7 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
 import { POKEMON_TIPS } from '../../constants/pokemon';
 import { getPokemonApiData, getStaticPokemonDetail, loadPokemonIndex } from '../../services/pokemonDataCache';
-import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, sanitizeSpriteUrl } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { HomeDashboard } from '../HomeDashboard';
 import { UserProfileModal } from '../modals/UserProfileModal';
@@ -54,18 +54,24 @@ const getDefaultHeroBackgroundId = () =>
 const toGreetingPokemonData = (pokemonData) => {
     if (!pokemonData) return null;
 
-    if (pokemonData.sprite && pokemonData.types) {
-        return pokemonData;
-    }
+    const base = pokemonData.sprite && pokemonData.types
+        ? pokemonData
+        : {
+            id: pokemonData.id,
+            name: pokemonData.name,
+            types: pokemonData.types?.map((typeEntry) => typeEntry.type?.name).filter(Boolean) || [],
+            sprite: pokemonData.sprites?.other?.['official-artwork']?.front_default || pokemonData.sprites?.front_default || POKEBALL_PLACEHOLDER_URL,
+            shinySprite: pokemonData.sprites?.other?.['official-artwork']?.front_shiny || pokemonData.sprites?.front_shiny || POKEBALL_PLACEHOLDER_URL,
+            animatedSprite: pokemonData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default || pokemonData.sprites?.front_default || POKEBALL_PLACEHOLDER_URL,
+            animatedShinySprite: pokemonData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_shiny || pokemonData.sprites?.front_shiny || POKEBALL_PLACEHOLDER_URL,
+        };
 
     return {
-        id: pokemonData.id,
-        name: pokemonData.name,
-        types: pokemonData.types?.map((typeEntry) => typeEntry.type?.name).filter(Boolean) || [],
-        sprite: pokemonData.sprites?.other?.['official-artwork']?.front_default || pokemonData.sprites?.front_default || POKEBALL_PLACEHOLDER_URL,
-        shinySprite: pokemonData.sprites?.other?.['official-artwork']?.front_shiny || pokemonData.sprites?.front_shiny || POKEBALL_PLACEHOLDER_URL,
-        animatedSprite: pokemonData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_default || pokemonData.sprites?.front_default || POKEBALL_PLACEHOLDER_URL,
-        animatedShinySprite: pokemonData.sprites?.versions?.['generation-v']?.['black-white']?.animated?.front_shiny || pokemonData.sprites?.front_shiny || POKEBALL_PLACEHOLDER_URL,
+        ...base,
+        sprite: sanitizeSpriteUrl(base.sprite),
+        shinySprite: sanitizeSpriteUrl(base.shinySprite),
+        animatedSprite: sanitizeSpriteUrl(base.animatedSprite),
+        animatedShinySprite: sanitizeSpriteUrl(base.animatedShinySprite),
     };
 };
 
@@ -1112,7 +1118,7 @@ export function HomeView({
                                                             <div className="flex gap-[1px] flex-wrap">
                                                                 {Array.from({ length: 6 }).map((_, slotIdx) => {
                                                                     const pk = message.sharedTeam.pokemons?.[slotIdx];
-                                                                    const spriteUrl = pk ? (pk.customization?.isShiny ? pk.shinySprite : pk.sprite) : null;
+                                                                    const spriteUrl = pk ? sanitizeSpriteUrl(pk.customization?.isShiny ? pk.shinySprite : pk.sprite) : null;
                                                                     return (
                                                                         <div
                                                                             key={slotIdx}

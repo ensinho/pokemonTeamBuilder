@@ -7,6 +7,14 @@ const toPokemonId = (value) => {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 };
 
+export const sanitizeSpriteUrl = (url) => {
+    if (!url || typeof url !== 'string') return url;
+    return url.replace(
+        /^https:\/\/raw\.githubusercontent\.com\/PokeAPI\/sprites\/master\//i,
+        'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/'
+    );
+};
+
 export const getPokemonFrontSpriteUrl = (pokemonId, { shiny = false } = {}) => {
     const resolvedId = toPokemonId(pokemonId);
     return resolvedId
@@ -42,8 +50,9 @@ export const getPokemonDisplaySprite = (pokemon, {
     if (!pokemon) return POKEBALL_PLACEHOLDER_URL;
 
     let resolvedId = toPokemonId(pokemon.id);
+    const spriteSrc = sanitizeSpriteUrl(pokemon.sprite);
     if (pokemon.name?.startsWith('Mega ') || pokemon.name?.includes('-Mega')) {
-        const spriteMatch = pokemon.sprite?.match(/\/(\d+)\.png/);
+        const spriteMatch = spriteSrc?.match(/\/(\d+)\.png/);
         if (spriteMatch) {
             const parsed = Number.parseInt(spriteMatch[1], 10);
             if (Number.isInteger(parsed) && parsed > 0) {
@@ -60,7 +69,7 @@ export const getPokemonDisplaySprite = (pokemon, {
     // `animated` still prefers the gen-5 animated sprite when one was stored.
     if (animated) {
         const stored = shiny ? pokemon.animatedShinySprite : pokemon.animatedSprite;
-        if (stored) return stored;
+        if (stored) return sanitizeSpriteUrl(stored);
     }
     return getPokemonFrontSpriteUrl(resolvedId, { shiny });
 };

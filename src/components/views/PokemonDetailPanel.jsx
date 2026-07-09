@@ -25,6 +25,7 @@ import {
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { buildPokemonForms, formDisplayName } from '../../utils/pokemonForms';
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
+import { sanitizeSpriteUrl } from '../../utils/pokemonSprites';
 
 // ── Shared helpers (mirrors PokedexView's detail panel) ──────────────────────
 const displayNameFromApi = (apiData) =>
@@ -459,11 +460,12 @@ export function PokemonDetailPanel({
     }, [fullApiData]);
 
     const spriteToShow = useMemo(() => {
-        if (customSelectedSprite) return customSelectedSprite;
+        if (customSelectedSprite) return sanitizeSpriteUrl(customSelectedSprite);
         if (!selectedPokemonDetails) return POKEBALL_PLACEHOLDER_URL;
-        return showShiny
+        const url = showShiny
             ? (selectedPokemonDetails.animatedShinySprite || selectedPokemonDetails.shinySprite || selectedPokemonDetails.sprite)
             : (selectedPokemonDetails.animatedSprite || selectedPokemonDetails.sprite);
+        return sanitizeSpriteUrl(url);
     }, [selectedPokemonDetails, showShiny, customSelectedSprite]);
 
     const formattedId = useMemo(() => (selectedPokemonDetails?.id ? String(selectedPokemonDetails.id).padStart(4, '0') : ''), [selectedPokemonDetails]);
