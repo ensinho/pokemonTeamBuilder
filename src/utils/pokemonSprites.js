@@ -1,6 +1,6 @@
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 
-const RAW_SPRITE_BASE_URL = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
+const RAW_SPRITE_BASE_URL = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon';
 
 const toPokemonId = (value) => {
     const parsed = Number.parseInt(value, 10);

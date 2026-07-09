@@ -1044,7 +1044,7 @@ export function HomeView({
                                                 >
                                                     {message.creatorAvatar ? (
                                                         <img
-                                                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
+                                                            src={`https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
                                                             alt=""
                                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                         />
@@ -1130,7 +1130,7 @@ export function HomeView({
                                                                                     src={spriteUrl}
                                                                                     alt={pk.name}
                                                                                     className="h-8 w-8 object-contain"
-                                                                                    onError={(e) => { e.currentTarget.src = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png'; }}
+                                                                                    onError={(e) => { e.currentTarget.src = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/poke-ball.png'; }}
                                                                                 />
                                                                             ) : (
                                                                                 <span className="opacity-25"><PokeballIcon className="w-3.5 h-3.5" /></span>

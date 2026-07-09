@@ -560,7 +560,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                 >
                                                     {message.creatorAvatar ? (
                                                         <img
-                                                            src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
+                                                            src={`https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
                                                             alt=""
                                                             onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                                         />

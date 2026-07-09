@@ -6,7 +6,7 @@
 // exists for a species, we fall back to a stat/archetype heuristic so every
 // member still gets sensible ideas.
 
-const ITEM_SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items';
+const ITEM_SPRITE_BASE = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items';
 export const itemSpriteUrl = (slug) => `${ITEM_SPRITE_BASE}/${slug}.png`;
 
 const r = (en, pt, lang) => (lang === 'pt' ? pt : en);

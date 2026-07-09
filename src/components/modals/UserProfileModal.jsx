@@ -57,7 +57,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                         <div className="w-20 h-20 rounded-full bg-surface-raised border-2 border-primary flex items-center justify-center overflow-hidden shadow-lg relative">
                             {avatar ? (
                                 <img
-                                    src={`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${avatar}.png`}
+                                    src={`https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${avatar}.png`}
                                     alt={name}
                                     className="w-20 h-20 object-contain sprite-fade"
                                     onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}

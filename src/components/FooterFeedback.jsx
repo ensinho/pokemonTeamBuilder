@@ -74,7 +74,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
                 );
                 // Thank-you toast with a random Pokémon sprite
                 const randomId = Math.floor(Math.random() * 898) + 1;
-                const spriteUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${randomId}.png`;
+                const spriteUrl = `https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${randomId}.png`;
                 const messages = [
                     'Thanks for the like!',
                     'You rock — thanks!',

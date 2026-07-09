@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07T22:58:18.477Z",
+  "generatedAt": "2026-07-09T00:44:54.551Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -10385,9 +10385,9 @@
             ]
           ],
           "evs": {
-            "hp": 4,
+            "hp": 0,
             "attack": 252,
-            "defense": 0,
+            "defense": 4,
             "special-attack": 0,
             "special-defense": 0,
             "speed": 252
@@ -45693,7 +45693,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Assault Vest turns Copperajah into a solid wallbreaker and allows it to better handle special attackers such as Galarian Articuno and Goodra. Knock Off lets Copperajah remove Heavy-Duty Boots from Scyther and Tornadus while catching Chandelure and Uxie on the switch in. Earthquake is a vital coverage move to hit…",
+          "description": "Assault Vest turns Copperajah into a solid wallbreaker and allows it to better handle special attackers such as Meloetta and Goodra. Knock Off lets Copperajah remove Heavy-Duty Boots from Scyther and Tornadus while catching Chandelure and Uxie on the switch in. Earthquake is a vital coverage move to hit Electric- and…",
           "source": "NU"
         }
       ]

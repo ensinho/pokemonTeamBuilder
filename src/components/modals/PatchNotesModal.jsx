@@ -6,7 +6,7 @@ import { useModalA11y } from '../../hooks/useModalA11y';
 import { ChartColumnIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MapPinIcon, PokeballIcon, StarsIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 
-const SPRITE_BASE = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
+const SPRITE_BASE = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon';
 
 const LikeFeedbackVisual = ({ t }) => (
     <div
@@ -171,7 +171,7 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                 {/* Pokémon Silhouette / Reveal Frame */}
                 <div className="relative w-16 h-16 rounded-xl border border-border bg-surface/50 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
                     <img
-                        src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png"
+                        src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/94.png"
                         alt="Gengar"
                         className="w-14 h-14 object-contain transition-all duration-700"
                         style={{
