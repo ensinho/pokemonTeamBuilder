@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-09T00:44:54.551Z",
+  "generatedAt": "2026-07-13T17:10:14.599Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -3042,7 +3042,7 @@
     "80": {
       "name": "Slowbro",
       "gen": "UU",
-      "overview": "Thanks to its typing, high HP and Defense, and access to Regenerator, Slowbro does a fantastic job at slowing down or outright stopping some of the most dangerous wallbreakers and setup sweepers of the tier in their tracks, including the likes of Galarian Zapdos, Krookodile, Terrakion, and Barraskewda. In addition to…",
+      "overview": "Thanks to its typing, high HP and Defense, and access to Regenerator, Slowbro does a fantastic job at slowing down or outright stopping some of the most dangerous wallbreakers and setup sweepers of the tier in their tracks, including the likes of Entei, Krookodile, Terrakion, and Barraskewda. In addition to being one…",
       "sets": [
         {
           "name": "Calm Mind",
@@ -3626,7 +3626,7 @@
     "89": {
       "name": "Muk-Alola",
       "gen": "Battle Stadium",
-      "overview": "Utilizing its large special bulk and the incredible progress-making combination of Poison Touch and Knock Off, Alolan Muk stands out as a potent special wall in the tier. Common special attackers such as Gengar and Volcanion struggle to get past it and are forced out by Knock Off. Alolan Muk can be incredibly…",
+      "overview": "Utilizing its large special bulk and the incredible progress-making combination of Poison Touch and Knock Off, Alolan Muk stands out as a potent special wall in the tier. Common special attackers such as Gengar and Yanmega struggle to get past it and are threatened by Knock Off. Alolan Muk can be incredibly difficult…",
       "sets": [
         {
           "name": "Ghostbuster (Stall)",
@@ -3760,7 +3760,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nDrain Punch allows Alolan Muk to regain health from targets while helping it against Steel-types like Hisuian Goodra and Bisharp. Haze allows Alolan Muk to stop setup sweepers such as Calm Mind Slowbro, Calm Mind Armarouge, and Calm Mind Reuniclus by negating the boosts they have attained. Rest is Alolan…",
+          "description": "Set Details\nDrain Punch allows Alolan Muk to regain health from targets while helping it against Steel-types like Hisuian Goodra and Bisharp. Haze allows Alolan Muk to stop setup sweepers such as Calm Mind Slowbro, Suicune, and Reuniclus by negating the boosts they have attained. Rest is Alolan Muk's main form of…",
           "source": "RU"
         },
         {
@@ -7984,7 +7984,7 @@
     "160": {
       "name": "Feraligatr",
       "gen": "RU",
-      "overview": "Feraligatr faces heavy competition from fellow physical Water-type Gyarados as a setup sweeper for offensive teams; however, it carves a niche for itself by being more immediately threatening with its ability Sheer Force as well as its access to a priority move in Aqua Jet. Feraligatr also has solid coverage, letting…",
+      "overview": "Feraligatr faces heavy competition from fellow physical setup sweepers like Bisharp, Mimikyu, and Necrozma; however, it carves a niche for itself by being more immediately threatening with its ability Sheer Force. Feraligatr also has solid coverage, letting it heavily damage Water-resistant targets like Slowbro and…",
       "sets": [
         {
           "name": "Setup Sweeper",
@@ -8519,7 +8519,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nWhirlpool is an effective means to trap unsuspecting checks like Chansey, Suicune, and Umbreon, enabling Perish Song to break through these defensive pieces. Ice Beam nails Grass- and Dragon-types like Amoonguss, Chesnaught, and Cyclizar. Encore can disrupt slower Pokemon like Reuniclus and Slowbro and put…",
+          "description": "Set Details\nWhirlpool is an effective means to trap unsuspecting checks like Blissey, Suicune, and Umbreon, enabling Perish Song to break through these defensive pieces. Ice Beam nails Grass- and Dragon-types like Amoonguss, Chesnaught, and Cyclizar. Encore can disrupt slower Pokemon like Reuniclus and Slowbro and put…",
           "source": "RU"
         }
       ]
@@ -9203,7 +9203,10 @@
         {
           "name": "Defensive Pivot",
           "item": "heavy-duty-boots",
-          "itemAlts": [],
+          "itemAlts": [
+            "colbur-berry",
+            "black-sludge"
+          ],
           "ability": "regenerator",
           "nature": "sassy",
           "tera": [
@@ -9227,7 +9230,8 @@
               "thunder-wave",
               "toxic",
               "flamethrower",
-              "ice-beam"
+              "ice-beam",
+              "trick"
             ]
           ],
           "evs": {
@@ -9247,7 +9251,7 @@
             "speed": 0
           },
           "level": null,
-          "description": "Galarian Slowking utilizes its great bulk, Regenerator, and excellent defensive typing as a valuable slow defensive pivot that can bring its teammates in safely via Chilly Reception. Future Sight is used for its ability to apply immense delayed pressure onto targets like Pecharunt, Dondozo, and Clefable, which its…",
+          "description": "Galarian Slowking utilizes its great bulk, Regenerator, and excellent defensive typing as a valuable slow defensive pivot that can bring its teammates in safely via Chilly Reception. Future Sight is used to support its wallbreaking teammates, as it can apply immense delayed pressure onto targets like Pecharunt,…",
           "source": "OU"
         },
         {
@@ -10801,19 +10805,18 @@
           ],
           "moves": [
             [
+              "spikes"
+            ],
+            [
+              "roost"
+            ],
+            [
               "body-press",
               "brave-bird"
             ],
             [
               "iron-defense",
               "whirlwind"
-            ],
-            [
-              "roost"
-            ],
-            [
-              "spikes",
-              "stealth-rock"
             ]
           ],
           "evs": {
@@ -10833,7 +10836,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Skarmory is commonly used as an anti-setup Pokemon, having great bulk and a strong defensive typing that lets it check common offensive physical threats such as Kingambit, Great Tusk, and Dragonite. Skarmory's immense physical bulk allows it to tank hits from the aforementioned Pokemon and punish them with Rocky…",
+          "description": "Skarmory's great bulk and strong defensive typing let it check common offensive physical threats such as Kingambit, Great Tusk, and Dragonite as well as providing opportunities to set up multiple layers of Spikes. Skarmory is able to set up Iron Defense on physical attackers, preventing it from being overwhelmed and…",
           "source": "OU"
         },
         {
@@ -12571,7 +12574,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nThis set focuses on Suicune being a wincon by making use of Pressure and its HP and Speed stats. Substitute + Calm Mind ensures Suicune can set up on bulky but offensively weak Pokemon such as Slowbro, Gastrodon, and Wo-Chien. Protect is excellent for scouting moves on Choice-locked Pokemon, such Galarian…",
+          "description": "Set Details\nThis set focuses on Suicune being a wincon by making use of Pressure and its HP and Speed stats. Substitute + Calm Mind ensures Suicune can set up on bulky but offensively weak Pokemon such as Slowbro, Gastrodon, and Wo-Chien. Protect is excellent for scouting moves on Choice-locked Pokemon, such as…",
           "source": "RU"
         }
       ]
@@ -14462,52 +14465,9 @@
     },
     "302": {
       "name": "Sableye",
-      "gen": "RU",
+      "gen": "ZU",
       "overview": "",
       "sets": [
-        {
-          "name": "Defensive",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "prankster",
-          "nature": "impish",
-          "tera": [
-            "poison"
-          ],
-          "moves": [
-            [
-              "knock-off"
-            ],
-            [
-              "night-shade"
-            ],
-            [
-              "will-o-wisp"
-            ],
-            [
-              "recover"
-            ]
-          ],
-          "evs": {
-            "hp": 252,
-            "attack": 0,
-            "defense": 252,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
         {
           "name": "Physical Wall",
           "item": "heavy-duty-boots",
@@ -14637,6 +14597,48 @@
           "level": null,
           "description": "",
           "source": "Nat Dex"
+        },
+        {
+          "name": "Calm Mind (Dark)",
+          "item": "sablenite",
+          "itemAlts": [],
+          "ability": "prankster",
+          "nature": "bold",
+          "tera": [],
+          "moves": [
+            [
+              "calm-mind"
+            ],
+            [
+              "recover"
+            ],
+            [
+              "will-o-wisp"
+            ],
+            [
+              "hex",
+              "dark-pulse"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 252,
+            "special-attack": 0,
+            "special-defense": 8,
+            "speed": 0
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "On offensive Dark teams, Calm Mind Mega Sableye can serve as a sturdy setup sweeper that brings some defensive utility to the table and ignores common anti-setup moves such as Taunt, Encore, and Whirlwind. Additionally, its ability to spread status with Will-O-Wisp enables the team to handle threatening physical…",
+          "source": "Nat Dex Mono"
         }
       ]
     },
@@ -16783,7 +16785,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nBody Press takes advantage of Registeel's high Defense and can hit Pokemon like Bisharp and Cyclizar. Iron Defense improves Registeel's survivability and turns it into an offensive threat thanks to Body Press. Thunder Wave can paralyze Cyclizar and Talonflame for Registeel's allies to deal with them…",
+          "description": "Set Details\nBody Press takes advantage of Registeel's high Defense and can hit Pokemon like Bisharp and Cyclizar. Iron Defense improves Registeel's survivability and turns it into an offensive threat thanks to Body Press. Thunder Wave can paralyze Cyclizar and Noivern for Registeel's allies to deal with them better.…",
           "source": "RU"
         }
       ]
@@ -18134,7 +18136,7 @@
     "389": {
       "name": "Torterra",
       "gen": "RU",
-      "overview": "Thanks to the addition of Shell Smash, Torterra is a powerful sweeper capable of devastating many Pokemon in the tier. Torterra's high-power STAB moves can cleanly deal with physical walls like Slowbro, Hippowdon, and Registeel, and its bulk allows it plenty of opportunities to set up against Pokemon such as Bisharp,…",
+      "overview": "Thanks to the addition of Shell Smash, Torterra is a powerful sweeper capable of devastating many Pokemon in the tier. Torterra's high-power STAB moves can cleanly deal with physical walls like Slowbro, Quagsire, and Registeel, and its bulk allows it plenty of opportunities to set up against Pokemon such as Bisharp,…",
       "sets": [
         {
           "name": "Shell Smash",
@@ -18145,6 +18147,7 @@
           "ability": "",
           "nature": "jolly",
           "tera": [
+            "fairy",
             "fire",
             "steel"
           ],
@@ -20487,7 +20490,7 @@
     "448": {
       "name": "Lucario",
       "gen": "Battle Stadium",
-      "overview": "By virtue of its access to the rare Extreme Speed paired with Swords Dance and a decent offensive typing, Lucario carves out a small niche as a setup sweeper that can revenge kill faster threats like Mienshao and Maushold. Its ample coverage also makes it difficult for defensive staples like Jirachi and Slowbro to…",
+      "overview": "By virtue of its access to the rare Extreme Speed paired with Swords Dance and a decent offensive typing, Lucario carves out a small niche as a setup sweeper that can revenge kill faster threats like Maushold and Shift Gear Toxtricity. Its ample coverage also makes it difficult for defensive staples like Jirachi and…",
       "sets": [
         {
           "name": "Extreme Speed",
@@ -21012,56 +21015,9 @@
     },
     "454": {
       "name": "Toxicroak",
-      "gen": "RU",
+      "gen": "NU",
       "overview": "Toxicroak stands out for having the rare combination of Dry Skin and a great typing both offensively and defensively, which makes it the premier switch-in to Water-types like Vaporeon, Milotic, Paldean Tauros-W, Basculegion, and Inteleon. Toxicroak is also less susceptible to being revenge killed after it has set up;…",
       "sets": [
-        {
-          "name": "Swords Dance",
-          "item": "life-orb",
-          "itemAlts": [
-            "air-balloon"
-          ],
-          "ability": "dry-skin",
-          "nature": "jolly",
-          "tera": [
-            "dark"
-          ],
-          "moves": [
-            [
-              "swords-dance"
-            ],
-            [
-              "gunk-shot"
-            ],
-            [
-              "close-combat",
-              "drain-punch"
-            ],
-            [
-              "sucker-punch",
-              "knock-off"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
         {
           "name": "Swords Dance",
           "item": "leftovers",
@@ -21199,6 +21155,54 @@
           "level": null,
           "description": "",
           "source": "PU"
+        },
+        {
+          "name": "Wallbreaker",
+          "item": "life-orb",
+          "itemAlts": [
+            "leftovers"
+          ],
+          "ability": "dry-skin",
+          "nature": "jolly",
+          "tera": [
+            "dark",
+            "fighting"
+          ],
+          "moves": [
+            [
+              "close-combat"
+            ],
+            [
+              "gunk-shot"
+            ],
+            [
+              "swords-dance",
+              "sucker-punch"
+            ],
+            [
+              "knock-off",
+              "sucker-punch"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
         }
       ]
     },
@@ -21701,7 +21705,7 @@
               "volt-switch"
             ],
             [
-              "tera-blast"
+              "tri-attack"
             ]
           ],
           "evs": {
@@ -21721,7 +21725,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Choice Specs Magnezone is a high-voltage wallbreaker that takes advantage of the lack of special tanks in RU to blast holes in teams. Volt Switch lets it keep momentum flowing against switch-ins like Hisuian Goodra, Wo-Chien, and Umbreon. Tera Blast Grass targets Hippowdon, Tera Blast Ground hits opposing Magnezone,…",
+          "description": "Choice Specs Magnezone is a high-voltage wallbreaker that takes advantage of the lack of special tanks in RU to blast holes in teams. Volt Switch lets it keep momentum flowing against switch-ins like Hisuian Goodra, Wo-Chien, and Umbreon. Tri Attack Analytic lets Flash Cannon OHKO Krookodile while also amping up Volt…",
           "source": "RU"
         },
         {
@@ -21746,9 +21750,7 @@
               "volt-switch"
             ],
             [
-              "body-press",
-              "tera-blast",
-              "mirror-coat"
+              "body-press"
             ]
           ],
           "evs": {
@@ -26277,8 +26279,8 @@
           "ability": "",
           "nature": "adamant",
           "tera": [
-            "ghost",
-            "ground"
+            "ground",
+            "ghost"
           ],
           "moves": [
             [
@@ -28994,23 +28996,23 @@
               "flip-turn"
             ],
             [
-              "scald"
-            ],
-            [
               "mirror-coat"
             ],
             [
-              "play-rough",
-              "body-slam",
+              "scald",
               "aqua-jet"
+            ],
+            [
+              "body-slam",
+              "play-rough"
             ]
           ],
           "evs": {
-            "hp": 0,
+            "hp": 252,
             "attack": 0,
-            "defense": 0,
+            "defense": 4,
             "special-attack": 0,
-            "special-defense": 0,
+            "special-defense": 252,
             "speed": 0
           },
           "ivs": {
@@ -30299,12 +30301,12 @@
             ]
           ],
           "evs": {
-            "hp": 132,
+            "hp": 120,
             "attack": 252,
             "defense": 0,
             "special-attack": 0,
             "special-defense": 0,
-            "speed": 124
+            "speed": 136
           },
           "ivs": {
             "hp": 31,
@@ -31712,28 +31714,30 @@
       "overview": "Terrakion is a superb wallbreaker and hyper offense lead, using its excellent Speed tier, immediate power, great offensive typing, and utility moves like Stealth Rock, Swords Dance, and Taunt to great effect. Focus Sash lead Terrakion can often disrupt opposing leads, like Jirachi and Krookodile, with Taunt before…",
       "sets": [
         {
-          "name": "Choice Band",
-          "item": "choice-band",
-          "itemAlts": [],
+          "name": "Stealth Rock",
+          "item": "focus-sash",
+          "itemAlts": [
+            "loaded-dice"
+          ],
           "ability": "",
           "nature": "jolly",
           "tera": [
-            "rock",
             "ghost"
           ],
           "moves": [
             [
-              "stone-edge"
+              "stealth-rock"
             ],
             [
               "close-combat"
             ],
             [
-              "earthquake"
+              "rock-blast",
+              "stone-edge"
             ],
             [
-              "quick-attack",
-              "tera-blast"
+              "swords-dance",
+              "taunt"
             ]
           ],
           "evs": {
@@ -31753,7 +31757,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Thanks to its high Attack stat and almost unresisted STAB combination, Choice Band Terrakion makes for an excellent wallbreaker that is very difficult to switch into. Earthquake helps it deal with Jirachi and is a great option for picking up weakened targets without suffering from the defense drops or inaccuracy from…",
+          "description": "Set Details\nTerrakion is an effective lead for hyper offense teams due to its good Speed and great offensive presence, especially against common entry hazard removers like Cyclizar and Maushold. Rock Blast is generally used over Stone Edge to circumvent opposing Focus Sash leads, including Kleavor, though Terrakion is…",
           "source": "RU"
         },
         {
@@ -31804,30 +31808,27 @@
           "source": "RU"
         },
         {
-          "name": "Stealth Rock",
-          "item": "focus-sash",
-          "itemAlts": [
-            "loaded-dice"
-          ],
+          "name": "Choice Band",
+          "item": "choice-band",
+          "itemAlts": [],
           "ability": "",
           "nature": "jolly",
           "tera": [
+            "rock",
             "ghost"
           ],
           "moves": [
             [
-              "stealth-rock"
+              "stone-edge"
             ],
             [
               "close-combat"
             ],
             [
-              "rock-blast",
-              "stone-edge"
+              "earthquake"
             ],
             [
-              "swords-dance",
-              "taunt"
+              "quick-attack"
             ]
           ],
           "evs": {
@@ -31847,7 +31848,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nTerrakion is an effective lead for hyper offense teams due to its good Speed and great offensive presence, especially against common entry hazard removers like Cyclizar and Maushold. Rock Blast is generally used over Stone Edge to circumvent opposing Focus Sash leads, including Kleavor, though Terrakion is…",
+          "description": "Thanks to its high Attack stat and almost unresisted STAB combination, Choice Band Terrakion makes for an excellent wallbreaker that is very difficult to switch into. Earthquake helps it deal with Jirachi and is a great option for picking up weakened targets without suffering from the defense drops or inaccuracy from…",
           "source": "RU"
         },
         {
@@ -33871,7 +33872,8 @@
           ],
           "moves": [
             [
-              "overheat"
+              "overheat",
+              "flamethrower"
             ],
             [
               "defog"
@@ -35389,7 +35391,8 @@
           "name": "Spikes",
           "item": "air-balloon",
           "itemAlts": [
-            "leftovers"
+            "leftovers",
+            "rocky-helmet"
           ],
           "ability": "",
           "nature": "impish",
@@ -35428,7 +35431,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nThis set focuses on laying Spikes and spreading Paralysis. Thunder Wave cripples offensive threats like Terrakion and discourages setup sweepers like Armarouge and Galarian Zapdos from boosting against Klefki. Foul Play targets physical attackers like Jirachi and Mamoswine and also prevents physical…",
+          "description": "Set Details\nThis set focuses on laying Spikes and spreading Paralysis. Thunder Wave cripples offensive threats like Terrakion and discourages setup sweepers like Necrozma and Terrakion from boosting against Klefki. Foul Play targets physical attackers like Jirachi and Mamoswine and also prevents physical wallbreakers…",
           "source": "RU"
         },
         {
@@ -36517,6 +36520,52 @@
       "overview": "",
       "sets": [
         {
+          "name": "Choice Band",
+          "item": "choice-band",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "adamant",
+          "tera": [
+            "dark",
+            "fighting"
+          ],
+          "moves": [
+            [
+              "hyperspace-fury"
+            ],
+            [
+              "zen-headbutt"
+            ],
+            [
+              "drain-punch"
+            ],
+            [
+              "knock-off",
+              "trick",
+              "gunk-shot"
+            ]
+          ],
+          "evs": {
+            "hp": 40,
+            "attack": 252,
+            "defense": 0,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 216
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "OU"
+        },
+        {
           "name": "Assault Vest",
           "item": "assault-vest",
           "itemAlts": [],
@@ -36646,54 +36695,6 @@
             "special-attack": 60,
             "special-defense": 4,
             "speed": 224
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "NU"
-        },
-        {
-          "name": "All-out Attacker",
-          "item": "assault-vest",
-          "itemAlts": [
-            "heavy-duty-boots"
-          ],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "fighting",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "psychic-noise",
-              "psyshock",
-              "psychic"
-            ],
-            [
-              "shadow-ball"
-            ],
-            [
-              "focus-blast"
-            ],
-            [
-              "knock-off"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
           },
           "ivs": {
             "hp": 31,
@@ -37917,7 +37918,7 @@
     "743": {
       "name": "Ribombee",
       "gen": "OU",
-      "overview": "Ribombee flutters its way into RU as a powerful Sticky Web setter that can use its access to Stun Spore to hinder foes that threaten to clear its Sticky Web, such as Talonflame and Noivern. Ribombee's ability to outspeed Pokemon such as Cyclizar, Noivern, and Maushold is invaluable, as it can threaten them with either…",
+      "overview": "Ribombee flutters its way into RU as a powerful Sticky Web setter that can use its access to Stun Spore to hinder foes that threaten to clear its Sticky Web, Cyclizar and Maushold. Ribombee's ability to outspeed Pokemon such as Cyclizar, Noivern, and Maushold is invaluable, as it can threaten them with either…",
       "sets": [
         {
           "name": "Sticky Web",
@@ -38795,7 +38796,8 @@
           "name": "Sticky Web",
           "item": "custap-berry",
           "itemAlts": [
-            "mental-herb"
+            "mental-herb",
+            "red-card"
           ],
           "ability": "",
           "nature": "modest",
@@ -38818,10 +38820,10 @@
             ]
           ],
           "evs": {
-            "hp": 0,
+            "hp": 252,
             "attack": 0,
-            "defense": 0,
-            "special-attack": 0,
+            "defense": 40,
+            "special-attack": 216,
             "special-defense": 0,
             "speed": 0
           },
@@ -38834,7 +38836,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Araquanid carves a niche as one of the tier's reliable Sticky Web user due to its good defensive typing, serviceable bulk, and amazing offensive matchups against notable threats to Sticky Web teams such as Iron Moth, Cinderace, Iron Treads, and Great Tusk. Surf is not only a very consistent STAB move for reliable…",
+          "description": "Araquanid carves a niche as one of the tier's reliable Sticky Web user due to its good typing, serviceable bulk, and amazing offensive and defensive matchups against notable threats to Sticky Web teams such as Iron Moth, Iron Treads, and Cinderace while still matching up well against Great Tusk, similar to Ribombee.…",
           "source": "OU"
         },
         {
@@ -39119,99 +39121,9 @@
     },
     "758": {
       "name": "Salazzle",
-      "gen": "RU",
+      "gen": "NU",
       "overview": "The combination of Nasty Plot, a good typing both offensively and defensively, and solid Special Attack and Speed lets Salazzle carve out a niche in NU as a setup sweeper, and its typing gives it setup opportunities against Pokemon such as Sylveon, Heracross, and Brambleghast. It's also a very difficult Pokemon to…",
       "sets": [
-        {
-          "name": "Substitute + Toxic",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "dark",
-            "steel",
-            "fairy"
-          ],
-          "moves": [
-            [
-              "flamethrower"
-            ],
-            [
-              "substitute"
-            ],
-            [
-              "protect"
-            ],
-            [
-              "toxic"
-            ]
-          ],
-          "evs": {
-            "hp": 248,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 8,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
-        {
-          "name": "Offensive",
-          "item": "heavy-duty-boots",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "timid",
-          "tera": [
-            "dark"
-          ],
-          "moves": [
-            [
-              "fire-blast",
-              "flamethrower"
-            ],
-            [
-              "sludge-bomb"
-            ],
-            [
-              "knock-off",
-              "encore"
-            ],
-            [
-              "toxic"
-            ]
-          ],
-          "evs": {
-            "hp": 4,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "",
-          "source": "RU"
-        },
         {
           "name": "Nasty Plot",
           "item": "heavy-duty-boots",
@@ -39309,6 +39221,50 @@
           "level": null,
           "description": "With Salazzle's deep utility movepool, it can act as great support Pokemon that lacks passivity thanks to its high Speed and its nearly unresisted STAB combination's damage output. Fire Blast is preferred for pure damage, but Flamethrower can be used instead for higher accuracy. Toxic + Corrosion allow Salazzle to…",
           "source": "PU"
+        },
+        {
+          "name": "Toxic Spreader (Poison)",
+          "item": "black-sludge",
+          "itemAlts": [
+            "heavy-duty-boots"
+          ],
+          "ability": "",
+          "nature": "timid",
+          "tera": [],
+          "moves": [
+            [
+              "toxic"
+            ],
+            [
+              "flamethrower"
+            ],
+            [
+              "encore"
+            ],
+            [
+              "substitute",
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 248,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 8,
+            "special-defense": 0,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "With Corrosion, Salazzle can inflict Toxic onto key defensive threats like Heatran, Empoleon, Amoonguss, and Toxapex, greatly decreasing their longevity. Flamethrower gives Salazzle some offensive pressure, letting it force out Steel-, Grass-, and Ice-type threats like Gholdengo, Brambleghast, and Alolan Sandslash.…",
+          "source": "Monotype"
         }
       ]
     },
@@ -39658,7 +39614,7 @@
     "770": {
       "name": "Palossand",
       "gen": "RU",
-      "overview": "With a rare defensive typing as well as access to reliable recovery in Shore Up, Palossand carves out a niche as a Stealth Rock setter that can block Rapid Spin attempts from Cyclizar. Palossand's solid natural bulk lets it tank anything Cyclizar throws at it and take on dangerous physical attackers like Galarian…",
+      "overview": "With a rare defensive typing as well as access to reliable recovery in Shore Up, Palossand carves out a niche as a Stealth Rock setter that can block Rapid Spin attempts from Cyclizar. Palossand's solid natural bulk lets it tank anything Cyclizar throws at it and take on dangerous wallbreakers like Kleavor, Terrakion,…",
       "sets": [
         {
           "name": "Defensive",
@@ -43730,56 +43686,9 @@
     },
     "834": {
       "name": "Drednaw",
-      "gen": "NU",
-      "overview": "Drednaw stands out as a premier hyper offense and offense option, able to threaten a sweep after a single Shell Smash. With access to Strong Jaw-boosted Ice Fang and Crunch, even typically sturdy physical walls such as Bronzong and Amoonguss can struggle to take its attacks. Drednaw also naturally outspeeds the…",
+      "gen": "Monotype",
+      "overview": "",
       "sets": [
-        {
-          "name": "Shell Smash",
-          "item": "white-herb",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "jolly",
-          "tera": [
-            "dark",
-            "ground",
-            "flying"
-          ],
-          "moves": [
-            [
-              "shell-smash"
-            ],
-            [
-              "liquidation",
-              "ice-fang"
-            ],
-            [
-              "stone-edge",
-              "earthquake"
-            ],
-            [
-              "crunch"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 252,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Set Details\nLiquidation offers a powerful STAB move to get past foes like Rhyperior and Incineroar with ease, and Stone Edge being a non-contact as well as STAB-boosted move allows Drednaw to handle Houndstone with relative ease. However, Ice Fang + Earthquake can be run: Ice Fang hits Pokemon such as Amoonguss,…",
-          "source": "NU"
-        },
         {
           "name": "Shell Smash (Rock)",
           "item": "air-balloon",
@@ -51100,12 +51009,15 @@
           "name": "Swords Dance",
           "item": "life-orb",
           "itemAlts": [
-            "focus-sash"
+            "air-balloon",
+            "focus-sash",
+            "heavy-duty-boots"
           ],
           "ability": "weak-armor",
-          "nature": "jolly",
+          "nature": "adamant",
           "tera": [
             "ghost",
+            "fairy",
             "fighting"
           ],
           "moves": [
@@ -55937,9 +55849,9 @@
           "ability": "",
           "nature": "jolly",
           "tera": [
+            "fighting",
             "steel",
-            "ice",
-            "fire"
+            "ice"
           ],
           "moves": [
             [
@@ -55952,9 +55864,9 @@
               "rapid-spin"
             ],
             [
+              "close-combat",
               "stealth-rock",
-              "knock-off",
-              "close-combat"
+              "knock-off"
             ]
           ],
           "evs": {
@@ -60115,47 +60027,48 @@
           "source": "OU"
         },
         {
-          "name": "Boots All-out-Attacker (Dragon)",
-          "item": "heavy-duty-boots",
+          "name": "Agility",
+          "item": "booster-energy",
           "itemAlts": [],
           "ability": "",
-          "nature": "timid",
-          "tera": [],
+          "nature": "modest",
+          "tera": [
+            "water",
+            "fairy"
+          ],
           "moves": [
             [
-              "scald",
-              "hydro-steam"
+              "agility"
             ],
             [
-              "draco-meteor"
+              "surf"
             ],
             [
-              "flamethrower"
+              "dragon-pulse"
             ],
             [
-              "knock-off",
-              "flip-turn"
+              "substitute"
             ]
           ],
           "evs": {
             "hp": 0,
             "attack": 0,
-            "defense": 12,
-            "special-attack": 244,
-            "special-defense": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 4,
             "speed": 252
           },
           "ivs": {
             "hp": 31,
-            "attack": 31,
+            "attack": 0,
             "defense": 31,
             "special-attack": 31,
             "special-defense": 31,
             "speed": 31
           },
           "level": null,
-          "description": "Walking Wake provides an interesting Speed tier, outspeeding problematic threats such as Iron Treads and Landorus, and offers coverage that pressures types such as Steel and Flying for Dragon teams. Scald's burn chance makes Walking Wake riskier to switch into, as it can inflict burn and reduce the threat of…",
-          "source": "Monotype"
+          "description": "",
+          "source": "OU"
         }
       ]
     },

@@ -5196,6 +5196,11 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/pokemon/Meowstic Female</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/pokemon/Mega Venusaur</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -5631,6 +5636,11 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/pokemon/Indeedee Female</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/pokemon/Gigantamax Venusaur</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -5881,7 +5891,17 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/pokemon/Basculegion Female</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/pokemon/Paldean Wooper</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/pokemon/Oinkologne Female</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6051,7 +6071,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/pokemon/Mega Meowstic</loc>
+    <loc>https://pokemonbuilder.app/pokemon/Mega Meowstic Male</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6107,6 +6127,11 @@
   </url>
   <url>
     <loc>https://pokemonbuilder.app/pokemon/Mega Baxcalibur</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/pokemon/Mega Meowstic Female</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
