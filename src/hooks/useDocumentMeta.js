@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 export const SITE_NAME = 'Pokémon Team Builder';
 export const SITE_URL = 'https://pokemonbuilder.app';
 const DEFAULT_DESCRIPTION = 'Build and share competitive Pokémon teams with a full Pokédex, damage calculator, speed tiers, Smogon sets, and real tournament usage stats.';
-const DEFAULT_IMAGE = `${SITE_URL}/android-chrome-512x512.png`;
+const DEFAULT_IMAGE = `${SITE_URL}/og-image.png`;
 
 function upsertMeta(attr, key, content) {
     let el = document.querySelector(`meta[${attr}="${key}"]`);

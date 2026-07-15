@@ -6,10 +6,15 @@
       "schedule": "0 6 * * *"
     }
   ],
+  "functions": {
+    "api/render-meta.js": {
+      "includeFiles": "dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/((?!api/.*).*)",
-      "destination": "/index.html"
+      "destination": "/api/render-meta"
     }
   ]
 }

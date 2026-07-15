@@ -15,6 +15,10 @@
 [![Firebase](https://img.shields.io/badge/Firebase-7C6AE8?logo=firebase&logoColor=white)](https://firebase.google.com)
 [![PokéAPI](https://img.shields.io/badge/PokéAPI-7C6AE8?logo=pokemon&logoColor=white)](https://pokeapi.co)
 
+<br/>
+<br/>
+<img src="public/og-image.png" width="100%" alt="Pokémon Team Builder Banner">
+
 </div>
 
 so i got tired of using 5 different outdated wikis just to plan a single team... so i built this. it does all the heavy math for you — no clutter, no annoying ads.
