@@ -1,0 +1,40 @@
+#!/usr/bin/env sh
+# commit-msg — exige o padrão Conventional Commits.
+# Formato: <tipo>(escopo opcional)!?: descrição
+# Ex.: feat: adiciona filtro de tipos   |   fix(damage-calc): corrige STAB
+
+msg_file="$1"
+# Primeira linha não-comentário (o assunto do commit).
+subject=$(grep -vE '^#' "$msg_file" | sed '/^[[:space:]]*$/d' | head -n1 || true)
+
+# Permite mensagens automáticas do git (merge/revert) sem validação.
+case "$subject" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*) exit 0 ;;
+esac
+
+tipos='feat|fix|docs|style|refactor|refact|perf|test|build|ci|chore|revert'
+regex="^(${tipos})(\([a-z0-9 ._/-]+\))?!?: .+"
+
+if ! printf '%s' "$subject" | grep -qE "$regex"; then
+  echo "❌ Mensagem de commit fora do padrão Conventional Commits."
+  echo ""
+  echo "   Recebido: \"$subject\""
+  echo ""
+  echo "   Formato esperado: <tipo>(escopo)?: descrição"
+  echo "   Tipos válidos: feat, fix, docs, style, refactor, refact, perf,"
+  echo "                  test, build, ci, chore, revert"
+  echo ""
+  echo "   Exemplos:"
+  echo "     feat: adiciona seletor de natureza"
+  echo "     fix(sprites): corrige carregamento de fêmeas"
+  echo "     refact: reorganiza store do time"
+  exit 1
+fi
+
+# Aviso (não bloqueia) se o assunto for muito longo.
+len=$(printf '%s' "$subject" | wc -c)
+if [ "$len" -gt 72 ]; then
+  echo "⚠️  Assunto com $len caracteres (recomendado <= 72). Commit permitido."
+fi
+
+exit 0

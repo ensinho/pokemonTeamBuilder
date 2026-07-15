@@ -1,0 +1,41 @@
+#!/usr/bin/env sh
+# pre-commit — bloqueia segredos vazados nos arquivos staged.
+# Bypass de emergência (use com cuidado): git commit --no-verify
+
+# Arquivos staged (Adicionados/Copiados/Modificados), ignorando deleções.
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+fail=0
+
+# 1) Bloqueia arquivos de ambiente/segredo pelo nome.
+#    .env.example / .env.sample / .env.template são permitidos (sem segredos reais).
+env_files=$(printf '%s\n' "$staged" | grep -E '(^|/)\.env($|\.)' | grep -vE '\.(example|sample|template)$' || true)
+if [ -n "$env_files" ]; then
+  echo "❌ Arquivo de ambiente com segredos não pode ser commitado:"
+  printf '   - %s\n' $env_files
+  fail=1
+fi
+
+# 2) Escaneia SÓ as linhas adicionadas (+) do diff staged por padrões de alta confiança.
+#    NOTA: chaves 'AIza...' do Firebase Web NÃO são bloqueadas de propósito — elas são
+#    públicas no bundle client-side deste app (config Firebase no front), não são segredo.
+added=$(git diff --cached --unified=0 --diff-filter=ACM -- $staged | grep -E '^\+' | grep -vE '^\+\+\+' || true)
+
+patterns='-----BEGIN[[:space:]]?(RSA|EC|DSA|OPENSSH|PGP)?[[:space:]]?PRIVATE KEY-----|"type"[[:space:]]*:[[:space:]]*"service_account"|"private_key"[[:space:]]*:|AKIA[0-9A-Z]{16}|ghp_[0-9A-Za-z]{36}|github_pat_[0-9A-Za-z_]{22,}|xox[baprs]-[0-9A-Za-z-]{10,}|sk-[0-9A-Za-z]{20,}'
+
+hits=$(printf '%s\n' "$added" | grep -nEi -e "$patterns" || true)
+if [ -n "$hits" ]; then
+  echo "❌ Possível segredo detectado nas alterações staged:"
+  printf '%s\n' "$hits" | sed 's/^/   /'
+  fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "Commit bloqueado. Remova o segredo (use variáveis de ambiente / .env não versionado)."
+  echo "Se for falso-positivo, refaça com: git commit --no-verify"
+  exit 1
+fi
+
+exit 0
