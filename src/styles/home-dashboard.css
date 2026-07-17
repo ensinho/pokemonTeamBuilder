@@ -568,8 +568,10 @@
     border-radius: 50%;
 }
 
-/* Responsiveness Media Queries */
-@media (max-width: 1024px) {
+/* Responsiveness Media Queries. Max-width values are canonical breakpoint − 1
+   (lg 1024 → 1023, md 768 → 767) so they don't overlap the min-width desktop
+   rules at the exact breakpoint pixel. */
+@media (max-width: 1023px) {
     .hd-core-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -581,7 +583,7 @@
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .hd-tiles {
         grid-template-columns: repeat(3, 1fr);
     }

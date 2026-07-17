@@ -945,7 +945,9 @@
 }
 
 .app-shell__body {
-    padding: 1rem;
+    /* Fluid horizontal gutter: 1rem on phones, scaling to 2rem on wide screens
+       so the 1024–1536 laptop band breathes without a hard breakpoint snap. */
+    padding: 1rem clamp(1rem, 0.6rem + 1.2vw, 2rem);
 }
 
 .app-shell__page-frame {
@@ -1037,10 +1039,11 @@
         padding: 1.85rem 1.15rem;
     }
 
-    .app-shell__body,
+    /* Body gutter is handled fluidly on .app-shell__body itself; keep the footer
+       aligned to the same fluid gutter. */
     .app-shell__footer {
-        padding-left: 1.25rem;
-        padding-right: 1.25rem;
+        padding-left: clamp(1rem, 0.6rem + 1.2vw, 2rem);
+        padding-right: clamp(1rem, 0.6rem + 1.2vw, 2rem);
     }
 }
 

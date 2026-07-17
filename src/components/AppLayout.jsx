@@ -17,6 +17,7 @@ import { getStaticPokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
+import { BREAKPOINTS } from '../constants/breakpoints';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useEdgeSwipe } from '../hooks/useEdgeSwipe';
@@ -149,6 +150,24 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon }) => {
     );
 };
 
+// Sidebar collapse preference. A fresh key (not the legacy 'ptb-sidebar-collapsed',
+// which was auto-persisted on every change) so that only a *deliberate* toggle
+// counts as a preference; absence means "let the viewport width decide".
+const SIDEBAR_COLLAPSE_KEY = 'ptb-sidebar-collapse-pref';
+
+// Returns the user's explicit choice (true/false), or null when they haven't
+// made one — in which case we auto-decide from the viewport width.
+const readSidebarCollapsePref = () => {
+    try {
+        const v = window.localStorage.getItem(SIDEBAR_COLLAPSE_KEY);
+        return v === '1' ? true : v === '0' ? false : null;
+    } catch { return null; }
+};
+
+// On the small-laptop band (1024–1279px) the fixed sidebar steals too much
+// width, so default it to the icon rail. At ≥1280px there's room to expand it.
+const autoCollapseForWidth = (w) => w >= BREAKPOINTS.lg && w < BREAKPOINTS.xl;
+
 const AUTH_SPLASH_MESSAGES = [
     'Checking if you are who you say you are',
     'Verifying trainer credentials',
@@ -228,25 +247,28 @@ export default function AppLayout() {
     // UI Local States
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window !== 'undefined') {
-            return window.innerWidth >= 1024;
+            return window.innerWidth >= BREAKPOINTS.lg;
         }
         return false;
     });
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         if (typeof window === 'undefined') return false;
-        try { return window.localStorage.getItem('ptb-sidebar-collapsed') === '1'; }
-        catch { return false; }
+        const pref = readSidebarCollapsePref();
+        if (pref !== null) return pref;                 // deliberate choice wins
+        return autoCollapseForWidth(window.innerWidth); // otherwise decide by width
     });
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
     const [showVersionModal, setShowVersionModal] = useState(false);
 
-    // Persist desktop sidebar collapse state so it survives reloads.
-    useEffect(() => {
-        try { window.localStorage.setItem('ptb-sidebar-collapsed', isSidebarCollapsed ? '1' : '0'); }
+    // Explicit collapse/expand from the sidebar controls. Persists the choice so
+    // it overrides the width-based auto behavior from then on.
+    const setSidebarCollapsedManual = useCallback((val) => {
+        setIsSidebarCollapsed(val);
+        try { window.localStorage.setItem(SIDEBAR_COLLAPSE_KEY, val ? '1' : '0'); }
         catch { /* ignore */ }
-    }, [isSidebarCollapsed]);
+    }, []);
 
     // PWA SW registration & update prompt
     const {
@@ -324,11 +346,16 @@ export default function AppLayout() {
         };
     }, []);
 
-    // Track mobile viewport
-    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+    // Track viewport tier, and auto-collapse the sidebar on the small-laptop band
+    // (1024–1279) — but only while the user hasn't set an explicit preference.
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < BREAKPOINTS.lg : false);
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(window.innerWidth < 1024);
+            const w = window.innerWidth;
+            setIsMobile(w < BREAKPOINTS.lg);
+            if (w >= BREAKPOINTS.lg && readSidebarCollapsePref() === null) {
+                setIsSidebarCollapsed(autoCollapseForWidth(w));
+            }
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
@@ -1005,7 +1032,7 @@ export default function AppLayout() {
                                 {isSidebarCollapsed && (
                                     <div className="app-shell__sidebar-controls is-collapsed">
                                         <button
-                                            onClick={() => setIsSidebarCollapsed(false)}
+                                            onClick={() => setSidebarCollapsedManual(false)}
                                             type="button"
                                             aria-label={t('layout.expandSidebar')}
                                             title={t('layout.expandSidebar')}
@@ -1066,7 +1093,7 @@ export default function AppLayout() {
 
                                 {!isSidebarCollapsed && (
                                     <button
-                                        onClick={() => setIsSidebarCollapsed(true)}
+                                        onClick={() => setSidebarCollapsedManual(true)}
                                         type="button"
                                         aria-label={t('layout.collapseSidebar')}
                                         title={t('layout.collapseSidebar')}
