@@ -40,6 +40,27 @@
     --radius-md: 0.5rem;    /* 8px  — buttons, inputs */
     --radius-lg: 0.75rem;   /* 12px — cards */
     --radius-xl: 1rem;      /* 16px — panels, modals */
+    --radius-full: 9999px;  /* pills, avatars, circular controls */
+
+    /* Typography scale — canonical font sizes. CSS files and inline styles
+       should pull from these instead of hardcoding rem values. Tailwind's own
+       text-* utilities are intentionally left untouched to avoid churn; adopt
+       these in hand-written CSS (var(--text-sm)) as views are refactored. */
+    --text-2xs:  0.625rem;   /* 10px — uppercase eyebrow/stat labels */
+    --text-xs:   0.75rem;    /* 12px — captions, badges, meta */
+    --text-sm:   0.8125rem;  /* 13px — secondary text, nav items */
+    --text-base: 0.875rem;   /* 14px — body, buttons, inputs */
+    --text-md:   1rem;       /* 16px — card titles, stat values */
+    --text-lg:   1.125rem;   /* 18px — section headings */
+    --text-xl:   1.35rem;    /* 21.6px — panel titles */
+    --text-2xl:  1.65rem;    /* 26.4px — hero subtitles */
+    --text-3xl:  clamp(2rem, 1.4rem + 3vw, 3rem); /* fluid hero headline */
+
+    /* Canonical responsive breakpoints (px). CSS custom properties cannot be
+       used inside @media conditions, so these mirror tailwind.config.js
+       `screens` and src/constants/breakpoints.js. Hand-written media queries
+       should use these exact values (documentary — do not consume as vars):
+         sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536 */
 
     /* Z-index stacking layer */
     --z-content:         10;
@@ -234,6 +255,14 @@
     --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+
+    /* Semantic shadow aliases. These resolve against the active theme's
+       --elevation-* at use-time (var() is late-bound), so a single definition
+       here works for every theme. Prefer these names in component CSS. */
+    --shadow-sm: var(--elevation-1);
+    --shadow-md: var(--elevation-2);
+    --shadow-lg: var(--elevation-3);
+    --shadow-xl: var(--elevation-4);
 }
 
 html, body {

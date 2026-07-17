@@ -5,6 +5,19 @@ export default {
         './src/**/*.{js,ts,jsx,tsx}',
     ],
     theme: {
+        // Canonical responsive breakpoints — the single source of truth for the
+        // whole app. These equal Tailwind's defaults (so no existing utility
+        // changes), but declaring them explicitly documents intent and keeps
+        // hand-written CSS media queries + src/constants/breakpoints.js in sync.
+        //   sm  tablet portrait      md  tablet landscape
+        //   lg  small laptop start   xl  desktop            2xl  large desktop
+        screens: {
+            sm: '640px',
+            md: '768px',
+            lg: '1024px',
+            xl: '1280px',
+            '2xl': '1536px',
+        },
         extend: {
             // Semantic, theme-aware tokens. Backed by CSS variables defined
             // in src/index.css under :root[data-theme="..."]. Switching theme
