@@ -1,0 +1,53 @@
+name: Refresh competitive data
+
+# The site is a static GitHub Pages build, so the baked datasets
+# (public/data/*.json — Smogon usage, VGCPastes tournament teams, move types,
+# Smogon sets) only change when the site is rebuilt & redeployed. This workflow
+# does that on a schedule so the live meta stays current without a manual deploy.
+#
+# Cadence: daily. Smogon usage stats refresh roughly monthly (the build auto-picks
+# the latest available month), but VGCPastes tournament teams change more often, so
+# a daily rebuild keeps both fresh. Also runnable on demand from the Actions tab.
+
+on:
+  schedule:
+    - cron: '30 7 * * *' # 07:30 UTC daily
+  workflow_dispatch: {}
+
+# Allow the deploy action to push the built site to the gh-pages branch.
+permissions:
+  contents: write
+
+# Never run two deploys at once; a newer run supersedes an in-flight one.
+concurrency:
+  group: refresh-data-deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Rebuild datasets + site
+        # `prebuild` regenerates public/data/*.json from Smogon, VGCPastes,
+        # PokéAPI and Pokémon Showdown; then Vite builds dist/. The data scripts
+        # are build-safe (they keep the previous data if a source is briefly down).
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
