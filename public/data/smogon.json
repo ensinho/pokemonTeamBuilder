@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-13T19:09:18.083Z",
+  "generatedAt": "2026-07-17T22:54:34.166Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -403,35 +403,34 @@
           "source": "PU"
         },
         {
-          "name": "All-Out Attacker",
-          "item": "heavy-duty-boots",
+          "name": "Drought Wallbreaker",
+          "item": "charizardite-y",
           "itemAlts": [],
           "ability": "",
           "nature": "timid",
-          "tera": [
-            "ground"
-          ],
+          "tera": [],
           "moves": [
             [
-              "hurricane"
+              "weather-ball",
+              "fire-blast"
             ],
             [
-              "flamethrower"
+              "solar-beam"
             ],
             [
               "scorching-sands",
-              "roar"
+              "focus-blast"
             ],
             [
-              "will-o-wisp"
+              "roost"
             ]
           ],
           "evs": {
             "hp": 0,
             "attack": 0,
-            "defense": 0,
+            "defense": 4,
             "special-attack": 252,
-            "special-defense": 4,
+            "special-defense": 0,
             "speed": 252
           },
           "ivs": {
@@ -443,8 +442,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Charizard's high Speed, great Special Attack, and unique offensive and defensive typing make it a great all-out attacker, checking many common Grass-types like Whimsicott and Venusaur. Charizard's Hurricane is one of its strongest attacks and has few common resistances. Flamethrower has more reliable accuracy than…",
-          "source": "ZU"
+          "description": "Mega Charizard Y's immense power combined with Drought makes it an extremely dangerous wallbreaker that threatens common defensive staples like Alomomola, Melmetal, and Ferrothorn while also supporting its teammates via sun. Weather Ball is the preferred Fire-type STAB move, as it is perfectly accurate, quite…",
+          "source": "Nat Dex"
         }
       ]
     },
@@ -5330,7 +5329,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nSince Close Combat nails Steel-types like Registeel, Orthworm, and Tera Steel Sylveon, it complements Dual Wingbeat almost perfectly. Trailblaze allows Scyther to boost its Speed, letting it outpace and deal with faster Pokemon such as Kilowattrel, Cinccino, and Inteleon. Since on hyper offense builds…",
+          "description": "Set Details\nSince Close Combat nails Steel-types like Duraludon, Orthworm, and Tera Steel Sylveon, it complements Dual Wingbeat almost perfectly. Trailblaze allows Scyther to boost its Speed, letting it outpace and deal with faster Pokemon such as Kilowattrel, Cinccino, and Inteleon. Since on hyper offense builds…",
           "source": "NU"
         },
         {
@@ -5377,7 +5376,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nU-turn lets Scyther pivot out of bad matchups against Bronzong, Galarian Slowbro, and Registeel while allowing it to maintain momentum. Close Combat targets the Steel-types that resist and try to switch into Scyther's STAB moves. Swords Dance allows Scyther to take advantage of a free turn, and it lets…",
+          "description": "Set Details\nU-turn lets Scyther pivot out of bad matchups against Bronzong, Galarian Slowbro, and Duraludon while allowing it to maintain momentum. Close Combat targets the Steel-types that resist and try to switch into Scyther's STAB moves. Swords Dance allows Scyther to take advantage of a free turn, and it lets…",
           "source": "NU"
         }
       ]
@@ -6196,7 +6195,8 @@
           "nature": "bold",
           "tera": [
             "poison",
-            "dark"
+            "dark",
+            "fairy"
           ],
           "moves": [
             [
@@ -6210,6 +6210,7 @@
             ],
             [
               "flip-turn",
+              "roar",
               "haze"
             ]
           ],
@@ -6230,7 +6231,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFlip Turn allows Vaporeon to pivot in teammates for free and more easily pass Wish. Alternatively, Haze gives Vaporeon an option to prevent opposing setup sweepers like Calm Mind Cresselia and Iron Defense Registeel from boosting out of control. Leftovers gives Vaporeon additional healing, particularly in…",
+          "description": "Set Details\nFlip Turn allows Vaporeon to pivot in teammates for free and more easily pass Wish. Alternatively, Roar gives Vaporeon an option to prevent opposing setup sweepers like Nasty Plot Uxie and Calm Mind Sylveon from boosting out of control. However, Haze can be used to avoid Throat Chop blocking sound moves…",
           "source": "NU"
         }
       ]
@@ -9201,17 +9202,15 @@
           "source": "OU"
         },
         {
-          "name": "Defensive Pivot",
+          "name": "Specially Defensive Pivot",
           "item": "heavy-duty-boots",
           "itemAlts": [
-            "colbur-berry",
-            "black-sludge"
+            "colbur-berry"
           ],
           "ability": "regenerator",
           "nature": "sassy",
           "tera": [
             "water",
-            "grass",
             "fairy"
           ],
           "moves": [
@@ -9229,17 +9228,15 @@
             [
               "thunder-wave",
               "toxic",
-              "flamethrower",
-              "ice-beam",
-              "trick"
+              "flamethrower"
             ]
           ],
           "evs": {
-            "hp": 0,
+            "hp": 252,
             "attack": 0,
-            "defense": 0,
+            "defense": 4,
             "special-attack": 0,
-            "special-defense": 0,
+            "special-defense": 252,
             "speed": 0
           },
           "ivs": {
@@ -9251,7 +9248,7 @@
             "speed": 0
           },
           "level": null,
-          "description": "Galarian Slowking utilizes its great bulk, Regenerator, and excellent defensive typing as a valuable slow defensive pivot that can bring its teammates in safely via Chilly Reception. Future Sight is used to support its wallbreaking teammates, as it can apply immense delayed pressure onto targets like Pecharunt,…",
+          "description": "",
           "source": "OU"
         },
         {
@@ -13398,7 +13395,9 @@
         {
           "name": "Utility Tank",
           "item": "leftovers",
-          "itemAlts": [],
+          "itemAlts": [
+            "rocky-helmet"
+          ],
           "ability": "",
           "nature": "careful",
           "tera": [
@@ -13439,7 +13438,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nFlip Turn allows Swampert to pivot out and bring in teammates to make progress. Knock Off supplies utility against foes that Swampert cannot hit well with its STAB moves, and it cripples item-reliant foes like Munkidori, Talonflame, and Avalugg. However, Roar prevents Swampert's passivity from getting…",
+          "description": "Set Details\nFlip Turn allows Swampert to pivot out and bring in teammates to make progress. Knock Off supplies utility against foes that Swampert cannot hit well with its STAB moves, and it cripples item-reliant foes like Munkidori, Duraludon, and Avalugg. However, Roar prevents Swampert's passivity from getting taken…",
           "source": "NU"
         },
         {
@@ -15818,7 +15817,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nPerish Song and Fire Spin let Altaria trap and KO foes that lack pivot moves, such as Bronzong, Amoonguss, and Gastrodon. Roost lets it heal up and stall turns until Perish Song kicks in. However, Rest can also be used, since Altaria's Natural Cure allows it to heal to full HP and then switch out while…",
+          "description": "Set Details\nPerish Song and Fire Spin let Altaria trap and KO foes that lack pivot moves, such as Bronzong, Amoonguss, and Wo-Chien. Roost lets it heal up and stall turns until Perish Song kicks in. However, Rest can also be used, since Altaria's Natural Cure allows it to heal to full HP and then switch out while…",
           "source": "NU"
         },
         {
@@ -22196,7 +22195,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Magmortar finds a place in the tier as a dangerous special attacker with a plethora of good coverage moves. Scorching Sands lets Magmortar hit other Fire-types such as Typhlosion and Camerupt as well as Rock-types like Regirock and Lycanroc. Thunderbolt damages Flying-types like Charizard and Drifblim and Water-types…",
+          "description": "Magmortar finds a place in the tier as a dangerous special attacker with a plethora of good coverage moves. Scorching Sands lets Magmortar hit other Fire-types such as Typhlosion and Camerupt as well as Rock-types like Regirock and Lycanroc. Thunderbolt damages Flying-types like Drifblim and Water-types like…",
           "source": "ZU"
         }
       ]
@@ -27965,7 +27964,8 @@
           "ability": "technician",
           "nature": "jolly",
           "tera": [
-            "ghost"
+            "ghost",
+            "fairy"
           ],
           "moves": [
             [
@@ -27975,13 +27975,12 @@
               "tail-slap"
             ],
             [
-              "knock-off",
-              "bullet-seed"
+              "knock-off"
             ],
             [
               "encore",
-              "endeavor",
-              "triple-axel"
+              "bullet-seed",
+              "endeavor"
             ]
           ],
           "evs": {
@@ -28001,7 +28000,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nKnock Off hits Ghost-types that blank Cinccino's STAB attack as well as Bronzong, and Bullet Seed hits certain physically defensive checks like Swampert, Vaporeon, and Milotic. Encore allows Cinccino to take advantage of passive Pokemon like Swampert, Bronzong, and Palossand that use Stealth Rock or heal…",
+          "description": "Set Details\nKnock Off hits Ghost-types that blank Cinccino's STAB attack as well as Bronzong. Encore allows Cinccino to take advantage of passive Pokemon like Swampert, Bronzong, and Palossand that use Stealth Rock or heal up, which gifts it more setup opportunities. It also helps Cinccino handle slower setup sweepers…",
           "source": "NU"
         },
         {
@@ -37041,7 +37040,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nGiga Drain, along with Roost, provides Decidueye with additional longevity, but Leaf Storm can provide immediate power to surprise opponents expecting physically offensive Decidueye sets. U-turn allows Decidueye to pivot on opposing Competitive Pokemon like Kilowattrel and Galarian Articuno that might…",
+          "description": "Set Details\nGiga Drain, along with Roost, provides Decidueye with additional longevity, but Leaf Storm can provide immediate power to surprise opponents expecting physically offensive Decidueye sets. U-turn allows Decidueye to pivot on opposing Competitive and Defiant Pokemon like Kilowattrel and Tornadus that might…",
           "source": "NU"
         },
         {
@@ -39271,7 +39270,7 @@
     "763": {
       "name": "Tsareena",
       "gen": "RU",
-      "overview": "Tsareena is NU's best entry hazard remover, and for good reason: it easily beats the plethora of Grass-weak hazard setters like Rhyperior, Swampert, and Diancie, and even Steel-types such as Klefki and Registeel are inconsistent at beating it one-on-one. While offensive Tsareena profiles as a solid wallbreaker that…",
+      "overview": "Tsareena is a decent entry hazard remover: it easily beats the plethora of Grass-weak hazard setters like Rhyperior, Swampert, and Mudsdale, and even Steel-types such as Klefki are inconsistent at beating it one-on-one. While offensive Tsareena profiles as a solid wallbreaker that can take over games thanks to Rapid…",
       "sets": [
         {
           "name": "Offensive Spinner",
@@ -39411,7 +39410,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nTsareena doubles as a source of entry hazard removal and a potent wallbreaker. Knock Off punishes switch-ins such as Talonflame and Magnezone while obliterating Chandelure, and Triple Axel deletes opposing Grass-types like Vileplume, Venusaur, and Rotom-C as well as Noivern. If you wish to tap further into…",
+          "description": "Set Details\nTsareena doubles as a source of entry hazard removal and a potent wallbreaker. Knock Off punishes switch-ins such as Chandelure, and Triple Axel deletes opposing Grass-types like Brambleghast, Whimsicott, and Rotom-C as well as Flygon. If you wish to tap further into Tsareena's utility movepool, U-turn is…",
           "source": "NU"
         },
         {
@@ -39459,7 +39458,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nBulky Tsareena is one of the tier's few good answers to the plethora of offensive Ground-types in NU, such as Flygon, Krookodile, and Rhyperior. Although they possess super effective coverage moves for it, they can't OHKO it, and Synthesis keeps Tsareena healthy throughout the game so it can stay out of KO…",
+          "description": "Set Details\nBulky Tsareena is one of the tier's few good answers to the plethora of offensive Ground-types in NU, such as Flygon and Rhyperior. Although they possess super effective coverage moves for it, they can't OHKO it, and Synthesis keeps Tsareena healthy throughout the game so it can stay out of KO range from…",
           "source": "NU"
         }
       ]
@@ -45512,7 +45511,7 @@
     "879": {
       "name": "Copperajah",
       "gen": "NU",
-      "overview": "Copperajah stands out from the other Steel-types for being a defensive tank that packs both firepower and utility. It checks special wallbreakers like Diancie, Munkidori, and Porygon-Z. Additionally, Copperajah's deep movepool gives it a lot of utility options. For example, Knock Off allows it to hit item-reliant…",
+      "overview": "Copperajah stands out from the other Steel-types for being a defensive tank that packs both firepower and utility. It checks special wallbreakers like Sylveon, Munkidori, and Dudunsparce. Additionally, Copperajah's deep movepool gives it a lot of utility options. For example, Knock Off allows it to hit item-reliant…",
       "sets": [
         {
           "name": "Stealth Rock",
@@ -45557,7 +45556,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Set Details\nKnock Off allows Copperajah to target item-reliant foes like Rotom-H, Kilowattrel, and Incineroar. For its last move, Copperajah commonly runs Whirlwind, allowing it to phaze bulky setup sweepers like Calm Mind Cresselia and Sylveon. Alternatively, Protect allows Copperajah to scout out Choice item…",
+          "description": "Set Details\nKnock Off allows Copperajah to target item-reliant foes like Chandelure, Kilowattrel, and Incineroar. For its last move, Copperajah commonly runs Whirlwind, allowing it to phaze bulky setup sweepers like Calm Mind Dudunsparce and Sylveon. Alternatively, Protect allows Copperajah to scout out Choice item…",
           "source": "NU"
         },
         {
@@ -48803,6 +48802,49 @@
           "source": "OU"
         },
         {
+          "name": "Substitute + 3 Attacks",
+          "item": "life-orb",
+          "itemAlts": [],
+          "ability": "contrary",
+          "nature": "modest",
+          "tera": [
+            "fairy"
+          ],
+          "moves": [
+            [
+              "substitute"
+            ],
+            [
+              "moonblast"
+            ],
+            [
+              "earth-power"
+            ],
+            [
+              "draining-kiss"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "OU"
+        },
+        {
           "name": "Calm Mind",
           "item": "leftovers",
           "itemAlts": [
@@ -48849,49 +48891,6 @@
           },
           "level": null,
           "description": "Calm Mind Enamorus-T is a niche setup sweeper that leverages its high Special Attack and bulk to trade against tier staples like Ting-Lu, Dragonite, and Great Tusk. Earth Power is necessary coverage to hit targets like Gholdengo, Iron Moth, and Galarian Slowking, all of which could otherwise check Enamorus-T, while…",
-          "source": "OU"
-        },
-        {
-          "name": "Choice Specs",
-          "item": "choice-specs",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "quiet",
-          "tera": [
-            "fairy"
-          ],
-          "moves": [
-            [
-              "moonblast"
-            ],
-            [
-              "earth-power"
-            ],
-            [
-              "mystical-fire"
-            ],
-            [
-              "draining-kiss"
-            ]
-          ],
-          "evs": {
-            "hp": 248,
-            "attack": 0,
-            "defense": 8,
-            "special-attack": 252,
-            "special-defense": 0,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 0,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 0
-          },
-          "level": null,
-          "description": "Choice Specs Enamorus-T is a powerhouse under Trick Room with respectable bulk, which helps it to check top threats like Great Tusk by avoiding a 2HKO from Ice Spinner, and an immunity to Spikes. Moonblast threatens an OHKO on Fairy-weak Pokemon with the notable exceptions of a 2HKO on Ting-Lu and Assault Vest…",
           "source": "OU"
         }
       ]
@@ -51056,35 +51055,33 @@
           "source": "OU"
         },
         {
-          "name": "Bulk Up",
-          "item": "covert-cloak",
+          "name": "Swords Dance (Fire)",
+          "item": "focus-sash",
           "itemAlts": [],
-          "ability": "",
-          "nature": "careful",
-          "tera": [
-            "bug"
-          ],
+          "ability": "weak-armor",
+          "nature": "jolly",
+          "tera": [],
           "moves": [
             [
-              "bulk-up"
+              "swords-dance"
+            ],
+            [
+              "poltergeist"
             ],
             [
               "bitter-blade"
             ],
             [
               "shadow-sneak"
-            ],
-            [
-              "taunt"
             ]
           ],
           "evs": {
-            "hp": 252,
-            "attack": 0,
+            "hp": 0,
+            "attack": 252,
             "defense": 0,
             "special-attack": 0,
-            "special-defense": 172,
-            "speed": 84
+            "special-defense": 4,
+            "speed": 252
           },
           "ivs": {
             "hp": 31,
@@ -51095,8 +51092,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "Ceruledge is a terrifying sweeper, particularly good against balance teams, with Bulk Up, the longevity from Bitter Blade, and a unique set of traits catered to take advantage of common balance team staples such as Garganacl and Alomomola. Shadow Sneak allows Ceruledge to pick off faster targets like Dragapult and…",
-          "source": "OU"
+          "description": "Ceruledge is an exceptional wallbreaker on Fire teams with its access to strong STAB moves and priority. Swords Dance allows it to set up quickly, enabling it to break walls like Iron Hands and Hisuian Goodra with relative ease. Bitter Blade allows Ceruledge to re-enable its Focus Sash if it's not already consumed.…",
+          "source": "Monotype"
         }
       ]
     },
@@ -51752,7 +51749,7 @@
     "947": {
       "name": "Brambleghast",
       "gen": "NU",
-      "overview": "Brambleghast is a premier Rapid Spin user in NU thanks to its high-Base Power STAB moves, typing that lets it beat common entry hazard setters like Swampert, Diancie, and Bronzong one-on-one, and solid Speed. Brambleghast's useful Wind Rider ability lets it block a possible Hurricane from Kilowattrel and Tornadus.…",
+      "overview": "Brambleghast is a premier Rapid Spin user in NU thanks to its high-Base Power STAB moves, typing that lets it beat common entry hazard setters like Swampert, Rhyperior, and Bronzong one-on-one, and solid Speed. Brambleghast's useful Wind Rider ability lets it block a possible Hurricane from Kilowattrel and Tornadus.…",
       "sets": [
         {
           "name": "Offensive Utility",
@@ -53897,7 +53894,7 @@
     "972": {
       "name": "Houndstone",
       "gen": "UU",
-      "overview": "Houndstone establishes itself in NU as an incredibly reliable spinblocker and defensive presence, being able to prevent Rapid Spin from the likes of Tsareena while taking on dangerous attackers such as Flamigo and Barraskewda effortlessly. Houndstone is able to utilize its switch-in opportunities to generate progress…",
+      "overview": "Houndstone establishes itself in NU as an incredibly reliable spinblocker and defensive presence, being able to prevent Rapid Spin from the likes of Tsareena while taking on dangerous attackers such as Flamigo and Scyther effortlessly. Houndstone is able to utilize its switch-in opportunities to generate progress via…",
       "sets": [
         {
           "name": "Sand Sweeper",
@@ -55126,7 +55123,8 @@
               "recover"
             ],
             [
-              "toxic"
+              "toxic",
+              "poison-jab"
             ],
             [
               "amnesia",
@@ -55151,7 +55149,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "With high special bulk, a useful typing, and an excellent ability in Unaware, Clodsire is one of the best special walls in OU, checking special setup sweepers like non-Draco Meteor Raging Bolt, Darkrai, and Iron Moth. Toxic puts the aforementioned threats as well as otherwise safe switch-ins and foes that can threaten…",
+          "description": "With high special bulk, a useful typing, and an excellent ability in Unaware, Clodsire is one of the best special walls in OU, checking special setup sweepers like non-Draco Meteor Raging Bolt, Darkrai, and Iron Moth. Toxic puts the aforementioned threats on a timer, as well as otherwise safe switch-ins and foes that…",
           "source": "OU"
         },
         {
