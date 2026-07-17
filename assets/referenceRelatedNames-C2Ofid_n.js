@@ -1,0 +1,1 @@
+const e=a=>typeof a=="string"?a:a==null?void 0:a.name;function f(a,l,u){return async r=>{if(!r||!Array.isArray(a)||a.length===0)return null;const t=a.find(i=>i.name===r||i.apiName===r);if(!t)return null;const s=await l(t.id),n=s==null?void 0:s[u];return Array.isArray(n)?n.map(e).filter(Boolean):null}}export{f as m};

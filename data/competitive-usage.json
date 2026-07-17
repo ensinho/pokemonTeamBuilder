@@ -1,0 +1,6260 @@
+{
+  "generatedAt": "2026-07-17T22:54:24.708Z",
+  "source": "pokepaste sets from tournament teams",
+  "species": 58,
+  "totalTeams": 120,
+  "byId": {
+    "3": {
+      "n": 3,
+      "teams": 3,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 2
+        },
+        {
+          "name": "Venusaurite",
+          "slug": "venusaurite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Chlorophyll",
+          "count": 3
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Sludge Bomb",
+          "count": 3
+        },
+        {
+          "name": "Earth Power",
+          "count": 3
+        },
+        {
+          "name": "Protect",
+          "count": 3
+        },
+        {
+          "name": "Sleep Powder",
+          "count": 2
+        },
+        {
+          "name": "Giga Drain",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": {
+            "def": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 21,
+            "spa": 31,
+            "spe": 14
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 2
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 2
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 2
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 2
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 2
+        },
+        {
+          "id": 227,
+          "name": "Skarmory-Mega",
+          "count": 1
+        },
+        {
+          "id": 302,
+          "name": "Sableye",
+          "count": 1
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 1
+        }
+      ]
+    },
+    "6": {
+      "n": 46,
+      "teams": 46,
+      "items": [
+        {
+          "name": "Charizardite Y",
+          "slug": "charizardite-y",
+          "count": 44
+        },
+        {
+          "name": "Charizardite X",
+          "slug": "charizardite-x",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Blaze",
+          "count": 34
+        },
+        {
+          "name": "Solar Power",
+          "count": 9
+        },
+        {
+          "name": "Drought",
+          "count": 3
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 46
+        },
+        {
+          "name": "Heat Wave",
+          "count": 44
+        },
+        {
+          "name": "Weather Ball",
+          "count": 43
+        },
+        {
+          "name": "Solar Beam",
+          "count": 40
+        },
+        {
+          "name": "Blast Burn",
+          "count": 2
+        },
+        {
+          "name": "Flare Blitz",
+          "count": 2
+        },
+        {
+          "name": "Dragon Claw",
+          "count": 2
+        },
+        {
+          "name": "Dragon Dance",
+          "count": 2
+        },
+        {
+          "name": "Helping Hand",
+          "count": 1
+        },
+        {
+          "name": "Air Slash",
+          "count": 1
+        },
+        {
+          "name": "Hurricane",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 22
+        },
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 4
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 24,
+            "def": 14,
+            "spa": 11,
+            "spe": 17
+          },
+          "count": 3
+        }
+      ],
+      "teammates": [
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 41
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 34
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 22
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 19
+        },
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "count": 17
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "count": 14
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 13
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 11
+        }
+      ]
+    },
+    "9": {
+      "n": 4,
+      "teams": 4,
+      "items": [
+        {
+          "name": "Blastoisinite",
+          "slug": "blastoisinite",
+          "count": 4
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Rain Dish",
+          "count": 4
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Water Spout",
+          "count": 4
+        },
+        {
+          "name": "Protect",
+          "count": 3
+        },
+        {
+          "name": "Dark Pulse",
+          "count": 3
+        },
+        {
+          "name": "Shell Smash",
+          "count": 3
+        },
+        {
+          "name": "Aura Sphere",
+          "count": 1
+        },
+        {
+          "name": "Fake Out",
+          "count": 1
+        },
+        {
+          "name": "Dragon Pulse",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 15,
+            "spa": 32,
+            "spe": 19
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 13,
+            "spa": 32,
+            "spd": 1,
+            "spe": 20
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 2
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 2
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 1
+        },
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "count": 1
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 1
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 1
+        }
+      ]
+    },
+    "38": {
+      "n": 2,
+      "teams": 2,
+      "items": [
+        {
+          "name": "Never-Melt Ice",
+          "slug": "never-melt-ice",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Snow Warning",
+          "count": 2
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Blizzard",
+          "count": 2
+        },
+        {
+          "name": "Encore",
+          "count": 2
+        },
+        {
+          "name": "Protect",
+          "count": 2
+        },
+        {
+          "name": "Disable",
+          "count": 1
+        },
+        {
+          "name": "Freeze-Dry",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 13,
+            "def": 3,
+            "spa": 18,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 2
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 2
+        },
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 1
+        },
+        {
+          "id": 970,
+          "name": "Glimmora",
+          "count": 1
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 1
+        },
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 1
+        }
+      ]
+    },
+    "59": {
+      "n": 7,
+      "teams": 7,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 7
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Rock Head",
+          "count": 7
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 7
+        },
+        {
+          "name": "Flare Blitz",
+          "count": 7
+        },
+        {
+          "name": "Head Smash",
+          "count": 7
+        },
+        {
+          "name": "Rock Slide",
+          "count": 4
+        },
+        {
+          "name": "Extreme Speed",
+          "count": 3
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 6
+        },
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 1,
+            "atk": 32,
+            "def": 1,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 6
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 4
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 4
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 4
+        },
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 3
+        },
+        {
+          "id": 823,
+          "name": "Corviknight",
+          "count": 3
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 3
+        },
+        {
+          "id": 635,
+          "name": "Hydreigon",
+          "count": 2
+        }
+      ]
+    },
+    "94": {
+      "n": 7,
+      "teams": 7,
+      "items": [
+        {
+          "name": "Gengarite",
+          "slug": "gengarite",
+          "count": 6
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Cursed Body",
+          "count": 7
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Shadow Ball",
+          "count": 6
+        },
+        {
+          "name": "Perish Song",
+          "count": 6
+        },
+        {
+          "name": "Protect",
+          "count": 6
+        },
+        {
+          "name": "Disable",
+          "count": 4
+        },
+        {
+          "name": "Sludge Bomb",
+          "count": 3
+        },
+        {
+          "name": "Icy Wind",
+          "count": 1
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        },
+        {
+          "name": "Taunt",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 30,
+            "def": 1,
+            "spa": 1,
+            "spd": 28,
+            "spe": 6
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 32,
+            "def": 19,
+            "spd": 15
+          },
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 30,
+            "def": 19,
+            "spd": 12,
+            "spe": 5
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 6
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 4
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 4
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 3
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "count": 3
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 2
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 2
+        },
+        {
+          "id": 959,
+          "name": "Tinkaton",
+          "count": 2
+        }
+      ]
+    },
+    "115": {
+      "n": 3,
+      "teams": 3,
+      "items": [
+        {
+          "name": "Kangaskhanite",
+          "slug": "kangaskhanite",
+          "count": 3
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Scrappy",
+          "count": 3
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Double-Edge",
+          "count": 3
+        },
+        {
+          "name": "Fake Out",
+          "count": 3
+        },
+        {
+          "name": "Low Kick",
+          "count": 2
+        },
+        {
+          "name": "Ice Punch",
+          "count": 2
+        },
+        {
+          "name": "Sucker Punch",
+          "count": 1
+        },
+        {
+          "name": "Hammer Arm",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 1
+        },
+        {
+          "nature": "Brave",
+          "evs": {
+            "hp": 32,
+            "atk": 32,
+            "def": 1,
+            "spd": 1
+          },
+          "count": 1
+        },
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 3
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 2
+        },
+        {
+          "id": 460,
+          "name": "Abomasnow-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 475,
+          "name": "Gallade",
+          "count": 1
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 1
+        },
+        {
+          "id": 730,
+          "name": "Primarina",
+          "count": 1
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 1
+        }
+      ]
+    },
+    "130": {
+      "n": 2,
+      "teams": 2,
+      "items": [
+        {
+          "name": "Gyaradosite",
+          "slug": "gyaradosite",
+          "count": 1
+        },
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Intimidate",
+          "count": 2
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Waterfall",
+          "count": 2
+        },
+        {
+          "name": "Lash Out",
+          "count": 1
+        },
+        {
+          "name": "Dragon Dance",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Taunt",
+          "count": 1
+        },
+        {
+          "name": "Thunder Wave",
+          "count": 1
+        },
+        {
+          "name": "Helping Hand",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 19,
+            "atk": 15,
+            "def": 1,
+            "spd": 1,
+            "spe": 30
+          },
+          "count": 1
+        },
+        {
+          "nature": "Impish",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 2
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 1
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 1
+        },
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 1
+        },
+        {
+          "id": 530,
+          "name": "Excadrill",
+          "count": 1
+        },
+        {
+          "id": 823,
+          "name": "Corviknight",
+          "count": 1
+        }
+      ]
+    },
+    "142": {
+      "n": 24,
+      "teams": 24,
+      "items": [
+        {
+          "name": "Aerodactylite",
+          "slug": "aerodactylite",
+          "count": 15
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 9
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Unnerve",
+          "count": 24
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Rock Slide",
+          "count": 24
+        },
+        {
+          "name": "Tailwind",
+          "count": 24
+        },
+        {
+          "name": "Dual Wingbeat",
+          "count": 18
+        },
+        {
+          "name": "Protect",
+          "count": 16
+        },
+        {
+          "name": "Wide Guard",
+          "count": 12
+        },
+        {
+          "name": "Sunny Day",
+          "count": 1
+        },
+        {
+          "name": "Ice Fang",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 13
+        },
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 4
+        },
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 32,
+            "atk": 6,
+            "def": 2,
+            "spe": 26
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 21
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 21
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 17
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "count": 17
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 9
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 6
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 5
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 3
+        }
+      ]
+    },
+    "143": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Leftovers",
+          "slug": "leftovers",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Thick Fat",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Double-Edge",
+          "count": 1
+        },
+        {
+          "name": "High Horsepower",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Yawn",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Relaxed",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 970,
+          "name": "Glimmora",
+          "count": 1
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 1
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        }
+      ]
+    },
+    "149": {
+      "n": 12,
+      "teams": 12,
+      "items": [
+        {
+          "name": "Dragoninite",
+          "slug": "dragoninite",
+          "count": 9
+        },
+        {
+          "name": "Dragon Fang",
+          "slug": "dragon-fang",
+          "count": 2
+        },
+        {
+          "name": "Lum Berry",
+          "slug": "lum-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Multiscale",
+          "count": 11
+        },
+        {
+          "name": "Inner Focus",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 12
+        },
+        {
+          "name": "Dragon Pulse",
+          "count": 9
+        },
+        {
+          "name": "Extreme Speed",
+          "count": 5
+        },
+        {
+          "name": "Flamethrower",
+          "count": 3
+        },
+        {
+          "name": "Tailwind",
+          "count": 3
+        },
+        {
+          "name": "Hurricane",
+          "count": 3
+        },
+        {
+          "name": "Dragon Claw",
+          "count": 3
+        },
+        {
+          "name": "Thunderbolt",
+          "count": 3
+        },
+        {
+          "name": "Heat Wave",
+          "count": 3
+        },
+        {
+          "name": "Low Kick",
+          "count": 2
+        },
+        {
+          "name": "Weather Ball",
+          "count": 1
+        },
+        {
+          "name": "Fire Punch",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 3
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 1,
+            "def": 1,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 2
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 8
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 7
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 6
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 4
+        },
+        {
+          "id": 279,
+          "name": "Pelipper",
+          "count": 3
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 3
+        },
+        {
+          "id": 212,
+          "name": "Scizor",
+          "count": 2
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 2
+        }
+      ]
+    },
+    "186": {
+      "n": 7,
+      "teams": 7,
+      "items": [
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 5
+        },
+        {
+          "name": "Mystic Water",
+          "slug": "mystic-water",
+          "count": 1
+        },
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Drizzle",
+          "count": 7
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Weather Ball",
+          "count": 7
+        },
+        {
+          "name": "Protect",
+          "count": 6
+        },
+        {
+          "name": "Perish Song",
+          "count": 5
+        },
+        {
+          "name": "Encore",
+          "count": 3
+        },
+        {
+          "name": "Ice Beam",
+          "count": 3
+        },
+        {
+          "name": "Muddy Water",
+          "count": 2
+        },
+        {
+          "name": "Hypnosis",
+          "count": 1
+        },
+        {
+          "name": "Icy Wind",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Calm",
+          "evs": {
+            "hp": 31,
+            "def": 23,
+            "spd": 12
+          },
+          "count": 1
+        },
+        {
+          "nature": "Calm",
+          "evs": {
+            "hp": 31,
+            "def": 29,
+            "spe": 6
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 23,
+            "def": 12,
+            "spa": 30,
+            "spe": 1
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 5
+        },
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "count": 4
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 4
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 4
+        },
+        {
+          "id": 959,
+          "name": "Tinkaton",
+          "count": 2
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "count": 2
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 2
+        },
+        {
+          "id": 956,
+          "name": "Espathra",
+          "count": 2
+        }
+      ]
+    },
+    "208": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Steelixite",
+          "slug": "steelixite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Sturdy",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Heavy Slam",
+          "count": 1
+        },
+        {
+          "name": "High Horsepower",
+          "count": 1
+        },
+        {
+          "name": "Wide Guard",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Brave",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 1
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 1
+        },
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 1
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 1
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 1
+        }
+      ]
+    },
+    "212": {
+      "n": 6,
+      "teams": 6,
+      "items": [
+        {
+          "name": "Scizorite",
+          "slug": "scizorite",
+          "count": 5
+        },
+        {
+          "name": "Metal Coat",
+          "slug": "metal-coat",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Technician",
+          "count": 6
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Bullet Punch",
+          "count": 6
+        },
+        {
+          "name": "Protect",
+          "count": 5
+        },
+        {
+          "name": "Bug Bite",
+          "count": 4
+        },
+        {
+          "name": "Swords Dance",
+          "count": 4
+        },
+        {
+          "name": "Close Combat",
+          "count": 2
+        },
+        {
+          "name": "Knock Off",
+          "count": 1
+        },
+        {
+          "name": "Quick Guard",
+          "count": 1
+        },
+        {
+          "name": "Tailwind",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 32,
+            "atk": 32,
+            "spd": 1,
+            "spe": 1
+          },
+          "count": 1
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 32,
+            "atk": 32,
+            "spe": 2
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 3
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 3
+        },
+        {
+          "id": 149,
+          "name": "Dragonite-Mega",
+          "count": 2
+        },
+        {
+          "id": 279,
+          "name": "Pelipper",
+          "count": 2
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 2
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 2
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 2
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 2
+        }
+      ]
+    },
+    "227": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Skarmorite",
+          "slug": "skarmorite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Sturdy",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Brave Bird",
+          "count": 1
+        },
+        {
+          "name": "Iron Head",
+          "count": 1
+        },
+        {
+          "name": "Tailwind",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 3,
+          "name": "Venusaur-Mega",
+          "count": 1
+        },
+        {
+          "id": 302,
+          "name": "Sableye",
+          "count": 1
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 1
+        },
+        {
+          "id": 149,
+          "name": "Dragonite-Mega",
+          "count": 1
+        }
+      ]
+    },
+    "248": {
+      "n": 12,
+      "teams": 12,
+      "items": [
+        {
+          "name": "Tyranitarite",
+          "slug": "tyranitarite",
+          "count": 12
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Sand Stream",
+          "count": 12
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 12
+        },
+        {
+          "name": "Knock Off",
+          "count": 12
+        },
+        {
+          "name": "Rock Slide",
+          "count": 12
+        },
+        {
+          "name": "Low Kick",
+          "count": 7
+        },
+        {
+          "name": "High Horsepower",
+          "count": 2
+        },
+        {
+          "name": "Dragon Dance",
+          "count": 2
+        },
+        {
+          "name": "Ice Punch",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 8
+        },
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 18,
+            "atk": 26,
+            "spe": 22
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 7
+        },
+        {
+          "id": 823,
+          "name": "Corviknight",
+          "count": 7
+        },
+        {
+          "id": 530,
+          "name": "Excadrill",
+          "count": 7
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 6
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 3
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "count": 3
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 3
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 3
+        }
+      ]
+    },
+    "279": {
+      "n": 6,
+      "teams": 6,
+      "items": [
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 3
+        },
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 1
+        },
+        {
+          "name": "Sharp Beak",
+          "slug": "sharp-beak",
+          "count": 1
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Drizzle",
+          "count": 6
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Weather Ball",
+          "count": 6
+        },
+        {
+          "name": "Hurricane",
+          "count": 6
+        },
+        {
+          "name": "Tailwind",
+          "count": 6
+        },
+        {
+          "name": "Wide Guard",
+          "count": 3
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Muddy Water",
+          "count": 1
+        },
+        {
+          "name": "Helping Hand",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 17,
+            "def": 1,
+            "spa": 15,
+            "spd": 23,
+            "spe": 10
+          },
+          "count": 1
+        },
+        {
+          "nature": "Bold",
+          "evs": {
+            "hp": 31,
+            "spd": 29,
+            "spe": 6
+          },
+          "count": 1
+        },
+        {
+          "nature": "Bold",
+          "evs": {
+            "hp": 29,
+            "def": 1,
+            "spa": 11,
+            "spd": 19,
+            "spe": 6
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 6
+        },
+        {
+          "id": 149,
+          "name": "Dragonite-Mega",
+          "count": 3
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 3
+        },
+        {
+          "id": 212,
+          "name": "Scizor",
+          "count": 2
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 2
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        },
+        {
+          "id": 956,
+          "name": "Espathra",
+          "count": 1
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 1
+        }
+      ]
+    },
+    "302": {
+      "n": 5,
+      "teams": 5,
+      "items": [
+        {
+          "name": "Roseli Berry",
+          "slug": "roseli-berry",
+          "count": 5
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Prankster",
+          "count": 5
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Rain Dance",
+          "count": 4
+        },
+        {
+          "name": "Light Screen",
+          "count": 3
+        },
+        {
+          "name": "Reflect",
+          "count": 3
+        },
+        {
+          "name": "Will-O-Wisp",
+          "count": 2
+        },
+        {
+          "name": "Encore",
+          "count": 2
+        },
+        {
+          "name": "Taunt",
+          "count": 1
+        },
+        {
+          "name": "Fake Out",
+          "count": 1
+        },
+        {
+          "name": "Quash",
+          "count": 1
+        },
+        {
+          "name": "Foul Play",
+          "count": 1
+        },
+        {
+          "name": "Disable",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Calm",
+          "evs": {
+            "hp": 32,
+            "def": 9,
+            "spd": 25
+          },
+          "count": 1
+        },
+        {
+          "nature": "Careful",
+          "evs": {
+            "hp": 32,
+            "def": 9,
+            "spd": 25
+          },
+          "count": 1
+        },
+        {
+          "nature": "Relaxed",
+          "evs": {
+            "hp": 32,
+            "def": 15,
+            "spd": 19
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 4
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 2
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 2
+        },
+        {
+          "id": 149,
+          "name": "Dragonite-Mega",
+          "count": 2
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 1
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "count": 1
+        },
+        {
+          "id": 956,
+          "name": "Espathra",
+          "count": 1
+        },
+        {
+          "id": 887,
+          "name": "Dragapult",
+          "count": 1
+        }
+      ]
+    },
+    "323": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Cameruptite",
+          "slug": "cameruptite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Solid Rock",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Heat Wave",
+          "count": 1
+        },
+        {
+          "name": "Earth Power",
+          "count": 1
+        },
+        {
+          "name": "Ancient Power",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Quiet",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 740,
+          "name": "Crabominable-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 666,
+          "name": "Vivillon",
+          "count": 1
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 1
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        }
+      ]
+    },
+    "324": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Charcoal",
+          "slug": "charcoal",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Drought",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Eruption",
+          "count": 1
+        },
+        {
+          "name": "Heat Wave",
+          "count": 1
+        },
+        {
+          "name": "Weather Ball",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Quiet",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 9,
+          "name": "Blastoise-Mega",
+          "count": 1
+        },
+        {
+          "id": 115,
+          "name": "Kangaskhan-Mega",
+          "count": 1
+        },
+        {
+          "id": 666,
+          "name": "Vivillon",
+          "count": 1
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 1
+        }
+      ]
+    },
+    "350": {
+      "n": 2,
+      "teams": 2,
+      "items": [
+        {
+          "name": "Leftovers",
+          "slug": "leftovers",
+          "count": 1
+        },
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Competitive",
+          "count": 2
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Life Dew",
+          "count": 2
+        },
+        {
+          "name": "Muddy Water",
+          "count": 1
+        },
+        {
+          "name": "Hypnosis",
+          "count": 1
+        },
+        {
+          "name": "Coil",
+          "count": 1
+        },
+        {
+          "name": "Psych Up",
+          "count": 1
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        },
+        {
+          "name": "Scald",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Sassy",
+          "evs": {
+            "hp": 31,
+            "def": 31,
+            "spa": 2,
+            "spd": 1,
+            "spe": 1
+          },
+          "count": 1
+        },
+        {
+          "nature": "Bold",
+          "evs": {
+            "hp": 31,
+            "def": 21,
+            "spa": 1,
+            "spd": 12,
+            "spe": 1
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 937,
+          "name": "Ceruledge",
+          "count": 1
+        },
+        {
+          "id": 497,
+          "name": "Serperior",
+          "count": 1
+        },
+        {
+          "id": 899,
+          "name": "Wyrdeer",
+          "count": 1
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "count": 1
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 1
+        },
+        {
+          "id": 302,
+          "name": "Sableye",
+          "count": 1
+        },
+        {
+          "id": 956,
+          "name": "Espathra",
+          "count": 1
+        }
+      ]
+    },
+    "445": {
+      "n": 60,
+      "teams": 60,
+      "items": [
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 23
+        },
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 15
+        },
+        {
+          "name": "Roseli Berry",
+          "slug": "roseli-berry",
+          "count": 13
+        },
+        {
+          "name": "Garchompite",
+          "slug": "garchompite",
+          "count": 3
+        },
+        {
+          "name": "Soft Sand",
+          "slug": "soft-sand",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Rough Skin",
+          "count": 60
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Dragon Claw",
+          "count": 56
+        },
+        {
+          "name": "Earthquake",
+          "count": 54
+        },
+        {
+          "name": "Rock Slide",
+          "count": 40
+        },
+        {
+          "name": "Protect",
+          "count": 32
+        },
+        {
+          "name": "Stomping Tantrum",
+          "count": 24
+        },
+        {
+          "name": "Poison Jab",
+          "count": 15
+        },
+        {
+          "name": "Rock Tomb",
+          "count": 14
+        },
+        {
+          "name": "Dragon Rush",
+          "count": 2
+        },
+        {
+          "name": "Dragon Tail",
+          "count": 1
+        },
+        {
+          "name": "Swords Dance",
+          "count": 1
+        },
+        {
+          "name": "Scale Shot",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 17
+        },
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 14
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 2
+        }
+      ],
+      "teammates": [
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 41
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 41
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 26
+        },
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "count": 21
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 19
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "count": 17
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 17
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 14
+        }
+      ]
+    },
+    "448": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Lucarionite",
+          "slug": "lucarionite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Inner Focus",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Aura Sphere",
+          "count": 1
+        },
+        {
+          "name": "Meteor Mash",
+          "count": 1
+        },
+        {
+          "name": "Bone Rush",
+          "count": 1
+        },
+        {
+          "name": "Stone Edge",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Hasty",
+          "evs": {
+            "atk": 19,
+            "spa": 22,
+            "spe": 25
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 780,
+          "name": "Drampa-Mega",
+          "count": 1
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 1
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 1
+        },
+        {
+          "id": 908,
+          "name": "Meowscarada",
+          "count": 1
+        }
+      ]
+    },
+    "460": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Abomasite",
+          "slug": "abomasite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Snow Warning",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Energy Ball",
+          "count": 1
+        },
+        {
+          "name": "Blizzard",
+          "count": 1
+        },
+        {
+          "name": "Ice Shard",
+          "count": 1
+        },
+        {
+          "name": "Earth Power",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Quiet",
+          "evs": {
+            "hp": 32,
+            "spa": 32,
+            "spe": 2
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 115,
+          "name": "Kangaskhan-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 475,
+          "name": "Gallade",
+          "count": 1
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 1
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        }
+      ]
+    },
+    "475": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Black Belt",
+          "slug": "black-belt",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Sharpness",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Sacred Sword",
+          "count": 1
+        },
+        {
+          "name": "Psycho Cut",
+          "count": 1
+        },
+        {
+          "name": "Leaf Blade",
+          "count": 1
+        },
+        {
+          "name": "Trick Room",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 30,
+            "atk": 5,
+            "def": 31
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 460,
+          "name": "Abomasnow-Mega",
+          "count": 1
+        },
+        {
+          "id": 115,
+          "name": "Kangaskhan-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 1
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        }
+      ]
+    },
+    "478": {
+      "n": 17,
+      "teams": 17,
+      "items": [
+        {
+          "name": "Froslassite",
+          "slug": "froslassite",
+          "count": 17
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Cursed Body",
+          "count": 16
+        },
+        {
+          "name": "Snow Cloak",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Blizzard",
+          "count": 17
+        },
+        {
+          "name": "Protect",
+          "count": 17
+        },
+        {
+          "name": "Shadow Ball",
+          "count": 16
+        },
+        {
+          "name": "Aurora Veil",
+          "count": 15
+        },
+        {
+          "name": "Weather Ball",
+          "count": 2
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 8
+        },
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 3
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 32,
+            "spa": 2,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 12
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 12
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 7
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "count": 6
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 6
+        },
+        {
+          "id": 823,
+          "name": "Corviknight",
+          "count": 4
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 4
+        },
+        {
+          "id": 745,
+          "name": "Lycanroc-Dusk",
+          "count": 4
+        }
+      ]
+    },
+    "479": {
+      "n": 11,
+      "teams": 11,
+      "items": [
+        {
+          "name": "Magnet",
+          "slug": "magnet",
+          "count": 4
+        },
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 3
+        },
+        {
+          "name": "Leftovers",
+          "slug": "leftovers",
+          "count": 2
+        },
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Levitate",
+          "count": 11
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Hydro Pump",
+          "count": 11
+        },
+        {
+          "name": "Will-O-Wisp",
+          "count": 10
+        },
+        {
+          "name": "Thunderbolt",
+          "count": 7
+        },
+        {
+          "name": "Volt Switch",
+          "count": 6
+        },
+        {
+          "name": "Protect",
+          "count": 5
+        },
+        {
+          "name": "Electroweb",
+          "count": 3
+        },
+        {
+          "name": "Light Screen",
+          "count": 1
+        },
+        {
+          "name": "Trick",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 3
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 18,
+            "def": 9,
+            "spa": 14,
+            "spe": 25
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 31,
+            "def": 15,
+            "spa": 8,
+            "spd": 8,
+            "spe": 4
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 7
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 6
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 5
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 5
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 5
+        },
+        {
+          "id": 530,
+          "name": "Excadrill",
+          "count": 5
+        },
+        {
+          "id": 823,
+          "name": "Corviknight",
+          "count": 3
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 3
+        }
+      ]
+    },
+    "497": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Contrary",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Leaf Storm",
+          "count": 1
+        },
+        {
+          "name": "Light Screen",
+          "count": 1
+        },
+        {
+          "name": "Reflect",
+          "count": 1
+        },
+        {
+          "name": "Glare",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 32,
+            "def": 5,
+            "spa": 1,
+            "spd": 2,
+            "spe": 26
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 937,
+          "name": "Ceruledge",
+          "count": 1
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "count": 1
+        },
+        {
+          "id": 899,
+          "name": "Wyrdeer",
+          "count": 1
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "count": 1
+        }
+      ]
+    },
+    "530": {
+      "n": 8,
+      "teams": 8,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 8
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Sand Rush",
+          "count": 7
+        },
+        {
+          "name": "Mold Breaker",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Iron Head",
+          "count": 8
+        },
+        {
+          "name": "Rock Slide",
+          "count": 8
+        },
+        {
+          "name": "Protect",
+          "count": 8
+        },
+        {
+          "name": "Earthquake",
+          "count": 4
+        },
+        {
+          "name": "High Horsepower",
+          "count": 4
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 5
+        },
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 1,
+            "atk": 32,
+            "spd": 1,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 7
+        },
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 5
+        },
+        {
+          "id": 823,
+          "name": "Corviknight",
+          "count": 4
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 4
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 4
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 3
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 2
+        },
+        {
+          "id": 635,
+          "name": "Hydreigon",
+          "count": 1
+        }
+      ]
+    },
+    "547": {
+      "n": 27,
+      "teams": 27,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 14
+        },
+        {
+          "name": "Fairy Feather",
+          "slug": "fairy-feather",
+          "count": 11
+        },
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 1
+        },
+        {
+          "name": "Coba Berry",
+          "slug": "coba-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Prankster",
+          "count": 27
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Moonblast",
+          "count": 27
+        },
+        {
+          "name": "Encore",
+          "count": 27
+        },
+        {
+          "name": "Tailwind",
+          "count": 27
+        },
+        {
+          "name": "Protect",
+          "count": 27
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 14
+        },
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 4
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 3
+        }
+      ],
+      "teammates": [
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 23
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 19
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 19
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 12
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 9
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 6
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 5
+        },
+        {
+          "id": 970,
+          "name": "Glimmora",
+          "count": 5
+        }
+      ]
+    },
+    "571": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Illusion",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Shadow Ball",
+          "count": 1
+        },
+        {
+          "name": "Psychic",
+          "count": 1
+        },
+        {
+          "name": "Icy Wind",
+          "count": 1
+        },
+        {
+          "name": "Taunt",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "count": 1
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 1
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 1
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        }
+      ]
+    },
+    "635": {
+      "n": 3,
+      "teams": 3,
+      "items": [
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 2
+        },
+        {
+          "name": "Haban Berry",
+          "slug": "haban-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Levitate",
+          "count": 3
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Dark Pulse",
+          "count": 3
+        },
+        {
+          "name": "Draco Meteor",
+          "count": 3
+        },
+        {
+          "name": "Snarl",
+          "count": 3
+        },
+        {
+          "name": "Earth Power",
+          "count": 2
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 4,
+            "def": 1,
+            "spa": 32,
+            "spd": 1,
+            "spe": 28
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 3
+        },
+        {
+          "id": 823,
+          "name": "Corviknight",
+          "count": 3
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 2
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "count": 2
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 2
+        },
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 1
+        },
+        {
+          "id": 530,
+          "name": "Excadrill",
+          "count": 1
+        }
+      ]
+    },
+    "655": {
+      "n": 6,
+      "teams": 6,
+      "items": [
+        {
+          "name": "Delphoxite",
+          "slug": "delphoxite",
+          "count": 6
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Blaze",
+          "count": 6
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Heat Wave",
+          "count": 6
+        },
+        {
+          "name": "Protect",
+          "count": 6
+        },
+        {
+          "name": "Psyshock",
+          "count": 5
+        },
+        {
+          "name": "Nasty Plot",
+          "count": 5
+        },
+        {
+          "name": "Psychic",
+          "count": 1
+        },
+        {
+          "name": "Substitute",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 4
+        },
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 19,
+            "def": 1,
+            "spa": 17,
+            "spe": 29
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 6
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 6
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 6
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 4
+        },
+        {
+          "id": 666,
+          "name": "Vivillon",
+          "count": 2
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 2
+        }
+      ]
+    },
+    "663": {
+      "n": 8,
+      "teams": 8,
+      "items": [
+        {
+          "name": "Sharp Beak",
+          "slug": "sharp-beak",
+          "count": 4
+        },
+        {
+          "name": "Mental Herb",
+          "slug": "mental-herb",
+          "count": 1
+        },
+        {
+          "name": "Charcoal",
+          "slug": "charcoal",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Gale Wings",
+          "count": 8
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Tailwind",
+          "count": 7
+        },
+        {
+          "name": "Protect",
+          "count": 6
+        },
+        {
+          "name": "Brave Bird",
+          "count": 5
+        },
+        {
+          "name": "Flare Blitz",
+          "count": 4
+        },
+        {
+          "name": "Will-O-Wisp",
+          "count": 2
+        },
+        {
+          "name": "Quick Guard",
+          "count": 2
+        },
+        {
+          "name": "Acrobatics",
+          "count": 2
+        },
+        {
+          "name": "Swords Dance",
+          "count": 1
+        },
+        {
+          "name": "Dual Wingbeat",
+          "count": 1
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        },
+        {
+          "name": "Overheat",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 3
+        },
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 4
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 4
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 4
+        },
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 2
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 2
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 2
+        },
+        {
+          "id": 970,
+          "name": "Glimmora",
+          "count": 2
+        },
+        {
+          "id": 208,
+          "name": "Steelix-Mega",
+          "count": 1
+        }
+      ]
+    },
+    "666": {
+      "n": 4,
+      "teams": 4,
+      "items": [
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 3
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Compound Eyes",
+          "count": 4
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Sleep Powder",
+          "count": 4
+        },
+        {
+          "name": "Rage Powder",
+          "count": 4
+        },
+        {
+          "name": "Hurricane",
+          "count": 4
+        },
+        {
+          "name": "Pollen Puff",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Tailwind",
+          "count": 1
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 3
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "def": 24,
+            "spa": 5,
+            "spd": 5,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 3
+        },
+        {
+          "id": 655,
+          "name": "Delphox-Mega",
+          "count": 2
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 2
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 2
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 2
+        },
+        {
+          "id": 323,
+          "name": "Camerupt-Mega",
+          "count": 1
+        },
+        {
+          "id": 740,
+          "name": "Crabominable-Mega",
+          "count": 1
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        }
+      ]
+    },
+    "670": {
+      "n": 51,
+      "teams": 51,
+      "items": [
+        {
+          "name": "Floettite",
+          "slug": "floettite",
+          "count": 51
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Flower Veil",
+          "count": 43
+        },
+        {
+          "name": "Fairy Aura",
+          "count": 8
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 51
+        },
+        {
+          "name": "Dazzling Gleam",
+          "count": 46
+        },
+        {
+          "name": "Moonblast",
+          "count": 39
+        },
+        {
+          "name": "Calm Mind",
+          "count": 31
+        },
+        {
+          "name": "Light of Ruin",
+          "count": 19
+        },
+        {
+          "name": "Draining Kiss",
+          "count": 17
+        },
+        {
+          "name": "Helping Hand",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 15
+        },
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 10
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 2
+        }
+      ],
+      "teammates": [
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 32
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 28
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 26
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 23
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 22
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 22
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 12
+        },
+        {
+          "id": 655,
+          "name": "Delphox-Mega",
+          "count": 6
+        }
+      ]
+    },
+    "700": {
+      "n": 20,
+      "teams": 20,
+      "items": [
+        {
+          "name": "Fairy Feather",
+          "slug": "fairy-feather",
+          "count": 20
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Pixilate",
+          "count": 20
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Hyper Voice",
+          "count": 20
+        },
+        {
+          "name": "Quick Attack",
+          "count": 18
+        },
+        {
+          "name": "Detect",
+          "count": 15
+        },
+        {
+          "name": "Hyper Beam",
+          "count": 13
+        },
+        {
+          "name": "Moonblast",
+          "count": 6
+        },
+        {
+          "name": "Protect",
+          "count": 5
+        },
+        {
+          "name": "Yawn",
+          "count": 1
+        },
+        {
+          "name": "Psych Up",
+          "count": 1
+        },
+        {
+          "name": "Calm Mind",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 12
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 9,
+            "def": 22,
+            "spa": 20,
+            "spe": 15
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 10,
+            "def": 1,
+            "spa": 32,
+            "spe": 23
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "count": 17
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 17
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 15
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 14
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 6
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 5
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 3
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 2
+        }
+      ]
+    },
+    "727": {
+      "n": 44,
+      "teams": 44,
+      "items": [
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 17
+        },
+        {
+          "name": "Chople Berry",
+          "slug": "chople-berry",
+          "count": 9
+        },
+        {
+          "name": "Passho Berry",
+          "slug": "passho-berry",
+          "count": 8
+        },
+        {
+          "name": "Charcoal",
+          "slug": "charcoal",
+          "count": 4
+        },
+        {
+          "name": "Leftovers",
+          "slug": "leftovers",
+          "count": 3
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Intimidate",
+          "count": 44
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Fake Out",
+          "count": 44
+        },
+        {
+          "name": "Parting Shot",
+          "count": 42
+        },
+        {
+          "name": "Flare Blitz",
+          "count": 41
+        },
+        {
+          "name": "Throat Chop",
+          "count": 22
+        },
+        {
+          "name": "Darkest Lariat",
+          "count": 11
+        },
+        {
+          "name": "Helping Hand",
+          "count": 7
+        },
+        {
+          "name": "Protect",
+          "count": 6
+        },
+        {
+          "name": "Close Combat",
+          "count": 2
+        },
+        {
+          "name": "Taunt",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Careful",
+          "evs": null,
+          "count": 9
+        },
+        {
+          "nature": "Impish",
+          "evs": null,
+          "count": 5
+        },
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 3
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 32
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 27
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 17
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 17
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 16
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 13
+        },
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "count": 6
+        },
+        {
+          "id": 655,
+          "name": "Delphox-Mega",
+          "count": 6
+        }
+      ]
+    },
+    "730": {
+      "n": 2,
+      "teams": 2,
+      "items": [
+        {
+          "name": "Mystic Water",
+          "slug": "mystic-water",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Liquid Voice",
+          "count": 2
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Hyper Voice",
+          "count": 2
+        },
+        {
+          "name": "Aqua Jet",
+          "count": 2
+        },
+        {
+          "name": "Moonblast",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Reflect",
+          "count": 1
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 1
+        },
+        {
+          "nature": "Quiet",
+          "evs": {
+            "hp": 32,
+            "def": 2,
+            "spa": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 212,
+          "name": "Scizor",
+          "count": 1
+        },
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 1
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 1
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 1
+        },
+        {
+          "id": 887,
+          "name": "Dragapult",
+          "count": 1
+        },
+        {
+          "id": 115,
+          "name": "Kangaskhan-Mega",
+          "count": 1
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 1
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 1
+        }
+      ]
+    },
+    "740": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Crabominite",
+          "slug": "crabominite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Hyper Cutter",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Close Combat",
+          "count": 1
+        },
+        {
+          "name": "Ice Hammer",
+          "count": 1
+        },
+        {
+          "name": "Mach Punch",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Brave",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 323,
+          "name": "Camerupt-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        },
+        {
+          "id": 666,
+          "name": "Vivillon",
+          "count": 1
+        },
+        {
+          "id": 981,
+          "name": "Farigiraf",
+          "count": 1
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 1
+        }
+      ]
+    },
+    "745": {
+      "n": 4,
+      "teams": 4,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 4
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Tough Claws",
+          "count": 4
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Close Combat",
+          "count": 4
+        },
+        {
+          "name": "Rock Slide",
+          "count": 4
+        },
+        {
+          "name": "Accelerock",
+          "count": 4
+        },
+        {
+          "name": "Protect",
+          "count": 4
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 3
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 4
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 4
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 4
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 4
+        }
+      ]
+    },
+    "780": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Drampanite",
+          "slug": "drampanite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Berserk",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Hyper Voice",
+          "count": 1
+        },
+        {
+          "name": "Dragon Pulse",
+          "count": 1
+        },
+        {
+          "name": "Earth Power",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Quiet",
+          "evs": {
+            "hp": 32,
+            "def": 2,
+            "spa": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 448,
+          "name": "Lucario-Mega",
+          "count": 1
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 1
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 1
+        },
+        {
+          "id": 908,
+          "name": "Meowscarada",
+          "count": 1
+        }
+      ]
+    },
+    "784": {
+      "n": 5,
+      "teams": 5,
+      "items": [
+        {
+          "name": "Leftovers",
+          "slug": "leftovers",
+          "count": 3
+        },
+        {
+          "name": "Dragon Fang",
+          "slug": "dragon-fang",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Soundproof",
+          "count": 4
+        },
+        {
+          "name": "Bulletproof",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Clanging Scales",
+          "count": 5
+        },
+        {
+          "name": "Clangorous Soul",
+          "count": 5
+        },
+        {
+          "name": "Protect",
+          "count": 5
+        },
+        {
+          "name": "Aura Sphere",
+          "count": 4
+        },
+        {
+          "name": "Drain Punch",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Naive",
+          "evs": {
+            "hp": 1,
+            "atk": 3,
+            "spa": 30,
+            "spe": 32
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 26,
+            "def": 1,
+            "spa": 30,
+            "spe": 9
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 23,
+            "spa": 30,
+            "spd": 1,
+            "spe": 12
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "count": 3
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 3
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 3
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 2
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 2
+        },
+        {
+          "id": 959,
+          "name": "Tinkaton",
+          "count": 2
+        },
+        {
+          "id": 937,
+          "name": "Ceruledge",
+          "count": 1
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "count": 1
+        }
+      ]
+    },
+    "823": {
+      "n": 8,
+      "teams": 8,
+      "items": [
+        {
+          "name": "Leftovers",
+          "slug": "leftovers",
+          "count": 4
+        },
+        {
+          "name": "Occa Berry",
+          "slug": "occa-berry",
+          "count": 3
+        },
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Mirror Armor",
+          "count": 8
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Brave Bird",
+          "count": 8
+        },
+        {
+          "name": "Tailwind",
+          "count": 7
+        },
+        {
+          "name": "Bulk Up",
+          "count": 5
+        },
+        {
+          "name": "Iron Head",
+          "count": 4
+        },
+        {
+          "name": "Roost",
+          "count": 4
+        },
+        {
+          "name": "Protect",
+          "count": 3
+        },
+        {
+          "name": "Body Press",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 3
+        },
+        {
+          "nature": "Impish",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 32,
+            "atk": 13,
+            "def": 2,
+            "spd": 13,
+            "spe": 6
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 7
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 4
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 4
+        },
+        {
+          "id": 530,
+          "name": "Excadrill",
+          "count": 4
+        },
+        {
+          "id": 59,
+          "name": "Arcanine-Hisui",
+          "count": 3
+        },
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 3
+        },
+        {
+          "id": 635,
+          "name": "Hydreigon",
+          "count": 3
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 2
+        }
+      ]
+    },
+    "887": {
+      "n": 2,
+      "teams": 2,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 1
+        },
+        {
+          "name": "Colbur Berry",
+          "slug": "colbur-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Cursed Body",
+          "count": 1
+        },
+        {
+          "name": "Clear Body",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Dragon Tail",
+          "count": 1
+        },
+        {
+          "name": "Beat Up",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        },
+        {
+          "name": "Curse",
+          "count": 1
+        },
+        {
+          "name": "Draco Meteor",
+          "count": 1
+        },
+        {
+          "name": "Shadow Ball",
+          "count": 1
+        },
+        {
+          "name": "Will-O-Wisp",
+          "count": 1
+        },
+        {
+          "name": "Light Screen",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 32,
+            "def": 1,
+            "spd": 1,
+            "spe": 32
+          },
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 1
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "count": 1
+        },
+        {
+          "id": 302,
+          "name": "Sableye",
+          "count": 1
+        },
+        {
+          "id": 956,
+          "name": "Espathra",
+          "count": 1
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 1
+        },
+        {
+          "id": 212,
+          "name": "Scizor",
+          "count": 1
+        },
+        {
+          "id": 248,
+          "name": "Tyranitar-Mega",
+          "count": 1
+        },
+        {
+          "id": 730,
+          "name": "Primarina",
+          "count": 1
+        }
+      ]
+    },
+    "899": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Colbur Berry",
+          "slug": "colbur-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Intimidate",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Psyshield Bash",
+          "count": 1
+        },
+        {
+          "name": "Gravity",
+          "count": 1
+        },
+        {
+          "name": "Hypnosis",
+          "count": 1
+        },
+        {
+          "name": "Trick Room",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 28,
+            "atk": 2,
+            "def": 8,
+            "spd": 21,
+            "spe": 7
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 937,
+          "name": "Ceruledge",
+          "count": 1
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "count": 1
+        },
+        {
+          "id": 497,
+          "name": "Serperior",
+          "count": 1
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "count": 1
+        }
+      ]
+    },
+    "900": {
+      "n": 4,
+      "teams": 4,
+      "items": [
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 2
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Sharpness",
+          "count": 4
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Stone Axe",
+          "count": 4
+        },
+        {
+          "name": "Close Combat",
+          "count": 4
+        },
+        {
+          "name": "Rock Slide",
+          "count": 2
+        },
+        {
+          "name": "Protect",
+          "count": 2
+        },
+        {
+          "name": "Feint",
+          "count": 2
+        },
+        {
+          "name": "X-Scissor",
+          "count": 1
+        },
+        {
+          "name": "U-turn",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "count": 2
+        },
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 2
+        }
+      ],
+      "teammates": [
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 4
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 4
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 3
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 2
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 2
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 1
+        }
+      ]
+    },
+    "903": {
+      "n": 48,
+      "teams": 48,
+      "items": [
+        {
+          "name": "White Herb",
+          "slug": "white-herb",
+          "count": 31
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 17
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Unburden",
+          "count": 39
+        },
+        {
+          "name": "Poison Touch",
+          "count": 9
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Close Combat",
+          "count": 48
+        },
+        {
+          "name": "Fake Out",
+          "count": 48
+        },
+        {
+          "name": "Dire Claw",
+          "count": 43
+        },
+        {
+          "name": "Protect",
+          "count": 36
+        },
+        {
+          "name": "Coaching",
+          "count": 7
+        },
+        {
+          "name": "Gunk Shot",
+          "count": 5
+        },
+        {
+          "name": "Quick Guard",
+          "count": 2
+        },
+        {
+          "name": "Feint",
+          "count": 1
+        },
+        {
+          "name": "Rock Tomb",
+          "count": 1
+        },
+        {
+          "name": "Rock Slide",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 15
+        },
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 13
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "count": 3
+        }
+      ],
+      "teammates": [
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 38
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 22
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 17
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 14
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 14
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 12
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 11
+        },
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "count": 9
+        }
+      ]
+    },
+    "908": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Overgrow",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Flower Trick",
+          "count": 1
+        },
+        {
+          "name": "Triple Axel",
+          "count": 1
+        },
+        {
+          "name": "U-turn",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 780,
+          "name": "Drampa-Mega",
+          "count": 1
+        },
+        {
+          "id": 448,
+          "name": "Lucario-Mega",
+          "count": 1
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 1
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 1
+        }
+      ]
+    },
+    "937": {
+      "n": 1,
+      "teams": 1,
+      "items": [
+        {
+          "name": "Charcoal",
+          "slug": "charcoal",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Flash Fire",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Bitter Blade",
+          "count": 1
+        },
+        {
+          "name": "Shadow Sneak",
+          "count": 1
+        },
+        {
+          "name": "Bulk Up",
+          "count": 1
+        },
+        {
+          "name": "Protect",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 31,
+            "atk": 1,
+            "def": 26,
+            "spe": 8
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "count": 1
+        },
+        {
+          "id": 497,
+          "name": "Serperior",
+          "count": 1
+        },
+        {
+          "id": 899,
+          "name": "Wyrdeer",
+          "count": 1
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "count": 1
+        }
+      ]
+    },
+    "952": {
+      "n": 12,
+      "teams": 12,
+      "items": [
+        {
+          "name": "Scovillainite",
+          "slug": "scovillainite",
+          "count": 12
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Moody",
+          "count": 9
+        },
+        {
+          "name": "Insomnia",
+          "count": 2
+        },
+        {
+          "name": "Chlorophyll",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 12
+        },
+        {
+          "name": "Rage Powder",
+          "count": 12
+        },
+        {
+          "name": "Overheat",
+          "count": 11
+        },
+        {
+          "name": "Leech Seed",
+          "count": 7
+        },
+        {
+          "name": "Giga Drain",
+          "count": 5
+        },
+        {
+          "name": "Flamethrower",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Bold",
+          "evs": null,
+          "count": 6
+        },
+        {
+          "nature": "Calm",
+          "evs": {
+            "hp": 32,
+            "def": 19,
+            "spd": 15
+          },
+          "count": 4
+        },
+        {
+          "nature": "Calm",
+          "evs": {
+            "hp": 32,
+            "def": 9,
+            "spd": 25
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 7
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 7
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "count": 5
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 4
+        },
+        {
+          "id": 745,
+          "name": "Lycanroc-Dusk",
+          "count": 4
+        },
+        {
+          "id": 956,
+          "name": "Espathra",
+          "count": 3
+        },
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 3
+        },
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "count": 3
+        }
+      ]
+    },
+    "956": {
+      "n": 4,
+      "teams": 4,
+      "items": [
+        {
+          "name": "Mental Herb",
+          "slug": "mental-herb",
+          "count": 1
+        },
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 1
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 1
+        },
+        {
+          "name": "Colbur Berry",
+          "slug": "colbur-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Speed Boost",
+          "count": 4
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Protect",
+          "count": 4
+        },
+        {
+          "name": "Lumina Crash",
+          "count": 4
+        },
+        {
+          "name": "Baton Pass",
+          "count": 3
+        },
+        {
+          "name": "Calm Mind",
+          "count": 3
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        },
+        {
+          "name": "Helping Hand",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 19,
+            "def": 14,
+            "spd": 4,
+            "spe": 29
+          },
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 32,
+            "def": 9,
+            "spd": 6,
+            "spe": 19
+          },
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "def": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 1018,
+          "name": "Archaludon",
+          "count": 4
+        },
+        {
+          "id": 952,
+          "name": "Scovillain-Mega",
+          "count": 3
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 2
+        },
+        {
+          "id": 350,
+          "name": "Milotic",
+          "count": 1
+        },
+        {
+          "id": 302,
+          "name": "Sableye",
+          "count": 1
+        },
+        {
+          "id": 887,
+          "name": "Dragapult",
+          "count": 1
+        },
+        {
+          "id": 149,
+          "name": "Dragonite-Mega",
+          "count": 1
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 1
+        }
+      ]
+    },
+    "959": {
+      "n": 3,
+      "teams": 3,
+      "items": [
+        {
+          "name": "Shuca Berry",
+          "slug": "shuca-berry",
+          "count": 2
+        },
+        {
+          "name": "Occa Berry",
+          "slug": "occa-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Mold Breaker",
+          "count": 2
+        },
+        {
+          "name": "Own Tempo",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Fake Out",
+          "count": 3
+        },
+        {
+          "name": "Gigaton Hammer",
+          "count": 3
+        },
+        {
+          "name": "Encore",
+          "count": 2
+        },
+        {
+          "name": "Protect",
+          "count": 2
+        },
+        {
+          "name": "Play Rough",
+          "count": 1
+        },
+        {
+          "name": "Feint",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 15,
+            "atk": 9,
+            "def": 13,
+            "spe": 29
+          },
+          "count": 1
+        },
+        {
+          "nature": "Jolly",
+          "evs": {
+            "hp": 32,
+            "atk": 7,
+            "spe": 27
+          },
+          "count": 1
+        },
+        {
+          "nature": "Jolly",
+          "evs": null,
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 3
+        },
+        {
+          "id": 1013,
+          "name": "Sinistcha",
+          "count": 3
+        },
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "count": 2
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 2
+        },
+        {
+          "id": 784,
+          "name": "Kommo-o",
+          "count": 2
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 1
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 1
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 1
+        }
+      ]
+    },
+    "970": {
+      "n": 7,
+      "teams": 7,
+      "items": [
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 6
+        },
+        {
+          "name": "Glimmoranite",
+          "slug": "glimmoranite",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Toxic Debris",
+          "count": 7
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Power Gem",
+          "count": 7
+        },
+        {
+          "name": "Sludge Bomb",
+          "count": 7
+        },
+        {
+          "name": "Earth Power",
+          "count": 7
+        },
+        {
+          "name": "Spiky Shield",
+          "count": 7
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 4
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 1,
+            "spa": 32,
+            "spd": 1,
+            "spe": 32
+          },
+          "count": 1
+        },
+        {
+          "nature": "Timid",
+          "evs": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 6
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 6
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 5
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 3
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 2
+        },
+        {
+          "id": 663,
+          "name": "Talonflame",
+          "count": 2
+        },
+        {
+          "id": 478,
+          "name": "Froslass-Mega",
+          "count": 1
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 1
+        }
+      ]
+    },
+    "981": {
+      "n": 11,
+      "teams": 11,
+      "items": [
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 9
+        },
+        {
+          "name": "Twisted Spoon",
+          "slug": "twisted-spoon",
+          "count": 1
+        },
+        {
+          "name": "Colbur Berry",
+          "slug": "colbur-berry",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Armor Tail",
+          "count": 11
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Trick Room",
+          "count": 11
+        },
+        {
+          "name": "Helping Hand",
+          "count": 10
+        },
+        {
+          "name": "Psychic",
+          "count": 8
+        },
+        {
+          "name": "Protect",
+          "count": 4
+        },
+        {
+          "name": "Hyper Voice",
+          "count": 3
+        },
+        {
+          "name": "Twin Beam",
+          "count": 2
+        },
+        {
+          "name": "Ally Switch",
+          "count": 2
+        },
+        {
+          "name": "Amnesia",
+          "count": 1
+        },
+        {
+          "name": "Baton Pass",
+          "count": 1
+        },
+        {
+          "name": "Thunderbolt",
+          "count": 1
+        },
+        {
+          "name": "Psyshock",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Relaxed",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Modest",
+          "evs": null,
+          "count": 2
+        },
+        {
+          "nature": "Quiet",
+          "evs": {
+            "hp": 31,
+            "def": 14,
+            "spd": 21
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 7
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 6
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 6
+        },
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "count": 6
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "count": 6
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 5
+        },
+        {
+          "id": 115,
+          "name": "Kangaskhan-Mega",
+          "count": 3
+        },
+        {
+          "id": 666,
+          "name": "Vivillon",
+          "count": 2
+        }
+      ]
+    },
+    "983": {
+      "n": 70,
+      "teams": 70,
+      "items": [
+        {
+          "name": "Chople Berry",
+          "slug": "chople-berry",
+          "count": 32
+        },
+        {
+          "name": "Black Glasses",
+          "slug": "black-glasses",
+          "count": 32
+        },
+        {
+          "name": "Occa Berry",
+          "slug": "occa-berry",
+          "count": 4
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 2
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Defiant",
+          "count": 70
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Kowtow Cleave",
+          "count": 70
+        },
+        {
+          "name": "Sucker Punch",
+          "count": 70
+        },
+        {
+          "name": "Protect",
+          "count": 53
+        },
+        {
+          "name": "Iron Head",
+          "count": 38
+        },
+        {
+          "name": "Low Kick",
+          "count": 30
+        },
+        {
+          "name": "Swords Dance",
+          "count": 18
+        },
+        {
+          "name": "Rain Dance",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Adamant",
+          "evs": null,
+          "count": 43
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 32,
+            "atk": 32,
+            "def": 1,
+            "spd": 1
+          },
+          "count": 3
+        },
+        {
+          "nature": "Adamant",
+          "evs": {
+            "hp": 25,
+            "atk": 32,
+            "spe": 9
+          },
+          "count": 2
+        }
+      ],
+      "teammates": [
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 41
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 38
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 34
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 28
+        },
+        {
+          "id": 547,
+          "name": "Whimsicott",
+          "count": 23
+        },
+        {
+          "id": 142,
+          "name": "Aerodactyl-Mega",
+          "count": 21
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 16
+        },
+        {
+          "id": 700,
+          "name": "Sylveon",
+          "count": 15
+        }
+      ]
+    },
+    "1013": {
+      "n": 31,
+      "teams": 31,
+      "items": [
+        {
+          "name": "Kasib Berry",
+          "slug": "kasib-berry",
+          "count": 15
+        },
+        {
+          "name": "Sitrus Berry",
+          "slug": "sitrus-berry",
+          "count": 9
+        },
+        {
+          "name": "Occa Berry",
+          "slug": "occa-berry",
+          "count": 3
+        },
+        {
+          "name": "Colbur Berry",
+          "slug": "colbur-berry",
+          "count": 2
+        },
+        {
+          "name": "Focus Sash",
+          "slug": "focus-sash",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Hospitality",
+          "count": 31
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Matcha Gotcha",
+          "count": 31
+        },
+        {
+          "name": "Rage Powder",
+          "count": 31
+        },
+        {
+          "name": "Trick Room",
+          "count": 25
+        },
+        {
+          "name": "Protect",
+          "count": 23
+        },
+        {
+          "name": "Life Dew",
+          "count": 13
+        },
+        {
+          "name": "Imprison",
+          "count": 1
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Bold",
+          "evs": null,
+          "count": 13
+        },
+        {
+          "nature": "Relaxed",
+          "evs": null,
+          "count": 4
+        },
+        {
+          "nature": "Relaxed",
+          "evs": {
+            "hp": 32,
+            "def": 7,
+            "spd": 27
+          },
+          "count": 3
+        }
+      ],
+      "teammates": [
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 27
+        },
+        {
+          "id": 670,
+          "name": "Floette-Eternal-Mega",
+          "count": 23
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 14
+        },
+        {
+          "id": 445,
+          "name": "Garchomp",
+          "count": 9
+        },
+        {
+          "id": 983,
+          "name": "Kingambit",
+          "count": 8
+        },
+        {
+          "id": 6,
+          "name": "Charizard-Mega-Y",
+          "count": 7
+        },
+        {
+          "id": 479,
+          "name": "Rotom-Wash",
+          "count": 6
+        },
+        {
+          "id": 655,
+          "name": "Delphox-Mega",
+          "count": 6
+        }
+      ]
+    },
+    "1018": {
+      "n": 15,
+      "teams": 15,
+      "items": [
+        {
+          "name": "Leftovers",
+          "slug": "leftovers",
+          "count": 13
+        },
+        {
+          "name": "Chople Berry",
+          "slug": "chople-berry",
+          "count": 1
+        },
+        {
+          "name": "Choice Scarf",
+          "slug": "choice-scarf",
+          "count": 1
+        }
+      ],
+      "abilities": [
+        {
+          "name": "Stamina",
+          "count": 14
+        },
+        {
+          "name": "Sturdy",
+          "count": 1
+        }
+      ],
+      "tera": [],
+      "moves": [
+        {
+          "name": "Electro Shot",
+          "count": 15
+        },
+        {
+          "name": "Flash Cannon",
+          "count": 14
+        },
+        {
+          "name": "Protect",
+          "count": 14
+        },
+        {
+          "name": "Dragon Pulse",
+          "count": 11
+        },
+        {
+          "name": "Draco Meteor",
+          "count": 4
+        },
+        {
+          "name": "Aura Sphere",
+          "count": 2
+        }
+      ],
+      "spreads": [
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 32,
+            "def": 1,
+            "spa": 5,
+            "spd": 25,
+            "spe": 3
+          },
+          "count": 2
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 27,
+            "spd": 30,
+            "spe": 9
+          },
+          "count": 1
+        },
+        {
+          "nature": "Modest",
+          "evs": {
+            "hp": 30,
+            "spa": 6,
+            "spd": 22,
+            "spe": 8
+          },
+          "count": 1
+        }
+      ],
+      "teammates": [
+        {
+          "id": 149,
+          "name": "Dragonite-Mega",
+          "count": 6
+        },
+        {
+          "id": 279,
+          "name": "Pelipper",
+          "count": 6
+        },
+        {
+          "id": 727,
+          "name": "Incineroar",
+          "count": 4
+        },
+        {
+          "id": 186,
+          "name": "Politoed",
+          "count": 4
+        },
+        {
+          "id": 903,
+          "name": "Sneasler",
+          "count": 4
+        },
+        {
+          "id": 302,
+          "name": "Sableye",
+          "count": 4
+        },
+        {
+          "id": 956,
+          "name": "Espathra",
+          "count": 4
+        },
+        {
+          "id": 94,
+          "name": "Gengar-Mega",
+          "count": 3
+        }
+      ]
+    }
+  }
+}

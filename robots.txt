@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /favorites
+Disallow: /teams
+Disallow: /profile
+Disallow: /admin
+
+Sitemap: https://pokemonbuilder.app/sitemap.xml

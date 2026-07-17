@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-07-17T22:55:03.485Z",
+  "month": "2026-06",
+  "source": "https://www.smogon.com/stats/2026-06/",
+  "default": "gen9championsvgc2026regmb",
+  "formats": [
+    {
+      "id": "gen9championsvgc2026regmb",
+      "label": "VGC Reg M-B",
+      "group": "Pokémon Champions",
+      "cutoff": 1630,
+      "totalBattles": 1163315,
+      "species": 122,
+      "file": "usage/gen9championsvgc2026regmb.json"
+    },
+    {
+      "id": "gen9championsvgc2026regma",
+      "label": "VGC Reg M-A",
+      "group": "Pokémon Champions",
+      "cutoff": 1630,
+      "totalBattles": 1479658,
+      "species": 126,
+      "file": "usage/gen9championsvgc2026regma.json"
+    },
+    {
+      "id": "gen9vgc2026regi",
+      "label": "VGC 2026 Reg I",
+      "group": "Scarlet & Violet",
+      "cutoff": 1630,
+      "totalBattles": 77135,
+      "species": 140,
+      "file": "usage/gen9vgc2026regi.json"
+    }
+  ]
+}
