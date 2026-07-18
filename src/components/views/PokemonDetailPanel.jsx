@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
 import {
     MapPin, Star, Sparkles, ChevronRight, Compass, Footprints, Waves, Fish, Gift, Music,
-    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, ChevronLeft, Trophy,
+    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, ChevronLeft, Trophy, ScrollText,
 } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
@@ -470,6 +470,22 @@ export function PokemonDetailPanel({
 
     const formattedId = useMemo(() => (selectedPokemonDetails?.id ? String(selectedPokemonDetails.id).padStart(4, '0') : ''), [selectedPokemonDetails]);
     const pokemonGenus = useMemo(() => speciesData?.genera?.find((g) => g.language.name === 'en')?.genus || '', [speciesData]);
+    // Pokédex flavor text — prefer the UI language, fall back to English (PokéAPI
+    // rarely ships pt). Clean soft-hyphen word breaks and collapse the line breaks
+    // old-gen entries carry mid-sentence.
+    const pokedexDescription = useMemo(() => {
+        const entries = speciesData?.flavor_text_entries;
+        if (!entries?.length) return '';
+        const langName = language === 'pt' ? 'pt' : 'en';
+        const entry = entries.find((e) => e.language?.name === langName)
+            || entries.find((e) => e.language?.name === 'en')
+            || entries[0];
+        return String(entry?.flavor_text || '')
+            .replace(/[­]\s*/g, '')
+            .replace(/[\n\f\r]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }, [speciesData, language]);
     const heightInM = useMemo(() => { const h = selectedPokemonDetails?.height || fullApiData?.height; return h ? h / 10 : 0; }, [selectedPokemonDetails, fullApiData]);
     const heightInFt = useMemo(() => { if (!heightInM) return ''; const ftTotal = heightInM * 3.28084; const ft = Math.floor(ftTotal); const inches = Math.round((ftTotal % 1) * 12); return `${ft}′${String(inches).padStart(2, '0')}″`; }, [heightInM]);
     const weightInKg = useMemo(() => { const w = selectedPokemonDetails?.weight || fullApiData?.weight; return w ? w / 10 : 0; }, [selectedPokemonDetails, fullApiData]);
@@ -566,55 +582,99 @@ export function PokemonDetailPanel({
                         </div>
                     </div>
 
-                    {evolutionDetails.length > 1 && (
-                        <div className="rounded-xl bg-surface p-4 border border-border">
-                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Linha Evolutiva' : 'Evolution Line'}</h4>
-                            <div className="overflow-x-auto custom-scrollbar pb-1">
-                                <div className="flex min-w-max items-center gap-2 px-1 justify-center">
-                                    {evolutionDetails.map((evo, index) => (
-                                        <React.Fragment key={evo.name}>
-                                            <button
-                                                type="button"
-                                                onClick={() => handleSelectPokemon(evo)}
-                                                className={`min-w-[5.5rem] text-center p-2 rounded-xl transition-all border ${selectedPokemonDetails.id === evo.id ? 'bg-primary-soft border-primary' : 'bg-surface-raised border-border hover:bg-surface-raised/80 hover:border-border'}`}
-                                            >
-                                                <img src={evo.sprite || POKEBALL_PLACEHOLDER_URL} alt={evo.name} className="h-12 w-12 mx-auto image-pixelated" />
-                                                <p className="text-xs font-bold text-fg capitalize mt-1 truncate max-w-[80px]">{evo.name}</p>
-                                            </button>
-                                            {index < evolutionDetails.length - 1 && <span className="text-muted text-base">➔</span>}
-                                        </React.Fragment>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {(() => {
+                        const hasEvolution = evolutionDetails.length > 1;
+                        const hasForms = forms.length > 0;
 
-                    {forms.length > 0 && (
-                        <div className="rounded-xl bg-surface p-4 border border-border">
-                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Formas & Megas' : 'Forms & Megas'}</h4>
-                            <div className="overflow-x-auto custom-scrollbar pb-1">
-                                <div className="flex min-w-max items-stretch gap-2 px-1 justify-center">
-                                    {forms.map((form) => (
-                                        <button
-                                            key={form.id}
-                                            type="button"
-                                            onClick={() => handleSelectPokemon({ id: form.id })}
-                                            title={form.displayName}
-                                            className="w-[6.5rem] text-center p-2 rounded-xl transition-all border bg-surface-raised border-border hover:border-primary hover:bg-primary-soft"
-                                        >
-                                            <img src={form.sprite || POKEBALL_PLACEHOLDER_URL} alt={form.displayName} className="h-14 w-14 mx-auto image-pixelated" />
-                                            <p className="text-[11px] font-bold text-fg capitalize mt-1 leading-tight line-clamp-2">{form.displayName}</p>
-                                            {form.types?.length > 0 && (
-                                                <div className="mt-1.5 flex flex-wrap justify-center gap-1">
-                                                    {form.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
-                                                </div>
-                                            )}
-                                        </button>
-                                    ))}
+                        const evolutionBlock = hasEvolution ? (
+                            <div className="rounded-xl bg-surface p-4 border border-border h-full flex flex-col">
+                                <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Linha Evolutiva' : 'Evolution Line'}</h4>
+                                <div className="overflow-x-auto custom-scrollbar pb-1 flex-1 flex items-center">
+                                    <div className="flex min-w-max items-center gap-2 px-1 justify-center mx-auto">
+                                        {evolutionDetails.map((evo, index) => (
+                                            <React.Fragment key={evo.name}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleSelectPokemon(evo)}
+                                                    className={`min-w-[5.5rem] text-center p-2 rounded-xl transition-all border ${selectedPokemonDetails.id === evo.id ? 'bg-primary-soft border-primary' : 'bg-surface-raised border-border hover:bg-surface-raised/80 hover:border-border'}`}
+                                                >
+                                                    <img src={evo.sprite || POKEBALL_PLACEHOLDER_URL} alt={evo.name} className="h-12 w-12 mx-auto image-pixelated" />
+                                                    <p className="text-xs font-bold text-fg capitalize mt-1 truncate max-w-[80px]">{evo.name}</p>
+                                                </button>
+                                                {index < evolutionDetails.length - 1 && <span className="text-muted text-base">➔</span>}
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    )}
+                        ) : null;
+
+                        const formsBlock = hasForms ? (
+                            <div className="rounded-xl bg-surface p-4 border border-border h-full flex flex-col">
+                                <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Formas & Megas' : 'Forms & Megas'}</h4>
+                                <div className="overflow-x-auto custom-scrollbar pb-1 flex-1 flex items-center">
+                                    <div className="flex min-w-max items-stretch gap-2 px-1 justify-center mx-auto">
+                                        {forms.map((form) => (
+                                            <button
+                                                key={form.id}
+                                                type="button"
+                                                onClick={() => handleSelectPokemon({ id: form.id })}
+                                                title={form.displayName}
+                                                className="w-[6.5rem] text-center p-2 rounded-xl transition-all border bg-surface-raised border-border hover:border-primary hover:bg-primary-soft"
+                                            >
+                                                <img src={form.sprite || POKEBALL_PLACEHOLDER_URL} alt={form.displayName} className="h-14 w-14 mx-auto image-pixelated" />
+                                                <p className="text-[11px] font-bold text-fg capitalize mt-1 leading-tight line-clamp-2">{form.displayName}</p>
+                                                {form.types?.length > 0 && (
+                                                    <div className="mt-1.5 flex flex-wrap justify-center gap-1">
+                                                        {form.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                                    </div>
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        ) : null;
+
+                        const descriptionBlock = pokedexDescription ? (
+                            <div className="rounded-xl bg-surface p-4 border border-border h-full flex flex-col">
+                                <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted flex items-center justify-center gap-1.5">
+                                    <ScrollText className="w-3.5 h-3.5 text-primary" />
+                                    <span>{language === 'pt' ? 'Descrição da Pokédex' : 'Pokédex Entry'}</span>
+                                </h4>
+                                <p className="flex-1 flex items-center text-center justify-center text-sm text-fg leading-relaxed">{pokedexDescription}</p>
+                            </div>
+                        ) : null;
+
+                        // Both evolution and forms exist → the Pokédex entry leads as its
+                        // own full-width row, then evolution & forms share a two-column row.
+                        if (hasEvolution && hasForms) {
+                            return (
+                                <>
+                                    {descriptionBlock}
+                                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+                                        {evolutionBlock}
+                                        {formsBlock}
+                                    </div>
+                                </>
+                            );
+                        }
+
+                        // Exactly one of them exists → the Pokédex entry leads the two-column
+                        // row (or the block takes the full width if there's no entry).
+                        const single = evolutionBlock || formsBlock;
+                        if (single) {
+                            return descriptionBlock ? (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+                                    {descriptionBlock}
+                                    {single}
+                                </div>
+                            ) : single;
+                        }
+
+                        // Neither exists → the Pokédex entry occupies the whole row.
+                        return descriptionBlock;
+                    })()}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-start">
                         <div className="flex flex-col gap-4">
