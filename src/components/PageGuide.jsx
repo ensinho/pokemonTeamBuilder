@@ -10,7 +10,7 @@ import { TRANSLATIONS } from '../constants/translations';
 
 const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 
-export function PageGuide({ colors, pageKey, db, userId, userEmail, displayName, showToast }) {
+export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToast }) {
     const { t, language } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [suggestionEmail, setSuggestionEmail] = useState(userEmail || '');
@@ -120,16 +120,16 @@ export function PageGuide({ colors, pageKey, db, userId, userEmail, displayName,
                 popoverRef={popoverRef}
                 className="w-[min(20rem,calc(100vw-1.5rem))] rounded-xl shadow-2xl flex flex-col"
                 style={{
-                    backgroundColor: colors.card,
-                    border: `1px solid ${colors.primary}40`,
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
                 }}
                 role="dialog"
                 ariaLabel={ariaLabelText}
                 viewportPadding={12}
                 arrowStyle={{
-                    backgroundColor: colors.card,
-                    borderTop: `1px solid ${colors.primary}40`,
-                    borderLeft: `1px solid ${colors.primary}40`,
+                    backgroundColor: 'var(--color-surface)',
+                    borderTop: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
+                    borderLeft: '1px solid color-mix(in srgb, var(--color-primary) 25%, transparent)',
                 }}
             >
                 <div className="p-4">
@@ -153,7 +153,7 @@ export function PageGuide({ colors, pageKey, db, userId, userEmail, displayName,
 
                 <div
                     className="px-4 py-3 rounded-b-xl border-t"
-                    style={{ borderColor: colors.cardLight, backgroundColor: `${colors.background}99` }}
+                    style={{ borderColor: 'var(--color-surface-raised)', backgroundColor: 'color-mix(in srgb, var(--color-bg) 60%, transparent)' }}
                 >
                     {sent ? (
                         <p className="text-center text-xs font-semibold text-primary">

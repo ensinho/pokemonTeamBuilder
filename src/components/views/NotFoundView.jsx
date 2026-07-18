@@ -5,7 +5,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 
 const LIGHT_THEMES = new Set(['light', 'daybreak', 'solar']);
 
-export function NotFoundView({ colors, navigate, theme }) {
+export function NotFoundView({ navigate, theme }) {
     const { t } = useTranslation();
     const isLightTheme = LIGHT_THEMES.has(theme);
 
@@ -33,17 +33,16 @@ export function NotFoundView({ colors, navigate, theme }) {
                 className="w-56 h-auto max-w-full mb-6 select-none"
                 draggable="false"
             />
-            <h1 className="text-2xl font-bold mb-2" style={{ color: colors.text }}>
+            <h1 className="text-2xl font-bold mb-2 text-fg">
                 {t('layout.notFoundTitle')}
             </h1>
-            <p className="text-sm mb-8 max-w-sm" style={{ color: colors.textMuted }}>
+            <p className="text-sm mb-8 max-w-sm text-muted">
                 {t('layout.notFoundDesc')}
             </p>
             <button
                 type="button"
                 onClick={() => navigate('/')}
-                className="inline-flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-bold text-white transition-opacity active:opacity-75"
-                style={{ backgroundColor: colors.primary }}
+                className="inline-flex items-center gap-2 rounded-xl py-2.5 px-5 text-sm font-bold text-white bg-primary transition-opacity active:opacity-75"
             >
                 <HomeIcon />
                 {t('layout.goHome')}
