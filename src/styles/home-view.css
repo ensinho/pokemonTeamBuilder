@@ -956,7 +956,10 @@
     }
 }
 
-@media (max-width: 1024px) {
+/* Keep the partner-card reflow aligned with the hero's row/column switch in
+   HomeView.jsx (flex-col → lg:flex-row). 1023 (lg − 1) so neither collides with
+   the other at the exact breakpoint pixel. */
+@media (max-width: 1023px) {
     .home-hero__content {
         flex-direction: column;
         align-items: stretch;

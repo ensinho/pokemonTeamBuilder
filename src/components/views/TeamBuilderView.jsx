@@ -205,8 +205,24 @@ export function TeamBuilderView({
     const { partnersFor, status: tournamentStatus, popular, synergy } = useTournamentData();
     const { byId: smogonById } = useSmogonData();
     const { byId: usageById } = useCompetitiveUsage();
-    // Real Smogon ladder usage for the current regulation — drives the "meta" signal.
-    const { ranked: metaRanked, usageMap: metaUsageMap } = useMetaUsage();
+    // Competitive regulation the user has paired the builder with (persisted).
+    // null → use the default regulation from the usage index.
+    const [selectedRegulation, setSelectedRegulation] = React.useState(() => {
+        if (typeof window === 'undefined') return null;
+        return window.localStorage.getItem('tb-regulation') || null;
+    });
+    React.useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (selectedRegulation) window.localStorage.setItem('tb-regulation', selectedRegulation);
+        else window.localStorage.removeItem('tb-regulation');
+    }, [selectedRegulation]);
+    // Real Smogon ladder usage for the chosen regulation — drives the "meta" signal.
+    const {
+        ranked: metaRanked,
+        usageMap: metaUsageMap,
+        formats: regulations,
+        formatId: activeRegulationId,
+    } = useMetaUsage(selectedRegulation);
 
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
 
@@ -333,6 +349,9 @@ export function TeamBuilderView({
                     selectedGame={selectedGame}
                     setSelectedGame={setSelectedGame}
                     games={games}
+                    regulations={regulations}
+                    selectedRegulation={activeRegulationId}
+                    onSelectRegulation={setSelectedRegulation}
                     generations={generations}
                     isInitialLoading={isInitialLoading}
                     displayedPokemons={displayedPokemons}
@@ -839,6 +858,9 @@ export function TeamBuilderView({
                 games={games}
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}
+                regulations={regulations}
+                selectedRegulation={activeRegulationId}
+                onSelectRegulation={setSelectedRegulation}
             />
 
             {isCoresOpen && (

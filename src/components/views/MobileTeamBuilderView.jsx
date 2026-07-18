@@ -349,6 +349,9 @@ export const MobileTeamBuilderView = ({
     selectedGame,
     setSelectedGame,
     games = [],
+    regulations = [],
+    selectedRegulation,
+    onSelectRegulation,
     generations,
     isInitialLoading,
     displayedPokemons,
@@ -924,6 +927,9 @@ export const MobileTeamBuilderView = ({
                 games={games}
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}
+                regulations={regulations}
+                selectedRegulation={selectedRegulation}
+                onSelectRegulation={onSelectRegulation}
             />
 
             {isCoresOpen && (

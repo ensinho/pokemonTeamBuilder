@@ -1,13 +1,22 @@
 import { useMemo } from 'react';
 import { useUsageIndex, useUsageFormat } from './useUsageStats';
 
-// The current-meta usage ranking (default regulation, e.g. Champions VGC Reg M-B)
-// exposed in a `popular`-compatible shape so the Team Builder suggestions and the
-// Home VGC card can rank by REAL Smogon ladder usage instead of the thin 120-team
-// tournament sample. Built on the shared usage hooks — no extra fetch.
-export function useMetaUsage() {
-    const { defaultFormatId, month, status: idxStatus } = useUsageIndex();
-    const { byId, format, status: fmtStatus } = useUsageFormat(defaultFormatId);
+// The current-meta usage ranking exposed in a `popular`-compatible shape so the
+// Team Builder suggestions and the Home VGC card can rank by REAL Smogon ladder
+// usage instead of the thin 120-team tournament sample. Built on the shared usage
+// hooks — no extra fetch.
+//
+// Pass a `formatId` to pair the ranking with a specific regulation (e.g. the one
+// the user picks in the Team Builder game selector); omit it (or pass an unknown
+// id) to fall back to the default regulation. Also returns the regulation catalog
+// so callers can render a selector.
+export function useMetaUsage(formatId) {
+    const { formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
+    // Only honour a requested regulation once we know it's real; otherwise default.
+    const activeId = (formatId && formats.some((f) => f.id === formatId))
+        ? formatId
+        : defaultFormatId;
+    const { byId, format, status: fmtStatus } = useUsageFormat(activeId);
 
     const ranked = useMemo(() => {
         if (!byId) return [];
@@ -23,6 +32,8 @@ export function useMetaUsage() {
         ranked,
         byId: byId || {},
         usageMap,
+        formats,
+        formatId: activeId,
         format,
         month,
         status: idxStatus === 'loading' || fmtStatus === 'loading' ? 'loading' : 'ready',

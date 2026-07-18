@@ -96,8 +96,21 @@ function GameCard({ logo, label, sub, accent, active, onClick }) {
 // ---------------------------------------------------------------------------
 // GamePickerModal — grid of game covers; selecting one sets the game filter.
 // ---------------------------------------------------------------------------
-export function GamePickerModal({ isOpen, onClose, games = [], selectedGame, onSelectGame }) {
-    const { t } = useTranslation();
+export function GamePickerModal({
+    isOpen,
+    onClose,
+    games = [],
+    selectedGame,
+    onSelectGame,
+    // Competitive regulations (from the usage index) that pair the builder's
+    // suggestions + usage data to a chosen meta. Optional — the section only
+    // renders when regulations are supplied.
+    regulations = [],
+    selectedRegulation,
+    onSelectRegulation,
+}) {
+    const { t, language } = useTranslation();
+    const pt = language === 'pt';
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
 
     if (!isOpen) return null;
@@ -107,6 +120,10 @@ export function GamePickerModal({ isOpen, onClose, games = [], selectedGame, onS
         onSelectGame?.(key);
         onClose?.();
     };
+    // Regulation picks tune the competitive data only — they don't filter the
+    // Pokédex, so keep the modal open so the user can also pick a game.
+    const chooseRegulation = (id) => onSelectRegulation?.(id);
+    const hasRegulations = regulations.length > 0 && typeof onSelectRegulation === 'function';
 
     return (
         <div
@@ -138,26 +155,70 @@ export function GamePickerModal({ isOpen, onClose, games = [], selectedGame, onS
                     </button>
                 </div>
 
-                <div className="game-picker__grid custom-scrollbar">
-                    <GameCard
-                        logo={POKEMON_LOGO}
-                        label={t('builder.allGames')}
-                        sub={t('builder.allGamesSubtitle')}
-                        accent="var(--color-primary)"
-                        active={current === 'all'}
-                        onClick={() => choose('all')}
-                    />
-                    {games.map((game) => (
-                        <GameCard
-                            key={game.key}
-                            logo={getGameLogo(game.key)}
-                            label={game.label}
-                            sub={game.count ? `${game.count} Pokémon` : null}
-                            accent={getGameAccent(game.generation)}
-                            active={current === game.key}
-                            onClick={() => choose(game.key)}
-                        />
-                    ))}
+                <div className="game-picker__body custom-scrollbar">
+                    {hasRegulations && (
+                        <section className="game-picker__section">
+                            <div className="game-picker__section-head">
+                                <h3 className="game-picker__section-title">
+                                    {pt ? 'Regulamento competitivo' : 'Competitive regulation'}
+                                </h3>
+                                <p className="game-picker__section-sub">
+                                    {pt
+                                        ? 'Alinha as sugestões e os dados de uso ao meta escolhido'
+                                        : 'Pairs the builder’s suggestions & usage data to the chosen meta'}
+                                </p>
+                            </div>
+                            <div className="game-picker__grid game-picker__grid--flush">
+                                {regulations.map((reg) => (
+                                    <GameCard
+                                        key={reg.id}
+                                        logo={getGameLogo('pokemonChampionsLogo')}
+                                        label={reg.label}
+                                        sub={reg.group}
+                                        accent={getGameAccent('generation-ix')}
+                                        active={selectedRegulation === reg.id}
+                                        onClick={() => chooseRegulation(reg.id)}
+                                    />
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    <section className="game-picker__section">
+                        {hasRegulations && (
+                            <div className="game-picker__section-head">
+                                <h3 className="game-picker__section-title">
+                                    {pt ? 'Pokédex do jogo' : 'Game Pokédex'}
+                                </h3>
+                                <p className="game-picker__section-sub">
+                                    {pt
+                                        ? 'Filtra a Pokédex pelos Pokémon obteníveis no jogo'
+                                        : 'Filters the Pokédex to a game’s obtainable Pokémon'}
+                                </p>
+                            </div>
+                        )}
+                        <div className="game-picker__grid game-picker__grid--flush">
+                            <GameCard
+                                logo={POKEMON_LOGO}
+                                label={t('builder.allGames')}
+                                sub={t('builder.allGamesSubtitle')}
+                                accent="var(--color-primary)"
+                                active={current === 'all'}
+                                onClick={() => choose('all')}
+                            />
+                            {games.map((game) => (
+                                <GameCard
+                                    key={game.key}
+                                    logo={getGameLogo(game.key)}
+                                    label={game.label}
+                                    sub={game.count ? `${game.count} Pokémon` : null}
+                                    accent={getGameAccent(game.generation)}
+                                    active={current === game.key}
+                                    onClick={() => choose(game.key)}
+                                />
+                            ))}
+                        </div>
+                    </section>
                 </div>
             </div>
         </div>

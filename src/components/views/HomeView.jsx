@@ -721,7 +721,7 @@ export function HomeView({
                                 </div>
                             </div>
                         </div>
-                        <div className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                        <div className="p-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                             <div className="space-y-2 flex-1 min-w-0">
                                 <h1 className="text-xl md:text-2xl font-bold text-fg leading-tight">
                                     {greeting.text}.
@@ -742,7 +742,7 @@ export function HomeView({
 
                             {greetingPokemonData && (
                                 <div
-                                    className="home-partner-card glass-card shadow-lg shrink-0 self-center md:self-auto"
+                                    className="home-partner-card glass-card shadow-lg shrink-0 self-center lg:self-auto"
                                     style={{
                                         '--partner-type-color': typeColors[greetingPokemonData.types?.[0]] || 'var(--color-primary)',
                                         '--partner-type-glow': `${typeColors[greetingPokemonData.types?.[0]] || 'var(--color-primary)'}22`

@@ -180,12 +180,45 @@
     color: var(--color-muted);
 }
 
+/* Scrollable modal body — holds one or more titled sections (regulation, games). */
+.game-picker__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+    padding: 1.1rem 1.25rem;
+    overflow-y: auto;
+}
+
+.game-picker__section-head {
+    margin-bottom: 0.7rem;
+}
+
+.game-picker__section-title {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-fg);
+}
+
+.game-picker__section-sub {
+    margin-top: 0.15rem;
+    font-size: 0.72rem;
+    color: var(--color-muted);
+}
+
 .game-picker__grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
     gap: 0.7rem;
     padding: 1.1rem 1.25rem;
     overflow-y: auto;
+}
+
+/* Grid nested inside .game-picker__body — the body owns padding + scroll. */
+.game-picker__grid--flush {
+    padding: 0;
+    overflow: visible;
 }
 
 /* --- Game card (cover tile) -------------------------------------------- */
