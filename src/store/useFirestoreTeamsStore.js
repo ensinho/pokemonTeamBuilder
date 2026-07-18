@@ -59,7 +59,10 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const unsubFavorites = onSnapshot(favoritesDocRef, (docSnap) => {
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    set({ favoritePokemons: new Set(data.ids || []) });
+                    // Normalize to numbers: ids may have been persisted as strings
+                    // (e.g. added from the /pokemon/:idOrName route param), which
+                    // would break Set.has() comparisons against numeric pokemon.id.
+                    set({ favoritePokemons: new Set((data.ids || []).map(Number)) });
                 } else {
                     set({ favoritePokemons: new Set() });
                 }
@@ -116,12 +119,13 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const currentFavorites = get().favoritePokemons;
 
             try {
+                const id = Number(pokemonId); // keep the Set numeric regardless of caller
                 const newFavorites = new Set(currentFavorites);
-                if (newFavorites.has(pokemonId)) {
-                    newFavorites.delete(pokemonId);
+                if (newFavorites.has(id)) {
+                    newFavorites.delete(id);
                     useToastStore.getState().showToast("Removed from favorites!", "info");
                 } else {
-                    newFavorites.add(pokemonId);
+                    newFavorites.add(id);
                     useToastStore.getState().showToast("Added to favorites!", "success");
                 }
 

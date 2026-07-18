@@ -1479,6 +1479,32 @@ export default function AppLayout() {
                         </footer>
                     )}
                 </div>
+
+                {isMobile && !isMobileDetailsOpen && (
+                    <nav className="app-shell__tabbar" aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
+                        {[
+                            { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
+                            { key: 'builder', label: t('nav.builder'), icon: <SwordsIcon />, path: '/builder' },
+                            { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
+                            { key: 'meta', label: 'Meta', icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
+                            { key: 'more', label: language === 'pt' ? 'Mais' : 'More', icon: <MenuIcon />, action: () => setIsSidebarOpen(true) },
+                        ].map((tab) => {
+                            const active = tab.key !== 'more' && (currentPage === tab.key || (tab.key === 'pokedex' && currentPage === 'pokemonDetail'));
+                            return (
+                                <button
+                                    key={tab.key}
+                                    type="button"
+                                    onClick={() => (tab.action ? tab.action() : navigate(tab.path))}
+                                    className={`app-shell__tab ${active ? 'is-active' : ''}`}
+                                    aria-current={active ? 'page' : undefined}
+                                >
+                                    <span className="app-shell__tab-icon" aria-hidden="true">{tab.icon}</span>
+                                    <span className="app-shell__tab-label">{tab.label}</span>
+                                </button>
+                            );
+                        })}
+                    </nav>
+                )}
             </div>
         </div>
     );

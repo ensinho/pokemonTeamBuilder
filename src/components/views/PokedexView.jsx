@@ -119,7 +119,7 @@ export function PokedexView({
 
     const displayedPokemons = useMemo(() => {
         return showOnlyFavorites
-            ? pokemons.filter((pokemon) => favoritePokemons.has(pokemon.id))
+            ? pokemons.filter((pokemon) => favoritePokemons.has(Number(pokemon.id)))
             : pokemons;
     }, [pokemons, showOnlyFavorites, favoritePokemons]);
 

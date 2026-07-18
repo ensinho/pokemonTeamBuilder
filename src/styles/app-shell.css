@@ -1243,3 +1243,97 @@
 .empty-state__action:active {
     transform: scale(0.98);
 }
+
+/* ============================================================
+   MOBILE BOTTOM TAB BAR — primary navigation on < lg (1024px).
+   Thumb-reach nav that replaces the hidden drawer as the primary
+   wayfinding on phones/tablets. "Mais" opens the full drawer for
+   the long tail. Hidden on desktop.
+   ============================================================ */
+.app-shell__tabbar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: var(--z-sticky);
+    display: flex;
+    align-items: stretch;
+    justify-content: space-around;
+    gap: 0.25rem;
+    padding: 0.3rem 0.4rem calc(0.3rem + env(safe-area-inset-bottom, 0px));
+    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
+    backdrop-filter: blur(12px) saturate(1.15);
+    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+    border-top: 1px solid var(--color-border);
+}
+
+@media (min-width: 1024px) {
+    .app-shell__tabbar {
+        display: none;
+    }
+}
+
+/* Reserve space so scrolled content + footer clear the fixed bar. */
+@media (max-width: 1023px) {
+    .app-shell__content {
+        padding-bottom: calc(3.9rem + env(safe-area-inset-bottom, 0px));
+    }
+    .app-shell__body.is-mobile-detail {
+        padding-bottom: 0;
+    }
+}
+
+.app-shell__tab {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    min-width: 0;
+    min-height: 2.9rem;
+    padding: 0.3rem 0.2rem;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__tab:hover {
+    color: var(--color-fg);
+}
+
+.app-shell__tab:active {
+    background: var(--color-surface-raised);
+}
+
+.app-shell__tab.is-active {
+    color: var(--color-primary);
+}
+
+.app-shell__tab-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.35rem;
+    width: 1.35rem;
+}
+
+.app-shell__tab-icon > svg {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.app-shell__tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.625rem;
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: 0.01em;
+}
