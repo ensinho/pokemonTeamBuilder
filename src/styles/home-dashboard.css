@@ -587,55 +587,79 @@
     .hd-tiles {
         grid-template-columns: repeat(3, 1fr);
     }
+
+    /* Shortcuts as icon-first quick actions: all 4 on one row, round icon chips
+       with the label underneath, no card chrome — reads like a native launcher. */
+    .hd-core-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.3rem;
+        margin-bottom: 0.25rem;
+    }
+    .hd-core-tile {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.15rem;
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
+    }
+    .hd-core-tile::before {
+        display: none; /* drop the card accent rail */
+    }
+    .hd-core-tile__icon-wrap {
+        width: 3.1rem;
+        height: 3.1rem;
+        margin: 0;
+        background: var(--color-primary-soft);
+        border-color: transparent;
+    }
+    .hd-core-tile:active .hd-core-tile__icon-wrap {
+        transform: scale(0.94);
+    }
+    .hd-core-tile__desc {
+        display: none;
+    }
+    .hd-core-tile__label {
+        font-size: 0.65rem;
+        line-height: 1.15;
+        font-weight: 600;
+    }
+
+    /* Popular mons as a horizontal snap rail — more of them visible in a single
+       row's height instead of wrapping into stacked rows (less vertical scroll,
+       more "app-like"). */
+    .hd-meta-mons-grid {
+        display: flex;
+        grid-template-columns: none;
+        gap: 0.5rem;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.35rem;
+        scrollbar-width: none;
+    }
+    .hd-meta-mons-grid::-webkit-scrollbar {
+        display: none;
+    }
+    .hd-meta-mons-grid > * {
+        flex: 0 0 4.5rem;
+        scroll-snap-align: start;
+    }
 }
 
 @media (max-width: 640px) {
-    .hd-core-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
-        margin-bottom: 0;
-    }
-
-    /* Mobile: surface only the highlight (core) shortcuts — hide the
-       secondary databases/utilities grid to keep the launcher focused. */
+    /* Shortcuts (.hd-core-*) are styled as icon-first quick actions in the
+       <=767 block above. Here we only hide the secondary databases/utilities
+       grid to keep the launcher focused. */
     .hd-divider-title,
     .hd-tiles {
         display: none !important;
     }
-    .hd-core-tile {
-        padding: 0.65rem 0.5rem;
-        flex-direction: column;
-        text-align: center;
-        gap: 0.35rem;
-        border-radius: 0.75rem;
-    }
-    .hd-core-tile__icon-wrap {
-        width: 2.2rem;
-        height: 2.2rem;
-        margin: 0;
-    }
-    .hd-core-tile__desc {
-        display: none !important;
-    }
-    .hd-core-tile__label {
-        font-size: 0.75rem;
-    }
-    
-    .hd-tiles {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.4rem;
-    }
-    
-    /* Mobile: fewer, bigger popular mons — 6 in a roomy 3-col grid so the
-       names fit and the row reads clean instead of cramped. */
-    .hd-meta-mons-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.45rem;
-    }
-    .hd-meta-mons-grid .hd-meta-mon-btn:nth-child(n + 7),
-    .hd-meta-mons-grid .hd-skel-mon-btn:nth-child(n + 7) {
-        display: none;
-    }
+
+    /* Popular mons render as a horizontal rail on mobile (see the <=767 block);
+       no column grid or 6-item cap here. */
     .hd-meta-mon-btn {
         padding: 0.5rem 0.25rem;
     }

@@ -904,7 +904,7 @@ export const TRANSLATIONS = {
             feed: 'Feed e Fórum',
             pokepuzzle: 'PokéPuzzle',
             database: 'Database',
-            pokemonList: 'Lista de Pokémon',
+            pokemonList: 'Pokédex',
             moves: 'Movimentos',
             abilities: 'Habilidades',
             items: 'Itens',

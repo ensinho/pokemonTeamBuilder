@@ -1007,6 +1007,12 @@
         overflow-x: hidden;
     }
 
+    /* Trim the flavor line on phones to shorten the hero (greeting + streak +
+       partner carry it). */
+    .home-readme-description {
+        display: none;
+    }
+
     .home-panel--hero {
         min-height: auto;
         padding: 0.85rem !important;

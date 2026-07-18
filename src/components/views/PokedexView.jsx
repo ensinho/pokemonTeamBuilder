@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
-import { Search, Star, X } from 'lucide-react';
+import { Search, Star, X, SlidersHorizontal } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
 import { typeColors, typeIcons } from '../../constants/types';
 import { EmptyState } from '../EmptyState';
+import { BottomSheet } from '../BottomSheet';
 import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
 import { StarIcon } from '../icons';
@@ -116,12 +117,19 @@ export function PokedexView({
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
     const displayedPokemons = useMemo(() => {
         return showOnlyFavorites
             ? pokemons.filter((pokemon) => favoritePokemons.has(Number(pokemon.id)))
             : pokemons;
     }, [pokemons, showOnlyFavorites, favoritePokemons]);
+
+    // Count of active filters (excluding search + favorites, which stay inline) —
+    // drives the badge on the mobile "Filtros" button.
+    const activeFilterCount = selectedTypes.size
+        + (selectedGeneration && selectedGeneration !== 'all' ? 1 : 0)
+        + (selectedGame && selectedGame !== 'all' ? 1 : 0);
 
     const selectedTypeCount = selectedTypes.size;
 
@@ -153,100 +161,128 @@ export function PokedexView({
         return (
             <div className="team-builder-mobile space-y-4 font-mono">
                 <section className="team-builder-panel p-4">
-                    <div className="pokedex-mobile-filters">
-                        {/* Search row */}
-                        <div className="pokedex-mobile-filter-full">
-                            <div className="relative w-full">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none flex items-center">
-                                    <Search className="w-4 h-4" />
-                                </span>
-                                <input
-                                    type="text"
-                                    placeholder={t('pokedex.searchPlaceholder')}
-                                    value={searchInput}
-                                    onChange={(e) => setSearchInput(e.target.value)}
-                                    className="team-builder-field w-full pl-9 pr-8"
-                                    style={{ boxShadow: 'none' }}
-                                />
-                                {searchInput && (
-                                    <button
-                                        type="button"
-                                        onClick={() => setSearchInput('')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-fg"
-                                        aria-label={t('common.clear')}
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                )}
-                            </div>
+                    <div className="pokedex-mobile-filterbar">
+                        <div className="relative flex-1 min-w-0">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none flex items-center">
+                                <Search className="w-4 h-4" />
+                            </span>
+                            <input
+                                type="text"
+                                placeholder={t('pokedex.searchPlaceholder')}
+                                value={searchInput}
+                                onChange={(e) => setSearchInput(e.target.value)}
+                                className="team-builder-field w-full pl-9 pr-8"
+                                style={{ boxShadow: 'none' }}
+                            />
+                            {searchInput && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearchInput('')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-fg"
+                                    aria-label={t('common.clear')}
+                                >
+                                    <X className="w-4 h-4" />
+                                </button>
+                            )}
                         </div>
 
-                        {/* Gen Dropdown */}
-                        <div className="relative w-full">
-                            <select
-                                value={selectedGeneration}
-                                onChange={(e) => setSelectedGeneration(e.target.value)}
-                                className="team-builder-field team-builder-select w-full pr-8 appearance-none capitalize"
-                                aria-label={t('pokedex.genFilterLabel')}
-                                style={{ background: 'none' }}
-                            >
-                                <option value="all">Gen: {language === 'pt' ? 'Todas' : 'All'}</option>
-                                {generations.map((generation) => (
-                                    <option key={generation} value={generation} className="capitalize">
-                                        {generation.replace('generation-', '').replace('-', ' ').toUpperCase()}
-                                    </option>
-                                ))}
-                            </select>
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-[10px]">▼</span>
-                        </div>
-
-                        {/* Game Filter Chip */}
-                        <GameFilterChip
-                            games={games}
-                            selectedGame={selectedGame}
-                            onOpen={() => setIsGamePickerOpen(true)}
-                            className="w-full"
-                        />
-
-                        {/* Favorites Toggle Button */}
+                        {/* Favorites stays inline (one tap, high-frequency) */}
                         <button
                             type="button"
                             onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                            className={`w-full rounded-md border transition-all flex items-center justify-center ${showOnlyFavorites ? 'border-accent bg-accent-soft text-accent' : 'border-border bg-surface-raised text-muted'}`}
+                            className={`pokedex-mobile-iconbtn ${showOnlyFavorites ? 'is-active-fav' : ''}`}
                             aria-pressed={showOnlyFavorites}
                             title={showOnlyFavorites ? t('pokedex.favoritesOnly') : t('common.all')}
                         >
                             <Star className={`w-4 h-4 ${showOnlyFavorites ? 'fill-[#FBBF24] text-[#FBBF24]' : ''}`} />
                         </button>
-                    </div>
 
-                    {/* Horizontally scrolling type badges */}
-                    <div className="pokedex-mobile-types-container pt-2 mt-2">
-                        <div className="pokedex-mobile-types">
-                            {Object.keys(typeColors).map((type) => {
-                                const isActive = selectedTypes.has(type);
-                                return (
-                                    <button
-                                        key={type}
-                                        type="button"
-                                        onClick={() => handleTypeSelection(type)}
-                                        className={`pokedex-mobile-type-badge ${isActive ? 'is-active' : ''}`}
-                                        style={{
-                                            '--type-color': typeColors[type],
-                                            backgroundColor: isActive ? typeColors[type] : 'var(--color-surface-raised)',
-                                            borderColor: isActive ? typeColors[type] : 'var(--color-border)',
-                                            color: isActive ? '#fff' : 'var(--color-fg)'
-                                        }}
-                                        title={type}
-                                    >
-                                        <img src={typeIcons[type]} alt={type} className="w-3.5 h-3.5 object-contain" />
-                                        <span className="text-[10px] font-bold capitalize select-none">{type}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        {/* Gen · game · types collapse into a bottom sheet */}
+                        <button
+                            type="button"
+                            onClick={() => setIsFiltersOpen(true)}
+                            className={`pokedex-mobile-iconbtn ${activeFilterCount > 0 ? 'is-active' : ''}`}
+                            aria-label={language === 'pt' ? 'Filtros' : 'Filters'}
+                        >
+                            <SlidersHorizontal className="w-4 h-4" />
+                            {activeFilterCount > 0 && (
+                                <span className="pokedex-mobile-iconbtn__badge">{activeFilterCount}</span>
+                            )}
+                        </button>
                     </div>
                 </section>
+
+                {isFiltersOpen && (
+                    <BottomSheet onClose={() => setIsFiltersOpen(false)} title={language === 'pt' ? 'Filtros' : 'Filters'}>
+                        <div className="space-y-5">
+                            <div>
+                                <p className="pokedex-sheet-label">{language === 'pt' ? 'Geração' : 'Generation'}</p>
+                                <div className="relative w-full">
+                                    <select
+                                        value={selectedGeneration}
+                                        onChange={(e) => setSelectedGeneration(e.target.value)}
+                                        className="team-builder-field team-builder-select w-full pr-8 appearance-none capitalize"
+                                        aria-label={t('pokedex.genFilterLabel')}
+                                        style={{ background: 'none' }}
+                                    >
+                                        <option value="all">Gen: {language === 'pt' ? 'Todas' : 'All'}</option>
+                                        {generations.map((generation) => (
+                                            <option key={generation} value={generation} className="capitalize">
+                                                {generation.replace('generation-', '').replace('-', ' ').toUpperCase()}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-[10px]">▼</span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <p className="pokedex-sheet-label">{language === 'pt' ? 'Jogo' : 'Game'}</p>
+                                <GameFilterChip
+                                    games={games}
+                                    selectedGame={selectedGame}
+                                    onOpen={() => setIsGamePickerOpen(true)}
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div>
+                                <p className="pokedex-sheet-label">{language === 'pt' ? 'Tipos' : 'Types'}</p>
+                                <div className="pokedex-sheet-types">
+                                    {Object.keys(typeColors).map((type) => {
+                                        const isActive = selectedTypes.has(type);
+                                        return (
+                                            <button
+                                                key={type}
+                                                type="button"
+                                                onClick={() => handleTypeSelection(type)}
+                                                className={`pokedex-mobile-type-badge ${isActive ? 'is-active' : ''}`}
+                                                style={{
+                                                    '--type-color': typeColors[type],
+                                                    backgroundColor: isActive ? typeColors[type] : 'var(--color-surface-raised)',
+                                                    borderColor: isActive ? typeColors[type] : 'var(--color-border)',
+                                                    color: isActive ? '#fff' : 'var(--color-fg)'
+                                                }}
+                                                title={type}
+                                            >
+                                                <img src={typeIcons[type]} alt={type} className="w-3.5 h-3.5 object-contain" />
+                                                <span className="text-[10px] font-bold capitalize select-none">{type}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                className="btn btn-primary w-full"
+                                onClick={() => setIsFiltersOpen(false)}
+                            >
+                                {language === 'pt' ? 'Ver resultados' : 'Show results'}
+                            </button>
+                        </div>
+                    </BottomSheet>
+                )}
 
                 <section className="team-builder-panel p-4">
                     {isInitialLoading ? (

@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
-import { Dices, Trophy, ShieldCheck, Sparkles, ChevronDown, SlidersHorizontal, Search } from 'lucide-react';
-import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
+import { Dices, Trophy, ShieldCheck, Sparkles, SlidersHorizontal, Search } from 'lucide-react';
+import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
+import { BottomSheet } from '../BottomSheet';
 import { Sprite } from '../Sprite';
 import { TypeBadge } from '../TypeBadge';
 import { AnchoredPopover } from '../AnchoredPopover';
@@ -378,6 +379,7 @@ export const MobileTeamBuilderView = ({
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [filtersExpanded, setFiltersExpanded] = React.useState(false);
+    const [savedTeamsOpen, setSavedTeamsOpen] = React.useState(false);
     const { byId: smogonById } = useSmogonData();
     const { byId: usageById } = useCompetitiveUsage();
     const teamCores = React.useMemo(
@@ -469,30 +471,8 @@ export const MobileTeamBuilderView = ({
         <div className="team-builder-mobile space-y-3">
             <div className="team-builder-mobile__sticky">
                 <section className="team-builder-panel team-builder-mobile__composer p-3.5">
-                    <div className="team-builder-panel__header flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div>
-                                <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Escalação atual' : 'Current team'}</p>
-                            </div>
-                            {editingTeamId && (
-                                editingTeamId === activeTeamId ? (
-                                    <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ {t('common.active')}</span>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => setActiveTeamId(editingTeamId)}
-                                        className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider"
-                                        style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
-                                    >
-                                        {language === 'pt' ? 'Ativar' : 'Set Active'}
-                                    </button>
-                                )
-                            )}
-                        </div>
-                        <span className="team-builder-panel__meta">{currentTeam.length}/6</span>
-                    </div>
-
-                    <div className="team-builder-mobile__composer-row mt-3">
+                    {/* Row 1: team name + count only */}
+                    <div className="team-builder-mobile__composer-top">
                         <input
                             type="text"
                             value={teamName}
@@ -501,44 +481,24 @@ export const MobileTeamBuilderView = ({
                             className="team-builder-field min-w-0 flex-1"
                             aria-label={t('builder.teamNamePlaceholder')}
                         />
-                        <button
-                            type="button"
-                            onClick={handleSaveTeam}
-                            className="team-builder-icon-button team-builder-icon-button--primary"
-                            aria-label={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
-                            title={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
-                        >
-                            <Save className="h-4 w-4" />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleShareTeam}
-                            className="team-builder-icon-button"
-                            aria-label={t('builder.shareTeam')}
-                            title={t('builder.shareTeam')}
-                        >
-                            <ShareIcon />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleExportToShowdown}
-                            className="team-builder-icon-button"
-                            aria-label={t('builder.exportShowdown')}
-                            title={t('builder.exportShowdown')}
-                        >
-                            <ShowdownIcon />
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleClearTeam}
-                            className="team-builder-icon-button team-builder-icon-button--danger"
-                            aria-label={t('builder.clearTeam')}
-                            title={t('builder.clearTeam')}
-                        >
-                            <ClearIcon />
-                        </button>
+                        {editingTeamId && (
+                            editingTeamId === activeTeamId ? (
+                                <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0">★ {t('common.active')}</span>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTeamId(editingTeamId)}
+                                    className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider shrink-0"
+                                    style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
+                                >
+                                    {language === 'pt' ? 'Ativar' : 'Set Active'}
+                                </button>
+                            )
+                        )}
+                        <span className="team-builder-panel__meta shrink-0">{currentTeam.length}/6</span>
                     </div>
 
+                    {/* Row 2: team slots */}
                     <div className="team-builder-mobile__slots mt-2.5">
                         {Array.from({ length: 6 }).map((_, index) => (
                             <MobileTeamSlot
@@ -552,16 +512,58 @@ export const MobileTeamBuilderView = ({
                         ))}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={() => handleRandomizeTeam?.(displayedPokemons)}
-                        disabled={isRandomizing || displayedPokemons.length === 0}
-                        className="team-builder-button team-builder-button--secondary team-builder-randomize mt-2.5 w-full"
-                        title={t('builder.randomizeTeam')}
-                    >
-                        <Dices className="h-4 w-4" />
-                        {isRandomizing ? t('builder.randomizing') : t('builder.randomizeTeam')}
-                    </button>
+                    {/* Row 3: Salvar (primary) + actions filling the remaining width */}
+                    <div className="team-builder-mobile__composer-actions mt-2.5">
+                        <button
+                            type="button"
+                            onClick={handleSaveTeam}
+                            className="team-builder-button team-builder-button--primary team-builder-mobile__save"
+                            aria-label={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
+                            title={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
+                        >
+                            <Save className="h-4 w-4" />
+                            <span>{editingTeamId ? (language === 'pt' ? 'Atualizar' : 'Update') : (language === 'pt' ? 'Salvar' : 'Save')}</span>
+                        </button>
+                        <div className="team-builder-mobile__composer-icons">
+                            <button
+                                type="button"
+                                onClick={() => handleRandomizeTeam?.(displayedPokemons)}
+                                disabled={isRandomizing || displayedPokemons.length === 0}
+                                className="team-builder-icon-button"
+                                aria-label={t('builder.randomizeTeam')}
+                                title={t('builder.randomizeTeam')}
+                            >
+                                <Dices className="h-4 w-4" />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleShareTeam}
+                                className="team-builder-icon-button"
+                                aria-label={t('builder.shareTeam')}
+                                title={t('builder.shareTeam')}
+                            >
+                                <ShareIcon />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleExportToShowdown}
+                                className="team-builder-icon-button"
+                                aria-label={t('builder.exportShowdown')}
+                                title={t('builder.exportShowdown')}
+                            >
+                                <ShowdownIcon />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleClearTeam}
+                                className="team-builder-icon-button team-builder-icon-button--danger"
+                                aria-label={t('builder.clearTeam')}
+                                title={t('builder.clearTeam')}
+                            >
+                                <ClearIcon />
+                            </button>
+                        </div>
+                    </div>
 
                     <TeamAnalysisChip
                         teamAnalysis={teamAnalysis}
@@ -595,113 +597,115 @@ export const MobileTeamBuilderView = ({
                         {activeFilterCount > 0 && (
                             <span className="team-builder-mobile__filter-count">{activeFilterCount}</span>
                         )}
-                        <ChevronDown className={`team-builder-mobile__filter-chevron h-4 w-4 shrink-0 ${filtersExpanded ? 'is-open' : ''}`} />
                     </button>
                 </div>
 
                 {filtersExpanded && (
-                    <div className="team-builder-mobile__filters mt-3">
-                        <label className="team-builder-control team-builder-mobile__filter-control">
-                            <span className="team-builder-control__label">{t('pokedex.genFilterLabel')}</span>
-                            <select
-                                value={selectedGeneration}
-                                onChange={(event) => setSelectedGeneration(event.target.value)}
-                                className="team-builder-field team-builder-select"
-                            >
-                                <option value="all">{t('pokedex.allGens')}</option>
-                                {generations.map((generation) => (
-                                    <option key={generation} value={generation} className="capitalize">
-                                        {generation.replace('-', ' ')}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
+                    <BottomSheet onClose={() => setFiltersExpanded(false)} title={language === 'pt' ? 'Filtros' : 'Filters'}>
+                        <div className="team-builder-mobile__filters">
+                            {games.length > 0 && setSelectedGame && (
+                                <div className="team-builder-mobile__filter-block">
+                                    <span className="team-builder-control__label">{t('builder.gameFilterLabel')}</span>
+                                    <GameFilterChip
+                                        games={games}
+                                        selectedGame={selectedGame}
+                                        onOpen={() => { setFiltersExpanded(false); setIsGamePickerOpen(true); }}
+                                        className="w-full"
+                                    />
+                                </div>
+                            )}
 
-                        {games.length > 0 && setSelectedGame && (
-                            <label className="team-builder-control team-builder-mobile__filter-control">
-                                <span className="team-builder-control__label">{t('builder.gameFilterLabel')}</span>
-                                <GameFilterChip
-                                    games={games}
-                                    selectedGame={selectedGame}
-                                    onOpen={() => setIsGamePickerOpen(true)}
-                                    className="w-full"
-                                />
-                            </label>
-                        )}
+                            <div className="team-builder-mobile__filter-block">
+                                <span className="team-builder-control__label">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
+                                <div className="team-builder-mobile__filter-row">
+                                    <button
+                                        type="button"
+                                        onClick={() => { setFiltersExpanded(false); setIsCoresOpen(true); }}
+                                        className="team-builder-mobile__sheet-core min-w-0 flex-1"
+                                    >
+                                        <span className="flex min-w-0 items-center gap-2">
+                                            <Atom className="h-4 w-4 shrink-0 text-primary" />
+                                            <span className="truncate">
+                                                {teamCores.length > 0
+                                                    ? (language === 'pt' ? `${teamCores.length} core montado${teamCores.length > 1 ? 's' : ''}` : `${teamCores.length} core${teamCores.length > 1 ? 's' : ''} built`)
+                                                    : (language === 'pt' ? 'Montar um core' : 'Build a core')}
+                                            </span>
+                                        </span>
+                                        <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+                                        className={`team-builder-mobile__fav-icon ${showOnlyFavorites ? 'is-active' : ''}`}
+                                        aria-pressed={showOnlyFavorites}
+                                        aria-label={language === 'pt' ? 'Somente favoritos' : 'Favorites only'}
+                                        title={language === 'pt' ? 'Somente favoritos' : 'Favorites only'}
+                                    >
+                                        <StarIcon className="w-4 h-4" isFavorite={showOnlyFavorites} color="currentColor" />
+                                    </button>
+                                </div>
+                            </div>
 
-                        <div className="team-builder-control team-builder-mobile__filter-control team-builder-mobile__filter-control--full">
-                            <span className="team-builder-control__label">{t('pokedex.typesFilterLabel')}</span>
-                            <div className="team-builder-mobile__filter-group">
+                            <div className="team-builder-mobile__filter-block">
+                                <span className="team-builder-control__label">{t('pokedex.genFilterLabel')}</span>
                                 <select
-                                    value={selectedTypeValue}
-                                    onChange={(event) => handleTypeSelectChange(event.target.value)}
-                                    className="team-builder-field team-builder-select"
+                                    value={selectedGeneration}
+                                    onChange={(event) => setSelectedGeneration(event.target.value)}
+                                    className="team-builder-field team-builder-select w-full"
                                 >
-                                    <option value="all">{t('pokedex.allTypes')}</option>
-                                    {Object.keys(typeIcons).map((type) => (
-                                        <option key={type} value={type} className="capitalize">
-                                            {t(`types.${type}`)}
+                                    <option value="all">{t('pokedex.allGens')}</option>
+                                    {generations.map((generation) => (
+                                        <option key={generation} value={generation} className="capitalize">
+                                            {generation.replace('-', ' ')}
                                         </option>
                                     ))}
                                 </select>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
-                                    className={`team-builder-toggle team-builder-mobile__toggle-favorite ${showOnlyFavorites ? 'is-active' : ''}`}
-                                    aria-pressed={showOnlyFavorites}
-                                    title={t('pokedex.favoritesOnly')}
-                                >
-                                    <StarIcon className="w-5 h-5" isFavorite={showOnlyFavorites} color="currentColor" />
-                                </button>
+                            </div>
+
+                            <div className="team-builder-mobile__filter-block team-builder-mobile__filter-block--types">
+                                <span className="team-builder-control__label">{t('pokedex.typesFilterLabel')}</span>
+                                <div className="pokedex-sheet-types">
+                                    {Object.keys(typeColors).map((type) => {
+                                        const isActive = selectedTypes.has(type);
+                                        return (
+                                            <button
+                                                key={type}
+                                                type="button"
+                                                onClick={() => handleTypeSelectChange(isActive ? 'all' : type)}
+                                                className={`pokedex-mobile-type-badge ${isActive ? 'is-active' : ''}`}
+                                                style={{
+                                                    '--type-color': typeColors[type],
+                                                    backgroundColor: isActive ? typeColors[type] : 'var(--color-surface-raised)',
+                                                    borderColor: isActive ? typeColors[type] : 'var(--color-border)',
+                                                    color: isActive ? '#fff' : 'var(--color-fg)'
+                                                }}
+                                                title={type}
+                                            >
+                                                <img src={typeIcons[type]} alt={type} className="w-3.5 h-3.5 object-contain" />
+                                                <span className="text-[10px] font-bold capitalize select-none">{type}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                        <button
+                            type="button"
+                            className="btn btn-primary w-full"
+                            onClick={() => setFiltersExpanded(false)}
+                        >
+                            {language === 'pt' ? 'Ver resultados' : 'Show results'}
+                        </button>
+                    </BottomSheet>
                 )}
             </section>
 
             <section className="team-builder-panel p-3.5">
-                <div className="team-builder-picker-cover-row mb-3">
-                    <GameCoverBanner
-                        games={games}
-                        selectedGame={selectedGame}
-                        onOpen={() => setIsGamePickerOpen(true)}
-                        className="game-cover--compact"
-                    />
-                    <span className="team-builder-panel__meta shrink-0">
-                        {displayedPokemons.length}
-                    </span>
+                {/* Game & Core now live in the Filtros sheet — keep only a light
+                   result count here. */}
+                <div className="team-builder-mobile__result-count mb-2.5">
+                    {displayedPokemons.length} Pokémon
                 </div>
-
-
-
-                <button
-                    type="button"
-                    onClick={() => setIsCoresOpen(true)}
-                    className="mt-2.5 flex w-full items-center gap-3 rounded-xl border border-border bg-bg p-2.5 text-left active:border-primary"
-                >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/15">
-                        <Atom className="h-4 w-4 text-primary" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-bold text-fg">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
-                        <span className="mt-1 flex flex-wrap items-center gap-1">
-                            {teamCores.length > 0 ? (
-                                teamCores.slice(0, 3).map((c) => {
-                                    const CIcon = coreIconFor(c.id);
-                                    return (
-                                        <span key={c.id} className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ color: c.accent, backgroundColor: `${c.accent}22` }}>
-                                            <CIcon className="h-3 w-3" />{c.name}
-                                        </span>
-                                    );
-                                })
-                            ) : (
-                                <span className="text-[11px] text-muted">{language === 'pt' ? 'Toque para montar um core' : 'Tap to build a core'}</span>
-                            )}
-                            {teamCores.length > 3 && <span className="text-[10px] font-bold text-muted">+{teamCores.length - 3}</span>}
-                        </span>
-                    </span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
-                </button>
 
                 <div className="team-builder-mobile__available mt-2">
                     {isInitialLoading ? (
@@ -833,24 +837,30 @@ export const MobileTeamBuilderView = ({
             )}
 
             <section className="team-builder-panel p-4">
-                <div className="flex items-center justify-between gap-3">
-                    <div>
-                        <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Trabalho salvo' : 'Saved work'}</p>
-                        <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">
+                <button
+                    type="button"
+                    onClick={() => setSavedTeamsOpen(true)}
+                    className="team-builder-mobile__saved-trigger"
+                >
+                    <span className="min-w-0 text-left">
+                        <span className="team-builder-panel__eyebrow block">{language === 'pt' ? 'Trabalho salvo' : 'Saved work'}</span>
+                        <span className="team-builder-mobile__saved-trigger-title">
                             {language === 'pt' ? 'Retomar equipe salva' : 'Resume a saved lineup'}
-                        </h3>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={onNavigateToTeams}
-                        className="team-builder-button team-builder-button--inline team-builder-button--inline-compact"
-                    >
-                        {t('home.seeAll')}
-                    </button>
-                </div>
+                        </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                        {recentTeams.length > 0 && (
+                            <span className="team-builder-mobile__core-count">{recentTeams.length}</span>
+                        )}
+                        <ChevronRight className="h-4 w-4 text-muted" />
+                    </span>
+                </button>
+            </section>
 
-                <div className="mt-3 space-y-2.5">
-                    {recentTeams.length > 0 ? recentTeams.map((team) => (
+            {savedTeamsOpen && (
+                <BottomSheet onClose={() => setSavedTeamsOpen(false)} title={language === 'pt' ? 'Times salvos' : 'Saved teams'}>
+                    <div className="space-y-2.5">
+                        {recentTeams.length > 0 ? recentTeams.map((team) => (
                         <div
                             key={team.id}
                             className="team-builder-mobile__recent-card"
@@ -918,8 +928,16 @@ export const MobileTeamBuilderView = ({
                             {language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}
                         </p>
                     )}
-                </div>
-            </section>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => { setSavedTeamsOpen(false); onNavigateToTeams(); }}
+                        className="btn btn-outline w-full mt-3"
+                    >
+                        {t('home.seeAll')}
+                    </button>
+                </BottomSheet>
+            )}
 
             <GamePickerModal
                 isOpen={isGamePickerOpen}

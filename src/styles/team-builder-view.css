@@ -739,6 +739,14 @@
 
 .team-builder-mobile__composer {
     box-shadow: var(--elevation-2);
+    /* Tighter top so the name row sits closer to the card edge. */
+    padding-top: 0.7rem;
+}
+
+/* Slightly shorter team-name input than the shared field default. */
+.team-builder-mobile__composer-top .team-builder-field {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
 }
 
 .team-builder-mobile__composer-row {
@@ -1421,6 +1429,260 @@
 
 .pokedex-mobile-filter-full {
     grid-column: 1 / -1;
+}
+
+/* Compact mobile filter bar: search + favorites + "Filtros" (opens a sheet). */
+.pokedex-mobile-filterbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.pokedex-mobile-iconbtn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.pokedex-mobile-iconbtn:hover {
+    color: var(--color-fg);
+    border-color: var(--color-border-hover);
+}
+
+.pokedex-mobile-iconbtn.is-active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.pokedex-mobile-iconbtn.is-active-fav {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+}
+
+.pokedex-mobile-iconbtn__badge {
+    position: absolute;
+    top: -0.35rem;
+    right: -0.35rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.05rem;
+    height: 1.05rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1;
+    border: 2px solid var(--color-surface);
+}
+
+/* Filter bottom-sheet sections */
+.pokedex-sheet-label {
+    margin: 0 0 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.pokedex-sheet-types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+/* Team Builder mobile: compact picker toolbar (game chip · Core chip · count). */
+.team-builder-mobile__picker-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.team-builder-mobile__core-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-shrink: 0;
+    height: 2.5rem;
+    padding: 0 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-mobile__core-chip:active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.team-builder-mobile__core-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.1rem;
+    height: 1.1rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+}
+
+/* Team Builder mobile composer — compact 3-row layout:
+   (1) name + count, (2) slots, (3) Salvar + action icons filling the rest. */
+.team-builder-mobile__composer-top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.team-builder-mobile__composer-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+.team-builder-mobile__save {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.team-builder-mobile__composer-icons {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    gap: 0.4rem;
+}
+
+/* Icons stretch to share the remaining width evenly (bigger tap targets). */
+.team-builder-mobile__composer-icons > .team-builder-icon-button {
+    flex: 1;
+    width: auto;
+}
+
+/* Result count above the picker grid (game & Core moved to the Filtros sheet). */
+.team-builder-mobile__result-count {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+/* Filtros sheet — vertical stack of labelled blocks for clear spacing. */
+.team-builder-mobile__filters {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+}
+
+.team-builder-mobile__filter-block {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.team-builder-mobile__sheet-core {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-mobile__sheet-core:active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+/* A filter row that pairs a full-width control with an inline icon toggle. */
+.team-builder-mobile__filter-row {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+}
+
+/* Favorites toggle as a square icon button, inline beside the Core control. */
+.team-builder-mobile__fav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 2.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-mobile__fav-icon.is-active {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+}
+
+/* Extra breathing room under the Tipos grid before the sheet footer. */
+.team-builder-mobile__filter-block--types {
+    padding-bottom: 0.35rem;
+}
+
+/* Saved-teams trigger — opens the saved teams in a bottom sheet. */
+.team-builder-mobile__saved-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0;
+    border: none;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.team-builder-mobile__saved-trigger-title {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-fg);
 }
 
 /* Regional / National Pokedex Section Headers in Grid */
