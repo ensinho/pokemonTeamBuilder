@@ -12,6 +12,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { appId, ADMIN_EMAILS } from '../constants/firebase';
+import { PATCH_NOTES_VERSION } from '../constants/theme';
 import { useThemeStore } from './useThemeStore';
 import { useToastStore } from './useToastStore';
 import { useLanguageStore } from './useLanguageStore';
@@ -51,6 +52,57 @@ const migratePokePuzzleProgress = async (fromUid, toUid) => {
     }
 };
 
+// --- Auth snapshot (stale-while-revalidate boot) -------------------------
+// Firebase already persists the session locally, but the initial splash used
+// to block until onAuthStateChanged + the Firestore preferences read both
+// finished — several seconds on bad latency. This snapshot lets us render the
+// app immediately with the last-known identity and reconcile against the real
+// auth/Firestore state in the background. It is a UX cache only: isAdmin is
+// NEVER trusted from here (it's re-derived from the real token), and no
+// privileged data loads without Firestore rules authorizing it server-side.
+const SNAPSHOT_KEY = 'ptb:authSnapshot';
+const SNAPSHOT_SCHEMA = 1; // bump to invalidate all snapshots on a shape change
+const SNAPSHOT_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+// A snapshot is only usable if it matches the current schema AND the current
+// app version AND is within the TTL. The version check means a deploy that
+// bumps PATCH_NOTES_VERSION transparently invalidates every cached snapshot
+// (the version-bump cleanup in AppLayout also wipes the key outright).
+const readAuthSnapshot = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+        const raw = localStorage.getItem(SNAPSHOT_KEY);
+        if (!raw) return null;
+        const snap = JSON.parse(raw);
+        if (!snap || snap.schema !== SNAPSHOT_SCHEMA) return null;
+        if (snap.appVersion !== PATCH_NOTES_VERSION) return null;
+        if (!snap.ts || (Date.now() - snap.ts) > SNAPSHOT_TTL_MS) return null;
+        if (typeof snap.uid !== 'string' || !snap.uid) return null;
+        return snap;
+    } catch (_) {
+        return null;
+    }
+};
+
+const writeAuthSnapshot = ({ uid, email, isAnonymous }) => {
+    if (typeof window === 'undefined' || !uid) return;
+    try {
+        localStorage.setItem(SNAPSHOT_KEY, JSON.stringify({
+            schema: SNAPSHOT_SCHEMA,
+            appVersion: PATCH_NOTES_VERSION,
+            ts: Date.now(),
+            uid,
+            email: email || null,
+            isAnonymous: !!isAnonymous,
+        }));
+    } catch (_) { /* ignore */ }
+};
+
+const clearAuthSnapshot = () => {
+    if (typeof window === 'undefined') return;
+    try { localStorage.removeItem(SNAPSHOT_KEY); } catch (_) { /* ignore */ }
+};
+
 const getInitialStreak = () => {
     if (typeof window === 'undefined') return { count: 0, longest: 0, lastVisit: null };
     try {
@@ -82,6 +134,11 @@ export const useAuthStore = create((set, get) => {
     let authUnsubscribe = null;
     let syncNudgeTimer = null;
     let profileHydratedFromFirestore = false;
+
+    // Read once at store creation. If present, the app boots as "ready" with
+    // the last-known identity instead of waiting on the network round-trips;
+    // onAuthStateChanged then reconciles the real state in the background.
+    const bootSnapshot = readAuthSnapshot();
 
     // Advance a streak by one "day played". Pure date-diff: same day → no-op,
     // exactly +1 day → increment, any gap → reset to 1. `lastVisit` holds the
@@ -128,10 +185,13 @@ export const useAuthStore = create((set, get) => {
     };
 
     return {
-        userId: null,
-        userEmail: null,
-        isAnonymous: true,
-        isAuthReady: false,
+        userId: bootSnapshot?.uid ?? null,
+        userEmail: bootSnapshot?.email ?? null,
+        isAnonymous: bootSnapshot ? bootSnapshot.isAnonymous : true,
+        // Optimistically ready when we trust a fresh snapshot — this is what
+        // dismisses the splash without waiting for auth/Firestore.
+        isAuthReady: bootSnapshot ? true : false,
+        // Never seeded from cache — a privileged flag must come from the token.
         isAdmin: false,
         displayName: '',
         greetingPokemonId: getInitialGreeting().id,
@@ -238,12 +298,20 @@ export const useAuthStore = create((set, get) => {
                         set({ streak: getInitialStreak() });
                     } finally {
                         profileHydratedFromFirestore = true;
-                        
+
                         // Push preferences state to Firestore to ensure sync
                         await get().syncPreferencesToFirestore();
-                        
+
                         // Set isAuthReady: true now that hydration is complete!
                         set({ isAuthReady: true });
+
+                        // Refresh the boot snapshot with the reconciled identity
+                        // so the next cold start can skip the network wait.
+                        writeAuthSnapshot({
+                            uid: user.uid,
+                            email: user.email,
+                            isAnonymous: user.isAnonymous,
+                        });
                     }
                 } else {
                     // Sign in anonymously if no user
@@ -446,6 +514,10 @@ export const useAuthStore = create((set, get) => {
 
         handleSignOut: async () => {
             try {
+                // Drop the cached identity immediately so a reload mid-sign-out
+                // can't briefly boot as the logged-in user. onAuthStateChanged
+                // will then write a fresh anonymous snapshot.
+                clearAuthSnapshot();
                 await signOut(auth);
                 useToastStore.getState().showToast('Signed out.', 'info');
             } catch (e) {
