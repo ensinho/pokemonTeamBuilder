@@ -13,6 +13,7 @@ import { pageGuideTips, PageGuide } from './PageGuide';
 import { FooterFeedback } from './FooterFeedback';
 import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
+import { GengarPresence } from './GengarPresence';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
@@ -80,11 +81,9 @@ import '../styles/app-shell.css';
 const RouteFallback = () => (
     <div
         className="flex items-center justify-center w-full"
-        style={{ minHeight: '60vh', color: 'var(--color-primary)' }}
-        role="status"
-        aria-label="Loading"
+        style={{ minHeight: '60vh' }}
     >
-        <PokeballIcon className="w-16 h-16 shrink-0 animate-spin opacity-70" />
+        <GengarPresence variant="loading" size={96} />
     </div>
 );
 
