@@ -11,6 +11,7 @@ import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
 import { usePokedexStore } from './usePokedexStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
+import { useLanguageStore } from './useLanguageStore';
 import { megaDisplayName } from '../hooks/useMegaStones';
 
 // Monotonic counter so instanceIds stay unique even when several members are
@@ -275,7 +276,9 @@ export const useActiveTeamStore = create((set, get) => ({
     copyTextToClipboard: async (text, successMessage) => {
         try {
             await navigator.clipboard.writeText(text);
-            useToastStore.getState().showToast(successMessage, 'success');
+            if (successMessage) {
+                useToastStore.getState().showToast(successMessage, 'success');
+            }
         } catch {
             try {
                 const ta = document.createElement('textarea');
@@ -286,7 +289,9 @@ export const useActiveTeamStore = create((set, get) => ({
                 ta.select();
                 document.execCommand('copy');
                 ta.remove();
-                useToastStore.getState().showToast(successMessage, 'success');
+                if (successMessage) {
+                    useToastStore.getState().showToast(successMessage, 'success');
+                }
             } catch {
                 useToastStore.getState().showToast('Failed to copy team.', 'error');
             }
@@ -294,13 +299,27 @@ export const useActiveTeamStore = create((set, get) => ({
     },
 
     handleExportToShowdown: async () => {
-        const { currentTeam, buildShowdownExportText, copyTextToClipboard } = get();
+        const { currentTeam, buildShowdownExportText, copyTextToClipboard, teamName } = get();
         if (currentTeam.length === 0) {
             useToastStore.getState().showToast('Your team is empty!', 'warning');
             return;
         }
         const exportText = buildShowdownExportText(currentTeam);
-        await copyTextToClipboard(exportText, 'Copied for Pokémon Showdown!');
+        
+        // Show redirecting toast first
+        const lang = useLanguageStore.getState().language;
+        const teamNameText = teamName ? ` "${teamName}"` : '';
+        const msg = lang === 'pt'
+            ? `Time${teamNameText} copiado! Redirecionando para o Pokémon Showdown em 2 segundos...`
+            : `Team${teamNameText} copied! Redirecting to Pokémon Showdown in 2 seconds...`;
+        useToastStore.getState().showToast(msg, 'success');
+
+        await copyTextToClipboard(exportText, null);
+
+        // Redirect after a 2 second delay so user sees the toast on the page
+        setTimeout(() => {
+            window.open('https://play.pokemonshowdown.com/teambuilder', '_blank');
+        }, 2000);
     },
 
     shareTeamByData: async (teamMembers, providedName = 'Unnamed Team') => {

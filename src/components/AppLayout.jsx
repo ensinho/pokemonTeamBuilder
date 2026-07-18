@@ -5,6 +5,7 @@ import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { useActiveTeam } from '../hooks/useActiveTeam';
+import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
 import { useReferenceStore } from '../store/useReferenceStore';
 
@@ -779,9 +780,21 @@ export default function AppLayout() {
     const handleExportSavedTeamToShowdown = useCallback(async (team) => {
         const teamMembers = team?.pokemons || [];
         if (teamMembers.length === 0) return showToast(t('layout.emptySavedTeamWarning'), 'warning');
-        const exportText = useActiveTeam.getState?.()?.buildShowdownExportText?.(teamMembers) || '';
-        await useActiveTeam.getState?.()?.copyTextToClipboard?.(exportText, 'Copied for Pokémon Showdown!');
-    }, [showToast]);
+        const exportText = useActiveTeamStore.getState().buildShowdownExportText(teamMembers);
+        
+        const teamNameText = team?.name ? ` "${team.name}"` : '';
+        const msg = language === 'pt'
+            ? `Time${teamNameText} copiado! Redirecionando para o Pokémon Showdown em 2 segundos...`
+            : `Team${teamNameText} copied! Redirecting to Pokémon Showdown in 2 seconds...`;
+        showToast(msg, 'success');
+
+        await useActiveTeamStore.getState().copyTextToClipboard(exportText, null);
+
+        // Redirect after a 2 second delay so user sees the toast on the page
+        setTimeout(() => {
+            window.open('https://play.pokemonshowdown.com/teambuilder', '_blank');
+        }, 2000);
+    }, [showToast, t, language]);
 
     const handleEditTeamMember = useCallback((pokemon) => {
         setEditingTeamMember(pokemon);

@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import './index.css' // <-- ADICIONE ESTA LINHA
+import './styles/motion.css' // shared entrance/hover motion utilities
 import { applyTheme } from './constants/theme'
 
 // Initialize theme from localStorage before first render so CSS vars are set.

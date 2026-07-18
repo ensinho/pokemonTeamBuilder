@@ -241,7 +241,7 @@ export function MetaUsageView() {
                     {visible.length === 0 ? (
                         <EmptyState compact title={pt ? 'Nenhum resultado' : 'No matches'} message={pt ? 'Tente outra busca.' : 'Try another search.'} />
                     ) : (
-                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 motion-stagger">
                             {visible.map((mon, i) => {
                                 const rank = query ? ranked.indexOf(mon) + 1 : i + 1;
                                 return (

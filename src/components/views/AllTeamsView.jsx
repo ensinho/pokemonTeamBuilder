@@ -239,7 +239,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
 
                 {filteredTeams.length > 0 ? (
                     layoutMode === 'grid' ? (
-                        <div className="all-teams-view__grid">
+                        <div className="all-teams-view__grid motion-stagger">
                             {filteredTeams.map((team) => (
                                 <article key={team.id} className="team-builder-recent-card team-builder-recent-card--wide all-teams-view__card">
                                     <div className="all-teams-view__card-head">

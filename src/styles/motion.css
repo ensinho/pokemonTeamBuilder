@@ -1,0 +1,61 @@
+/* ============================================================
+   MOTION SYSTEM
+   A deliberately small, reusable motion language:
+     · ONE entrance — fade-up, optionally staggered for grids/lists
+     · ONE hover    — a consistent "lift"
+   Generalizes the home dashboard's proven pattern so every view can
+   share it instead of reinventing (or having none). Everything opts
+   out under prefers-reduced-motion.
+
+   Depends on tokens from index.css: the `fade-in-up` keyframe,
+   --duration-entrance, --ease-out-expo, --ease-smooth, --shadow-md,
+   --color-border-hover.
+   ============================================================ */
+
+/* Single entrance — the element fades up as it mounts. */
+.motion-enter {
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
+}
+
+/* Staggered entrance — direct children fade up in sequence. Delays cap at the
+   10th item so long grids don't trickle in late; items past 10 share the cap. */
+.motion-stagger > * {
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
+}
+.motion-stagger > *:nth-child(1)  { animation-delay: 0ms; }
+.motion-stagger > *:nth-child(2)  { animation-delay: 40ms; }
+.motion-stagger > *:nth-child(3)  { animation-delay: 80ms; }
+.motion-stagger > *:nth-child(4)  { animation-delay: 120ms; }
+.motion-stagger > *:nth-child(5)  { animation-delay: 160ms; }
+.motion-stagger > *:nth-child(6)  { animation-delay: 200ms; }
+.motion-stagger > *:nth-child(7)  { animation-delay: 240ms; }
+.motion-stagger > *:nth-child(8)  { animation-delay: 280ms; }
+.motion-stagger > *:nth-child(9)  { animation-delay: 320ms; }
+.motion-stagger > *:nth-child(10) { animation-delay: 360ms; }
+.motion-stagger > *:nth-child(n+11) { animation-delay: 360ms; }
+
+/* Consistent interactive hover: lift + soften shadow + accent the border.
+   Add to any card/tile that should read as clickable. */
+.interactive-lift {
+    transition: transform var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth);
+}
+.interactive-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-border-hover);
+}
+.interactive-lift:active {
+    transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .motion-enter,
+    .motion-stagger > * {
+        animation: none;
+    }
+    .interactive-lift:hover {
+        transform: none;
+    }
+}

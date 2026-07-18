@@ -154,7 +154,7 @@ export function TournamentsView({ onOpenTeam }) {
             {featured.length > 0 && (
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.featuredTeams')}</h2>
-                    <div className="trn-grid">
+                    <div className="trn-grid motion-stagger">
                         {featured.map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                 </section>
@@ -163,7 +163,7 @@ export function TournamentsView({ onOpenTeam }) {
             {tournament.length > 0 && (
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.tournamentTeams')}</h2>
-                    <div className="trn-grid">
+                    <div className="trn-grid motion-stagger">
                         {tournament.map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                 </section>

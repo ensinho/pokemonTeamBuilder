@@ -198,12 +198,16 @@ export const SparklesIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-export const ShowdownIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
-        <path d="M7 9l5 -5l5 5" />
-        <path d="M12 4l0 12" />
+export const ShowdownIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        {/* Top half of Pokéball donut */}
+        <path d="M 3.6 11 A 5.5 5.5 0 0 1 14.4 11 H 10.1 A 1.5 1.5 0 0 0 7.9 11 H 3.6 Z" />
+        {/* Bottom half of Pokéball donut */}
+        <path d="M 3.6 13 A 5.5 5.5 0 0 0 14.4 13 H 10.1 A 1.5 1.5 0 0 1 7.9 13 H 3.6 Z" />
+        {/* Exclamation mark top bar */}
+        <path d="M 18.5 3.5 H 21.5 L 18.5 15.5 H 15.5 Z" />
+        {/* Exclamation mark bottom dot */}
+        <path d="M 14.8 18.5 H 17.8 L 17 21.5 H 14 Z" />
     </svg>
 );
 
