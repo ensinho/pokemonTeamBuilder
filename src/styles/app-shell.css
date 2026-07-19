@@ -1414,7 +1414,7 @@
     align-items: stretch;
     justify-content: space-around;
     gap: 0.25rem;
-    padding: 0.3rem 0.4rem calc(0.3rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.3rem 0.4rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
     background: color-mix(in srgb, var(--color-surface) 92%, transparent);
     backdrop-filter: blur(12px) saturate(1.15);
     -webkit-backdrop-filter: blur(12px) saturate(1.15);
