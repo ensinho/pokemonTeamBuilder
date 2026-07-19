@@ -1097,7 +1097,7 @@ export default function PokePuzzleView() {
                                 <div className="pokepuzzle-tips-header">
                                     <h3 className="pokepuzzle-tips-title">
                                         <Lightbulb className="w-4 h-4 text-accent" />
-                                        <span>{language === 'pt' ? 'Serviço de Dicas' : 'Tips Service'}</span>
+                                        <span>{language === 'pt' ? 'Dicas' : 'Service'}</span>
                                     </h3>
                                     <div className="flex gap-2 items-center">
                                         <span className="text-[10px] uppercase font-bold text-accent bg-accent/10 border border-accent px-2 py-0.5 rounded">
