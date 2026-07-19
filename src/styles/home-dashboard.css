@@ -658,6 +658,16 @@
         display: none !important;
     }
 
+    /* Tighter launcher: the shortcuts row is the only content in this panel on
+       phones, so trim the body padding and icon chips that left it feeling airy. */
+    .hd-panel__body {
+        padding: 0.7rem;
+    }
+    .hd-core-tile__icon-wrap {
+        width: 2.8rem;
+        height: 2.8rem;
+    }
+
     /* Popular mons render as a horizontal rail on mobile (see the <=767 block);
        no column grid or 6-item cap here. */
     .hd-meta-mon-btn {

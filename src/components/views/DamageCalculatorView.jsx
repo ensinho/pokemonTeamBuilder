@@ -74,6 +74,15 @@ const STAT_LABELS = {
     'special-defense': 'SpD',
     speed: 'Spe'
 };
+// Per-stat accent (mirrors StatBar / the team editor) so each EV bar reads at a glance.
+const STAT_COLOR_VAR = {
+    hp: '--stat-hp',
+    attack: '--stat-atk',
+    defense: '--stat-def',
+    'special-attack': '--stat-spa',
+    'special-defense': '--stat-spd',
+    speed: '--stat-spe',
+};
 
 const WEATHERS = [
     { v: 'none', l: 'None' }, { v: 'sun', l: 'Sun' }, { v: 'rain', l: 'Rain' },
@@ -526,46 +535,57 @@ export function DamageCalculatorView() {
     }, [p1, p2]);
 
     // ── Render helpers ──────────────────────────────────────────────────────
+    // One stat row: label · base · IV input · draggable EV bar · direct EV input · total.
     const renderStatsRow = (key, pState, setP) => {
         const natureMod = natureMultiplier(pState.nature, key);
         const natureColor = natureMod === 1.1 ? 'text-[#F87171]' : (natureMod === 0.9 ? 'text-[#60A5FA]' : 'text-fg');
+        const iv = pState.ivs[key] ?? 31;
+        const ev = pState.evs[key] ?? 0;
         const calculated = calcStat({
             base: pState.baseStats?.[key] || 0,
-            iv: pState.ivs[key] ?? 31,
-            ev: pState.evs[key] ?? 0,
+            iv, ev,
             level: pState.level,
             nature: pState.nature,
             statKey: key,
         });
+        const statColor = `var(${STAT_COLOR_VAR[key] ?? '--stat-hp'})`;
+        const fillPct = (ev / 252) * 100;
+        const setEv = (raw) => {
+            const val = Math.max(0, Math.min(252, Number(raw) || 0));
+            setP(prev => ({ ...prev, evs: { ...prev.evs, [key]: val } }));
+        };
 
         return (
-            <tr key={key} className="border-b border-border last:border-0">
-                <td className="py-1 font-semibold text-muted text-[11px]">{STAT_LABELS[key]}</td>
-                <td className="py-1 text-center text-[11px] font-medium text-fg/70">{pState.baseStats?.[key] || 0}</td>
-                <td className="py-1 text-center">
-                    <input
-                        type="number" min="0" max="31"
-                        value={pState.ivs[key] ?? 31}
-                        onChange={(e) => {
-                            const val = Math.max(0, Math.min(31, Number(e.target.value) || 0));
-                            setP(prev => ({ ...prev, ivs: { ...prev.ivs, [key]: val } }));
-                        }}
-                        className="w-11 text-center bg-bg border border-border rounded text-[11px] py-0.5"
-                    />
-                </td>
-                <td className="py-1 text-center">
-                    <input
-                        type="number" min="0" max="252" step="4"
-                        value={pState.evs[key] ?? 0}
-                        onChange={(e) => {
-                            const val = Math.max(0, Math.min(252, Number(e.target.value) || 0));
-                            setP(prev => ({ ...prev, evs: { ...prev.evs, [key]: val } }));
-                        }}
-                        className="w-12 text-center bg-bg border border-border rounded text-[11px] py-0.5 font-mono"
-                    />
-                </td>
-                <td className={`py-1 text-right font-bold text-[11px] font-mono ${natureColor}`}>{calculated}</td>
-            </tr>
+            <div key={key} className="flex items-center gap-1.5">
+                <span className="w-7 shrink-0 text-[11px] font-bold uppercase" style={{ color: statColor }}>{STAT_LABELS[key]}</span>
+                <span className="w-6 shrink-0 text-center text-[11px] font-medium text-fg/55" title="Base">{pState.baseStats?.[key] || 0}</span>
+                <input
+                    type="number" min="0" max="31"
+                    value={iv}
+                    onChange={(e) => {
+                        const val = Math.max(0, Math.min(31, Number(e.target.value) || 0));
+                        setP(prev => ({ ...prev, ivs: { ...prev.ivs, [key]: val } }));
+                    }}
+                    aria-label={`${key.replace(/-/g, ' ')} IV`}
+                    className="w-8 shrink-0 text-center bg-bg border border-border rounded text-[11px] py-0.5 font-mono focus:border-primary focus:outline-none"
+                />
+                <input
+                    type="range" min="0" max="252" step="4"
+                    value={ev}
+                    onChange={(e) => setEv(e.target.value)}
+                    className="ev-slider min-w-0 flex-1"
+                    style={{ background: `linear-gradient(to right, ${statColor} 0%, ${statColor} ${fillPct}%, var(--color-surface-raised) ${fillPct}%, var(--color-surface-raised) 100%)` }}
+                    aria-label={`${key.replace(/-/g, ' ')} EV`}
+                />
+                <input
+                    type="number" min="0" max="252" step="4"
+                    value={ev}
+                    onChange={(e) => setEv(e.target.value)}
+                    aria-label={`${key.replace(/-/g, ' ')} EV value`}
+                    className="w-10 shrink-0 text-center bg-bg border border-border rounded text-[11px] py-0.5 font-mono focus:border-primary focus:outline-none"
+                />
+                <span className={`w-7 shrink-0 text-right font-bold text-[11px] font-mono ${natureColor}`} title="Total">{calculated}</span>
+            </div>
         );
     };
 
@@ -621,7 +641,7 @@ export function DamageCalculatorView() {
                 </div>
 
                 {/* Tera */}
-                <div className="bg-bg/40 p-2 rounded-lg border border-border flex items-center justify-between gap-3">
+                <div className="bg-bg/40 p-2.5 rounded-lg border border-border flex items-center justify-between gap-3">
                     <ToggleSwitch checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label="Terastallize" activeColor={accentBg} />
                     <select
                         className="dmg-select text-xs py-1 w-28"
@@ -634,23 +654,22 @@ export function DamageCalculatorView() {
                 </div>
 
                 {/* Nature + stats */}
-                <div className="bg-bg/25 p-2 rounded-lg border border-border">
-                    <div className="flex items-center justify-between gap-2 pb-1.5 mb-1 border-b border-border">
+                <div className="bg-bg/40 p-2.5 rounded-lg border border-border">
+                    <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-border">
                         <label className="dmg-field__label mb-0 shrink-0">Nature</label>
                         <select className="dmg-select text-xs py-1 max-w-[13rem]" value={pState.nature} onChange={(e) => setP(prev => ({ ...prev, nature: e.target.value }))}>
                             {NATURE_OPTIONS.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                         </select>
                     </div>
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="text-[9px] text-muted uppercase tracking-wider font-semibold">
-                                <th className="pb-1">Stat</th><th className="pb-1 text-center">Base</th>
-                                <th className="pb-1 text-center">IVs</th><th className="pb-1 text-center">EVs</th>
-                                <th className="pb-1 text-right">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>{STAT_KEYS.map(key => renderStatsRow(key, pState, setP))}</tbody>
-                    </table>
+                    <div className="flex items-center gap-1.5 px-0.5 pb-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted">
+                        <span className="w-7 shrink-0">Stat</span>
+                        <span className="w-6 shrink-0 text-center">Base</span>
+                        <span className="w-8 shrink-0 text-center">IV</span>
+                        <span className="flex-1 text-center">EV</span>
+                        <span className="w-10 shrink-0 text-center">Val</span>
+                        <span className="w-7 shrink-0 text-right">Tot</span>
+                    </div>
+                    <div className="space-y-2">{STAT_KEYS.map(key => renderStatsRow(key, pState, setP))}</div>
                 </div>
 
                 {/* Ability + Item */}
@@ -812,14 +831,14 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Weather */}
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Weather</span>
-                        <div className="inline-flex bg-bg border border-border rounded-lg p-0.5 gap-0.5">
+                    <div className="flex items-center gap-1.5 w-full min-w-0 sm:w-auto">
+                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted">Weather</span>
+                        <div className="flex min-w-0 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5">
                             {WEATHERS.map((w) => (
                                 <button
                                     key={w.v}
                                     onClick={() => setField(prev => ({ ...prev, weather: w.v }))}
-                                    className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${field.weather === w.v ? 'bg-primary/20 text-primary font-bold' : 'text-muted hover:text-fg'}`}
+                                    className={`shrink-0 px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${field.weather === w.v ? 'bg-primary/20 text-primary font-bold' : 'text-muted hover:text-fg'}`}
                                 >
                                     {w.l}
                                 </button>
@@ -828,14 +847,14 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Terrain */}
-                    <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-muted">Terrain</span>
-                        <div className="inline-flex bg-bg border border-border rounded-lg p-0.5 gap-0.5">
+                    <div className="flex items-center gap-1.5 w-full min-w-0 sm:w-auto">
+                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted">Terrain</span>
+                        <div className="flex min-w-0 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5">
                             {TERRAINS.map((tr) => (
                                 <button
                                     key={tr.v}
                                     onClick={() => setField(prev => ({ ...prev, terrain: tr.v }))}
-                                    className={`px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${field.terrain === tr.v ? 'bg-primary/20 text-primary font-bold' : 'text-muted hover:text-fg'}`}
+                                    className={`shrink-0 px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${field.terrain === tr.v ? 'bg-primary/20 text-primary font-bold' : 'text-muted hover:text-fg'}`}
                                 >
                                     {tr.l}
                                 </button>

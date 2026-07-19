@@ -125,12 +125,12 @@ export function MetaUsageView() {
     const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
 
     return (
-        <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-5">
-            <header className="mb-5">
-                <h1 className="flex items-center gap-2 text-2xl font-extrabold text-fg sm:text-3xl">
-                    <TrendingUp className="h-6 w-6 text-primary" /> {pt ? 'Meta & Uso' : 'Meta & Usage'}
+        <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-5 sm:py-5">
+            <header className="mb-4 sm:mb-5">
+                <h1 className="flex items-center gap-2 text-xl font-extrabold text-fg sm:text-3xl">
+                    <TrendingUp className="h-5 w-5 text-primary sm:h-6 sm:w-6" /> {pt ? 'Meta & Uso' : 'Meta & Usage'}
                 </h1>
-                <p className="mt-1 max-w-2xl text-sm text-muted">
+                <p className="mt-1 line-clamp-2 max-w-2xl text-[13px] text-muted sm:line-clamp-none sm:text-sm">
                     {usingSmogon && format
                         ? (pt
                             ? `Uso real de ${format.label} no ladder competitivo${battlesLabel ? ` (${battlesLabel} partidas${month ? `, ${month}` : ''})` : ''} — clique em um Pokémon para ver exatamente o que ele roda.`

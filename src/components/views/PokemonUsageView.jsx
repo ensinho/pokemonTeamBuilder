@@ -120,7 +120,9 @@ export function PokemonUsageView() {
         return (
             <main className="mx-auto max-w-5xl px-4 py-10">
                 <button type="button" onClick={goBack} className="edv-back mb-4">
-                    <ChevronLeft className="h-4 w-4" /> {backLabel}
+                    <ChevronLeft className="h-4 w-4 shrink-0" />
+                    <span className="hidden sm:inline">{backLabel}</span>
+                    <span className="sm:hidden">{pt ? 'Voltar' : 'Back'}</span>
                 </button>
                 <EmptyState title={pt ? 'Pokémon não encontrado' : 'Pokémon not found'} message={pt ? 'Verifique o endereço.' : 'Check the URL.'} />
             </main>
@@ -141,7 +143,9 @@ export function PokemonUsageView() {
         <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <button type="button" onClick={goBack} className="edv-back">
-                    <ChevronLeft className="h-4 w-4" /> {backLabel}
+                    <ChevronLeft className="h-4 w-4 shrink-0" />
+                    <span className="hidden sm:inline">{backLabel}</span>
+                    <span className="sm:hidden">{pt ? 'Voltar' : 'Back'}</span>
                 </button>
                 {formats.length > 0 && (
                     <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} className="py-1.5 text-[13px]" />

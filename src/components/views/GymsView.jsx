@@ -560,12 +560,12 @@ export function GymsView({ showDetails, onAddToTeam }) {
     };
 
     return (
-        <div className="mx-auto max-w-[1600px] px-3 py-5 sm:px-5">
-            <header className="mb-5">
-                <h1 className="flex items-center gap-2 text-2xl font-extrabold text-fg sm:text-3xl">
-                    <Swords className="h-6 w-6 text-primary" /> {pt ? 'Ginásios & Treinadores' : 'Gyms & Trainers'}
+        <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-5 sm:py-5">
+            <header className="mb-4 sm:mb-5">
+                <h1 className="flex items-center gap-2 text-xl font-extrabold text-fg sm:text-3xl">
+                    <Swords className="h-5 w-5 text-primary sm:h-6 sm:w-6" /> {pt ? 'Ginásios & Treinadores' : 'Gyms & Trainers'}
                 </h1>
-                <p className="mt-1 max-w-2xl text-sm text-muted">
+                <p className="mt-1 line-clamp-2 max-w-2xl text-[13px] text-muted sm:line-clamp-none sm:text-sm">
                     {pt
                         ? 'Os líderes de ginásio de cada jogo e os times exatos que eles usam — jogos oficiais e os hack ROMs mais famosos.'
                         : "Each game's gym leaders and the exact teams they battle with — official games and the most famous hack ROMs."}
@@ -608,9 +608,11 @@ export function GymsView({ showDetails, onAddToTeam }) {
                         </button>
                     )}
 
-                    {/* Timeline Navigation */}
+                    {/* Timeline Navigation — desktop sticky-sidebar jump nav. Hidden on
+                        mobile, where it just duplicated the detailed cards below and
+                        added a full screen of scrolling. */}
                     {selected && selected.leaders && selected.leaders.length > 0 && (
-                        <nav className="team-builder-panel p-3.5 space-y-4">
+                        <nav className="team-builder-panel p-3.5 space-y-4 hidden lg:block">
                             {gymLeaders.length > 0 && (
                                 <div>
                                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted px-2.5 mb-2.5">

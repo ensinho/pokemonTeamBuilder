@@ -541,10 +541,10 @@ export function PokemonDetailPanel({
             return (
                 <div className="flex-1 flex flex-col space-y-5 animate-scale-in">
                     <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1.3fr] gap-4 items-stretch">
-                        <div className="text-center p-4 bg-surface rounded-xl border border-border flex flex-col justify-between items-center">
-                            <div className="w-full flex-1 flex flex-col justify-center items-center py-2">
+                        <div className="text-center p-3.5 sm:p-4 bg-surface rounded-xl border border-border flex flex-col justify-between items-center">
+                            <div className="w-full flex-1 flex flex-col justify-center items-center py-1 sm:py-2">
                                 <div className="relative inline-block">
-                                    <img src={spriteToShow} alt={selectedPokemonDetails.name} className="mx-auto h-28 w-28 sm:h-36 sm:w-36 image-pixelated hover:scale-105 transition-transform duration-300" />
+                                    <img src={spriteToShow} alt={selectedPokemonDetails.name} className="mx-auto h-24 w-24 sm:h-36 sm:w-36 image-pixelated hover:scale-105 transition-transform duration-300" />
                                     <button
                                         type="button"
                                         onClick={() => setShowShiny((value) => !value)}
@@ -564,7 +564,7 @@ export function PokemonDetailPanel({
                                         </button>
                                     )}
                                 </div>
-                                <h3 className="mt-3.5 text-xl font-extrabold capitalize text-fg tracking-tight">
+                                <h3 className="mt-2 sm:mt-3.5 text-xl font-extrabold capitalize text-fg tracking-tight">
                                     {selectedPokemonDetails.name} <span className="text-muted font-normal text-base">#{selectedPokemonDetails.id}</span>
                                 </h3>
                                 {pokemonGenus && <p className="mt-0.5 text-sm text-muted">{pokemonGenus}</p>}
@@ -1052,8 +1052,11 @@ export function PokemonDetailPanel({
                             onClick={onBack}
                             className="pb-2.5 px-3 flex items-center gap-1.5 font-bold text-sm text-muted hover:text-primary transition-colors shrink-0"
                         >
-                            <ChevronLeft className="w-4 h-4" />
-                            <span>{backLabel}</span>
+                            <ChevronLeft className="w-4 h-4 shrink-0" />
+                            {/* Full contextual label on desktop; just "Voltar" on mobile so
+                                the long "…à Pokédex" suffix doesn't crowd the tab row. */}
+                            <span className="hidden sm:inline">{backLabel}</span>
+                            <span className="sm:hidden">{language === 'pt' ? 'Voltar' : 'Back'}</span>
                         </button>
                         <div className="w-px bg-border self-stretch mb-2.5 shrink-0" />
                     </>
