@@ -105,13 +105,14 @@ export const THEMES = {
 };
 
 // Display metadata for the theme picker UI. Order here drives render order.
+// `mode` groups themes as dark vs light so the picker can label them separately.
 export const THEME_META = [
-    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#7c6ae8' },
-    { id: 'eclipse', label: 'Eclipse', hint: 'Ultra-dark violet neon', swatch: '#8B5CF6' },
-    { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights', swatch: '#38BDF8' },
-    { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB' },
-    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6353b3' },
-    { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04' },
+    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#7c6ae8', mode: 'dark' },
+    { id: 'eclipse', label: 'Eclipse', hint: 'Ultra-dark violet neon', swatch: '#8B5CF6', mode: 'dark' },
+    { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights', swatch: '#38BDF8', mode: 'dark' },
+    { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB', mode: 'light' },
+    { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6353b3', mode: 'light' },
+    { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04', mode: 'light' },
 ];
 
 // Apply a theme to the document.

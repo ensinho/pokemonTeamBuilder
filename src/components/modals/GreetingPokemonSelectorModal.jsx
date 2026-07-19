@@ -9,9 +9,10 @@ import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { CloseIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import '../../styles/greeting-selector-modal.css';
 
 export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, currentPokemonId, currentPokemonIsShiny, colors, db }) {
-    const { t } = useTranslation();
+    const { t, language } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 350);
@@ -124,7 +125,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                 aria-modal="true"
                 aria-labelledby="greeting-selector-title"
                 tabIndex={-1}
-                className="relative w-full max-w-7xl max-h-[85vh] overflow-y-auto rounded-2xl bg-surface p-6 shadow-xl custom-scrollbar animate-scale-in focus:outline-none"
+                className="greeting-selector relative w-full max-w-7xl max-h-[85vh] overflow-y-auto rounded-xl border border-border bg-surface p-4 sm:p-6 shadow-lg custom-scrollbar animate-scale-in focus:outline-none"
                 style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >
@@ -132,21 +133,17 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                     <CloseIcon />
                 </button>
 
-                <div className="mb-6">
-                    <h2 id="greeting-selector-title" className="mb-2 text-2xl font-bold text-fg">
+                <div className="mb-3 pr-8">
+                    <h2 id="greeting-selector-title" className="text-lg font-bold text-fg">
                         {t('modals.greetingSelectorTitle')}
                     </h2>
-                    <p className="text-sm text-muted">
-                        {t('modals.greetingSelectorSubtitle')}
-                    </p>
                 </div>
 
                 <div className="mb-4 space-y-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="min-w-0">
-                            <p className="team-builder-panel__eyebrow">{t('modals.greetingSelectorFilters')}</p>
                             {isSearchActive ? (
-                                <p className="mt-1 text-xs text-muted">
+                                <p className="text-xs text-muted">
                                     {isSearching
                                         ? t('modals.greetingSelectorSearching')
                                         : t('modals.greetingSelectorSearchResults', {
@@ -156,7 +153,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                                           })}
                                 </p>
                             ) : (
-                                <p className="mt-1 text-xs text-muted">
+                                <p className="text-xs text-muted">
                                     {t('modals.greetingSelectorBrowsing', { count: browseList.length })}
                                 </p>
                             )}
@@ -178,7 +175,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                             placeholder={t('modals.greetingSelectorSearchPlaceholder')}
                             value={searchTerm}
                             onChange={(event) => setSearchTerm(event.target.value)}
-                            className={`w-full rounded-lg border-2 px-4 py-2 pr-10 text-fg transition-all focus:outline-none ${isSearchActive ? 'border-primary bg-surface-raised' : 'border-surface-raised bg-surface-raised'}`}
+                            className={`w-full rounded-lg border bg-surface-raised px-4 py-2 pr-10 text-sm text-fg transition-colors focus:outline-none ${isSearchActive ? 'border-primary' : 'border-border focus:border-primary'}`}
                         />
                         {isSearchActive && (
                             <button
@@ -192,55 +189,47 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         )}
                     </div>
 
-                    <div className="team-builder-picker-toolbar team-builder-picker-toolbar--compact border-b border-border">
-                        <div className="team-builder-picker-focus" role="group" aria-label="Partner type filter">
+                    <div className="greeting-selector__types">
+                        <div className="greeting-selector__types-head">
+                            <p className="greeting-selector__types-label">{language === 'pt' ? 'Tipo' : 'Type'}</p>
+                            <span className="greeting-selector__types-current">{selectedTypeLabel}</span>
+                        </div>
+                        <div className="greeting-selector__types-grid" role="group" aria-label="Partner type filter">
                             <button
                                 type="button"
                                 onClick={() => setSelectedType(null)}
-                                className={`team-builder-type-button team-builder-type-button--compact ${!selectedType ? 'is-active' : ''}`}
+                                className={`team-builder-type-button greeting-selector__type-button greeting-selector__type-button--all ${!selectedType ? 'is-active' : ''}`}
                                 title={t('modals.greetingSelectorAllTypes')}
                                 aria-pressed={!selectedType}
                             >
-                                <span className="text-[0.6rem] font-bold uppercase tracking-[0.08em]">{t('common.all')}</span>
+                                {t('common.all')}
                             </button>
-                            <div className="team-builder-type-grid team-builder-type-grid--compact">
-                                {Object.keys(typeIcons).map((type) => (
-                                    <button
-                                        key={type}
-                                        type="button"
-                                        onClick={() => setSelectedType(type)}
-                                        className={`team-builder-type-button team-builder-type-button--compact ${selectedType === type ? 'is-active' : ''}`}
-                                        title={t(`types.${type.toLowerCase()}`, { defaultValue: type })}
-                                        aria-pressed={selectedType === type}
-                                    >
-                                        <img src={typeIcons[type]} alt={type} className="w-full h-full object-contain" />
-                                    </button>
-                                ))}
-                            </div>
+                            {Object.keys(typeIcons).map((type) => (
+                                <button
+                                    key={type}
+                                    type="button"
+                                    onClick={() => setSelectedType(type)}
+                                    className={`team-builder-type-button greeting-selector__type-button ${selectedType === type ? 'is-active' : ''}`}
+                                    title={t(`types.${type.toLowerCase()}`, { defaultValue: type })}
+                                    aria-pressed={selectedType === type}
+                                >
+                                    <img src={typeIcons[type]} alt={type} />
+                                </button>
+                            ))}
                         </div>
-
-                        <span className="team-builder-picker-summary">{selectedTypeLabel}</span>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setSelectedType(null)}
-                            className={`team-builder-button team-builder-button--inline team-builder-button--inline-compact ${!selectedType ? 'border-primary bg-primary-soft text-primary' : 'border-border bg-surface-raised text-muted'}`}
-                        >
-                            {t('modals.greetingSelectorClearTypeFilter')}
-                        </button>
                     </div>
                 </div>
 
                 {currentPokemonId && (
-                    <button
-                        onClick={() => onSelect({ pokemonId: null, isShiny: false })}
-                        className="mb-4 w-full rounded-lg border-2 border-dashed border-muted p-3 text-muted transition-all hover:scale-[1.02]"
-                    >
-                        <span className="text-2xl mb-1 block">✨</span>
-                        {t('modals.greetingSelectorRemoveCustom')}
-                    </button>
+                    <div className="mb-3 flex justify-center">
+                        <button
+                            onClick={() => onSelect({ pokemonId: null, isShiny: false })}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted transition-colors hover:text-fg"
+                        >
+                            <span aria-hidden="true">✨</span>
+                            {t('modals.greetingSelectorRemoveCustom')}
+                        </button>
+                    </div>
                 )}
 
                 {isSearching ? (
@@ -253,7 +242,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                             <button
                                 key={pokemon.id}
                                 onClick={() => onSelect({ pokemonId: pokemon.id, isShiny: isShinySelection })}
-                                className={`relative rounded-xl p-3 text-center transition-all hover:scale-105 hover:shadow-lg ${currentPokemonId === pokemon.id ? 'border-2 border-primary bg-primary-soft' : 'border-2 border-transparent bg-surface-raised'}`}
+                                className={`interactive-lift relative rounded-lg border p-3 text-center ${currentPokemonId === pokemon.id ? 'border-primary bg-primary-soft' : 'border-border bg-surface-raised'}`}
                             >
                                 {currentPokemonId === pokemon.id && (
                                     <div className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary">

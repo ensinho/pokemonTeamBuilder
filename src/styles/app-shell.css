@@ -510,18 +510,12 @@
     border-top: 1px solid var(--color-border);
 }
 
-.app-shell__account-button,
-.app-shell__account-card {
-    background: var(--color-surface-raised);
-}
-
 .app-shell__account-card {
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: 0.45rem;
+    padding: 0.2rem;
 }
 
 .app-shell__account-menu {
@@ -655,6 +649,9 @@
     width: min(20rem, calc(100vw - 1.5rem));
     border-radius: var(--radius-lg);
     overflow: hidden;
+    @media (max-width: 400px ){
+        left: 60px !important;
+    }
 }
 
 .app-shell__account-popover.is-collapsed {
@@ -811,6 +808,163 @@
     border-color: var(--color-fg);
     box-shadow: 0 0 0 2px var(--color-primary);
     transform: scale(1.05);
+}
+
+/* Theme picker grouped by dark / light families — each family is a tidy
+   segmented row: [icon LABEL] · · · dots, sitting in its own soft chip. */
+.app-shell__account-theme-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.app-shell__account-theme-group {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.3rem 0.45rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.app-shell__account-theme-group-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-shrink: 0;
+    width: 4.25rem;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.app-shell__account-theme-group-tag--dark {
+    color: color-mix(in srgb, var(--color-fg) 78%, var(--color-primary));
+}
+
+.app-shell__account-theme-group-tag--light {
+    color: var(--color-accent);
+}
+
+.app-shell__account-theme-group-icon {
+    display: inline-flex;
+}
+
+.app-shell__account-theme-group-icon svg {
+    width: 0.85rem;
+    height: 0.85rem;
+}
+
+.app-shell__account-theme-dots {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1;
+    justify-content: space-between;
+    padding-right: 0.15rem;
+}
+
+/* Header settings icon (mobile) — opens the account & preferences menu */
+.app-shell__account-menu.is-header,
+.app-shell__account-card.is-header {
+    display: inline-flex;
+}
+
+.app-shell__account-header-trigger svg {
+    transition: transform var(--duration-normal) var(--ease-smooth);
+}
+
+.app-shell__account-header-trigger:hover svg,
+.app-shell__account-header-trigger.is-open svg {
+    transform: rotate(45deg);
+    color: var(--color-primary);
+}
+
+/* Mobile drawer account card acting as a direct link to the profile page */
+.app-shell__account-summary-block.is-shortcut {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+}
+
+.app-shell__account-summary-block.is-shortcut .app-shell__account-copy {
+    flex: 1;
+    min-width: 0;
+}
+
+.app-shell__account-subline {
+    margin: 0.05rem 0 0;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.app-shell__account-summary-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--color-muted);
+    transition: transform var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__account-summary-block.is-shortcut:hover .app-shell__account-summary-chevron {
+    transform: translateX(2px);
+    color: var(--color-primary);
+}
+
+/* Compact, calmer spacing for the mobile (header) account menu */
+.app-shell__account-popover.is-header .app-shell__account-popover-head {
+    padding: 0.6rem 0.7rem;
+    gap: 0.5rem;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-popover-section {
+    padding: 0.55rem 0.7rem;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-popover-label {
+    margin-bottom: 0.4rem;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-menu-item {
+    align-items: center;
+    padding: 0.5rem 0.55rem;
+    gap: 0.55rem;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-menu-item-note {
+    font-size: 0.65rem;
+    line-height: 1.3;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-menu-item--danger {
+    /* Sign-out needs no descriptive note on the compact menu — the label says it. */
+    padding: 0.55rem;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-menu-item--danger .app-shell__account-menu-item-note {
+    display: none;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-theme-groups {
+    gap: 0.4rem;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-theme-dot {
+    width: 1.35rem;
+    height: 1.35rem;
+}
+
+.app-shell__account-popover.is-header .app-shell__account-lang-btn {
+    padding: 0.3rem;
+    font-size: 0.72rem;
 }
 
 .app-shell__account-language-row {

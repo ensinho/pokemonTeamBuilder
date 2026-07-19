@@ -102,18 +102,6 @@ export const AnchoredPopover = ({
                 ...style,
             }}
         >
-            {(arrowStyle || arrowTopStyle || arrowBottomStyle) && (
-                <span
-                    className={`absolute h-3 w-3 -translate-x-1/2 rotate-45 ${position?.placement === 'top' ? '-bottom-1.5' : '-top-1.5'}`}
-                    style={{
-                        left: position ? `${position.arrowLeft}px` : '50%',
-                        ...(position?.placement === 'top'
-                            ? (arrowBottomStyle ?? arrowStyle)
-                            : (arrowTopStyle ?? arrowStyle)),
-                    }}
-                    aria-hidden="true"
-                />
-            )}
             {children}
         </div>,
         document.body

@@ -1,0 +1,95 @@
+/* Partner-Pokémon selector modal.
+   Self-contained layout for the type filter so it no longer borrows the Team
+   Builder toolbar's 3-column (ALL | grid | summary) arrangement, which crowded
+   badly on phones. Scoped under .greeting-selector to stay out of other views. */
+
+.greeting-selector__types {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.7rem;
+}
+
+.greeting-selector__types-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+
+.greeting-selector__types-label {
+    margin: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.greeting-selector__types-current {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 60%;
+}
+
+.greeting-selector__types-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
+    gap: 0.45rem;
+    justify-items: center;
+}
+
+/* Rounded-square tiles that match the Team Builder type filter (radius-md),
+   so the modal reads as part of the same system rather than a one-off. */
+.greeting-selector__types-grid .greeting-selector__type-button {
+    width: 100%;
+    max-width: 2.5rem;
+    aspect-ratio: 1 / 1;
+    height: auto;
+    padding: 0.3rem;
+    border-radius: var(--radius-md);
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+        background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.greeting-selector__types-grid .greeting-selector__type-button:hover {
+    border-color: var(--color-border-hover);
+}
+
+/* .is-active inherits the system look (primary border + primary-soft bg)
+   from the base .team-builder-type-button rule. */
+
+/* ALL chip: dashed so it reads as "everything" rather than a single type. */
+.greeting-selector__type-button--all {
+    font-size: 0.5rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+    border-style: dashed;
+}
+
+.greeting-selector__type-button--all.is-active {
+    color: var(--color-primary);
+    border-style: solid;
+}
+
+.greeting-selector__type-button img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@media (max-width: 640px) {
+    .greeting-selector__types-grid {
+        grid-template-columns: repeat(auto-fill, minmax(2.1rem, 1fr));
+        gap: 0.4rem;
+    }
+}

@@ -11,6 +11,7 @@ import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon,
 } from '../icons';
+import { Flame } from 'lucide-react';
 
 const EmailVerifyRow = () => {
     const showToast = useToastStore((state) => state.showToast);
@@ -67,8 +68,8 @@ const EmailVerifyRow = () => {
  * mount in App.jsx (see useTrainerStreak).
  */
 
-const ThemeSwatchIcon = ({ id, color }) => {
-    if (id === 'dark' || id === 'midnight' || id === 'eclipse') return <MoonIcon className="w-4 h-4" color={color} />;
+const ThemeSwatchIcon = ({ mode, color }) => {
+    if (mode === 'dark') return <MoonIcon className="w-4 h-4" color={color} />;
     return <SunIcon className="w-4 h-4" color={color} />;
 };
 
@@ -235,14 +236,15 @@ export function ProfileView({
 
                 <div className="profile-hero__side">
                     <div className="profile-streak-card" aria-label={`Current streak: ${streakCount} days`}>
-                        <p className="profile-streak-card__label">{t('profile.currentStreak')}</p>
-                        <div className="profile-streak-card__value-row">
-                            <p className="profile-streak-card__value">
-                                {streakCount}
-                                <span>d</span>
-                            </p>
-                            <span className="profile-pill">{t('profile.bestStreak', { count: streakLongest })}</span>
+                        <div className="profile-overview-stat__top">
+                            <span className="profile-overview-stat__icon"><Flame className="w-4 h-4" /></span>
+                            <span className="profile-overview-stat__label">{t('profile.currentStreak')}</span>
                         </div>
+                        <p className="profile-streak-card__value">
+                            {streakCount}
+                            <span>d</span>
+                        </p>
+                        <p className="profile-overview-stat__hint">{t('profile.bestStreak', { count: streakLongest })}</p>
                     </div>
 
                     <div className="profile-overview-grid">
@@ -271,29 +273,47 @@ export function ProfileView({
                         subtitle={t('profile.sectionAppearanceDesc')}
                         icon={<SunIcon className="w-5 h-5" />}
                     >
-                        <div className="profile-theme-grid">
-                            {THEME_META.map((t) => {
-                                const selected = theme === t.id;
-                                return (
-                                    <button
-                                        key={t.id}
-                                        type="button"
-                                        onClick={() => onChangeTheme(t.id)}
-                                        aria-pressed={selected}
-                                        className={`profile-theme-card ${selected ? 'is-selected' : ''}`}
-                                        style={{ '--profile-theme-swatch': t.swatch }}
-                                    >
-                                        <div className="profile-theme-card__header">
-                                            <span className="profile-theme-card__swatch" aria-hidden="true"></span>
-                                            <span className="profile-theme-card__label">{t.label}</span>
-                                            <span className="profile-theme-card__icon">
-                                                <ThemeSwatchIcon id={t.id} color="currentColor" />
-                                            </span>
-                                        </div>
-                                        <p className="profile-theme-card__hint">{t.hint}</p>
-                                    </button>
-                                );
-                            })}
+                        <div className="profile-theme-groups">
+                        {[
+                            { key: 'dark', label: language === 'pt' ? 'Escuros' : 'Dark', icon: <MoonIcon className="w-3.5 h-3.5" /> },
+                            { key: 'light', label: language === 'pt' ? 'Claros' : 'Light', icon: <SunIcon className="w-3.5 h-3.5" /> },
+                        ].map((group) => {
+                            const groupThemes = THEME_META.filter((entry) =>
+                                group.key === 'dark' ? entry.mode === 'dark' : entry.mode !== 'dark'
+                            );
+                            return (
+                                <div key={group.key} className="profile-theme-group">
+                                    <p className={`profile-theme-group__label profile-theme-group__label--${group.key}`}>
+                                        <span className="profile-theme-group__icon">{group.icon}</span>
+                                        {group.label}
+                                    </p>
+                                    <div className="profile-theme-grid">
+                                        {groupThemes.map((entry) => {
+                                            const selected = theme === entry.id;
+                                            return (
+                                                <button
+                                                    key={entry.id}
+                                                    type="button"
+                                                    onClick={() => onChangeTheme(entry.id)}
+                                                    aria-pressed={selected}
+                                                    className={`profile-theme-card ${selected ? 'is-selected' : ''}`}
+                                                    style={{ '--profile-theme-swatch': entry.swatch }}
+                                                >
+                                                    <div className="profile-theme-card__header">
+                                                        <span className="profile-theme-card__swatch" aria-hidden="true"></span>
+                                                        <span className="profile-theme-card__label">{entry.label}</span>
+                                                        <span className="profile-theme-card__icon">
+                                                            <ThemeSwatchIcon mode={entry.mode} color="currentColor" />
+                                                        </span>
+                                                    </div>
+                                                    <p className="profile-theme-card__hint">{entry.hint}</p>
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })}
                         </div>
                     </SectionCard>
 

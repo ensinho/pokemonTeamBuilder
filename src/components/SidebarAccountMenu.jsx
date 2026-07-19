@@ -6,6 +6,8 @@ import { useAuthStore } from '../store/useAuthStore';
 
 export function SidebarAccountMenu({
     collapsed = false,
+    variant = 'sidebar', // 'sidebar' | 'header'
+    isMobile = false,
     avatar,
     displayName,
     email,
@@ -20,6 +22,11 @@ export function SidebarAccountMenu({
     const anchorRef = useRef(null);
     const popoverRef = useRef(null);
     const accountName = displayName || email?.split('@')[0] || 'Trainer';
+
+    const isHeader = variant === 'header';
+    // On the mobile sidebar drawer the card is a direct shortcut to the profile
+    // page — the full menu lives behind the header settings icon instead.
+    const isProfileShortcut = variant === 'sidebar' && isMobile && !collapsed;
 
     useEffect(() => {
         if (!isOpen) return undefined;
@@ -72,57 +79,122 @@ export function SidebarAccountMenu({
         setIsOpen(false);
     };
 
-    return (
-        <div className={`app-shell__account-menu ${collapsed ? 'is-collapsed' : ''}`}>
-            <div ref={anchorRef} className={`app-shell__account-card ${collapsed ? 'is-collapsed' : ''}`}>
-                {collapsed ? (
-                    <button
-                        type="button"
-                        onClick={handleToggle}
-                        aria-label={`Open account menu for ${accountName}`}
-                        aria-expanded={isOpen}
-                        className={`app-shell__icon-button app-shell__account-menu-trigger ${isOpen ? 'is-open' : ''}`}
-                        title={accountName}
-                    >
-                        {avatar}
-                    </button>
-                ) : (
-                    <>
-                        <button
-                            type="button"
-                            onClick={handleToggle}
-                            aria-label={`Open account menu for ${accountName}`}
-                            aria-expanded={isOpen}
-                            className={`app-shell__account-summary-block ${isOpen ? 'is-open' : ''}`}
-                            title={accountName}
-                        >
-                            <span className="app-shell__account-avatar">{avatar}</span>
-                            <div className="app-shell__account-copy">
-                                <p className="app-shell__account-name" title={accountName}>
-                                    {accountName}
-                                </p>
-                            </div>
-                        </button>
+    // Split themes so dark and light presets read as two distinct families.
+    const themeGroups = [
+        {
+            key: 'dark',
+            label: language === 'pt' ? 'Escuros' : 'Dark',
+            icon: <MoonIcon />,
+            items: themes.filter((theme) => theme.mode === 'dark'),
+        },
+        {
+            key: 'light',
+            label: language === 'pt' ? 'Claros' : 'Light',
+            icon: <SunIcon />,
+            items: themes.filter((theme) => theme.mode !== 'dark'),
+        },
+    ];
 
-                        <button
-                            type="button"
-                            onClick={handleToggle}
-                            aria-label={`Open account menu for ${accountName}`}
-                            aria-expanded={isOpen}
-                            className={`app-shell__account-menu-trigger ${isOpen ? 'is-open' : ''}`}
-                            title="Account settings"
-                        >
-                            <SettingsIcon className="w-4.5 h-4.5" />
-                        </button>
-                    </>
-                )}
+    const settingsLabel = language === 'pt' ? 'Conta e preferências' : 'Account & preferences';
+
+    const renderTrigger = () => {
+        if (isHeader) {
+            return (
+                <button
+                    type="button"
+                    onClick={handleToggle}
+                    aria-label={settingsLabel}
+                    aria-expanded={isOpen}
+                    className={`app-shell__icon-button app-shell__account-header-trigger ${isOpen ? 'is-open' : ''}`}
+                    title={settingsLabel}
+                >
+                    <SettingsIcon className="w-5 h-5" />
+                </button>
+            );
+        }
+
+        if (collapsed) {
+            return (
+                <button
+                    type="button"
+                    onClick={handleToggle}
+                    aria-label={`Open account menu for ${accountName}`}
+                    aria-expanded={isOpen}
+                    className={`app-shell__icon-button app-shell__account-menu-trigger ${isOpen ? 'is-open' : ''}`}
+                    title={accountName}
+                >
+                    {avatar}
+                </button>
+            );
+        }
+
+        // Mobile drawer: the whole card jumps straight to the profile page.
+        if (isProfileShortcut) {
+            return (
+                <button
+                    type="button"
+                    onClick={handleOpenProfile}
+                    aria-label={`${t('accountMenu.profileLabel')} — ${accountName}`}
+                    className="app-shell__account-summary-block is-shortcut"
+                    title={accountName}
+                >
+                    <span className="app-shell__account-avatar">{avatar}</span>
+                    <div className="app-shell__account-copy">
+                        <p className="app-shell__account-name" title={accountName}>
+                            {accountName}
+                        </p>
+                        <p className="app-shell__account-subline">{t('accountMenu.profileLabel')}</p>
+                    </div>
+                    <span className="app-shell__account-summary-chevron" aria-hidden="true">
+                        <PokeballIcon className="w-4 h-4" />
+                    </span>
+                </button>
+            );
+        }
+
+        return (
+            <>
+                <button
+                    type="button"
+                    onClick={handleToggle}
+                    aria-label={`Open account menu for ${accountName}`}
+                    aria-expanded={isOpen}
+                    className={`app-shell__account-summary-block ${isOpen ? 'is-open' : ''}`}
+                    title={accountName}
+                >
+                    <span className="app-shell__account-avatar">{avatar}</span>
+                    <div className="app-shell__account-copy">
+                        <p className="app-shell__account-name" title={accountName}>
+                            {accountName}
+                        </p>
+                    </div>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={handleToggle}
+                    aria-label={`Open account menu for ${accountName}`}
+                    aria-expanded={isOpen}
+                    className={`app-shell__account-menu-trigger ${isOpen ? 'is-open' : ''}`}
+                    title="Account settings"
+                >
+                    <SettingsIcon className="w-4.5 h-4.5" />
+                </button>
+            </>
+        );
+    };
+
+    return (
+        <div className={`app-shell__account-menu ${collapsed ? 'is-collapsed' : ''} ${isHeader ? 'is-header' : ''}`}>
+            <div ref={anchorRef} className={`app-shell__account-card ${collapsed ? 'is-collapsed' : ''} ${isHeader ? 'is-header' : ''}`}>
+                {renderTrigger()}
             </div>
 
             <AnchoredPopover
                 isOpen={isOpen}
                 anchorRef={anchorRef}
                 popoverRef={popoverRef}
-                className={`app-shell__account-popover ${collapsed ? 'is-collapsed' : ''}`}
+                className={`app-shell__account-popover ${collapsed ? 'is-collapsed' : ''} ${isHeader ? 'is-header' : ''}`}
                 style={{
                     backgroundColor: 'var(--color-surface)',
                     border: '1px solid var(--color-border)',
@@ -141,8 +213,8 @@ export function SidebarAccountMenu({
                 ariaLabel="Account menu"
                 viewportPadding={12}
                 offset={10}
-                zIndex={90}
-                placement="top"
+                zIndex={isHeader ? 95 : 90}
+                placement={isHeader ? 'bottom' : 'top'}
             >
                 <div className="app-shell__account-popover-body">
                     <div className="app-shell__account-popover-head">
@@ -171,22 +243,31 @@ export function SidebarAccountMenu({
 
                     <div className="app-shell__account-popover-section">
                         <p className="app-shell__account-popover-label">{t('accountMenu.themeLabel')}</p>
-                        <div className="app-shell__account-theme-row">
-                            {themes.map((theme) => {
-                                const isActive = currentTheme === theme.id;
-
-                                return (
-                                    <button
-                                        key={theme.id}
-                                        type="button"
-                                        onClick={() => handleThemeChange(theme.id)}
-                                        aria-pressed={isActive}
-                                        className={`app-shell__account-theme-dot ${isActive ? 'is-active' : ''}`}
-                                        style={{ backgroundColor: theme.swatch }}
-                                        title={theme.label}
-                                    />
-                                );
-                            })}
+                        <div className="app-shell__account-theme-groups">
+                            {themeGroups.map((group) => (
+                                <div key={group.key} className="app-shell__account-theme-group">
+                                    <span className={`app-shell__account-theme-group-tag app-shell__account-theme-group-tag--${group.key}`}>
+                                        <span className="app-shell__account-theme-group-icon" aria-hidden="true">{group.icon}</span>
+                                        {group.label}
+                                    </span>
+                                    <div className="app-shell__account-theme-dots">
+                                        {group.items.map((theme) => {
+                                            const isActive = currentTheme === theme.id;
+                                            return (
+                                                <button
+                                                    key={theme.id}
+                                                    type="button"
+                                                    onClick={() => handleThemeChange(theme.id)}
+                                                    aria-pressed={isActive}
+                                                    className={`app-shell__account-theme-dot ${isActive ? 'is-active' : ''}`}
+                                                    style={{ backgroundColor: theme.swatch }}
+                                                    title={theme.label}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
 

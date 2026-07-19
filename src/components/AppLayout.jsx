@@ -1070,6 +1070,7 @@ export default function AppLayout() {
                                     ) : (
                                         <SidebarAccountMenu
                                             collapsed={isSidebarCollapsed}
+                                            isMobile={isMobile}
                                             avatar={<TrainerAvatar pokemonId={greetingPokemonId} isShiny={greetingPokemonIsShiny} color={colors.primary} />}
                                             displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
                                             email={userEmail || ''}
@@ -1177,9 +1178,27 @@ export default function AppLayout() {
                             </div>
 
                             <div className="app-shell__header-actions">
-                                <button onClick={toggleTheme} type="button" aria-label={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })} className="app-shell__icon-button">
-                                    {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                </button>
+                                {/* Desktop keeps the quick theme toggle; guests keep it on mobile too. */}
+                                {(!isMobile || isAnonymous) && (
+                                    <button onClick={toggleTheme} type="button" aria-label={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })} className="app-shell__icon-button">
+                                        {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
+                                    </button>
+                                )}
+                                {/* Mobile: the top-right icon opens the account & preferences menu. */}
+                                {isMobile && !isAnonymous && (
+                                    <SidebarAccountMenu
+                                        variant="header"
+                                        isMobile
+                                        avatar={<TrainerAvatar pokemonId={greetingPokemonId} isShiny={greetingPokemonIsShiny} color={colors.primary} />}
+                                        displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
+                                        email={userEmail || ''}
+                                        currentTheme={theme}
+                                        themes={THEME_META}
+                                        onOpenProfile={() => navigate('/profile')}
+                                        onChangeTheme={changeTheme}
+                                        onSignOut={handleSignOut}
+                                    />
+                                )}
                             </div>
                         </header>
                     )}
