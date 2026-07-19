@@ -565,10 +565,12 @@
 }
 
 .team-builder-mobile__available {
-    max-height: 52vh;
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    -webkit-overflow-scrolling: touch;
+    /* No nested scroller on mobile — the page itself is the single scroll
+       surface, so the picker grid flows full-length instead of living in a
+       cramped ~52vh window (which wasted space and let the next panel peek). */
+    border: none;
+    background: transparent;
+    border-radius: 0;
 }
 
 .team-builder-results__scroll {
@@ -872,7 +874,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 0.45rem;
+    padding: 0.4rem 0.4rem 0.45rem;
     text-align: left;
 }
 
@@ -923,7 +925,7 @@
     display: block;
     width: 100%;
     margin-top: 0.05rem;
-    font-size: 0.5rem;
+    font-size: 0.45rem;
     font-weight: 700;
     text-transform: capitalize;
     text-align: left;
@@ -966,10 +968,10 @@
 }
 
 .team-builder-mobile-card__media {
-    margin-top: 0.2rem;
+    margin-top: 0.1rem;
     border-radius: var(--radius-md);
-    background: var(--color-bg);
-    padding: 0.35rem;
+    background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+    padding: 0.12rem;
 }
 
 .team-builder-mobile-card__name {
@@ -1507,6 +1509,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
+    margin-bottom: 0.5rem;
 }
 
 /* Team Builder mobile: compact picker toolbar (game chip · Core chip · count). */
@@ -1565,6 +1568,12 @@
     display: flex;
     align-items: stretch;
     gap: 0.5rem;
+    /* Collapsible: the whole actions row folds away when the header condenses. */
+    max-height: 4rem;
+    overflow: hidden;
+    transition: max-height var(--duration-normal) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth),
+                margin-top var(--duration-normal) var(--ease-smooth);
 }
 
 .team-builder-mobile__save {
@@ -1585,11 +1594,125 @@
     width: auto;
 }
 
+/* ── Condense-on-scroll: sticky composer shrinks to 2 rows ─────────────
+   (name + compact Save, then slots). The count ⇄ compact-Save cross-fade
+   in a shared grid cell; the actions row and analysis chip fold away. */
+.team-builder-mobile__composer-corner {
+    position: relative;
+    display: grid;
+    place-items: center end;
+    min-width: 2.4rem;
+}
+
+.team-builder-mobile__composer-corner > * {
+    grid-area: 1 / 1;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+                transform var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-mobile__save-compact {
+    min-height: auto;
+    padding: 0.4rem 0.6rem;
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.team-builder-mobile__composer.is-condensed .team-builder-mobile__composer-count {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+.team-builder-mobile__composer.is-condensed .team-builder-mobile__save-compact {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+}
+
+.team-builder-mobile__composer.is-condensed .team-builder-mobile__composer-actions {
+    max-height: 0;
+    margin-top: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.team-builder-mobile__composer-analysis {
+    max-height: 6rem;
+    overflow: hidden;
+    transition: max-height var(--duration-normal) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-mobile__composer.is-condensed .team-builder-mobile__composer-analysis {
+    max-height: 0;
+    opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .team-builder-mobile__composer-actions,
+    .team-builder-mobile__composer-analysis,
+    .team-builder-mobile__composer-corner > * {
+        transition-duration: 0.001ms;
+    }
+}
+
+/* Picker header: result count on the left, saved-teams caller on the right. */
+.team-builder-mobile__result-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
 /* Result count above the picker grid (game & Core moved to the Filtros sheet). */
 .team-builder-mobile__result-count {
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--color-muted);
+}
+
+/* Saved-teams caller — compact icon button opening the saved-teams sheet. */
+.team-builder-mobile__saved-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.1rem;
+    height: 2.1rem;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.team-builder-mobile__saved-icon:active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.team-builder-mobile__saved-icon-badge {
+    position: absolute;
+    top: -0.35rem;
+    right: -0.35rem;
+    min-width: 1rem;
+    height: 1rem;
+    padding: 0 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    line-height: 1;
 }
 
 /* Filtros sheet — vertical stack of labelled blocks for clear spacing. */
@@ -1664,27 +1787,6 @@
 }
 
 /* Saved-teams trigger — opens the saved teams in a bottom sheet. */
-.team-builder-mobile__saved-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 0;
-    border: none;
-    background: transparent;
-    text-align: left;
-    cursor: pointer;
-}
-
-.team-builder-mobile__saved-trigger-title {
-    display: block;
-    margin-top: 0.35rem;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-fg);
-}
-
 /* Regional / National Pokedex Section Headers in Grid */
 .pokedex-section-title {
     grid-column: 1 / -1;

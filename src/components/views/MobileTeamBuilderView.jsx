@@ -125,12 +125,12 @@ const MobilePokemonPickerCard = ({
             </div>
 
             <div className="team-builder-mobile-card__media tb-type-tint" style={typeVars(pokemon)}>
-                <div className="mx-auto aspect-square w-full max-w-[84px]">
+                <div className="mx-auto aspect-square w-full max-w-[96px]">
                     <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>
 
-            <div className="mt-2">
+            <div className="mt-1.5">
                 <p className="team-builder-mobile-card__name font-bold capitalize">
                     {pokemon.name}
                 </p>
@@ -380,6 +380,34 @@ export const MobileTeamBuilderView = ({
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [filtersExpanded, setFiltersExpanded] = React.useState(false);
     const [savedTeamsOpen, setSavedTeamsOpen] = React.useState(false);
+    // Sticky composer condenses to a 2-row header once the user scrolls past
+    // the top, then re-expands near the top. Hysteresis (56/16) keeps it from
+    // flickering right at the threshold. The scroll surface is the app shell's
+    // content column (`.app-shell__content`), not the window.
+    const [isComposerCondensed, setIsComposerCondensed] = React.useState(false);
+    React.useEffect(() => {
+        const scroller = document.querySelector('.app-shell__content') || window;
+        const readY = () => (scroller === window ? window.scrollY : scroller.scrollTop);
+        let raf = 0;
+        const onScroll = () => {
+            if (raf) return;
+            raf = requestAnimationFrame(() => {
+                raf = 0;
+                const y = readY();
+                setIsComposerCondensed((prev) => {
+                    if (!prev && y > 56) return true;
+                    if (prev && y < 16) return false;
+                    return prev;
+                });
+            });
+        };
+        scroller.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+        return () => {
+            scroller.removeEventListener('scroll', onScroll);
+            if (raf) cancelAnimationFrame(raf);
+        };
+    }, []);
     const { byId: smogonById } = useSmogonData();
     const { byId: usageById } = useCompetitiveUsage();
     const teamCores = React.useMemo(
@@ -470,8 +498,8 @@ export const MobileTeamBuilderView = ({
     return (
         <div className="team-builder-mobile space-y-3">
             <div className="team-builder-mobile__sticky">
-                <section className="team-builder-panel team-builder-mobile__composer p-3.5">
-                    {/* Row 1: team name + count only */}
+                <section className={`team-builder-panel team-builder-mobile__composer p-3.5 ${isComposerCondensed ? 'is-condensed' : ''}`}>
+                    {/* Row 1: team name + (count ⇄ compact Save) */}
                     <div className="team-builder-mobile__composer-top">
                         <input
                             type="text"
@@ -495,7 +523,21 @@ export const MobileTeamBuilderView = ({
                                 </button>
                             )
                         )}
-                        <span className="team-builder-panel__meta shrink-0">{currentTeam.length}/6</span>
+                        {/* Count and the compact Save share one grid cell so they
+                           cross-fade in place as the header condenses. */}
+                        <div className="team-builder-mobile__composer-corner shrink-0">
+                            <span className="team-builder-panel__meta team-builder-mobile__composer-count">{currentTeam.length}/6</span>
+                            <button
+                                type="button"
+                                onClick={handleSaveTeam}
+                                className="team-builder-button team-builder-button--primary team-builder-mobile__save-compact"
+                                aria-label={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
+                                title={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
+                                tabIndex={isComposerCondensed ? 0 : -1}
+                            >
+                                <Save className="h-4 w-4" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Row 2: team slots */}
@@ -565,11 +607,13 @@ export const MobileTeamBuilderView = ({
                         </div>
                     </div>
 
-                    <TeamAnalysisChip
-                        teamAnalysis={teamAnalysis}
-                        teamSize={currentTeam.length}
-                        colors={colors}
-                    />
+                    <div className="team-builder-mobile__composer-analysis">
+                        <TeamAnalysisChip
+                            teamAnalysis={teamAnalysis}
+                            teamSize={currentTeam.length}
+                            colors={colors}
+                        />
+                    </div>
                 </section>
             </div>
 
@@ -701,10 +745,23 @@ export const MobileTeamBuilderView = ({
             </section>
 
             <section className="team-builder-panel p-3.5">
-                {/* Game & Core now live in the Filtros sheet — keep only a light
-                   result count here. */}
-                <div className="team-builder-mobile__result-count mb-2.5">
-                    {displayedPokemons.length} Pokémon
+                {/* Game & Core live in the Filtros sheet — this row keeps a light
+                   result count plus the saved-teams caller (top-right), which
+                   opens the saved-teams bottom sheet. */}
+                <div className="team-builder-mobile__result-head mb-2.5">
+                    <span className="team-builder-mobile__result-count">{displayedPokemons.length} Pokémon</span>
+                    <button
+                        type="button"
+                        onClick={() => setSavedTeamsOpen(true)}
+                        className="team-builder-mobile__saved-icon"
+                        aria-label={language === 'pt' ? 'Times salvos' : 'Saved teams'}
+                        title={language === 'pt' ? 'Times salvos' : 'Saved teams'}
+                    >
+                        <SaveAll className="h-4 w-4" />
+                        {recentTeams.length > 0 && (
+                            <span className="team-builder-mobile__saved-icon-badge">{recentTeams.length}</span>
+                        )}
+                    </button>
                 </div>
 
                 <div className="team-builder-mobile__available mt-2">
@@ -715,7 +772,7 @@ export const MobileTeamBuilderView = ({
                     ) : (
                         <>
                             <div className="p-1 custom-scrollbar">
-                                <div className="team-builder-mobile__grid grid grid-cols-3 gap-2">
+                                <div className="team-builder-mobile__grid grid grid-cols-3 gap-1.5">
                                     {isGameFilterActive ? (
                                         (gameSections || []).map((section) => (
                                             <React.Fragment key={section.key}>
@@ -835,27 +892,6 @@ export const MobileTeamBuilderView = ({
                     </div>
                 </section>
             )}
-
-            <section className="team-builder-panel p-4">
-                <button
-                    type="button"
-                    onClick={() => setSavedTeamsOpen(true)}
-                    className="team-builder-mobile__saved-trigger"
-                >
-                    <span className="min-w-0 text-left">
-                        <span className="team-builder-panel__eyebrow block">{language === 'pt' ? 'Trabalho salvo' : 'Saved work'}</span>
-                        <span className="team-builder-mobile__saved-trigger-title">
-                            {language === 'pt' ? 'Retomar equipe salva' : 'Resume a saved lineup'}
-                        </span>
-                    </span>
-                    <span className="flex shrink-0 items-center gap-2">
-                        {recentTeams.length > 0 && (
-                            <span className="team-builder-mobile__core-count">{recentTeams.length}</span>
-                        )}
-                        <ChevronRight className="h-4 w-4 text-muted" />
-                    </span>
-                </button>
-            </section>
 
             {savedTeamsOpen && (
                 <BottomSheet onClose={() => setSavedTeamsOpen(false)} title={language === 'pt' ? 'Times salvos' : 'Saved teams'}>
