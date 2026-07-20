@@ -10,6 +10,15 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const canvasRef = useRef(null);
 
+    // useModalA11y focuses the first button ("try another"), so a stray Enter
+    // right after the final guess would activate it and dismiss the quiz.
+    // Park focus on the dialog container instead.
+    useEffect(() => {
+        if (!isOpen) return undefined;
+        const frame = window.requestAnimationFrame(() => dialogRef.current?.focus());
+        return () => window.cancelAnimationFrame(frame);
+    }, [isOpen, dialogRef]);
+
     useEffect(() => {
         if (!isOpen || !canvasRef.current) return;
         const canvas = canvasRef.current;

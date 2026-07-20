@@ -53,9 +53,11 @@ export function PokemonGenerationQuizCard({
             </div>
 
             <span className="generation-quiz-card__name">{pokemon.displayName}</span>
-            <span className="generation-quiz-card__hint">
-                {isLoading ? 'Loading...' : isInteractable ? 'Tap for info' : 'Locked'}
-            </span>
+            {(isLoading || isInteractable) && (
+                <span className="generation-quiz-card__hint">
+                    {isLoading ? 'Loading...' : 'Tap for info'}
+                </span>
+            )}
         </button>
     );
 }

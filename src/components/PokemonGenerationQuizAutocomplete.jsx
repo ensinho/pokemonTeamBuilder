@@ -10,6 +10,7 @@ export function PokemonGenerationQuizAutocomplete({
     disabled,
     inputRef,
     helperText,
+    placeholder,
     minCharacters,
 }) {
     const listboxId = useId();
@@ -25,8 +26,8 @@ export function PokemonGenerationQuizAutocomplete({
                 <input tabIndex={-1} type="password" autoComplete="new-password" className="generation-quiz-autocomplete__decoy" />
             </div>
             <label className="generation-quiz__field" htmlFor="generation-quiz-answer">
-                <span className="generation-quiz__field-label">Name</span>
-                <div className="generation-quiz-autocomplete__input-wrap mt-2">
+                <span className="sr-only">Pokémon name</span>
+                <div className="generation-quiz-autocomplete__input-wrap">
                     <input
                         ref={inputRef}
                         id="generation-quiz-answer"
@@ -41,7 +42,7 @@ export function PokemonGenerationQuizAutocomplete({
                         data-form-type="other"
                         data-lpignore="true"
                         data-1p-ignore="true"
-                        placeholder="Type a Pokémon name"
+                        placeholder={placeholder || 'Type a Pokémon name'}
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
                         onKeyDown={onKeyDown}
@@ -54,7 +55,7 @@ export function PokemonGenerationQuizAutocomplete({
                         aria-expanded={isOpen}
                         aria-controls={isOpen ? listboxId : undefined}
                         aria-activedescendant={activeSuggestion ? `${listboxId}-${activeSuggestion.id}` : undefined}
-                        aria-describedby="generation-quiz-helper"
+                        aria-describedby={helperText ? 'generation-quiz-helper' : undefined}
                     />
                     {isOpen && (
                         <div className="generation-quiz-autocomplete__panel elevation-2">
@@ -81,9 +82,11 @@ export function PokemonGenerationQuizAutocomplete({
                 </div>
             </label>
 
-            <p id="generation-quiz-helper" className="generation-quiz__helper-text">
-                {helperText}
-            </p>
+            {helperText && (
+                <p id="generation-quiz-helper" className="generation-quiz__helper-text">
+                    {helperText}
+                </p>
+            )}
         </div>
     );
 }

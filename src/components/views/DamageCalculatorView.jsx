@@ -818,7 +818,7 @@ export function DamageCalculatorView() {
             <div className="bg-surface border border-border rounded-xl px-3 py-2.5 shadow-sm">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     {/* Format */}
-                    <div className="inline-flex bg-bg border border-border rounded-lg p-0.5">
+                    <div className="order-1 inline-flex h-8 items-stretch bg-bg border border-border rounded-lg p-0.5">
                         {['singles', 'doubles'].map((f) => (
                             <button
                                 key={f}
@@ -831,9 +831,9 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Weather */}
-                    <div className="flex items-center gap-1.5 w-full min-w-0 sm:w-auto">
-                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted">Weather</span>
-                        <div className="flex min-w-0 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5">
+                    <div className="order-3 flex items-center gap-1.5 w-full min-w-0 sm:order-2 sm:w-auto">
+                        <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Weather</span>
+                        <div className="flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
                             {WEATHERS.map((w) => (
                                 <button
                                     key={w.v}
@@ -847,9 +847,9 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Terrain */}
-                    <div className="flex items-center gap-1.5 w-full min-w-0 sm:w-auto">
-                        <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted">Terrain</span>
-                        <div className="flex min-w-0 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5">
+                    <div className="order-4 flex items-center gap-1.5 w-full min-w-0 sm:order-3 sm:w-auto">
+                        <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Terrain</span>
+                        <div className="flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
                             {TERRAINS.map((tr) => (
                                 <button
                                     key={tr.v}
@@ -863,22 +863,23 @@ export function DamageCalculatorView() {
                     </div>
 
                     {/* Actions */}
-                    <div className="ml-auto flex items-center gap-2">
+                    <div className="order-2 ml-auto flex items-center gap-1.5 sm:order-5 sm:gap-2">
                         <button
                             onClick={() => setShowField(v => !v)}
-                            className={`btn btn-outline flex items-center gap-1.5 text-xs h-8 px-3 ${showField ? 'text-primary border-border' : ''}`}
+                            className={`btn btn-outline flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3 ${showField ? 'text-primary border-border' : ''}`}
                             title="Screens, hazards and side boosts"
+                            aria-label="Field effects"
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
-                            Field
+                            <span className="hidden sm:inline">Field</span>
                         </button>
-                        <button onClick={handleSwap} className="btn btn-secondary flex items-center gap-1.5 text-xs h-8 px-3" title="Swap the two Pokémon">
+                        <button onClick={handleSwap} className="btn btn-secondary flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3" title="Swap the two Pokémon" aria-label="Swap the two Pokémon">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3 21 7 17 11" /><path d="M3 7h18" /><path d="M7 21 3 17 7 13" /><path d="M21 17H3" /></svg>
-                            Swap
+                            <span className="hidden sm:inline">Swap</span>
                         </button>
-                        <button onClick={handleResetAll} className="btn btn-outline flex items-center gap-1.5 text-xs h-8 px-3 hover:text-danger hover:border-danger" title="Clear everything">
+                        <button onClick={handleResetAll} className="btn btn-outline flex items-center gap-1.5 text-xs h-8 px-2.5 sm:px-3 hover:text-danger hover:border-danger" title="Clear everything" aria-label="Clear everything">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" /></svg>
-                            Reset
+                            <span className="hidden sm:inline">Reset</span>
                         </button>
                     </div>
                 </div>

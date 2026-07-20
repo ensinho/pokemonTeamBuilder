@@ -1,5 +1,6 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CheckCircle2, HelpCircle, LayoutGrid } from 'lucide-react';
 
 import '../../styles/generation-quiz-view.css';
 
@@ -78,6 +79,16 @@ const formatPokemonDisplayName = (name = '') => {
         .join(' ');
 };
 
+// Hint reveals the first ~20% of the name (min 2 chars) — roughly the first
+// syllable — instead of a single letter.
+const buildQuizHintText = (pokemon, language) => {
+    const name = pokemon.displayName;
+    const prefix = name.slice(0, Math.max(2, Math.ceil(name.length * 0.2)));
+    return language === 'pt'
+        ? `Dica para você: '${prefix}…' (${name.length})!`
+        : `Tip to you:'${prefix}…' (${name.length})!`;
+};
+
 const getGenerationKeyForPokemon = (pokemonId) => QUIZ_GENERATION_KEYS.find((generationKey) => {
     const range = GENERATION_RANGES[generationKey];
     return pokemonId >= range.start && pokemonId <= range.end;
@@ -109,6 +120,8 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [answerInput, setAnswerInput] = useState('');
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [currentTip, setCurrentTip] = useState('');
+    const [manualHint, setManualHint] = useState('');
+    const [hintsUsed, setHintsUsed] = useState(0);
     const [feedback, setFeedback] = useState({ tone: 'muted', message: language === 'pt' ? 'Escolha as gerações.' : 'Choose generations.' });
     const [announcement, setAnnouncement] = useState('');
     const [newlyFoundId, setNewlyFoundId] = useState(null);
@@ -277,12 +290,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
             const randomIndex = Math.floor(Math.random() * remainingEntries.length);
             const randomPokemon = remainingEntries[randomIndex];
             if (randomPokemon) {
-                const firstLetter = randomPokemon.displayName.charAt(0).toUpperCase();
-                const nameLength = randomPokemon.displayName.length;
-                const genLabel = randomPokemon.generationLabel;
-                setCurrentTip(language === 'pt' 
-                    ? `Tente adivinhar um Pokémon da ${genLabel} começando com '${firstLetter}' (${nameLength} letras)!`
-                    : `Try guessing a ${genLabel} Pokémon starting with '${firstLetter}' (${nameLength} letters)!`);
+                setCurrentTip(buildQuizHintText(randomPokemon, language));
             }
         } else if (consecutiveMisses === 0) {
             setCurrentTip('');
@@ -362,21 +370,24 @@ export function GenerationQuizView({ showDetails, showToast }) {
     }, [answerLookup, foundIds, normalizedAnswerInput, pokemonById, quizStarted, totalCount, activeRun, updateActiveRunProgress, language]);
 
     useEffect(() => {
-        if (!quizStarted) return;
+        if (!quizStarted || !isComplete) return undefined;
 
-        if (isComplete) {
-            setAnnouncement(language === 'pt' ? 'Quiz de Gerações concluído.' : 'Generation Quiz complete.');
-            setFeedback({ tone: 'success', message: language === 'pt' ? 'Quiz concluído. Todos os Pokémon selecionados foram encontrados!' : 'Quiz complete. Every selected Pokémon has been found.' });
-            showToast?.(language === 'pt' ? 'Quiz de Gerações concluído!' : 'Generation Quiz complete!', 'success');
+        setAnnouncement(language === 'pt' ? 'Quiz de Gerações concluído.' : 'Generation Quiz complete.');
+        setFeedback({ tone: 'success', message: language === 'pt' ? 'Quiz concluído. Todos os Pokémon selecionados foram encontrados!' : 'Quiz complete. Every selected Pokémon has been found.' });
+        showToast?.(language === 'pt' ? 'Quiz de Gerações concluído!' : 'Generation Quiz complete!', 'success');
 
-            if (activeEntries.length > 0) {
-                const randomIndex = Math.floor(Math.random() * activeEntries.length);
-                setCelebrationPokemon(activeEntries[randomIndex]);
-            } else {
-                setCelebrationPokemon(null);
-            }
-            setIsCelebrationOpen(true);
+        if (activeEntries.length > 0) {
+            const randomIndex = Math.floor(Math.random() * activeEntries.length);
+            setCelebrationPokemon(activeEntries[randomIndex]);
+        } else {
+            setCelebrationPokemon(null);
         }
+
+        // Open with a beat of delay: the last guess commits while the user is
+        // still typing, and an immediate open lets their trailing Enter press
+        // land on the modal's focused action button (closing it instantly).
+        const timer = window.setTimeout(() => setIsCelebrationOpen(true), 750);
+        return () => window.clearTimeout(timer);
     }, [isComplete, quizStarted, showToast, activeEntries, language]);
 
     useEffect(() => {
@@ -412,9 +423,28 @@ export function GenerationQuizView({ showDetails, showToast }) {
     }, [normalizedAnswerInput]);
 
     const recentFinds = useMemo(
-        () => foundOrder.slice(-6).reverse().map((pokemonId) => pokemonById.get(pokemonId)).filter(Boolean),
+        () => foundOrder.slice(-4).reverse().map((pokemonId) => pokemonById.get(pokemonId)).filter(Boolean),
         [foundOrder, pokemonById]
     );
+
+    // Manual hints: 1 credit earned per 10 catches. A fresh/restarted run
+    // (foundCount back to 0) resets spent credits; a new catch clears the
+    // last manual hint so it doesn't linger after being solved.
+    useEffect(() => {
+        setManualHint('');
+        if (foundCount === 0) {
+            setHintsUsed(0);
+        }
+    }, [foundCount, activeRun?.id]);
+
+    const availableHints = Math.max(0, Math.floor(foundCount / 10) - hintsUsed);
+
+    const handleManualHint = useCallback(() => {
+        if (availableHints <= 0 || remainingEntries.length === 0) return;
+        const randomPokemon = remainingEntries[Math.floor(Math.random() * remainingEntries.length)];
+        setManualHint(buildQuizHintText(randomPokemon, language));
+        setHintsUsed((value) => value + 1);
+    }, [availableHints, remainingEntries, language]);
 
     const toggleGeneration = useCallback((generationKey) => {
         setSelectedGenerationKeys(new Set([generationKey]));
@@ -560,180 +590,50 @@ export function GenerationQuizView({ showDetails, showToast }) {
         }
     }, [loadingDetailId, showDetails, showToast, language]);
 
-    const helperText = isComplete
-        ? (language === 'pt' ? 'Todos os Pokémon selecionados foram encontrados!' : 'All selected Pokémon found!')
-        : (language === 'pt' ? `Digite para adivinhar (mínimo de ${MIN_AUTOCOMPLETE_CHARACTERS} letras para sugestões)` : `Type to guess (${MIN_AUTOCOMPLETE_CHARACTERS}+ chars for suggestions)`);
-
     const allGenerationsSelected = selectedGenerationList.length === QUIZ_GENERATION_KEYS.length;
-    const hasPendingSelectionChanges = quizStarted
-        && buildSelectionSignature(selectedGenerationList) !== buildSelectionSignature(activeGenerationList);
+    const lastFind = recentFinds[0] || null;
+    const previousFinds = recentFinds.slice(1);
+
+    const gridFilterOptions = [
+        { key: 'all', Icon: LayoutGrid, label: language === 'pt' ? 'Todos' : 'All', count: totalCount },
+        { key: 'guessed', Icon: CheckCircle2, label: language === 'pt' ? 'Adivinhados' : 'Guessed', count: foundCount },
+        { key: 'missing', Icon: HelpCircle, label: language === 'pt' ? 'Faltando' : 'Missing', count: remainingCount },
+    ];
+
+    const historyButton = (
+        <button
+            type="button"
+            onClick={() => setIsHistoryOpen(true)}
+            className="generation-quiz__history-toggle"
+            title={language === 'pt' ? 'Ver Histórico de Partidas' : 'View Quiz Run History'}
+        >
+            <HistoryIcon />
+            <span>{language === 'pt' ? 'Histórico' : 'History'}</span>
+            {quizRuns.length > 0 && (
+                <span className="generation-quiz__history-toggle-badge">
+                    {quizRuns.length}
+                </span>
+            )}
+        </button>
+    );
 
     return (
         <main className={`generation-quiz ${quizStarted ? 'generation-quiz--running' : ''}`}>
-            <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel">
-                <div className="generation-quiz__panel-header">
-                    <div className="flex items-center gap-2">
-                        <h2 className="team-builder-panel__title team-builder-panel__title--compact">{language === 'pt' ? 'Lista de Pokémon' : 'Pokémon Roster'}</h2>
-                        {quizStarted && (
-                            <span className="team-builder-panel__meta team-builder-panel__meta--compact">
-                                {foundCount}/{totalCount}
-                            </span>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-3 ml-auto">
-                        {quizStarted && (
-                            <div className="generation-quiz__grid-filters">
-                                <button
-                                    type="button"
-                                    onClick={() => setGridFilter('all')}
-                                    className={`generation-quiz__filter-btn ${gridFilter === 'all' ? 'is-active' : ''}`}
-                                >
-                                    {language === 'pt' ? 'Todos' : 'All'} ({totalCount})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setGridFilter('guessed')}
-                                    className={`generation-quiz__filter-btn ${gridFilter === 'guessed' ? 'is-active' : ''}`}
-                                >
-                                    {language === 'pt' ? 'Adivinhados' : 'Guessed'} ({foundCount})
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setGridFilter('missing')}
-                                    className={`generation-quiz__filter-btn ${gridFilter === 'missing' ? 'is-active' : ''}`}
-                                >
-                                    {language === 'pt' ? 'Faltando' : 'Missing'} ({remainingCount})
-                                </button>
-                            </div>
-                        )}
-                        {quizStarted && (
-                            <span className="generation-quiz__grid-meta hidden md:inline">{visibleEntries.length} {language === 'pt' ? 'exibidos' : 'shown'}</span>
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => setIsHistoryOpen(true)}
-                            className="generation-quiz__history-toggle"
-                            title={language === 'pt' ? 'Ver Histórico de Partidas' : 'View Quiz Run History'}
-                        >
-                            <HistoryIcon />
-                            <span>{language === 'pt' ? 'Histórico' : 'History'}</span>
-                            {quizRuns.length > 0 && (
-                                <span className="generation-quiz__history-toggle-badge">
-                                    {quizRuns.length}
-                                </span>
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Sticky Controls Wrapper for mobile */}
-                {quizStarted && (
-                    <div className="generation-quiz__sticky-controls">
-                        {/* Main Input Field */}
-                        <div className="generation-quiz__main-input-row mt-3">
-                            <PokemonGenerationQuizAutocomplete
-                                value={answerInput}
-                                onChange={setAnswerInput}
-                                onKeyDown={handleInputKeyDown}
-                                suggestions={suggestions}
-                                activeIndex={activeSuggestionIndex}
-                                onSelectSuggestion={handleSelectSuggestion}
-                                disabled={!quizStarted || isComplete}
-                                inputRef={inputRef}
-                                helperText={quizStarted ? helperText : (language === 'pt' ? 'Selecione as gerações acima e clique em Começar para iniciar.' : 'Select generations above and click Start to begin.')}
-                                minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
-                            />
-                            {feedback.message && (
-                                <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
-                                    {feedback.message}
-                                </p>
-                            )}
+            {!quizStarted ? (
+                <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel">
+                    <div className="generation-quiz__panel-header">
+                        <div className="generation-quiz__panel-title-group">
+                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('quiz.title')}</h2>
                         </div>
-
-                        {/* Hint/Tip Banner */}
-                        {consecutiveMisses >= 3 && currentTip && (
-                            <div className="generation-quiz__tip-banner mt-3">
-                                <SparklesIcon />
-                                <span className="generation-quiz__tip-text">{currentTip}</span>
-                            </div>
-                        )}
-
-                        {/* Compact Progress Area */}
-                        {quizStarted ? (
-                            <div className="generation-quiz__compact-progress-row mt-3">
-                                <div className="generation-quiz__progress-bar-container">
-                                    <div className="generation-quiz__progress-bar" aria-hidden="true">
-                                        <span className="generation-quiz__progress-fill" style={{ width: `${completionPercent}%` }} />
-                                    </div>
-                                </div>
-                                <div className="generation-quiz__progress-details mt-2">
-                                    <div className="generation-quiz__progress-metrics">
-                                        <span className="generation-quiz__metric-item">
-                                            <span className="generation-quiz__metric-label">{language === 'pt' ? 'Progresso:' : 'Progress:'}</span>
-                                            <strong className="generation-quiz__metric-value">{foundCount}/{totalCount} ({completionPercent}%)</strong>
-                                        </span>
-                                        <span className="generation-quiz__metric-item">
-                                            <span className="generation-quiz__metric-label">{language === 'pt' ? 'Precisão:' : 'Accuracy:'}</span>
-                                            <strong className="generation-quiz__metric-value">{accuracyPercent}%</strong>
-                                        </span>
-                                    </div>
-
-                                    {recentFinds.length > 0 && (
-                                        <div className="generation-quiz__progress-recent">
-                                            <span className="generation-quiz__recent-label">{language === 'pt' ? 'Recentes:' : 'Recent:'}</span>
-                                            <div className="generation-quiz__recent-chips">
-                                                {recentFinds.map((pokemon) => (
-                                                    <span key={pokemon.id} className="generation-quiz__recent-chip">
-                                                        {pokemon.displayName}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="flex gap-2">
-                                        <button type="button" onClick={startQuiz} className="generation-quiz__compact-reset-btn">
-                                            <RefreshIcon /> {language === 'pt' ? 'Recomeçar' : 'Restart'}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setActiveRunId(null)}
-                                            className="generation-quiz__compact-reset-btn"
-                                            title={language === 'pt' ? 'Retornar à tela inicial para mudar as gerações' : 'Return to start screen to change generations'}
-                                        >
-                                            {language === 'pt' ? 'Mudar Gerações' : 'Change Gens'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {isComplete && (
-                                    <div className="generation-quiz__celebration mt-3">
-                                        <SuccessToastIcon />
-                                        <div>
-                                            <strong>{language === 'pt' ? 'Parabéns!' : 'Congratulations!'}</strong>
-                                            <p>{language === 'pt' ? `Você adivinhou todos os Pokémon selecionados com ${accuracyPercent}% de precisão.` : `You guessed every selected Pokémon with ${accuracyPercent}% accuracy.`}</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="generation-quiz__compact-progress-row is-idle mt-3">
-                                <span className="generation-quiz__idle-note">
-                                    {language === 'pt' ? 'Melhor Partida:' : 'Best Run:'} <strong>{bestRun ? `${bestRun.bestFound}/${bestRun.totalCount} (${bestRun.accuracyPercent}% ${language === 'pt' ? 'de precisão' : 'accuracy'})` : (language === 'pt' ? 'Nenhuma partida ainda' : 'No runs yet')}</strong>
-                                </span>
-                            </div>
-                        )}
+                        {historyButton}
                     </div>
-                )}
 
-                {quizStarted && <div className="generation-quiz-divider mt-2 mb-1" />}
-
-                {isLoadingIndex ? (
-                    <div className="generation-quiz__loading-state">
-                        <div className="team-builder-spinner" aria-hidden="true"></div>
-                    </div>
-                ) : !quizStarted ? (
-                    <div className="generation-quiz__start-card">
+                    {isLoadingIndex ? (
+                        <div className="generation-quiz__loading-state">
+                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                        </div>
+                    ) : (
+                        <div className="generation-quiz__start-card">
                         <div className="generation-quiz__start-icon-wrap">
                             <img
                                 src={import.meta.env.BASE_URL + "LogoCuteGengarRounded.png"}
@@ -792,23 +692,178 @@ export function GenerationQuizView({ showDetails, showToast }) {
                             {language === 'pt' ? `Começar Quiz (${previewEntries.length} Pokémon)` : `Start Quiz (${previewEntries.length} Pokémon)`}
                         </button>
                     </div>
-                ) : (
-                    <div className="generation-quiz__grid" role="list" aria-label={language === 'pt' ? 'Grade de Pokémon do quiz' : 'Pokémon quiz grid'}>
-                        {visibleEntries.map((pokemon) => (
-                            <div key={pokemon.id} role="listitem">
-                                <PokemonGenerationQuizCard
-                                    pokemon={pokemon}
-                                    isFound={foundIds.has(pokemon.id)}
-                                    isNew={newlyFoundId === pokemon.id}
-                                    isLoading={loadingDetailId === pokemon.id}
-                                    isInteractable={isComplete}
-                                    onInspect={inspectPokemon}
-                                />
-                            </div>
-                        ))}
+                    )}
+                </section>
+            ) : (
+                <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel">
+                    <div className="generation-quiz__panel-header">
+                        <div className="generation-quiz__panel-title-group">
+                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">{language === 'pt' ? 'Lista de Pokémon' : 'Pokémon Roster'}</h2>
+                            <span className="team-builder-panel__meta team-builder-panel__meta--compact">
+                                {foundCount}/{totalCount}
+                            </span>
+                        </div>
+                        <div className="generation-quiz__grid-filters">
+                            {gridFilterOptions.map(({ key, Icon, label, count }) => (
+                                <button
+                                    key={key}
+                                    type="button"
+                                    onClick={() => setGridFilter(key)}
+                                    className={`generation-quiz__filter-btn ${gridFilter === key ? 'is-active' : ''}`}
+                                    aria-pressed={gridFilter === key}
+                                >
+                                    <Icon className="generation-quiz__filter-icon" aria-hidden="true" />
+                                    <span>{label}</span>
+                                    <span className="generation-quiz__filter-count">{count}</span>
+                                </button>
+                            ))}
+                        </div>
+                        {historyButton}
                     </div>
-                )}
-            </section>
+
+                    <div className="generation-quiz-divider mt-2 mb-1" />
+
+                    <div className="generation-quiz__grid" role="list" aria-label={language === 'pt' ? 'Grade de Pokémon do quiz' : 'Pokémon quiz grid'}>
+                        {/* Console occupies the top-left cells; cards flow beside and below it */}
+                        <div className="generation-quiz__console-cell" role="presentation">
+                            <section className="team-builder-panel generation-quiz__console">
+                            <div className="generation-quiz__console-main">
+                                <div className="generation-quiz__last-find" key={lastFind ? lastFind.id : 'empty'}>
+                                    <div className="generation-quiz__last-find-media" title={lastFind ? lastFind.displayName : undefined}>
+                                        {lastFind ? (
+                                            <img src={lastFind.spriteUrl} alt={lastFind.displayName} className="image-pixelated" />
+                                        ) : (
+                                            <PokeballIcon />
+                                        )}
+                                    </div>
+                                    <div className="generation-quiz__last-find-info">
+                                        <span className="generation-quiz__last-find-eyebrow">{language === 'pt' ? 'Último acerto' : 'Last catch'}</span>
+                                        <span className="generation-quiz__last-find-name">{lastFind ? lastFind.displayName : '???'}</span>
+                                        <span className="generation-quiz__last-find-id">
+                                            {lastFind ? `#${lastFind.id} · ${lastFind.generationLabel}` : (language === 'pt' ? 'Digite o primeiro nome!' : 'Type your first guess!')}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="generation-quiz__console-input">
+                                    <PokemonGenerationQuizAutocomplete
+                                        value={answerInput}
+                                        onChange={setAnswerInput}
+                                        onKeyDown={handleInputKeyDown}
+                                        suggestions={suggestions}
+                                        activeIndex={activeSuggestionIndex}
+                                        onSelectSuggestion={handleSelectSuggestion}
+                                        disabled={!quizStarted || isComplete}
+                                        inputRef={inputRef}
+                                        placeholder={language === 'pt' ? 'Digite para adivinhar…' : 'Type to guess…'}
+                                        minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="generation-quiz__progress-bar" aria-hidden="true">
+                                <span className="generation-quiz__progress-fill" style={{ width: `${completionPercent}%` }} />
+                            </div>
+
+                            <div className="generation-quiz__console-status">
+                                <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
+                                    {feedback.message}
+                                </p>
+                                <span className="generation-quiz__console-inline-metrics">
+                                    {foundCount}/{totalCount} · {accuracyPercent}%
+                                </span>
+                            </div>
+
+                            <div className="generation-quiz__console-metrics">
+                                <div className="generation-quiz__console-stat">
+                                    <strong>{foundCount}/{totalCount}</strong>
+                                    <span>{language === 'pt' ? 'Encontrados' : 'Found'}</span>
+                                </div>
+                                <div className="generation-quiz__console-stat">
+                                    <strong>{completionPercent}%</strong>
+                                    <span>{language === 'pt' ? 'Completo' : 'Complete'}</span>
+                                </div>
+                                <div className="generation-quiz__console-stat">
+                                    <strong>{accuracyPercent}%</strong>
+                                    <span>{language === 'pt' ? 'Precisão' : 'Accuracy'}</span>
+                                </div>
+                            </div>
+
+                            {previousFinds.length > 0 && (
+                                <div className="generation-quiz__progress-recent">
+                                    <span className="generation-quiz__recent-label">{language === 'pt' ? 'Recentes:' : 'Recent:'}</span>
+                                    <div className="generation-quiz__recent-chips">
+                                        {previousFinds.map((pokemon) => (
+                                            <span key={pokemon.id} className="generation-quiz__recent-chip">
+                                                {pokemon.displayName}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {(manualHint || (consecutiveMisses >= 3 && currentTip)) && (
+                                <div className="generation-quiz__tip-banner">
+                                    <SparklesIcon />
+                                    <span className="generation-quiz__tip-text">{manualHint || currentTip}</span>
+                                </div>
+                            )}
+
+                            {isComplete && (
+                                <div className="generation-quiz__celebration">
+                                    <SuccessToastIcon />
+                                    <div>
+                                        <strong>{language === 'pt' ? 'Parabéns!' : 'Congratulations!'}</strong>
+                                        <p>{language === 'pt' ? `Você adivinhou todos os Pokémon selecionados com ${accuracyPercent}% de precisão.` : `You guessed every selected Pokémon with ${accuracyPercent}% accuracy.`}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="generation-quiz__console-actions">
+                                <button
+                                    type="button"
+                                    onClick={handleManualHint}
+                                    disabled={availableHints <= 0 || isComplete}
+                                    className="generation-quiz__compact-reset-btn generation-quiz__hint-btn"
+                                    title={language === 'pt' ? 'Ganhe 1 dica a cada 10 acertos' : 'Earn 1 hint every 10 catches'}
+                                >
+                                    <SparklesIcon /> {language === 'pt' ? 'Dica' : 'Hint'}
+                                    <span className="generation-quiz__hint-count">{availableHints}</span>
+                                </button>
+                                <button type="button" onClick={startQuiz} className="generation-quiz__compact-reset-btn">
+                                    <RefreshIcon /> {language === 'pt' ? 'Recomeçar' : 'Restart'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveRunId(null)}
+                                    className="generation-quiz__compact-reset-btn"
+                                    title={language === 'pt' ? 'Retornar à tela inicial para mudar as gerações' : 'Return to start screen to change generations'}
+                                >
+                                    {language === 'pt' ? 'Gerações' : 'Change Gens'}
+                                </button>
+                            </div>
+                        </section>
+                        </div>
+
+                        {visibleEntries.length === 0 ? (
+                            <p className="team-builder-empty-note generation-quiz__grid-empty">{language === 'pt' ? 'Nenhum Pokémon neste filtro.' : 'No Pokémon in this filter.'}</p>
+                        ) : (
+                            visibleEntries.map((pokemon) => (
+                                <div key={pokemon.id} role="listitem">
+                                    <PokemonGenerationQuizCard
+                                        pokemon={pokemon}
+                                        isFound={foundIds.has(pokemon.id)}
+                                        isNew={newlyFoundId === pokemon.id}
+                                        isLoading={loadingDetailId === pokemon.id}
+                                        isInteractable={isComplete}
+                                        onInspect={inspectPokemon}
+                                    />
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </section>
+            )}
 
             <div className="sr-only" aria-live="polite">{announcement}</div>
 
@@ -911,6 +966,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                                             setSelectedGenerationKeys(new Set(run.generationKeys));
                                                             resumeRun(run.id);
                                                             setIsHistoryOpen(false);
+                                                            setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida retomada. Boa sorte!' : 'Run resumed. Good luck!' });
                                                         }}
                                                         className="generation-quiz-history__btn generation-quiz-history__btn--continue"
                                                     >
@@ -923,6 +979,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                                         setSelectedGenerationKeys(new Set(run.generationKeys));
                                                         rerunRun(run.id);
                                                         setIsHistoryOpen(false);
+                                                        setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida reiniciada do zero.' : 'Run restarted from scratch.' });
                                                     }}
                                                     className="generation-quiz-history__btn generation-quiz-history__btn--rerun"
                                                 >
