@@ -88,7 +88,7 @@
 .generation-quiz__console {
     display: flex;
     flex-direction: column;
-    gap: 0.7rem;
+    gap: 0.55rem;
     padding: 1rem;
     flex: 1;
     min-width: 0;
@@ -545,7 +545,7 @@
 .generation-quiz__grid-panel {
     display: flex;
     flex-direction: column;
-    padding: 1.5rem;
+    padding: 0.5rem 1.25rem;
     border-radius: var(--radius-lg);
     border: var(--card-border-style, solid) 1px var(--card-border-color, var(--color-border));
     background: var(--color-surface);
@@ -796,19 +796,44 @@
 
 /* Desktop layout: console spans the top-left of the roster grid */
 @media (min-width: 1024px) {
+    .generation-quiz__layout-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+    }
+
     .generation-quiz__console-cell {
-        grid-column: span 3;
-        grid-row: span 3;
+        grid-area: 1 / 1;
+        justify-self: start;
+        align-self: start;
+        position: sticky;
+        top: 0.5rem;
+        z-index: 10;
+        width: var(--console-width, auto);
     }
 
     .generation-quiz--running .generation-quiz__grid-panel {
-        max-height: calc(100vh - var(--app-shell-top-band-height) - 4.5rem);
+        max-height: calc(100vh - var(--app-shell-top-band-height) - 2.25rem);
         overflow-y: auto;
     }
 
     .generation-quiz__grid {
+        grid-area: 1 / 1;
         padding-right: 0.35rem;
         align-content: start;
+    }
+
+    .generation-quiz__console-spacer {
+        grid-column: span 3;
+        grid-row: span 3;
+        visibility: hidden;
+        pointer-events: none;
+    }
+}
+
+@media (max-width: 1023px) {
+    .generation-quiz__console-spacer {
+        display: none;
     }
 }
 
@@ -1583,6 +1608,7 @@
 
 /* Respect reduced-motion preference */
 @media (prefers-reduced-motion: reduce) {
+
     [class^="generation-quiz"],
     [class*=" generation-quiz"] {
         animation-duration: 0.001ms !important;

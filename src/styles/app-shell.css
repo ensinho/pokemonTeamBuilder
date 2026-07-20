@@ -23,6 +23,7 @@
     from {
         opacity: 0;
     }
+
     to {
         opacity: 1;
     }
@@ -141,7 +142,7 @@
     gap: 0.5rem;
     width: 100%;
     margin-top: auto;
-    padding: var(--app-shell-gutter) 0;
+    padding: 0;
 }
 
 .app-shell__sidebar-controls {
@@ -160,7 +161,7 @@
 
 .app-shell__brand,
 .app-shell__account {
-    padding: var(--app-shell-gutter);
+    padding: 0.5rem;
 }
 
 .app-shell__brand {
@@ -649,7 +650,8 @@
     width: min(20rem, calc(100vw - 1.5rem));
     border-radius: var(--radius-lg);
     overflow: hidden;
-    @media (max-width: 400px ){
+
+    @media (max-width: 400px) {
         left: 60px !important;
     }
 }
@@ -1432,6 +1434,7 @@
     .app-shell__content {
         padding-bottom: calc(3.9rem + env(safe-area-inset-bottom, 0px));
     }
+
     .app-shell__body.is-mobile-detail {
         padding-bottom: 0;
     }
@@ -1453,7 +1456,7 @@
     color: var(--color-muted);
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth);
+        background-color var(--duration-fast) var(--ease-smooth);
 }
 
 .app-shell__tab:hover {
@@ -1476,7 +1479,7 @@
     width: 1.35rem;
 }
 
-.app-shell__tab-icon > svg {
+.app-shell__tab-icon>svg {
     width: 1.3rem;
     height: 1.3rem;
 }

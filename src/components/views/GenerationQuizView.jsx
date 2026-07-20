@@ -26,7 +26,7 @@ import {
     SparklesIcon,
     SuccessToastIcon,
 } from '../icons';
-import { QuizCelebrationModal } from '../modals';
+import { ConfirmDialog, QuizCelebrationModal } from '../modals';
 import { useQuizRuns } from '../../hooks/useQuizRuns';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
@@ -104,6 +104,8 @@ const buildSelectionSignature = (generationKeys) => {
 export function GenerationQuizView({ showDetails, showToast }) {
     const navigate = useNavigate();
     const inputRef = useRef(null);
+    const consoleCellRef = useRef(null);
+    const [consoleWidth, setConsoleWidth] = useState(0);
     const detailCacheRef = useRef({});
     const { t, language } = useTranslation();
     useDocumentMeta({
@@ -127,10 +129,10 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [newlyFoundId, setNewlyFoundId] = useState(null);
     const [loadingDetailId, setLoadingDetailId] = useState(null);
     const [gridFilter, setGridFilter] = useState('all'); // 'all', 'guessed', 'missing'
-
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
     const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(5);
     const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
+    const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
 
     useEffect(() => {
         if (feedback.message === 'Choose generations.' || feedback.message === 'Escolha as gerações.') {
@@ -148,6 +150,63 @@ export function GenerationQuizView({ showDetails, showToast }) {
         deleteRun,
         setActiveRunId
     } = useQuizRuns();
+
+    const quizStarted = activeRun !== null;
+    const isComplete = quizStarted && activeRun.totalCount > 0 && activeRun.foundIds.length === activeRun.totalCount;
+
+    const handleExitQuizClick = useCallback(() => {
+        if (quizStarted && !isComplete) {
+            setIsExitConfirmOpen(true);
+        } else {
+            setActiveRunId(null);
+        }
+    }, [quizStarted, isComplete, setActiveRunId]);
+
+    useEffect(() => {
+        if (!quizStarted) return undefined;
+
+        const measureWidth = () => {
+            const spacerEl = document.querySelector('.generation-quiz__console-spacer');
+            if (spacerEl) {
+                setConsoleWidth(spacerEl.getBoundingClientRect().width);
+            }
+        };
+
+        // Measure initially
+        measureWidth();
+
+        // Measure on window resize
+        window.addEventListener('resize', measureWidth);
+
+        // Also measure using ResizeObserver to be reactive to grid container changes
+        let resizeObserver;
+        const spacerEl = document.querySelector('.generation-quiz__console-spacer');
+        if (spacerEl && typeof ResizeObserver !== 'undefined') {
+            resizeObserver = new ResizeObserver(measureWidth);
+            resizeObserver.observe(spacerEl);
+        }
+
+        return () => {
+            window.removeEventListener('resize', measureWidth);
+            if (resizeObserver) {
+                resizeObserver.disconnect();
+            }
+        };
+    }, [quizStarted, gridFilter]);
+
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            if (quizStarted && !isComplete) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [quizStarted, isComplete]);
 
     const handleHistoryScroll = useCallback((e) => {
         const { scrollTop, scrollHeight, clientHeight } = e.target;
@@ -167,13 +226,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
             setVisibleHistoryLimit(5);
         }
     }, [isHistoryOpen]);
-
-    const quizStarted = activeRun !== null;
-    const activeGenerationKeys = activeRun ? activeRun.generationKeys : [];
-
-    const foundIds = useMemo(() => {
-        return new Set(activeRun ? activeRun.foundIds : []);
-    }, [activeRun?.foundIds]);
 
     const foundOrder = activeRun ? activeRun.foundOrder : [];
     const invalidGuesses = activeRun ? activeRun.invalidGuesses : 0;
@@ -222,6 +274,12 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
         return () => window.clearTimeout(timer);
     }, [newlyFoundId]);
+
+    const foundIds = useMemo(() => {
+        return new Set(activeRun ? activeRun.foundIds : []);
+    }, [activeRun?.foundIds]);
+
+    const activeGenerationKeys = activeRun ? activeRun.generationKeys : [];
 
     const catalog = useMemo(() => pokemonIndex.map((pokemon) => {
         const generationKey = getGenerationKeyForPokemon(pokemon.id);
@@ -315,7 +373,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const accuracyPercent = foundCount + invalidGuesses > 0
         ? Math.round((foundCount / (foundCount + invalidGuesses)) * 100)
         : 100;
-    const isComplete = quizStarted && totalCount > 0 && foundCount === totalCount;
 
     const normalizedAnswerInput = useMemo(
         () => normalizePokemonQuizInput(deferredAnswerInput),
@@ -723,9 +780,14 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
                     <div className="generation-quiz-divider mt-2 mb-1" />
 
-                    <div className="generation-quiz__grid" role="list" aria-label={language === 'pt' ? 'Grade de Pokémon do quiz' : 'Pokémon quiz grid'}>
+                    <div className="generation-quiz__layout-container">
                         {/* Console occupies the top-left cells; cards flow beside and below it */}
-                        <div className="generation-quiz__console-cell" role="presentation">
+                        <div 
+                            ref={consoleCellRef}
+                            className="generation-quiz__console-cell" 
+                            role="presentation"
+                            style={{ '--console-width': consoleWidth ? `${consoleWidth}px` : 'auto' }}
+                        >
                             <section className="team-builder-panel generation-quiz__console">
                             <div className="generation-quiz__console-main">
                                 <div className="generation-quiz__last-find" key={lastFind ? lastFind.id : 'empty'}>
@@ -835,7 +897,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => setActiveRunId(null)}
+                                    onClick={handleExitQuizClick}
                                     className="generation-quiz__compact-reset-btn"
                                     title={language === 'pt' ? 'Retornar à tela inicial para mudar as gerações' : 'Return to start screen to change generations'}
                                 >
@@ -845,22 +907,25 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         </section>
                         </div>
 
-                        {visibleEntries.length === 0 ? (
-                            <p className="team-builder-empty-note generation-quiz__grid-empty">{language === 'pt' ? 'Nenhum Pokémon neste filtro.' : 'No Pokémon in this filter.'}</p>
-                        ) : (
-                            visibleEntries.map((pokemon) => (
-                                <div key={pokemon.id} role="listitem">
-                                    <PokemonGenerationQuizCard
-                                        pokemon={pokemon}
-                                        isFound={foundIds.has(pokemon.id)}
-                                        isNew={newlyFoundId === pokemon.id}
-                                        isLoading={loadingDetailId === pokemon.id}
-                                        isInteractable={isComplete}
-                                        onInspect={inspectPokemon}
-                                    />
-                                </div>
-                            ))
-                        )}
+                        <div className="generation-quiz__grid" role="list" aria-label={language === 'pt' ? 'Grade de Pokémon do quiz' : 'Pokémon quiz grid'}>
+                            <div className="generation-quiz__console-spacer" />
+                            {visibleEntries.length === 0 ? (
+                                <p className="team-builder-empty-note generation-quiz__grid-empty">{language === 'pt' ? 'Nenhum Pokémon neste filtro.' : 'No Pokémon in this filter.'}</p>
+                            ) : (
+                                visibleEntries.map((pokemon) => (
+                                    <div key={pokemon.id} role="listitem">
+                                        <PokemonGenerationQuizCard
+                                            pokemon={pokemon}
+                                            isFound={foundIds.has(pokemon.id)}
+                                            isNew={newlyFoundId === pokemon.id}
+                                            isLoading={loadingDetailId === pokemon.id}
+                                            isInteractable={isComplete}
+                                            onInspect={inspectPokemon}
+                                        />
+                                    </div>
+                                ))
+                            )}
+                        </div>
                     </div>
                 </section>
             )}
@@ -883,6 +948,23 @@ export function GenerationQuizView({ showDetails, showToast }) {
                     pokemon={celebrationPokemon}
                     accuracy={accuracyPercent}
                     totalCount={totalCount}
+                />
+            )}
+            {isExitConfirmOpen && (
+                <ConfirmDialog
+                    isOpen={isExitConfirmOpen}
+                    onClose={() => setIsExitConfirmOpen(false)}
+                    onConfirm={() => {
+                        setActiveRunId(null);
+                        setIsExitConfirmOpen(false);
+                    }}
+                    title={language === 'pt' ? 'Sair do Quiz?' : 'Exit Quiz?'}
+                    message={
+                        language === 'pt'
+                            ? 'Tem certeza que deseja voltar para a seleção de gerações? Seu progresso atual não será perdido e você poderá continuar depois.'
+                            : "Are you sure you want to return to generation selection? Your current progress won't be lost and you can resume later."
+                    }
+                    confirmText={language === 'pt' ? 'Sim, sair' : 'Yes, exit'}
                 />
             )}
             {/* History Drawer Overlay */}

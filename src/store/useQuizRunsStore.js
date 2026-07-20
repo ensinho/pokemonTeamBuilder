@@ -80,12 +80,22 @@ const loadLocalRuns = () => {
     return runs;
 };
 
+const loadActiveRunId = () => {
+    if (typeof window === 'undefined') return null;
+    try {
+        return localStorage.getItem('generationQuizActiveRunId') || null;
+    } catch (_) {
+        return null;
+    }
+};
+
+
 export const useQuizRunsStore = create((set, get) => {
     let runsUnsubscribe = null;
 
     return {
         quizRuns: loadLocalRuns(),
-        activeRunId: null,
+        activeRunId: loadActiveRunId(),
 
         initFirestoreListeners: () => {
             const userId = useAuthStore.getState().userId;
@@ -168,6 +178,9 @@ export const useQuizRunsStore = create((set, get) => {
             updatedRuns.push(newRun);
 
             set({ quizRuns: updatedRuns, activeRunId: signature });
+            try {
+                localStorage.setItem('generationQuizActiveRunId', signature);
+            } catch (_) {}
             get().saveRunToStorage(newRun);
         },
 
@@ -175,6 +188,9 @@ export const useQuizRunsStore = create((set, get) => {
             const run = get().quizRuns.find((r) => r.id === runId);
             if (run) {
                 set({ activeRunId: runId });
+                try {
+                    localStorage.setItem('generationQuizActiveRunId', runId);
+                } catch (_) {}
             }
         },
 
@@ -192,6 +208,9 @@ export const useQuizRunsStore = create((set, get) => {
                 };
                 const updatedRuns = get().quizRuns.map((r) => r.id === runId ? resetRun : r);
                 set({ quizRuns: updatedRuns, activeRunId: runId });
+                try {
+                    localStorage.setItem('generationQuizActiveRunId', runId);
+                } catch (_) {}
                 get().saveRunToStorage(resetRun);
             }
         },
@@ -260,6 +279,9 @@ export const useQuizRunsStore = create((set, get) => {
             
             if (get().activeRunId === runId) {
                 set({ activeRunId: null });
+                try {
+                    localStorage.removeItem('generationQuizActiveRunId');
+                } catch (_) {}
             }
 
             try {
@@ -278,6 +300,15 @@ export const useQuizRunsStore = create((set, get) => {
             }
         },
 
-        setActiveRunId: (id) => set({ activeRunId: id }),
+        setActiveRunId: (id) => {
+            set({ activeRunId: id });
+            try {
+                if (id) {
+                    localStorage.setItem('generationQuizActiveRunId', id);
+                } else {
+                    localStorage.removeItem('generationQuizActiveRunId');
+                }
+            } catch (_) {}
+        },
     };
 });
