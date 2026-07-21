@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T08:27:03.946Z",
+  "generatedAt": "2026-07-21T08:16:11.747Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -8770,7 +8770,7 @@
     "196": {
       "name": "Espeon",
       "gen": "RU",
-      "overview": "",
+      "overview": "Espeon is a Magic Bounce support Pokemon that compresses entry hazard denial, status spreading, and possibly momentum grabbing into one slot. It punishes common utility Pokemon such as Gligar, Swampert, Bronzong, Klefki, Bellibolt, Dudunsparce, and Vaporeon for setting hazards and using disruptive moves like Thunder…",
       "sets": [
         {
           "name": "Choice Specs",
@@ -8909,6 +8909,55 @@
           "level": null,
           "description": "",
           "source": "RU"
+        },
+        {
+          "name": "Magic Bounce Support",
+          "item": "rocky-helmet",
+          "itemAlts": [
+            "eject-button"
+          ],
+          "ability": "magic-bounce",
+          "nature": "timid",
+          "tera": [
+            "fairy",
+            "steel",
+            "ghost"
+          ],
+          "moves": [
+            [
+              "psychic-noise"
+            ],
+            [
+              "thunder-wave"
+            ],
+            [
+              "grass-knot",
+              "alluring-voice",
+              "shadow-ball"
+            ],
+            [
+              "morning-sun"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 0,
+            "defense": 80,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 176
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "Set Details\nPsychic Noise makes it harder for Pokemon such as Vaporeon, Bellibolt, and Chansey to sit in front of Espeon after Magic Bounce denies their utility moves. Thunder Wave provides speed control, letting Espeon punish faster threats like Munkidori, Flamigo, and Scyther as well as setup sweepers such as…",
+          "source": "NU"
         }
       ]
     },
