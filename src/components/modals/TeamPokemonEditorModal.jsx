@@ -13,7 +13,7 @@ import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useBattleItems } from '../../hooks/useBattleItems';
 import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
-import { natureLabel } from '../../constants/natures';
+import { natureLabel, ALL_NATURES } from '../../constants/natures';
 import { UsageBar, pctOf, pretty, RegulationSelect } from '../views/metaShared';
 import { SpriteSelect } from '../SpriteSelect';
 import { TypeBadge } from '../TypeBadge';
@@ -325,7 +325,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 <div>
                                     <label htmlFor="editor-nature" className={fieldLabelClassName}>{t('modals.editorModalNatureLabel')}</label>
                                     <select id="editor-nature" value={customization.nature} onChange={(event) => handleCustomizationChange('nature', event.target.value)} className={controlClassName}>
-                                        {natures.map((nature) => <option key={nature.name} value={nature.name}>{natureLabel(nature.name)}</option>)}
+                                        {(natures && natures.length >= 25 ? natures : ALL_NATURES).map((nature) => <option key={nature.name} value={nature.name}>{natureLabel(nature.name)}</option>)}
                                     </select>
                                 </div>
                                 <div>

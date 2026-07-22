@@ -28,9 +28,15 @@ const NATURE_EFFECTS = {
 
 export const natureEffect = (name = '') => NATURE_EFFECTS[name.toLowerCase()] || null;
 
+export const ALL_NATURES = Object.keys(NATURE_EFFECTS).map((name) => ({
+    name,
+    url: `https://pokeapi.co/api/v2/nature/${name}/`
+}));
+
 // "Adamant (+Atk / −SpA)" or "Hardy (neutral)".
 export const natureLabel = (name = '') => {
     const pretty = name.charAt(0).toUpperCase() + name.slice(1);
     const eff = natureEffect(name);
     return eff ? `${pretty} (+${eff.up} / −${eff.down})` : `${pretty} (—)`;
 };
+
