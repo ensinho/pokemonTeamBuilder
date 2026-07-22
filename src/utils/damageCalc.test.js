@@ -174,4 +174,107 @@ describe('calcDamage', () => {
 
         expect(resVeil.maxDamage).toBeLessThan(resNormal.maxDamage);
     });
+
+    it('handles type-changing ate abilities (Refrigerate, Pixilate, Aerilate, Galvanize, Normalize)', () => {
+        // Aurorus (Rock/Ice) with Refrigerate using Hyper Beam (Normal, 150 BP) against Bulbasaur (Grass/Poison)
+        const aurorus = {
+            baseStats: { hp: 123, attack: 77, defense: 72, 'special-attack': 99, 'special-defense': 92, speed: 58 },
+            types: ['rock', 'ice'],
+            evs: { 'special-attack': 252 },
+            ivs: { 'special-attack': 31 },
+            nature: 'serious',
+            ability: 'refrigerate',
+            level: 50
+        };
+
+        const bulbasaur = {
+            baseStats: { hp: 45, attack: 49, defense: 49, 'special-attack': 65, 'special-defense': 65, speed: 45 },
+            types: ['grass', 'poison'],
+            evs: { hp: 0 },
+            ivs: { hp: 31 },
+            nature: 'serious',
+            level: 50
+        };
+
+        const resRefrigerate = calcDamage({
+            level: 50,
+            movePower: 150,
+            moveType: 'normal',
+            moveCategory: 'special',
+            moveName: 'Hyper Beam',
+            attacker: aurorus,
+            defender: bulbasaur
+        });
+
+        const resNeutralAbility = calcDamage({
+            level: 50,
+            movePower: 150,
+            moveType: 'normal',
+            moveCategory: 'special',
+            moveName: 'Hyper Beam',
+            attacker: { ...aurorus, ability: '' },
+            defender: bulbasaur
+        });
+
+        expect(resRefrigerate.effectiveType).toBe('ice');
+        expect(resRefrigerate.effectiveness).toBe(2); // Ice vs Grass/Poison is 2x (2x vs Grass, 1x vs Poison)
+        expect(resRefrigerate.stab).toBe(true); // Aurorus is Ice type -> gets STAB
+        expect(resRefrigerate.maxDamage).toBeGreaterThan(resNeutralAbility.maxDamage * 2); // 4x vs 1x + STAB + 1.2x boost
+    });
+
+    it('handles Aura abilities (Dark Aura, Fairy Aura, Aura Break)', () => {
+        const darkAttacker = {
+            baseStats: { hp: 126, attack: 131, defense: 95, 'special-attack': 131, 'special-defense': 98, speed: 99 },
+            types: ['dark', 'flying'],
+            evs: { attack: 252 },
+            ivs: { attack: 31 },
+            nature: 'adamant',
+            ability: 'dark-aura',
+            level: 50
+        };
+
+        const neutralDefender = {
+            baseStats: { hp: 100, attack: 100, defense: 100, 'special-attack': 100, 'special-defense': 100, speed: 100 },
+            types: ['normal'],
+            evs: { hp: 0, defense: 0 },
+            ivs: { hp: 31, defense: 31 },
+            nature: 'serious',
+            level: 50
+        };
+
+        const resWithDarkAura = calcDamage({
+            level: 50,
+            movePower: 80,
+            moveType: 'dark',
+            moveCategory: 'physical',
+            moveName: 'Knock Off',
+            attacker: darkAttacker,
+            defender: neutralDefender
+        });
+
+        const resWithoutDarkAura = calcDamage({
+            level: 50,
+            movePower: 80,
+            moveType: 'dark',
+            moveCategory: 'physical',
+            moveName: 'Knock Off',
+            attacker: { ...darkAttacker, ability: '' },
+            defender: neutralDefender
+        });
+
+        expect(resWithDarkAura.maxDamage).toBeGreaterThan(resWithoutDarkAura.maxDamage);
+
+        // Test Aura Break reversing Dark Aura
+        const resWithAuraBreak = calcDamage({
+            level: 50,
+            movePower: 80,
+            moveType: 'dark',
+            moveCategory: 'physical',
+            moveName: 'Knock Off',
+            attacker: darkAttacker,
+            defender: { ...neutralDefender, ability: 'aura-break' }
+        });
+
+        expect(resWithAuraBreak.maxDamage).toBeLessThan(resWithoutDarkAura.maxDamage);
+    });
 });

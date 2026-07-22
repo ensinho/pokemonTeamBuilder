@@ -54,6 +54,29 @@ export const typeEffectiveness = (attackingType, defendingTypes = []) => {
     }, 1);
 };
 
+export const SOUND_MOVES = [
+    'alluring-voice', 'bark', 'boomburst', 'bug-buzz', 'chatter', 'clanging-scales',
+    'clangorous-soul', 'confide', 'disarming-voice', 'echoed-voice', 'eerie-spell',
+    'grass-whistle', 'growl', 'heal-bell', 'hyper-voice', 'howl', 'metal-sound',
+    'noble-roar', 'overdrive', 'parting-shot', 'perish-song', 'psychic-noise',
+    'relic-song', 'roar', 'round', 'screech', 'shadow-panic', 'sing',
+    'snarl', 'snore', 'sparkling-aria', 'supersonic', 'torch-song', 'uproar'
+];
+
+export const getEffectiveMoveType = (moveType, ability, moveName = '') => {
+    if (!ability || !moveType) return moveType;
+    const normName = (moveName || '').toLowerCase();
+
+    if (ability === 'refrigerate' && moveType === 'normal') return 'ice';
+    if (ability === 'pixilate' && moveType === 'normal') return 'fairy';
+    if (ability === 'aerilate' && moveType === 'normal') return 'flying';
+    if (ability === 'galvanize' && moveType === 'normal') return 'electric';
+    if (ability === 'normalize') return 'normal';
+    if (ability === 'liquid-voice' && SOUND_MOVES.includes(normName)) return 'water';
+
+    return moveType;
+};
+
 /**
  * Estimate damage rolls using complete competitive Pokemon calculations.
  *
@@ -77,6 +100,14 @@ export const calcDamage = ({
 }) => {
     if (!movePower || !attacker?.baseStats || !defender?.baseStats) return null;
     if (moveCategory !== 'physical' && moveCategory !== 'special') return null;
+
+    const effectiveMoveType = getEffectiveMoveType(moveType, attacker?.ability, moveName);
+    let ateBoost = 1.0;
+    if (attacker?.ability === 'refrigerate' && moveType === 'normal') ateBoost = 1.2;
+    else if (attacker?.ability === 'pixilate' && moveType === 'normal') ateBoost = 1.2;
+    else if (attacker?.ability === 'aerilate' && moveType === 'normal') ateBoost = 1.2;
+    else if (attacker?.ability === 'galvanize' && moveType === 'normal') ateBoost = 1.2;
+    else if (attacker?.ability === 'normalize') ateBoost = 1.2;
 
     const atkLevel = attacker.level || level || 50;
     const defLevel = defender.level || level || 50;
@@ -162,11 +193,11 @@ export const calcDamage = ({
     // Weather
     let weatherMult = 1.0;
     if (field?.weather === 'sun') {
-        if (moveType === 'fire') weatherMult = 1.5;
-        else if (moveType === 'water') weatherMult = 0.5;
+        if (effectiveMoveType === 'fire') weatherMult = 1.5;
+        else if (effectiveMoveType === 'water') weatherMult = 0.5;
     } else if (field?.weather === 'rain') {
-        if (moveType === 'water') weatherMult = 1.5;
-        else if (moveType === 'fire') weatherMult = 0.5;
+        if (effectiveMoveType === 'water') weatherMult = 1.5;
+        else if (effectiveMoveType === 'fire') weatherMult = 0.5;
     }
 
     // Critical Hit
@@ -179,21 +210,21 @@ export const calcDamage = ({
     let stab = 1.0;
     const attackerOriginalTypes = attacker.types || [];
     if (attacker.isTerastallized && attacker.teraType) {
-        const matchesOriginal = attackerOriginalTypes.includes(moveType);
-        const matchesTera = attacker.teraType === moveType;
+        const matchesOriginal = attackerOriginalTypes.includes(effectiveMoveType);
+        const matchesTera = attacker.teraType === effectiveMoveType;
         if (matchesOriginal && matchesTera) {
             stab = 2.0;
         } else if (matchesOriginal || matchesTera) {
             stab = 1.5;
         }
     } else {
-        if (attackerOriginalTypes.includes(moveType)) {
+        if (attackerOriginalTypes.includes(effectiveMoveType)) {
             stab = 1.5;
         }
     }
 
     // Type Effectiveness
-    const effectiveness = typeEffectiveness(moveType, defenderTypes);
+    const effectiveness = typeEffectiveness(effectiveMoveType, defenderTypes);
 
     // Burn status
     let burnMult = 1.0;
@@ -208,20 +239,24 @@ export const calcDamage = ({
         otherMult *= 1.5;
     }
 
+    if (ateBoost > 1.0) {
+        otherMult *= ateBoost;
+    }
+
     // Attacker Abilities
-    if (attacker.ability === 'transistor' && moveType === 'electric') {
+    if (attacker.ability === 'transistor' && effectiveMoveType === 'electric') {
         otherMult *= 1.3;
     }
-    if (attacker.ability === 'dragons-maw' && moveType === 'dragon') {
+    if (attacker.ability === 'dragons-maw' && effectiveMoveType === 'dragon') {
         otherMult *= 1.5;
     }
-    if (attacker.ability === 'rocky-payload' && moveType === 'rock') {
+    if (attacker.ability === 'rocky-payload' && effectiveMoveType === 'rock') {
         otherMult *= 1.5;
     }
-    if (attacker.ability === 'water-bubble' && moveType === 'water') {
+    if (attacker.ability === 'water-bubble' && effectiveMoveType === 'water') {
         otherMult *= 2.0;
     }
-    if ((attacker.ability === 'steely-spirit' || attacker.ability === 'steelworker') && moveType === 'steel') {
+    if ((attacker.ability === 'steely-spirit' || attacker.ability === 'steelworker') && effectiveMoveType === 'steel') {
         otherMult *= 1.5;
     }
     if (attacker.ability === 'tinted-lens' && effectiveness < 1) {
@@ -242,11 +277,20 @@ export const calcDamage = ({
     if (attacker.ability === 'tough-claws' && moveCategory === 'physical') {
         otherMult *= 1.3;
     }
-    if (attacker.ability === 'overgrow' && moveType === 'grass') otherMult *= 1.5;
-    if (attacker.ability === 'blaze' && moveType === 'fire') otherMult *= 1.5;
-    if (attacker.ability === 'torrent' && moveType === 'water') otherMult *= 1.5;
-    if (attacker.ability === 'swarm' && moveType === 'bug') otherMult *= 1.5;
-    if (attacker.ability === 'flash-fire' && moveType === 'fire') otherMult *= 1.5;
+    if (attacker.ability === 'overgrow' && effectiveMoveType === 'grass') otherMult *= 1.5;
+    if (attacker.ability === 'blaze' && effectiveMoveType === 'fire') otherMult *= 1.5;
+    if (attacker.ability === 'torrent' && effectiveMoveType === 'water') otherMult *= 1.5;
+    if (attacker.ability === 'swarm' && effectiveMoveType === 'bug') otherMult *= 1.5;
+    if (attacker.ability === 'flash-fire' && effectiveMoveType === 'fire') otherMult *= 1.5;
+
+    // Field/Aura Abilities (Dark Aura, Fairy Aura, Aura Break)
+    const hasAuraBreak = attacker.ability === 'aura-break' || defender.ability === 'aura-break';
+    if (effectiveMoveType === 'dark' && (attacker.ability === 'dark-aura' || defender.ability === 'dark-aura')) {
+        otherMult *= hasAuraBreak ? 0.75 : (4 / 3);
+    }
+    if (effectiveMoveType === 'fairy' && (attacker.ability === 'fairy-aura' || defender.ability === 'fairy-aura')) {
+        otherMult *= hasAuraBreak ? 0.75 : (4 / 3);
+    }
 
     // Attacker Items
     if (attacker.item === 'life-orb') {
@@ -269,19 +313,19 @@ export const calcDamage = ({
         'spell-tag': 'ghost', 'dragon-fang': 'dragon', 'black-glasses': 'dark',
         'metal-coat': 'steel', 'silk-scarf': 'normal', 'pixie-plate': 'fairy'
     };
-    if (itemTypeBoosts[attacker.item] === moveType) {
+    if (itemTypeBoosts[attacker.item] === effectiveMoveType) {
         otherMult *= 1.2;
     }
 
     // Terrain Multipliers (Electric, Grassy, Psychic Terrain boost same-type by 1.3x)
-    if (field?.terrain === 'electric' && moveType === 'electric') {
+    if (field?.terrain === 'electric' && effectiveMoveType === 'electric') {
         otherMult *= 1.3;
     } else if (field?.terrain === 'grassy') {
-        if (moveType === 'grass') otherMult *= 1.3;
+        if (effectiveMoveType === 'grass') otherMult *= 1.3;
         else if (['earthquake', 'bulldoze', 'magnitude'].includes(moveName?.toLowerCase())) otherMult *= 0.5;
-    } else if (field?.terrain === 'psychic' && moveType === 'psychic') {
+    } else if (field?.terrain === 'psychic' && effectiveMoveType === 'psychic') {
         otherMult *= 1.3;
-    } else if (field?.terrain === 'misty' && moveType === 'dragon') {
+    } else if (field?.terrain === 'misty' && effectiveMoveType === 'dragon') {
         otherMult *= 0.5;
     }
 
@@ -294,22 +338,22 @@ export const calcDamage = ({
     }
     if (defender.ability === 'fluffy') {
         if (moveCategory === 'physical') otherMult *= 0.5;
-        if (moveType === 'fire') otherMult *= 2.0;
+        if (effectiveMoveType === 'fire') otherMult *= 2.0;
     }
     if (defender.ability === 'ice-scales' && moveCategory === 'special') {
         otherMult *= 0.5;
     }
-    if (defender.ability === 'thick-fat' && (moveType === 'fire' || moveType === 'ice')) {
+    if (defender.ability === 'thick-fat' && (effectiveMoveType === 'fire' || effectiveMoveType === 'ice')) {
         otherMult *= 0.5;
     }
-    if (defender.ability === 'heatproof' && moveType === 'fire') {
+    if (defender.ability === 'heatproof' && effectiveMoveType === 'fire') {
         otherMult *= 0.5;
     }
     if (defender.ability === 'dry-skin') {
-        if (moveType === 'fire') otherMult *= 1.25;
-        else if (moveType === 'water') otherMult = 0;
+        if (effectiveMoveType === 'fire') otherMult *= 1.25;
+        else if (effectiveMoveType === 'water') otherMult = 0;
     }
-    if (defender.ability === 'water-bubble' && moveType === 'fire') {
+    if (defender.ability === 'water-bubble' && effectiveMoveType === 'fire') {
         otherMult *= 0.5;
     }
     if (['solid-rock', 'filter', 'prism-armor'].includes(defender.ability) && effectiveness > 1) {
@@ -452,6 +496,7 @@ export const calcDamage = ({
     return {
         defenderHP,
         effectiveness,
+        effectiveType: effectiveMoveType,
         stab: stab > 1.0,
         minDamage,
         maxDamage,

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import '../../styles/tools-views.css';
 import { resolvePokemonDetail, getMoveDetails } from '../../services/pokemonDataCache';
-import { calcDamage, calcStat, NATURE_MODIFIERS, natureMultiplier } from '../../utils/damageCalc';
+import { calcDamage, calcStat, getEffectiveMoveType, NATURE_MODIFIERS, natureMultiplier } from '../../utils/damageCalc';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
@@ -31,6 +31,15 @@ const SPREAD_MOVES = [
 
 const BATTLE_ABILITIES = [
     { value: '', label: '(No Ability / Neutral)' },
+    { value: 'refrigerate', label: 'Refrigerate' },
+    { value: 'pixilate', label: 'Pixilate' },
+    { value: 'aerilate', label: 'Aerilate' },
+    { value: 'galvanize', label: 'Galvanize' },
+    { value: 'normalize', label: 'Normalize' },
+    { value: 'liquid-voice', label: 'Liquid Voice' },
+    { value: 'dark-aura', label: 'Dark Aura' },
+    { value: 'fairy-aura', label: 'Fairy Aura' },
+    { value: 'aura-break', label: 'Aura Break' },
     { value: 'huge-power', label: 'Huge Power' },
     { value: 'pure-power', label: 'Pure Power' },
     { value: 'guts', label: 'Guts' },
@@ -720,7 +729,7 @@ export function DamageCalculatorView() {
                                 {m.name && m.power > 0 && (
                                     <span className="text-[9px] font-extrabold uppercase px-1.5 py-1 rounded bg-surface-raised border border-border text-muted font-mono leading-none shrink-0">{m.power}</span>
                                 )}
-                                {m.name && <TypeBadge type={m.type} />}
+                                {m.name && <TypeBadge type={getEffectiveMoveType(m.type, pState.ability, m.name)} />}
                             </div>
                             {m.name && (
                                 <div className="flex items-center gap-4 pl-1">
@@ -779,7 +788,7 @@ export function DamageCalculatorView() {
                         >
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                    <TypeBadge type={move.type} />
+                                    <TypeBadge type={r?.effectiveType || getEffectiveMoveType(move.type, attacker.ability, move.name)} />
                                     <span className="text-xs font-semibold text-fg truncate capitalize">{prettify(move.name)}</span>
                                     {eff && <span className={`text-[9px] font-extrabold ${effColor}`}>{eff}</span>}
                                 </div>
