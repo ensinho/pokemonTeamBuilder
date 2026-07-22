@@ -629,6 +629,12 @@ export const TRANSLATIONS = {
             shareModalForumBtn: 'Share on Forum',
             shareModalForumSuccess: 'Team posted to forum successfully!',
             shareModalForumError: 'You must be logged in to share on the forum.',
+            shareModalModePoster: 'Banner Poster',
+            shareModalModeCards: 'Competitive Cards',
+            shareModalTrainerLabel: 'Trainer Name',
+            shareModalTeamIdLabel: 'Team ID / Code',
+            shareModalTabMoves: 'Moves & More',
+            shareModalTabStats: 'Stats & EVs',
 
             // TeamPokemonEditorModal
             editorModalWeakVs: 'Weak vs',
@@ -1466,6 +1472,12 @@ export const TRANSLATIONS = {
             shareModalForumBtn: 'Compartilhar no Fórum',
             shareModalForumSuccess: 'Time postado no fórum com sucesso!',
             shareModalForumError: 'Você precisa estar logado para compartilhar no fórum.',
+            shareModalModePoster: 'Banner Poster',
+            shareModalModeCards: 'Cartões Competitivos',
+            shareModalTrainerLabel: 'Nome do Treinador',
+            shareModalTeamIdLabel: 'ID / Código do Time',
+            shareModalTabMoves: 'Ataques & Info',
+            shareModalTabStats: 'Atributos & EVs',
 
             // TeamPokemonEditorModal
             editorModalWeakVs: 'Fraco contra',

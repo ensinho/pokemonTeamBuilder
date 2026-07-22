@@ -343,11 +343,15 @@ export const useActiveTeamStore = create((set, get) => ({
             const spriteId = isMega ? mega.spriteId : member.id;
 
             return {
+                ...member,
                 id: member.id,
                 name: name,
+                types: member.types || [],
                 sprite: isMega 
                     ? getPokemonFrontSpriteUrl(spriteId, { shiny: member.customization?.isShiny || member.isShiny })
                     : (getTeamPokemonDisplaySprite(member) || ''),
+                artworkSprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: member.customization?.isShiny || member.isShiny }),
+                customization: member.customization || {},
             };
         });
 
