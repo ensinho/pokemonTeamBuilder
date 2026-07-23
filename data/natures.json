@@ -81,6 +81,26 @@
     {
       "name": "naive",
       "url": "https://pokeapi.co/api/v2/nature/20/"
+    },
+    {
+      "name": "brave",
+      "url": "https://pokeapi.co/api/v2/nature/21/"
+    },
+    {
+      "name": "relaxed",
+      "url": "https://pokeapi.co/api/v2/nature/22/"
+    },
+    {
+      "name": "quiet",
+      "url": "https://pokeapi.co/api/v2/nature/23/"
+    },
+    {
+      "name": "sassy",
+      "url": "https://pokeapi.co/api/v2/nature/24/"
+    },
+    {
+      "name": "serious",
+      "url": "https://pokeapi.co/api/v2/nature/25/"
     }
   ]
 }

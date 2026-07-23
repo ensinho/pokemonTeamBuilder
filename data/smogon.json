@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-22T08:16:22.019Z",
+  "generatedAt": "2026-07-23T08:16:22.017Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -325,8 +325,8 @@
             ],
             [
               "scorching-sands",
-              "overheat",
-              "weather-ball"
+              "weather-ball",
+              "overheat"
             ],
             [
               "tailwind"
@@ -5205,13 +5205,13 @@
               "seismic-toss"
             ],
             [
+              "ice-punch",
               "sucker-punch",
-              "shadow-claw",
-              "ice-punch"
+              "shadow-claw"
             ],
             [
-              "low-kick",
               "rock-tomb",
+              "low-kick",
               "protect"
             ]
           ],
@@ -15225,7 +15225,6 @@
               "earth-power"
             ],
             [
-              "eruption",
               "nature-power",
               "substitute"
             ],
@@ -16333,7 +16332,9 @@
               "protect"
             ],
             [
-              "roost"
+              "roost",
+              "breaking-swipe",
+              "protect"
             ],
             [
               "tailwind",
@@ -28840,6 +28841,7 @@
           "name": "Redirection Support",
           "item": "sitrus-berry",
           "itemAlts": [
+            "covert-cloak",
             "rocky-helmet"
           ],
           "ability": "regenerator",
@@ -38938,33 +38940,36 @@
           "source": "NU"
         },
         {
-          "name": "Sticky Web (Bug)",
-          "item": "heavy-duty-boots",
+          "name": "Choice Band",
+          "item": "choice-band",
           "itemAlts": [],
           "ability": "",
-          "nature": "impish",
-          "tera": [],
+          "nature": "adamant",
+          "tera": [
+            "water"
+          ],
           "moves": [
             [
               "liquidation"
             ],
             [
-              "infestation"
+              "leech-life"
             ],
             [
-              "sticky-web"
+              "poison-jab"
             ],
             [
+              "sticky-web",
               "mirror-coat"
             ]
           ],
           "evs": {
-            "hp": 248,
-            "attack": 0,
-            "defense": 252,
+            "hp": 0,
+            "attack": 252,
+            "defense": 0,
             "special-attack": 0,
-            "special-defense": 8,
-            "speed": 0
+            "special-defense": 4,
+            "speed": 252
           },
           "ivs": {
             "hp": 31,
@@ -38975,36 +38980,40 @@
             "speed": 31
           },
           "level": null,
-          "description": "Araquanid makes for a good Sticky Web setter for Bug teams due to having more bulk than other Sticky Web setters, such as Galvantula and Ribombee, as well as being a huge asset to Bug teams with its Water Bubble ability, resisting Fire-type moves and hitting Fire-type Pokemon super effectively. Liquidation is a strong…",
-          "source": "Monotype"
+          "description": "",
+          "source": "PU"
         },
         {
-          "name": "Choice Band (Bug)",
-          "item": "choice-band",
+          "name": "Substitute",
+          "item": "leftovers",
           "itemAlts": [],
           "ability": "",
           "nature": "adamant",
-          "tera": [],
+          "tera": [
+            "ghost",
+            "dragon",
+            "steel"
+          ],
           "moves": [
             [
-              "liquidation"
+              "substitute"
             ],
             [
-              "poison-jab"
+              "liquidation"
             ],
             [
               "leech-life"
             ],
             [
-              "sticky-web"
+              "poison-jab"
             ]
           ],
           "evs": {
-            "hp": 184,
-            "attack": 252,
+            "hp": 192,
+            "attack": 248,
             "defense": 0,
             "special-attack": 0,
-            "special-defense": 4,
+            "special-defense": 0,
             "speed": 68
           },
           "ivs": {
@@ -39016,8 +39025,8 @@
             "speed": 31
           },
           "level": null,
-          "description": "This is a winning set from the Monotype Rising sets project. This will be updated as we work on new analyses. Stay tuned!",
-          "source": "Monotype"
+          "description": "The EV spread allows Araquanid's Substitute to not be broken by Palossand's Shadow Ball, ensures it outpaces Chansey, and maximizes Attack.",
+          "source": "PU"
         }
       ]
     },
@@ -41620,11 +41629,8 @@
       "sets": [
         {
           "name": "Specially Defensive",
-          "item": "misty-seed",
-          "itemAlts": [
-            "grassy-seed",
-            "leftovers"
-          ],
+          "item": "leftovers",
+          "itemAlts": [],
           "ability": "",
           "nature": "impish",
           "tera": [
@@ -41635,8 +41641,8 @@
               "heavy-slam"
             ],
             [
-              "acrobatics",
-              "substitute"
+              "substitute",
+              "iron-defense"
             ],
             [
               "leech-seed"
@@ -41662,7 +41668,93 @@
             "speed": 31
           },
           "level": null,
-          "description": "The given EV spread allows Celesteela to survive Heat Wave from Mega Charizard Y or Flare Blitz from Incineroar while outspeeding Pokemon with base 100 Spe during Tailwind.\nTerrain seeds help boost the damage output of Acrobatics. Leftovers is recommended if Substitute is used instead.",
+          "description": "The given EV spread allows Celesteela to survive Heat Wave from Mega Charizard Y or Flare Blitz from Incineroar while outspeeding Pokemon with base 100 Spe during Tailwind.",
+          "source": "Nat Dex Doubles"
+        },
+        {
+          "name": "Acrobatics",
+          "item": "misty-seed",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "adamant",
+          "tera": [
+            "dragon"
+          ],
+          "moves": [
+            [
+              "heavy-slam"
+            ],
+            [
+              "acrobatics"
+            ],
+            [
+              "leech-seed"
+            ],
+            [
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 252,
+            "attack": 88,
+            "defense": 88,
+            "special-attack": 0,
+            "special-defense": 0,
+            "speed": 80
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 31,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "Nat Dex Doubles"
+        },
+        {
+          "name": "Meteor Beam",
+          "item": "power-herb",
+          "itemAlts": [],
+          "ability": "",
+          "nature": "modest",
+          "tera": [
+            "dragon"
+          ],
+          "moves": [
+            [
+              "meteor-beam"
+            ],
+            [
+              "flash-cannon"
+            ],
+            [
+              "air-slash"
+            ],
+            [
+              "protect"
+            ]
+          ],
+          "evs": {
+            "hp": 188,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 200,
+            "special-defense": 0,
+            "speed": 120
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
           "source": "Nat Dex Doubles"
         },
         {
@@ -41705,92 +41797,6 @@
           "level": null,
           "description": "Celesteela is a durable mixed wall that is capable of taking on several dangerous Pokemon, such as Mega Diancie, Landorus-T, and Tapu Lele. Heavy Slam is the preferred STAB move thanks to Celesteela's high weight, giving it a high Base Power much of the time. Flamethrower lets Celesteela pressure Steel- and…",
           "source": "Nat Dex"
-        },
-        {
-          "name": "Defensive",
-          "item": "leftovers",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "sassy",
-          "tera": [],
-          "moves": [
-            [
-              "leech-seed"
-            ],
-            [
-              "heavy-slam",
-              "air-slash"
-            ],
-            [
-              "protect",
-              "toxic"
-            ],
-            [
-              "flamethrower",
-              "earthquake",
-              "heavy-slam"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 0,
-            "special-defense": 0,
-            "speed": 0
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Celesteela makes the most of its typing, utility options, and great natural bulk on both sides to serve as a fantastic wall, capable of holding teams together against threats such as Aegislash, Excadrill, and Mega Latias. Leech Seed serves as Celesteela's main recovery move, capitalizing on the many switches it forces…",
-          "source": "Nat Dex UU"
-        },
-        {
-          "name": "Autotomize Sweeper",
-          "item": "power-herb",
-          "itemAlts": [],
-          "ability": "",
-          "nature": "modest",
-          "tera": [],
-          "moves": [
-            [
-              "autotomize"
-            ],
-            [
-              "meteor-beam"
-            ],
-            [
-              "air-slash"
-            ],
-            [
-              "fire-blast"
-            ]
-          ],
-          "evs": {
-            "hp": 0,
-            "attack": 0,
-            "defense": 0,
-            "special-attack": 252,
-            "special-defense": 4,
-            "speed": 252
-          },
-          "ivs": {
-            "hp": 31,
-            "attack": 31,
-            "defense": 31,
-            "special-attack": 31,
-            "special-defense": 31,
-            "speed": 31
-          },
-          "level": null,
-          "description": "Celesteela's high Special Attack, good movepool, and snowballing potential with Beast Boost make it a great sweeper when using Autotomize to shore up its poor Speed. Its naturally great bulk and Steel/Flying typing afford it setup opportunities against foes like Scizor and Excadrill, as well as the ability to easily…",
-          "source": "Nat Dex UU"
         }
       ]
     },
@@ -42607,23 +42613,26 @@
           "tera": [
             "electric",
             "grass",
-            "water"
+            "flying"
           ],
           "moves": [
             [
               "fake-out"
             ],
             [
-              "plasma-fists"
-            ],
-            [
-              "electroweb",
-              "knock-off",
-              "snarl",
-              "taunt"
-            ],
-            [
               "volt-switch"
+            ],
+            [
+              "plasma-fists",
+              "snarl",
+              "hidden-power-ice",
+              "electroweb"
+            ],
+            [
+              "snarl",
+              "close-combat",
+              "electroweb",
+              "taunt"
             ]
           ],
           "evs": {
@@ -42643,7 +42652,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "",
+          "description": "Zerora can use any of the given moves in combination depending on team.\nHidden Power Ice is used to force progress into Salamence-Mega and Landorus. Electroweb utilizes Zeraora's status as the fastest unboosted speed tier in the format, giving it an excellent speed control option. Snarl is used to slow down special…",
           "source": "Nat Dex Doubles"
         },
         {
@@ -52879,7 +52888,7 @@
             "speed": 31
           },
           "level": null,
-          "description": "Tinkaton's good matchup against Mandibuzz makes it a strong Stealth Rock setter that uses its typing to get plenty of entry hazard-setting chances. Certain teams prefer Tinkaton to use Thunder Wave, though, since they can fit another Stealth Rock setter; this can help significantly when dealing with foes like Latios…",
+          "description": "Tinkaton's good matchup against Mandibuzz makes it a strong Stealth Rock setter that uses its typing to get plenty of entry hazard-setting chances. Certain teams prefer Tinkaton to use Thunder Wave, though, since they can fit another Stealth Rock setter; this can help significantly when dealing with foes like Latios.…",
           "source": "UU"
         },
         {
