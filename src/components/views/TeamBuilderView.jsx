@@ -119,7 +119,6 @@ export function TeamBuilderView({
     isFetchingMore,
     selectedTypes,
     handleTypeSelection,
-    showDetails,
     suggestedPokemonIds,
     colors,
     onEditTeamPokemon,
@@ -202,7 +201,7 @@ export function TeamBuilderView({
     // index — not just the Pokémon currently visible in the picker.
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
-    const { partnersFor, status: tournamentStatus, popular, synergy } = useTournamentData();
+    const { popular, synergy } = useTournamentData();
     const { byId: smogonById } = useSmogonData();
     const { byId: usageById } = useCompetitiveUsage();
     // Competitive regulation the user has paired the builder with (persisted).
@@ -247,7 +246,7 @@ export function TeamBuilderView({
             usageById,
             popular: metaRanked.length ? metaRanked : popular,
             metaUsage: metaUsageMap,
-            limit: 20,
+            limit: 30,
             allowedIds,
         });
     }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds]);
@@ -281,7 +280,6 @@ export function TeamBuilderView({
     const selectedGameObj = React.useMemo(() => {
         return isGameFilterActive ? games.find((g) => g.key === selectedGame) : null;
     }, [games, selectedGame, isGameFilterActive]);
-    const gameLabel = selectedGameObj ? selectedGameObj.label : selectedGame;
 
     // When a game is selected, show ONLY that game's obtainable Pokémon: its real
     // sub-dexes in regional ORDER, each base species followed inline by its legal
