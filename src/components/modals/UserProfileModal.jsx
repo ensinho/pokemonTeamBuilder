@@ -4,8 +4,14 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { Download } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { AvatarSprite } from '../AvatarSprite';
 
-export function UserProfileModal({ isOpen, profile, onClose, messages = [], handleImportTeam, language = 'en' }) {
+/**
+ * `friendAction` is injected rather than built here: this modal is rendered from
+ * the forum and the home feed, and only the caller knows whether a friend button
+ * makes sense (never for yourself, never while anonymous).
+ */
+export function UserProfileModal({ isOpen, profile, onClose, messages = [], handleImportTeam, language = 'en', friendAction = null }) {
     const dialogRef = useModalA11y(isOpen ? onClose : null);
 
     const userSharedTeams = useMemo(() => {
@@ -21,7 +27,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
 
     if (!isOpen || !profile) return null;
 
-    const { name, avatar, isShiny } = profile;
+    const { name, avatar, isShiny, trainerSprite } = profile;
 
     const isMsgAdmin = profile.userId === 'system' || profile.userEmail === 'enzopo625@gmail.com' || name === 'Professor Oak';
 
@@ -55,16 +61,14 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                 <div className="px-6 pb-6 relative">
                     <div className="flex items-end justify-between -mt-10 mb-4">
                         <div className="w-20 h-20 rounded-full bg-surface-raised border-2 border-primary flex items-center justify-center overflow-hidden shadow-lg relative">
-                            {avatar ? (
-                                <img
-                                    src={`https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${isShiny ? 'shiny/' : ''}${avatar}.png`}
-                                    alt={name}
-                                    className="w-20 h-20 object-contain sprite-fade"
-                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                />
-                            ) : (
-                                <PokeballIcon className="w-10 h-10 text-muted opacity-30" />
-                            )}
+                            <AvatarSprite
+                                trainerSprite={trainerSprite}
+                                pokemonId={avatar}
+                                isShiny={isShiny}
+                                alt={name}
+                                className="w-20 h-20 object-contain sprite-fade"
+                                fallback={<PokeballIcon className="w-10 h-10 text-muted opacity-30" />}
+                            />
                         </div>
                         <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-primary-soft text-primary border border-primary-border">
                             {isMsgAdmin ? 'LIGA DE ELITE' : 'TREINADOR'}
@@ -80,6 +84,8 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                             {language === 'pt' ? 'Membro ativo da comunidade Gengar Team Builder.' : 'Active member of the Gengar Team Builder community.'}
                         </p>
                     </div>
+
+                    {friendAction && <div className="mt-4">{friendAction}</div>}
 
                     {/* Shared Teams Section */}
                     <div className="mt-6 space-y-3">

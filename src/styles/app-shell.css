@@ -437,6 +437,38 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    /* Anchors the collapsed-rail notification dot. */
+    position: relative;
+}
+
+/* Pending-count badge on a nav entry (e.g. incoming friend requests). */
+.app-shell__nav-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    margin-left: auto;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+/* Collapsed rail: no room for a number, so it becomes a dot on the icon. */
+.app-shell__nav-dot {
+    position: absolute;
+    top: -1px;
+    right: -2px;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: 1.5px solid var(--color-surface);
 }
 
 .app-shell__nav-icon>svg,

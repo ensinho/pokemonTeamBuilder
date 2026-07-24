@@ -7,7 +7,9 @@ const cleanGlobals = (entries) => Object.fromEntries(
   Object.entries(entries).map(([key, value]) => [key.trim(), value])
 )
 
-const browserGlobals = cleanGlobals(globals.browser)
+// `globals.browser` covers DOM/BOM only — it omits ES built-ins like `Intl`,
+// so the language globals have to be merged in or `no-undef` flags them.
+const browserGlobals = { ...cleanGlobals(globals.es2021), ...cleanGlobals(globals.browser) }
 const nodeGlobals = cleanGlobals(globals.node)
 
 export default [

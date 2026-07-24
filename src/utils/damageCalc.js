@@ -390,11 +390,16 @@ export const calcDamage = ({
     if (attacker.ability === 'neuroforce' && effectiveness > 1) {
         otherMult *= 1.25;
     }
+    // Aura Break doesn't cancel Dark/Fairy Aura — it *reverses* it, turning the
+    // 4/3 boost into a 3/4 drop. It's a field effect, so either side having it
+    // flips the aura.
+    const auraBreak = attacker.ability === 'aura-break' || defender.ability === 'aura-break';
+    const auraMult = auraBreak ? 0.75 : 1.33;
     if (attacker.ability === 'dark-aura' && effectiveMoveType === 'dark') {
-        otherMult *= 1.33;
+        otherMult *= auraMult;
     }
     if (attacker.ability === 'fairy-aura' && effectiveMoveType === 'fairy') {
-        otherMult *= 1.33;
+        otherMult *= auraMult;
     }
     if (attacker.ability === 'sharpness' && SLICING_MOVES.has(normName)) {
         otherMult *= 1.5;

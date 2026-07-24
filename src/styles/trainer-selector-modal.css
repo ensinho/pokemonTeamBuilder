@@ -1,0 +1,103 @@
+/* Trainer-sprite selector modal.
+   The sprites are 80×80 pixel art hotlinked from Showdown, so everything here is
+   about keeping them crisp (no smoothing) and giving the grid enough room that a
+   tile stays a comfortable touch target on phones. Scoped under
+   .trainer-selector to stay out of other views. */
+
+.trainer-selector__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: var(--space-3);
+}
+
+.trainer-selector__tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    min-height: 118px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    transition: transform var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.trainer-selector__tile:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-border-hover);
+}
+
+.trainer-selector__tile:active {
+    transform: scale(0.97);
+}
+
+.trainer-selector__tile.is-selected {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.trainer-selector__sprite {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    /* Pixel art: never let the browser smooth it. */
+    image-rendering: pixelated;
+}
+
+.trainer-selector__label {
+    display: block;
+    width: 100%;
+    font-size: 0.65rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    color: var(--color-fg);
+    overflow-wrap: break-word;
+}
+
+.trainer-selector__gen {
+    display: inline-block;
+    margin-left: 0.25rem;
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-muted);
+}
+
+.trainer-selector__toggle {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.trainer-selector__toggle:hover {
+    color: var(--color-fg);
+}
+
+.trainer-selector__toggle.is-active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+@media (max-width: 480px) {
+    .trainer-selector__grid {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: var(--space-2);
+    }
+
+    .trainer-selector__sprite {
+        width: 56px;
+        height: 56px;
+    }
+}

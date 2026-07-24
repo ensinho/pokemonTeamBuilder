@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 import { typeColors, typeIcons } from '../../constants/types';
+import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';

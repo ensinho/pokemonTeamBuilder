@@ -275,6 +275,15 @@
     margin-top: 2px;
 }
 
+/* Trainer sprites are square with no transparent padding, so they must not get
+   the Pokémon sprite's overflow-and-offset crop. */
+.forum-message-avatar img.avatar-sprite--trainer {
+    width: 100%;
+    height: 100%;
+    margin-top: 0;
+    image-rendering: pixelated;
+}
+
 .forum-message-bubble {
     flex: 1;
     min-width: 0;

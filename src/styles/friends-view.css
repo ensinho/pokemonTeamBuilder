@@ -1,0 +1,229 @@
+/* FriendsView — trainer list, pending requests, directory search.
+   The trainer row is shared by all three tabs, so its identity block is defined
+   once here rather than per tab. */
+
+.friends-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────── */
+
+.friends-tabs {
+    display: flex;
+    gap: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-2);
+    overflow-x: auto;
+}
+
+.friends-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0.5rem 0.9rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    white-space: nowrap;
+    transition: color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.friends-tab:hover {
+    color: var(--color-fg);
+    background: var(--color-surface-raised);
+}
+
+.friends-tab.is-active {
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.friends-tab__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--color-surface-raised);
+    font-size: 0.625rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.friends-tab__count--alert {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+/* ── Sections ─────────────────────────────────────────────────────── */
+
+.friends-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+}
+
+.friends-sections section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.friends-section-title {
+    margin: 0;
+    font-size: 0.688rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.friends-section-empty,
+.friends-section-hint {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+}
+
+/* ── Trainer rows ─────────────────────────────────────────────────── */
+
+.friends-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.friends-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    transition: border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.friends-row:hover {
+    border-color: var(--color-border-hover);
+}
+
+.friends-list--invite .friends-row {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.friends-row__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-primary-soft);
+    overflow: hidden;
+}
+
+/* Pokémon sprites carry transparent padding, so they're drawn wider than the
+   frame and nudged down; trainer sprites are square and fill it exactly. */
+.friends-row__avatar img {
+    width: 48px;
+    height: 40px;
+    object-fit: contain;
+    margin-top: 2px;
+}
+
+.friends-row__avatar img.avatar-sprite--trainer {
+    width: 100%;
+    height: 100%;
+    margin-top: 0;
+    image-rendering: pixelated;
+}
+
+.friends-row__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.friends-row__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.friends-row__meta {
+    font-size: 0.688rem;
+    color: var(--color-muted);
+}
+
+.friends-row__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.friends-action {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* ── Invite link ──────────────────────────────────────────────────── */
+
+.friends-invite {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.friends-invite__link {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.688rem;
+    color: var(--color-muted);
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* ── Loading ──────────────────────────────────────────────────────── */
+
+.friends-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) 0;
+}
+
+@media (max-width: 560px) {
+    .friends-row {
+        flex-wrap: wrap;
+    }
+
+    .friends-row__actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}

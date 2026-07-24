@@ -5,5 +5,6 @@ export { PatchNotesModal } from './PatchNotesModal';
 export { ShareSnippetModal } from './ShareSnippetModal';
 export { SyncPromptModal } from './SyncPromptModal';
 export { TeamPokemonEditorModal } from './TeamPokemonEditorModal';
+export { TrainerSpriteSelectorModal } from './TrainerSpriteSelectorModal';
 export { QuizCelebrationModal } from './QuizCelebrationModal';
 export { VersionUpdateModal } from './VersionUpdateModal';

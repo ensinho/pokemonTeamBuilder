@@ -24,12 +24,28 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/raw\.githubusercontent\.com\//,
+            // Pokémon sprites. `raw.githubusercontent.com` is the legacy host —
+            // src/utils/pokemonSprites.js now serves everything from jsDelivr, so
+            // both are matched (the old one only for links already in the wild).
+            urlPattern: /^https:\/\/(cdn\.jsdelivr\.net\/gh\/PokeAPI\/sprites|raw\.githubusercontent\.com)\//,
             handler: 'CacheFirst',
             options: {
               cacheName: 'pokemon-sprites',
               expiration: {
                 maxEntries: 600,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+              },
+            },
+          },
+          {
+            // Showdown trainer sprites (and, later, the animated battle sprites).
+            // Hotlinked via <img> only — the host sends no CORS header.
+            urlPattern: /^https:\/\/play\.pokemonshowdown\.com\/sprites\//,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'showdown-sprites',
+              expiration: {
+                maxEntries: 300,
                 maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
             },

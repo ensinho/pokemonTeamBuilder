@@ -1,0 +1,1760 @@
+{
+  "generatedAt": "2026-07-24T20:03:26.744Z",
+  "source": "https://play.pokemonshowdown.com/js/battle-dex-data.js",
+  "spriteBaseUrl": "https://play.pokemonshowdown.com/sprites/trainers",
+  "count": 292,
+  "trainers": [
+    {
+      "id": "lucas",
+      "label": "Lucas",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "dawn",
+      "label": "Dawn",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "youngster-gen4dp",
+      "label": "Youngster",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "lass-gen4dp",
+      "label": "Lass",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "camper",
+      "label": "Camper",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "picnicker",
+      "label": "Picnicker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "bugcatcher-gen4dp",
+      "label": "Bug Catcher",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "aromalady",
+      "label": "Aroma Lady",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "twins-gen4dp",
+      "label": "Twins",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "hiker-gen4",
+      "label": "Hiker",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "battlegirl-gen4",
+      "label": "Battle Girl",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "fisherman-gen4",
+      "label": "Fisherman",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "cyclist-gen4",
+      "label": "Cyclist",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "cyclistf-gen4",
+      "label": "Cyclist",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "blackbelt-gen4dp",
+      "label": "Black Belt",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "artist-gen4",
+      "label": "Artist",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "pokemonbreeder-gen4",
+      "label": "Pokémon Breeder",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "pokemonbreederf-gen4",
+      "label": "Pokémon Breeder",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "cowgirl",
+      "label": "Cowgirl",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "jogger",
+      "label": "Jogger",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pokefan-gen4",
+      "label": "Poké Fan",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "pokefanf-gen4",
+      "label": "Poké Fan",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "pokekid",
+      "label": "Poké Kid",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "youngcouple-gen4dp",
+      "label": "Young Couple",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "acetrainer-gen4dp",
+      "label": "Ace Trainer",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "acetrainerf-gen4dp",
+      "label": "Ace Trainer",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "waitress-gen4",
+      "label": "Waitress",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "veteran-gen4",
+      "label": "Veteran",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "ninjaboy",
+      "label": "Ninja Boy",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "dragontamer",
+      "label": "Dragon Tamer",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "birdkeeper-gen4dp",
+      "label": "Bird Keeper",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "doubleteam",
+      "label": "Double Team",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "richboy-gen4",
+      "label": "Rich Boy",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "lady-gen4",
+      "label": "Lady",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "gentleman-gen4dp",
+      "label": "Gentleman",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "madame-gen4dp",
+      "label": "Madame",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "beauty-gen4dp",
+      "label": "Beauty",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "collector",
+      "label": "Collector",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "policeman-gen4",
+      "label": "Policeman",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "pokemonranger-gen4",
+      "label": "Pokémon Ranger",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "pokemonrangerf-gen4",
+      "label": "Pokémon Ranger",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "scientist-gen4dp",
+      "label": "Scientist",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "swimmer-gen4dp",
+      "label": "Swimmer",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "swimmerf-gen4dp",
+      "label": "Swimmer",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "tuber",
+      "label": "Tuber",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "tuberf",
+      "label": "Tuber",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "sailor",
+      "label": "Sailor",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "sisandbro",
+      "label": "Sisandbro",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "ruinmaniac",
+      "label": "Ruin Maniac",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "psychic-gen4",
+      "label": "Psychic",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "psychicf-gen4",
+      "label": "Psychic",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "gambler",
+      "label": "Gambler",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "guitarist-gen4",
+      "label": "Guitarist",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "acetrainersnow",
+      "label": "Ace Trainer Snow",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "acetrainersnowf",
+      "label": "Ace Trainer Snow",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "skier",
+      "label": "Skier",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "skierf-gen4dp",
+      "label": "Skierf",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "roughneck-gen4",
+      "label": "Roughneck",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "clown",
+      "label": "Clown",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "worker-gen4",
+      "label": "Worker",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "schoolkid-gen4dp",
+      "label": "School Kid",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "schoolkidf-gen4",
+      "label": "School Kid",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "roark",
+      "label": "Roark",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "barry",
+      "label": "Barry",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "byron",
+      "label": "Byron",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "aaron",
+      "label": "Aaron",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "bertha",
+      "label": "Bertha",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "flint",
+      "label": "Flint",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "lucian",
+      "label": "Lucian",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cynthia-gen4",
+      "label": "Cynthia",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "bellepa",
+      "label": "Bellepa",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "rancher",
+      "label": "Rancher",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "mars",
+      "label": "Mars",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "galacticgrunt",
+      "label": "Galactic Grunt",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "gardenia",
+      "label": "Gardenia",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "crasherwake",
+      "label": "Crasher Wake",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "maylene",
+      "label": "Maylene",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "fantina",
+      "label": "Fantina",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "candice",
+      "label": "Candice",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "volkner",
+      "label": "Volkner",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "parasollady-gen4",
+      "label": "Parasol Lady",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "waiter-gen4dp",
+      "label": "Waiter",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "interviewers",
+      "label": "Interviewers",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cameraman",
+      "label": "Cameraman",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "reporter",
+      "label": "Reporter",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "idol",
+      "label": "Idol",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cyrus",
+      "label": "Cyrus",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "jupiter",
+      "label": "Jupiter",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "saturn",
+      "label": "Saturn",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "galacticgruntf",
+      "label": "Galactic Grunt",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "argenta",
+      "label": "Argenta",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "palmer",
+      "label": "Palmer",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "thorton",
+      "label": "Thorton",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "buck",
+      "label": "Buck",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "darach-caitlin",
+      "label": "Darach Caitlin",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "marley",
+      "label": "Marley",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "mira",
+      "label": "Mira",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cheryl",
+      "label": "Cheryl",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "riley",
+      "label": "Riley",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "dahlia",
+      "label": "Dahlia",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "ethan",
+      "label": "Ethan",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "lyra",
+      "label": "Lyra",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "twins-gen4",
+      "label": "Twins",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "lass-gen4",
+      "label": "Lass",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "acetrainer-gen4",
+      "label": "Ace Trainer",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "acetrainerf-gen4",
+      "label": "Ace Trainer",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "juggler",
+      "label": "Juggler",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "sage",
+      "label": "Sage",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "li",
+      "label": "Li",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "gentleman-gen4",
+      "label": "Gentleman",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "teacher",
+      "label": "Teacher",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "beauty",
+      "label": "Beauty",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "birdkeeper",
+      "label": "Bird Keeper",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "swimmer-gen4",
+      "label": "Swimmer",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "swimmerf-gen4",
+      "label": "Swimmer",
+      "female": true,
+      "gen": 4
+    },
+    {
+      "id": "kimonogirl",
+      "label": "Kimonogirl",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "scientist-gen4",
+      "label": "Scientist",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "acetrainercouple",
+      "label": "Ace Trainer Couple",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "youngcouple",
+      "label": "Young Couple",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "supernerd",
+      "label": "Supernerd",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "medium",
+      "label": "Medium",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "schoolkid-gen4",
+      "label": "School Kid",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "blackbelt-gen4",
+      "label": "Black Belt",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "pokemaniac",
+      "label": "Pokemaniac",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "firebreather",
+      "label": "Fire Breather",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "burglar",
+      "label": "Burglar",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "biker-gen4",
+      "label": "Biker",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "skierf",
+      "label": "Skierf",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "boarder",
+      "label": "Boarder",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "rocketgrunt",
+      "label": "Rocket Grunt",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "rocketgruntf",
+      "label": "Rocket Grunt",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "archer",
+      "label": "Archer",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "ariana",
+      "label": "Ariana",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "proton",
+      "label": "Proton",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "petrel",
+      "label": "Petrel",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "eusine",
+      "label": "Eusine",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "lucas-gen4pt",
+      "label": "Lucas",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "dawn-gen4pt",
+      "label": "Dawn",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "madame-gen4",
+      "label": "Madame",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "waiter-gen4",
+      "label": "Waiter",
+      "female": false,
+      "gen": 4
+    },
+    {
+      "id": "falkner",
+      "label": "Falkner",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "bugsy",
+      "label": "Bugsy",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "whitney",
+      "label": "Whitney",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "morty",
+      "label": "Morty",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "chuck",
+      "label": "Chuck",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "jasmine",
+      "label": "Jasmine",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pryce",
+      "label": "Pryce",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "clair",
+      "label": "Clair",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "will",
+      "label": "Will",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "koga",
+      "label": "Koga",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "bruno",
+      "label": "Bruno",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "karen",
+      "label": "Karen",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "lance",
+      "label": "Lance",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "brock",
+      "label": "Brock",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "misty",
+      "label": "Misty",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "ltsurge",
+      "label": "Ltsurge",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "erika",
+      "label": "Erika",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "janine",
+      "label": "Janine",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "sabrina",
+      "label": "Sabrina",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "blaine",
+      "label": "Blaine",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "blue",
+      "label": "Blue",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "red",
+      "label": "Red",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "silver",
+      "label": "Silver",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "giovanni",
+      "label": "Giovanni",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "unknownf",
+      "label": "Unknownf",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "unknown",
+      "label": "Unknown",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hilbert",
+      "label": "Hilbert",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hilda",
+      "label": "Hilda",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "youngster",
+      "label": "Youngster",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "lass",
+      "label": "Lass",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "schoolkid",
+      "label": "School Kid",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "schoolkidf",
+      "label": "School Kid",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "smasher",
+      "label": "Smasher",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "linebacker",
+      "label": "Linebacker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "waiter",
+      "label": "Waiter",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "waitress",
+      "label": "Waitress",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "chili",
+      "label": "Chili",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cilan",
+      "label": "Cilan",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cress",
+      "label": "Cress",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "nurseryaide",
+      "label": "Nursery Aide",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "preschoolerf",
+      "label": "Preschooler",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "preschooler",
+      "label": "Preschooler",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "twins",
+      "label": "Twins",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pokemonbreeder",
+      "label": "Pokémon Breeder",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pokemonbreederf",
+      "label": "Pokémon Breeder",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "lenora",
+      "label": "Lenora",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "burgh",
+      "label": "Burgh",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "elesa",
+      "label": "Elesa",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "clay",
+      "label": "Clay",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "skyla",
+      "label": "Skyla",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pokemonranger",
+      "label": "Pokémon Ranger",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pokemonrangerf",
+      "label": "Pokémon Ranger",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "worker",
+      "label": "Worker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "backpacker",
+      "label": "Backpacker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "backpackerf",
+      "label": "Backpacker",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "fisherman",
+      "label": "Fisherman",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "musician",
+      "label": "Musician",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "dancer",
+      "label": "Dancer",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "harlequin",
+      "label": "Harlequin",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "artist",
+      "label": "Artist",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "baker",
+      "label": "Baker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "psychic",
+      "label": "Psychic",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "psychicf",
+      "label": "Psychic",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "cheren",
+      "label": "Cheren",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "bianca",
+      "label": "Bianca",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "plasmagrunt-gen5bw",
+      "label": "Plasma Grunt",
+      "female": false,
+      "gen": 5
+    },
+    {
+      "id": "n",
+      "label": "N",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "richboy",
+      "label": "Rich Boy",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "lady",
+      "label": "Lady",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pilot",
+      "label": "Pilot",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "workerice",
+      "label": "Worker Ice",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hoopster",
+      "label": "Hoopster",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "scientistf",
+      "label": "Scientist",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "clerkf",
+      "label": "Clerk",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "acetrainerf",
+      "label": "Ace Trainer",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "acetrainer",
+      "label": "Ace Trainer",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "blackbelt",
+      "label": "Black Belt",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "scientist",
+      "label": "Scientist",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "striker",
+      "label": "Striker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "brycen",
+      "label": "Brycen",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "iris",
+      "label": "Iris",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "drayden",
+      "label": "Drayden",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "roughneck",
+      "label": "Roughneck",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "janitor",
+      "label": "Janitor",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pokefan",
+      "label": "Poké Fan",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "pokefanf",
+      "label": "Poké Fan",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "doctor",
+      "label": "Doctor",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "nurse",
+      "label": "Nurse",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hooligans",
+      "label": "Hooligans",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "battlegirl",
+      "label": "Battle Girl",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "parasollady",
+      "label": "Parasol Lady",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "clerk",
+      "label": "Clerk",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "clerk-boss",
+      "label": "Clerk Boss",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "backers",
+      "label": "Backers",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "backersf",
+      "label": "Backersf",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "veteran",
+      "label": "Veteran",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "veteranf",
+      "label": "Veteran",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "biker",
+      "label": "Biker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "infielder",
+      "label": "Infielder",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hiker",
+      "label": "Hiker",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "madame",
+      "label": "Madame",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "gentleman",
+      "label": "Gentleman",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "plasmagruntf-gen5bw",
+      "label": "Plasma Grunt",
+      "female": true,
+      "gen": 5
+    },
+    {
+      "id": "shauntal",
+      "label": "Shauntal",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "marshal",
+      "label": "Marshal",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "grimsley",
+      "label": "Grimsley",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "caitlin",
+      "label": "Caitlin",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "ghetsis-gen5bw",
+      "label": "Ghetsis",
+      "female": false,
+      "gen": 5
+    },
+    {
+      "id": "depotagent",
+      "label": "Depotagent",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "swimmer",
+      "label": "Swimmer",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "swimmerf",
+      "label": "Swimmer",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "policeman",
+      "label": "Policeman",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "maid",
+      "label": "Maid",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "ingo",
+      "label": "Ingo",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "alder",
+      "label": "Alder",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cyclist",
+      "label": "Cyclist",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cyclistf",
+      "label": "Cyclist",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "cynthia",
+      "label": "Cynthia",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "emmet",
+      "label": "Emmet",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hilbert-wonderlauncher",
+      "label": "Hilbert Wonderlauncher",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hilda-wonderlauncher",
+      "label": "Hilda Wonderlauncher",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "hugh",
+      "label": "Hugh",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "rosa",
+      "label": "Rosa",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "nate",
+      "label": "Nate",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "colress",
+      "label": "Colress",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "beauty-gen5bw2",
+      "label": "Beauty",
+      "female": false,
+      "gen": 5
+    },
+    {
+      "id": "ghetsis",
+      "label": "Ghetsis",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "plasmagrunt",
+      "label": "Plasma Grunt",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "plasmagruntf",
+      "label": "Plasma Grunt",
+      "female": true,
+      "gen": null
+    },
+    {
+      "id": "iris-gen5bw2",
+      "label": "Iris",
+      "female": false,
+      "gen": 5
+    },
+    {
+      "id": "brycenman",
+      "label": "Brycen-Man",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "shadowtriad",
+      "label": "Shadow Triad",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "rood",
+      "label": "Rood",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "zinzolin",
+      "label": "Zinzolin",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "cheren-gen5bw2",
+      "label": "Cheren",
+      "female": false,
+      "gen": 5
+    },
+    {
+      "id": "marlon",
+      "label": "Marlon",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "roxie",
+      "label": "Roxie",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "roxanne",
+      "label": "Roxanne",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "brawly",
+      "label": "Brawly",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "wattson",
+      "label": "Wattson",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "flannery",
+      "label": "Flannery",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "norman",
+      "label": "Norman",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "winona",
+      "label": "Winona",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "tate",
+      "label": "Tate",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "liza",
+      "label": "Liza",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "juan",
+      "label": "Juan",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "guitarist",
+      "label": "Guitarist",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "steven",
+      "label": "Steven",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "wallace",
+      "label": "Wallace",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "bellelba",
+      "label": "Bellelba",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "benga",
+      "label": "Benga",
+      "female": false,
+      "gen": null
+    },
+    {
+      "id": "ash",
+      "label": "Ash",
+      "female": false,
+      "gen": null
+    }
+  ]
+}

@@ -192,6 +192,9 @@ export const useForumStore = create((set, get) => ({
             const topicId = newTopicRef.id;
 
             const creatorName = authState.displayName || (authState.userEmail ? authState.userEmail.split('@')[0] : 'Guest Trainer');
+            // Avatar denormalized onto the doc with the user's pokemon/trainer
+            // preference already applied, so readers need no extra lookup.
+            const authorAvatar = authState.publicAvatar();
 
             let serializedAttachedTeam = null;
             if (attachedTeam && attachedTeam.pokemons) {
@@ -208,8 +211,9 @@ export const useForumStore = create((set, get) => ({
                 createdAt: new Date().toISOString(),
                 createdBy: authState.userId,
                 creatorName: creatorName,
-                creatorAvatar: authState.greetingPokemonId || null,
-                creatorAvatarIsShiny: authState.greetingPokemonIsShiny || false,
+                creatorAvatar: authorAvatar.pokemonId,
+                creatorAvatarIsShiny: authorAvatar.isShiny,
+                creatorTrainerSprite: authorAvatar.trainerSprite,
                 lastActivityAt: new Date().toISOString(),
                 messageCount: 1,
                 lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : '')
@@ -223,8 +227,9 @@ export const useForumStore = create((set, get) => ({
                 createdAt: new Date().toISOString(),
                 createdBy: authState.userId,
                 creatorName: creatorName,
-                creatorAvatar: authState.greetingPokemonId || null,
-                creatorAvatarIsShiny: authState.greetingPokemonIsShiny || false,
+                creatorAvatar: authorAvatar.pokemonId,
+                creatorAvatarIsShiny: authorAvatar.isShiny,
+                creatorTrainerSprite: authorAvatar.trainerSprite,
                 sharedTeam: serializedAttachedTeam
             };
             await setDoc(firstMsgRef, firstMsgData);
@@ -253,6 +258,9 @@ export const useForumStore = create((set, get) => ({
 
         try {
             const creatorName = authState.displayName || (authState.userEmail ? authState.userEmail.split('@')[0] : 'Guest Trainer');
+            // Avatar denormalized onto the doc with the user's pokemon/trainer
+            // preference already applied, so readers need no extra lookup.
+            const authorAvatar = authState.publicAvatar();
             const messageRef = doc(collection(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`));
 
             let serializedAttachedTeam = null;
@@ -284,8 +292,9 @@ export const useForumStore = create((set, get) => ({
                 createdAt: new Date().toISOString(),
                 createdBy: authState.userId,
                 creatorName: creatorName,
-                creatorAvatar: authState.greetingPokemonId || null,
-                creatorAvatarIsShiny: authState.greetingPokemonIsShiny || false,
+                creatorAvatar: authorAvatar.pokemonId,
+                creatorAvatarIsShiny: authorAvatar.isShiny,
+                creatorTrainerSprite: authorAvatar.trainerSprite,
                 sharedTeam: serializedAttachedTeam,
                 replyTo: replyRef
             };

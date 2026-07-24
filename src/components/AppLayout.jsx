@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
-import { useAuthStore } from '../store/useAuthStore';
+import { useAuthStore, resolveAvatar } from '../store/useAuthStore';
+import { useFriends } from '../hooks/useFriends';
 import { useActiveTeam } from '../hooks/useActiveTeam';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
@@ -14,6 +15,7 @@ import { pageGuideTips, PageGuide } from './PageGuide';
 import { FooterFeedback } from './FooterFeedback';
 import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
+import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
@@ -31,6 +33,7 @@ import {
     AuthModal,
     ConfirmDialog,
     GreetingPokemonSelectorModal,
+    TrainerSpriteSelectorModal,
     PatchNotesModal,
     ShareSnippetModal,
     SyncPromptModal,
@@ -57,6 +60,7 @@ const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ 
 const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
 const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
+const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
 const TeamBuilderView = lazy(() => import('./views/TeamBuilderView').then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
 const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
@@ -88,8 +92,8 @@ const RouteFallback = () => (
     </div>
 );
 
-const TrainerAvatar = ({ pokemonId, isShiny = false, size = 24, color = 'currentColor', className = '' }) => {
-    if (pokemonId) {
+const TrainerAvatar = ({ pokemonId, isShiny = false, trainerSprite = null, size = 24, color = 'currentColor', className = '' }) => {
+    if (trainerSprite || pokemonId) {
         return (
             <span
                 className={`inline-flex items-center justify-center rounded-full overflow-hidden shrink-0 ${className}`}
@@ -97,10 +101,17 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, size = 24, color = 'current
                 aria-hidden="true"
             >
                 <img
-                    src={getPokemonFrontSpriteUrl(pokemonId, { shiny: isShiny })}
+                    src={trainerSprite
+                        ? trainerSpriteUrl(trainerSprite)
+                        : getPokemonFrontSpriteUrl(pokemonId, { shiny: isShiny })}
                     alt=""
                     className="image-pixelated"
-                    style={{ width: size + 8, height: size, objectFit: 'contain', marginTop: 2 }}
+                    // Pokémon sprites carry transparent padding, so they get cropped
+                    // wider than the frame and nudged down; trainer sprites are
+                    // square and fill it exactly.
+                    style={trainerSprite
+                        ? { width: size, height: size, objectFit: 'contain' }
+                        : { width: size + 8, height: size, objectFit: 'contain', marginTop: 2 }}
                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                 />
             </span>
@@ -109,7 +120,7 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, size = 24, color = 'current
     return <AccountIcon color={color} className={`shrink-0 ${className}`} />;
 };
 
-const ShellNavButton = ({ active, collapsed, label, onClick, icon }) => {
+const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0 }) => {
     const buttonRef = useRef(null);
     // Styled hover tooltip for the collapsed rail. Rendered via a portal with
     // fixed positioning so it escapes the sidebar's `overflow: hidden` clip.
@@ -134,8 +145,13 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon }) => {
             aria-current={active ? 'page' : undefined}
             className={`app-shell__nav-link ${active ? 'is-active' : ''} ${collapsed ? 'is-collapsed' : ''}`}
         >
-            <span className="app-shell__nav-icon" aria-hidden="true">{icon}</span>
+            <span className="app-shell__nav-icon" aria-hidden="true">
+                {icon}
+                {/* Collapsed rail has no room for the count, so it degrades to a dot. */}
+                {badge > 0 && collapsed && <span className="app-shell__nav-dot" aria-hidden="true" />}
+            </span>
             <span className={`app-shell__nav-text ${collapsed ? 'is-hidden' : ''}`}>{label}</span>
+            {badge > 0 && !collapsed && <span className="app-shell__nav-badge">{badge > 9 ? '9+' : badge}</span>}
             {collapsed && tooltipPos && createPortal(
                 <span
                     role="tooltip"
@@ -199,6 +215,7 @@ export default function AppLayout() {
         if (path.includes('/speed-tiers')) return 'speedTiers';
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/quiz')) return 'generationQuiz';
+        if (path.includes('/friends')) return 'friends';
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
         if (path.includes('/profile')) return 'profile';
@@ -212,6 +229,7 @@ export default function AppLayout() {
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
+        trainerSprite, setTrainerSprite, avatarPreference, setAvatarPreference,
         handleResetSyncPrompt, showSyncPrompt, handleDismissSyncPrompt,
         handleSignIn, handleSignUp, handleSignOut, isAuthReady
     } = useAuthStore();
@@ -260,7 +278,21 @@ export default function AppLayout() {
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
+    const [showTrainerSpriteSelector, setShowTrainerSpriteSelector] = useState(false);
     const [showVersionModal, setShowVersionModal] = useState(false);
+
+    // Bound here (not only in FriendsView) so the sidebar badge stays live on every
+    // route. The store reference-counts, so FriendsView holding it too is fine.
+    const { incomingRequests } = useFriends();
+    const pendingFriendRequests = incomingRequests.length;
+
+    // The signed-in trainer's own avatar, with their pokemon/trainer choice
+    // applied. Memoized off the primitives so the shell doesn't rebuild it on
+    // every unrelated store update.
+    const ownAvatar = useMemo(
+        () => resolveAvatar({ avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny }),
+        [avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny],
+    );
 
     // Explicit collapse/expand from the sidebar controls. Persists the choice so
     // it overrides the width-based auto behavior from then on.
@@ -549,10 +581,11 @@ export default function AppLayout() {
             'meta': { title: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
             'damageCalc': { title: t('nav.damageCalc'), subtitle: t('tools.damageSubtitle') },
             'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
+            'friends': { title: t('nav.friends'), subtitle: language === 'pt' ? 'Seus amigos treinadores e pedidos pendentes' : 'Your trainer friends and pending requests' },
             'notFound': { title: '404', subtitle: '' },
         };
         return pages[currentPage] || pages['home'];
-    }, [currentPage, t]);
+    }, [currentPage, t, language]);
 
     const pageFrameClassName = useMemo(() => {
         if (currentPage === 'home') return '';
@@ -566,6 +599,7 @@ export default function AppLayout() {
                 items: [
                     { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
                     { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
+                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <AccountIcon className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
                 ]
             },
             {
@@ -608,7 +642,7 @@ export default function AppLayout() {
         }
 
         return groups;
-    }, [isAdmin, t]);
+    }, [isAdmin, t, language, pendingFriendRequests]);
 
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {
@@ -878,6 +912,17 @@ export default function AppLayout() {
                     db={db}
                 />
             )}
+            {showTrainerSpriteSelector && (
+                <TrainerSpriteSelectorModal
+                    onClose={() => setShowTrainerSpriteSelector(false)}
+                    onSelect={(spriteId) => {
+                        setTrainerSprite(spriteId);
+                        setShowTrainerSpriteSelector(false);
+                    }}
+                    currentSpriteId={trainerSprite}
+                    colors={colors}
+                />
+            )}
 
             <ShareSnippetModal
                 isOpen={shareModal.isOpen}
@@ -1009,6 +1054,7 @@ export default function AppLayout() {
                                                             collapsed={isSidebarCollapsed}
                                                             label={item.label}
                                                             icon={item.icon}
+                                                            badge={item.badge || 0}
                                                             onClick={() => {
                                                                 navigate(item.path);
                                                                 setIsSidebarOpen(false);
@@ -1071,7 +1117,7 @@ export default function AppLayout() {
                                         <SidebarAccountMenu
                                             collapsed={isSidebarCollapsed}
                                             isMobile={isMobile}
-                                            avatar={<TrainerAvatar pokemonId={greetingPokemonId} isShiny={greetingPokemonIsShiny} color={colors.primary} />}
+                                            avatar={<TrainerAvatar pokemonId={ownAvatar.pokemonId} isShiny={ownAvatar.isShiny} trainerSprite={ownAvatar.trainerSprite} color={colors.primary} />}
                                             displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
                                             email={userEmail || ''}
                                             currentTheme={theme}
@@ -1189,7 +1235,7 @@ export default function AppLayout() {
                                     <SidebarAccountMenu
                                         variant="header"
                                         isMobile
-                                        avatar={<TrainerAvatar pokemonId={greetingPokemonId} isShiny={greetingPokemonIsShiny} color={colors.primary} />}
+                                        avatar={<TrainerAvatar pokemonId={ownAvatar.pokemonId} isShiny={ownAvatar.isShiny} trainerSprite={ownAvatar.trainerSprite} color={colors.primary} />}
                                         displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
                                         email={userEmail || ''}
                                         currentTheme={theme}
@@ -1406,6 +1452,7 @@ export default function AppLayout() {
                                                 showDetails={showDetails}
                                             />
                                         } />
+                                        <Route path="/friends" element={<FriendsView />} />
                                         <Route path="/profile" element={
                                             <ProfileView
                                                 userEmail={userEmail}
@@ -1423,6 +1470,10 @@ export default function AppLayout() {
                                                 greetingPokemonId={greetingPokemonId}
                                                 greetingPokemonIsShiny={greetingPokemonIsShiny}
                                                 onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                                                trainerSprite={trainerSprite}
+                                                onOpenTrainerSelector={() => setShowTrainerSpriteSelector(true)}
+                                                avatarPreference={avatarPreference}
+                                                onChangeAvatarPreference={setAvatarPreference}
                                                 streak={streak}
                                                 savedTeamsCount={savedTeams.length}
                                                 favoritePokemonsCount={favoritePokemons.size}

@@ -17,6 +17,10 @@ import { useThemeStore } from './useThemeStore';
 import { useToastStore } from './useToastStore';
 import { useLanguageStore } from './useLanguageStore';
 import { migrateLocalProgress, listLocalSuffixesForUid, ppLocalKey, pickBestState } from '../utils/pokePuzzleMigration';
+import { resolveAvatar } from '../utils/avatar';
+
+// Re-exported so components can keep importing it from the store they already use.
+export { resolveAvatar };
 
 // Move PokePuzzle progress from an anonymous uid onto the just-authenticated
 // account. localStorage is the reliable source (the game mirrors every save
@@ -194,6 +198,12 @@ export const useAuthStore = create((set, get) => {
         // Never seeded from cache — a privileged flag must come from the token.
         isAdmin: false,
         displayName: '',
+        // Showdown trainer-sprite id available as an avatar (see
+        // src/hooks/useTrainerSprites.js).
+        trainerSprite: null,
+        // Which of the two the user wants as their main avatar: 'pokemon' (the
+        // partner Pokémon, the historical default) or 'trainer'.
+        avatarPreference: 'pokemon',
         greetingPokemonId: getInitialGreeting().id,
         greetingPokemonIsShiny: getInitialGreeting().isShiny,
         streak: getInitialStreak(),
@@ -249,6 +259,14 @@ export const useAuthStore = create((set, get) => {
                                 set({ displayName: data.displayName });
                             }
 
+                            // 2.1 Trainer sprite + which avatar the user picked
+                            if (typeof data.trainerSprite === 'string' || data.trainerSprite === null) {
+                                set({ trainerSprite: data.trainerSprite || null });
+                            }
+                            if (data.avatarPreference === 'trainer' || data.avatarPreference === 'pokemon') {
+                                set({ avatarPreference: data.avatarPreference });
+                            }
+
                             // 3. Greeting Pokemon
                             let nextGreeting = { id: null, isShiny: false };
                             if (Number.isInteger(data.greetingPokemon?.id)) {
@@ -301,6 +319,11 @@ export const useAuthStore = create((set, get) => {
 
                         // Push preferences state to Firestore to ensure sync
                         await get().syncPreferencesToFirestore();
+
+                        // Keep the public directory entry current (no-op for
+                        // anonymous accounts). Not awaited — boot must not wait
+                        // on a social nicety.
+                        get().syncPublicProfile();
 
                         // Set isAuthReady: true now that hydration is complete!
                         set({ isAuthReady: true });
@@ -357,7 +380,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, greetingPokemonId, greetingPokemonIsShiny, streak, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -368,6 +391,8 @@ export const useAuthStore = create((set, get) => {
                 theme,
                 language,
                 displayName,
+                trainerSprite: trainerSprite || null,
+                avatarPreference: avatarPreference || 'pokemon',
                 greetingPokemonId,
                 greetingPokemon: greetingPokemonId ? { id: greetingPokemonId, isShiny: greetingPokemonIsShiny } : null,
                 greetingPokemonIsShiny,
@@ -395,9 +420,75 @@ export const useAuthStore = create((set, get) => {
         },
 
 
+        // The name other trainers see. Mirrors the fallback chain the forum has
+        // always used, so a user without an explicit display name still shows up
+        // as something recognisable instead of a raw uid.
+        trainerDisplayName: () => {
+            const { displayName, userEmail } = get();
+            return displayName || (userEmail ? userEmail.split('@')[0] : '') || 'Trainer';
+        },
+
+        // This trainer's resolved avatar — see `resolveAvatar` above.
+        publicAvatar: () => resolveAvatar(get()),
+
+        /**
+         * Mirror the public-facing slice of the profile into
+         * `artifacts/{appId}/publicProfiles/{uid}` — the directory other trainers
+         * search to add friends.
+         *
+         * Best-effort and never awaited by the boot path: a failure here must not
+         * block sign-in. Anonymous accounts are skipped on purpose (the rules
+         * reject them too) so the directory doesn't fill with throwaway ghosts.
+         *
+         * Uses `merge: true` deliberately: `battleRecord` is owned by the battle
+         * resolver, and the rules only accept a write that leaves it untouched.
+         */
+        syncPublicProfile: async () => {
+            const { userId, isAnonymous } = get();
+            if (!db || !userId || isAnonymous || !profileHydratedFromFirestore) return;
+
+            const name = get().trainerDisplayName();
+            const avatar = get().publicAvatar();
+            try {
+                const profileRef = doc(db, `artifacts/${appId}/publicProfiles`, userId);
+                await setDoc(profileRef, {
+                    displayName: name,
+                    displayNameLower: name.toLowerCase(),
+                    // Resolved avatar: the directory shows what the user chose,
+                    // and never needs to know the preference itself.
+                    avatarPokemonId: avatar.pokemonId,
+                    avatarIsShiny: avatar.isShiny,
+                    trainerSprite: avatar.trainerSprite,
+                    updatedAt: new Date().toISOString(),
+                }, { merge: true });
+            } catch (e) {
+                // Non-critical: the private profile is already saved, and the
+                // directory entry re-syncs on the next profile change.
+                console.error('Failed to sync public profile:', e);
+            }
+        },
+
         setDisplayName: (name) => {
             set({ displayName: name });
             get().savePreferences({ displayName: name });
+            get().syncPublicProfile();
+        },
+
+        setTrainerSprite: (spriteId) => {
+            const next = spriteId || null;
+            // Picking a sprite implies wanting to use it; clearing it falls back
+            // to the partner Pokémon. Saves the user a second click.
+            const nextPreference = next ? 'trainer' : 'pokemon';
+            set({ trainerSprite: next, avatarPreference: nextPreference });
+            get().savePreferences({ trainerSprite: next, avatarPreference: nextPreference });
+            get().syncPublicProfile();
+        },
+
+        setAvatarPreference: (preference) => {
+            const next = preference === 'trainer' ? 'trainer' : 'pokemon';
+            set({ avatarPreference: next });
+            get().savePreferences({ avatarPreference: next });
+            get().syncPublicProfile();
         },
 
         setGreetingPokemon: (selection) => {
@@ -428,6 +519,7 @@ export const useAuthStore = create((set, get) => {
                 greetingPokemon: nextId ? { id: nextId, isShiny: nextIsShiny } : null,
                 greetingPokemonIsShiny: Boolean(nextId) && nextIsShiny,
             });
+            get().syncPublicProfile();
         },
 
         handleDismissSyncPrompt: () => {

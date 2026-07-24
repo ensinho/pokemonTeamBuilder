@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import '../../styles/profile-view.css';
 import { THEME_META } from '../../constants/theme';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
+import { resolveAvatar } from '../../store/useAuthStore';
 import { Sprite } from '../Sprite';
 import { useTranslation } from '../../hooks/useTranslation';
 import { auth } from '../../services/firebase';
@@ -115,6 +117,10 @@ export function ProfileView({
     greetingPokemonId,
     greetingPokemonIsShiny,
     onOpenPokemonSelector,
+    trainerSprite,
+    onOpenTrainerSelector,
+    avatarPreference,
+    onChangeAvatarPreference,
     // engagement
     streak,                // { count, longest, lastVisit }
     // stats
@@ -143,6 +149,11 @@ export function ProfileView({
         setEditingName(false);
     };
 
+    const mainAvatar = useMemo(
+        () => resolveAvatar({ avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny }),
+        [avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny],
+    );
+
     const trainerLabel = displayName?.trim() || (isAnonymous ? t('profile.guestPill') : (userEmail?.split('@')[0] || 'Trainer'));
     const initials = (trainerLabel.match(/\b\w/g) || ['T']).slice(0, 2).join('').toUpperCase();
 
@@ -170,9 +181,16 @@ export function ProfileView({
                         aria-label={t('profile.sectionAvatarDesc')}
                         title={t('profile.sectionAvatarDesc')}
                     >
-                        {greetingPokemonId ? (
+                        {/* Whichever the trainer picked as their main avatar. */}
+                        {mainAvatar.trainerSprite ? (
                             <Sprite
-                                src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
+                                src={trainerSpriteUrl(mainAvatar.trainerSprite)}
+                                alt="Trainer avatar"
+                                className="profile-avatar-button__sprite profile-avatar-button__sprite--pixel"
+                            />
+                        ) : mainAvatar.pokemonId ? (
+                            <Sprite
+                                src={getPokemonArtworkSpriteUrl(mainAvatar.pokemonId, { shiny: mainAvatar.isShiny })}
                                 alt="Trainer avatar"
                                 className="profile-avatar-button__sprite"
                             />
@@ -420,6 +438,73 @@ export function ProfileView({
                                 )}
                             </div>
                         </div>
+                    </SectionCard>
+
+                    <SectionCard
+                        className="profile-card--avatar"
+                        title={t('profile.sectionTrainer')}
+                        subtitle={t('profile.sectionTrainerDesc')}
+                        icon={<AccountIcon className="w-5 h-5" />}
+                    >
+                        <div className="profile-avatar-card">
+                            <div className="profile-avatar-preview">
+                                {trainerSprite ? (
+                                    <Sprite
+                                        src={trainerSpriteUrl(trainerSprite)}
+                                        alt="Trainer sprite"
+                                        className="profile-avatar-preview__sprite profile-avatar-preview__sprite--pixel"
+                                    />
+                                ) : (
+                                    <span className="profile-avatar-preview__fallback">?</span>
+                                )}
+                            </div>
+                            <div className="profile-avatar-actions">
+                                <button
+                                    type="button"
+                                    onClick={onOpenTrainerSelector}
+                                    className="profile-button profile-button--primary"
+                                >
+                                    {trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Which of the two avatars is the public one. Only worth
+                            asking once both exist. */}
+                        {trainerSprite && greetingPokemonId && (
+                            <div className="profile-avatar-choice">
+                                <p className="profile-avatar-choice__label">{t('profile.avatarChoiceLabel')}</p>
+                                <div className="profile-avatar-choice__options" role="group" aria-label={t('profile.avatarChoiceLabel')}>
+                                    <button
+                                        type="button"
+                                        onClick={() => onChangeAvatarPreference('pokemon')}
+                                        aria-pressed={avatarPreference !== 'trainer'}
+                                        className={`profile-avatar-choice__option ${avatarPreference !== 'trainer' ? 'is-active' : ''}`}
+                                    >
+                                        <img
+                                            src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
+                                            alt=""
+                                            aria-hidden="true"
+                                        />
+                                        <span>{t('profile.avatarChoicePokemon')}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onChangeAvatarPreference('trainer')}
+                                        aria-pressed={avatarPreference === 'trainer'}
+                                        className={`profile-avatar-choice__option ${avatarPreference === 'trainer' ? 'is-active' : ''}`}
+                                    >
+                                        <img
+                                            src={trainerSpriteUrl(trainerSprite)}
+                                            alt=""
+                                            aria-hidden="true"
+                                            className="profile-avatar-choice__pixel"
+                                        />
+                                        <span>{t('profile.avatarChoiceTrainer')}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </SectionCard>
 
                     <SectionCard

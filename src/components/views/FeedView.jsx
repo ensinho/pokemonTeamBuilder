@@ -7,6 +7,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { AnchoredPopover } from '../AnchoredPopover';
+import { AvatarSprite } from '../AvatarSprite';
+import { FriendActionButton } from '../FriendActionButton';
 import { UserProfileModal } from '../modals/UserProfileModal';
 import { TeamsTopicNotice } from '../TeamsTopicNotice';
 import {
@@ -555,18 +557,16 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         userId: message.createdBy,
                                                         name: message.creatorName,
                                                         avatar: message.creatorAvatar,
-                                                        isShiny: message.creatorAvatarIsShiny
+                                                        isShiny: message.creatorAvatarIsShiny,
+                                                        trainerSprite: message.creatorTrainerSprite
                                                     })}
                                                 >
-                                                    {message.creatorAvatar ? (
-                                                        <img
-                                                            src={`https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
-                                                            alt=""
-                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                        />
-                                                    ) : (
-                                                        <PokeballIcon className="w-5 h-5 text-muted opacity-50" />
-                                                    )}
+                                                    <AvatarSprite
+                                                        trainerSprite={message.creatorTrainerSprite}
+                                                        pokemonId={message.creatorAvatar}
+                                                        isShiny={message.creatorAvatarIsShiny}
+                                                        fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                                                    />
                                                 </div>
                                             </div>
 
@@ -579,7 +579,8 @@ export function FeedView({ colors, showToast, navigate }) {
                                                                 userId: message.createdBy,
                                                                 name: message.creatorName,
                                                                 avatar: message.creatorAvatar,
-                                                                isShiny: message.creatorAvatarIsShiny
+                                                                isShiny: message.creatorAvatarIsShiny,
+                                                                trainerSprite: message.creatorTrainerSprite
                                                             })}
                                                         >
                                                             @{message.creatorName}
@@ -977,6 +978,9 @@ export function FeedView({ colors, showToast, navigate }) {
                 messages={messages}
                 handleImportTeam={handleImportTeam}
                 language={language}
+                friendAction={selectedProfile && (
+                    <FriendActionButton targetUserId={selectedProfile.userId} className="w-full justify-center" />
+                )}
             />
         </div>
     );

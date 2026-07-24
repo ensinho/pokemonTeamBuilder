@@ -1952,6 +1952,13 @@
     object-fit: cover;
 }
 
+/* Trainer sprites are square pixel art — `cover` would crop the character's
+   head, and upscaling must not be smoothed. */
+.home-timeline-avatar img.avatar-sprite--trainer {
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
 .home-timeline-content-wrap {
     flex: 1;
     min-width: 0;

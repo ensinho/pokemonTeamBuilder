@@ -5,6 +5,8 @@ import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useToastStore } from '../../store/useToastStore';
 import { AnchoredPopover } from '../AnchoredPopover';
+import { AvatarSprite } from '../AvatarSprite';
+import { FriendActionButton } from '../FriendActionButton';
 import { MessageIcon, PlusIcon, ClipIcon, HeartIcon, ReplyIcon } from '../icons';
 import { doc, getDoc } from 'firebase/firestore';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -1045,18 +1047,16 @@ export function HomeView({
                                                         userId: message.createdBy,
                                                         name: message.creatorName,
                                                         avatar: message.creatorAvatar,
-                                                        isShiny: message.creatorAvatarIsShiny
+                                                        isShiny: message.creatorAvatarIsShiny,
+                                                        trainerSprite: message.creatorTrainerSprite
                                                     })}
                                                 >
-                                                    {message.creatorAvatar ? (
-                                                        <img
-                                                            src={`https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/${message.creatorAvatarIsShiny ? 'shiny/' : ''}${message.creatorAvatar}.png`}
-                                                            alt=""
-                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                        />
-                                                    ) : (
-                                                        <PokeballIcon className="w-4 h-4 text-muted opacity-50" />
-                                                    )}
+                                                    <AvatarSprite
+                                                        trainerSprite={message.creatorTrainerSprite}
+                                                        pokemonId={message.creatorAvatar}
+                                                        isShiny={message.creatorAvatarIsShiny}
+                                                        fallback={<PokeballIcon className="w-4 h-4 text-muted opacity-50" />}
+                                                    />
                                                 </div>
                                             </div>
 
@@ -1367,6 +1367,9 @@ export function HomeView({
                 messages={messages}
                 handleImportTeam={handleImportTeam}
                 language={language}
+                friendAction={selectedProfile && (
+                    <FriendActionButton targetUserId={selectedProfile.userId} className="w-full justify-center" />
+                )}
             />
         </main>
     );

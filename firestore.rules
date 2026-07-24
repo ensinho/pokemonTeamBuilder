@@ -17,6 +17,14 @@ service cloud.firestore {
         && request.auth.token.email in ['enzopo625@gmail.com'];
     }
 
+    // Auth starts anonymous and upgrades via email link. Anything social
+    // (public directory, friends, battles) requires a real, upgraded account —
+    // otherwise the friend list fills with throwaway ghosts.
+    function isUpgradedAccount() {
+      return isSignedIn()
+        && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
     match /artifacts/{appId} {
 
       match /users/{userId}/{document=**} {
@@ -26,6 +34,121 @@ service cloud.firestore {
       match /users/{userId}/profile/{docId} {
         allow read: if isOwner(userId) || isAdmin();
         allow write: if isOwner(userId);
+      }
+
+      // Public trainer directory. Exists so trainers can find each other to add
+      // as friends — it is deliberately world-readable and holds only what the
+      // user already exposes on the forum (name + avatar), never their email.
+      // Owned by the user; there is no server-side writer.
+      match /publicProfiles/{userId} {
+        allow read: if true;
+        allow create, update: if isOwner(userId)
+          && isUpgradedAccount()
+          && validPublicProfile();
+        allow delete: if isOwner(userId) || isAdmin();
+
+        // NOTE: optional fields are read via `.get(key, default)`. Reading an
+        // absent key off `request.resource.data` directly raises an error (which
+        // denies the write), so `x == null ||` would *not* be a safe shorthand.
+        function validPublicProfile() {
+          let d = request.resource.data;
+          let avatarId = d.get('avatarPokemonId', null);
+          let sprite = d.get('trainerSprite', null);
+          let record = d.get('battleRecord', { 'wins': 0, 'losses': 0 });
+          let priorRecord = resource == null
+            ? { 'wins': 0, 'losses': 0 }
+            : resource.data.get('battleRecord', { 'wins': 0, 'losses': 0 });
+          return d.keys().hasOnly([
+              'displayName', 'displayNameLower', 'avatarPokemonId',
+              'avatarIsShiny', 'trainerSprite', 'battleRecord', 'updatedAt'
+            ])
+            && d.displayName is string
+            && d.displayName.size() >= 1 && d.displayName.size() <= 40
+            // Mirrored lowercase copy backs prefix search; must match the name
+            // so a user can't be findable under something they don't display.
+            && d.displayNameLower is string
+            && d.displayNameLower == d.displayName.lower()
+            && (avatarId == null
+                || (avatarId is int && avatarId > 0 && avatarId <= 1025))
+            && d.get('avatarIsShiny', false) is bool
+            && (sprite == null || (sprite is string && sprite.size() <= 40))
+            && d.updatedAt is string
+            // Win/loss is written by the battle resolver (admin SDK, which
+            // bypasses these rules). A client may only ever leave it untouched,
+            // so records can't be self-inflated.
+            && record.keys().hasOnly(['wins', 'losses'])
+            && record.get('wins', -1) is int && record.get('losses', -1) is int
+            && record == priorRecord;
+        }
+      }
+
+      // Friend requests. The doc id is `{fromUid}_{toUid}`, which makes a
+      // duplicate request impossible by construction (same id → same doc) and
+      // lets both parties address it without a query.
+      match /friendRequests/{requestId} {
+        allow read: if isSignedIn()
+          && request.auth.uid in [resource.data.from, resource.data.to];
+
+        allow create: if isUpgradedAccount()
+          && request.resource.data.from == request.auth.uid
+          && request.resource.data.to is string
+          && request.resource.data.to != request.auth.uid
+          && requestId == request.resource.data.from + '_' + request.resource.data.to
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt is string
+          && request.resource.data.keys().hasOnly(['from', 'to', 'status', 'createdAt', 'respondedAt']);
+
+        // Only the recipient answers a request, and only by moving it out of
+        // 'pending' — nobody can rewrite who it was from or to.
+        allow update: if isSignedIn()
+          && request.auth.uid == resource.data.to
+          && resource.data.status == 'pending'
+          && request.resource.data.status in ['accepted', 'declined']
+          && request.resource.data.diff(resource.data).affectedKeys()
+              .hasOnly(['status', 'respondedAt']);
+
+        // Sender cancels, recipient dismisses.
+        allow delete: if isSignedIn()
+          && request.auth.uid in [resource.data.from, resource.data.to];
+      }
+
+      // An accepted friendship. The doc id is the two uids sorted and joined,
+      // so "are we friends?" is a single get() with no query, and the pair can
+      // only ever exist once.
+      match /friendships/{pairId} {
+        allow read: if isSignedIn() && request.auth.uid in resource.data.members;
+
+        // Created by whoever accepts the request. The pending request must
+        // actually exist — otherwise anyone could befriend a stranger by
+        // writing this doc directly.
+        allow create: if isUpgradedAccount()
+          && request.resource.data.members is list
+          && request.resource.data.members.size() == 2
+          && request.auth.uid in request.resource.data.members
+          // Canonical ordering, which is what makes the id collision-free.
+          && request.resource.data.members[0] < request.resource.data.members[1]
+          && pairId == request.resource.data.members[0] + '_' + request.resource.data.members[1]
+          && request.resource.data.createdAt is string
+          && request.resource.data.keys().hasOnly(['members', 'createdAt'])
+          && hasPendingRequestBetween(
+              request.resource.data.members[0],
+              request.resource.data.members[1]);
+
+        // Immutable: to change a friendship you delete it and start over.
+        allow update: if false;
+
+        // Either side may unfriend.
+        allow delete: if isSignedIn() && request.auth.uid in resource.data.members;
+
+        function requestIsPending(from, to) {
+          let path = /databases/$(database)/documents/artifacts/$(appId)/friendRequests/$(from + '_' + to);
+          return exists(path) && get(path).data.status == 'pending';
+        }
+
+        // A request in either direction justifies the friendship.
+        function hasPendingRequestBetween(a, b) {
+          return requestIsPending(a, b) || requestIsPending(b, a);
+        }
       }
 
       match /public/data/teams/{teamId} {

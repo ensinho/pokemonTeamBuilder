@@ -68,6 +68,69 @@
     object-fit: contain;
 }
 
+/* Trainer sprites are 80×80 pixel art — upscaling them must not be smoothed. */
+.profile-avatar-button__sprite--pixel,
+.profile-avatar-preview__sprite--pixel,
+.profile-avatar-choice__pixel {
+    image-rendering: pixelated;
+}
+
+/* Pick which avatar is the public-facing one. */
+.profile-avatar-choice {
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+}
+
+.profile-avatar-choice__label {
+    margin: 0 0 var(--space-2);
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.profile-avatar-choice__options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+}
+
+.profile-avatar-choice__option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-avatar-choice__option img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+}
+
+.profile-avatar-choice__option:hover {
+    border-color: var(--color-border-hover);
+    color: var(--color-fg);
+}
+
+.profile-avatar-choice__option.is-active {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
 .profile-avatar-button__initials {
     font-size: 1.75rem;
     font-weight: 800;
