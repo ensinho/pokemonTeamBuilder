@@ -175,9 +175,9 @@ export function TeamBuilderView({
         }
     }, [filtersExpanded]);
 
-    const displayedPokemons = showOnlyFavorites
-        ? availablePokemons.filter((pokemon) => favoritePokemons.has(pokemon.id))
-        : availablePokemons;
+    // Favorites filtering already happened upstream (usePokedexStore, over the
+    // full index before pagination) — availablePokemons only trims teamed mons.
+    const displayedPokemons = availablePokemons;
     const selectedTypeCount = selectedTypes.size;
     const hasActiveFilters = (selectedGeneration && selectedGeneration !== 'all')
         || (selectedGame && selectedGame !== 'all')

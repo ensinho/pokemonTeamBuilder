@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { loadPokemonIndex, loadGames } from '../services/pokemonDataCache';
 import { useToastStore } from './useToastStore';
+import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 
 const PAGE_SIZE = 50;
 
@@ -39,7 +40,7 @@ const getGameSets = () => {
 };
 
 // Pure client-side filtering — mirrors what the old Firestore `where` clauses did.
-const filterPokemons = (all, { generation, types, search, gameIds, gameGen, restrict }) => {
+const filterPokemons = (all, { generation, types, search, gameIds, gameGen, restrict, showOnlyFavorites, favoritePokemons }) => {
     const searchTerm = (search || '').toLowerCase().trim();
     const typeList = Array.from(types || []);
 
@@ -47,6 +48,7 @@ const filterPokemons = (all, { generation, types, search, gameIds, gameGen, rest
         if (generation && generation !== 'all' && p.generation !== generation) return false;
         if (typeList.length > 0 && !typeList.some((t) => (p.types || []).includes(t))) return false;
         if (searchTerm && !p.name.toLowerCase().includes(searchTerm)) return false;
+        if (showOnlyFavorites && !favoritePokemons?.has(p.id)) return false;
         return true;
     });
 
@@ -151,6 +153,8 @@ export const usePokedexStore = create((set, get) => ({
                 gameIds,
                 gameGen,
                 restrict: isPokedex,
+                showOnlyFavorites: isPokedex ? state.pokedexShowOnlyFavorites : state.showOnlyFavorites,
+                favoritePokemons: useFirestoreTeamsStore.getState().favoritePokemons,
             });
 
             set({

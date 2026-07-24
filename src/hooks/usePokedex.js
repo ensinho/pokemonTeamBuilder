@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { usePokedexStore } from '../store/usePokedexStore';
 import { useDebounce } from './useDebounce';
 import { useAuthStore } from '../store/useAuthStore';
+import { useFirestoreTeamsStore } from '../store/useFirestoreTeamsStore';
 
 export function usePokedex() {
     const location = useLocation();
@@ -31,6 +32,8 @@ export function usePokedex() {
     const pokedexSelectedTypes = usePokedexStore(state => state.pokedexSelectedTypes);
     const pokedexShowOnlyFavorites = usePokedexStore(state => state.pokedexShowOnlyFavorites);
 
+    const favoritePokemons = useFirestoreTeamsStore(state => state.favoritePokemons);
+
     // Retrieve actions
     const setFilter = usePokedexStore(state => state.setFilter);
     const toggleTypeSelection = usePokedexStore(state => state.toggleTypeSelection);
@@ -55,6 +58,7 @@ export function usePokedex() {
     const game = isPokedex ? pokedexSelectedGame : selectedGame;
     const types = isPokedex ? pokedexSelectedTypes : selectedTypes;
     const activeSearch = isPokedex ? debouncedPokedexSearchTermInStore : debouncedSearchTermInStore;
+    const activeShowOnlyFavorites = isPokedex ? pokedexShowOnlyFavorites : showOnlyFavorites;
 
     // Derived Set of Pokemon IDs for the selected game
     const gamePokemonIds = gameSets && game && game !== 'all' ? (gameSets.get(game)?.ids || null) : null;
@@ -64,7 +68,7 @@ export function usePokedex() {
     useEffect(() => {
         if (!isAuthReady) return;
         fetchInitial(isPokedex);
-    }, [isAuthReady, isPokedex, gen, game, types, activeSearch, fetchInitial]);
+    }, [isAuthReady, isPokedex, gen, game, types, activeSearch, activeShowOnlyFavorites, favoritePokemons, fetchInitial]);
 
     // Infinite scroll observer setup
     const observer = useRef(null);
