@@ -19,6 +19,8 @@ import { Atom } from 'lucide-react';
 import { coreIconFor } from '../coreIcons';
 import { detectTeamCores } from '../../utils/metaCores';
 import { buildSynergySuggestions } from '../../utils/synergySuggestions';
+import { buildTeamThreats } from '../../utils/teamThreats';
+import { TeamThreats } from '../TeamThreats';
 import { buildGameSections } from '../../utils/gameDex';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { useSmogonData } from '../../hooks/useSmogonData';
@@ -39,18 +41,6 @@ import {
     TrophyIcon,
 } from '../icons';
 
-// Convert a hex color (#rgb or #rrggbb) to an rgba() string with the given alpha.
-function hexToRgba(hex, alpha) {
-    if (typeof hex !== 'string') return `rgba(119,119,119,${alpha})`;
-    let h = hex.replace('#', '');
-    if (h.length === 3) h = h.split('').map((c) => c + c).join('');
-    const r = parseInt(h.slice(0, 2), 16);
-    const g = parseInt(h.slice(2, 4), 16);
-    const b = parseInt(h.slice(4, 6), 16);
-    if ([r, g, b].some(Number.isNaN)) return `rgba(119,119,119,${alpha})`;
-    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
-
 // Inline CSS custom properties driving the per-type disc/ring behind a team
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
 export function typeDiscStyle(pokemon) {
@@ -60,24 +50,19 @@ export function typeDiscStyle(pokemon) {
     return { '--type-a': a, '--type-b': b };
 }
 
+// Compact, borderless icon-only type mark for the team-analysis cards (saves
+// space vs the full type name). The type name still ships as the tooltip / label.
 function AnalysisTypeBadge({ type }) {
     const { t } = useTranslation();
     const typeLower = type.toLowerCase();
     const color = typeColors[typeLower] || '#777';
     const icon = typeIcons[typeLower];
+    const label = t(`types.${typeLower}`, { defaultValue: type });
 
-    return (
-        <span
-            className="inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-md border"
-            style={{
-                backgroundColor: hexToRgba(color, 0.13),
-                borderColor: hexToRgba(color, 0.55),
-                color,
-            }}
-        >
-            {icon && <img src={icon} alt="" className="w-3 h-3 object-contain shrink-0" aria-hidden="true" />}
-            <span className="leading-none">{t(`types.${typeLower}`, { defaultValue: type }).toUpperCase()}</span>
-        </span>
+    return icon ? (
+        <img src={icon} alt={label} title={label} className="w-5 h-5 shrink-0 object-contain" />
+    ) : (
+        <span className="text-[11px] font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
     );
 }
 
@@ -144,6 +129,8 @@ export function TeamBuilderView({
     const [dragIndex, setDragIndex] = React.useState(null);
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
+    // Analysis panel tab: type-coverage analysis vs meta threats (same card).
+    const [analysisTab, setAnalysisTab] = React.useState('analysis');
     const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
         if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
             return false;
@@ -215,10 +202,12 @@ export function TeamBuilderView({
         if (selectedRegulation) window.localStorage.setItem('tb-regulation', selectedRegulation);
         else window.localStorage.removeItem('tb-regulation');
     }, [selectedRegulation]);
-    // Real Smogon ladder usage for the chosen regulation — drives the "meta" signal.
+    // Real competitive usage + win-rate for the chosen regulation — drives the
+    // "meta" signal AND the meta-threats panel.
     const {
         ranked: metaRanked,
         usageMap: metaUsageMap,
+        byId: metaById,
         formats: regulations,
         formatId: activeRegulationId,
     } = useMetaUsage(selectedRegulation);
@@ -256,6 +245,18 @@ export function TeamBuilderView({
         (s) => handleAddPokemonWithClear(suggestionIndexById.get(s.id) || s),
         [handleAddPokemonWithClear, suggestionIndexById]
     );
+
+    // Meta threats: the most-used / best-winning meta Pokémon (for the selected
+    // regulation) that pressure the current team. Join usage/win-rate from the
+    // usage dataset with types from the index, then rank against the roster.
+    const teamThreats = React.useMemo(() => {
+        const teamIds = new Set(currentTeam.map((p) => p.id));
+        const meta = Object.entries(metaById || {}).map(([id, e]) => {
+            const nid = Number(id);
+            return { id: nid, name: e.name, types: suggestionIndexById.get(nid)?.types || [], usage: e.usage, winRate: e.winRate };
+        });
+        return buildTeamThreats(currentTeam, meta, { limit: 6, excludeIds: teamIds });
+    }, [currentTeam, metaById, suggestionIndexById]);
     // Map synergy id → primary reason for in-grid border/icon rendering.
     const synergyReasonById = React.useMemo(
         () => new Map(synergySuggestions.map((s) => [s.id, s.primary])),
@@ -340,6 +341,7 @@ export function TeamBuilderView({
                     handleShareTeam={handleShareTeam}
                     handleExportToShowdown={handleExportToShowdown}
                     teamAnalysis={teamAnalysis}
+                    teamThreats={teamThreats}
                     searchInput={searchInput}
                     setSearchInput={setSearchInput}
                     selectedGeneration={selectedGeneration}
@@ -526,23 +528,22 @@ export function TeamBuilderView({
                             ))}
                         </div>
 
-                        <button
-                            type="button"
-                            onClick={() => handleRandomizeTeam?.(displayedPokemons)}
-                            disabled={isRandomizing || displayedPokemons.length === 0}
-                            className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-randomize mt-3 w-full"
-                            title={t('builder.randomizeTeam')}
-                        >
-                            <Dices className="h-4 w-4" />
-                            {isRandomizing ? t('builder.randomizing') : t('builder.randomizeTeam')}
-                        </button>
-
                         <TeamIdentitySummary team={currentTeam} />
 
                         <div className="team-builder-action-row">
                             <button type="button" onClick={handleSaveTeam} className="team-builder-button team-builder-button--primary team-builder-button--grow">
                                 <SaveIcon />
-                                {editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
+                                {editingTeamId ? t('builder.update') : t('builder.save')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleRandomizeTeam?.(displayedPokemons)}
+                                disabled={isRandomizing || displayedPokemons.length === 0}
+                                className="team-builder-icon-button"
+                                aria-label={t('builder.randomizeTeam')}
+                                title={t('builder.randomizeTeam')}
+                            >
+                                <Dices className="h-4 w-4" />
                             </button>
                             <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="team-builder-icon-button" title={t('builder.exportShowdown')}><ShowdownIcon /></button>
                             <button onClick={handleShareTeam} type="button" aria-label="Share team" className="team-builder-icon-button" title={t('builder.shareTeam')}><ShareIcon /></button>
@@ -551,56 +552,76 @@ export function TeamBuilderView({
                     </section>
 
                     <section className="team-builder-panel p-4">
-                        <div className="team-builder-panel__header team-builder-panel__header--compact">
-                            <h3 className="team-builder-panel__title team-builder-panel__title--compact">{t('builder.analysisTitle')}</h3>
+                        <div role="tablist" aria-label={t('builder.analysisTitle')} className="flex gap-1 border-b border-border">
+                            {[
+                                { id: 'analysis', label: t('builder.analysisTitle') },
+                                { id: 'threats', label: t('builder.threatsTitle') },
+                            ].map((tb) => (
+                                <button
+                                    key={tb.id}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={analysisTab === tb.id}
+                                    onClick={() => setAnalysisTab(tb.id)}
+                                    className={`-mb-px border-b-2 px-3 py-1.5 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${analysisTab === tb.id ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-fg'}`}
+                                >
+                                    {tb.label}
+                                </button>
+                            ))}
                         </div>
 
-                        <div className="team-builder-analysis-grid mt-4">
-                            <div className="team-builder-analysis-card">
-                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive coverage'}</h4>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {currentTeam.length > 0
-                                        ? (teamAnalysis.strengths.size > 0
-                                            ? Array.from(teamAnalysis.strengths).sort().map((type) => <AnalysisTypeBadge key={type} type={type} colors={colors} />)
-                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
-                                        : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
+                        {analysisTab === 'analysis' ? (
+                            <div className="team-builder-analysis-grid mt-4">
+                                <div className="team-builder-analysis-card">
+                                    <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive coverage'}</h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {currentTeam.length > 0
+                                            ? (teamAnalysis.strengths.size > 0
+                                                ? Array.from(teamAnalysis.strengths).sort().map((type) => <AnalysisTypeBadge key={type} type={type} colors={colors} />)
+                                                : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
+                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="team-builder-analysis-card">
-                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Defensiva' : 'Defensive coverage'}</h4>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {currentTeam.length > 0
-                                        ? (teamAnalysis.defensiveCoverage && Object.keys(teamAnalysis.defensiveCoverage).length > 0
-                                            ? Object.entries(teamAnalysis.defensiveCoverage).sort(([, a], [, b]) => b - a).map(([type, count]) => (
-                                                <div key={type} className="flex items-center gap-1">
-                                                    <AnalysisTypeBadge type={type} colors={colors} />
-                                                    {count > 1 && (
-                                                        <span className="team-builder-analysis-score team-builder-analysis-score--success">({count}x)</span>
-                                                    )}
-                                                </div>
-                                            ))
-                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma cobertura defensiva.' : 'No defensive coverage.'}</p>)
-                                        : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Cobertura defensiva aparece após a primeira escolha.' : 'Defensive coverage appears after the first pick.'}</p>}
+                                <div className="team-builder-analysis-card">
+                                    <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Defensiva' : 'Defensive coverage'}</h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {currentTeam.length > 0
+                                            ? (teamAnalysis.defensiveCoverage && Object.keys(teamAnalysis.defensiveCoverage).length > 0
+                                                ? Object.entries(teamAnalysis.defensiveCoverage).sort(([, a], [, b]) => b - a).map(([type, count]) => (
+                                                    <div key={type} className="flex items-center gap-1">
+                                                        <AnalysisTypeBadge type={type} colors={colors} />
+                                                        {count > 1 && (
+                                                            <span className="team-builder-analysis-score team-builder-analysis-score--success">({count}x)</span>
+                                                        )}
+                                                    </div>
+                                                ))
+                                                : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma cobertura defensiva.' : 'No defensive coverage.'}</p>)
+                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Cobertura defensiva aparece após a primeira escolha.' : 'Defensive coverage appears after the first pick.'}</p>}
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div className="team-builder-analysis-card">
-                                <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--danger">{language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive weaknesses'}</h4>
-                                <div className="flex flex-wrap gap-1.5">
-                                    {currentTeam.length > 0
-                                        ? (Object.keys(teamAnalysis.weaknesses).length > 0
-                                            ? Object.entries(teamAnalysis.weaknesses).sort(([, a], [, b]) => b - a).map(([type, score]) => (
-                                                <div key={type} className="flex items-center gap-1">
-                                                    <AnalysisTypeBadge type={type} colors={colors} />
-                                                    <span className="team-builder-analysis-score">({score}x)</span>
-                                                </div>
-                                            ))
-                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
-                                        : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
+                                <div className="team-builder-analysis-card">
+                                    <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--danger">{language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive weaknesses'}</h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {currentTeam.length > 0
+                                            ? (Object.keys(teamAnalysis.weaknesses).length > 0
+                                                ? Object.entries(teamAnalysis.weaknesses).sort(([, a], [, b]) => b - a).map(([type, score]) => (
+                                                    <div key={type} className="flex items-center gap-1">
+                                                        <AnalysisTypeBadge type={type} colors={colors} />
+                                                        <span className="team-builder-analysis-score">({score}x)</span>
+                                                    </div>
+                                                ))
+                                                : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
+                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ) : (
+                            <div className="mt-4">
+                                <TeamThreats threats={teamThreats} hasTeam={currentTeam.length > 0} onOpenDetail={openDetailModal} bare />
+                            </div>
+                        )}
                     </section>
                 </div>
 

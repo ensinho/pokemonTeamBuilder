@@ -84,15 +84,28 @@ export function MetaUsageView() {
     }, [teams, regToken]);
     const teamCompositions = useMemo(() => commonTeams(teamsForReg, 24), [teamsForReg]);
 
-    // Smogon usage ranking for the selected regulation (falls back to tournament
-    // appearance counts if the usage dataset isn't available).
+    // Sort mode for the usage list: by raw usage (default) or by tournament
+    // win-rate. Lives in the URL (?sort=wr) so it's shareable + survives back-nav.
+    const sortMode = params.get('sort') === 'wr' ? 'wr' : 'usage';
+    const setSortMode = (id) => setParams((prev) => {
+        const p = new URLSearchParams(prev);
+        if (id === 'usage') p.delete('sort'); else p.set('sort', id);
+        return p;
+    }, { replace: true });
+
+    // Usage ranking for the selected regulation (falls back to tournament
+    // appearance counts if the usage dataset isn't available). Carries win-rate
+    // when the dataset has it (Limitless-mined formats).
     const smogonRanked = useMemo(() => {
         if (!byId) return [];
-        return Object.entries(byId)
-            .map(([id, e]) => ({ id: Number(id), name: e.name, pct: e.usage, count: e.rawCount }))
-            .sort((a, b) => b.pct - a.pct);
-    }, [byId]);
+        const rows = Object.entries(byId)
+            .map(([id, e]) => ({ id: Number(id), name: e.name, pct: e.usage, count: e.rawCount ?? e.teams, winRate: Number.isFinite(e.winRate) ? e.winRate : null }));
+        return rows.sort((a, b) => (sortMode === 'wr'
+            ? (b.winRate ?? -1) - (a.winRate ?? -1) || b.pct - a.pct
+            : b.pct - a.pct));
+    }, [byId, sortMode]);
     const usingSmogon = smogonRanked.length > 0;
+    const hasWinRates = useMemo(() => smogonRanked.some((r) => Number.isFinite(r.winRate)), [smogonRanked]);
     const tournamentRanked = useMemo(() => rankUsage(teams), [teams]);
     const ranked = usingSmogon ? smogonRanked : tournamentRanked;
 
@@ -180,6 +193,24 @@ export function MetaUsageView() {
                         )}
                     </div>
                 )}
+                {tab === 'usage' && hasWinRates && (
+                    <div className="inline-flex overflow-hidden rounded-xl border border-border" role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
+                        {[
+                            { id: 'usage', label: pt ? 'Uso' : 'Usage' },
+                            { id: 'wr', label: pt ? 'Vitórias' : 'Win rate' },
+                        ].map((s) => (
+                            <button
+                                key={s.id}
+                                type="button"
+                                onClick={() => setSortMode(s.id)}
+                                aria-pressed={sortMode === s.id}
+                                className={`px-3 py-2 text-xs font-bold transition-colors focus:outline-none ${sortMode === s.id ? 'bg-primary text-white' : 'bg-surface text-muted hover:text-fg'}`}
+                            >
+                                {s.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
                 {formats.length > 0 && (
                     <div className="ml-auto">
                         <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} />
@@ -260,6 +291,11 @@ export function MetaUsageView() {
                                         <span className="mt-1 text-[10px] font-semibold tabular-nums text-muted">
                                             {mon.pct}% {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
                                         </span>
+                                        {Number.isFinite(mon.winRate) && (
+                                            <span className="text-[10px] font-semibold tabular-nums text-muted/80">
+                                                {mon.winRate}% {pt ? 'vit' : 'WR'}
+                                            </span>
+                                        )}
                                     </button>
                                 );
                             })}

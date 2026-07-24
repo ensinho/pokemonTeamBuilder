@@ -28,10 +28,22 @@ export function useMetaUsage(formatId) {
     // id → usage% weight, for the suggestion engine's meta signals.
     const usageMap = useMemo(() => new Map(ranked.map((r) => [r.id, r.count])), [ranked]);
 
+    // id → win-rate% (real tournament performance, Limitless). Only present for
+    // formats mined from Limitless; older Smogon-only formats simply lack it.
+    const winRateMap = useMemo(() => {
+        if (!byId) return new Map();
+        return new Map(
+            Object.entries(byId)
+                .filter(([, e]) => Number.isFinite(e.winRate))
+                .map(([id, e]) => [Number(id), e.winRate]),
+        );
+    }, [byId]);
+
     return {
         ranked,
         byId: byId || {},
         usageMap,
+        winRateMap,
         formats,
         formatId: activeId,
         format,

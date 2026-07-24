@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
-import { Dices, Trophy, ShieldCheck, Sparkles, SlidersHorizontal, Search } from 'lucide-react';
+import { Dices, Trophy, ShieldCheck, ShieldAlert, Sparkles, SlidersHorizontal, Search } from 'lucide-react';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
 import { BottomSheet } from '../BottomSheet';
@@ -14,6 +14,7 @@ import { coreIconFor } from '../coreIcons';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { detectTeamCores } from '../../utils/metaCores';
 import { buildGameSections } from '../../utils/gameDex';
+import { TeamThreats } from '../TeamThreats';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useReferenceStore } from '../../store/useReferenceStore';
@@ -142,6 +143,21 @@ const MobilePokemonPickerCard = ({
     );
 };
 
+// Compact, borderless icon-only type mark for the analysis popover (saves space
+// vs the full type name). Type name kept as the tooltip / accessible label.
+const AnalysisTypeIcon = ({ type }) => {
+    const { t } = useTranslation();
+    const lower = String(type).toLowerCase();
+    const color = typeColors[lower] || '#777';
+    const icon = typeIcons[lower];
+    const label = t(`types.${lower}`, { defaultValue: type });
+    return icon ? (
+        <img src={icon} alt={label} title={label} className="h-5 w-5 shrink-0 object-contain" />
+    ) : (
+        <span className="text-[11px] font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
+    );
+};
+
 // ---------------------------------------------------------------------------
 // TeamAnalysisChip — condensed indicator that lives under the team slots.
 // Tap toggles a small popover with the breakdown so users on mobile can
@@ -253,7 +269,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                     </p>
                     <div className="flex flex-wrap gap-1">
                         {topStrengths.length > 0 ? topStrengths.map((type) => (
-                            <TypeBadge key={type} type={type} colors={colors} />
+                            <AnalysisTypeIcon key={type} type={type} />
                         )) : (
                             <span className="text-[11px] text-muted">{language === 'pt' ? 'Sem vantagens ainda.' : 'No advantages yet.'}</span>
                         )}
@@ -267,7 +283,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                     <div className="flex flex-wrap items-center gap-1">
                         {topWeaknesses.length > 0 ? topWeaknesses.map(([type, score]) => (
                             <span key={type} className="inline-flex items-center gap-1">
-                                <TypeBadge type={type} colors={colors} />
+                                <AnalysisTypeIcon type={type} />
                                 <span className="text-[10px] font-bold text-danger">×{score}</span>
                             </span>
                         )) : (
@@ -343,6 +359,7 @@ export const MobileTeamBuilderView = ({
     handleShareTeam,
     handleExportToShowdown,
     teamAnalysis,
+    teamThreats = [],
     searchInput,
     setSearchInput,
     selectedGeneration,
@@ -370,6 +387,7 @@ export const MobileTeamBuilderView = ({
     suggestedPokemonIds,
     colors,
     onEditTeamPokemon,
+    showDetails,
     favoritePokemons,
     onToggleFavoritePokemon,
     showOnlyFavorites,
@@ -380,6 +398,7 @@ export const MobileTeamBuilderView = ({
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [filtersExpanded, setFiltersExpanded] = React.useState(false);
     const [savedTeamsOpen, setSavedTeamsOpen] = React.useState(false);
+    const [threatsOpen, setThreatsOpen] = React.useState(false);
     // Sticky composer condenses to a 2-row header once the user scrolls past
     // the top, then re-expands near the top. Hysteresis (56/16) keeps it from
     // flickering right at the threshold. The scroll surface is the app shell's
@@ -607,12 +626,27 @@ export const MobileTeamBuilderView = ({
                         </div>
                     </div>
 
-                    <div className="team-builder-mobile__composer-analysis">
+                    <div className="team-builder-mobile__composer-analysis flex flex-wrap items-center justify-center gap-2">
                         <TeamAnalysisChip
                             teamAnalysis={teamAnalysis}
                             teamSize={currentTeam.length}
                             colors={colors}
                         />
+                        {currentTeam.length > 0 && (
+                            <button
+                                type="button"
+                                onClick={() => setThreatsOpen(true)}
+                                aria-haspopup="dialog"
+                                aria-label={t('builder.threatsTitle')}
+                                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-surface-raised bg-surface-raised px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            >
+                                <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden="true" />
+                                <span>{t('builder.threatsShort')}</span>
+                                {teamThreats.length > 0 && (
+                                    <span className="rounded-full bg-danger/15 px-1.5 text-[10px] font-bold text-danger">{teamThreats.length}</span>
+                                )}
+                            </button>
+                        )}
                     </div>
                 </section>
             </div>
@@ -992,6 +1026,18 @@ export const MobileTeamBuilderView = ({
                     currentTeam={currentTeam}
                     onAddToTeam={handleAddPokemonToTeam}
                 />
+            )}
+
+            {threatsOpen && (
+                <BottomSheet onClose={() => setThreatsOpen(false)} title={t('builder.threatsTitle')}>
+                    <p className="mb-3 text-[11px] text-muted">{t('builder.threatsSubtitle')}</p>
+                    <TeamThreats
+                        threats={teamThreats}
+                        hasTeam={currentTeam.length > 0}
+                        onOpenDetail={showDetails ? (mon) => { setThreatsOpen(false); showDetails(mon); } : undefined}
+                        bare
+                    />
+                </BottomSheet>
             )}
         </div>
     );

@@ -192,7 +192,7 @@ export function PokemonUsageView() {
                     <div className="grid shrink-0 grid-cols-3 gap-2 sm:w-64">
                         <MetricTile icon={<TrendingUp className="h-4 w-4" />} value={hasUsage ? `${usage.usage}%` : '—'} label={pt ? 'Uso' : 'Usage'} accent={accent} />
                         <MetricTile icon={<Trophy className="h-4 w-4" />} value={rank ? `#${rank}` : '—'} label={pt ? 'Ranking' : 'Rank'} accent="var(--color-accent)" />
-                        <MetricTile icon={<Users className="h-4 w-4" />} value={hasUsage ? usage.rawCount.toLocaleString(pt ? 'pt-BR' : 'en-US') : '—'} label={pt ? 'Partidas' : 'Games'} accent="var(--color-info)" />
+                        <MetricTile icon={<Users className="h-4 w-4" />} value={hasUsage ? (usage.rawCount ?? usage.teams ?? usage.n ?? 0).toLocaleString(pt ? 'pt-BR' : 'en-US') : '—'} label={pt ? 'Partidas' : 'Games'} accent="var(--color-info)" />
                     </div>
                 </div>
             </section>
