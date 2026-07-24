@@ -43,6 +43,74 @@ export const calcStat = ({ base, iv = 31, ev = 0, level = 50, nature = 'serious'
     return Math.floor((common + 5) * natureMultiplier(nature, statKey));
 };
 
+// Categorized move sets for ability calculations
+export const SECONDARY_EFFECT_MOVES = new Set([
+    // Status chance moves
+    'thunderbolt', 'thunder', 'discharge', 'volt-tackle', 'spark', 'nuzzle', 'zap-cannon', 'thunder-punch',
+    'body-slam', 'lick', 'force-palm', 'secret-power', 'bounce', 'dragon-breath', 'freeze-dry',
+    'ice-beam', 'blizzard', 'powder-snow', 'ice-punch', 'ice-fang', 'frost-breath',
+    'flamethrower', 'fire-blast', 'heat-wave', 'lava-plume', 'sacred-fire', 'inferno', 'ember',
+    'flame-wheel', 'fire-punch', 'fire-fang', 'flare-blitz', 'scald', 'burning-jealousy', 'scorching-sands',
+    'sludge-bomb', 'sludge-wave', 'poison-jab', 'gunk-shot', 'poison-tail', 'poison-sting', 'cross-poison', 'sludge',
+    'tri-attack', 'smog', 'relic-song', 'syrup-bomb',
+    // Flinch chance moves
+    'rock-slide', 'iron-head', 'waterfall', 'zen-headbutt', 'dark-pulse', 'bite', 'air-slash',
+    'icicle-crash', 'heart-stamp', 'headbutt', 'astonish', 'stomp', 'needle-arm', 'hyper-fang',
+    'extrasensory', 'fake-out', 'crunch', 'air-cutter', 'steam-roller', 'fiery-wrath',
+    // Stat drop chance (Target)
+    'earth-power', 'moonblast', 'shadow-ball', 'energy-ball', 'psychic', 'acid-spray', 'play-rough',
+    'flash-cannon', 'focus-blast', 'bug-buzz', 'apple-acid', 'grav-apple', 'mist-ball', 'luster-purge',
+    'rock-tomb', 'icy-wind', 'mud-shot', 'electroweb', 'bulldoze', 'snarl', 'struggle-bug',
+    'iron-tail', 'razor-shell', 'liquidation', 'spirit-break', 'skitter-leap', 'lunge', 'trop-kick',
+    'low-sweep', 'acid', 'aurora-beam', 'bubble', 'bubble-beam', 'constrict', 'dazzling-gleam',
+    'obstruct', 'octazooka', 'rock-smash', 'shadow-bone', 'springtide-storm',
+    // Stat boost chance (User)
+    'ancient-power', 'ominous-wind', 'silver-wind', 'charge-beam', 'fiery-dance', 'torch-song',
+    'power-up-punch', 'metal-claw', 'steel-wing', 'meteor-mash', 'diamond-storm', 'crush-claw',
+    'rage-fist',
+]);
+
+export const SLICING_MOVES = new Set([
+    'leaf-blade', 'air-slash', 'ceaseless-edge', 'aqua-cutter', 'psycho-cut', 'sacred-sword',
+    'slash', 'night-slash', 'x-scissor', 'stone-axe', 'kowtow-cleave', 'bitter-blade',
+    'population-bomb', 'razor-leaf', 'air-cutter', 'cut', 'cross-poison', 'solar-blade', 'secret-sword'
+]);
+
+export const PUNCHING_MOVES = new Set([
+    'fire-punch', 'ice-punch', 'thunder-punch', 'drain-punch', 'shadow-punch', 'mach-punch',
+    'bullet-punch', 'rage-fist', 'dynamic-punch', 'meteor-mash', 'hammer-arm', 'focus-punch',
+    'plasma-fists', 'surging-strikes', 'wicked-blow', 'ice-hammer', 'sky-upper-cut', 'headlong-rush'
+]);
+
+export const BITING_MOVES = new Set([
+    'bite', 'crunch', 'fire-fang', 'ice-fang', 'thunder-fang', 'psychic-fangs', 'poison-fang',
+    'hyper-fang', 'fishious-rend', 'jaw-lock'
+]);
+
+export const RECOIL_MOVES = new Set([
+    'double-edge', 'flare-blitz', 'brave-bird', 'head-smash', 'high-jump-kick', 'jump-kick',
+    'wood-hammer', 'wave-crash', 'take-down', 'wild-charge', 'submission', 'volt-tackle', 'head-charge'
+]);
+
+export const PULSE_MOVES = new Set([
+    'aura-sphere', 'dark-pulse', 'dragon-pulse', 'water-pulse', 'origin-pulse', 'terrain-pulse', 'heal-pulse'
+]);
+
+export const SOUND_MOVES = new Set([
+    'alluring-voice', 'bark', 'boomburst', 'bug-buzz', 'chatter', 'clanging-scales',
+    'clangorous-soul', 'confide', 'disarming-voice', 'echoed-voice', 'eerie-spell',
+    'grass-whistle', 'growl', 'heal-bell', 'hyper-voice', 'howl', 'metal-sound',
+    'noble-roar', 'overdrive', 'parting-shot', 'perish-song', 'psychic-noise',
+    'relic-song', 'roar', 'round', 'screech', 'shadow-panic', 'sing',
+    'snarl', 'snore', 'sparkling-aria', 'supersonic', 'torch-song', 'uproar'
+]);
+
+export const BALL_BOMB_MOVES = new Set([
+    'shadow-ball', 'sludge-bomb', 'focus-blast', 'energy-ball', 'gyro-ball', 'electro-ball',
+    'weather-ball', 'pyro-ball', 'misty-explosion', 'magnet-bomb', 'egg-bomb', 'acid-spray',
+    'aura-sphere', 'bullet-seed', 'rock-wrecker', 'sear-shot', 'syrup-bomb', 'zap-cannon'
+]);
+
 const toChartKey = (type) => type.charAt(0).toUpperCase() + type.slice(1);
 
 // Combined type multiplier of an attacking type vs. the defender's type(s).
@@ -54,25 +122,16 @@ export const typeEffectiveness = (attackingType, defendingTypes = []) => {
     }, 1);
 };
 
-export const SOUND_MOVES = [
-    'alluring-voice', 'bark', 'boomburst', 'bug-buzz', 'chatter', 'clanging-scales',
-    'clangorous-soul', 'confide', 'disarming-voice', 'echoed-voice', 'eerie-spell',
-    'grass-whistle', 'growl', 'heal-bell', 'hyper-voice', 'howl', 'metal-sound',
-    'noble-roar', 'overdrive', 'parting-shot', 'perish-song', 'psychic-noise',
-    'relic-song', 'roar', 'round', 'screech', 'shadow-panic', 'sing',
-    'snarl', 'snore', 'sparkling-aria', 'supersonic', 'torch-song', 'uproar'
-];
-
 export const getEffectiveMoveType = (moveType, ability, moveName = '') => {
     if (!ability || !moveType) return moveType;
-    const normName = (moveName || '').toLowerCase();
+    const normName = (moveName || '').toLowerCase().trim();
 
     if (ability === 'refrigerate' && moveType === 'normal') return 'ice';
     if (ability === 'pixilate' && moveType === 'normal') return 'fairy';
     if (ability === 'aerilate' && moveType === 'normal') return 'flying';
     if (ability === 'galvanize' && moveType === 'normal') return 'electric';
     if (ability === 'normalize') return 'normal';
-    if (ability === 'liquid-voice' && SOUND_MOVES.includes(normName)) return 'water';
+    if (ability === 'liquid-voice' && SOUND_MOVES.has(normName)) return 'water';
 
     return moveType;
 };
@@ -101,16 +160,16 @@ export const calcDamage = ({
     if (!movePower || !attacker?.baseStats || !defender?.baseStats) return null;
     if (moveCategory !== 'physical' && moveCategory !== 'special') return null;
 
-    const effectiveMoveType = getEffectiveMoveType(moveType, attacker?.ability, moveName);
-    let ateBoost = 1.0;
-    if (attacker?.ability === 'refrigerate' && moveType === 'normal') ateBoost = 1.2;
-    else if (attacker?.ability === 'pixilate' && moveType === 'normal') ateBoost = 1.2;
-    else if (attacker?.ability === 'aerilate' && moveType === 'normal') ateBoost = 1.2;
-    else if (attacker?.ability === 'galvanize' && moveType === 'normal') ateBoost = 1.2;
-    else if (attacker?.ability === 'normalize') ateBoost = 1.2;
-
+    const normName = (moveName || '').toLowerCase().trim();
     const atkLevel = attacker.level || level || 50;
     const defLevel = defender.level || level || 50;
+
+    // Type-changing abilities
+    const effectiveMoveType = getEffectiveMoveType(moveType, attacker?.ability, moveName);
+    let ateBoost = 1.0;
+    if (['aerilate', 'pixilate', 'refrigerate', 'galvanize', 'normalize'].includes(attacker?.ability) && (moveType === 'normal' || attacker?.ability === 'normalize')) {
+        ateBoost = 1.2;
+    }
 
     const atkKey = moveCategory === 'physical' ? 'attack' : 'special-attack';
     const defKey = moveCategory === 'physical' ? 'defense' : 'special-defense';
@@ -128,10 +187,35 @@ export const calcDamage = ({
         if (attacker.ability === 'guts' && attacker.status && attacker.status !== 'healthy') {
             A = Math.floor(A * 1.5);
         }
+        if (attacker.ability === 'hustle' || attacker.ability === 'gorilla-tactics') {
+            A = Math.floor(A * 1.5);
+        }
+        if (attacker.ability === 'toxic-boost' && attacker.status === 'poisoned') {
+            A = Math.floor(A * 1.5);
+        }
+        if (attacker.ability === 'orichalcum-pulse' && field?.weather === 'sun') {
+            A = Math.floor(A * 1.333);
+        }
     } else if (atkKey === 'special-attack') {
         if (attacker.ability === 'solar-power' && field?.weather === 'sun') {
             A = Math.floor(A * 1.5);
         }
+        if (attacker.ability === 'flare-boost' && attacker.status === 'burned') {
+            A = Math.floor(A * 1.5);
+        }
+        if (attacker.ability === 'hadron-engine' && field?.terrain === 'electric') {
+            A = Math.floor(A * 1.333);
+        }
+    }
+
+    if (defender.ability === 'tablets-of-ruin' && atkKey === 'attack') {
+        A = Math.floor(A * 0.75);
+    }
+    if (defender.ability === 'vessel-of-ruin' && atkKey === 'special-attack') {
+        A = Math.floor(A * 0.75);
+    }
+    if (attacker.ability === 'slow-start' && atkKey === 'attack') {
+        A = Math.floor(A * 0.5);
     }
 
     if (atkKey === 'attack' && attacker.item === 'choice-band') {
@@ -161,9 +245,19 @@ export const calcDamage = ({
         if (defender.ability === 'fur-coat') {
             D *= 2;
         }
+        if (field?.terrain === 'grassy' && defender.ability === 'grass-pelt') {
+            D = Math.floor(D * 1.5);
+        }
     }
     if (defender.ability === 'marvel-scale' && defender.status && defender.status !== 'healthy' && defKey === 'defense') {
         D = Math.floor(D * 1.5);
+    }
+
+    if (attacker.ability === 'sword-of-ruin' && defKey === 'defense') {
+        D = Math.floor(D * 0.75);
+    }
+    if (attacker.ability === 'beads-of-ruin' && defKey === 'special-defense') {
+        D = Math.floor(D * 0.75);
     }
 
     if (defKey === 'special-defense' && defender.item === 'assault-vest') {
@@ -179,9 +273,14 @@ export const calcDamage = ({
         ev: defender.evs?.hp ?? 0, iv: defender.ivs?.hp ?? 31,
     });
 
-    // 3. Base Damage
+    // 3. Base Damage calculation
+    let calcPower = movePower;
+    if (attacker.ability === 'technician' && calcPower <= 60) {
+        calcPower *= 1.5;
+    }
+
     const levelFactor = Math.floor((2 * atkLevel) / 5) + 2;
-    let baseDamage = Math.floor(Math.floor((levelFactor * movePower * A) / D) / 50) + 2;
+    let baseDamage = Math.floor(Math.floor((levelFactor * calcPower * A) / D) / 50) + 2;
 
     // 4. Modifiers
     // Format / Spread
@@ -209,22 +308,45 @@ export const calcDamage = ({
     // STAB
     let stab = 1.0;
     const attackerOriginalTypes = attacker.types || [];
+    const isAdaptability = attacker.ability === 'adaptability';
+    const normalStabVal = isAdaptability ? 2.0 : 1.5;
+    const doubleStabVal = isAdaptability ? 2.25 : 2.0;
+
     if (attacker.isTerastallized && attacker.teraType) {
         const matchesOriginal = attackerOriginalTypes.includes(effectiveMoveType);
         const matchesTera = attacker.teraType === effectiveMoveType;
         if (matchesOriginal && matchesTera) {
-            stab = 2.0;
+            stab = doubleStabVal;
         } else if (matchesOriginal || matchesTera) {
-            stab = 1.5;
+            stab = normalStabVal;
         }
     } else {
         if (attackerOriginalTypes.includes(effectiveMoveType)) {
-            stab = 1.5;
+            stab = normalStabVal;
         }
     }
 
-    // Type Effectiveness
-    const effectiveness = typeEffectiveness(effectiveMoveType, defenderTypes);
+    // Type Effectiveness & Immunities
+    let effectiveness = typeEffectiveness(effectiveMoveType, defenderTypes);
+
+    // Defender Ability Immunities
+    if ((defender.ability === 'levitate' || defender.ability === 'earth-eater') && effectiveMoveType === 'ground') {
+        effectiveness = 0;
+    } else if ((defender.ability === 'flash-fire' || defender.ability === 'well-baked-body') && effectiveMoveType === 'fire') {
+        effectiveness = 0;
+    } else if ((defender.ability === 'water-absorb' || defender.ability === 'storm-drain') && effectiveMoveType === 'water') {
+        effectiveness = 0;
+    } else if ((defender.ability === 'volt-absorb' || defender.ability === 'lightning-rod' || defender.ability === 'motor-drive') && effectiveMoveType === 'electric') {
+        effectiveness = 0;
+    } else if (defender.ability === 'sap-sipper' && effectiveMoveType === 'grass') {
+        effectiveness = 0;
+    } else if (defender.ability === 'bulletproof' && BALL_BOMB_MOVES.has(normName)) {
+        effectiveness = 0;
+    } else if (defender.ability === 'soundproof' && SOUND_MOVES.has(normName)) {
+        effectiveness = 0;
+    } else if (defender.ability === 'wonder-guard' && effectiveness <= 1) {
+        effectiveness = 0;
+    }
 
     // Burn status
     let burnMult = 1.0;
@@ -244,6 +366,9 @@ export const calcDamage = ({
     }
 
     // Attacker Abilities
+    if (attacker.ability === 'sheer-force' && (SECONDARY_EFFECT_MOVES.has(normName) || attacker.hasSecondaryEffect)) {
+        otherMult *= 1.3;
+    }
     if (attacker.ability === 'transistor' && effectiveMoveType === 'electric') {
         otherMult *= 1.3;
     }
@@ -262,35 +387,54 @@ export const calcDamage = ({
     if (attacker.ability === 'tinted-lens' && effectiveness < 1) {
         otherMult *= 2.0;
     }
-    if (attacker.ability === 'sharpness' && [
-        'leaf-blade', 'air-slash', 'ceaseless-edge', 'aqua-cutter', 'psycho-cut',
-        'sacred-sword', 'slash', 'night-slash', 'x-scissor', 'stone-axe', 'kowtow-cleave'
-    ].includes(moveName?.toLowerCase())) {
+    if (attacker.ability === 'neuroforce' && effectiveness > 1) {
+        otherMult *= 1.25;
+    }
+    if (attacker.ability === 'dark-aura' && effectiveMoveType === 'dark') {
+        otherMult *= 1.33;
+    }
+    if (attacker.ability === 'fairy-aura' && effectiveMoveType === 'fairy') {
+        otherMult *= 1.33;
+    }
+    if (attacker.ability === 'sharpness' && SLICING_MOVES.has(normName)) {
         otherMult *= 1.5;
     }
-    if (attacker.ability === 'iron-fist' && [
-        'fire-punch', 'ice-punch', 'thunder-punch', 'drain-punch', 'shadow-punch',
-        'mach-punch', 'bullet-punch', 'rage-fist', 'dynamic-punch', 'meteor-mash'
-    ].includes(moveName?.toLowerCase())) {
+    if (attacker.ability === 'iron-fist' && PUNCHING_MOVES.has(normName)) {
+        otherMult *= 1.2;
+    }
+    if (attacker.ability === 'strong-jaw' && BITING_MOVES.has(normName)) {
+        otherMult *= 1.5;
+    }
+    if (attacker.ability === 'mega-launcher' && PULSE_MOVES.has(normName)) {
+        otherMult *= 1.5;
+    }
+    if (attacker.ability === 'punk-rock' && SOUND_MOVES.has(normName)) {
+        otherMult *= 1.3;
+    }
+    if (attacker.ability === 'reckless' && RECOIL_MOVES.has(normName)) {
         otherMult *= 1.2;
     }
     if (attacker.ability === 'tough-claws' && moveCategory === 'physical') {
         otherMult *= 1.3;
+    }
+    if (attacker.ability === 'sand-force' && field?.weather === 'sand' && ['rock', 'ground', 'steel'].includes(effectiveMoveType)) {
+        otherMult *= 1.3;
+    }
+    if (attacker.ability === 'analytic') {
+        const atkSpd = calcStat({ base: attacker.baseStats.speed, statKey: 'speed', level: atkLevel, ev: attacker.evs?.speed ?? 0, iv: attacker.ivs?.speed ?? 31, nature: attacker.nature });
+        const defSpd = calcStat({ base: defender.baseStats.speed, statKey: 'speed', level: defLevel, ev: defender.evs?.speed ?? 0, iv: defender.ivs?.speed ?? 31, nature: defender.nature });
+        if (atkSpd < defSpd) {
+            otherMult *= 1.3;
+        }
+    }
+    if (attacker.ability === 'supreme-overlord') {
+        otherMult *= 1.1;
     }
     if (attacker.ability === 'overgrow' && effectiveMoveType === 'grass') otherMult *= 1.5;
     if (attacker.ability === 'blaze' && effectiveMoveType === 'fire') otherMult *= 1.5;
     if (attacker.ability === 'torrent' && effectiveMoveType === 'water') otherMult *= 1.5;
     if (attacker.ability === 'swarm' && effectiveMoveType === 'bug') otherMult *= 1.5;
     if (attacker.ability === 'flash-fire' && effectiveMoveType === 'fire') otherMult *= 1.5;
-
-    // Field/Aura Abilities (Dark Aura, Fairy Aura, Aura Break)
-    const hasAuraBreak = attacker.ability === 'aura-break' || defender.ability === 'aura-break';
-    if (effectiveMoveType === 'dark' && (attacker.ability === 'dark-aura' || defender.ability === 'dark-aura')) {
-        otherMult *= hasAuraBreak ? 0.75 : (4 / 3);
-    }
-    if (effectiveMoveType === 'fairy' && (attacker.ability === 'fairy-aura' || defender.ability === 'fairy-aura')) {
-        otherMult *= hasAuraBreak ? 0.75 : (4 / 3);
-    }
 
     // Attacker Items
     if (attacker.item === 'life-orb') {
@@ -322,7 +466,7 @@ export const calcDamage = ({
         otherMult *= 1.3;
     } else if (field?.terrain === 'grassy') {
         if (effectiveMoveType === 'grass') otherMult *= 1.3;
-        else if (['earthquake', 'bulldoze', 'magnitude'].includes(moveName?.toLowerCase())) otherMult *= 0.5;
+        else if (['earthquake', 'bulldoze', 'magnitude'].includes(normName)) otherMult *= 0.5;
     } else if (field?.terrain === 'psychic' && effectiveMoveType === 'psychic') {
         otherMult *= 1.3;
     } else if (field?.terrain === 'misty' && effectiveMoveType === 'dragon') {
@@ -347,6 +491,12 @@ export const calcDamage = ({
         otherMult *= 0.5;
     }
     if (defender.ability === 'heatproof' && effectiveMoveType === 'fire') {
+        otherMult *= 0.5;
+    }
+    if (defender.ability === 'purifying-salt' && effectiveMoveType === 'ghost') {
+        otherMult *= 0.5;
+    }
+    if (defender.ability === 'punk-rock' && SOUND_MOVES.has(normName)) {
         otherMult *= 0.5;
     }
     if (defender.ability === 'dry-skin') {
@@ -509,4 +659,3 @@ export const calcDamage = ({
         hazardsDamage,
     };
 };
-
