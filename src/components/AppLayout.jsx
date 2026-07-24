@@ -1480,7 +1480,7 @@ export default function AppLayout() {
                         )}
                     </main>
 
-                    {currentPage !== 'feed' && (
+                    {currentPage !== 'feed' && currentPage !== 'generationQuiz' && (
                         <footer className="app-shell__footer">
                             <div className="app-shell__footer-row">
                                 <div className="app-shell__footer-credit">
