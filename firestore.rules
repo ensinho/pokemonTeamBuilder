@@ -87,7 +87,7 @@ service cloud.firestore {
       // lets both parties address it without a query.
       match /friendRequests/{requestId} {
         allow read: if isSignedIn()
-          && request.auth.uid in [resource.data.from, resource.data.to];
+          && (resource.data.to == request.auth.uid || resource.data.from == request.auth.uid);
 
         allow create: if isUpgradedAccount()
           && request.resource.data.from == request.auth.uid
