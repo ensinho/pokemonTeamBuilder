@@ -107,9 +107,14 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys()
               .hasOnly(['status', 'respondedAt']);
 
-        // Sender cancels, recipient dismisses.
+        // Sender cancels, recipient dismisses. acceptRequest deletes both
+        // directions defensively (only one usually exists) — deleting an
+        // already-absent doc is a harmless no-op, so it must not error out on
+        // a null `resource` and sink the whole batch.
         allow delete: if isSignedIn()
-          && request.auth.uid in [resource.data.from, resource.data.to];
+          && (resource == null
+              || resource.data.to == request.auth.uid
+              || resource.data.from == request.auth.uid);
       }
 
       // An accepted friendship. The doc id is the two uids sorted and joined,
