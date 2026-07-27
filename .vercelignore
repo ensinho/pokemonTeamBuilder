@@ -1,0 +1,4 @@
+# Vercel turns every file under api/ into its own serverless function, so the
+# colocated unit tests would each be deployed as a route (/api/lib/*.test) that
+# imports vitest at runtime. They are not part of the build either way.
+api/**/*.test.js

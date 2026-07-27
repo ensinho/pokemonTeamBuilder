@@ -3,11 +3,18 @@ import { randomInt } from 'node:crypto';
 
 import {
     verifyCaller, getAdminFirestore, getAppId, setCorsHeaders, HttpError,
+    describeCredentials, getFirebaseProjectId,
 } from './lib/serverAuth.js';
 import {
     replayBattle, resolveTurn, makeSeed, BattleResolveError,
 } from './lib/battleResolver.js';
 import { notifyAwaitingPlayer } from './lib/battleNotify.js';
+import { installRuntimeGuards, getLastRuntimeError, withTimeout } from './lib/runtimeGuards.js';
+
+// Before anything else, and at module scope so it covers the import graph too:
+// an unhandled rejection anywhere in this process returns FUNCTION_INVOCATION_FAILED
+// with no stack and no log line pointing at the cause.
+installRuntimeGuards();
 
 /**
  * POST /api/battle-turn — the authoritative turn resolver.
@@ -170,6 +177,28 @@ const publishLog = async (db, battleId, { result, battle, round, sides, names, a
     return { winnerUid, awaitingUids };
 };
 
+/**
+ * Which sides the sim is actually waiting on right now.
+ *
+ * Usually both — but not always, and the exception is what matters. When a
+ * Pokémon faints, only its trainer is asked to switch: the opponent's stream
+ * receives `|request|{"wait":true}` and their client has nothing it *can*
+ * submit. Gating resolution on "both players have chosen" therefore deadlocks
+ * the battle the first time anything faints, because the side that owes nothing
+ * can never produce the choice the other side is being held for.
+ *
+ * `awaitingChoiceFrom` is derived by `publishLog` from the sim's own per-side
+ * requests, so it is the authority on who owes what. Missing or empty — a battle
+ * that predates the field, or one that hasn't bootstrapped yet — falls back to
+ * requiring both, which is the right reading of team preview and of every
+ * ordinary turn.
+ */
+const sidesOwingChoice = (battle, sides) => {
+    const awaiting = Array.isArray(battle.awaitingChoiceFrom) ? battle.awaitingChoiceFrom : null;
+    if (!awaiting || awaiting.length === 0) return { p1: true, p2: true };
+    return { p1: awaiting.includes(sides.p1), p2: awaiting.includes(sides.p2) };
+};
+
 const handle = async (req, res) => {
     const { uid, isAnonymous } = await verifyCaller(req);
     if (isAnonymous) throw new HttpError(403, 'Battles require a full account.');
@@ -229,22 +258,39 @@ const handle = async (req, res) => {
         const opened = await publishLog(db, battleId, {
             result: opening, battle, round, sides, names, advanceTurn: false,
         });
-        // Re-read so the offsets below reflect what we just wrote.
+        // Re-read so the offsets below reflect what we just wrote — including
+        // who the sim is now waiting on, which `sidesOwingChoice` reads.
         battle.logSeq = 1;
         battle.logLines = { p1: opening.log.p1.length, p2: opening.log.p2.length };
+        battle.awaitingChoiceFrom = opened.awaitingUids;
 
         // The battle just went live — nudge whichever of the two didn't just
         // trigger this bootstrap (i.e. hasn't opened the app yet).
-        try {
-            await Promise.race([
-                notifyAwaitingPlayer({
-                    db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
-                }).catch((err) => console.error('Failed to notify awaiting player:', err)),
-                new Promise((resolve) => setTimeout(resolve, 1500)),
-            ]);
-        } catch (err) {
-            console.error('Failed to notify awaiting player:', err);
-        }
+        await withTimeout(
+            notifyAwaitingPlayer({
+                db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
+            }).catch((err) => console.error('Failed to notify awaiting player:', err)),
+            1500,
+        );
+    }
+
+    const owing = sidesOwingChoice(battle, sides);
+
+    // A choice from someone the sim didn't ask is dropped rather than stored.
+    // Storing it would be actively harmful, not merely useless: the history is
+    // replayed in `p1, p2` order every round, so a stray line sits there and
+    // gets fed to the sim on the *next* replay — by which point the battle has
+    // moved on and the sim reads it as an answer to a different question. That
+    // is how a replay silently stops matching the battle the players saw.
+    if (choice && !owing[mySide]) {
+        return res.status(200).json({
+            battleId,
+            round,
+            resolved: false,
+            waitingOnYou: false,
+            waitingOnOpponent: true,
+            ignored: 'The simulator is not waiting on you right now.',
+        });
     }
 
     // Record this player's choice for the round, if they sent one. `create` fails
@@ -271,14 +317,17 @@ const handle = async (req, res) => {
     const p1Choice = byId.get(`${round}_${sides.p1}`)?.choice || null;
     const p2Choice = byId.get(`${round}_${sides.p2}`)?.choice || null;
 
-    // Not both in yet: nothing to resolve. Report the position and stop.
-    if (!p1Choice || !p2Choice) {
+    // Everyone the sim asked has to have answered — but only them. A side the
+    // sim isn't prompting is not something to wait for.
+    const stillOwed = (owing.p1 && !p1Choice) || (owing.p2 && !p2Choice);
+    if (stillOwed) {
+        const iHaveChosen = byId.has(`${round}_${uid}`);
         return res.status(200).json({
             battleId,
             round,
             resolved: false,
-            waitingOnYou: !byId.has(`${round}_${uid}`),
-            waitingOnOpponent: Boolean(byId.has(`${round}_${uid}`)),
+            waitingOnYou: owing[mySide] && !iHaveChosen,
+            waitingOnOpponent: !owing[mySide] || iHaveChosen,
         });
     }
 
@@ -288,7 +337,13 @@ const handle = async (req, res) => {
         teams,
         names,
         choices: history,
-        nextChoices: { p1: p1Choice, p2: p2Choice },
+        // Only feed back what was actually asked for. Replaying a choice the sim
+        // never prompted for makes it answer the *next* request with a stale
+        // input, which is how a replay silently diverges from the live battle.
+        nextChoices: {
+            p1: owing.p1 ? p1Choice : null,
+            p2: owing.p2 ? p2Choice : null,
+        },
     });
 
     // Idempotency guard: if another invocation resolved this round while we were
@@ -305,15 +360,11 @@ const handle = async (req, res) => {
     // A round just became someone else's to answer — tell them. Skipped on a
     // finished battle: nobody is "awaiting" a win.
     if (!result.ended) {
-        try {
-            await Promise.race([
-                notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
-                    .catch((err) => console.error('Failed to notify awaiting player:', err)),
-                new Promise((resolve) => setTimeout(resolve, 1500)),
-            ]);
-        } catch (err) {
-            console.error('Failed to notify awaiting player:', err);
-        }
+        await withTimeout(
+            notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
+                .catch((err) => console.error('Failed to notify awaiting player:', err)),
+            1500,
+        );
     }
 
     return res.status(200).json({
@@ -329,12 +380,73 @@ const handle = async (req, res) => {
     });
 };
 
+/**
+ * `GET /api/battle-turn` — a self-check, because the interesting failures here
+ * are environmental and invisible from the outside.
+ *
+ * Exercises each of the three things that can be broken independently: the
+ * service-account credentials, a real Firestore round-trip, and the simulator.
+ * Reports the *shape* of the config, never its contents — see
+ * `describeCredentials` — so this is safe to leave unauthenticated, which is the
+ * point: it has to work when auth is exactly what's broken.
+ */
+const runDiagnostics = async () => {
+    const checks = {
+        ok: true,
+        node: process.version,
+        engine: ENGINE_VERSION,
+        region: process.env.VERCEL_REGION || null,
+        credentials: describeCredentials(),
+    };
+
+    if (checks.credentials.privateKeyProblem) checks.ok = false;
+
+    try {
+        const db = getAdminFirestore();
+        await db.doc(`artifacts/${getAppId()}/__diagnostics/ping`).get();
+        checks.firestore = 'ok';
+    } catch (err) {
+        checks.ok = false;
+        checks.firestore = `${err.name}: ${err.message}`;
+    }
+
+    // A two-Pokémon battle through the real code path: if `@pkmn/sim` failed to
+    // deploy, or the format id is wrong, this is where it shows.
+    try {
+        const team = 'Ditto\nAbility: Limber\nLevel: 50\n- Transform\n';
+        const opening = await replayBattle({
+            format: 'gen9customgame',
+            seed: [1, 2, 3, 4],
+            teams: { p1: team, p2: team },
+            names: { p1: 'A', p2: 'B' },
+            choices: [],
+        });
+        checks.sim = opening.log.omniscient.length > 0 ? 'ok' : 'produced no output';
+    } catch (err) {
+        checks.ok = false;
+        checks.sim = `${err.name}: ${err.message}`;
+    }
+
+    // A crash on an *earlier* request to this same warm process leaves no other
+    // trace the caller can see.
+    checks.lastRuntimeError = getLastRuntimeError();
+    if (checks.lastRuntimeError) checks.ok = false;
+
+    return checks;
+};
+
 export default async function handler(req, res) {
     try {
         const originAllowed = setCorsHeaders(req, res);
 
         if (req.method === 'OPTIONS') return res.status(204).end();
         if (!originAllowed) return res.status(403).json({ error: 'Origin not allowed.' });
+
+        if (req.method === 'GET') {
+            const checks = await runDiagnostics();
+            return res.status(checks.ok ? 200 : 503).json(checks);
+        }
+
         if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
 
         return await handle(req, res);
@@ -349,6 +461,10 @@ export default async function handler(req, res) {
         return res.status(500).json({
             error: err?.message || 'Could not resolve the turn.',
             details: String(err?.stack || err),
+            // Named here as well as in the logs: an async crash that the guards
+            // caught is usually the real cause of whatever surfaced above.
+            lastRuntimeError: getLastRuntimeError(),
+            projectId: getFirebaseProjectId(),
         });
     }
 }

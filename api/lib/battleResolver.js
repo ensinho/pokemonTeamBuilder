@@ -108,8 +108,14 @@ export const replayBattle = async ({ format, seed, teams, names = {}, choices = 
         }
     });
 
+    // Every write is awaited. `ObjectReadWriteStream.write`/`writeEnd` return
+    // promises, and `getPlayerStreams` throws away the inner one it gets from the
+    // BattleStream (`void stream.write(data)`) — so a rejection here has no
+    // handler anywhere up the chain, and an unhandled rejection kills the whole
+    // function process rather than this request. See ./runtimeGuards.js.
+    let writeError = null;
     try {
-        streams.omniscient.write([
+        await streams.omniscient.write([
             `>start ${JSON.stringify({ formatid: format, seed })}`,
             `>player p1 ${JSON.stringify({ name: names.p1 || 'Player 1', team: p1Team })}`,
             `>player p2 ${JSON.stringify({ name: names.p2 || 'Player 2', team: p2Team })}`,
@@ -120,21 +126,38 @@ export const replayBattle = async ({ format, seed, teams, names = {}, choices = 
         // between each so ordering matches a live game.
         for (const choice of choices) {
             if (!choice || typeof choice !== 'string') continue;
-            streams.omniscient.write(choice);
+            await streams.omniscient.write(choice);
             await drain();
         }
-
-        // Closing the input ends the streams, which ends the readers.
-        streams.omniscient.writeEnd();
     } catch (err) {
         console.error('Error writing to battle simulator stream:', err);
-        throw new BattleResolveError(`Battle simulator error: ${err.message}`, 'simError');
+        writeError = err;
     }
 
-    await Promise.race([
-        Promise.all(readers).catch((err) => console.error('Stream readers error:', err)),
-        new Promise((resolve) => setTimeout(resolve, MAX_DRAIN_MS)),
-    ]);
+    // Closing the input ends the streams, which ends the readers — so it has to
+    // happen even when a write failed, or the readers below never finish and
+    // this sits until the platform's own timeout kills it.
+    try {
+        await streams.omniscient.writeEnd();
+    } catch (err) {
+        console.error('Error closing the battle simulator stream:', err);
+    }
+
+    if (writeError) {
+        throw new BattleResolveError(`Battle simulator error: ${writeError.message}`, 'simError');
+    }
+
+    let guard = null;
+    try {
+        await Promise.race([
+            Promise.all(readers).catch((err) => console.error('Stream readers error:', err)),
+            new Promise((resolve) => { guard = setTimeout(resolve, MAX_DRAIN_MS); }),
+        ]);
+    } finally {
+        // Leaving this pending keeps the event loop alive for two seconds after
+        // the response, delaying the freeze and billing for the wait.
+        if (guard) clearTimeout(guard);
+    }
 
     const lines = (who) => collected[who].join('\n').split('\n').filter(Boolean);
     const omniscient = lines('omniscient');

@@ -17,7 +17,8 @@
     },
     "api/battle-turn.js": {
       "memory": 1024,
-      "maxDuration": 15
+      "maxDuration": 30,
+      "excludeFiles": "api/**/*.test.js"
     }
   },
   "rewrites": [
