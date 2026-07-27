@@ -322,11 +322,16 @@ export const useBattlesStore = create((set, get) => ({
                 body: JSON.stringify({ battleId, choice }),
             });
 
-            const payload = await response.json().catch(() => ({}));
+            const text = await response.text();
+            let payload = {};
+            try {
+                payload = JSON.parse(text);
+            } catch (_) { /* non-JSON response (HTML error page) */ }
+
             if (!response.ok) {
-                // 503 means the deploy has no service-account configured — worth
-                // saying plainly rather than as a generic failure.
-                showToast(payload.error || 'Could not resolve the turn.', 'error');
+                const errMsg = payload.error
+                    || (response.status === 500 ? 'Server error (500) resolving turn.' : `HTTP ${response.status} error`);
+                showToast(errMsg, 'error');
                 return null;
             }
             return payload;

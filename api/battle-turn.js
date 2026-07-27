@@ -138,8 +138,8 @@ const publishLog = async (db, battleId, { result, battle, round, sides, names, a
 
     const awaitingUids = [];
     if (!result.ended) {
-        if (result.awaiting.p1) awaitingUids.push(sides.p1);
-        if (result.awaiting.p2) awaitingUids.push(sides.p2);
+        if (result.awaiting?.p1 && sides.p1) awaitingUids.push(sides.p1);
+        if (result.awaiting?.p2 && sides.p2) awaitingUids.push(sides.p2);
     }
 
     batch.update(ref, {
@@ -316,22 +316,25 @@ const handle = async (req, res) => {
 };
 
 export default async function handler(req, res) {
-    const originAllowed = setCorsHeaders(req, res);
-
-    if (req.method === 'OPTIONS') return res.status(204).end();
-    if (!originAllowed) return res.status(403).json({ error: 'Origin not allowed.' });
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
-
     try {
+        const originAllowed = setCorsHeaders(req, res);
+
+        if (req.method === 'OPTIONS') return res.status(204).end();
+        if (!originAllowed) return res.status(403).json({ error: 'Origin not allowed.' });
+        if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed.' });
+
         return await handle(req, res);
     } catch (err) {
+        console.error('battle-turn failed:', err);
         if (err instanceof BattleResolveError) {
             return res.status(422).json({ error: err.message, code: err.code });
         }
         if (err?.status) {
             return res.status(err.status).json({ error: err.message });
         }
-        console.error('battle-turn failed:', err);
-        return res.status(500).json({ error: err?.message || 'Could not resolve the turn.' });
+        return res.status(500).json({
+            error: err?.message || 'Could not resolve the turn.',
+            details: String(err?.stack || err),
+        });
     }
 }

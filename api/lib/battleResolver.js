@@ -99,29 +99,38 @@ export const replayBattle = async ({ format, seed, teams, names = {}, choices = 
     // Read all three views concurrently. Each `for await` ends when the stream
     // closes, so these settle on their own once the battle finishes.
     const readers = ['p1', 'p2', 'omniscient'].map(async (who) => {
-        for await (const chunk of streams[who]) collected[who].push(chunk);
+        try {
+            for await (const chunk of streams[who]) {
+                if (chunk) collected[who].push(chunk);
+            }
+        } catch (err) {
+            console.error(`Error reading ${who} stream:`, err);
+        }
     });
 
-    void streams.omniscient.write([
-        `>start ${JSON.stringify({ formatid: format, seed })}`,
-        `>player p1 ${JSON.stringify({ name: names.p1 || 'Player 1', team: p1Team })}`,
-        `>player p2 ${JSON.stringify({ name: names.p2 || 'Player 2', team: p2Team })}`,
-    ].join('\n'));
-    await drain();
-
-    // Feed the history back in, one line at a time, letting the sim settle
-    // between each so ordering matches a live game.
-    for (const choice of choices) {
-        if (!choice || typeof choice !== 'string') continue;
-        void streams.omniscient.write(choice);
+    try {
+        streams.omniscient.write([
+            `>start ${JSON.stringify({ formatid: format, seed })}`,
+            `>player p1 ${JSON.stringify({ name: names.p1 || 'Player 1', team: p1Team })}`,
+            `>player p2 ${JSON.stringify({ name: names.p2 || 'Player 2', team: p2Team })}`,
+        ].join('\n'));
         await drain();
+
+        // Feed the history back in, one line at a time, letting the sim settle
+        // between each so ordering matches a live game.
+        for (const choice of choices) {
+            if (!choice || typeof choice !== 'string') continue;
+            streams.omniscient.write(choice);
+            await drain();
+        }
+
+        // Closing the input ends the streams, which ends the readers.
+        streams.omniscient.writeEnd();
+    } catch (err) {
+        console.error('Error writing to battle simulator stream:', err);
+        throw new BattleResolveError(`Battle simulator error: ${err.message}`, 'simError');
     }
 
-    // Closing the input ends the streams, which ends the readers. Await them
-    // properly — a short fixed delay here truncates the tail (the `|request|`
-    // that says whose turn it is arrives last). The timeout is only a guard so a
-    // stream that never closes can't hang the serverless function.
-    void streams.omniscient.writeEnd();
     await Promise.race([
         Promise.all(readers),
         new Promise((resolve) => setTimeout(resolve, MAX_DRAIN_MS)),
