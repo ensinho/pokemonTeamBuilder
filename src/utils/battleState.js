@@ -72,6 +72,10 @@ export const parseCondition = (raw) => {
     };
 };
 
+/** Green → amber → red, the mainline HP thresholds. Shared so the battlefield's
+ *  active-mon bar and the switch-chooser's mini bar never drift apart. */
+export const hpTone = (pct) => (pct > 50 ? 'high' : pct > 20 ? 'mid' : 'low');
+
 const blankSide = () => ({
     name: null,
     active: null,

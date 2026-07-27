@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readBattleField, parseCondition } from './battleState';
+import { readBattleField, parseCondition, hpTone } from './battleState';
 
 describe('parseCondition', () => {
     it('reads real HP with a maximum', () => {
@@ -26,6 +26,17 @@ describe('parseCondition', () => {
         expect(parseCondition('')).toBeNull();
         expect(parseCondition('nonsense')).toBeNull();
         expect(parseCondition(undefined)).toBeNull();
+    });
+});
+
+describe('hpTone', () => {
+    it('is high above 50%, mid down to 20%, low below', () => {
+        expect(hpTone(100)).toBe('high');
+        expect(hpTone(51)).toBe('high');
+        expect(hpTone(50)).toBe('mid');
+        expect(hpTone(21)).toBe('mid');
+        expect(hpTone(20)).toBe('low');
+        expect(hpTone(0)).toBe('low');
     });
 });
 

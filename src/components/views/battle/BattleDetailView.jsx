@@ -12,7 +12,8 @@ import { EmptyState } from '../../EmptyState';
 import { PokeballIcon } from '../../icons';
 import { getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../../../utils/pokemonSprites';
 import { readMyRequest, describeLogLines } from '../../../utils/battleProtocol';
-import { readBattleField } from '../../../utils/battleState';
+import { readBattleField, parseCondition, hpTone } from '../../../utils/battleState';
+import { getBattleIcon } from '../../../utils/battleSprites';
 import { Battlefield } from './Battlefield';
 import { POKEBALL_PLACEHOLDER_URL } from '../../../constants/theme';
 import '../../../styles/battle-view.css';
@@ -41,6 +42,68 @@ function TeamSpriteBar({ sprites = [] }) {
                 );
             })}
         </div>
+    );
+}
+
+/**
+ * The turn indicator. It's the single clearest signal in the whole screen: a
+ * glowing "your turn" strip while a choice is owed, replaced the instant you
+ * submit one by a muted "waiting" strip — so clicking a move always produces an
+ * unmistakable visual change, even before the network round-trip lands.
+ */
+function TurnBanner({ waiting, opponentName, choiceLabel, t }) {
+    return (
+        <div className={`battle-turn-banner ${waiting ? 'is-waiting' : 'is-yours'}`}>
+            {waiting ? (
+                <span className="battle-turn-banner__dots" aria-hidden="true">
+                    <span /><span /><span />
+                </span>
+            ) : (
+                <span className="battle-turn-banner__icon" aria-hidden="true" />
+            )}
+            <span className="battle-turn-banner__text">
+                {waiting ? t('battle.waitingOpponentTurn', { name: opponentName }) : t('battle.turnYours')}
+            </span>
+            {waiting && choiceLabel && (
+                <span className="battle-turn-banner__choice">{t('battle.youChose', { choice: choiceLabel })}</span>
+            )}
+        </div>
+    );
+}
+
+/** A switch option: sprite, name, and a mini HP bar — everything the team-select
+ *  team bar already shows, just sized for a button in the choice grid. */
+function SwitchOption({ mon, disabled, onClick }) {
+    const icon = getBattleIcon(mon.name);
+    const condition = parseCondition(mon.condition);
+    return (
+        <button
+            type="button"
+            className="battle-move battle-move--switch"
+            disabled={disabled}
+            onClick={onClick}
+        >
+            <span className="battle-move__icon">
+                {icon.url ? (
+                    <img src={icon.url} alt={mon.name} loading="lazy" />
+                ) : (
+                    <PokeballIcon className="w-5 h-5 text-muted opacity-40" />
+                )}
+            </span>
+            <span className="battle-move__body">
+                <span className="battle-move__name">{mon.name}</span>
+                {condition && (
+                    <span className="battle-move__hp">
+                        <span className={`battle-move__hp-track is-${hpTone(condition.pct)}`}>
+                            <span className="battle-move__hp-fill" style={{ width: `${condition.pct}%` }} />
+                        </span>
+                        <span className="battle-move__hp-text">
+                            {condition.max ? `${condition.current}/${condition.max}` : `${Math.round(condition.pct)}%`}
+                        </span>
+                    </span>
+                )}
+            </span>
+        </button>
     );
 }
 
@@ -98,6 +161,24 @@ export function BattleDetailView() {
         });
     };
 
+    // The server never confirms "I've recorded your choice, now wait" as a
+    // durable log line — it only says so in the HTTP response, because nothing
+    // is resolved (and so nothing is written to my log) until *both* players
+    // have chosen. So the "waiting for opponent" state has to be tracked here,
+    // optimistically, the moment a choice is sent — otherwise clicking a move
+    // looks like it did nothing until the opponent, possibly hours later, also
+    // moves. `awaitingRound` is compared against the battle's live `turn` on
+    // every render, so it self-clears the instant the round actually advances.
+    const [awaitingRound, setAwaitingRound] = useState(null);
+    const [awaitingLogLength, setAwaitingLogLength] = useState(null);
+    const [lastChoiceLabel, setLastChoiceLabel] = useState(null);
+
+    useEffect(() => {
+        setAwaitingRound(null);
+        setAwaitingLogLength(null);
+        setLastChoiceLabel(null);
+    }, [battleId]);
+
     useEffect(() => {
         if (!battleId) return undefined;
         initChatListener(battleId);
@@ -129,6 +210,43 @@ export function BattleDetailView() {
         () => savedTeams.find((team) => team.id === selectedTeamId) || null,
         [savedTeams, selectedTeamId],
     );
+
+    const currentRound = battle?.turn ?? 0;
+    // `myRequest.kind === 'wait'` is the sim's own signal (e.g. only one side
+    // needs a mid-turn switch). Otherwise this is this component's own
+    // optimistic memory of "I already answered this one" — true only while
+    // *both* the round number and my own log are still exactly what they were
+    // the moment I clicked. Either one moving on (the round resolves, or the
+    // opponent's turn appends fresh lines to my log) clears it, whichever the
+    // two independent Firestore listeners deliver first.
+    const isWaitingForOpponent = myRequest.kind === 'wait'
+        || (awaitingRound === currentRound && awaitingLogLength === myLog.length);
+
+    // Once we're no longer waiting, drop the memory of what we submitted —
+    // otherwise a stale "you chose X" could bleed into a later round that
+    // happens to land on the same round number by coincidence.
+    useEffect(() => {
+        if (!isWaitingForOpponent) {
+            setAwaitingRound(null);
+            setAwaitingLogLength(null);
+            setLastChoiceLabel(null);
+        }
+    }, [isWaitingForOpponent]);
+
+    // Every move/switch/team-preview button routes through here so the "waiting"
+    // state flips on immediately, before the fetch even resolves.
+    const handleChoice = async (choice, label) => {
+        setAwaitingRound(currentRound);
+        setAwaitingLogLength(myLog.length);
+        setLastChoiceLabel(label);
+        const result = await submitChoice(battleId, choice);
+        if (!result) {
+            // The request failed outright — nothing was recorded, so let them retry.
+            setAwaitingRound(null);
+            setAwaitingLogLength(null);
+            setLastChoiceLabel(null);
+        }
+    };
 
     // The live list is the source of truth; while it loads, `entry` is null.
     if (!battle || !view) {
@@ -308,73 +426,79 @@ export function BattleDetailView() {
                             {t('battle.animatedSprites')}: {animatedSprites ? t('common.yes') : t('common.no')}
                         </button>
 
-                        {myRequest.kind === 'wait' && (
-                            <p className="battle-panel__copy">{t('battle.waitingOpponentTurn')}</p>
-                        )}
-
                         {myRequest.kind === 'none' && (
                             <p className="battle-panel__copy">
                                 {isResolvingTurn ? t('battle.syncing') : t('battle.noPromptYet')}
                             </p>
                         )}
 
-                        {myRequest.kind === 'teamPreview' && (
+                        {myRequest.kind !== 'none' && (
                             <div className="battle-choices">
-                                <p className="battle-panel__label">{t('battle.teamPreviewPrompt')}</p>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    disabled={isResolvingTurn}
-                                    onClick={() => submitChoice(battleId, 'default')}
-                                >
-                                    {t('battle.confirmOrder')}
-                                </button>
-                            </div>
-                        )}
+                                <TurnBanner
+                                    waiting={isWaitingForOpponent}
+                                    opponentName={view.opponentName || t('friends.unknownTrainer')}
+                                    choiceLabel={lastChoiceLabel}
+                                    t={t}
+                                />
 
-                        {(myRequest.kind === 'move' || myRequest.kind === 'switch') && (
-                            <div className="battle-choices">
-                                {myRequest.kind === 'move' && (
+                                {!isWaitingForOpponent && myRequest.kind === 'teamPreview' && (
                                     <>
-                                        <p className="battle-panel__label">{t('battle.chooseMove')}</p>
-                                        <div className="battle-choices__grid">
-                                            {myRequest.moves.map((move) => (
-                                                <button
-                                                    key={move.slot}
-                                                    type="button"
-                                                    className="battle-move"
-                                                    disabled={move.disabled || isResolvingTurn}
-                                                    onClick={() => submitChoice(battleId, `move ${move.slot}`)}
-                                                >
-                                                    <span className="battle-move__name">{move.name}</span>
-                                                    {Number.isFinite(move.pp) && (
-                                                        <span className="battle-move__pp">{move.pp}/{move.maxpp}</span>
-                                                    )}
-                                                </button>
-                                            ))}
-                                        </div>
+                                        <p className="battle-panel__label">{t('battle.teamPreviewPrompt')}</p>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            disabled={isResolvingTurn}
+                                            onClick={() => handleChoice('default', t('battle.teamOrderConfirmed'))}
+                                        >
+                                            {t('battle.confirmOrder')}
+                                        </button>
                                     </>
                                 )}
 
-                                {myRequest.switches.length > 0 && (
+                                {!isWaitingForOpponent && (myRequest.kind === 'move' || myRequest.kind === 'switch') && (
                                     <>
-                                        <p className="battle-panel__label">
-                                            {myRequest.kind === 'switch' ? t('battle.mustSwitch') : t('battle.orSwitch')}
-                                        </p>
-                                        <div className="battle-choices__grid">
-                                            {myRequest.switches.map((mon) => (
-                                                <button
-                                                    key={mon.slot}
-                                                    type="button"
-                                                    className="battle-move battle-move--switch"
-                                                    disabled={isResolvingTurn}
-                                                    onClick={() => submitChoice(battleId, `switch ${mon.slot}`)}
-                                                >
-                                                    <span className="battle-move__name">{mon.name}</span>
-                                                    <span className="battle-move__pp">{mon.condition}</span>
-                                                </button>
-                                            ))}
-                                        </div>
+                                        {myRequest.kind === 'move' && (
+                                            <>
+                                                <p className="battle-panel__label">{t('battle.chooseMove')}</p>
+                                                <div className="battle-choices__grid">
+                                                    {myRequest.moves.map((move) => (
+                                                        <button
+                                                            key={move.slot}
+                                                            type="button"
+                                                            className="battle-move"
+                                                            disabled={move.disabled || isResolvingTurn}
+                                                            onClick={() => handleChoice(`move ${move.slot}`, move.name)}
+                                                        >
+                                                            <span className="battle-move__name">{move.name}</span>
+                                                            {Number.isFinite(move.pp) && (
+                                                                <span className="battle-move__pp">{move.pp}/{move.maxpp}</span>
+                                                            )}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {myRequest.switches.length > 0 && (
+                                            <>
+                                                <p className="battle-panel__label">
+                                                    {myRequest.kind === 'switch' ? t('battle.mustSwitch') : t('battle.orSwitch')}
+                                                </p>
+                                                <div className="battle-choices__grid">
+                                                    {myRequest.switches.map((mon) => (
+                                                        <SwitchOption
+                                                            key={mon.slot}
+                                                            mon={mon}
+                                                            disabled={isResolvingTurn}
+                                                            onClick={() => handleChoice(
+                                                                `switch ${mon.slot}`,
+                                                                t('battle.switchChoiceLabel', { name: mon.name }),
+                                                            )}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </>
+                                        )}
                                     </>
                                 )}
                             </div>

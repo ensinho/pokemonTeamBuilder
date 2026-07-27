@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { getBattleSprite, getBattleIcon, statusLabel } from '../../../utils/battleSprites';
+import { hpTone } from '../../../utils/battleState';
 import { PokeballIcon } from '../../icons';
 import { useTranslation } from '../../../hooks/useTranslation';
 
@@ -17,7 +18,7 @@ import { useTranslation } from '../../../hooks/useTranslation';
 /** HP bar. Green → amber → red, the mainline thresholds. */
 function HpBar({ hp }) {
     const pct = hp?.pct ?? 100;
-    const tone = pct > 50 ? 'is-high' : pct > 20 ? 'is-mid' : 'is-low';
+    const tone = `is-${hpTone(pct)}`;
     return (
         <div className="battlefield-hp">
             <div className={`battlefield-hp__track ${tone}`}>

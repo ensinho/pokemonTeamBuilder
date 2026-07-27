@@ -675,6 +675,96 @@
     color: var(--color-primary);
 }
 
+/* ── Turn banner ──────────────────────────────────────────────────────
+   The one signal that must never be missable: a glowing strip while a choice
+   is owed, a muted one the instant it's been sent. Clicking a move always
+   swaps one for the other, even before the network round-trip lands. */
+
+.battle-turn-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.battle-turn-banner.is-yours {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    animation: battle-turn-glow 1.8s ease-in-out infinite;
+}
+
+.battle-turn-banner.is-waiting {
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    font-weight: 600;
+}
+
+.battle-turn-banner__icon {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: battle-turn-pulse 1.2s ease-in-out infinite;
+}
+
+.battle-turn-banner__dots {
+    display: flex;
+    flex-shrink: 0;
+    gap: 3px;
+}
+
+.battle-turn-banner__dots span {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: battle-turn-dot 1.4s ease-in-out infinite;
+}
+
+.battle-turn-banner__dots span:nth-child(2) { animation-delay: 0.2s; }
+.battle-turn-banner__dots span:nth-child(3) { animation-delay: 0.4s; }
+
+.battle-turn-banner__text {
+    flex: 1;
+}
+
+.battle-turn-banner__choice {
+    font-size: 0.688rem;
+    font-weight: 500;
+    font-style: italic;
+    color: var(--color-muted);
+    text-align: right;
+}
+
+@keyframes battle-turn-pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.7); opacity: 0.5; }
+}
+
+@keyframes battle-turn-dot {
+    0%, 80%, 100% { opacity: 0.3; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-2px); }
+}
+
+@keyframes battle-turn-glow {
+    0%, 100% { box-shadow: 0 0 0 0 var(--color-primary-soft); }
+    50% { box-shadow: 0 0 0 4px var(--color-primary-soft); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .battle-turn-banner.is-yours,
+    .battle-turn-banner__icon,
+    .battle-turn-banner__dots span {
+        animation: none;
+    }
+}
+
 /* ── Turn choices ─────────────────────────────────────────────────── */
 
 .battle-choices {
@@ -718,6 +808,9 @@
 }
 
 .battle-move--switch {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
     border-style: dashed;
 }
 
@@ -732,6 +825,67 @@
     font-size: 0.625rem;
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
+}
+
+/* The switch chooser's own sprite + mini HP bar, so picking a bench Pokémon
+   looks like the team strip rather than a plain text list. */
+
+.battle-move__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+}
+
+.battle-move__icon img {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.battle-move__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.battle-move__hp {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.battle-move__hp-track {
+    position: relative;
+    flex: 1;
+    min-width: 40px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--color-surface);
+    overflow: hidden;
+}
+
+.battle-move__hp-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    transition: width var(--duration-slow) var(--ease-smooth);
+}
+
+.battle-move__hp-track.is-high .battle-move__hp-fill { background: var(--color-success); }
+.battle-move__hp-track.is-mid  .battle-move__hp-fill { background: var(--color-warning); }
+.battle-move__hp-track.is-low  .battle-move__hp-fill { background: var(--color-danger); }
+
+.battle-move__hp-text {
+    font-size: 0.563rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+    white-space: nowrap;
 }
 
 /* ── Transcript ───────────────────────────────────────────────────── */
