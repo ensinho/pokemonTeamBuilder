@@ -122,7 +122,7 @@ export const describeBattle = (battle, userId) => {
         canSubmitTeam: status === 'teamSelect' && !myReady,
         // Either player may start it, but only once both teams are locked in.
         canStart: status === 'teamSelect' && myReady && theirReady,
-        canDelete: isOver || status === 'pending',
+        canDelete: true,
     };
 };
 

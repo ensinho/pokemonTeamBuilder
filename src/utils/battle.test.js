@@ -119,8 +119,8 @@ describe('describeBattle', () => {
         expect(active.canCancel).toBe(false);
         expect(active.canSubmitTeam).toBe(false);
         expect(active.canStart).toBe(false);
-        // An active battle is a record — it must not be deletable.
-        expect(active.canDelete).toBe(false);
+        // Any battle may be discarded/deleted by its participants.
+        expect(active.canDelete).toBe(true);
     });
 
     it('falls back to pending for an unknown status', () => {

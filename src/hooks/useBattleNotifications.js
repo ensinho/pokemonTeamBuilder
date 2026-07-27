@@ -24,9 +24,11 @@ export const isBrowserNotificationSupported = () => typeof window !== 'undefined
 
 export const getBrowserNotificationPreference = () => {
     try {
-        return localStorage.getItem(PREFERENCE_KEY) === '1';
+        const value = localStorage.getItem(PREFERENCE_KEY);
+        if (value === null) return true; // Default to Enabled (true)
+        return value === '1';
     } catch (_) {
-        return false;
+        return true;
     }
 };
 
@@ -39,6 +41,14 @@ export const setBrowserNotificationPreference = (enabled) => {
 export function useBattleNotifications() {
     const { t } = useTranslation();
     const { battles } = useBattles();
+
+    // Auto-request browser notification permission on mount if preference is enabled and status is default.
+    useEffect(() => {
+        if (!isBrowserNotificationSupported() || !getBrowserNotificationPreference()) return;
+        if (Notification.permission === 'default') {
+            Notification.requestPermission().catch(() => {});
+        }
+    }, []);
 
     // Which battles already needed attention as of the last snapshot. Only a
     // battleId moving from absent to present here fires a popup — otherwise a

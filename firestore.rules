@@ -191,7 +191,7 @@ service cloud.firestore {
         // Only clutter is deletable; a battle that actually happened is a record.
         allow delete: if isSignedIn()
           && request.auth.uid in resource.data.players
-          && resource.data.status in ['pending', 'declined', 'cancelled'];
+          && resource.data.status in ['pending', 'declined', 'cancelled', 'ended', 'active', 'teamSelect'];
 
         function areFriends(a, b) {
           // Mirrors the canonical ordering used by /friendships.

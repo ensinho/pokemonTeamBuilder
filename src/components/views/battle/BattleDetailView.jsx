@@ -278,6 +278,30 @@ export function BattleDetailView() {
 
     return (
         <div className="battle-view">
+            {/* ── Navigation top bar ─────────────────────────────────── */}
+            <div className="battle-nav-bar flex items-center justify-between gap-2 mb-3">
+                <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => navigate('/battles')}
+                >
+                    {t('battle.backBtn')}
+                </button>
+
+                <button
+                    type="button"
+                    className="btn btn-ghost btn-sm text-red-400 hover:text-red-300"
+                    onClick={async () => {
+                        if (window.confirm(t('battle.confirmDiscard'))) {
+                            const ok = await deleteBattle(battleId);
+                            if (ok) navigate('/battles');
+                        }
+                    }}
+                >
+                    {t('battle.discardBattle')}
+                </button>
+            </div>
+
             {/* ── Opponent header ─────────────────────────────────────── */}
             <header className="battle-header">
                 <span className="battle-header__avatar">

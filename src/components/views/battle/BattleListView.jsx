@@ -22,7 +22,7 @@ function NotificationToggle() {
     const [enabled, setEnabled] = useState(() => (
         isBrowserNotificationSupported()
         && getBrowserNotificationPreference()
-        && Notification.permission === 'granted'
+        && (typeof Notification !== 'undefined' && Notification.permission !== 'denied')
     ));
 
     const handleClick = async () => {
@@ -30,7 +30,7 @@ function NotificationToggle() {
             showToast(t('battle.notifyUnsupported'), 'warning');
             return;
         }
-        if (enabled) {
+        if (enabled && Notification.permission === 'granted') {
             setBrowserNotificationPreference(false);
             setEnabled(false);
             return;
@@ -39,20 +39,19 @@ function NotificationToggle() {
             showToast(t('battle.notifyBlocked'), 'warning');
             return;
         }
-        const permission = Notification.permission === 'granted'
-            ? 'granted'
-            : await Notification.requestPermission();
+        const permission = await Notification.requestPermission();
         if (permission === 'granted') {
             setBrowserNotificationPreference(true);
             setEnabled(true);
         } else {
             showToast(t('battle.notifyBlocked'), 'warning');
+            setEnabled(false);
         }
     };
 
     return (
         <button type="button" className="battle-sprite-toggle" aria-pressed={enabled} onClick={handleClick}>
-            {t('battle.notifyToggle')}: {enabled ? t('common.yes') : t('common.no')}
+            {enabled ? t('battle.notifyStatusEnabled') : t('battle.notifyStatusDisabled')}
         </button>
     );
 }
@@ -96,6 +95,13 @@ export function BattleListView() {
             return t('battle.statusReadyToStart');
         }
         return t(`battle.status_${view.status}`);
+    };
+
+    const handleDelete = async (battleId, event) => {
+        event.stopPropagation();
+        if (window.confirm(t('battle.confirmDiscard'))) {
+            await deleteBattle(battleId);
+        }
     };
 
     return (
@@ -146,7 +152,7 @@ export function BattleListView() {
                                 <button
                                     type="button"
                                     className="btn btn-ghost battle-card__dismiss"
-                                    onClick={() => deleteBattle(battle.id)}
+                                    onClick={(e) => handleDelete(battle.id, e)}
                                 >
                                     {t('battle.dismiss')}
                                 </button>

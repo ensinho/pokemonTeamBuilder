@@ -598,6 +598,11 @@ export const TRANSLATIONS = {
             chatTitle: 'Trainer talk',
             chatEmpty: 'No messages yet. Say something.',
             chatPlaceholder: 'Message your opponent...',
+            backBtn: '← Back to battles',
+            discardBattle: 'Discard Battle',
+            confirmDiscard: 'Are you sure you want to discard this battle?',
+            notifyStatusEnabled: 'Browser notifications: Enabled',
+            notifyStatusDisabled: 'Browser notifications: Disabled',
         },
         friends: {
             tab_friends: 'Friends',
@@ -1578,6 +1583,11 @@ export const TRANSLATIONS = {
             chatTitle: 'Conversa de treinadores',
             chatEmpty: 'Nenhuma mensagem ainda. Diga algo.',
             chatPlaceholder: 'Mande uma mensagem ao oponente...',
+            backBtn: '← Voltar para batalhas',
+            discardBattle: 'Descartar Batalha',
+            confirmDiscard: 'Tem certeza que deseja descartar esta batalha?',
+            notifyStatusEnabled: 'Notificações do navegador: Ativadas',
+            notifyStatusDisabled: 'Notificações do navegador: Desativadas',
         },
         friends: {
             tab_friends: 'Amigos',
