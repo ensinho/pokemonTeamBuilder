@@ -97,6 +97,18 @@ export const verifyCaller = async (req) => {
     };
 };
 
+const formatPrivateKey = (raw) => {
+    if (!raw) return '';
+    let key = String(raw).trim();
+    key = key.replace(/^["']|["']$/g, '').trim();
+    key = key.replace(/\\n/g, '\n');
+    key = key.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    if (!key.includes('BEGIN PRIVATE KEY')) {
+        key = `-----BEGIN PRIVATE KEY-----\n${key}\n-----END PRIVATE KEY-----`;
+    }
+    return key;
+};
+
 /**
  * Initialise the admin app once. Credentials come from three env vars rather
  * than a JSON blob so the private key can be pasted into Vercel's UI. Vercel
@@ -106,9 +118,9 @@ const ensureAdminApp = () => {
     if (getApps().length > 0) return;
 
     const projectId = getFirebaseProjectId();
-    const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+    const clientEmail = (process.env.FIREBASE_CLIENT_EMAIL || '').trim();
     const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
-    const privateKey = rawKey.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
+    const privateKey = formatPrivateKey(rawKey);
 
     if (!clientEmail || !privateKey) {
         throw new HttpError(
@@ -117,7 +129,15 @@ const ensureAdminApp = () => {
         );
     }
 
-    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+    try {
+        initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+    } catch (err) {
+        console.error('Firebase Admin initializeApp failed:', err);
+        throw new HttpError(
+            503,
+            `Firebase Admin config error: ${err.message || 'Invalid service account credentials.'}`,
+        );
+    }
 };
 
 let firestore = null;
