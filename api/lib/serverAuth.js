@@ -107,7 +107,8 @@ const ensureAdminApp = () => {
 
     const projectId = getFirebaseProjectId();
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-    const privateKey = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+    const rawKey = process.env.FIREBASE_PRIVATE_KEY || '';
+    const privateKey = rawKey.trim().replace(/^["']|["']$/g, '').replace(/\\n/g, '\n');
 
     if (!clientEmail || !privateKey) {
         throw new HttpError(

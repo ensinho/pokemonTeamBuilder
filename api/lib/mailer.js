@@ -21,6 +21,9 @@ const createTransport = () => {
         port: Number(process.env.SMTP_PORT || 465),
         secure: String(process.env.SMTP_SECURE || 'true').toLowerCase() !== 'false',
         auth: { user: emailFrom, pass: password },
+        connectionTimeout: 3000,
+        greetingTimeout: 3000,
+        socketTimeout: 3000,
     });
 };
 

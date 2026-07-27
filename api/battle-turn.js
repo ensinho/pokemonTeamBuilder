@@ -235,9 +235,9 @@ const handle = async (req, res) => {
 
         // The battle just went live — nudge whichever of the two didn't just
         // trigger this bootstrap (i.e. hasn't opened the app yet).
-        await notifyAwaitingPlayer({
+        void notifyAwaitingPlayer({
             db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
-        });
+        }).catch((err) => console.error('Failed to notify awaiting player:', err));
     }
 
     // Record this player's choice for the round, if they sent one. `create` fails
@@ -298,7 +298,8 @@ const handle = async (req, res) => {
     // A round just became someone else's to answer — tell them. Skipped on a
     // finished battle: nobody is "awaiting" a win.
     if (!result.ended) {
-        await notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] });
+        void notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
+            .catch((err) => console.error('Failed to notify awaiting player:', err));
     }
 
     return res.status(200).json({
@@ -331,6 +332,6 @@ export default async function handler(req, res) {
             return res.status(err.status).json({ error: err.message });
         }
         console.error('battle-turn failed:', err);
-        return res.status(500).json({ error: 'Could not resolve the turn.' });
+        return res.status(500).json({ error: err?.message || 'Could not resolve the turn.' });
     }
 }
