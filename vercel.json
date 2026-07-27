@@ -14,6 +14,10 @@
   "functions": {
     "api/render-meta.js": {
       "includeFiles": "dist/**"
+    },
+    "api/battle-turn.js": {
+      "memory": 1024,
+      "maxDuration": 15
     }
   },
   "rewrites": [

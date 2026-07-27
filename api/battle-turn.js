@@ -197,7 +197,7 @@ const handle = async (req, res) => {
     // The rules guarantee the challenger is one of the two players.
     const p1 = battle.challenger;
     const sides = { p1, p2: players.find((id) => id !== p1) };
-    if (!sides.p2) throw new HttpError(409, 'This battle has a broken player list.');
+    if (!sides.p1 || !sides.p2) throw new HttpError(409, 'This battle has a broken player list.');
     const mySide = sides.p1 === uid ? 'p1' : 'p2';
 
     // First contact after the players started it: the seed is the server's to
@@ -235,9 +235,16 @@ const handle = async (req, res) => {
 
         // The battle just went live — nudge whichever of the two didn't just
         // trigger this bootstrap (i.e. hasn't opened the app yet).
-        void notifyAwaitingPlayer({
-            db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
-        }).catch((err) => console.error('Failed to notify awaiting player:', err));
+        try {
+            await Promise.race([
+                notifyAwaitingPlayer({
+                    db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
+                }).catch((err) => console.error('Failed to notify awaiting player:', err)),
+                new Promise((resolve) => setTimeout(resolve, 1500)),
+            ]);
+        } catch (err) {
+            console.error('Failed to notify awaiting player:', err);
+        }
     }
 
     // Record this player's choice for the round, if they sent one. `create` fails
@@ -298,8 +305,15 @@ const handle = async (req, res) => {
     // A round just became someone else's to answer — tell them. Skipped on a
     // finished battle: nobody is "awaiting" a win.
     if (!result.ended) {
-        void notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
-            .catch((err) => console.error('Failed to notify awaiting player:', err));
+        try {
+            await Promise.race([
+                notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
+                    .catch((err) => console.error('Failed to notify awaiting player:', err)),
+                new Promise((resolve) => setTimeout(resolve, 1500)),
+            ]);
+        } catch (err) {
+            console.error('Failed to notify awaiting player:', err);
+        }
     }
 
     return res.status(200).json({

@@ -132,7 +132,7 @@ export const replayBattle = async ({ format, seed, teams, names = {}, choices = 
     }
 
     await Promise.race([
-        Promise.all(readers),
+        Promise.all(readers).catch((err) => console.error('Stream readers error:', err)),
         new Promise((resolve) => setTimeout(resolve, MAX_DRAIN_MS)),
     ]);
 
