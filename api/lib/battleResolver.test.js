@@ -204,3 +204,50 @@ describe('resolveTurn', () => {
         expect(strip(viaResolve.log.omniscient)).toBe(strip(viaReplay.log.omniscient));
     });
 });
+
+// The endpoint stores only the *delta* between replays (see publishLog): it slices
+// each new full log at the number of lines already sent. That is only correct if a
+// longer replay extends a shorter one line-for-line — so assert it directly.
+describe('replay logs extend, they do not rewrite', () => {
+    const stripTs = (lines) => lines.filter((line) => !line.startsWith('|t:|'));
+
+    it('a longer history yields a line-wise extension of the shorter one', async () => {
+        const short = ['>p1 team 1', '>p2 team 1'];
+        const long = [...short, '>p1 move 1', '>p2 move 1'];
+
+        const a = await replayBattle({ format: FORMAT, seed: SEED, teams, names, choices: short });
+        const b = await replayBattle({ format: FORMAT, seed: SEED, teams, names, choices: long });
+
+        for (const side of ['p1', 'p2', 'omniscient']) {
+            expect(b.log[side].length).toBeGreaterThan(a.log[side].length);
+            // Everything already delivered stays identical (timestamps aside), so
+            // slicing at the previous length neither repeats nor skips a line.
+            expect(stripTs(b.log[side].slice(0, a.log[side].length)))
+                .toEqual(stripTs(a.log[side]));
+        }
+    });
+
+    it('concatenating deltas reproduces the full log', async () => {
+        const rounds = [
+            ['>p1 team 1', '>p2 team 1'],
+            ['>p1 move 1', '>p2 move 1'],
+            ['>p1 move 1', '>p2 move 1'],
+        ];
+
+        let history = [];
+        let offset = 0;
+        const stitched = [];
+        let full = [];
+
+        for (const round of rounds) {
+            history = [...history, ...round];
+            const result = await replayBattle({ format: FORMAT, seed: SEED, teams, names, choices: history });
+            full = result.log.p1;
+            stitched.push(...full.slice(offset));
+            offset = full.length;
+        }
+
+        expect(stitched.length).toBe(full.length);
+        expect(stripTs(stitched)).toEqual(stripTs(full));
+    });
+});

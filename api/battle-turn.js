@@ -5,7 +5,7 @@ import {
     verifyCaller, getAdminFirestore, getAppId, setCorsHeaders, HttpError,
 } from './lib/serverAuth.js';
 import {
-    resolveTurn, makeSeed, BattleResolveError,
+    replayBattle, resolveTurn, makeSeed, BattleResolveError,
 } from './lib/battleResolver.js';
 
 /**
@@ -77,22 +77,47 @@ const simNames = (battle, sides) => {
     return { p1, p2: p2Raw === p1 ? `${p2Raw} (2)` : p2Raw };
 };
 
-/** Persist a resolved round: per-side log, round counter, and the outcome. */
-const writeResolution = async (db, battleId, { result, round, sides, names }) => {
+/**
+ * Publish a replay result: the new protocol lines for each player, plus whatever
+ * the battle's position now is.
+ *
+ * ## Only the delta is stored
+ *
+ * `replayBattle` always returns the log from turn zero, because that's how a
+ * stateless replay works. Writing that whole thing every round would mean each
+ * document repeats its predecessors — the client, which concatenates the rounds
+ * in order, would show every earlier line again, and the read cost would grow
+ * quadratically. So `logLines` on the battle doc tracks how many lines each side
+ * has already received, and only what's past that offset gets written.
+ *
+ * @param {boolean} advanceTurn false for the opening publish, which reveals the
+ *   first prompt without any round having been resolved yet.
+ */
+const publishLog = async (db, battleId, { result, battle, round, sides, names, advanceTurn }) => {
     const ref = battleRef(db, battleId);
     const batch = db.batch();
+
+    const offsets = {
+        p1: Number.isInteger(battle.logLines?.p1) ? battle.logLines.p1 : 0,
+        p2: Number.isInteger(battle.logLines?.p2) ? battle.logLines.p2 : 0,
+    };
+    const seq = Number.isInteger(battle.logSeq) ? battle.logSeq : 0;
+    const createdAt = new Date().toISOString();
+    const nextLines = {};
 
     // Append-only, and stored **per player** rather than as one doc holding both
     // sides. Firestore grants read access per document, never per field, so a
     // shared doc would hand each player the opponent's filtered stream — undoing
-    // the whole point of resolving turns server-side. The round is zero-padded so
-    // documents sort naturally.
-    const roundId = String(round).padStart(4, '0');
-    const createdAt = new Date().toISOString();
+    // the whole point of resolving turns server-side. The sequence is zero-padded
+    // so documents sort naturally.
     for (const side of ['p1', 'p2']) {
+        const full = result.log[side] || [];
+        const delta = full.slice(offsets[side]);
+        nextLines[side] = full.length;
+        if (delta.length === 0) continue;
         batch.set(
-            ref.collection('playerLogs').doc(sides[side]).collection('rounds').doc(roundId),
-            { round, lines: result.log[side], createdAt },
+            ref.collection('playerLogs').doc(sides[side]).collection('rounds').doc(String(seq).padStart(4, '0')),
+            { round, seq, lines: delta, createdAt },
         );
     }
     // The omniscient stream is deliberately NOT stored: nobody may read it while
@@ -110,12 +135,14 @@ const writeResolution = async (db, battleId, { result, round, sides, names }) =>
     }
 
     batch.update(ref, {
-        turn: round + 1,
+        ...(advanceTurn ? { turn: round + 1 } : {}),
+        logSeq: seq + 1,
+        logLines: nextLines,
         awaitingChoiceFrom: awaitingUids,
         engineVersion: ENGINE_VERSION,
-        lastActivityAt: new Date().toISOString(),
+        lastActivityAt: createdAt,
         ...(result.ended
-            ? { status: 'ended', winner: winnerUid, endedAt: new Date().toISOString() }
+            ? { status: 'ended', winner: winnerUid, endedAt: createdAt }
             : {}),
     });
 
@@ -178,6 +205,27 @@ const handle = async (req, res) => {
     const names = simNames(battle, sides);
     const { history, byId } = await readChoiceHistory(db, battleId, sides, round);
 
+    // Bootstrap. Nothing has been logged yet, so neither player has been told
+    // what the sim wants — and without a prompt neither can choose, which means
+    // the battle can never start. Publishing the opening position breaks that
+    // deadlock: it hands both players their team-preview request without
+    // resolving anything (hence `advanceTurn: false`).
+    if (!Number.isInteger(battle.logSeq) || battle.logSeq === 0) {
+        const opening = await replayBattle({
+            format: battle.format || 'gen9customgame',
+            seed,
+            teams,
+            names,
+            choices: history,
+        });
+        await publishLog(db, battleId, {
+            result: opening, battle, round, sides, names, advanceTurn: false,
+        });
+        // Re-read so the offsets below reflect what we just wrote.
+        battle.logSeq = 1;
+        battle.logLines = { p1: opening.log.p1.length, p2: opening.log.p2.length };
+    }
+
     // Record this player's choice for the round, if they sent one. `create` fails
     // if it already exists, which is exactly the write-once guarantee we want.
     if (choice) {
@@ -229,8 +277,8 @@ const handle = async (req, res) => {
         return res.status(200).json({ battleId, round, resolved: true, alreadyResolved: true });
     }
 
-    const { winnerUid, awaitingUids } = await writeResolution(db, battleId, {
-        result, round, sides, names,
+    const { winnerUid, awaitingUids } = await publishLog(db, battleId, {
+        result, battle, round, sides, names, advanceTurn: true,
     });
 
     return res.status(200).json({

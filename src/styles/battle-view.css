@@ -138,6 +138,45 @@
     image-rendering: pixelated;
 }
 
+/* ── Two-column layout ────────────────────────────────────────────
+   The battle is the point, so it takes the wide column; the chat sits beside it
+   and sticks while the battle scrolls. Collapses to a single stack on narrow
+   screens, chat last. */
+
+.battle-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    align-items: start;
+}
+
+@media (min-width: 1024px) {
+    .battle-layout {
+        /* ~2:1 — wide enough for the battlefield renderer that phase 4 drops in. */
+        grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+    }
+
+    .battle-layout__side {
+        position: sticky;
+        top: var(--space-4);
+    }
+}
+
+.battle-layout__main,
+.battle-layout__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+/* In its own column the chat can afford the height. */
+@media (min-width: 1024px) {
+    .battle-layout__side .battle-chat {
+        max-height: min(58vh, 520px);
+    }
+}
+
 /* ── Detail header ────────────────────────────────────────────────── */
 
 .battle-header {

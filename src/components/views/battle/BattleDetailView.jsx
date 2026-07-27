@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 import { useBattles } from '../../../hooks/useBattles';
@@ -72,6 +72,7 @@ export function BattleDetailView() {
 
     const [selectedTeamId, setSelectedTeamId] = useState('');
     const [chatDraft, setChatDraft] = useState('');
+    const chatEndRef = useRef(null);
 
     useEffect(() => {
         if (!battleId) return undefined;
@@ -88,6 +89,13 @@ export function BattleDetailView() {
         // Intentionally keyed on the battle's turn: re-sync once per round, not on
         // every unrelated re-render.
     }, [battleId, battle?.status, battle?.turn, submitChoice]);
+
+    // Keep the chat pinned to the newest message. `block: 'nearest'` so only the
+    // chat column scrolls — scrolling the whole page would yank the battle out of
+    // view every time either trainer talks.
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }, [chatMessages.length]);
 
     const myRequest = useMemo(() => readMyRequest(myLog), [myLog]);
     const transcript = useMemo(() => describeLogLines(myLog), [myLog]);
@@ -148,6 +156,8 @@ export function BattleDetailView() {
                 </div>
             </header>
 
+            <div className="battle-layout">
+                <div className="battle-layout__main">
             {/* ── Lifecycle actions ───────────────────────────────────── */}
             <section className="battle-panel">
                 <h3 className="battle-panel__title">{t('battle.statusTitle')}</h3>
@@ -372,6 +382,9 @@ export function BattleDetailView() {
                 )}
             </section>
 
+                </div>
+
+                <aside className="battle-layout__side">
             {/* ── Trainer talk ────────────────────────────────────────── */}
             <section className="battle-panel">
                 <h3 className="battle-panel__title">{t('battle.chatTitle')}</h3>
@@ -400,6 +413,7 @@ export function BattleDetailView() {
                             </li>
                         ))
                     )}
+                    <li ref={chatEndRef} aria-hidden="true" />
                 </ul>
 
                 <form className="battle-chat__composer" onSubmit={handleSend}>
@@ -416,6 +430,8 @@ export function BattleDetailView() {
                     </button>
                 </form>
             </section>
+                </aside>
+            </div>
         </div>
     );
 }
