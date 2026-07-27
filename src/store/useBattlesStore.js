@@ -13,10 +13,13 @@ import {
     writeBatch,
 } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
-import { appId, BATTLE_TURN_ENDPOINT } from '../constants/firebase';
+import { appId, BATTLE_TURN_ENDPOINT, BATTLE_RANDOM_ENDPOINT } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
-import { BATTLE_FORMAT, BATTLE_LEVEL, battleOpponentId, buildBattleTeamText } from '../utils/battle';
+import {
+    BATTLE_FORMAT, BATTLE_LEVEL, RANDOM_BATTLE_FORMAT,
+    battleOpponentId, buildBattleTeamText,
+} from '../utils/battle';
 
 const battlesPath = () => `artifacts/${appId}/battles`;
 
@@ -32,14 +35,53 @@ const unbindBattles = () => {
     boundUserId = null;
 };
 
+/**
+ * POST to one of the server-authoritative battle endpoints with the caller's
+ * Firebase ID token.
+ *
+ * Both of them (turn resolution and the random roll) need the same three things
+ * that are easy to get subtly wrong: a fresh token, a response that may not be
+ * JSON at all (Vercel serves an HTML page for a platform-level failure), and an
+ * error message that says what actually went wrong rather than "undefined".
+ *
+ * @returns {Promise<{ok: boolean, payload: object, error: string|null}>}
+ */
+const callBattleApi = async (endpoint, body, { serverErrorMessage = 'Server error (500).' } = {}) => {
+    const token = await auth?.currentUser?.getIdToken?.();
+    if (!token) return { ok: false, payload: {}, error: 'signedOut' };
+
+    const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+    });
+
+    const text = await response.text();
+    let payload = {};
+    try {
+        payload = JSON.parse(text);
+    } catch (_) { /* non-JSON response (HTML error page) */ }
+
+    if (!response.ok) {
+        return {
+            ok: false,
+            payload,
+            error: payload.error
+                || (response.status === 500 ? serverErrorMessage : `HTTP ${response.status} error`),
+        };
+    }
+    return { ok: true, payload, error: null };
+};
+
 export const useBattlesStore = create((set, get) => ({
     battles: [],
     isLoadingBattles: false,
     // The battle currently open, plus its chat. Kept separate from `battles` so
     // the detail view keeps working while the list re-sorts under it.
     chatMessages: [],
-    myTeam: null,          // my submitted team for the open battle
+    myTeam: null,          // my submitted (or randomly dealt) team for the open battle
     isLoadingTeam: false,
+    isRollingTeams: false,
     // My own filtered protocol lines for the open battle, oldest round first.
     // The opponent's view is a separate field on each log doc that the rules let
     // us read but which we deliberately ignore — see the note in submitChoice.
@@ -87,8 +129,16 @@ export const useBattlesStore = create((set, get) => ({
         set({ battles: [] });
     },
 
-    /** Challenge a friend. Returns the new battle id, or null. */
-    challengeFriend: async (friend) => {
+    /**
+     * Challenge a friend. Returns the new battle id, or null.
+     *
+     * `mode: 'random'` skips team building entirely — once the challenge is
+     * accepted, `/api/battle-random` deals both trainers six Pokémon from
+     * Showdown's random-battle generator. The mode is fixed at creation because
+     * it decides the format the battle is played under, and the resolver reads
+     * that from the document on every replay.
+     */
+    challengeFriend: async (friend, { mode = 'standard' } = {}) => {
         const authState = useAuthStore.getState();
         const showToast = useToastStore.getState().showToast;
         const { userId, isAnonymous } = authState;
@@ -102,6 +152,7 @@ export const useBattlesStore = create((set, get) => ({
 
         const myAvatar = authState.publicAvatar();
         const now = new Date().toISOString();
+        const isRandom = mode === 'random';
 
         try {
             const battleRef = doc(collection(db, battlesPath()));
@@ -122,8 +173,12 @@ export const useBattlesStore = create((set, get) => ({
                     },
                 },
                 status: 'pending',
-                format: BATTLE_FORMAT,
-                level: BATTLE_LEVEL,
+                mode: isRandom ? 'random' : 'standard',
+                format: isRandom ? RANDOM_BATTLE_FORMAT : BATTLE_FORMAT,
+                // Random battles have a level per Pokémon, chosen by the
+                // generator to balance the tiers, so there is no team-wide one.
+                level: isRandom ? null : BATTLE_LEVEL,
+                randomTeamsRolledAt: null,
                 ready: {},
                 // Resolver-owned from here down. The rules require these exact
                 // empty values on create so a challenger can't stack the deck.
@@ -145,7 +200,21 @@ export const useBattlesStore = create((set, get) => ({
         }
     },
 
-    acceptChallenge: async (battleId) => get().setStatus(battleId, 'teamSelect', 'Challenge accepted — pick your team!'),
+    /**
+     * Accept a challenge. A random battle then rolls immediately: there is no
+     * team to pick, so stopping at `teamSelect` would only show both players a
+     * screen with nothing on it.
+     */
+    acceptChallenge: async (battleId, { mode = 'standard' } = {}) => {
+        const isRandom = mode === 'random';
+        const ok = await get().setStatus(
+            battleId,
+            'teamSelect',
+            isRandom ? null : 'Challenge accepted — pick your team!',
+        );
+        if (ok && isRandom) await get().rollRandomTeams(battleId);
+        return ok;
+    },
     declineChallenge: async (battleId) => get().setStatus(battleId, 'declined', null),
     cancelChallenge: async (battleId) => get().setStatus(battleId, 'cancelled', null),
 
@@ -229,6 +298,44 @@ export const useBattlesStore = create((set, get) => ({
     /** Both teams are in — flip it to active. */
     startBattle: async (battleId) => get().setStatus(battleId, 'active', null),
 
+    /**
+     * Ask the server to deal both trainers a random team.
+     *
+     * Safe to call from either player and from more than one tab: the endpoint
+     * claims the roll in a transaction, so every call after the first returns
+     * `alreadyRolled` without touching anything. That matters because this is
+     * fired both by whoever accepts the challenge and by the detail view when it
+     * finds an accepted random battle that hasn't been dealt yet — the recovery
+     * path for a roll that failed halfway.
+     */
+    rollRandomTeams: async (battleId) => {
+        const showToast = useToastStore.getState().showToast;
+        if (!battleId) return null;
+
+        set({ isRollingTeams: true });
+        try {
+            const { ok, payload, error } = await callBattleApi(
+                BATTLE_RANDOM_ENDPOINT,
+                { battleId },
+                { serverErrorMessage: 'Server error (500) dealing the random teams.' },
+            );
+            if (!ok) {
+                showToast(error === 'signedOut' ? 'Sign in again to keep battling.' : error, 'error');
+                return null;
+            }
+            // The roll wrote this player's team; pull it in so the reveal doesn't
+            // wait for a screen change.
+            await get().loadMyTeam(battleId);
+            return payload;
+        } catch (err) {
+            console.error('Failed to roll the random teams:', err);
+            showToast('Could not reach the battle server.', 'error');
+            return null;
+        } finally {
+            set({ isRollingTeams: false });
+        }
+    },
+
     deleteBattle: async (battleId) => {
         const showToast = useToastStore.getState().showToast;
         if (!db || !battleId) return false;
@@ -308,30 +415,15 @@ export const useBattlesStore = create((set, get) => ({
         const showToast = useToastStore.getState().showToast;
         if (!battleId) return null;
 
-        const token = await auth?.currentUser?.getIdToken?.();
-        if (!token) {
-            showToast('Sign in again to keep battling.', 'error');
-            return null;
-        }
-
         set({ isResolvingTurn: true });
         try {
-            const response = await fetch(BATTLE_TURN_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ battleId, choice }),
-            });
-
-            const text = await response.text();
-            let payload = {};
-            try {
-                payload = JSON.parse(text);
-            } catch (_) { /* non-JSON response (HTML error page) */ }
-
-            if (!response.ok) {
-                const errMsg = payload.error
-                    || (response.status === 500 ? 'Server error (500) resolving turn.' : `HTTP ${response.status} error`);
-                showToast(errMsg, 'error');
+            const { ok, payload, error } = await callBattleApi(
+                BATTLE_TURN_ENDPOINT,
+                { battleId, choice },
+                { serverErrorMessage: 'Server error (500) resolving turn.' },
+            );
+            if (!ok) {
+                showToast(error === 'signedOut' ? 'Sign in again to keep battling.' : error, 'error');
                 return null;
             }
             return payload;

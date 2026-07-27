@@ -20,21 +20,32 @@ import '../../../styles/battle-view.css';
 
 const ANIMATED_SPRITES_KEY = 'ptb:battleAnimatedSprites';
 
-/** Six slots of sprite icons — the team preview bar. */
-function TeamSpriteBar({ sprites = [] }) {
+/**
+ * Six slots of sprite icons — the team preview bar.
+ *
+ * `showLevels` is for random battles, where the level is the balancing mechanism
+ * rather than a constant: a team of L95 Gumshoos and a L69 Eternatus is the
+ * generator doing its job, and hiding that would make the matchup look lopsided.
+ */
+function TeamSpriteBar({ sprites = [], showLevels = false }) {
     return (
         <div className="battle-team-bar">
             {Array.from({ length: 6 }).map((_, index) => {
                 const mon = sprites[index];
                 return (
-                    <span key={index} className="battle-team-bar__slot">
+                    <span key={index} className="battle-team-bar__slot" title={mon?.name || ''}>
                         {mon ? (
-                            <img
-                                src={getPokemonFrontSpriteUrl(mon.id)}
-                                alt={mon.name || ''}
-                                loading="lazy"
-                                onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                            />
+                            <>
+                                <img
+                                    src={getPokemonFrontSpriteUrl(mon.id)}
+                                    alt={mon.name || ''}
+                                    loading="lazy"
+                                    onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                />
+                                {showLevels && mon.level && (
+                                    <span className="battle-team-bar__level">L{mon.level}</span>
+                                )}
+                            </>
                         ) : (
                             <PokeballIcon className="w-4 h-4 text-muted opacity-20" />
                         )}
@@ -122,6 +133,7 @@ export function BattleDetailView() {
         loadMyTeam, myTeam, initChatListener, clearOpenBattle,
         chatMessages, sendChatMessage,
         initLogListener, myLog, submitChoice, isResolvingTurn,
+        rollRandomTeams, isRollingTeams,
     } = useBattlesStore();
 
     const entry = useMemo(
@@ -194,6 +206,28 @@ export function BattleDetailView() {
         // Intentionally keyed on the battle's turn: re-sync once per round, not on
         // every unrelated re-render.
     }, [battleId, battle?.status, battle?.turn, submitChoice]);
+
+    // An accepted random battle that hasn't been dealt yet. The roll normally
+    // rides the accept, so reaching here means that call didn't land — a closed
+    // tab, a dropped connection — or that this is the *challenger*, who never
+    // touched accept and would otherwise sit on an empty screen. One attempt per
+    // visit: the endpoint is idempotent, but a roll that keeps failing must not
+    // become a retry loop.
+    const rollAttemptedFor = useRef(null);
+    useEffect(() => {
+        if (!battleId || !view?.canRollRandomTeams) return;
+        if (rollAttemptedFor.current === battleId) return;
+        rollAttemptedFor.current = battleId;
+        rollRandomTeams(battleId);
+    }, [battleId, view?.canRollRandomTeams, rollRandomTeams]);
+
+    // The other player may be the one who triggers the roll, and this screen was
+    // already open when they did: the team document appears from under us, and
+    // the mount-time read found nothing. The battle doc's roll timestamp is the
+    // signal that it exists now.
+    useEffect(() => {
+        if (battle?.randomTeamsRolledAt) loadMyTeam(battleId);
+    }, [battleId, battle?.randomTeamsRolledAt, loadMyTeam]);
 
     // Keep the chat pinned to the newest message. `block: 'nearest'` so only the
     // chat column scrolls — scrolling the whole page would yank the battle out of
@@ -318,7 +352,11 @@ export function BattleDetailView() {
                         {view.opponentName || t('friends.unknownTrainer')}
                     </h2>
                     <p className="battle-header__meta">
-                        {t('battle.formatLine', { format: battle.format, level: battle.level })}
+                        {/* A random battle has no single level to name — each
+                            Pokémon gets one that offsets how strong it is. */}
+                        {view.isRandom
+                            ? t('battle.randomFormatLine', { format: battle.format })
+                            : t('battle.formatLine', { format: battle.format, level: battle.level })}
                     </p>
                 </div>
             </header>
@@ -334,9 +372,16 @@ export function BattleDetailView() {
                         <p className="battle-panel__copy">
                             {view.isChallenger ? t('battle.pendingSent') : t('battle.pendingReceived')}
                         </p>
+                        {view.isRandom && (
+                            <p className="battle-panel__copy">{t('battle.randomPendingHint')}</p>
+                        )}
                         <div className="battle-actions">
                             {view.canAccept && (
-                                <button type="button" className="btn btn-primary" onClick={() => acceptChallenge(battleId)}>
+                                <button
+                                    type="button"
+                                    className="btn btn-primary"
+                                    onClick={() => acceptChallenge(battleId, { mode: battle.mode })}
+                                >
                                     {t('battle.accept')}
                                 </button>
                             )}
@@ -354,7 +399,26 @@ export function BattleDetailView() {
                     </>
                 )}
 
-                {view.status === 'teamSelect' && (
+                {/* A random battle has nothing to select: the server deals both
+                    sides and flips the battle to active in one write, so this is
+                    a brief "dealing…" state and, if the roll failed, the way back. */}
+                {view.status === 'teamSelect' && view.isRandom && (
+                    <>
+                        <p className="battle-panel__copy">{t('battle.randomDealing')}</p>
+                        <div className="battle-actions">
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                disabled={isRollingTeams}
+                                onClick={() => rollRandomTeams(battleId)}
+                            >
+                                {isRollingTeams ? t('battle.randomDealingBtnBusy') : t('battle.randomDealBtn')}
+                            </button>
+                        </div>
+                    </>
+                )}
+
+                {view.status === 'teamSelect' && !view.isRandom && (
                     <>
                         <div className="battle-ready">
                             <span className={`battle-ready__side ${view.myReady ? 'is-ready' : ''}`}>
@@ -439,6 +503,16 @@ export function BattleDetailView() {
 
                 {view.status === 'active' && (
                     <>
+                        {/* The reveal. In a random battle this is the first time
+                            the player sees what they were dealt, and the levels
+                            are the interesting part — see TeamSpriteBar. */}
+                        {view.isRandom && myTeam?.sprites?.length > 0 && (
+                            <div className="battle-locked-team">
+                                <p className="battle-panel__label">{t('battle.randomYourTeam')}</p>
+                                <TeamSpriteBar sprites={myTeam.sprites} showLevels />
+                            </div>
+                        )}
+
                         <Battlefield field={field} animated={animatedSprites} />
 
                         <button

@@ -19,3 +19,6 @@ export const ADMIN_EMAIL_ENDPOINT = import.meta.env.VITE_ADMIN_EMAIL_ENDPOINT ||
 // The authoritative battle turn resolver. Vercel-only: the GitHub Pages deploy has
 // no /api/*, so battles are unavailable there (same as admin email replies).
 export const BATTLE_TURN_ENDPOINT = import.meta.env.VITE_BATTLE_TURN_ENDPOINT || '/api/battle-turn';
+
+// Deals both trainers a random team. Same Vercel-only caveat as above.
+export const BATTLE_RANDOM_ENDPOINT = import.meta.env.VITE_BATTLE_RANDOM_ENDPOINT || '/api/battle-random';

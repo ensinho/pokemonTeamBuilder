@@ -128,6 +128,48 @@ describe('describeBattle', () => {
     });
 });
 
+describe('describeBattle — random battles', () => {
+    const random = (overrides = {}) => make({ mode: 'random', ...overrides });
+
+    it('offers no team picking or starting: the server deals and starts it', () => {
+        const dealt = describeBattle(random({ status: 'teamSelect' }), ME);
+        expect(dealt.isRandom).toBe(true);
+        expect(dealt.canSubmitTeam).toBe(false);
+        expect(dealt.canStart).toBe(false);
+
+        // …not even once both `ready` flags are set by the roll, which is the
+        // one moment the ordinary flow would light up a "start" button.
+        const rolled = describeBattle(
+            random({ status: 'teamSelect', ready: { [ME]: true, [THEM]: true } }), ME);
+        expect(rolled.canStart).toBe(false);
+    });
+
+    it('lets either player trigger the roll, until it has been rolled', () => {
+        expect(describeBattle(random({ status: 'teamSelect' }), ME).canRollRandomTeams).toBe(true);
+        expect(describeBattle(random({ status: 'teamSelect' }), THEM).canRollRandomTeams).toBe(true);
+
+        const rolled = random({ status: 'teamSelect', randomTeamsRolledAt: '2026-07-27T00:00:00.000Z' });
+        expect(describeBattle(rolled, ME).canRollRandomTeams).toBe(false);
+
+        // The roll is what makes a battle active, so there is nothing left to do.
+        expect(describeBattle(random({ status: 'active' }), ME).canRollRandomTeams).toBe(false);
+        // And a challenge nobody has accepted is too early — the endpoint refuses it.
+        expect(describeBattle(random({ status: 'pending' }), ME).canRollRandomTeams).toBe(false);
+    });
+
+    it('waits on whoever is looking while the teams are undealt', () => {
+        expect(describeBattle(random({ status: 'teamSelect' }), ME).waitingOn).toBe('me');
+        expect(describeBattle(random({ status: 'teamSelect' }), THEM).waitingOn).toBe('me');
+    });
+
+    it('leaves an ordinary battle unchanged', () => {
+        const standard = describeBattle(make({ status: 'teamSelect' }), ME);
+        expect(standard.isRandom).toBe(false);
+        expect(standard.canRollRandomTeams).toBe(false);
+        expect(standard.canSubmitTeam).toBe(true);
+    });
+});
+
 describe('battleSortRank', () => {
     it('puts the viewer\'s move first and finished battles last', () => {
         const myMove = describeBattle(make({ status: 'teamSelect' }), ME);
@@ -213,5 +255,12 @@ describe('battleAttentionNotice', () => {
     it('flags an owed move once active', () => {
         const view = describeBattle(make({ status: 'active', awaitingChoiceFrom: [ME] }), ME);
         expect(battleAttentionNotice(view).titleKey).toBe('battle.notifyTurnTitle');
+    });
+
+    // "Pick your team" would be wrong for a random battle: there is nothing to
+    // pick, and a trainer told to go and choose one finds no way to do it.
+    it('says the teams are waiting, not that a team is owed, for a random battle', () => {
+        const view = describeBattle(make({ mode: 'random', status: 'teamSelect' }), ME);
+        expect(battleAttentionNotice(view).titleKey).toBe('battle.notifyRandomTitle');
     });
 });

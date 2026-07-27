@@ -235,6 +235,17 @@ export function FriendsView() {
                                         <button
                                             type="button"
                                             className="btn btn-outline friends-action"
+                                            title={t('friends.randomBattleHint')}
+                                            onClick={async () => {
+                                                const battleId = await challengeFriend(friend, { mode: 'random' });
+                                                if (battleId) navigate(`/battles/${battleId}`);
+                                            }}
+                                        >
+                                            {t('friends.randomBattle')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline friends-action"
                                             onClick={() => setConfirmingRemoval(friend.userId)}
                                         >
                                             {t('friends.remove')}

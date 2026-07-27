@@ -15,6 +15,21 @@ export const BATTLE_FORMAT = 'gen9customgame';
 export const BATTLE_LEVEL = 50;
 
 /**
+ * Random battles run under Showdown's own random-battle format, not the custom
+ * game the built-team battles use, because that is the ruleset the rolled sets
+ * are balanced for: Species Clause, Sleep Clause Mod, HP shown as a percentage,
+ * and no team preview. Levels are per-Pokémon (a Magikarp lands near 95, an
+ * Eternatus near 69), so there is no single `level` to display — see
+ * api/lib/randomTeams.js.
+ */
+export const RANDOM_BATTLE_FORMAT = 'gen9randombattle';
+
+export const BATTLE_MODES = ['standard', 'random'];
+
+/** A battle whose teams are dealt by the server. Absent mode = the old kind. */
+export const isRandomBattle = (battle) => battle?.mode === 'random';
+
+/**
  * Turn a saved team into the Showdown paste the battle engine will import.
  *
  * `buildShowdownExportText` is reused verbatim (it already emits `Level: 50`),
@@ -83,6 +98,8 @@ export const describeBattle = (battle, userId) => {
     const ready = battle.ready || {};
     const myReady = ready[userId] === true;
     const theirReady = ready[opponentId] === true;
+    const isRandom = isRandomBattle(battle);
+    const rolled = Boolean(battle.randomTeamsRolledAt);
 
     const isOpen = status === 'pending' || status === 'teamSelect';
     const isOver = status === 'ended' || status === 'declined' || status === 'cancelled';
@@ -92,7 +109,10 @@ export const describeBattle = (battle, userId) => {
     if (status === 'pending') {
         waitingOn = isChallenger ? 'them' : 'me';
     } else if (status === 'teamSelect') {
-        if (!myReady) waitingOn = 'me';
+        // A random battle never really rests here: neither player owes a team, so
+        // whoever has the app open is the one who can ask the server to deal them.
+        if (isRandom) waitingOn = 'me';
+        else if (!myReady) waitingOn = 'me';
         else if (!theirReady) waitingOn = 'them';
     } else if (status === 'active') {
         // Resolver-owned, updated only once a round actually resolves — see
@@ -114,14 +134,18 @@ export const describeBattle = (battle, userId) => {
         isOpen,
         isOver,
         waitingOn,
+        isRandom,
 
         // Actions, matching the transitions firestore.rules permits.
         canAccept: status === 'pending' && !isChallenger,
         canDecline: status === 'pending' && !isChallenger,
         canCancel: status === 'pending' && isChallenger,
-        canSubmitTeam: status === 'teamSelect' && !myReady,
+        // Nothing to submit and nothing to start in a random battle: the roll
+        // deals both teams and flips the battle straight to active.
+        canSubmitTeam: status === 'teamSelect' && !myReady && !isRandom,
         // Either player may start it, but only once both teams are locked in.
-        canStart: status === 'teamSelect' && myReady && theirReady,
+        canStart: status === 'teamSelect' && myReady && theirReady && !isRandom,
+        canRollRandomTeams: isRandom && status === 'teamSelect' && !rolled,
         canDelete: true,
     };
 };
@@ -144,7 +168,11 @@ export const battleAttentionNotice = (view) => {
         return { titleKey: 'battle.notifyChallengeTitle', bodyKey: 'battle.notifyChallengeBody', params };
     }
     if (view.status === 'teamSelect') {
-        return { titleKey: 'battle.notifyTeamTitle', bodyKey: 'battle.notifyTeamBody', params };
+        // "Pick your team" would be a lie for a random battle — there is nothing
+        // to pick, the six are waiting to be dealt.
+        return view.isRandom
+            ? { titleKey: 'battle.notifyRandomTitle', bodyKey: 'battle.notifyRandomBody', params }
+            : { titleKey: 'battle.notifyTeamTitle', bodyKey: 'battle.notifyTeamBody', params };
     }
     if (view.status === 'active') {
         return { titleKey: 'battle.notifyTurnTitle', bodyKey: 'battle.notifyTurnBody', params };

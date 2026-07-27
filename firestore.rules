@@ -182,7 +182,11 @@ service cloud.firestore {
           && request.resource.data.get('seed', null) == null
           && request.resource.data.get('winner', null) == null
           && request.resource.data.get('turn', 0) == 0
-          && request.resource.data.get('ready', {}).size() == 0;
+          && request.resource.data.get('ready', {}).size() == 0
+          // 'random' means the teams are dealt by /api/battle-random rather than
+          // chosen. Absent is the ordinary battle, so old clients keep working.
+          && request.resource.data.get('mode', 'standard') in ['standard', 'random']
+          && request.resource.data.get('randomTeamsRolledAt', null) == null;
 
         allow update: if isSignedIn()
           && request.auth.uid in resource.data.players
@@ -248,14 +252,29 @@ service cloud.firestore {
           // `showdownText` is the team in Showdown import format — exactly what
           // buildShowdownExportText() emits (Level: 50 included) and what the
           // resolver feeds to Teams.import().
+          //
+          // In a random battle there is no client-submitted team at all: both
+          // sides are dealt by /api/battle-random through the admin SDK. So no
+          // client write is permitted, in either direction — otherwise a player
+          // could create this document before the roll and be handed a battle
+          // with the team they picked against an opponent who got six at random.
           allow create: if isOwner(teamOwnerId)
+            && !isRandomBattle()
             && request.resource.data.showdownText is string
             && request.resource.data.showdownText.size() > 0
             && request.resource.data.showdownText.size() <= 20000;
           allow update: if isOwner(teamOwnerId)
-            && get(/databases/$(database)/documents/artifacts/$(appId)/battles/$(battleId))
-                .data.status == 'teamSelect';
+            && !isRandomBattle()
+            && battleDoc().status == 'teamSelect';
           allow delete: if false;
+
+          function battleDoc() {
+            return get(/databases/$(database)/documents/artifacts/$(appId)/battles/$(battleId)).data;
+          }
+
+          function isRandomBattle() {
+            return battleDoc().get('mode', 'standard') == 'random';
+          }
         }
 
         // Trainer talk. Same shape as a forum message.

@@ -90,6 +90,9 @@ export function BattleListView() {
             return view.isChallenger ? t('battle.statusSentPending') : t('battle.statusAwaitingYou');
         }
         if (view.status === 'teamSelect') {
+            // Random battles pass through this status in a single write, so it
+            // only shows while the server is dealing (or if that roll failed).
+            if (view.isRandom) return t('battle.statusDealingRandom');
             if (!view.myReady) return t('battle.statusPickYourTeam');
             if (!view.theirReady) return t('battle.statusWaitingTheirTeam');
             return t('battle.statusReadyToStart');

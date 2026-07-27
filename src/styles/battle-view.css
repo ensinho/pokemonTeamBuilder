@@ -335,6 +335,26 @@
     image-rendering: pixelated;
 }
 
+/* Random battles balance by level, so the level is part of the information the
+   bar carries — pinned to the corner of the sprite rather than beside it, which
+   would break the six-slot rhythm. */
+.battle-team-bar__slot {
+    position: relative;
+}
+
+.battle-team-bar__level {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    padding: 0 2px;
+    border-top-left-radius: var(--radius-sm);
+    font-size: 0.6rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--color-fg);
+    background: color-mix(in srgb, var(--color-bg) 78%, transparent);
+}
+
 /* ── Chat ─────────────────────────────────────────────────────────── */
 
 .battle-chat {
