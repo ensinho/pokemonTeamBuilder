@@ -26,6 +26,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@pkmn/img": "^0.3.4",
     "@pkmn/sim": "0.10.11",
     "firebase": "^11.10.0",
     "firebase-admin": "^14.2.0",

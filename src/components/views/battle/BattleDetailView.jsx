@@ -12,8 +12,12 @@ import { EmptyState } from '../../EmptyState';
 import { PokeballIcon } from '../../icons';
 import { getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../../../utils/pokemonSprites';
 import { readMyRequest, describeLogLines } from '../../../utils/battleProtocol';
+import { readBattleField } from '../../../utils/battleState';
+import { Battlefield } from './Battlefield';
 import { POKEBALL_PLACEHOLDER_URL } from '../../../constants/theme';
 import '../../../styles/battle-view.css';
+
+const ANIMATED_SPRITES_KEY = 'ptb:battleAnimatedSprites';
 
 /** Six slots of sprite icons — the team preview bar. */
 function TeamSpriteBar({ sprites = [] }) {
@@ -74,6 +78,26 @@ export function BattleDetailView() {
     const [chatDraft, setChatDraft] = useState('');
     const chatEndRef = useRef(null);
 
+    // Animated sprites are ~80 KB each, so slow connections get a way out. The
+    // choice is remembered; storage is best-effort, as everywhere else here.
+    const [animatedSprites, setAnimatedSprites] = useState(() => {
+        try {
+            return localStorage.getItem(ANIMATED_SPRITES_KEY) !== '0';
+        } catch (_) {
+            return true;
+        }
+    });
+
+    const toggleAnimatedSprites = () => {
+        setAnimatedSprites((previous) => {
+            const next = !previous;
+            try {
+                localStorage.setItem(ANIMATED_SPRITES_KEY, next ? '1' : '0');
+            } catch (_) { /* a preference is not worth throwing over */ }
+            return next;
+        });
+    };
+
     useEffect(() => {
         if (!battleId) return undefined;
         initChatListener(battleId);
@@ -99,6 +123,7 @@ export function BattleDetailView() {
 
     const myRequest = useMemo(() => readMyRequest(myLog), [myLog]);
     const transcript = useMemo(() => describeLogLines(myLog), [myLog]);
+    const field = useMemo(() => readBattleField(myLog), [myLog]);
 
     const selectedTeam = useMemo(
         () => savedTeams.find((team) => team.id === selectedTeamId) || null,
@@ -272,7 +297,16 @@ export function BattleDetailView() {
 
                 {view.status === 'active' && (
                     <>
-                        {myTeam && <TeamSpriteBar sprites={myTeam.sprites} />}
+                        <Battlefield field={field} animated={animatedSprites} />
+
+                        <button
+                            type="button"
+                            className="battle-sprite-toggle"
+                            aria-pressed={animatedSprites}
+                            onClick={toggleAnimatedSprites}
+                        >
+                            {t('battle.animatedSprites')}: {animatedSprites ? t('common.yes') : t('common.no')}
+                        </button>
 
                         {myRequest.kind === 'wait' && (
                             <p className="battle-panel__copy">{t('battle.waitingOpponentTurn')}</p>

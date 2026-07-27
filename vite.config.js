@@ -75,6 +75,11 @@ export default defineConfig({
           if (!normalizedId.includes('/node_modules/')) return undefined
           if (normalizedId.includes('/firebase/') || normalizedId.includes('/@firebase/')) return 'firebase'
           if (normalizedId.includes('/react/') || normalizedId.includes('/react-dom/') || normalizedId.includes('/scheduler/')) return 'react-vendor'
+          // Battle sprites (@pkmn/img) are only ever needed by the battle route.
+          // Left in `vendor` they rode along in the eager boot bundle, costing
+          // every visitor ~40 KB gz for a feature most never open. Their own chunk
+          // means Rollup loads them with the lazy battle view instead.
+          if (normalizedId.includes('/@pkmn/')) return 'pkmn'
           return 'vendor'
         },
       },
