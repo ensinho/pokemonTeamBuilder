@@ -15,3 +15,7 @@ export const ADMIN_EMAILS = (import.meta.env.VITE_ADMIN_EMAILS || '')
     .map(email => email.trim().toLowerCase())
     .filter(Boolean);
 export const ADMIN_EMAIL_ENDPOINT = import.meta.env.VITE_ADMIN_EMAIL_ENDPOINT || '/api/send-admin-reply';
+
+// The authoritative battle turn resolver. Vercel-only: the GitHub Pages deploy has
+// no /api/*, so battles are unavailable there (same as admin email replies).
+export const BATTLE_TURN_ENDPOINT = import.meta.env.VITE_BATTLE_TURN_ENDPOINT || '/api/battle-turn';

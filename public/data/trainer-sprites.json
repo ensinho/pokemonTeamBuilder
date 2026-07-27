@@ -425,6 +425,12 @@
       "gen": 4
     },
     {
+      "id": "cynthia-gen7",
+      "label": "Cynthia 7th Gen",
+      "female": false,
+      "gen": 7
+    },
+    {
       "id": "bellepa",
       "label": "Bellepa",
       "female": false,

@@ -5,6 +5,7 @@ import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore, resolveAvatar } from '../store/useAuthStore';
 import { useFriends } from '../hooks/useFriends';
+import { useBattles } from '../hooks/useBattles';
 import { useActiveTeam } from '../hooks/useActiveTeam';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
@@ -61,6 +62,8 @@ const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then(
 const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
+const BattleListView = lazy(() => import('./views/battle/BattleListView').then((m) => ({ default: m.BattleListView })));
+const BattleDetailView = lazy(() => import('./views/battle/BattleDetailView').then((m) => ({ default: m.BattleDetailView })));
 const TeamBuilderView = lazy(() => import('./views/TeamBuilderView').then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
 const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
@@ -215,6 +218,7 @@ export default function AppLayout() {
         if (path.includes('/speed-tiers')) return 'speedTiers';
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/quiz')) return 'generationQuiz';
+        if (path.includes('/battles')) return 'battles';
         if (path.includes('/friends')) return 'friends';
         if (path.includes('/favorites')) return 'favorites';
         if (path.includes('/builder')) return 'builder';
@@ -285,6 +289,10 @@ export default function AppLayout() {
     // route. The store reference-counts, so FriendsView holding it too is fine.
     const { incomingRequests } = useFriends();
     const pendingFriendRequests = incomingRequests.length;
+
+    // Same reasoning: bound here so the badge counts battles waiting on this
+    // trainer no matter which route is open.
+    const { awaitingMeCount: battlesAwaitingMe } = useBattles();
 
     // The signed-in trainer's own avatar, with their pokemon/trainer choice
     // applied. Memoized off the primitives so the shell doesn't rebuild it on
@@ -582,6 +590,7 @@ export default function AppLayout() {
             'damageCalc': { title: t('nav.damageCalc'), subtitle: t('tools.damageSubtitle') },
             'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
             'friends': { title: t('nav.friends'), subtitle: language === 'pt' ? 'Seus amigos treinadores e pedidos pendentes' : 'Your trainer friends and pending requests' },
+            'battles': { title: t('nav.battles'), subtitle: language === 'pt' ? 'Batalhas por turno contra seus amigos' : 'Turn-by-turn battles against your friends' },
             'notFound': { title: '404', subtitle: '' },
         };
         return pages[currentPage] || pages['home'];
@@ -600,6 +609,7 @@ export default function AppLayout() {
                     { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
                     { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
                     { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <AccountIcon className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
+                    { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <SwordsIcon className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
                 ]
             },
             {
@@ -642,7 +652,7 @@ export default function AppLayout() {
         }
 
         return groups;
-    }, [isAdmin, t, language, pendingFriendRequests]);
+    }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe]);
 
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {
@@ -1453,6 +1463,8 @@ export default function AppLayout() {
                                             />
                                         } />
                                         <Route path="/friends" element={<FriendsView />} />
+                                        <Route path="/battles" element={<BattleListView />} />
+                                        <Route path="/battles/:battleId" element={<BattleDetailView />} />
                                         <Route path="/profile" element={
                                             <ProfileView
                                                 userEmail={userEmail}

@@ -156,6 +156,153 @@ service cloud.firestore {
         }
       }
 
+      // Async ("play-by-message") battles between two friends.
+      //
+      // Clients own only the pre-battle lifecycle: create a challenge, accept or
+      // decline it, submit a team. Everything that decides the *outcome* — seed,
+      // turn, log, winner — is written by the serverless resolver through the
+      // admin SDK, which bypasses these rules entirely. So there is deliberately
+      // no client-writable path to any of those fields.
+      match /battles/{battleId} {
+        allow read: if isSignedIn() && request.auth.uid in resource.data.players;
+
+        allow create: if isUpgradedAccount()
+          && request.resource.data.challenger == request.auth.uid
+          && request.resource.data.players is list
+          && request.resource.data.players.size() == 2
+          && request.auth.uid in request.resource.data.players
+          && request.resource.data.players[0] != request.resource.data.players[1]
+          && request.resource.data.status == 'pending'
+          // Battles are a friends-only feature, so the friendship must exist.
+          && areFriends(request.resource.data.players[0], request.resource.data.players[1])
+          // The resolver's fields must start empty — a challenger can't seed a
+          // battle in their own favour or pre-declare themselves the winner.
+          // Read via `.get()`: an absent key raises an error rather than
+          // returning null, which would deny the write for the wrong reason.
+          && request.resource.data.get('seed', null) == null
+          && request.resource.data.get('winner', null) == null
+          && request.resource.data.get('turn', 0) == 0
+          && request.resource.data.get('ready', {}).size() == 0;
+
+        allow update: if isSignedIn()
+          && request.auth.uid in resource.data.players
+          && (respondsToChallenge() || withdrawsChallenge() || submitsOwnReady() || startsBattle());
+
+        // Only clutter is deletable; a battle that actually happened is a record.
+        allow delete: if isSignedIn()
+          && request.auth.uid in resource.data.players
+          && resource.data.status in ['pending', 'declined', 'cancelled'];
+
+        function areFriends(a, b) {
+          // Mirrors the canonical ordering used by /friendships.
+          let id = a < b ? a + '_' + b : b + '_' + a;
+          return exists(/databases/$(database)/documents/artifacts/$(appId)/friendships/$(id));
+        }
+
+        function touchesOnly(fields) {
+          return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+        }
+
+        // The challenged player accepts (→ team select) or declines.
+        function respondsToChallenge() {
+          return resource.data.status == 'pending'
+            && request.auth.uid != resource.data.challenger
+            && request.resource.data.status in ['teamSelect', 'declined']
+            && touchesOnly(['status', 'lastActivityAt']);
+        }
+
+        // The challenger takes it back while it's still unanswered.
+        function withdrawsChallenge() {
+          return resource.data.status == 'pending'
+            && request.auth.uid == resource.data.challenger
+            && request.resource.data.status == 'cancelled'
+            && touchesOnly(['status', 'lastActivityAt']);
+        }
+
+        // "My team is in." A player may only ever flip their *own* flag.
+        function submitsOwnReady() {
+          return resource.data.status == 'teamSelect'
+            && request.resource.data.status == 'teamSelect'
+            && touchesOnly(['ready', 'lastActivityAt'])
+            && request.resource.data.ready.diff(resource.data.ready)
+                .affectedKeys().hasOnly([request.auth.uid])
+            && request.resource.data.ready[request.auth.uid] == true;
+        }
+
+        // Either player may start it once both teams are in. The seed stays null:
+        // it is the resolver's to set, so neither player can influence the RNG.
+        function startsBattle() {
+          return resource.data.status == 'teamSelect'
+            && request.resource.data.status == 'active'
+            && resource.data.ready.size() == 2
+            && touchesOnly(['status', 'lastActivityAt']);
+        }
+
+        // A player's own team. Read-restricted to its owner so the opponent
+        // cannot inspect their sets — the reason turn resolution is server-side
+        // at all. Rules grant read per document, never per field, which is why
+        // this can't be a map on the battle doc.
+        match /teams/{teamOwnerId} {
+          allow read: if isOwner(teamOwnerId);
+          // Write-once: resubmitting after the battle starts would rewrite history.
+          // `showdownText` is the team in Showdown import format — exactly what
+          // buildShowdownExportText() emits (Level: 50 included) and what the
+          // resolver feeds to Teams.import().
+          allow create: if isOwner(teamOwnerId)
+            && request.resource.data.showdownText is string
+            && request.resource.data.showdownText.size() > 0
+            && request.resource.data.showdownText.size() <= 20000;
+          allow update: if isOwner(teamOwnerId)
+            && get(/databases/$(database)/documents/artifacts/$(appId)/battles/$(battleId))
+                .data.status == 'teamSelect';
+          allow delete: if false;
+        }
+
+        // Trainer talk. Same shape as a forum message.
+        match /chat/{messageId} {
+          allow read: if isSignedIn()
+            && request.auth.uid in get(/databases/$(database)/documents/artifacts/$(appId)/battles/$(battleId)).data.players;
+          allow create: if isSignedIn()
+            && request.resource.data.createdBy == request.auth.uid
+            && request.auth.uid in get(/databases/$(database)/documents/artifacts/$(appId)/battles/$(battleId)).data.players
+            && request.resource.data.text is string
+            && request.resource.data.text.size() <= 500;
+          allow update: if false;
+          allow delete: if isSignedIn() && resource.data.createdBy == request.auth.uid;
+        }
+
+        // The battle transcript, stored **per player**.
+        //
+        // It cannot be one shared document holding both sides: rules grant read
+        // access per document and never per field, so a single doc with `p1` and
+        // `p2` fields would let each player read the other's filtered stream —
+        // undoing the entire reason turn resolution is server-side. Keyed by uid
+        // and owner-read-only, exactly like /teams.
+        //
+        // Written only by the resolver (admin SDK): no client may forge a turn.
+        match /playerLogs/{logOwnerId} {
+          allow read: if isOwner(logOwnerId);
+          allow write: if false;
+
+          match /rounds/{roundId} {
+            allow read: if isOwner(logOwnerId);
+            allow write: if false;
+          }
+        }
+
+        // A player's move/switch for a turn. Write-once so a choice can't be
+        // changed after the fact; the resolver reads both and advances the turn.
+        match /choices/{choiceId} {
+          allow read: if isSignedIn()
+            && request.auth.uid in get(/databases/$(database)/documents/artifacts/$(appId)/battles/$(battleId)).data.players;
+          allow create: if isSignedIn()
+            && request.resource.data.uid == request.auth.uid
+            && choiceId == string(get(/databases/$(database)/documents/artifacts/$(appId)/battles/$(battleId)).data.turn) + '_' + request.auth.uid
+            && request.resource.data.choice is string;
+          allow update, delete: if false;
+        }
+      }
+
       match /public/data/teams/{teamId} {
         allow read: if true;
         allow create: if isSignedIn() && validSharedTeam();

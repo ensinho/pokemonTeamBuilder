@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import { useFriends } from '../../hooks/useFriends';
+import { useBattlesStore } from '../../store/useBattlesStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -60,6 +61,9 @@ export function FriendsView() {
         sendRequest, acceptRequest, declineRequest, removeRequest, removeFriend,
         loadProfile,
     } = useFriends();
+
+    const navigate = useNavigate();
+    const challengeFriend = useBattlesStore((state) => state.challengeFriend);
 
     const [searchParams, setSearchParams] = useSearchParams();
     const tabParam = searchParams.get('tab');
@@ -217,13 +221,25 @@ export function FriendsView() {
                                         </button>
                                     </>
                                 ) : (
-                                    <button
-                                        type="button"
-                                        className="btn btn-outline friends-action"
-                                        onClick={() => setConfirmingRemoval(friend.userId)}
-                                    >
-                                        {t('friends.remove')}
-                                    </button>
+                                    <>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary friends-action"
+                                            onClick={async () => {
+                                                const battleId = await challengeFriend(friend);
+                                                if (battleId) navigate(`/battles/${battleId}`);
+                                            }}
+                                        >
+                                            {t('friends.battle')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline friends-action"
+                                            onClick={() => setConfirmingRemoval(friend.userId)}
+                                        >
+                                            {t('friends.remove')}
+                                        </button>
+                                    </>
                                 )}
                             />
                         ))}

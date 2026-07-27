@@ -1,0 +1,491 @@
+/* Async battles — list + detail.
+   Phase 2 (no engine yet): challenge lifecycle, team selection and trainer chat.
+   The battlefield renderer will get its own file when phase 4 lands. */
+
+.battle-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.battle-intro {
+    margin: 0;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+}
+
+.battle-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) 0;
+}
+
+/* ── List ─────────────────────────────────────────────────────────── */
+
+.battle-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.battle-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-left-width: 3px;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    transition: border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.battle-card:hover {
+    border-color: var(--color-border-hover);
+}
+
+/* The left edge carries the state, so the list scans without reading. */
+.battle-card.is-urgent { border-left-color: var(--color-primary); }
+.battle-card.is-active { border-left-color: var(--color-success); }
+.battle-card.is-waiting { border-left-color: var(--color-border); }
+.battle-card.is-over { border-left-color: transparent; opacity: 0.65; }
+
+.battle-card__main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-2) 0;
+    text-align: left;
+}
+
+.battle-card__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.battle-card__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-fg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.battle-card__status {
+    font-size: 0.688rem;
+    color: var(--color-muted);
+}
+
+.battle-card__flag {
+    flex-shrink: 0;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.battle-card__dismiss {
+    flex-shrink: 0;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.688rem;
+}
+
+/* ── Avatars ──────────────────────────────────────────────────────── */
+
+.battle-card__avatar,
+.battle-header__avatar,
+.battle-chat__avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-primary-soft);
+    overflow: hidden;
+}
+
+.battle-card__avatar { width: 40px; height: 40px; }
+.battle-header__avatar { width: 56px; height: 56px; }
+.battle-chat__avatar { width: 28px; height: 28px; }
+
+/* Pokémon sprites carry transparent padding, so they're drawn wider than the
+   frame and nudged down; trainer sprites are square and fill it exactly. */
+.battle-card__avatar img { width: 48px; height: 40px; object-fit: contain; margin-top: 2px; }
+.battle-header__avatar img { width: 66px; height: 56px; object-fit: contain; margin-top: 3px; }
+.battle-chat__avatar img { width: 34px; height: 28px; object-fit: contain; margin-top: 1px; }
+
+.battle-card__avatar img.avatar-sprite--trainer,
+.battle-header__avatar img.avatar-sprite--trainer,
+.battle-chat__avatar img.avatar-sprite--trainer {
+    width: 100%;
+    height: 100%;
+    margin-top: 0;
+    image-rendering: pixelated;
+}
+
+/* ── Detail header ────────────────────────────────────────────────── */
+
+.battle-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.battle-header__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.battle-header__eyebrow {
+    margin: 0;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.battle-header__name {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+.battle-header__meta {
+    margin: 0;
+    font-size: 0.688rem;
+    color: var(--color-muted);
+}
+
+/* ── Panels ───────────────────────────────────────────────────────── */
+
+.battle-panel {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+}
+
+.battle-panel__title {
+    margin: 0;
+    font-size: 0.688rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+}
+
+.battle-panel__copy {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--color-fg);
+}
+
+.battle-panel__label {
+    font-size: 0.688rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.battle-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+/* ── Team select ──────────────────────────────────────────────────── */
+
+.battle-ready {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.battle-ready__side {
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface-raised);
+    font-size: 0.688rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.battle-ready__side.is-ready {
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+
+.battle-team-picker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    align-items: flex-start;
+}
+
+.battle-team-picker .btn {
+    align-self: flex-start;
+}
+
+.battle-team-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.battle-team-preview img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.battle-locked-team {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.battle-team-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+}
+
+.battle-team-bar__slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    overflow: hidden;
+}
+
+.battle-team-bar__slot img {
+    width: 38px;
+    height: 38px;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* ── Chat ─────────────────────────────────────────────────────────── */
+
+.battle-chat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-height: 320px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.battle-chat__empty {
+    font-size: 0.8rem;
+    font-style: italic;
+    color: var(--color-muted);
+    text-align: center;
+    padding: var(--space-4) 0;
+}
+
+.battle-chat__row {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+}
+
+.battle-chat__row.is-mine {
+    flex-direction: row-reverse;
+}
+
+.battle-chat__bubble {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    max-width: 80%;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.battle-chat__row.is-mine .battle-chat__bubble {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.battle-chat__author {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: var(--color-muted);
+}
+
+.battle-chat__text {
+    font-size: 0.85rem;
+    color: var(--color-fg);
+    overflow-wrap: anywhere;
+}
+
+.battle-chat__composer {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.battle-chat__composer .input-clean {
+    flex: 1;
+}
+
+/* ── Turn choices ─────────────────────────────────────────────────── */
+
+.battle-choices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.battle-choices__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-2);
+}
+
+.battle-move {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    text-align: left;
+    transition: transform var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.battle-move:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: var(--color-primary);
+}
+
+.battle-move:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.battle-move:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.battle-move--switch {
+    border-style: dashed;
+}
+
+.battle-move__name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-fg);
+    text-transform: capitalize;
+}
+
+.battle-move__pp {
+    font-size: 0.625rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+/* ── Transcript ───────────────────────────────────────────────────── */
+
+.battle-transcript {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.battle-transcript__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    max-height: 260px;
+    overflow-y: auto;
+    margin: 0;
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    list-style: none;
+}
+
+.battle-transcript__line {
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--color-fg);
+}
+
+.battle-transcript__line.is-turn {
+    margin-top: var(--space-2);
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-primary);
+}
+
+.battle-transcript__line.is-turn:first-child {
+    margin-top: 0;
+}
+
+.battle-transcript__line.is-effect,
+.battle-transcript__line.is-status {
+    color: var(--color-muted);
+    font-style: italic;
+}
+
+.battle-transcript__line.is-faint {
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+.battle-transcript__line.is-win {
+    color: var(--color-success);
+    font-weight: 800;
+}
+
+@media (max-width: 560px) {
+    .battle-card {
+        flex-wrap: wrap;
+    }
+
+    .battle-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
