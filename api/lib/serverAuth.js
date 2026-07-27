@@ -1,6 +1,7 @@
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 /**
  * Shared server-side auth for the API routes: verify a caller's Firebase ID
@@ -96,19 +97,13 @@ export const verifyCaller = async (req) => {
     };
 };
 
-let firestore = null;
-
 /**
- * Admin-SDK Firestore. Bypasses security rules by design — this is what makes the
- * resolver authoritative over fields (seed, turn, log, winner) that no client is
- * allowed to write.
- *
- * Credentials come from three env vars rather than a JSON blob so the private key
- * can be pasted into Vercel's UI. Vercel stores it with literal `\n`, hence the
- * unescape.
+ * Initialise the admin app once. Credentials come from three env vars rather
+ * than a JSON blob so the private key can be pasted into Vercel's UI. Vercel
+ * stores it with literal `\n`, hence the unescape.
  */
-export const getAdminFirestore = () => {
-    if (firestore) return firestore;
+const ensureAdminApp = () => {
+    if (getApps().length > 0) return;
 
     const projectId = getFirebaseProjectId();
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
@@ -121,11 +116,35 @@ export const getAdminFirestore = () => {
         );
     }
 
-    if (getApps().length === 0) {
-        initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-    }
+    initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
+};
+
+let firestore = null;
+
+/**
+ * Admin-SDK Firestore. Bypasses security rules by design — this is what makes the
+ * resolver authoritative over fields (seed, turn, log, winner) that no client is
+ * allowed to write.
+ */
+export const getAdminFirestore = () => {
+    if (firestore) return firestore;
+    ensureAdminApp();
     firestore = getFirestore();
     return firestore;
+};
+
+let auth = null;
+
+/**
+ * Admin-SDK Auth — the only way to resolve a uid to an email server-side (the
+ * public profile deliberately never stores one). Same service-account
+ * credentials as Firestore; no extra secret needed.
+ */
+export const getAdminAuth = () => {
+    if (auth) return auth;
+    ensureAdminApp();
+    auth = getAuth();
+    return auth;
 };
 
 /** `artifacts/{appId}` prefix, mirroring the client's namespacing. */

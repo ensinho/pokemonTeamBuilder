@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { battleOpponentId, describeBattle, battleSortRank, buildBattleTeamText } from './battle';
+import {
+    battleOpponentId, describeBattle, battleSortRank, buildBattleTeamText, battleAttentionNotice,
+} from './battle';
 
 const ME = 'uid-me';
 const THEM = 'uid-them';
@@ -84,6 +86,19 @@ describe('describeBattle', () => {
 
         const bothReady = make({ status: 'teamSelect', ready: { [ME]: true, [THEM]: true } });
         expect(describeBattle(bothReady, ME).waitingOn).toBeNull();
+    });
+
+    it('tracks whose move it is once the battle is active, from awaitingChoiceFrom', () => {
+        const myTurn = make({ status: 'active', awaitingChoiceFrom: [ME] });
+        expect(describeBattle(myTurn, ME).waitingOn).toBe('me');
+        expect(describeBattle(myTurn, THEM).waitingOn).toBe('them');
+
+        const bothOwe = make({ status: 'active', awaitingChoiceFrom: [ME, THEM] });
+        expect(describeBattle(bothOwe, ME).waitingOn).toBe('me');
+
+        // Before the opening bootstrap runs, the field is empty/absent.
+        expect(describeBattle(make({ status: 'active', awaitingChoiceFrom: [] }), ME).waitingOn).toBeNull();
+        expect(describeBattle(make({ status: 'active' }), ME).waitingOn).toBeNull();
     });
 
     it('marks finished battles as over and offers no actions', () => {
@@ -172,5 +187,31 @@ describe('buildBattleTeamText', () => {
         ]);
         expect(errors).toEqual([]);
         expect(text.split('\n\n')).toHaveLength(2);
+    });
+});
+
+describe('battleAttentionNotice', () => {
+    it('has nothing to say when the battle is not waiting on the viewer', () => {
+        expect(battleAttentionNotice(describeBattle(make(), ME))).toBeNull();
+        expect(battleAttentionNotice(null)).toBeNull();
+    });
+
+    it('flags a fresh challenge received', () => {
+        const view = describeBattle(make(), THEM); // THEM did not send this one
+        expect(battleAttentionNotice(view)).toMatchObject({
+            titleKey: 'battle.notifyChallengeTitle',
+            bodyKey: 'battle.notifyChallengeBody',
+            params: { name: 'Me' },
+        });
+    });
+
+    it('flags an unsubmitted team', () => {
+        const view = describeBattle(make({ status: 'teamSelect' }), ME);
+        expect(battleAttentionNotice(view).titleKey).toBe('battle.notifyTeamTitle');
+    });
+
+    it('flags an owed move once active', () => {
+        const view = describeBattle(make({ status: 'active', awaitingChoiceFrom: [ME] }), ME);
+        expect(battleAttentionNotice(view).titleKey).toBe('battle.notifyTurnTitle');
     });
 });

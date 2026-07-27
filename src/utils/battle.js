@@ -94,6 +94,12 @@ export const describeBattle = (battle, userId) => {
     } else if (status === 'teamSelect') {
         if (!myReady) waitingOn = 'me';
         else if (!theirReady) waitingOn = 'them';
+    } else if (status === 'active') {
+        // Resolver-owned, updated only once a round actually resolves — see
+        // api/battle-turn.js. Empty/absent before the opening bootstrap runs.
+        const awaiting = Array.isArray(battle.awaitingChoiceFrom) ? battle.awaitingChoiceFrom : [];
+        if (awaiting.includes(userId)) waitingOn = 'me';
+        else if (awaiting.includes(opponentId)) waitingOn = 'them';
     }
 
     return {
@@ -118,6 +124,32 @@ export const describeBattle = (battle, userId) => {
         canStart: status === 'teamSelect' && myReady && theirReady,
         canDelete: isOver || status === 'pending',
     };
+};
+
+/**
+ * Which translation keys describe the "needs attention" browser notification
+ * for this battle, from the viewer's own `describeBattle` result — or `null`
+ * when nothing currently needs a nudge.
+ *
+ * Returns keys/params rather than resolved strings so this stays pure and
+ * testable without a `t()`; the caller (a hook, which does have one) resolves
+ * them. Callers must only fire a notification on the *transition* into a
+ * non-null result, not on every render — this alone doesn't debounce.
+ */
+export const battleAttentionNotice = (view) => {
+    if (!view || view.waitingOn !== 'me') return null;
+    const params = { name: view.opponentName || null };
+
+    if (view.status === 'pending') {
+        return { titleKey: 'battle.notifyChallengeTitle', bodyKey: 'battle.notifyChallengeBody', params };
+    }
+    if (view.status === 'teamSelect') {
+        return { titleKey: 'battle.notifyTeamTitle', bodyKey: 'battle.notifyTeamBody', params };
+    }
+    if (view.status === 'active') {
+        return { titleKey: 'battle.notifyTurnTitle', bodyKey: 'battle.notifyTurnBody', params };
+    }
+    return null;
 };
 
 /**

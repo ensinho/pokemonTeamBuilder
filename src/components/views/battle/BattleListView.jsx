@@ -1,15 +1,61 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useBattles } from '../../../hooks/useBattles';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useBattlesStore } from '../../../store/useBattlesStore';
+import { useToastStore } from '../../../store/useToastStore';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useDocumentMeta } from '../../../hooks/useDocumentMeta';
+import {
+    isBrowserNotificationSupported, getBrowserNotificationPreference, setBrowserNotificationPreference,
+} from '../../../hooks/useBattleNotifications';
 import { AvatarSprite } from '../../AvatarSprite';
 import { EmptyState } from '../../EmptyState';
 import { PokeballIcon } from '../../icons';
 import '../../../styles/battle-view.css';
+
+/** Enable/disable the native browser popup for "your turn" and challenges. */
+function NotificationToggle() {
+    const { t } = useTranslation();
+    const showToast = useToastStore((state) => state.showToast);
+    const [enabled, setEnabled] = useState(() => (
+        isBrowserNotificationSupported()
+        && getBrowserNotificationPreference()
+        && Notification.permission === 'granted'
+    ));
+
+    const handleClick = async () => {
+        if (!isBrowserNotificationSupported()) {
+            showToast(t('battle.notifyUnsupported'), 'warning');
+            return;
+        }
+        if (enabled) {
+            setBrowserNotificationPreference(false);
+            setEnabled(false);
+            return;
+        }
+        if (Notification.permission === 'denied') {
+            showToast(t('battle.notifyBlocked'), 'warning');
+            return;
+        }
+        const permission = Notification.permission === 'granted'
+            ? 'granted'
+            : await Notification.requestPermission();
+        if (permission === 'granted') {
+            setBrowserNotificationPreference(true);
+            setEnabled(true);
+        } else {
+            showToast(t('battle.notifyBlocked'), 'warning');
+        }
+    };
+
+    return (
+        <button type="button" className="battle-sprite-toggle" aria-pressed={enabled} onClick={handleClick}>
+            {t('battle.notifyToggle')}: {enabled ? t('common.yes') : t('common.no')}
+        </button>
+    );
+}
 
 /** Status pill copy + tone, from the viewer's point of view. */
 const statusTone = (view) => {
@@ -55,6 +101,7 @@ export function BattleListView() {
     return (
         <div className="battle-view">
             <p className="battle-intro">{t('battle.listIntro')}</p>
+            <NotificationToggle />
 
             {isLoadingBattles && battles.length === 0 ? (
                 <div className="battle-loading">

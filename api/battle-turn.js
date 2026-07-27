@@ -7,6 +7,7 @@ import {
 import {
     replayBattle, resolveTurn, makeSeed, BattleResolveError,
 } from './lib/battleResolver.js';
+import { notifyAwaitingPlayer } from './lib/battleNotify.js';
 
 /**
  * POST /api/battle-turn — the authoritative turn resolver.
@@ -31,6 +32,13 @@ import {
  * resolution is guarded by the round number: if the stored round has already
  * advanced past what we replayed, another invocation won this race and we simply
  * return the fresh state instead of writing a second time.
+ *
+ * ## "Your turn" notifications
+ *
+ * Whenever `publishLog` produces a fresh `awaitingUids`, `notifyAwaitingPlayer`
+ * (`./lib/battleNotify.js`) emails whichever of them is *not* the caller — the
+ * caller is, by definition, in the app right now. No cron job, no queue: the
+ * nudge rides the same request that changed the state.
  */
 
 const ENGINE_VERSION = '@pkmn/sim@0.10.11';
@@ -218,12 +226,18 @@ const handle = async (req, res) => {
             names,
             choices: history,
         });
-        await publishLog(db, battleId, {
+        const opened = await publishLog(db, battleId, {
             result: opening, battle, round, sides, names, advanceTurn: false,
         });
         // Re-read so the offsets below reflect what we just wrote.
         battle.logSeq = 1;
         battle.logLines = { p1: opening.log.p1.length, p2: opening.log.p2.length };
+
+        // The battle just went live — nudge whichever of the two didn't just
+        // trigger this bootstrap (i.e. hasn't opened the app yet).
+        await notifyAwaitingPlayer({
+            db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
+        });
     }
 
     // Record this player's choice for the round, if they sent one. `create` fails
@@ -280,6 +294,12 @@ const handle = async (req, res) => {
     const { winnerUid, awaitingUids } = await publishLog(db, battleId, {
         result, battle, round, sides, names, advanceTurn: true,
     });
+
+    // A round just became someone else's to answer — tell them. Skipped on a
+    // finished battle: nobody is "awaiting" a win.
+    if (!result.ended) {
+        await notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] });
+    }
 
     return res.status(200).json({
         battleId,

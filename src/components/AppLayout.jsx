@@ -6,6 +6,7 @@ import { useThemeStore } from '../store/useThemeStore';
 import { useAuthStore, resolveAvatar } from '../store/useAuthStore';
 import { useFriends } from '../hooks/useFriends';
 import { useBattles } from '../hooks/useBattles';
+import { useBattleNotifications } from '../hooks/useBattleNotifications';
 import { useActiveTeam } from '../hooks/useActiveTeam';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
@@ -293,6 +294,11 @@ export default function AppLayout() {
     // Same reasoning: bound here so the badge counts battles waiting on this
     // trainer no matter which route is open.
     const { awaitingMeCount: battlesAwaitingMe } = useBattles();
+
+    // Native browser Notification popups for battles — must live somewhere
+    // mounted for the whole session (not just inside the battle views) so a
+    // popup can fire while the trainer is looking at something else entirely.
+    useBattleNotifications();
 
     // The signed-in trainer's own avatar, with their pokemon/trainer choice
     // applied. Memoized off the primitives so the shell doesn't rebuild it on
