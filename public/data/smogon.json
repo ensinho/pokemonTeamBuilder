@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T13:58:00.699Z",
+  "generatedAt": "2026-07-27T20:37:46.835Z",
   "source": "https://pkmn.github.io/smogon/data/",
   "formats": [
     "VGC 2025",
@@ -19706,6 +19706,53 @@
           "level": null,
           "description": "",
           "source": "PU"
+        },
+        {
+          "name": "Choice Item",
+          "item": "choice-scarf",
+          "itemAlts": [
+            "choice-specs"
+          ],
+          "ability": "",
+          "nature": "timid",
+          "tera": [
+            "fairy",
+            "ghost"
+          ],
+          "moves": [
+            [
+              "shadow-ball"
+            ],
+            [
+              "dazzling-gleam"
+            ],
+            [
+              "psychic",
+              "destiny-bond"
+            ],
+            [
+              "trick"
+            ]
+          ],
+          "evs": {
+            "hp": 0,
+            "attack": 0,
+            "defense": 0,
+            "special-attack": 252,
+            "special-defense": 4,
+            "speed": 252
+          },
+          "ivs": {
+            "hp": 31,
+            "attack": 0,
+            "defense": 31,
+            "special-attack": 31,
+            "special-defense": 31,
+            "speed": 31
+          },
+          "level": null,
+          "description": "",
+          "source": "ZU"
         }
       ]
     },

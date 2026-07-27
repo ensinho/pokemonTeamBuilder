@@ -1,20 +1,78 @@
-import { FieldValue } from 'firebase-admin/firestore';
 import { randomInt } from 'node:crypto';
 
-import {
-    verifyCaller, getAdminFirestore, getAppId, setCorsHeaders, HttpError,
-    describeCredentials, getFirebaseProjectId,
-} from './lib/serverAuth.js';
-import {
-    replayBattle, resolveTurn, makeSeed, BattleResolveError,
-} from './lib/battleResolver.js';
-import { notifyAwaitingPlayer } from './lib/battleNotify.js';
+import { setCorsHeaders, HttpError } from './lib/httpBasics.js';
 import { installRuntimeGuards, getLastRuntimeError, withTimeout } from './lib/runtimeGuards.js';
 
-// Before anything else, and at module scope so it covers the import graph too:
-// an unhandled rejection anywhere in this process returns FUNCTION_INVOCATION_FAILED
+// An unhandled rejection anywhere in this process returns FUNCTION_INVOCATION_FAILED
 // with no stack and no log line pointing at the cause.
 installRuntimeGuards();
+
+/**
+ * ## Why the heavy dependencies are loaded lazily
+ *
+ * Everything above is either a Node builtin or a module with no imports of its
+ * own, so **evaluating this file cannot fail**. That is load-bearing, not
+ * tidiness.
+ *
+ * A serverless function is imported once, during the platform's init phase,
+ * before the handler exists. Anything that throws there — a dependency missing
+ * from the bundle, an init phase that runs past its deadline while parsing
+ * ~32 MB of `@pkmn/sim` and firebase-admin on a fraction of a vCPU — kills the
+ * process before a single line of our error handling runs. The caller gets
+ * `FUNCTION_INVOCATION_FAILED`: no body, no stack, and no way to tell which of
+ * those it was. That failure is invisible from the outside and identical for
+ * every request, `GET` and `POST` alike, which is exactly what we were seeing.
+ *
+ * Moving the imports here changes two things. They run during *invoke*, with
+ * the full duration budget and the CPU burst, instead of against the init
+ * deadline; and if one of them does fail it now throws inside the handler's
+ * `try`, so the response says which module and why. `?ping` below deliberately
+ * answers before any of this runs, to tell "the function can't start" apart
+ * from "a dependency can't load".
+ *
+ * The promise is memoised, so a warm process pays the cost once — but it's
+ * cleared on failure, so one bad load doesn't poison every later request.
+ */
+let depsPromise = null;
+
+/**
+ * The loaded modules, once `loadDeps()` has resolved. Every helper below reads
+ * from here rather than from an import binding — which is safe because both
+ * entry points (`handle` and `runDiagnostics`) await `loadDeps()` before
+ * touching anything else.
+ */
+let deps = null;
+
+const loadDeps = () => {
+    if (!depsPromise) {
+        depsPromise = (async () => {
+            const [firestore, serverAuth, resolver, notify] = await Promise.all([
+                import('firebase-admin/firestore'),
+                import('./lib/serverAuth.js'),
+                import('./lib/battleResolver.js'),
+                import('./lib/battleNotify.js'),
+            ]);
+            deps = {
+                FieldValue: firestore.FieldValue,
+                verifyCaller: serverAuth.verifyCaller,
+                getAdminFirestore: serverAuth.getAdminFirestore,
+                getAppId: serverAuth.getAppId,
+                describeCredentials: serverAuth.describeCredentials,
+                getFirebaseProjectId: serverAuth.getFirebaseProjectId,
+                replayBattle: resolver.replayBattle,
+                resolveTurn: resolver.resolveTurn,
+                makeSeed: resolver.makeSeed,
+                BattleResolveError: resolver.BattleResolveError,
+                notifyAwaitingPlayer: notify.notifyAwaitingPlayer,
+            };
+            return deps;
+        })().catch((err) => {
+            depsPromise = null;
+            throw new HttpError(503, `Could not load the battle engine: ${err.message}`);
+        });
+    }
+    return depsPromise;
+};
 
 /**
  * POST /api/battle-turn — the authoritative turn resolver.
@@ -50,7 +108,7 @@ installRuntimeGuards();
 
 const ENGINE_VERSION = '@pkmn/sim@0.10.11';
 
-const battleRef = (db, battleId) => db.doc(`artifacts/${getAppId()}/battles/${battleId}`);
+const battleRef = (db, battleId) => db.doc(`artifacts/${deps.getAppId()}/battles/${battleId}`);
 
 /** Rebuild the flat choice history the resolver replays. */
 const readChoiceHistory = async (db, battleId, sides, upToRound) => {
@@ -167,10 +225,10 @@ const publishLog = async (db, battleId, { result, battle, round, sides, names, a
     // a failed counter must not roll back a resolved battle.
     if (result.ended && winnerUid) {
         const loserUid = winnerUid === sides.p1 ? sides.p2 : sides.p1;
-        const profiles = db.collection(`artifacts/${getAppId()}/publicProfiles`);
+        const profiles = db.collection(`artifacts/${deps.getAppId()}/publicProfiles`);
         await Promise.allSettled([
-            profiles.doc(winnerUid).set({ battleRecord: { wins: FieldValue.increment(1) } }, { merge: true }),
-            profiles.doc(loserUid).set({ battleRecord: { losses: FieldValue.increment(1) } }, { merge: true }),
+            profiles.doc(winnerUid).set({ battleRecord: { wins: deps.FieldValue.increment(1) } }, { merge: true }),
+            profiles.doc(loserUid).set({ battleRecord: { losses: deps.FieldValue.increment(1) } }, { merge: true }),
         ]);
     }
 
@@ -200,7 +258,9 @@ const sidesOwingChoice = (battle, sides) => {
 };
 
 const handle = async (req, res) => {
-    const { uid, isAnonymous } = await verifyCaller(req);
+    await loadDeps();
+
+    const { uid, isAnonymous } = await deps.verifyCaller(req);
     if (isAnonymous) throw new HttpError(403, 'Battles require a full account.');
 
     const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
@@ -210,7 +270,7 @@ const handle = async (req, res) => {
     if (!battleId) throw new HttpError(400, 'battleId is required.');
     if (choice && choice.length > 60) throw new HttpError(400, 'That choice is not valid.');
 
-    const db = getAdminFirestore();
+    const db = deps.getAdminFirestore();
     const ref = battleRef(db, battleId);
     const snap = await ref.get();
     if (!snap.exists) throw new HttpError(404, 'Battle not found.');
@@ -233,7 +293,7 @@ const handle = async (req, res) => {
     // choose, so neither player can grind the RNG.
     let seed = battle.seed;
     if (!Array.isArray(seed) || seed.length !== 4) {
-        seed = makeSeed(randomInt);
+        seed = deps.makeSeed(randomInt);
         await ref.update({ seed, engineVersion: ENGINE_VERSION });
     }
 
@@ -248,7 +308,7 @@ const handle = async (req, res) => {
     // deadlock: it hands both players their team-preview request without
     // resolving anything (hence `advanceTurn: false`).
     if (!Number.isInteger(battle.logSeq) || battle.logSeq === 0) {
-        const opening = await replayBattle({
+        const opening = await deps.replayBattle({
             format: battle.format || 'gen9customgame',
             seed,
             teams,
@@ -267,7 +327,7 @@ const handle = async (req, res) => {
         // The battle just went live — nudge whichever of the two didn't just
         // trigger this bootstrap (i.e. hasn't opened the app yet).
         await withTimeout(
-            notifyAwaitingPlayer({
+            deps.notifyAwaitingPlayer({
                 db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
             }).catch((err) => console.error('Failed to notify awaiting player:', err)),
             1500,
@@ -331,7 +391,7 @@ const handle = async (req, res) => {
         });
     }
 
-    const result = await resolveTurn({
+    const result = await deps.resolveTurn({
         format: battle.format || 'gen9customgame',
         seed,
         teams,
@@ -361,7 +421,7 @@ const handle = async (req, res) => {
     // finished battle: nobody is "awaiting" a win.
     if (!result.ended) {
         await withTimeout(
-            notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
+            deps.notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
                 .catch((err) => console.error('Failed to notify awaiting player:', err)),
             1500,
         );
@@ -396,14 +456,30 @@ const runDiagnostics = async () => {
         node: process.version,
         engine: ENGINE_VERSION,
         region: process.env.VERCEL_REGION || null,
-        credentials: describeCredentials(),
     };
 
+    // Reported as its own step, and first, because "the dependencies won't
+    // load" is the failure that used to be indistinguishable from every other
+    // failure. If this is what's broken, everything below is noise.
+    const startedAt = Date.now();
+    try {
+        await loadDeps();
+        checks.dependencies = `ok (${Date.now() - startedAt}ms)`;
+    } catch (err) {
+        return {
+            ...checks,
+            ok: false,
+            dependencies: `${err.name}: ${err.message}`,
+            lastRuntimeError: getLastRuntimeError(),
+        };
+    }
+
+    checks.credentials = deps.describeCredentials();
     if (checks.credentials.privateKeyProblem) checks.ok = false;
 
     try {
-        const db = getAdminFirestore();
-        await db.doc(`artifacts/${getAppId()}/__diagnostics/ping`).get();
+        const db = deps.getAdminFirestore();
+        await db.doc(`artifacts/${deps.getAppId()}/__diagnostics/ping`).get();
         checks.firestore = 'ok';
     } catch (err) {
         checks.ok = false;
@@ -414,7 +490,7 @@ const runDiagnostics = async () => {
     // deploy, or the format id is wrong, this is where it shows.
     try {
         const team = 'Ditto\nAbility: Limber\nLevel: 50\n- Transform\n';
-        const opening = await replayBattle({
+        const opening = await deps.replayBattle({
             format: 'gen9customgame',
             seed: [1, 2, 3, 4],
             teams: { p1: team, p2: team },
@@ -442,6 +518,21 @@ export default async function handler(req, res) {
         if (req.method === 'OPTIONS') return res.status(204).end();
         if (!originAllowed) return res.status(403).json({ error: 'Origin not allowed.' });
 
+        // `?ping` answers without loading anything, which makes it the one probe
+        // that separates the two failures that look identical from outside: if
+        // this returns JSON the function starts fine and the problem is a
+        // dependency (ask the bare GET, which reports which one); if this *also*
+        // returns FUNCTION_INVOCATION_FAILED, nothing in this file ever ran and
+        // the fault is in the deployment or the platform config, not the code.
+        if (req.query?.ping !== undefined || req.url?.includes('ping=')) {
+            return res.status(200).json({
+                pong: true,
+                node: process.version,
+                region: process.env.VERCEL_REGION || null,
+                lastRuntimeError: getLastRuntimeError(),
+            });
+        }
+
         if (req.method === 'GET') {
             const checks = await runDiagnostics();
             return res.status(checks.ok ? 200 : 503).json(checks);
@@ -452,7 +543,9 @@ export default async function handler(req, res) {
         return await handle(req, res);
     } catch (err) {
         console.error('battle-turn failed:', err);
-        if (err instanceof BattleResolveError) {
+        // `deps` is null when the failure *was* the dependency load, so the
+        // class to compare against may not exist yet.
+        if (deps?.BattleResolveError && err instanceof deps.BattleResolveError) {
             return res.status(422).json({ error: err.message, code: err.code });
         }
         if (err?.status) {
@@ -464,7 +557,7 @@ export default async function handler(req, res) {
             // Named here as well as in the logs: an async crash that the guards
             // caught is usually the real cause of whatever surfaced above.
             lastRuntimeError: getLastRuntimeError(),
-            projectId: getFirebaseProjectId(),
+            projectId: deps?.getFirebaseProjectId?.() || null,
         });
     }
 }

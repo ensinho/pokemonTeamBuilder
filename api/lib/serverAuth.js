@@ -5,6 +5,8 @@ import { cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 
+import { HttpError, setCorsHeaders, getAllowedOrigins } from './httpBasics.js';
+
 /**
  * Shared server-side auth for the API routes: verify a caller's Firebase ID
  * token, and hand out an admin-SDK Firestore handle.
@@ -23,45 +25,10 @@ export const getFirebaseProjectId = () => process.env.FIREBASE_PROJECT_ID
     || process.env.VITE_FIREBASE_PROJECT_ID
     || 'pokemonbuilder-8f80d';
 
-const splitList = (value) => String(value || '')
-    .split(',')
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean);
-
-const getAllowedOrigins = () => splitList(process.env.API_ALLOWED_ORIGINS || '')
-    .concat([
-        'https://pokemonbuilder.app',
-        'https://ensinho.github.io',
-        'http://localhost:5173',
-        'http://127.0.0.1:5173',
-        'http://localhost:4173',
-        'http://127.0.0.1:4173',
-    ]);
-
-export const setCorsHeaders = (req, res) => {
-    const origin = req.headers.origin || '';
-    const normalized = origin.toLowerCase();
-    const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}`.toLowerCase() : '';
-    const allowed = getAllowedOrigins();
-    const isAllowed = !origin
-        || allowed.includes('*')
-        || allowed.includes(normalized)
-        || (vercelUrl && normalized === vercelUrl);
-
-    if (isAllowed && origin) res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    return isAllowed;
-};
-
-class HttpError extends Error {
-    constructor(status, message) {
-        super(message);
-        this.status = status;
-    }
-}
-export { HttpError };
+// Re-exported so callers keep importing these from here as before. They live in
+// a dependency-free module because `api/battle-turn.js` needs them *without*
+// loading this file — see `./httpBasics.js`.
+export { HttpError, setCorsHeaders, getAllowedOrigins };
 
 const getBearerToken = (req) => {
     const header = req.headers.authorization || req.headers.Authorization || '';

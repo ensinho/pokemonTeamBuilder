@@ -28,6 +28,12 @@
     "deploy": "gh-pages -d dist",
     "prepare": "husky"
   },
+  "//overrides": "jwks-rsa (via firebase-admin) is CommonJS but declares jose@^6, which is ESM-only — its require('jose') dies with ERR_REQUIRE_ESM on any runtime without require(esm), which is how Vercel loads functions. jose@5 ships a CJS build and has every API jwks-rsa uses. Do not remove without running api/lib/dependencies.test.js; see docs/wounds.md 2026-07-27.",
+  "overrides": {
+    "jwks-rsa": {
+      "jose": "^5.10.0"
+    }
+  },
   "dependencies": {
     "@pkmn/img": "^0.3.4",
     "@pkmn/sim": "0.10.11",
