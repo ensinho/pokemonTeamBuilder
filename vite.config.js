@@ -21,6 +21,7 @@ export default defineConfig({
       // Use the existing site.webmanifest — only add the service worker
       manifest: false,
       workbox: {
+        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

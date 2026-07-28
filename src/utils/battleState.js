@@ -97,6 +97,7 @@ export const readBattleField = (lines = []) => {
         weather: null,
         ended: false,
         winner: null,
+        myDetailsMap: new Map(),
         sides: { p1: blankSide(), p2: blankSide() },
     };
 
@@ -116,13 +117,11 @@ export const readBattleField = (lines = []) => {
 
         switch (tag) {
             case 'player': {
-                // |player|p1|Enzo|avatar|rating
                 const [side, name] = rest;
                 if (SIDES.includes(side) && name) state.sides[side].name = name;
                 break;
             }
             case 'poke': {
-                // |poke|p1|Charizard, L50, M|item — team preview roster
                 const [side, details] = rest;
                 if (SIDES.includes(side)) {
                     state.sides[side].roster.push(parseDetails(details));
@@ -130,12 +129,25 @@ export const readBattleField = (lines = []) => {
                 break;
             }
             case 'request': {
-                // The only trustworthy statement of which side is mine.
                 try {
                     const payload = JSON.parse(rest.join('|'));
                     const id = payload?.side?.id;
                     if (SIDES.includes(id)) state.mySide = id;
-                } catch { /* a malformed request tells us nothing */ }
+
+                    // Extract detailed set data for my own team (ability, item, stats)
+                    const roster = payload?.side?.pokemon || [];
+                    for (const mon of roster) {
+                        const name = (mon.details || '').split(',')[0] || mon.ident;
+                        if (name) {
+                            state.myDetailsMap.set(name, {
+                                ability: mon.baseAbility || mon.ability || null,
+                                item: mon.item || null,
+                                stats: mon.stats || null,
+                                moves: mon.moves || [],
+                            });
+                        }
+                    }
+                } catch { /* malformed request */ }
                 break;
             }
             case 'switch':
@@ -144,14 +156,32 @@ export const readBattleField = (lines = []) => {
                 const ident = parseIdent(rest[0]);
                 if (!ident) break;
                 const details = parseDetails(rest[1]);
+
                 state.sides[ident.side].active = {
                     nickname: ident.nickname,
                     ...details,
                     hp: parseCondition(rest[2]) || { current: 100, max: null, pct: 100, status: null, fainted: false },
                     status: null,
                     fainted: false,
+                    item: null,
+                    ability: null,
                 };
                 applyCondition(ident.side, rest[2]);
+                break;
+            }
+            case '-item':
+            case '-enditem': {
+                const ident = parseIdent(rest[0]);
+                if (ident && state.sides[ident.side].active) {
+                    state.sides[ident.side].active.item = rest[1] || null;
+                }
+                break;
+            }
+            case '-ability': {
+                const ident = parseIdent(rest[0]);
+                if (ident && state.sides[ident.side].active) {
+                    state.sides[ident.side].active.ability = rest[1] || null;
+                }
                 break;
             }
             case '-damage':
@@ -206,9 +236,33 @@ export const readBattleField = (lines = []) => {
         }
     }
 
-    // Resolve the viewer's perspective once, so the renderer never has to.
+    // Resolve viewer's perspective and attach myDetailsMap info to my side's active/roster
     const mine = state.mySide || 'p1';
     const theirs = mine === 'p1' ? 'p2' : 'p1';
+
+    // Enrich my active Pokémon
+    if (state.sides[mine].active) {
+        const specName = state.sides[mine].active.species;
+        const myDet = state.myDetailsMap.get(specName) || state.myDetailsMap.get(state.sides[mine].active.nickname);
+        if (myDet) {
+            state.sides[mine].active.ability = myDet.ability || state.sides[mine].active.ability;
+            state.sides[mine].active.item = myDet.item || state.sides[mine].active.item;
+            state.sides[mine].active.stats = myDet.stats || null;
+        }
+    }
+
+    // Enrich my roster Pokémon
+    state.sides[mine].roster = state.sides[mine].roster.map((mon) => {
+        const myDet = state.myDetailsMap.get(mon.species);
+        return {
+            ...mon,
+            isMine: true,
+            ability: myDet?.ability || null,
+            item: myDet?.item || null,
+            stats: myDet?.stats || null,
+        };
+    });
+
     return {
         ...state,
         mine: state.sides[mine],

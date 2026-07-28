@@ -73,6 +73,9 @@ export const readMyRequest = (myLogLines = []) => {
 export const describeLogLines = (lines = []) => {
     const out = [];
     const nick = (ident) => String(ident || '').replace(/^p[12][a-c]?:\s*/, '');
+    const statNames = {
+        atk: 'Attack', def: 'Defense', spa: 'Sp. Atk', spd: 'Sp. Def', spe: 'Speed', accuracy: 'Accuracy', evasion: 'Evasion',
+    };
 
     for (const line of lines) {
         const parts = line.split('|').slice(1);
@@ -80,64 +83,159 @@ export const describeLogLines = (lines = []) => {
 
         switch (tag) {
             case 'turn':
-                out.push({ kind: 'turn', text: `Turn ${rest[0]}` });
+                out.push({ kind: 'turn', turn: Number(rest[0]) || 0, text: `Turn ${rest[0]}` });
                 break;
             case 'move':
-                out.push({ kind: 'move', text: `${nick(rest[0])} used ${rest[1]}!` });
+                out.push({
+                    kind: 'move',
+                    user: nick(rest[0]),
+                    move: rest[1],
+                    target: nick(rest[2]),
+                    text: `${nick(rest[0])} used ${rest[1]}!`,
+                });
                 break;
             case 'switch':
             case 'drag':
-                out.push({ kind: 'switch', text: `${nick(rest[0])} came out!` });
+                out.push({
+                    kind: 'switch',
+                    mon: nick(rest[0]),
+                    details: rest[1] || '',
+                    hp: rest[2] || '',
+                    text: `${nick(rest[0])} came out!`,
+                });
                 break;
             case '-damage': {
                 const hp = rest[1] || '';
+                const fainted = hp.endsWith('fnt') || hp === '0 fnt';
                 out.push({
                     kind: 'damage',
-                    text: hp.endsWith('fnt')
-                        ? `${nick(rest[0])} fainted!`
-                        : `${nick(rest[0])} is at ${hp}.`,
+                    mon: nick(rest[0]),
+                    hp,
+                    fainted,
+                    text: fainted ? `${nick(rest[0])} fainted!` : `${nick(rest[0])} is at ${hp}.`,
                 });
                 break;
             }
             case '-heal':
-                out.push({ kind: 'heal', text: `${nick(rest[0])} recovered to ${rest[1]}.` });
+                out.push({
+                    kind: 'heal',
+                    mon: nick(rest[0]),
+                    hp: rest[1] || '',
+                    text: `${nick(rest[0])} recovered to ${rest[1]}.`,
+                });
                 break;
             case '-supereffective':
-                out.push({ kind: 'effect', text: "It's super effective!" });
+                out.push({ kind: 'effect', subkind: 'supereffective', target: nick(rest[0]), text: "It's super effective!" });
                 break;
             case '-resisted':
-                out.push({ kind: 'effect', text: 'It was not very effective…' });
+                out.push({ kind: 'effect', subkind: 'resisted', target: nick(rest[0]), text: 'It was not very effective…' });
                 break;
             case '-immune':
-                out.push({ kind: 'effect', text: `${nick(rest[0])} is immune.` });
+                out.push({ kind: 'effect', subkind: 'immune', mon: nick(rest[0]), text: `${nick(rest[0])} is immune.` });
                 break;
             case '-crit':
-                out.push({ kind: 'effect', text: 'A critical hit!' });
+                out.push({ kind: 'effect', subkind: 'crit', target: nick(rest[0]), text: 'A critical hit!' });
                 break;
             case '-miss':
-                out.push({ kind: 'effect', text: `${nick(rest[0])} missed!` });
+                out.push({ kind: 'effect', subkind: 'miss', mon: nick(rest[0]), text: `${nick(rest[0])} missed!` });
                 break;
             case '-status':
-                out.push({ kind: 'status', text: `${nick(rest[0])} was afflicted (${rest[1]}).` });
+                out.push({
+                    kind: 'status',
+                    subkind: 'afflict',
+                    mon: nick(rest[0]),
+                    status: rest[1],
+                    text: `${nick(rest[0])} was afflicted (${rest[1]}).`,
+                });
                 break;
-            case '-boost':
-                out.push({ kind: 'status', text: `${nick(rest[0])}'s ${rest[1]} rose.` });
+            case '-curestatus':
+                out.push({
+                    kind: 'status',
+                    subkind: 'cure',
+                    mon: nick(rest[0]),
+                    status: rest[1],
+                    text: `${nick(rest[0])} was cured of ${rest[1]}!`,
+                });
                 break;
-            case '-unboost':
-                out.push({ kind: 'status', text: `${nick(rest[0])}'s ${rest[1]} fell.` });
+            case '-boost': {
+                const stat = rest[1];
+                const amt = Number(rest[2]) || 1;
+                const statName = statNames[stat] || stat;
+                out.push({
+                    kind: 'boost',
+                    mon: nick(rest[0]),
+                    stat,
+                    statName,
+                    amount: amt,
+                    text: `${nick(rest[0])}'s ${statName} rose!`,
+                });
+                break;
+            }
+            case '-unboost': {
+                const stat = rest[1];
+                const amt = Number(rest[2]) || 1;
+                const statName = statNames[stat] || stat;
+                out.push({
+                    kind: 'boost',
+                    mon: nick(rest[0]),
+                    stat,
+                    statName,
+                    amount: -amt,
+                    text: `${nick(rest[0])}'s ${statName} fell!`,
+                });
+                break;
+            }
+            case '-weather': {
+                const weather = rest[0] || '';
+                if (weather === 'none' || weather === 'upkeep') break;
+                out.push({
+                    kind: 'weather',
+                    weather,
+                    text: weather ? `Weather: ${weather}` : 'Weather cleared.',
+                });
+                break;
+            }
+            case '-terastallize':
+                out.push({
+                    kind: 'tera',
+                    mon: nick(rest[0]),
+                    teraType: rest[1],
+                    text: `${nick(rest[0])} Terastallized into ${rest[1]} type!`,
+                });
+                break;
+            case '-mega':
+                out.push({
+                    kind: 'mega',
+                    mon: nick(rest[0]),
+                    text: `${nick(rest[0])} Mega Evolved!`,
+                });
+                break;
+            case '-ability':
+                out.push({
+                    kind: 'ability',
+                    mon: nick(rest[0]),
+                    ability: rest[1],
+                    text: `${nick(rest[0])}'s ${rest[1]} activated!`,
+                });
+                break;
+            case 'cant':
+                out.push({
+                    kind: 'cant',
+                    mon: nick(rest[0]),
+                    reason: rest[1] || '',
+                    text: `${nick(rest[0])} is unable to move!`,
+                });
                 break;
             case 'faint':
-                out.push({ kind: 'faint', text: `${nick(rest[0])} fainted!` });
+                out.push({ kind: 'faint', mon: nick(rest[0]), text: `${nick(rest[0])} fainted!` });
                 break;
             case 'win':
-                out.push({ kind: 'win', text: `${rest[0]} won the battle!` });
+                out.push({ kind: 'win', winner: rest[0], text: `${rest[0]} won the battle!` });
                 break;
             case 'tie':
-                out.push({ kind: 'win', text: 'The battle ended in a tie.' });
+                out.push({ kind: 'win', winner: null, text: 'The battle ended in a tie.' });
                 break;
             default:
-                // Unknown or purely structural line — skip it rather than leak
-                // protocol noise into the UI.
                 break;
         }
     }

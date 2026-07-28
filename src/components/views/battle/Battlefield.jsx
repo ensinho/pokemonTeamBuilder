@@ -1,9 +1,9 @@
-import React from 'react';
-
+import { Sparkles } from 'lucide-react';
 import { getBattleSprite, getBattleIcon, statusLabel } from '../../../utils/battleSprites';
 import { hpTone } from '../../../utils/battleState';
 import { PokeballIcon } from '../../icons';
 import { useTranslation } from '../../../hooks/useTranslation';
+import { TooltipTrigger, MonTooltipCard } from './BattlePopover';
 
 /**
  * The battlefield: both active Pokémon, their HP, and each side's remaining team.
@@ -59,20 +59,36 @@ function ActiveMon({ mon, isMine, animated }) {
                 {status && <span className={`battlefield-status is-${String(mon.status).toLowerCase()}`}>{status}</span>}
             </div>
 
-            <div className="battlefield-slot__sprite">
-                {sprite.url ? (
-                    <img
-                        src={sprite.url}
-                        alt={mon.species}
-                        width={sprite.w}
-                        height={sprite.h}
-                        loading="eager"
-                        onError={(event) => { event.currentTarget.style.visibility = 'hidden'; }}
+            <TooltipTrigger
+                placement={isMine ? 'right' : 'left'}
+                tooltipContent={
+                    <MonTooltipCard
+                        speciesName={mon.species}
+                        level={mon.level}
+                        hpCondition={mon.hp}
+                        status={mon.status}
+                        item={mon.item}
+                        ability={mon.ability}
+                        stats={mon.stats}
+                        isMine={isMine}
                     />
-                ) : (
-                    <PokeballIcon className="w-10 h-10 text-muted opacity-30" />
-                )}
-            </div>
+                }
+            >
+                <div className="battlefield-slot__sprite cursor-pointer" title={mon.species}>
+                    {sprite.url ? (
+                        <img
+                            src={sprite.url}
+                            alt={mon.species}
+                            width={sprite.w}
+                            height={sprite.h}
+                            loading="eager"
+                            onError={(event) => { event.currentTarget.style.visibility = 'hidden'; }}
+                        />
+                    ) : (
+                        <PokeballIcon className="w-10 h-10 text-muted opacity-30" />
+                    )}
+                </div>
+            </TooltipTrigger>
         </div>
     );
 }
@@ -81,7 +97,7 @@ function ActiveMon({ mon, isMine, animated }) {
  * Remaining team. For the viewer it's their own roster; for the opponent it's the
  * species revealed at team preview, with no HP claimed.
  */
-function TeamStrip({ side, revealSpecies, faintedCount }) {
+function TeamStrip({ side, revealSpecies, faintedCount, isMine }) {
     const roster = side?.roster || [];
     if (roster.length === 0) return null;
 
@@ -93,34 +109,63 @@ function TeamStrip({ side, revealSpecies, faintedCount }) {
                 // dims from the end rather than pretending to know which fell.
                 const isDown = index >= roster.length - faintedCount;
                 return (
-                    <span key={`${mon.species}-${index}`} className={`battlefield-strip__slot ${isDown ? 'is-down' : ''}`}>
-                        {icon?.url ? (
-                            <img src={icon.url} alt={mon.species} loading="lazy" />
-                        ) : (
-                            <PokeballIcon className="w-4 h-4 text-muted opacity-40" />
-                        )}
-                    </span>
+                    <TooltipTrigger
+                        key={`${mon.species}-${index}`}
+                        placement={isMine ? 'top' : 'bottom'}
+                        tooltipContent={
+                            <MonTooltipCard
+                                speciesName={mon.species}
+                                item={mon.item}
+                                ability={mon.ability}
+                                stats={mon.stats}
+                                isMine={isMine}
+                            />
+                        }
+                    >
+                        <span className={`battlefield-strip__slot ${isDown ? 'is-down' : ''} cursor-pointer`}>
+                            {icon?.url ? (
+                                <img src={icon.url} alt={mon.species} loading="lazy" />
+                            ) : (
+                                <PokeballIcon className="w-4 h-4 text-muted opacity-40" />
+                            )}
+                        </span>
+                    </TooltipTrigger>
                 );
             })}
         </div>
     );
 }
 
-export function Battlefield({ field, animated = true }) {
+export function Battlefield({ field, animated = true, onToggleAnimated }) {
     const { t } = useTranslation();
     if (!field) return null;
 
     return (
         <div className="battlefield">
             <div className="battlefield__meta">
-                {field.turn > 0 && <span className="battlefield__turn">{t('battle.turnLabel', { turn: field.turn })}</span>}
-                {field.weather && <span className="battlefield__weather">{field.weather}</span>}
+                <div className="battlefield__meta-info">
+                    {field.turn > 0 && <span className="battlefield__turn">{t('battle.turnLabel', { turn: field.turn })}</span>}
+                    {field.weather && <span className="battlefield__weather">{field.weather}</span>}
+                </div>
+
+                {onToggleAnimated && (
+                    <button
+                        type="button"
+                        className="battle-sprite-toggle battle-sprite-toggle--compact flex items-center gap-1"
+                        aria-pressed={animated}
+                        onClick={onToggleAnimated}
+                        title={t('battle.animatedSprites')}
+                    >
+                        <Sparkles className="w-3 h-3 text-amber-400 inline-block" />
+                        <span>{animated ? 'GIF' : 'PNG'}</span>
+                    </button>
+                )}
             </div>
 
             <div className="battlefield__side is-theirs">
                 <div className="battlefield__side-head">
                     <span className="battlefield__trainer">{field.theirs?.name || t('friends.unknownTrainer')}</span>
-                    <TeamStrip side={field.theirs} revealSpecies faintedCount={field.theirs?.faintedCount || 0} />
+                    <TeamStrip side={field.theirs} revealSpecies faintedCount={field.theirs?.faintedCount || 0} isMine={false} />
                 </div>
                 <ActiveMon mon={field.theirs?.active} isMine={false} animated={animated} />
             </div>
@@ -128,10 +173,10 @@ export function Battlefield({ field, animated = true }) {
             <div className="battlefield__divider" aria-hidden="true" />
 
             <div className="battlefield__side is-mine">
-                <ActiveMon mon={field.mine?.active} isMine animated={animated} />
+                <ActiveMon mon={field.mine?.active} isMine={true} animated={animated} />
                 <div className="battlefield__side-head">
                     <span className="battlefield__trainer">{field.mine?.name || t('battle.you')}</span>
-                    <TeamStrip side={field.mine} revealSpecies faintedCount={field.mine?.faintedCount || 0} />
+                    <TeamStrip side={field.mine} revealSpecies faintedCount={field.mine?.faintedCount || 0} isMine={true} />
                 </div>
             </div>
 
