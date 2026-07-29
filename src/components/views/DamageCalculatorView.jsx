@@ -644,7 +644,7 @@ export function DamageCalculatorView() {
                         {side === 'p1' ? 'Pokémon 1' : 'Pokémon 2'}
                         {pState.isMega && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surface-raised text-muted border border-border">MEGA</span>}
                     </span>
-                    <div className="flex gap-1">{pState.types.map(tp => <TypeBadge key={tp} type={tp} />)}</div>
+                    <div className="flex gap-1">{(pState.types || []).map(tp => <TypeBadge key={tp} type={tp} />)}</div>
                 </div>
 
                 {/* Sprite + picker + level/status */}

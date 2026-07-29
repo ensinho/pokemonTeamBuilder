@@ -1020,6 +1020,7 @@ export const ShareSnippetModal = ({
                     return {
                         id: p.id,
                         name,
+                        types: Array.isArray(p.types) ? p.types : (p.types ? [p.types] : []),
                         sprite: getPokemonArtworkSpriteUrl(spriteId),
                         shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
                         animatedSprite: getPokemonFrontSpriteUrl(spriteId),

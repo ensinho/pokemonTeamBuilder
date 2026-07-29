@@ -626,7 +626,7 @@ export function PokemonDetailPanel({
                                                 <p className="text-[11px] font-bold text-fg capitalize mt-1 leading-tight line-clamp-2">{form.displayName}</p>
                                                 {form.types?.length > 0 && (
                                                     <div className="mt-1.5 flex flex-wrap justify-center gap-1">
-                                                        {form.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                                        {(form.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                                                     </div>
                                                 )}
                                             </button>
@@ -765,7 +765,7 @@ export function PokemonDetailPanel({
                                                 <div key={g.mult} className={`rounded-lg border ${g.border} ${g.bg} px-3 py-2.5`}>
                                                     <span className={`text-[10px] font-extrabold uppercase tracking-widest ${g.text} block mb-2`}>{g.label}</span>
                                                     <div className="flex flex-wrap gap-1.5">
-                                                        {g.types.map((tName) => (
+                                                        {(g.types || []).map((tName) => (
                                                             <span key={tName} className={`inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-semibold capitalize ${g.badge}`}>
                                                                 <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0" />{tName}
                                                             </span>

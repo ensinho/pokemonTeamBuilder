@@ -1144,7 +1144,7 @@ export default function PokePuzzleView() {
                                         <div className="pokepuzzle-tip-card">
                                             <span className="pokepuzzle-tip-label">{t('pokepuzzle.tipTypes')}</span>
                                             <div className="pokepuzzle-tip-content pokepuzzle-clue-types">
-                                                {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                                {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
                                                     <span
                                                         key={type}
                                                         className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded"
@@ -1407,7 +1407,7 @@ export default function PokePuzzleView() {
                                         <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
 
                                         <div className="pokepuzzle-result-types mt-0.5">
-                                            {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                            {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
                                                 <span
                                                     key={type}
                                                     className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
@@ -1506,7 +1506,7 @@ export default function PokePuzzleView() {
                                         <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
 
                                         <div className="pokepuzzle-result-types mt-0.5">
-                                            {isLoadingDetails ? '...' : targetDetails.types.map(type => (
+                                            {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
                                                 <span
                                                     key={type}
                                                     className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"

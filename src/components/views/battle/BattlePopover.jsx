@@ -130,7 +130,7 @@ export function MonTooltipCard({ speciesName, level = 50, hpCondition, status, i
                     {!isMine && <span className="text-[10px] text-muted uppercase font-bold bg-surface-raised px-1 py-0.5 rounded">Enemy</span>}
                 </div>
                 <div className="flex items-center gap-1">
-                    {spec.types.map((type) => {
+                    {(spec.types || []).map((type) => {
                         const color = typeColors[type] || '#A8A77A';
                         const icon = typeIcons[type];
                         return (

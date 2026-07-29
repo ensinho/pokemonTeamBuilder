@@ -734,9 +734,9 @@ export default function AppLayout() {
                     const defaultCustomization = {
                         item: '',
                         nature: 'serious',
-                        teraType: detail.types[0],
+                        teraType: detail.types?.[0] || 'normal',
                         isShiny: false,
-                        ability: detail.abilities[0].name,
+                        ability: detail.abilities?.[0]?.name || 'unknown',
                         moves: [],
                         evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
                         ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
@@ -786,8 +786,8 @@ export default function AppLayout() {
             if (!detail) return null;
             const savedPokemonData = team.pokemons[i];
             const defaultCustomization = {
-                item: '', nature: 'serious', teraType: detail.types[0], isShiny: false,
-                ability: detail.abilities[0].name,
+                item: '', nature: 'serious', teraType: detail.types?.[0] || 'normal', isShiny: false,
+                ability: detail.abilities?.[0]?.name || 'unknown',
                 moves: [],
                 evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
                 ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }

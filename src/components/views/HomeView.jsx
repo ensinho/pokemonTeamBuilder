@@ -402,23 +402,38 @@ export function HomeView({
         }
     };
 
-    const handleImportTeam = (sharedTeam) => {
+    const handleImportTeam = async (sharedTeam) => {
         if (!sharedTeam || !sharedTeam.pokemons) return;
 
-        const pokemonIndex = useReferenceStore.getState().pokemonIndex || [];
-        const indexById = new Map(pokemonIndex.map((p) => [p.id, p]));
+        let pokemonIndex = useReferenceStore.getState().pokemonIndex || [];
+        if (!pokemonIndex || pokemonIndex.length === 0) {
+            try {
+                pokemonIndex = await useReferenceStore.getState().fetchPokemonIndex();
+            } catch (err) {
+                console.error("Failed to fetch pokemon index on import:", err);
+                pokemonIndex = [];
+            }
+        }
+        const indexById = new Map((pokemonIndex || []).map((p) => [p.id, p]));
 
-        const enrichedPokemons = sharedTeam.pokemons.map((p) => {
+        const enrichedPokemons = await Promise.all(sharedTeam.pokemons.map(async (p) => {
             if (!p) return p;
-            const indexEntry = indexById.get(p.id);
+            let indexEntry = indexById.get(p.id);
+            if (!indexEntry && p.id) {
+                try {
+                    indexEntry = await getStaticPokemonDetail(p.id);
+                } catch (_) { /* ignore */ }
+            }
+            const types = (Array.isArray(p.types) && p.types.length > 0)
+                ? p.types
+                : ((Array.isArray(indexEntry?.types) && indexEntry.types.length > 0) ? indexEntry.types : ['normal']);
+
             return {
                 ...(indexEntry || {}),
                 ...p,
-                types: (Array.isArray(p.types) && p.types.length > 0)
-                    ? p.types
-                    : (indexEntry?.types || []),
+                types,
             };
-        });
+        }));
 
         setCurrentTeam(enrichedPokemons);
         setTeamName(sharedTeam.name || 'Imported Team');
@@ -793,7 +808,7 @@ export function HomeView({
                                             <span className="home-partner-card__badge">{t('home.partner')}</span>
                                             {greetingPokemonData.types && (
                                                 <div className="home-partner-card__types">
-                                                    {greetingPokemonData.types.map((type) => (
+                                                    {(greetingPokemonData.types || []).map((type) => (
                                                         <img
                                                             key={type}
                                                             src={typeIcons[type]}
