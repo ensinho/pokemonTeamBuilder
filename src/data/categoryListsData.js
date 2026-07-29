@@ -12,7 +12,7 @@ export const CATEGORY_LISTS = [
         hint: { pt: 'Pokémon baseados em macacos, lêmures e grandes primatas (Classificação de Espécie da Bulbapedia).', en: 'Pokémon based on monkeys, lemurs, and apes (Bulbapedia Species Classification).' },
         iconName: 'Target',
         wikiRef: 'https://bulbapedia.bulbagarden.net/wiki/Category:Monkey_Pok%C3%A9mon',
-        pokemonNames: ['mankey', 'primeape', 'aipom', 'ambipom', 'chimchar', 'monferno', 'infernape', 'pansage', 'simisage', 'pansear', 'simisear', 'panpour', 'simpour', 'passimian', 'oranguru', 'grookey', 'thwackey', 'rillaboom', 'zarude', 'annihilape'],
+        pokemonNames: ['mankey', 'primeape', 'aipom', 'ambipom', 'chimchar', 'monferno', 'infernape', 'pansage', 'simisage', 'pansear', 'simisear', 'panpour', 'simipour', 'passimian', 'oranguru', 'grookey', 'thwackey', 'rillaboom', 'zarude', 'annihilape'],
     },
     {
         id: 'fossil-pokemon',

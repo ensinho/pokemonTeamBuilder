@@ -50,11 +50,18 @@ import {
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { PokemonGenerationQuizAutocomplete } from '../PokemonGenerationQuizAutocomplete';
 import { PokemonGenerationQuizCard } from '../PokemonGenerationQuizCard';
-import { PokeballIcon } from '../icons';
+import { CloseIcon, PokeballIcon } from '../icons';
 import { QuizCelebrationModal } from '../modals';
 
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
 const MIN_AUTOCOMPLETE_CHARACTERS = 3;
+
+const HistoryIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1em', height: '1em' }}>
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="12 6 12 12 16 14" />
+    </svg>
+);
 
 const LUCIDE_ICONS = {
     Activity,
@@ -157,11 +164,14 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     const [answerInput, setAnswerInput] = useState('');
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [manualHint, setManualHint] = useState('');
+    const [hintTargetName, setHintTargetName] = useState(null);
     const [feedback, setFeedback] = useState({ tone: 'muted', message: language === 'pt' ? 'Adivinhe os Pokémon da lista!' : 'Guess the Pokémon in the category!' });
     const [newlyFoundId, setNewlyFoundId] = useState(null);
     const [loadingDetailId, setLoadingDetailId] = useState(null);
     const [gridFilter, setGridFilter] = useState('all');
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(5);
+    const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
     const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
     const [celebrationPokemon, setCelebrationPokemon] = useState(null);
 
@@ -171,10 +181,30 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         activeRunId,
         getRandomUnplayedListId,
         startNewRun,
+        resumeRun,
         updateActiveRunProgress,
         deleteRun,
         rerunRun,
     } = useCategoryGuesser();
+
+    const handleHistoryScroll = useCallback((e) => {
+        const { scrollTop, scrollHeight, clientHeight } = e.target;
+        if (scrollHeight - scrollTop - clientHeight < 20) {
+            if (!isHistoryLoadingMore && visibleHistoryLimit < quizRuns.length) {
+                setIsHistoryLoadingMore(true);
+                setTimeout(() => {
+                    setVisibleHistoryLimit((prev) => Math.min(prev + 5, quizRuns.length));
+                    setIsHistoryLoadingMore(false);
+                }, 400);
+            }
+        }
+    }, [isHistoryLoadingMore, visibleHistoryLimit, quizRuns.length]);
+
+    useEffect(() => {
+        if (!isHistoryOpen) {
+            setVisibleHistoryLimit(5);
+        }
+    }, [isHistoryOpen]);
 
     const categoryListMap = useMemo(() => {
         return new Map(CATEGORY_LISTS.map((item) => [item.id, item]));
@@ -217,6 +247,10 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         const map = new Map();
         pokemonIndex.forEach((p) => {
             map.set(p.name, p);
+            const baseName = p.name.replace(/-(normal|altered|incarnate|ordinary|standard|shield|amped|disguised|solo|curly|two-segment|full-belly|male|female|red-striped|ice|zero|green-plumage|land|single-strike|aria|average)$/, '');
+            if (baseName && !map.has(baseName)) {
+                map.set(baseName, p);
+            }
         });
         return map;
     }, [pokemonIndex]);
@@ -229,17 +263,23 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     }, [activeRun, activeCategory]);
 
     const activePokemonList = useMemo(() => {
-        return activePokemonNames.map((name) => {
-            const match = pokemonByName.get(name);
-            const id = match ? match.id : 0;
-            return {
-                id,
-                name,
-                displayName: formatPokemonDisplayName(name),
-                spriteUrl: getPokemonFrontSpriteUrl(id),
-                artworkUrl: getPokemonArtworkSpriteUrl(id),
-            };
-        });
+        return activePokemonNames
+            .map((name) => {
+                const match = pokemonByName.get(name) || pokemonByName.get(name.toLowerCase());
+                if (!match) {
+                    console.warn(`[PokéQuiz] Could not resolve Pokémon for name: "${name}"`);
+                    return null;
+                }
+                const id = match.id;
+                return {
+                    id,
+                    name,
+                    displayName: formatPokemonDisplayName(name),
+                    spriteUrl: getPokemonFrontSpriteUrl(id),
+                    artworkUrl: getPokemonArtworkSpriteUrl(id),
+                };
+            })
+            .filter((p) => p && p.id > 0);
     }, [activePokemonNames, pokemonByName]);
 
     const pokemonById = useMemo(() => {
@@ -249,6 +289,12 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     const foundNames = useMemo(() => {
         return new Set(activeRun ? activeRun.foundNames : []);
     }, [activeRun?.foundNames]);
+
+    // Dynamic reactive hint: clear hint automatically when a guess is made or challenge changes
+    useEffect(() => {
+        setManualHint('');
+        setHintTargetName(null);
+    }, [foundNames.size, activeRunId]);
 
     const foundIds = useMemo(() => {
         const ids = new Set();
@@ -419,6 +465,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         startNewRun(nextObj.id, nextObj.pokemonNames);
         setAnswerInput('');
         setManualHint('');
+        setHintTargetName(null);
         setFeedback({ tone: 'info', message: language === 'pt' ? `Novo desafio: ${nextObj.title.pt}` : `New challenge: ${nextObj.title.en}` });
         if (showToast) {
             showToast(language === 'pt' ? 'Novo desafio sorteado!' : 'New challenge drawn!', 'info');
@@ -429,6 +476,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         if (remainingPokemon.length === 0) return;
         const randomPokemon = remainingPokemon[Math.floor(Math.random() * remainingPokemon.length)];
         setManualHint(buildQuizHintText(randomPokemon.name, language));
+        setHintTargetName(randomPokemon.name);
     }, [remainingPokemon, language]);
 
     const inspectPokemon = useCallback(async (pokemon) => {
@@ -637,7 +685,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
 
                             {manualHint && (
                                 <div className="generation-quiz__tip-banner">
-                                    <HelpCircle className="w-4 h-4" />
+                                    <HelpCircle className="w-4 h-4 text-amber-400" />
                                     <span className="generation-quiz__tip-text">{manualHint}</span>
                                 </div>
                             )}
@@ -709,69 +757,132 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                 />
             )}
 
-            {/* History Modal */}
-            {isHistoryOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="w-full max-w-lg p-6 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                                <History className="w-5 h-5 text-indigo-400" />
-                                <span>{language === 'pt' ? 'Histórico do PokéQuiz' : 'PokéQuiz History'}</span>
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setIsHistoryOpen(false)}
-                                className="text-slate-400 hover:text-white font-bold px-2 text-lg"
-                            >
-                                ✕
-                            </button>
-                        </div>
+            {/* History Drawer Overlay */}
+            <div
+                className={`generation-quiz__history-overlay ${isHistoryOpen ? 'is-open' : ''}`}
+                onClick={() => setIsHistoryOpen(false)}
+            />
 
-                        <div className="max-h-96 overflow-y-auto pr-1">
-                            {quizRuns.length === 0 ? (
-                                <p className="text-slate-400 text-sm text-center py-6">
-                                    {language === 'pt' ? 'Nenhuma partida registrada ainda.' : 'No runs recorded yet.'}
-                                </p>
-                            ) : (
-                                quizRuns.map((run) => {
+            {/* History Drawer Sidebar */}
+            <div className={`generation-quiz__history-sidebar ${isHistoryOpen ? 'is-open' : ''}`}>
+                <div className="generation-quiz__history-sidebar-header">
+                    <h3 className="generation-quiz__history-sidebar-title">
+                        <HistoryIcon /> {language === 'pt' ? 'Histórico do PokéQuiz' : 'PokéQuiz History'}
+                    </h3>
+                    <button
+                        type="button"
+                        className="generation-quiz__history-sidebar-close"
+                        onClick={() => setIsHistoryOpen(false)}
+                        title={language === 'pt' ? 'Fechar Histórico' : 'Close History'}
+                    >
+                        <CloseIcon />
+                    </button>
+                </div>
+
+                <div
+                    className="generation-quiz__history-sidebar-scroll"
+                    onScroll={handleHistoryScroll}
+                >
+                    {quizRuns.length === 0 ? (
+                        <div className="generation-quiz__history-sidebar-empty">
+                            <div className="generation-quiz__history-sidebar-empty-icon">
+                                <HistoryIcon />
+                            </div>
+                            <p className="generation-quiz__history-sidebar-empty-text">
+                                {language === 'pt' ? (
+                                    <>
+                                        Nenhuma partida gravada ainda.<br />
+                                        Jogue um desafio para registrar seu histórico!
+                                    </>
+                                ) : (
+                                    <>
+                                        No quiz runs recorded yet.<br />
+                                        Play a challenge to record your history!
+                                    </>
+                                )}
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {quizRuns
+                                .slice()
+                                .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
+                                .slice(0, visibleHistoryLimit)
+                                .map((run) => {
                                     const cat = categoryListMap.get(run.listId);
                                     const titleStr = cat ? (language === 'pt' ? cat.title.pt : cat.title.en) : run.listId;
+                                    const isRunComplete = run.isComplete || (run.foundNames && run.foundNames.length === run.totalCount);
+                                    const runAccuracy = run.bestAccuracy !== undefined ? run.bestAccuracy : 100;
+
                                     return (
-                                        <div key={run.id} className="flex items-center justify-between p-3 bg-slate-800/60 border border-slate-700/50 rounded-xl mb-2">
-                                            <div>
-                                                <div className="font-bold text-white text-sm">{titleStr}</div>
-                                                <div className="text-xs text-slate-400">
-                                                    {run.bestFound}/{run.totalCount} ({run.bestAccuracy}%) {run.isComplete ? (language === 'pt' ? '[Concluído]' : '[Complete]') : ''}
+                                        <div key={run.id} className="generation-quiz-history__item">
+                                            <div className="generation-quiz-history__info">
+                                                <span className="generation-quiz-history__gens">{titleStr}</span>
+                                                <div className="generation-quiz-history__stats">
+                                                    <span>{language === 'pt' ? 'Progresso:' : 'Progress:'} <strong>{run.foundNames ? run.foundNames.length : 0}/{run.totalCount}</strong></span>
+                                                    <span>{language === 'pt' ? 'Precisão:' : 'Accuracy:'} <strong>{runAccuracy}%</strong></span>
+                                                    {run.bestFound > 0 && (
+                                                        <span>{language === 'pt' ? 'Melhor:' : 'Best:'} <strong>{run.bestFound}/{run.totalCount}</strong></span>
+                                                    )}
+                                                    <span className={`generation-quiz-history__badge ${isRunComplete ? 'generation-quiz-history__badge--complete' : 'generation-quiz-history__badge--progress'}`}>
+                                                        {isRunComplete ? (language === 'pt' ? 'Concluído' : 'Completed') : (language === 'pt' ? 'Em Progresso' : 'In Progress')}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="generation-quiz-history__actions">
+                                                {!isRunComplete && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            resumeRun(run.id);
+                                                            setIsHistoryOpen(false);
+                                                            setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida retomada. Boa sorte!' : 'Run resumed. Good luck!' });
+                                                        }}
+                                                        className="generation-quiz-history__btn generation-quiz-history__btn--continue"
+                                                    >
+                                                        {language === 'pt' ? 'Continuar' : 'Continue'}
+                                                    </button>
+                                                )}
                                                 <button
                                                     type="button"
                                                     onClick={() => {
                                                         const catObj = categoryListMap.get(run.listId);
                                                         rerunRun(run.id, catObj ? catObj.pokemonNames : []);
                                                         setIsHistoryOpen(false);
+                                                        setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida reiniciada do zero.' : 'Run restarted from scratch.' });
                                                     }}
-                                                    className="px-3 py-1 bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 text-xs font-semibold rounded-lg transition"
+                                                    className="generation-quiz-history__btn generation-quiz-history__btn--rerun"
                                                 >
-                                                    {language === 'pt' ? 'Jogar' : 'Play'}
+                                                    {isRunComplete ? (language === 'pt' ? 'Jogar Novamente' : 'Play Again') : (language === 'pt' ? 'Recomeçar' : 'Restart')}
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => deleteRun(run.id)}
-                                                    className="px-2 py-1 bg-red-500/20 hover:bg-red-500/40 text-red-400 text-xs font-semibold rounded-lg transition"
+                                                    onClick={() => {
+                                                        if (window.confirm(language === 'pt' ? 'Tem certeza que quer deletar o progresso desta partida?' : "Are you sure you want to delete this run's progress?")) {
+                                                            deleteRun(run.id);
+                                                        }
+                                                    }}
+                                                    className="generation-quiz-history__btn generation-quiz-history__btn--delete"
+                                                    title={language === 'pt' ? 'Deletar Partida' : 'Delete Run'}
                                                 >
-                                                    ✕
+                                                    <CloseIcon />
                                                 </button>
                                             </div>
                                         </div>
                                     );
-                                })
+                                })}
+
+                            {isHistoryLoadingMore && (
+                                <div className="generation-quiz__history-loading">
+                                    <div className="generation-quiz__history-loading-spinner" />
+                                    <span>{language === 'pt' ? 'Carregando partidas antigas...' : 'Loading older runs...'}</span>
+                                </div>
                             )}
-                        </div>
-                    </div>
+                        </>
+                    )}
                 </div>
-            )}
+            </div>
         </main>
     );
 }
+
