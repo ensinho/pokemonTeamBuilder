@@ -60,6 +60,7 @@ import { HomeView } from './views';
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
 const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
+const CategoryGuesserView = lazy(() => import('./views/CategoryGuesserView').then((m) => ({ default: m.CategoryGuesserView })));
 const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
@@ -218,6 +219,7 @@ export default function AppLayout() {
         if (path.includes('/damage-calculator')) return 'damageCalc';
         if (path.includes('/speed-tiers')) return 'speedTiers';
         if (path.includes('/teams')) return 'allTeams';
+        if (path.includes('/guesser')) return 'categoryGuesser';
         if (path.includes('/quiz')) return 'generationQuiz';
         if (path.includes('/battles')) return 'battles';
         if (path.includes('/friends')) return 'friends';
@@ -582,6 +584,7 @@ export default function AppLayout() {
             'builder': { title: t('builder.title'), subtitle: t('builder.subtitle') },
             'pokedex': { title: t('nav.pokedex'), subtitle: t('home.shortcutPokedexDesc') },
             'allTeams': { title: t('savedTeams.title'), subtitle: t('savedTeams.subtitle') },
+            'categoryGuesser': { title: t('nav.pokequiz'), subtitle: language === 'pt' ? 'Adivinhe Pokémon por características e atributos oficiais' : 'Guess Pokémon by official traits & characteristics' },
             'generationQuiz': { title: t('quiz.title'), subtitle: t('quiz.subtitle') },
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
@@ -642,6 +645,7 @@ export default function AppLayout() {
             {
                 title: t('nav.guessing'),
                 items: [
+                    { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
                 ]
@@ -1442,7 +1446,13 @@ export default function AppLayout() {
                                                 }}
                                             />
                                         } />
-                                        <Route path="/quiz" element={
+                                         <Route path="/guesser" element={
+                                             <CategoryGuesserView
+                                                 showDetails={showDetails}
+                                                 showToast={showToast}
+                                             />
+                                         } />
+                                         <Route path="/quiz" element={
                                             <GenerationQuizView
                                                 showDetails={showDetails}
                                                 showToast={showToast}
