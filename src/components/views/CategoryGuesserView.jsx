@@ -142,7 +142,7 @@ const formatPokemonDisplayName = (name = '') => {
 
 const buildQuizHintText = (name, language) => {
     const displayName = formatPokemonDisplayName(name);
-    const prefix = displayName.slice(0, Math.max(2, Math.ceil(displayName.length * 0.35)));
+    const prefix = displayName.slice(0, Math.max(2, Math.ceil(displayName.length * 0.33)));
     return language === 'pt'
         ? `Dica: '${prefix}…' (${displayName.length} letras)!`
         : `Tip: '${prefix}…' (${displayName.length} letters)!`;
