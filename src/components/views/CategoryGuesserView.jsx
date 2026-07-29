@@ -54,7 +54,7 @@ import { CloseIcon, PokeballIcon } from '../icons';
 import { QuizCelebrationModal } from '../modals';
 
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
-const MIN_AUTOCOMPLETE_CHARACTERS = 3;
+const MIN_AUTOCOMPLETE_CHARACTERS = 5;
 
 const HistoryIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '1em', height: '1em' }}>
@@ -165,6 +165,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [manualHint, setManualHint] = useState('');
     const [hintTargetName, setHintTargetName] = useState(null);
+    const [hintsUsed, setHintsUsed] = useState(0);
     const [feedback, setFeedback] = useState({ tone: 'muted', message: language === 'pt' ? 'Adivinhe os Pokémon da lista!' : 'Guess the Pokémon in the category!' });
     const [newlyFoundId, setNewlyFoundId] = useState(null);
     const [loadingDetailId, setLoadingDetailId] = useState(null);
@@ -290,11 +291,22 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         return new Set(activeRun ? activeRun.foundNames : []);
     }, [activeRun?.foundNames]);
 
+    const foundCount = foundNames.size;
+    const totalCount = activePokemonList.length;
+    const remainingCount = Math.max(0, totalCount - foundCount);
+
+    // Hints earned: 1 hint credit per 20% of total (e.g. 4 catches for 20 pokemon)
+    const hintInterval = Math.max(1, Math.round(totalCount * 0.2));
+    const availableHints = Math.max(0, Math.floor(foundCount / hintInterval) - hintsUsed);
+
     // Dynamic reactive hint: clear hint automatically when a guess is made or challenge changes
     useEffect(() => {
         setManualHint('');
         setHintTargetName(null);
-    }, [foundNames.size, activeRunId]);
+        if (foundCount === 0) {
+            setHintsUsed(0);
+        }
+    }, [foundCount, activeRunId]);
 
     const foundIds = useMemo(() => {
         const ids = new Set();
@@ -466,6 +478,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         setAnswerInput('');
         setManualHint('');
         setHintTargetName(null);
+        setHintsUsed(0);
         setFeedback({ tone: 'info', message: language === 'pt' ? `Novo desafio: ${nextObj.title.pt}` : `New challenge: ${nextObj.title.en}` });
         if (showToast) {
             showToast(language === 'pt' ? 'Novo desafio sorteado!' : 'New challenge drawn!', 'info');
@@ -473,11 +486,12 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     }, [getRandomUnplayedListId, categoryListMap, startNewRun, showToast, language]);
 
     const handleManualHint = useCallback(() => {
-        if (remainingPokemon.length === 0) return;
+        if (availableHints <= 0 || remainingPokemon.length === 0) return;
         const randomPokemon = remainingPokemon[Math.floor(Math.random() * remainingPokemon.length)];
         setManualHint(buildQuizHintText(randomPokemon.name, language));
         setHintTargetName(randomPokemon.name);
-    }, [remainingPokemon, language]);
+        setHintsUsed((count) => count + 1);
+    }, [availableHints, remainingPokemon, language]);
 
     const inspectPokemon = useCallback(async (pokemon) => {
         if (!pokemon || loadingDetailId) return;
@@ -515,10 +529,6 @@ export function CategoryGuesserView({ showDetails, showToast }) {
             setLoadingDetailId(null);
         }
     }, [loadingDetailId, showDetails]);
-
-    const foundCount = foundNames.size;
-    const totalCount = activePokemonList.length;
-    const remainingCount = Math.max(0, totalCount - foundCount);
 
     const visibleEntries = useMemo(() => {
         if (gridFilter === 'guessed') return activePokemonList.filter((p) => foundNames.has(p.name));
@@ -706,11 +716,12 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                                     type="button"
                                     onClick={handleManualHint}
                                     className="category-guesser__action-btn"
-                                    disabled={remainingPokemon.length === 0}
-                                    title={language === 'pt' ? 'Pedir uma dica' : 'Get a hint'}
+                                    disabled={availableHints <= 0 || remainingPokemon.length === 0 || isComplete}
+                                    title={language === 'pt' ? `Ganhe 1 dica a cada 20% de acertos (${hintInterval} Pokémon)` : `Earn 1 hint every 20% of catches (${hintInterval} Pokémon)`}
                                 >
                                     <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
                                     <span>{language === 'pt' ? 'Dica' : 'Hint'}</span>
+                                    <span className="generation-quiz__hint-count">{availableHints}</span>
                                 </button>
                             </div>
                         </section>
