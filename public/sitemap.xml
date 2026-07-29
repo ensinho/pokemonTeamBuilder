@@ -6826,7 +6826,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/pinsir</loc>
+    <loc>https://pokemonbuilder.app/meta/pikachu</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/machamp</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6836,7 +6841,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/banette</loc>
+    <loc>https://pokemonbuilder.app/meta/sharpedo</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6846,77 +6851,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/glalie</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/spiritomb</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/rhyperior</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/audino</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/meowstic-male</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/aegislash-shield</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/aurorus</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/mimikyu-disguised</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/runerigus</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/alcremie</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/wyrdeer</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/basculegion-male</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/maushold-family-of-four</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/garganacl</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/palafin-zero</loc>
+    <loc>https://pokemonbuilder.app/meta/glaceon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7137,6 +7077,11 @@
   </url>
   <url>
     <loc>https://pokemonbuilder.app/meta/toxtricity-amped</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/alcremie</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
