@@ -567,105 +567,103 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                 <div className="category-guesser__columns">
                     {/* Left Column: Sidebar / Console Box */}
                     <aside className="category-guesser__sidebar">
-                        <section className="team-builder-panel generation-quiz__console">
-                            <div className="generation-quiz__console-main">
-                                {/* Last found indicator */}
-                                <div className="generation-quiz__last-find" key={lastFind ? lastFind.id : 'empty'}>
-                                    <div className="generation-quiz__last-find-media" title={lastFind ? formatPokemonDisplayName(lastFind.name) : undefined}>
-                                        {lastFind ? (
-                                            <img src={getPokemonFrontSpriteUrl(lastFind.id)} alt={lastFind.name} className="image-pixelated" />
-                                        ) : (
-                                            <PokeballIcon />
-                                        )}
-                                    </div>
-                                    <div className="generation-quiz__last-find-info">
-                                        <span className="generation-quiz__last-find-eyebrow">
-                                            {language === 'pt' ? 'ÚLTIMO ENCONTRADO' : 'LAST FOUND'}
-                                        </span>
-                                        <span className="generation-quiz__last-find-name">
-                                            {lastFind ? formatPokemonDisplayName(lastFind.name) : '---'}
-                                        </span>
-                                        {lastFind && <span className="generation-quiz__last-find-id">#{lastFind.id}</span>}
-                                    </div>
+                        <section className="category-guesser__console-box">
+                            {/* Last found indicator */}
+                            <div className="category-guesser__last-find-bar" key={lastFind ? lastFind.id : 'empty'}>
+                                <div className="category-guesser__last-find-thumb" title={lastFind ? formatPokemonDisplayName(lastFind.name) : undefined}>
+                                    {lastFind ? (
+                                        <img src={getPokemonFrontSpriteUrl(lastFind.id)} alt={lastFind.name} className="image-pixelated" />
+                                    ) : (
+                                        <PokeballIcon />
+                                    )}
                                 </div>
-
-                                {/* Category Official Description Box */}
-                                <div className="p-3 border border-slate-700/50 rounded-xl bg-slate-800/40">
-                                    <div className="flex items-center justify-between gap-2 mb-1">
-                                        <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                                            <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                                            <span>{language === 'pt' ? 'Dica da Categoria' : 'Category Hint'}</span>
-                                        </span>
-                                        {activeCategory.wikiRef && (
-                                            <a
-                                                href={activeCategory.wikiRef}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-                                            >
-                                                <span>Bulbapedia</span>
-                                                <ExternalLink className="w-3 h-3" />
-                                            </a>
-                                        )}
-                                    </div>
-                                    <p className="text-xs text-slate-300 m-0 leading-relaxed">
-                                        {language === 'pt' ? activeCategory.hint.pt : activeCategory.hint.en}
-                                    </p>
+                                <div className="category-guesser__last-find-meta">
+                                    <span className="category-guesser__last-find-label">
+                                        {language === 'pt' ? 'ÚLTIMO ENCONTRADO' : 'LAST FOUND'}
+                                    </span>
+                                    <span className="category-guesser__last-find-name">
+                                        {lastFind ? formatPokemonDisplayName(lastFind.name) : '---'}
+                                    </span>
+                                    {lastFind && <span className="text-xs text-slate-400">#{lastFind.id}</span>}
                                 </div>
+                            </div>
 
-                                {/* Autocomplete Search Input */}
-                                <div className="generation-quiz__console-input">
-                                    <PokemonGenerationQuizAutocomplete
-                                        value={answerInput}
-                                        onChange={setAnswerInput}
-                                        onKeyDown={handleInputKeyDown}
-                                        suggestions={suggestions}
-                                        activeIndex={activeSuggestionIndex}
-                                        onSelectSuggestion={handleSelectSuggestion}
-                                        disabled={isComplete}
-                                        inputRef={inputRef}
-                                        placeholder={language === 'pt' ? 'Digite o nome do Pokémon...' : 'Type a Pokémon name...'}
-                                        minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
-                                    />
+                            {/* Category Official Description Box */}
+                            <div className="category-guesser__hint-box">
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                        <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
+                                        <span>{language === 'pt' ? 'Dica da Categoria' : 'Category Hint'}</span>
+                                    </span>
+                                    {activeCategory.wikiRef && (
+                                        <a
+                                            href={activeCategory.wikiRef}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                                        >
+                                            <span>Bulbapedia</span>
+                                            <ExternalLink className="w-3 h-3" />
+                                        </a>
+                                    )}
                                 </div>
+                                <p className="text-xs text-slate-300 m-0 leading-relaxed">
+                                    {language === 'pt' ? activeCategory.hint.pt : activeCategory.hint.en}
+                                </p>
+                            </div>
 
-                                {/* Console Feedback */}
-                                <div className="generation-quiz__console-status">
-                                    <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
-                                        {feedback.message}
-                                    </p>
+                            {/* Autocomplete Search Input */}
+                            <div className="w-full">
+                                <PokemonGenerationQuizAutocomplete
+                                    value={answerInput}
+                                    onChange={setAnswerInput}
+                                    onKeyDown={handleInputKeyDown}
+                                    suggestions={suggestions}
+                                    activeIndex={activeSuggestionIndex}
+                                    onSelectSuggestion={handleSelectSuggestion}
+                                    disabled={isComplete}
+                                    inputRef={inputRef}
+                                    placeholder={language === 'pt' ? 'Digite o nome do Pokémon...' : 'Type a Pokémon name...'}
+                                    minCharacters={MIN_AUTOCOMPLETE_CHARACTERS}
+                                />
+                            </div>
+
+                            {/* Console Feedback */}
+                            <div className="w-full">
+                                <p className={`generation-quiz__feedback generation-quiz__feedback--${feedback.tone}`}>
+                                    {feedback.message}
+                                </p>
+                            </div>
+
+                            {manualHint && (
+                                <div className="generation-quiz__tip-banner">
+                                    <HelpCircle className="w-4 h-4" />
+                                    <span className="generation-quiz__tip-text">{manualHint}</span>
                                 </div>
+                            )}
 
-                                {manualHint && (
-                                    <div className="generation-quiz__tip-banner">
-                                        <HelpCircle className="w-4 h-4" />
-                                        <span className="generation-quiz__tip-text">{manualHint}</span>
-                                    </div>
-                                )}
+                            {/* Symmetrical Action Buttons (50% / 50%) */}
+                            <div className="category-guesser__console-actions">
+                                <button
+                                    type="button"
+                                    onClick={handleRerollChallenge}
+                                    className="category-guesser__action-btn"
+                                    title={language === 'pt' ? 'Sortear outro desafio' : 'Draw another challenge'}
+                                >
+                                    <RefreshCw className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+                                    <span>{language === 'pt' ? 'Novo Desafio' : 'New Challenge'}</span>
+                                </button>
 
-                                {/* Symmetrical Action Buttons (50% / 50%) */}
-                                <div className="category-guesser__console-actions">
-                                    <button
-                                        type="button"
-                                        onClick={handleRerollChallenge}
-                                        className="category-guesser__action-btn"
-                                        title={language === 'pt' ? 'Sortear outro desafio' : 'Draw another challenge'}
-                                    >
-                                        <RefreshCw className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-                                        <span>{language === 'pt' ? 'Novo Desafio' : 'New Challenge'}</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={handleManualHint}
-                                        className="category-guesser__action-btn"
-                                        disabled={remainingPokemon.length === 0}
-                                        title={language === 'pt' ? 'Pedir uma dica' : 'Get a hint'}
-                                    >
-                                        <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                                        <span>{language === 'pt' ? 'Dica' : 'Hint'}</span>
-                                    </button>
-                                </div>
+                                <button
+                                    type="button"
+                                    onClick={handleManualHint}
+                                    className="category-guesser__action-btn"
+                                    disabled={remainingPokemon.length === 0}
+                                    title={language === 'pt' ? 'Pedir uma dica' : 'Get a hint'}
+                                >
+                                    <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                                    <span>{language === 'pt' ? 'Dica' : 'Hint'}</span>
+                                </button>
                             </div>
                         </section>
                     </aside>
