@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { useBattles } from '../../../hooks/useBattles';
+import { useFriends } from '../../../hooks/useFriends';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useBattlesStore } from '../../../store/useBattlesStore';
 import { useToastStore } from '../../../store/useToastStore';
@@ -12,7 +13,8 @@ import {
 } from '../../../hooks/useBattleNotifications';
 import { AvatarSprite } from '../../AvatarSprite';
 import { EmptyState } from '../../EmptyState';
-import { PokeballIcon } from '../../icons';
+import { PokeballIcon, SwordsIcon } from '../../icons';
+import { ChallengeModal } from '../../modals/ChallengeModal';
 import '../../../styles/battle-view.css';
 
 /** Enable/disable the native browser popup for "your turn" and challenges. */
@@ -73,9 +75,14 @@ export function BattleListView() {
     });
 
     const navigate = useNavigate();
+    const userId = useAuthStore((state) => state.userId);
     const isAnonymous = useAuthStore((state) => state.isAnonymous);
     const { battles, isLoadingBattles } = useBattles();
+    const { friends } = useFriends();
+    const challengeFriend = useBattlesStore((state) => state.challengeFriend);
     const deleteBattle = useBattlesStore((state) => state.deleteBattle);
+
+    const [isChallengeModalOpen, setIsChallengeModalOpen] = useState(false);
 
     if (isAnonymous) {
         return (
@@ -90,8 +97,6 @@ export function BattleListView() {
             return view.isChallenger ? t('battle.statusSentPending') : t('battle.statusAwaitingYou');
         }
         if (view.status === 'teamSelect') {
-            // Random battles pass through this status in a single write, so it
-            // only shows while the server is dealing (or if that roll failed).
             if (view.isRandom) return t('battle.statusDealingRandom');
             if (!view.myReady) return t('battle.statusPickYourTeam');
             if (!view.theirReady) return t('battle.statusWaitingTheirTeam');
@@ -109,8 +114,25 @@ export function BattleListView() {
 
     return (
         <div className="battle-view">
-            <p className="battle-intro">{t('battle.listIntro')}</p>
-            <NotificationToggle />
+            {/* Header controls bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                <p className="battle-intro text-sm text-muted m-0 flex-1 min-w-[240px]">
+                    {t('battle.listIntro')}
+                </p>
+
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        className="btn btn-primary font-semibold text-xs flex items-center gap-1.5 px-4 py-2"
+                        onClick={() => setIsChallengeModalOpen(true)}
+                    >
+                        <SwordsIcon className="w-4 h-4" />
+                        <span>{t('battle.createBattle')}</span>
+                    </button>
+
+                    <NotificationToggle />
+                </div>
+            </div>
 
             {isLoadingBattles && battles.length === 0 ? (
                 <div className="battle-loading">
@@ -121,7 +143,10 @@ export function BattleListView() {
                     compact
                     title={t('battle.emptyTitle')}
                     message={t('battle.emptyMessage')}
-                    action={{ label: t('battle.goToFriends'), onClick: () => navigate('/friends') }}
+                    action={{
+                        label: t('battle.createBattle'),
+                        onClick: () => setIsChallengeModalOpen(true),
+                    }}
                 />
             ) : (
                 <ul className="battle-list">
@@ -164,6 +189,17 @@ export function BattleListView() {
                     ))}
                 </ul>
             )}
+
+            <ChallengeModal
+                isOpen={isChallengeModalOpen}
+                onClose={() => setIsChallengeModalOpen(false)}
+                friends={friends}
+                onStartChallenge={async (targetFriend, { mode }) => {
+                    const battleId = await challengeFriend(targetFriend, { mode });
+                    if (battleId) navigate(`/battles/${battleId}`);
+                }}
+                userId={userId}
+            />
         </div>
     );
 }

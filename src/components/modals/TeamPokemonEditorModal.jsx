@@ -218,7 +218,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             <div className="min-w-0">
                                 <h2 id="team-editor-title" className="truncate text-lg font-bold capitalize text-fg sm:text-xl md:text-2xl">{pokemon.name}</h2>
                                 <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {pokemon.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                    {(pokemon.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                                 </div>
                                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                                     <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">

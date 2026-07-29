@@ -3,6 +3,7 @@ import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
+import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
@@ -261,7 +262,22 @@ export function FeedView({ colors, showToast, navigate }) {
     const handleImportTeam = (sharedTeam) => {
         if (!sharedTeam || !sharedTeam.pokemons) return;
 
-        setCurrentTeam(sharedTeam.pokemons);
+        const pokemonIndex = useReferenceStore.getState().pokemonIndex || [];
+        const indexById = new Map(pokemonIndex.map((p) => [p.id, p]));
+
+        const enrichedPokemons = sharedTeam.pokemons.map((p) => {
+            if (!p) return p;
+            const indexEntry = indexById.get(p.id);
+            return {
+                ...(indexEntry || {}),
+                ...p,
+                types: (Array.isArray(p.types) && p.types.length > 0)
+                    ? p.types
+                    : (indexEntry?.types || []),
+            };
+        });
+
+        setCurrentTeam(enrichedPokemons);
         setTeamName(sharedTeam.name || 'Imported Team');
         setEditingTeamId(null); // Clear editing to prevent saving over another team
 

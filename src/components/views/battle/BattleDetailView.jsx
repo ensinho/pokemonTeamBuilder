@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FileText, MessageSquare, RefreshCw } from 'lucide-react';
+import { FileText, MessageSquare, RefreshCw, Share2 } from 'lucide-react';
 
 import { useBattles } from '../../../hooks/useBattles';
 import { useBattlesStore } from '../../../store/useBattlesStore';
+import { useForumStore } from '../../../store/useForumStore';
+import { useToastStore } from '../../../store/useToastStore';
 import { useFirestoreTeams } from '../../../hooks/useFirestoreTeams';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useTranslation } from '../../../hooks/useTranslation';
@@ -341,6 +343,61 @@ export function BattleDetailView() {
         });
     };
 
+    // Auto-confirm lead order during teamPreview without requiring manual click
+    const autoConfirmedPreviewFor = useRef(null);
+    useEffect(() => {
+        if (
+            myRequest.kind === 'teamPreview'
+            && !isWaitingForOpponent
+            && !isResolvingTurn
+            && autoConfirmedPreviewFor.current !== `${battleId}:${currentRound}`
+        ) {
+            autoConfirmedPreviewFor.current = `${battleId}:${currentRound}`;
+            handleChoice('default', t('battle.teamOrderConfirmed'));
+        }
+    }, [myRequest.kind, isWaitingForOpponent, isResolvingTurn, battleId, currentRound, handleChoice, t]);
+
+    const [isSharingForum, setIsSharingForum] = useState(false);
+    const showToast = useToastStore((state) => state.showToast);
+    const sendMessage = useForumStore((state) => state.sendMessage);
+
+    const handleShareResultToForum = async () => {
+        if (isSharingForum || !view) return;
+        setIsSharingForum(true);
+        try {
+            const opponent = view.opponentName || t('friends.unknownTrainer');
+            let summaryText = '';
+            if (view.winner === userId) {
+                summaryText = language === 'pt'
+                    ? `🏆 Venci a batalha contra @${opponent}!`
+                    : `🏆 I won the battle against @${opponent}!`;
+            } else if (view.winner) {
+                summaryText = language === 'pt'
+                    ? `⚔️ @${opponent} venceu a batalha contra mim.`
+                    : `⚔️ @${opponent} won the battle against me.`;
+            } else {
+                summaryText = language === 'pt'
+                    ? `🤝 Batalha empatada contra @${opponent}!`
+                    : `🤝 Battle tied against @${opponent}!`;
+            }
+
+            const replayUrl = `${window.location.origin}${window.location.pathname}#/battles/${battleId}`;
+            const fullMsg = `${summaryText}\n${language === 'pt' ? 'Assista o replay' : 'Watch the replay'}: ${replayUrl}`;
+
+            const ok = await sendMessage('general', fullMsg);
+            if (ok) {
+                showToast(t('battle.shareForumSuccess'), 'success');
+            } else {
+                showToast(t('battle.shareForumError'), 'error');
+            }
+        } catch (err) {
+            console.error('Error sharing battle to forum:', err);
+            showToast(t('battle.shareForumError'), 'error');
+        } finally {
+            setIsSharingForum(false);
+        }
+    };
+
     if (!battle || !view) {
         return (
             <div className="battle-view">
@@ -587,17 +644,10 @@ export function BattleDetailView() {
                                         />
 
                                         {!isWaitingForOpponent && myRequest.kind === 'teamPreview' && (
-                                            <>
-                                                <p className="battle-panel__label">{t('battle.teamPreviewPrompt')}</p>
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-primary"
-                                                    disabled={isResolvingTurn}
-                                                    onClick={() => handleChoice('default', t('battle.teamOrderConfirmed'))}
-                                                >
-                                                    {t('battle.confirmOrder')}
-                                                </button>
-                                            </>
+                                            <p className="battle-panel__copy flex items-center justify-center gap-2 py-2 text-primary font-semibold animate-pulse">
+                                                <RefreshCw className="w-4 h-4 animate-spin text-primary shrink-0" />
+                                                <span>{t('battle.syncing')}</span>
+                                            </p>
                                         )}
 
                                         {!isWaitingForOpponent && (myRequest.kind === 'move' || myRequest.kind === 'switch') && (
@@ -668,8 +718,18 @@ export function BattleDetailView() {
                         {view.isOver && (
                             <>
                                 <p className="battle-panel__copy">{t(`battle.status_${view.status}`)}</p>
-                                {view.canDelete && (
-                                    <div className="battle-actions">
+                                <div className="battle-actions flex flex-wrap gap-2">
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary flex items-center gap-1.5"
+                                        disabled={isSharingForum}
+                                        onClick={handleShareResultToForum}
+                                    >
+                                        <Share2 className="w-4 h-4" />
+                                        <span>{t('battle.shareForum')}</span>
+                                    </button>
+
+                                    {view.canDelete && (
                                         <button
                                             type="button"
                                             className="btn btn-outline"
@@ -680,8 +740,8 @@ export function BattleDetailView() {
                                         >
                                             {t('battle.dismiss')}
                                         </button>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </>
                         )}
                     </section>

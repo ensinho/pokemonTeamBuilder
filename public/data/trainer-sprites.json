@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-24T20:03:26.744Z",
+  "generatedAt": "2026-07-29T15:41:38.330Z",
   "source": "https://play.pokemonshowdown.com/js/battle-dex-data.js",
   "spriteBaseUrl": "https://play.pokemonshowdown.com/sprites/trainers",
   "count": 292,
@@ -423,12 +423,6 @@
       "label": "Cynthia",
       "female": false,
       "gen": 4
-    },
-    {
-      "id": "cynthia-gen7",
-      "label": "Cynthia 7th Gen",
-      "female": false,
-      "gen": 7
     },
     {
       "id": "bellepa",

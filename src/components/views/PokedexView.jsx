@@ -50,7 +50,7 @@ const MobilePokedexPokemonCard = ({
         >
             <div className="flex items-center justify-between gap-1">
                 <div className="flex items-center gap-1">
-                    {pokemon.types.map((type) => (
+                    {(pokemon.types || []).map((type) => (
                         <img
                             key={type}
                             src={typeIcons[type]}

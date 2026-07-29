@@ -252,7 +252,7 @@ export function PokemonDetailModal({
                                     {pokemon.name} <span className="text-muted font-normal text-base">#{pokemon.id}</span>
                                 </h2>
                                 <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-                                    {pokemon.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                    {(pokemon.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                                 </div>
                             </div>
                         </div>
@@ -420,7 +420,7 @@ export function PokemonDetailModal({
                                             <span className="block text-xs font-bold capitalize text-fg leading-tight">{form.displayName}</span>
                                             {form.types?.length > 0 && (
                                                 <span className="mt-1 flex gap-1">
-                                                    {form.types.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                                    {(form.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                                                 </span>
                                             )}
                                         </span>

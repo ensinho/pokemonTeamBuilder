@@ -76,10 +76,12 @@ const serializeTeamPokemon = (pokemon, megaStones = null) => {
     
     const spriteId = isMega ? mega.spriteId : pokemon.id;
     const displayName = isMega ? megaDisplayName(mega.form) : pokemon.name;
+    const types = (isMega && mega?.types) ? mega.types : (pokemon?.types || []);
 
     return {
         id: pokemon.id,
         name: displayName,
+        types,
         sprite: getPokemonArtworkSpriteUrl(spriteId),
         shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
         animatedSprite: getPokemonFrontSpriteUrl(spriteId),

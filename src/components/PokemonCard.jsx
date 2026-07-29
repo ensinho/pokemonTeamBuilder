@@ -76,7 +76,7 @@ export const PokemonCard = React.memo(function PokemonCard({
             )}
             <div className="pokemon-card__topbar">
                 <div className="pokemon-card__types">
-                    {details.types.map((type) => (
+                    {(details.types || []).map((type) => (
                         <img
                             key={type}
                             src={typeIcons[type]}

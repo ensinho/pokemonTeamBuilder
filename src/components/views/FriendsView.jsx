@@ -10,7 +10,8 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useDebounce } from '../../hooks/useDebounce';
 import { AvatarSprite } from '../AvatarSprite';
 import { EmptyState } from '../EmptyState';
-import { PokeballIcon, CloseIcon } from '../icons';
+import { PokeballIcon, CloseIcon, SwordsIcon } from '../icons';
+import { ChallengeModal } from '../modals/ChallengeModal';
 import '../../styles/friends-view.css';
 
 const TABS = ['friends', 'requests', 'find'];
@@ -72,6 +73,7 @@ export function FriendsView() {
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebounce(searchTerm, 350);
     const [confirmingRemoval, setConfirmingRemoval] = useState(null);
+    const [challengingFriend, setChallengingFriend] = useState(null);
 
     // An `?add=<uid>` invite link resolves to a trainer card in the Find tab.
     const inviteUid = searchParams.get('add');
@@ -189,70 +191,76 @@ export function FriendsView() {
                         message={t('friends.emptyMessage')}
                     />
                 ) : (
-                    <ul className="friends-list">
+                    <ul className="friends-grid">
                         {friends.map((friend) => (
-                            <TrainerRow
-                                key={friend.userId}
-                                profile={friend}
-                                subtitle={friend.since
-                                    ? t('friends.friendsSince', {
-                                        date: new Date(friend.since).toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US'),
-                                    })
-                                    : null}
-                                actions={confirmingRemoval === friend.userId ? (
-                                    <>
-                                        <button
-                                            type="button"
-                                            className="btn btn-danger friends-action"
-                                            onClick={() => {
-                                                removeFriend(friend.userId);
-                                                setConfirmingRemoval(null);
-                                            }}
-                                        >
-                                            {t('friends.confirmRemove')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-ghost friends-action"
-                                            onClick={() => setConfirmingRemoval(null)}
-                                            aria-label={t('common.cancel')}
-                                        >
-                                            <CloseIcon className="w-4 h-4" />
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        <button
-                                            type="button"
-                                            className="btn btn-primary friends-action"
-                                            onClick={async () => {
-                                                const battleId = await challengeFriend(friend);
-                                                if (battleId) navigate(`/battles/${battleId}`);
-                                            }}
-                                        >
-                                            {t('friends.battle')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline friends-action"
-                                            title={t('friends.randomBattleHint')}
-                                            onClick={async () => {
-                                                const battleId = await challengeFriend(friend, { mode: 'random' });
-                                                if (battleId) navigate(`/battles/${battleId}`);
-                                            }}
-                                        >
-                                            {t('friends.randomBattle')}
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline friends-action"
-                                            onClick={() => setConfirmingRemoval(friend.userId)}
-                                        >
-                                            {t('friends.remove')}
-                                        </button>
-                                    </>
-                                )}
-                            />
+                            <li key={friend.userId} className="friend-card">
+                                <div className="friend-card__header">
+                                    <span className="friend-card__avatar">
+                                        <AvatarSprite
+                                            trainerSprite={friend.trainerSprite}
+                                            pokemonId={friend.avatarPokemonId}
+                                            isShiny={friend.avatarIsShiny}
+                                            fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                                        />
+                                    </span>
+                                    <div className="friend-card__identity">
+                                        <span className="friend-card__name">
+                                            {friend.displayName || t('friends.unknownTrainer')}
+                                        </span>
+                                        {friend.since && (
+                                            <span className="friend-card__meta">
+                                                {t('friends.friendsSince', {
+                                                    date: new Date(friend.since).toLocaleDateString(language === 'pt' ? 'pt-BR' : 'en-US'),
+                                                })}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="friend-card__actions">
+                                    {confirmingRemoval === friend.userId ? (
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="btn btn-danger btn-sm flex-1"
+                                                onClick={() => {
+                                                    removeFriend(friend.userId);
+                                                    setConfirmingRemoval(null);
+                                                }}
+                                            >
+                                                {t('friends.confirmRemove')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost btn-sm"
+                                                onClick={() => setConfirmingRemoval(null)}
+                                                aria-label={t('common.cancel')}
+                                            >
+                                                <CloseIcon className="w-4 h-4" />
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary btn-sm friend-card__battle-btn"
+                                                onClick={() => setChallengingFriend(friend)}
+                                            >
+                                                <SwordsIcon className="w-4 h-4" />
+                                                <span>{t('friends.battle')}</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="btn btn-ghost btn-sm text-muted hover:text-red-400"
+                                                title={t('friends.remove')}
+                                                onClick={() => setConfirmingRemoval(friend.userId)}
+                                            >
+                                                {t('friends.remove')}
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </li>
                         ))}
                     </ul>
                 )
@@ -361,6 +369,16 @@ export function FriendsView() {
                     </section>
                 </div>
             )}
+            <ChallengeModal
+                isOpen={!!challengingFriend}
+                friend={challengingFriend}
+                onClose={() => setChallengingFriend(null)}
+                onStartChallenge={async (targetFriend, { mode }) => {
+                    const battleId = await challengeFriend(targetFriend, { mode });
+                    if (battleId) navigate(`/battles/${battleId}`);
+                }}
+                userId={userId}
+            />
         </div>
     );
 }
