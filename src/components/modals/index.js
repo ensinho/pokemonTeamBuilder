@@ -9,3 +9,4 @@ export { TeamPokemonEditorModal } from './TeamPokemonEditorModal';
 export { TrainerSpriteSelectorModal } from './TrainerSpriteSelectorModal';
 export { QuizCelebrationModal } from './QuizCelebrationModal';
 export { VersionUpdateModal } from './VersionUpdateModal';
+export { TeamBuilderOnboardingModal } from './TeamBuilderOnboardingModal';

@@ -8,8 +8,9 @@ import { EmptyState } from '../EmptyState';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
 import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
-import { Dices } from 'lucide-react';
+import { Dices, HelpCircle } from 'lucide-react';
 import { PokemonDetailModal } from '../modals/PokemonDetailModal';
+import { TeamBuilderOnboardingModal } from '../modals/TeamBuilderOnboardingModal';
 import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
@@ -129,6 +130,13 @@ export function TeamBuilderView({
     const [dragIndex, setDragIndex] = React.useState(null);
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
+    const [isOnboardingOpen, setIsOnboardingOpen] = React.useState(false);
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined' && window.localStorage.getItem('tb-onboarding-seen') !== '1') {
+            setIsOnboardingOpen(true);
+        }
+    }, []);
     // Analysis panel tab: type-coverage analysis vs meta threats (same card).
     const [analysisTab, setAnalysisTab] = React.useState('analysis');
     const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
@@ -257,10 +265,26 @@ export function TeamBuilderView({
         });
         return buildTeamThreats(currentTeam, meta, { limit: 6, excludeIds: teamIds });
     }, [currentTeam, metaById, suggestionIndexById]);
+    // Filter suggestions by active user filters (type, generation, favorites, search)
+    const activeFilteredSuggestions = React.useMemo(() => {
+        if (!synergySuggestions.length) return [];
+        const typeList = [...selectedTypes];
+        const search = (searchInput || '').toLowerCase().trim();
+        return synergySuggestions.filter((s) => {
+            const entry = suggestionIndexById.get(s.id);
+            if (!entry) return false;
+            if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
+            if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
+            if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
+            if (search && !entry.name.toLowerCase().includes(search)) return false;
+            return true;
+        });
+    }, [synergySuggestions, suggestionIndexById, selectedTypes, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
+
     // Map synergy id → primary reason for in-grid border/icon rendering.
     const synergyReasonById = React.useMemo(
-        () => new Map(synergySuggestions.map((s) => [s.id, s.primary])),
-        [synergySuggestions]
+        () => new Map(activeFilteredSuggestions.map((s) => [s.id, s.primary])),
+        [activeFilteredSuggestions]
     );
 
     // Synergy-only picks that aren't already in the displayed list, prepended as
@@ -269,11 +293,11 @@ export function TeamBuilderView({
     const synergyOnlyCards = React.useMemo(() => {
         // While searching, surface the matching Pokémon first — don't prepend
         // synergy suggestions ahead of the actual search results.
-        if (searchInput.trim() || !synergySuggestions.length) return [];
-        return synergySuggestions
+        if (searchInput.trim() || !activeFilteredSuggestions.length) return [];
+        return activeFilteredSuggestions
             .filter((s) => !displayedIdSet.has(s.id) && suggestionIndexById.has(s.id))
             .map((s) => ({ ...suggestionIndexById.get(s.id), ...s, _synergyOnly: true }));
-    }, [synergySuggestions, displayedIdSet, suggestionIndexById, searchInput]);
+    }, [activeFilteredSuggestions, displayedIdSet, suggestionIndexById, searchInput]);
 
     const megaStones = useMegaStones();
 
@@ -374,42 +398,54 @@ export function TeamBuilderView({
                     favoritePokemons={favoritePokemons}
                     showOnlyFavorites={showOnlyFavorites}
                     setShowOnlyFavorites={setShowOnlyFavorites}
+                    onOpenOnboarding={() => setIsOnboardingOpen(true)}
                 />
             ) : null}
 
             {isDesktopLayout ? <main className="team-builder grid grid-cols-12 gap-6 xl:gap-7">
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-6 lg:self-start">
-                    <button
-                        type="button"
-                        onClick={() => setIsCoresOpen(true)}
-                        className="team-builder-panel flex w-full items-center gap-2.5 p-3 text-left transition-all hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                        title={language === 'pt' ? 'Montar a partir de um core do meta' : 'Build around a meta core'}
-                    >
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15">
-                            <Atom className="h-4 w-4 text-primary" />
-                        </span>
-                        <span className="min-w-0 flex-1">
-                            <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
-                            <span className="mt-1 flex flex-wrap items-center gap-1">
-                                {teamCores.length > 0 ? (
-                                    teamCores.slice(0, 3).map((c) => {
-                                        const CIcon = coreIconFor(c.id);
-                                        return (
-                                            <span key={c.id} className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ color: c.accent, backgroundColor: `${c.accent}22` }}>
-                                                <CIcon className="h-3 w-3" />{c.name}
-                                            </span>
-                                        );
-                                    })
-                                ) : (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-1.5 py-0.5 text-[10px] font-semibold text-muted">
-                                        {language === 'pt' ? 'Nenhum core ainda' : 'No core yet'}
-                                    </span>
-                                )}
-                                {teamCores.length > 3 && <span className="text-[10px] font-bold text-muted">+{teamCores.length - 3}</span>}
+                    <div className="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onClick={() => setIsCoresOpen(true)}
+                            className="team-builder-panel flex flex-1 items-center gap-2.5 p-3 text-left transition-all hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            title={language === 'pt' ? 'Montar a partir de um core do meta' : 'Build around a meta core'}
+                        >
+                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15">
+                                <Atom className="h-4 w-4 text-primary" />
                             </span>
-                        </span>
-                        <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted" />
-                    </button>
+                            <span className="min-w-0 flex-1">
+                                <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
+                                <span className="mt-1 flex flex-wrap items-center gap-1">
+                                    {teamCores.length > 0 ? (
+                                        teamCores.slice(0, 3).map((c) => {
+                                            const CIcon = coreIconFor(c.id);
+                                            return (
+                                                <span key={c.id} className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ color: c.accent, backgroundColor: `${c.accent}22` }}>
+                                                    <CIcon className="h-3 w-3" />{c.name}
+                                                </span>
+                                            );
+                                        })
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-1.5 py-0.5 text-[10px] font-semibold text-muted">
+                                            {language === 'pt' ? 'Nenhum core ainda' : 'No core yet'}
+                                        </span>
+                                    )}
+                                    {teamCores.length > 3 && <span className="text-[10px] font-bold text-muted">+{teamCores.length - 3}</span>}
+                                </span>
+                            </span>
+                            <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted" />
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIsOnboardingOpen(true)}
+                            className="team-builder-panel flex h-[58px] shrink-0 items-center justify-center p-3 text-muted hover:text-primary hover:border-primary transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            title={language === 'pt' ? 'Como funciona a montagem automática e Megas' : 'How auto building & Megas work'}
+                            aria-label={language === 'pt' ? 'Guia do Team Builder' : 'Team Builder Guide'}
+                        >
+                            <HelpCircle className="h-5 w-5" />
+                        </button>
+                    </div>
                     <section className="team-builder-panel p-4">
                         <div className="team-builder-current-head">
                             <div className="team-builder-panel__header team-builder-panel__header--compact flex items-center justify-between gap-3 mb-4">
@@ -903,6 +939,12 @@ export function TeamBuilderView({
                     setPokemonDetailsCache={setPokemonDetailsCache}
                     isFavorite={favoritePokemons.has(detailPokemon.id)}
                     onToggleFavorite={onToggleFavoritePokemon}
+                />
+            )}
+
+            {isOnboardingOpen && (
+                <TeamBuilderOnboardingModal
+                    onClose={() => setIsOnboardingOpen(false)}
                 />
             )}
         </>

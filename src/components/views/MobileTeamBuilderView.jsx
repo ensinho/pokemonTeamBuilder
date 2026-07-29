@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
-import { Dices, Trophy, ShieldCheck, ShieldAlert, Sparkles, SlidersHorizontal, Search } from 'lucide-react';
+import { Dices, Trophy, ShieldCheck, ShieldAlert, Sparkles, SlidersHorizontal, Search, HelpCircle } from 'lucide-react';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
 import { BottomSheet } from '../BottomSheet';
@@ -392,6 +392,7 @@ export const MobileTeamBuilderView = ({
     onToggleFavoritePokemon,
     showOnlyFavorites,
     setShowOnlyFavorites,
+    onOpenOnboarding,
 }) => {
     const { t, language } = useTranslation();
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
@@ -433,9 +434,25 @@ export const MobileTeamBuilderView = ({
         () => detectTeamCores(currentTeam.map((p) => p.id), { smogonById, usageById }),
         [currentTeam, smogonById, usageById]
     );
+
+    // Filter suggestions by active user filters (type, generation, favorites, search)
+    const activeFilteredSuggestions = React.useMemo(() => {
+        if (!synergySuggestions.length) return [];
+        const typeList = [...selectedTypes];
+        const search = (searchInput || '').toLowerCase().trim();
+        return synergySuggestions.filter((s) => {
+            const entry = s.id ? displayedPokemons.find((p) => p.id === s.id) : null;
+            if (showOnlyFavorites && entry && !favoritePokemons.has(entry.id)) return false;
+            if (selectedGeneration && selectedGeneration !== 'all' && entry && entry.generation !== selectedGeneration) return false;
+            if (typeList.length && entry && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
+            if (search && s.name && !s.name.toLowerCase().includes(search)) return false;
+            return true;
+        });
+    }, [synergySuggestions, displayedPokemons, selectedTypes, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
+
     const synergyReasonById = React.useMemo(
-        () => new Map(synergySuggestions.map((s) => [s.id, s.primary])),
-        [synergySuggestions]
+        () => new Map(activeFilteredSuggestions.map((s) => [s.id, s.primary])),
+        [activeFilteredSuggestions]
     );
 
     // Synergy-only picks not in the displayed list, prepended to grid.
@@ -448,11 +465,11 @@ export const MobileTeamBuilderView = ({
     }, [displayedPokemons]);
     const synergyOnlyCards = React.useMemo(() => {
         // While searching, show the matching Pokémon first (no synergy prepend).
-        if (searchInput.trim() || !synergySuggestions.length) return [];
-        return synergySuggestions
+        if (searchInput.trim() || !activeFilteredSuggestions.length) return [];
+        return activeFilteredSuggestions
             .filter((s) => !displayedIdSet.has(s.id))
             .map((s) => ({ ...s, _synergyOnly: true }));
-    }, [synergySuggestions, displayedIdSet, searchInput]);
+    }, [activeFilteredSuggestions, displayedIdSet, searchInput]);
 
     React.useEffect(() => {
         if (selectedTypes.size <= 1) return;
@@ -613,6 +630,15 @@ export const MobileTeamBuilderView = ({
                                 title={t('builder.exportShowdown')}
                             >
                                 <ShowdownIcon />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={onOpenOnboarding}
+                                className="team-builder-icon-button"
+                                aria-label={language === 'pt' ? 'Como funciona' : 'How it works'}
+                                title={language === 'pt' ? 'Como funciona' : 'How it works'}
+                            >
+                                <HelpCircle className="h-4 w-4 text-primary" />
                             </button>
                             <button
                                 type="button"
