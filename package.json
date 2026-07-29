@@ -19,7 +19,7 @@
     "data:sitemap": "node scripts/build-sitemap.mjs",
     "data:trainers": "node scripts/build-trainer-sprites.mjs",
     "data:refresh-all": "node scripts/build-tournaments.mjs && node scripts/build-smogon.mjs && node scripts/build-move-types.mjs && node scripts/build-usage-stats.mjs && node scripts/build-limitless-usage.mjs && node scripts/build-trainer-sprites.mjs && node scripts/build-sitemap.mjs",
-    "prebuild": "npm run data:refresh-all",
+    "prebuild": "node -e \"if (process.env.SCRAPE_DATA === 'true') { require('child_process').execSync('npm run data:refresh-all', { stdio: 'inherit' }); } else { require('child_process').execSync('node scripts/build-move-types.mjs && node scripts/build-sitemap.mjs', { stdio: 'inherit' }); }\"",
     "build": "vite build",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
