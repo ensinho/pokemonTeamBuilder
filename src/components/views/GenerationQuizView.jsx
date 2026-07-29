@@ -83,7 +83,7 @@ const formatPokemonDisplayName = (name = '') => {
 // syllable — instead of a single letter.
 const buildQuizHintText = (pokemon, language) => {
     const name = pokemon.displayName;
-    const prefix = name.slice(0, Math.max(2, Math.ceil(name.length * 33)));
+    const prefix = name.slice(0, Math.max(2, Math.ceil(name.length * 0.4)));
     return language === 'pt'
         ? `Dica para você: '${prefix}…' (${name.length})!`
         : `Tip to you:'${prefix}…' (${name.length})!`;
