@@ -1,12 +1,6 @@
 // Vercel Cron target: triggers a redeploy once a day so the build re-scrapes the
 // latest VGC tournament teams (the scrape runs in `prebuild`). Keeps the static
 // data fresh without committing to the repo.
-//
-// Required env:
-//   DEPLOY_HOOK_URL — a Vercel Deploy Hook URL (Project → Settings → Git → Deploy Hooks)
-//   CRON_SECRET     — optional; when set, Vercel Cron sends it as a Bearer token,
-//                     and we reject any request that doesn't match.
-
 export default async function handler(req, res) {
     const secret = process.env.CRON_SECRET;
     if (secret) {

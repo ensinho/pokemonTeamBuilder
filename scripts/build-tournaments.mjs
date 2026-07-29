@@ -62,6 +62,49 @@ const fetchText = async (url) => {
     return res.text();
 };
 
+const INDEX_FILE = path.join(DATA_DIR, 'pokemon-index.json');
+
+const slugify = (name = '') => String(name).toLowerCase().trim()
+    .replace(/[.'’:]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '');
+
+const ALIAS_ID = {
+    tornadus: 641, thundurus: 642, landorus: 645, enamorus: 905,
+    urshifu: 892, indeedee: 876, basculegion: 902, maushold: 925,
+    tatsugiri: 978, oinkologne: 916, palafin: 964, dudunsparce: 982,
+    mimikyu: 778, keldeo: 647, giratina: 487, lycanroc: 745,
+    toxtricity: 849, meloetta: 648, minior: 774, meowstic: 678,
+    eiscue: 875, morpeko: 877, zacian: 888, zamazenta: 889,
+    shaymin: 492, oricorio: 741, pyroar: 668, darmanitan: 555,
+    zygarde: 718, aegislash: 681, wishiwashi: 746, gourgeist: 711,
+    pumpkaboo: 710, sinistea: 854, polteageist: 855, basculin: 550,
+    ironbundle: 991, ironhands: 992, ironjugulis: 993, ironmoth: 994, ironthorns: 995, ironvaliant: 998, ironleaves: 1010, ironboulder: 1022, ironcrown: 1023,
+    greattusk: 984, screamtail: 985, brutebonnet: 986, fluttermane: 987, slitherwing: 988, sandyshocks: 989, roaringmoon: 1005, walkingwake: 1009, gougingfire: 1020, ragingbolt: 1021,
+};
+
+// Load baked pokemon index so we resolve names locally without HTTP overhead.
+const loadIndexMap = async () => {
+    try {
+        const raw = JSON.parse(await fs.readFile(INDEX_FILE, 'utf8'));
+        const map = new Map();
+        for (const p of raw.pokemons || []) {
+            const baseId = p.baseId || p.id;
+            if (p.name) {
+                map.set(p.name, baseId);
+                map.set(slugify(p.name), baseId);
+            }
+            if (p.apiName) {
+                map.set(p.apiName, baseId);
+                map.set(slugify(p.apiName), baseId);
+            }
+        }
+        return map;
+    } catch (_) {
+        return new Map();
+    }
+};
+
 // Showdown display name -> PokéAPI slug candidates (most specific first).
 const slugCandidates = (name) => {
     const base = name.toLowerCase().trim()
@@ -75,21 +118,29 @@ const slugCandidates = (name) => {
 };
 
 const speciesCache = new Map();
-// Resolve a Showdown name to a base national-dex id (1..1025) for stable sprites.
-const resolveSpeciesId = async (name) => {
+const makeResolver = (indexMap) => async (name) => {
+    if (!name) return null;
     if (speciesCache.has(name)) return speciesCache.get(name);
     let resolved = null;
     for (const slug of slugCandidates(name)) {
-        try {
-            const data = await (await fetch(`${POKEAPI}/pokemon/${slug}`)).json();
-            if (data?.id) {
-                const speciesId = data.species?.url
-                    ? Number.parseInt(data.species.url.split('/').filter(Boolean).pop(), 10)
-                    : data.id;
-                resolved = Number.isInteger(speciesId) ? speciesId : data.id;
-                break;
-            }
-        } catch (_) { /* try next candidate */ }
+        if (indexMap.has(slug)) { resolved = indexMap.get(slug); break; }
+        if (ALIAS_ID[slug]) { resolved = ALIAS_ID[slug]; break; }
+    }
+    if (!resolved) {
+        for (const slug of slugCandidates(name)) {
+            try {
+                const res = await fetch(`${POKEAPI}/pokemon/${slug}`);
+                if (!res.ok) continue;
+                const data = await res.json();
+                if (data?.id) {
+                    const speciesId = data.species?.url
+                        ? Number.parseInt(data.species.url.split('/').filter(Boolean).pop(), 10)
+                        : data.id;
+                    resolved = Number.isInteger(speciesId) ? speciesId : data.id;
+                    break;
+                }
+            } catch (_) { /* try next candidate */ }
+        }
     }
     speciesCache.set(name, resolved);
     return resolved;
@@ -209,11 +260,11 @@ const topEntries = (map, limit) => [...map.entries()]
 // set (item/ability/tera/nature/EVs/IVs/level/moves) mined from its pokepaste.
 // Names + order + ids stay exactly as before; sets are attached by matching the
 // resolved species id, so a click can show what the player actually ran.
-const buildEnrichedRoster = async (monNames, pokepaste) => {
+const buildEnrichedRoster = async (monNames, pokepaste, resolve) => {
     // Resolve the authoritative sheet roster first (stable ids/names/order).
     const roster = [];
     for (const monName of monNames) {
-        const id = await resolveSpeciesId(monName);
+        const id = await resolve(monName);
         if (id) roster.push({ id, name: monName });
     }
 
@@ -221,7 +272,7 @@ const buildEnrichedRoster = async (monNames, pokepaste) => {
     const sets = await fetchPaste(pokepaste);
     const setsById = new Map();
     for (const set of sets) {
-        const id = await resolveSpeciesId(set.species);
+        const id = await resolve(set.species);
         if (!id) continue;
         if (!setsById.has(id)) setsById.set(id, []);
         setsById.get(id).push(set);
@@ -385,10 +436,12 @@ const main = async () => {
     };
 
     console.log(`Resolving rosters + mining sets for ${capped.length} teams…`);
+    const indexMap = await loadIndexMap();
+    const resolveSpeciesId = makeResolver(indexMap);
     const teams = [];
     let done = 0;
-    await mapPool(capped, 6, async (tm, idx) => {
-        const pokemons = await buildEnrichedRoster(tm.monNames, tm.pokepaste);
+    await mapPool(capped, 15, async (tm, idx) => {
+        const pokemons = await buildEnrichedRoster(tm.monNames, tm.pokepaste, resolveSpeciesId);
         done += 1;
         if (done % 25 === 0) console.log(`  …${done}/${capped.length} teams`);
         if (pokemons.length < 4) return; // skip teams we mostly couldn't resolve

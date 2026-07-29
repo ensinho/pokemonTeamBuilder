@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T15:28:55.572Z",
+  "generatedAt": "2026-07-29T17:17:08.111Z",
   "source": "https://docs.google.com/spreadsheets/d/1axlwmzPA49rYkqXh7zHvAtSP-TKbM0ijGYBPRflLSWw",
   "count": 120,
   "teams": [
@@ -622,6 +622,19 @@
             "Overheat",
             "Giga Drain",
             "Rage Powder",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Sitrus Berry",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
             "Protect"
           ]
         },
@@ -1563,6 +1576,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 14,
+            "spe": 20
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 26,
           "name": "Raichu",
           "item": "Raichunite Y",
@@ -2359,6 +2391,27 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Sitrus Berry",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 7,
+            "atk": 28,
+            "def": 11,
+            "spd": 15,
+            "spe": 5
+          },
+          "moves": [
+            "Wave Crash",
+            "Aqua Jet",
+            "Last Respects",
+            "Protect"
+          ]
+        },
+        {
           "id": 1000,
           "name": "Gholdengo",
           "item": "Focus Sash",
@@ -2470,6 +2523,26 @@
             "Solar Beam",
             "Weather Ball",
             "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 20,
+            "def": 13,
+            "spd": 1,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Flip Turn",
+            "Aqua Jet"
           ]
         },
         {
@@ -2852,6 +2925,26 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 12,
+            "atk": 18,
+            "def": 7,
+            "spe": 29
+          },
+          "moves": [
+            "Wave Crash",
+            "Protect",
+            "Last Respects",
+            "Aqua Jet"
+          ]
+        },
+        {
           "id": 547,
           "name": "Whimsicott",
           "item": "Focus Sash",
@@ -3205,6 +3298,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Flip Turn",
+            "Aqua Jet"
+          ]
+        },
+        {
           "id": 279,
           "name": "Pelipper",
           "item": "Sitrus Berry",
@@ -3470,6 +3582,26 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Colbur Berry",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 1,
+            "spd": 1,
+            "spe": 32
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 903,
           "name": "Sneasler",
           "item": "Life Orb",
@@ -3577,6 +3709,25 @@
             "Heat Wave",
             "Solar Beam",
             "Ancient Power",
+            "Protect"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Wide Lens",
+          "ability": "Technician",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Population Bomb",
+            "Low Kick",
+            "Feint",
             "Protect"
           ]
         },
@@ -3935,6 +4086,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Focus Sash",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Liquidation",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 687,
           "name": "Malamar",
           "item": "Roseli Berry",
@@ -3970,6 +4140,25 @@
             "Frost Breath",
             "Charm",
             "Fake Out"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Wide Lens",
+          "ability": "Technician",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Follow Me",
+            "Population Bomb",
+            "Feint",
+            "Protect"
           ]
         },
         {
@@ -4312,6 +4501,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Flip Turn"
+          ]
+        },
+        {
           "id": 970,
           "name": "Glimmora",
           "item": "Focus Sash",
@@ -4403,6 +4611,26 @@
             "Heat Wave",
             "Solar Beam",
             "Ancient Power",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 6,
+            "atk": 32,
+            "def": 8,
+            "spe": 20
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Aqua Jet",
             "Protect"
           ]
         },
@@ -4928,6 +5156,27 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Sitrus Berry",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 12,
+            "atk": 8,
+            "def": 27,
+            "spd": 9,
+            "spe": 10
+          },
+          "moves": [
+            "Protect",
+            "Wave Crash",
+            "Aqua Jet",
+            "Last Respects"
+          ]
+        },
+        {
           "id": 903,
           "name": "Sneasler",
           "item": "Focus Sash",
@@ -5076,6 +5325,25 @@
             "Gunk Shot",
             "Fake Out",
             "Rain Dance"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Focus Sash",
+          "ability": "Friend Guard",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Protect",
+            "Follow Me",
+            "Super Fang",
+            "Feint"
           ]
         },
         {
@@ -5281,6 +5549,27 @@
             "Weather Ball",
             "Solar Beam",
             "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Colbur Berry",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 6,
+            "atk": 18,
+            "def": 2,
+            "spd": 18,
+            "spe": 22
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Protect",
+            "Aqua Jet"
           ]
         },
         {
@@ -5531,6 +5820,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 26,
+            "def": 8,
+            "spe": 32
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Flip Turn",
+            "Aqua Jet"
+          ]
+        },
+        {
           "id": 547,
           "name": "Whimsicott",
           "item": "Focus Sash",
@@ -5644,6 +5952,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Focus Sash",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 908,
           "name": "Meowscarada",
           "item": "Life Orb",
@@ -5679,6 +6006,25 @@
             "Knock Off",
             "Protect",
             "Trick Room"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Wide Lens",
+          "ability": "Technician",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Population Bomb",
+            "Follow Me",
+            "Protect",
+            "Feint"
           ]
         }
       ]
@@ -5999,6 +6345,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 4,
+            "atk": 30,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Aqua Jet",
+            "Last Respects",
+            "Protect"
+          ]
+        },
+        {
           "id": 186,
           "name": "Politoed",
           "item": "Sitrus Berry",
@@ -6089,6 +6454,27 @@
             "Wave Crash",
             "High Horsepower",
             "Wide Guard"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Swift Swim",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 4,
+            "atk": 18,
+            "def": 11,
+            "spd": 1,
+            "spe": 32
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Aqua Jet",
+            "Protect"
           ]
         },
         {
@@ -6224,6 +6610,26 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Sitrus Berry",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 4,
+            "atk": 12,
+            "def": 32,
+            "spe": 18
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 745,
           "name": "Lycanroc-Dusk",
           "item": "Focus Sash",
@@ -6314,6 +6720,44 @@
             "Dark Pulse",
             "Aura Sphere",
             "Ice Beam"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 28,
+            "def": 14,
+            "spe": 24
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Flip Turn"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Wide Lens",
+          "ability": "Technician",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Population Bomb",
+            "Feint",
+            "Bite",
+            "Protect"
           ]
         },
         {
@@ -7214,6 +7658,44 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Aqua Jet",
+            "Flip Turn",
+            "Last Respects"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Focus Sash",
+          "ability": "Friend Guard",
+          "nature": "Timid",
+          "level": 50,
+          "evs": {
+            "hp": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Super Fang",
+            "Taunt",
+            "Follow Me",
+            "Protect"
+          ]
+        },
+        {
           "id": 983,
           "name": "Kingambit",
           "item": "Black Glasses",
@@ -7697,6 +8179,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 31,
+            "def": 12,
+            "spe": 23
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Protect",
+            "Aqua Jet"
+          ]
+        },
+        {
           "id": 279,
           "name": "Pelipper",
           "item": "Sitrus Berry",
@@ -7807,6 +8308,26 @@
             "Brave Bird",
             "Roost",
             "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 1,
+            "spd": 1,
+            "spe": 32
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Aqua Jet",
+            "Flip Turn"
           ]
         },
         {
@@ -8212,6 +8733,24 @@
           ]
         },
         {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Chople Berry",
+          "ability": "Friend Guard",
+          "nature": "Impish",
+          "evs": {
+            "hp": 32,
+            "def": 20,
+            "spd": 14
+          },
+          "moves": [
+            "Feint",
+            "Helping Hand",
+            "Protect",
+            "Follow Me"
+          ]
+        },
+        {
           "id": 1013,
           "name": "Sinistcha",
           "item": "Kasib Berry",
@@ -8261,6 +8800,25 @@
             "Ancient Power",
             "Solar Beam",
             "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Flip Turn",
+            "Aqua Jet"
           ]
         },
         {
@@ -8476,6 +9034,19 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "moves": [
+            "Wave Crash",
+            "Aqua Jet",
+            "Last Respects",
+            "Protect"
+          ]
+        },
+        {
           "id": 547,
           "name": "Whimsicott",
           "item": "Focus Sash",
@@ -8645,6 +9216,19 @@
             "Heat Wave",
             "Weather Ball",
             "Solar Beam",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "moves": [
+            "Wave Crash",
+            "Aqua Jet",
+            "Last Respects",
             "Protect"
           ]
         },
@@ -9008,6 +9592,19 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Flip Turn",
+            "Aqua Jet"
+          ]
+        },
+        {
           "id": 903,
           "name": "Sneasler",
           "item": "Focus Sash",
@@ -9085,6 +9682,19 @@
             "Overheat",
             "Rage Powder",
             "Leech Seed"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Swift Swim",
+          "nature": "Adamant",
+          "moves": [
+            "Protect",
+            "Wave Crash",
+            "Aqua Jet",
+            "Last Respects"
           ]
         },
         {
@@ -9627,7 +10237,21 @@
         },
         {
           "id": 668,
-          "name": "Pyroar-Mega"
+          "name": "Pyroar-Mega",
+          "item": "Pyroarite",
+          "ability": "Unnerve",
+          "nature": "Timid",
+          "evs": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Protect",
+            "Overheat",
+            "Heat Wave",
+            "Solar Beam"
+          ]
         },
         {
           "id": 727,
@@ -9737,7 +10361,22 @@
         },
         {
           "id": 668,
-          "name": "Pyroar-Mega"
+          "name": "Pyroar-Mega",
+          "item": "Pyroarite",
+          "ability": "Unnerve",
+          "nature": "Timid",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Heat Wave",
+            "Flamethrower",
+            "Solar Beam",
+            "Protect"
+          ]
         },
         {
           "id": 324,
@@ -10000,6 +10639,25 @@
             "Throat Chop",
             "Fake Out",
             "Parting Shot"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 20,
+            "def": 14,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Flip Turn"
           ]
         },
         {
@@ -10362,6 +11020,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Icy Wind"
+          ]
+        },
+        {
           "id": 26,
           "name": "Raichu",
           "item": "Raichunite Y",
@@ -10624,6 +11301,25 @@
             "Poltergeist",
             "Shadow Sneak",
             "Taunt"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Flip Turn",
+            "Aqua Jet"
           ]
         },
         {
@@ -10986,6 +11682,26 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 4,
+            "atk": 31,
+            "def": 11,
+            "spe": 20
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 547,
           "name": "Whimsicott",
           "item": "Focus Sash",
@@ -11096,6 +11812,25 @@
             "Thunderbolt",
             "Tailwind",
             "Whirlwind"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 13,
+            "spe": 21
+          },
+          "moves": [
+            "Protect",
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet"
           ]
         },
         {
@@ -11342,6 +12077,19 @@
           ]
         },
         {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Focus Sash",
+          "ability": "Friend Guard",
+          "level": 50,
+          "moves": [
+            "Follow Me",
+            "Feint",
+            "Helping Hand",
+            "Protect"
+          ]
+        },
+        {
           "id": 1013,
           "name": "Sinistcha",
           "item": "Coba Berry",
@@ -11421,6 +12169,26 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 4,
+            "atk": 31,
+            "def": 11,
+            "spe": 20
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 279,
           "name": "Pelipper",
           "item": "Focus Sash",
@@ -11437,6 +12205,25 @@
             "Tailwind",
             "Weather Ball",
             "Wide Guard"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold",
+          "item": "Chople Berry",
+          "ability": "Friend Guard",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Protect",
+            "Super Fang",
+            "Follow Me",
+            "Encore"
           ]
         },
         {
@@ -11510,6 +12297,27 @@
             "Overheat",
             "Giga Drain",
             "Rage Powder",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Sitrus Berry",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "hp": 12,
+            "atk": 13,
+            "def": 8,
+            "spd": 17,
+            "spe": 16
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
             "Protect"
           ]
         },
@@ -12139,6 +12947,25 @@
           ]
         },
         {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Chople Berry",
+          "ability": "Friend Guard",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 32,
+            "spd": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Super Fang",
+            "Follow Me",
+            "Beat Up",
+            "Protect"
+          ]
+        },
+        {
           "id": 547,
           "name": "Whimsicott",
           "item": "Focus Sash",
@@ -12473,6 +13300,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 28,
+            "def": 13,
+            "spe": 25
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 903,
           "name": "Sneasler",
           "item": "White Herb",
@@ -12605,6 +13451,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 13,
+            "spe": 21
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 3,
           "name": "Venusaur",
           "item": "Occa Berry",
@@ -12697,6 +13562,44 @@
             "Heat Wave",
             "Weather Ball",
             "Solar Beam",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Flip Turn"
+          ]
+        },
+        {
+          "id": 925,
+          "name": "Maushold-Four",
+          "item": "Wide Lens",
+          "ability": "Technician",
+          "nature": "Jolly",
+          "level": 50,
+          "evs": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "moves": [
+            "Population Bomb",
+            "Feint",
+            "Follow Me",
             "Protect"
           ]
         },
@@ -13082,6 +13985,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Life Orb",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 13,
+            "spe": 21
+          },
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 547,
           "name": "Whimsicott",
           "item": "Focus Sash",
@@ -13213,6 +14135,25 @@
           ]
         },
         {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Focus Sash",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "level": 50,
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Liquidation",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
+          ]
+        },
+        {
           "id": 983,
           "name": "Kingambit",
           "item": "Life Orb",
@@ -13291,6 +14232,19 @@
             "Parting Shot",
             "Helping Hand",
             "Fake Out"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Choice Scarf",
+          "ability": "Adaptability",
+          "nature": "Jolly",
+          "moves": [
+            "Last Respects",
+            "Wave Crash",
+            "Flip Turn",
+            "Aqua Jet"
           ]
         },
         {
@@ -13384,6 +14338,19 @@
             "Throat Chop",
             "Parting Shot",
             "Fake Out"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Mystic Water",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "moves": [
+            "Wave Crash",
+            "Last Respects",
+            "Aqua Jet",
+            "Protect"
           ]
         },
         {
@@ -13680,6 +14647,24 @@
             "Wave Crash",
             "Earthquake",
             "Ice Punch",
+            "Protect"
+          ]
+        },
+        {
+          "id": 902,
+          "name": "Basculegion",
+          "item": "Focus Sash",
+          "ability": "Adaptability",
+          "nature": "Adamant",
+          "evs": {
+            "atk": 32,
+            "def": 2,
+            "spe": 32
+          },
+          "moves": [
+            "Liquidation",
+            "Last Respects",
+            "Aqua Jet",
             "Protect"
           ]
         },
