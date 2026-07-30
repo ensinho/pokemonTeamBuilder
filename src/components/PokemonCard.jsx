@@ -76,6 +76,9 @@ export const PokemonCard = React.memo(function PokemonCard({
             )}
             <div className="pokemon-card__topbar">
                 <div className="pokemon-card__types">
+                    <span className="pokemon-card__dex-number" title={`#${details.id}`}>
+                        #{String(details.id).padStart(4, '0')}
+                    </span>
                     {(details.types || []).map((type) => (
                         <img
                             key={type}

@@ -180,6 +180,19 @@
     min-height: 1rem;
 }
 
+.pokemon-card__dex-number {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    opacity: 0.75;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-right: 0.15rem;
+    user-select: none;
+    flex-shrink: 0;
+}
+
 .pokemon-card__type-icon {
     width: 0.9rem;
     height: 0.9rem;

@@ -18,7 +18,7 @@ import { TeamThreats } from '../TeamThreats';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useReferenceStore } from '../../store/useReferenceStore';
-import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, matchesPokemonSearch } from '../../utils/pokemonSprites';
 import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
 import { useTranslation } from '../../hooks/useTranslation';
 import {
@@ -99,20 +99,25 @@ const MobilePokemonPickerCard = ({
                 </span>
             )}
             <div className="flex items-center justify-between gap-1">
-                <div className="flex items-center gap-1">
-                    {(pokemon.types || []).map((type) => (
-                        <img
-                            key={type}
-                            src={typeIcons[type]}
-                            alt={type}
-                            className="h-4 w-4 rounded-full"
-                        />
-                    ))}
-                    {!hasSynergy && isSuggested && (
-                        <div className="team-builder-mobile-card__badge ml-1">
-                            {language === 'pt' ? 'Novo' : 'New'}
-                        </div>
-                    )}
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="font-mono text-[10px] font-semibold text-muted opacity-75 tracking-tight shrink-0 select-none">
+                        #{String(pokemon.id).padStart(4, '0')}
+                    </span>
+                    <div className="flex items-center gap-1 overflow-hidden">
+                        {(pokemon.types || []).map((type) => (
+                            <img
+                                key={type}
+                                src={typeIcons[type]}
+                                alt={type}
+                                className="h-4 w-4 rounded-full"
+                            />
+                        ))}
+                        {!hasSynergy && isSuggested && (
+                            <div className="team-builder-mobile-card__badge ml-1">
+                                {language === 'pt' ? 'Novo' : 'New'}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
                 <button
@@ -445,7 +450,7 @@ export const MobileTeamBuilderView = ({
             if (showOnlyFavorites && entry && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry && entry.generation !== selectedGeneration) return false;
             if (typeList.length && entry && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
-            if (search && s.name && !s.name.toLowerCase().includes(search)) return false;
+            if (search && !matchesPokemonSearch(entry || s, search)) return false;
             return true;
         });
     }, [synergySuggestions, displayedPokemons, selectedTypes, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
@@ -521,7 +526,7 @@ export const MobileTeamBuilderView = ({
             if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
             if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
-            if (search && !entry.name.toLowerCase().includes(search)) return false;
+            if (search && !matchesPokemonSearch(entry, search)) return false;
             return true;
         };
         return buildGameSections({ fullIndex, gameDexes, game: selectedGameObj, matches });

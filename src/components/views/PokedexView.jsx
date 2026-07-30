@@ -49,15 +49,20 @@ const MobilePokedexPokemonCard = ({
             className="team-builder-mobile-card"
         >
             <div className="flex items-center justify-between gap-1">
-                <div className="flex items-center gap-1">
-                    {(pokemon.types || []).map((type) => (
-                        <img
-                            key={type}
-                            src={typeIcons[type]}
-                            alt={type}
-                            className="h-4 w-4 rounded-full"
-                        />
-                    ))}
+                <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="font-mono text-[10px] font-semibold text-muted opacity-75 tracking-tight shrink-0 select-none">
+                        #{String(pokemon.id).padStart(4, '0')}
+                    </span>
+                    <div className="flex items-center gap-1 overflow-hidden">
+                        {(pokemon.types || []).map((type) => (
+                            <img
+                                key={type}
+                                src={typeIcons[type]}
+                                alt={type}
+                                className="h-4 w-4 rounded-full"
+                            />
+                        ))}
+                    </div>
                 </div>
                 <button
                     onClick={handleFavoriteClick}

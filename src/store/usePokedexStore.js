@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { loadPokemonIndex, loadGames } from '../services/pokemonDataCache';
 import { useToastStore } from './useToastStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
+import { matchesPokemonSearch } from '../utils/pokemonSprites';
 
 const PAGE_SIZE = 50;
 
@@ -47,7 +48,7 @@ const filterPokemons = (all, { generation, types, search, gameIds, gameGen, rest
     let filtered = all.filter((p) => {
         if (generation && generation !== 'all' && p.generation !== generation) return false;
         if (typeList.length > 0 && !typeList.some((t) => (p.types || []).includes(t))) return false;
-        if (searchTerm && !p.name.toLowerCase().includes(searchTerm)) return false;
+        if (searchTerm && !matchesPokemonSearch(p, searchTerm)) return false;
         if (showOnlyFavorites && !favoritePokemons?.has(p.id)) return false;
         return true;
     });

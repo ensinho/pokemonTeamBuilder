@@ -126,4 +126,25 @@ export function resolveMegaPokemonEntry(p, pokemonIndex, byStone) {
     }
 
     return { id: baseId, name: displayName, spriteId: resolvedId };
-}
+}
+
+/**
+ * Helper to match a Pokémon by name OR Pokédex number (e.g. 25, #25, 025, #0025).
+ */
+export function matchesPokemonSearch(pokemon, searchInput) {
+    if (!pokemon) return false;
+    const searchTerm = (searchInput || '').toLowerCase().trim();
+    if (!searchTerm) return true;
+
+    if (pokemon.name?.toLowerCase().includes(searchTerm)) return true;
+
+    const cleanSearch = searchTerm.replace(/^#/, '').trim();
+    if (!cleanSearch) return false;
+
+    const rawId = String(pokemon.id);
+    const pad3Id = rawId.padStart(3, '0');
+    const pad4Id = rawId.padStart(4, '0');
+
+    return rawId.includes(cleanSearch) || pad3Id.includes(cleanSearch) || pad4Id.includes(cleanSearch);
+}
+

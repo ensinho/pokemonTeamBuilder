@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
-import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
+import { getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, matchesPokemonSearch } from '../../utils/pokemonSprites';
 import { EmptyState } from '../EmptyState';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
@@ -276,7 +276,7 @@ export function TeamBuilderView({
             if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
             if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
-            if (search && !entry.name.toLowerCase().includes(search)) return false;
+            if (search && !matchesPokemonSearch(entry, search)) return false;
             return true;
         });
     }, [synergySuggestions, suggestionIndexById, selectedTypes, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
@@ -320,7 +320,7 @@ export function TeamBuilderView({
             if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
             if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
-            if (search && !entry.name.toLowerCase().includes(search)) return false;
+            if (search && !matchesPokemonSearch(entry, search)) return false;
             return true;
         };
         return buildGameSections({ fullIndex: pokemonIndex, gameDexes, game: selectedGameObj, matches });

@@ -259,7 +259,7 @@ export const TRANSLATIONS = {
             ]
         },
         pokedex: {
-            searchPlaceholder: 'Search Pokémon...',
+            searchPlaceholder: 'Search Pokémon by name or #ID...',
             favoritesOnly: 'Favorites only',
             selectedTypes: 'Types ({{count}})',
             typesFilterLabel: 'Types',

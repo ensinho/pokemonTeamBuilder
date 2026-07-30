@@ -9,7 +9,7 @@ import { ExternalLink } from 'lucide-react';
 import { EmptyState } from '../EmptyState';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useNavigate } from 'react-router-dom';
-import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { getPokemonArtworkSpriteUrl, matchesPokemonSearch } from '../../utils/pokemonSprites';
 import { useReferenceStore } from '../../store/useReferenceStore';
 
 const getGenerationLabelForRangeKey = (key) => {
@@ -77,7 +77,7 @@ export function FavoritePokemonsView({
 
         if (searchInput) {
             filtered = filtered.filter((pokemon) =>
-                pokemon.name.toLowerCase().includes(searchInput.toLowerCase())
+                matchesPokemonSearch(pokemon, searchInput)
             );
         }
 
