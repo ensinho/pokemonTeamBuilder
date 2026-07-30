@@ -476,6 +476,7 @@ export const TRANSLATIONS = {
             totalGuessed: 'Total Guessed',
             accuracy: 'Accuracy',
             tryAnotherGen: 'Try Another Gen',
+            tryAnotherCategory: 'Try Another Challenge',
             closeQuiz: 'Close Quiz'
         },
         pokepuzzle: {
@@ -1485,6 +1486,7 @@ export const TRANSLATIONS = {
             totalGuessed: 'Total Adivinhado',
             accuracy: 'Precisão',
             tryAnotherGen: 'Tentar Outra Geração',
+            tryAnotherCategory: 'Tentar Outro Desafio',
             closeQuiz: 'Fechar Quiz'
         },
         pokepuzzle: {

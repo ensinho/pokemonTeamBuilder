@@ -295,6 +295,13 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     const totalCount = activePokemonList.length;
     const remainingCount = Math.max(0, totalCount - foundCount);
 
+    const accuracyPercent = useMemo(() => {
+        if (!activeRun) return 100;
+        const invalid = activeRun.invalidGuesses || 0;
+        const totalAttempts = foundCount + invalid;
+        return totalAttempts > 0 ? Math.round((foundCount / totalAttempts) * 100) : 100;
+    }, [activeRun, foundCount]);
+
     // Hints earned: 1 hint credit per 20% of total (e.g. 4 catches for 20 pokemon)
     const hintInterval = Math.max(1, Math.round(totalCount * 0.2));
     const availableHints = Math.max(0, Math.floor(foundCount / hintInterval) - hintsUsed);
@@ -757,13 +764,17 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                 <QuizCelebrationModal
                     isOpen={isCelebrationOpen}
                     onClose={() => setIsCelebrationOpen(false)}
-                    onPlayAgain={() => {
+                    onTryAnother={() => {
                         setIsCelebrationOpen(false);
                         handleRerollChallenge();
                     }}
-                    generationLabel={language === 'pt' ? activeCategory.title.pt : activeCategory.title.en}
+                    onCloseQuiz={() => {
+                        setIsCelebrationOpen(false);
+                    }}
+                    mode="category"
+                    categoryLabel={language === 'pt' ? activeCategory.title.pt : activeCategory.title.en}
                     totalCount={totalCount}
-                    accuracyPercent={activeRun ? activeRun.bestAccuracy : 100}
+                    accuracy={accuracyPercent}
                     pokemon={celebrationPokemon}
                 />
             )}

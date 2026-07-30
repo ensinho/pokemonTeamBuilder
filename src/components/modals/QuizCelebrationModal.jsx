@@ -5,10 +5,61 @@ import { useModalA11y } from '../../hooks/useModalA11y';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 
-export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQuiz, pokemon, accuracy, totalCount }) {
-    const { t } = useTranslation();
+export function QuizCelebrationModal({
+    isOpen,
+    onClose,
+    onTryAnother,
+    onPlayAgain,
+    onCloseQuiz,
+    pokemon,
+    accuracy,
+    accuracyPercent,
+    totalCount,
+    categoryLabel,
+    generationLabel,
+    tryAnotherText,
+    closeQuizText,
+    titleText,
+    descText,
+    mode = 'generation',
+}) {
+    const { t, language } = useTranslation();
     const dialogRef = useModalA11y(isOpen ? onClose : undefined);
     const canvasRef = useRef(null);
+
+    const finalAccuracy = accuracy !== undefined ? accuracy : (accuracyPercent !== undefined ? accuracyPercent : 100);
+
+    const handleTryAnother = () => {
+        if (onTryAnother) onTryAnother();
+        else if (onPlayAgain) onPlayAgain();
+        onClose?.();
+    };
+
+    const getCelebrationDescription = () => {
+        if (descText) return descText;
+        if (categoryLabel) {
+            return language === 'pt'
+                ? `Você adivinhou com sucesso todos os Pokémon da categoria "${categoryLabel}"!`
+                : `You successfully guessed every single Pokémon in the "${categoryLabel}" category!`;
+        }
+        if (generationLabel) {
+            return language === 'pt'
+                ? `Você adivinhou com sucesso todos os Pokémon de ${generationLabel}!`
+                : `You successfully guessed every single Pokémon from ${generationLabel}!`;
+        }
+        if (mode === 'category') {
+            return language === 'pt'
+                ? 'Você adivinhou com sucesso todos os Pokémon deste desafio!'
+                : 'You successfully guessed every single Pokémon in this challenge!';
+        }
+        return t('quiz.celebrationDesc');
+    };
+
+    const defaultTryAnotherBtnText = mode === 'category'
+        ? (t('quiz.tryAnotherCategory') || (language === 'pt' ? 'Tentar Outro Desafio' : 'Try Another Challenge'))
+        : t('quiz.tryAnotherGen');
+
+    const finalTryAnotherText = tryAnotherText || defaultTryAnotherBtnText;
 
     // useModalA11y focuses the first button ("try another"), so a stray Enter
     // right after the final guess would activate it and dismiss the quiz.
@@ -147,10 +198,10 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
 
                     <div className="space-y-2">
                         <h2 id="celebration-title" className="text-3xl font-extrabold text-fg tracking-tight">
-                            {t('quiz.celebrationTitle')}
+                            {titleText || t('quiz.celebrationTitle')}
                         </h2>
                         <p className="text-sm text-muted max-w-sm mx-auto leading-relaxed">
-                            {t('quiz.celebrationDesc')}
+                            {getCelebrationDescription()}
                         </p>
                     </div>
 
@@ -183,7 +234,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                         </div>
                         <div className="text-center border-l border-border">
                             <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">{t('quiz.accuracy')}</span>
-                            <span className="text-lg font-black text-success">{accuracy}%</span>
+                            <span className="text-lg font-black text-success">{finalAccuracy}%</span>
                         </div>
                     </div>
 
@@ -191,13 +242,10 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                     <div className="mt-8 flex flex-col gap-2.5 sm:flex-row sm:justify-center">
                         <button
                             type="button"
-                            onClick={() => {
-                                onTryAnother?.();
-                                onClose?.();
-                            }}
+                            onClick={handleTryAnother}
                             className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white shadow-elevation-1 transition-all hover:scale-102 hover:shadow-lg hover:shadow-primary-soft focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                            {t('quiz.tryAnotherGen')}
+                            {finalTryAnotherText}
                         </button>
                         <button
                             type="button"
@@ -207,7 +255,7 @@ export function QuizCelebrationModal({ isOpen, onClose, onTryAnother, onCloseQui
                             }}
                             className="inline-flex items-center justify-center rounded-xl border border-border bg-surface-raised px-5 py-3 text-sm font-semibold text-fg transition-all hover:scale-102 hover:bg-surface-raised/75 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
-                            {t('quiz.closeQuiz')}
+                            {closeQuizText || t('quiz.closeQuiz')}
                         </button>
                     </div>
                 </div>
