@@ -110,6 +110,85 @@ export const getPokemonGeneration = (id) => {
     return 1;
 };
 
+const ROMAN_GENERATIONS = { i: 1, ii: 2, iii: 3, iv: 4, v: 5, vi: 6, vii: 7, viii: 8, ix: 9 };
+
+/**
+ * Resolve a Pokémon's generation to a plain number.
+ *
+ * The index (`pokemon-index.json`) stores it as `"generation-i"`, so comparing
+ * `pokemon.generation` straight against a number silently answered "no" to
+ * every generation question. Accepts a number, a `generation-<roman>` string,
+ * or nothing at all — falling back to the id range.
+ */
+export const resolvePokemonGenerationNumber = (pokemon) => {
+    const raw = pokemon?.generation;
+
+    if (typeof raw === 'number' && Number.isFinite(raw) && raw > 0) return raw;
+
+    if (typeof raw === 'string') {
+        const digits = raw.match(/\d+/);
+        if (digits) return Number(digits[0]);
+        const roman = raw.toLowerCase().replace('generation', '').replace(/[^a-z]/g, '');
+        if (ROMAN_GENERATIONS[roman]) return ROMAN_GENERATIONS[roman];
+    }
+
+    return getPokemonGeneration(pokemon?.id);
+};
+
+const toFiniteNumber = (value) => {
+    const num = Number(value);
+    return Number.isFinite(num) ? num : null;
+};
+
+/**
+ * Height in metres. PokéAPI serves decimetres, so `heightDm`/`height` are
+ * divided by 10; `heightM` is trusted as-is. Returns null when unknown, which
+ * callers must treat as "cannot answer" rather than "no".
+ */
+export const getPokemonHeightMeters = (pokemon) => {
+    const meters = toFiniteNumber(pokemon?.heightM);
+    if (meters !== null) return meters;
+    const decimetres = toFiniteNumber(pokemon?.heightDm ?? pokemon?.height);
+    return decimetres === null ? null : decimetres / 10;
+};
+
+/** Weight in kilograms. PokéAPI serves hectograms. Null when unknown. */
+export const getPokemonWeightKg = (pokemon) => {
+    const kilos = toFiniteNumber(pokemon?.weightKg);
+    if (kilos !== null) return kilos;
+    const hectograms = toFiniteNumber(pokemon?.weightHg ?? pokemon?.weight);
+    return hectograms === null ? null : hectograms / 10;
+};
+
+const stripDiacritics = (value = '') => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+/**
+ * Normalize a typed *question* (not a Pokémon name).
+ *
+ * `normalizePokemonQuizInput` removes every non-alphanumeric character —
+ * including spaces — which is right for matching names but silently broke every
+ * multi-word intent here ("maior que 1m" collapsed to "maiorque1m"). This keeps
+ * words separated, and keeps `.`/`,` so decimals like "1,5m" survive.
+ */
+export const normalizeQuestionText = (value = '') => stripDiacritics(String(value ?? '').toLowerCase())
+    .replace(/[^a-z0-9.,]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const hasAny = (text, terms) => terms.some((term) => text.includes(term));
+
+const GREATER_TERMS = ['maior', 'mais de', 'mais que', 'acima', 'superior', 'passa de', 'ultrapassa', 'no minimo'];
+const SMALLER_TERMS = ['menor', 'menos de', 'menos que', 'abaixo', 'inferior', 'no maximo', 'ate '];
+
+const parseMeasure = (text, units) => {
+    const pattern = new RegExp(`(\\d+(?:[.,]\\d+)?)\\s*(?:${units})(?![a-z])`);
+    const match = text.match(pattern);
+    return match ? Number(match[1].replace(',', '.')) : null;
+};
+
+const formatMeters = (meters) => `${String(Number(meters).toFixed(2)).replace(/\.?0+$/, '').replace('.', ',')}m`;
+const formatKilos = (kilos) => `${String(Number(kilos).toFixed(2)).replace(/\.?0+$/, '').replace('.', ',')}kg`;
+
 /**
  * Calculate Levenshtein distance between two strings for fuzzy matching
  */
@@ -150,20 +229,36 @@ export const fuzzyMatchPokemon = (inputName, targetPokemonName, threshold = 2) =
 
 /**
  * Evaluate an attribute question against a target secret Pokemon record.
- * 
+ *
+ * A returned `unknown: true` means the question could not be judged — the
+ * record is missing the data it needs (e.g. height). Callers must surface that
+ * as "cannot answer" and NOT as a "no", which is what the old `default` branch
+ * did for every unrecognised category.
+ *
  * @param {object} question - Question object e.g. { category: 'type', value: 'fire' }
  * @param {object} secretPokemon - Secret Pokemon data object
- * @returns {{ answer: boolean, hint: string }}
+ * @returns {{ answer: boolean, unknown?: boolean, hint?: string }}
  */
 export const evaluateAttributeQuestion = (question, secretPokemon, userFavorites = []) => {
+    const result = evaluateAttributeQuestionCore(question, secretPokemon, userFavorites);
+
+    // `invert` powers the mirrored intents ("monotipo?" is "dual type?" negated).
+    // An unanswerable question stays unanswerable — negating it would invent data.
+    if (question?.invert && !result.unknown) {
+        return { ...result, answer: !result.answer };
+    }
+    return result;
+};
+
+const evaluateAttributeQuestionCore = (question, secretPokemon, userFavorites = []) => {
     if (!question || !secretPokemon) {
-        return { answer: false, hint: 'Dados insuficientes' };
+        return { answer: false, unknown: true, hint: 'Dados insuficientes' };
     }
 
     const { category, value } = question;
     const types = (secretPokemon.types || []).map((t) => t.toLowerCase());
     const id = Number(secretPokemon.id);
-    const gen = secretPokemon.generation || getPokemonGeneration(id);
+    const gen = resolvePokemonGenerationNumber(secretPokemon);
     const stats = secretPokemon.baseStats || secretPokemon.stats || {};
 
     let bst = 0;
@@ -193,18 +288,36 @@ export const evaluateAttributeQuestion = (question, secretPokemon, userFavorites
             return { answer: gen > Number(value) };
 
         // --- LINHA EVOLUTIVA ---
+        // The stage flags come from the evolution chain, which the lightweight
+        // index does not carry — `evolutionStage`/`evolutionStageCount` are added
+        // by the room when the secret is drawn. Absent them the honest answer is
+        // "unknown", not "no".
         case 'isBaby':
-            return { answer: BABY_SPECIES_IDS.has(id) };
-        case 'isSingleStage':
-            return { answer: Boolean(secretPokemon.isSingleStage) };
-        case 'isBaseForm':
-            return { answer: Boolean(secretPokemon.isBaseForm) };
-        case 'isFinalForm':
-            return { answer: Boolean(secretPokemon.isFinalForm) };
-        case 'isSingleStage':
-            return { answer: Boolean(secretPokemon.isSingleStage) };
-        case 'isBaby':
-            return { answer: Boolean(secretPokemon.isBaby) };
+            return { answer: Boolean(secretPokemon.isBaby) || BABY_SPECIES_IDS.has(id) };
+        case 'isSingleStage': {
+            const total = toFiniteNumber(secretPokemon.evolutionStageCount);
+            if (total === null) return { answer: false, unknown: true, hint: 'Sem dados de evolução' };
+            return { answer: total === 1 };
+        }
+        case 'isBaseForm': {
+            const stage = toFiniteNumber(secretPokemon.evolutionStage);
+            const total = toFiniteNumber(secretPokemon.evolutionStageCount);
+            if (stage === null || total === null) return { answer: false, unknown: true, hint: 'Sem dados de evolução' };
+            return { answer: stage === 1 && total > 1 };
+        }
+        case 'isFinalForm': {
+            const stage = toFiniteNumber(secretPokemon.evolutionStage);
+            const total = toFiniteNumber(secretPokemon.evolutionStageCount);
+            if (stage === null || total === null) return { answer: false, unknown: true, hint: 'Sem dados de evolução' };
+            return { answer: stage === total && total > 1 };
+        }
+        // "É uma evolução?" — deliberately not `isBaseForm` inverted, because a
+        // single-stage Pokémon is not a base form *and* not an evolution.
+        case 'isEvolved': {
+            const stage = toFiniteNumber(secretPokemon.evolutionStage);
+            if (stage === null) return { answer: false, unknown: true, hint: 'Sem dados de evolução' };
+            return { answer: stage > 1 };
+        }
 
         // --- CATEGORIAS ESPECIAIS & CONCEITOS REAIS ---
         case 'isLegendary':
@@ -223,29 +336,77 @@ export const evaluateAttributeQuestion = (question, secretPokemon, userFavorites
             return { answer: REAL_ANIMAL_SPECIES_IDS.has(id) };
 
         // --- FÍSICA & ESTATÍSTICAS ---
+        // Height/weight arrive in human units (metres / kg) on the question and
+        // are compared against the record's PokéAPI decimetres / hectograms.
+        case 'heightMin': {
+            const meters = getPokemonHeightMeters(secretPokemon);
+            if (meters === null) return { answer: false, unknown: true, hint: 'Sem dados de altura' };
+            return { answer: meters >= Number(value) };
+        }
+        case 'heightMax': {
+            const meters = getPokemonHeightMeters(secretPokemon);
+            if (meters === null) return { answer: false, unknown: true, hint: 'Sem dados de altura' };
+            return { answer: meters < Number(value) };
+        }
+        case 'heightRange': {
+            const meters = getPokemonHeightMeters(secretPokemon);
+            if (meters === null) return { answer: false, unknown: true, hint: 'Sem dados de altura' };
+            return { answer: meters >= Number(question.min) && meters < Number(question.max) };
+        }
+        case 'weightMin': {
+            const kilos = getPokemonWeightKg(secretPokemon);
+            if (kilos === null) return { answer: false, unknown: true, hint: 'Sem dados de peso' };
+            return { answer: kilos >= Number(value) };
+        }
+        case 'weightMax': {
+            const kilos = getPokemonWeightKg(secretPokemon);
+            if (kilos === null) return { answer: false, unknown: true, hint: 'Sem dados de peso' };
+            return { answer: kilos < Number(value) };
+        }
+
         case 'bstMin':
+            if (!bst) return { answer: false, unknown: true, hint: 'Sem dados de status' };
             return { answer: bst >= Number(value) };
         case 'bstMax':
+            if (!bst) return { answer: false, unknown: true, hint: 'Sem dados de status' };
             return { answer: bst <= Number(value) };
         case 'topStatSpeed': {
-            let maxStat = 'hp';
-            let maxVal = 0;
-            if (typeof stats === 'object' && !Array.isArray(stats)) {
-                for (const [k, v] of Object.entries(stats)) {
-                    if (v > maxVal) { maxVal = v; maxStat = k; }
-                }
+            if (!bst) return { answer: false, unknown: true, hint: 'Sem dados de status' };
+            let maxStat = null;
+            let maxVal = -1;
+            const entries = Array.isArray(stats)
+                ? stats.map((s) => [s.name, s.base_stat])
+                : Object.entries(stats);
+            for (const [k, v] of entries) {
+                if (Number(v) > maxVal) { maxVal = Number(v); maxStat = k; }
             }
             return { answer: maxStat === 'speed' };
         }
 
         // --- PESSOAL & FAVORITOS ---
         case 'isUserFavorite': {
-            const favIds = (userFavorites || []).map((f) => Number(typeof f === 'object' ? f.id : f));
+            let favArray = [];
+            if (Array.isArray(userFavorites)) {
+                favArray = userFavorites;
+            } else if (userFavorites && typeof userFavorites === 'object') {
+                if (userFavorites instanceof Set) {
+                    favArray = Array.from(userFavorites);
+                } else if (typeof userFavorites[Symbol.iterator] === 'function') {
+                    favArray = Array.from(userFavorites);
+                } else {
+                    favArray = Object.keys(userFavorites);
+                }
+            }
+            const favIds = favArray.map((f) => Number(typeof f === 'object' && f !== null ? (f.id ?? f.pokemonId ?? f) : f));
             return { answer: favIds.includes(Number(secretPokemon.id)) };
         }
 
+        // A question nobody taught the evaluator about. Answering "no" here is a
+        // lie — it reads as information about the secret Pokémon when it is really
+        // just a parser gap. Callers should reject the question instead.
+        case 'custom':
         default:
-            return { answer: false, hint: 'Pergunta não reconhecida' };
+            return { answer: false, unknown: true, hint: 'Pergunta não reconhecida' };
     }
 };
 
@@ -275,196 +436,260 @@ export const comparePokemonGuess = (guessedPokemon, secretPokemon) => {
 };
 
 /**
- * Parse a free-text question typed by the user and detect natural human intents
+ * Natural-language question intents, in priority order.
+ *
+ * `terms` are substring matches (safe for multi-word phrases and long stems);
+ * `words` are whole-token matches, used for short strings that would otherwise
+ * hit innocent substrings — "aco" inside "macaco", "luta" inside "lutador".
+ *
+ * Order matters: the first match wins, so narrower intents ("status alto")
+ * must precede broader ones ("alto").
+ */
+const QUESTION_INTENTS = [
+    // --- QUANTIDADE DE TIPOS ---
+    {
+        terms: ['duas tipagens', 'dois tipos', '2 tipos', '2 tipagens', 'tipo duplo', 'dual type', 'dupla tipagem', 'segundo tipo'],
+        obj: { category: 'isDualType' },
+        label: 'Possui 2 Tipos (Dual Type)?',
+    },
+    {
+        terms: ['um tipo', '1 tipo', 'tipo unico', 'apenas um tipo', 'monotipo', 'mono tipo'],
+        obj: { category: 'isDualType', invert: true },
+        label: 'Possui apenas 1 Tipo (Monotipo)?',
+    },
+
+    // --- TIPOS / ELEMENTOS ---
+    { terms: ['fogo', 'fire', 'chama', 'queima', 'flamejante'], obj: { category: 'type', value: 'fire' }, label: 'É do tipo Fogo?' },
+    { terms: ['agua', 'water', 'aquatico', 'marinho'], obj: { category: 'type', value: 'water' }, label: 'É do tipo Água?' },
+    { terms: ['planta', 'grass', 'grama', 'folha', 'vegetal'], obj: { category: 'type', value: 'grass' }, label: 'É do tipo Planta?' },
+    { terms: ['eletric', 'electric', 'raio', 'trovao', 'choque'], obj: { category: 'type', value: 'electric' }, label: 'É do tipo Elétrico?' },
+    { terms: ['dragao', 'dragon'], obj: { category: 'type', value: 'dragon' }, label: 'É do tipo Dragão?' },
+    { terms: ['fantasma', 'ghost', 'assombrad', 'espirito'], obj: { category: 'type', value: 'ghost' }, label: 'É do tipo Fantasma?' },
+    { terms: ['psiquic', 'psychic', 'telepat'], words: ['mente'], obj: { category: 'type', value: 'psychic' }, label: 'É do tipo Psíquico?' },
+    { terms: ['congelad'], words: ['gelo', 'ice', 'neve'], obj: { category: 'type', value: 'ice' }, label: 'É do tipo Gelo?' },
+    { terms: ['lutador', 'fighting', 'artes marciais', 'briga'], words: ['luta'], obj: { category: 'type', value: 'fighting' }, label: 'É do tipo Lutador?' },
+    { terms: ['veneno', 'poison', 'toxico', 'venenoso'], obj: { category: 'type', value: 'poison' }, label: 'É do tipo Veneno?' },
+    { terms: ['ground', 'terrestre'], words: ['terra'], obj: { category: 'type', value: 'ground' }, label: 'É do tipo Terrestre?' },
+    { terms: ['voador', 'flying'], words: ['voa', 'asa', 'asas'], obj: { category: 'type', value: 'flying' }, label: 'É do tipo Voador?' },
+    { terms: ['inseto', 'besouro'], words: ['bug'], obj: { category: 'type', value: 'bug' }, label: 'É do tipo Inseto?' },
+    { terms: ['pedra', 'rock', 'rocha'], obj: { category: 'type', value: 'rock' }, label: 'É do tipo Pedra?' },
+    { terms: ['sombrio', 'noturno', 'trevas'], words: ['dark'], obj: { category: 'type', value: 'dark' }, label: 'É do tipo Sombrio?' },
+    { terms: ['steel'], words: ['aco', 'metal', 'metalico', 'ferro'], obj: { category: 'type', value: 'steel' }, label: 'É do tipo Aço?' },
+    { terms: ['fairy', 'magico'], words: ['fada'], obj: { category: 'type', value: 'fairy' }, label: 'É do tipo Fada?' },
+
+    // --- EVOLUÇÃO & ESTÁGIOS ---
+    {
+        terms: ['nao evolui', 'sem evolucao', 'estagio unico', 'nao tem evolucao', 'unico estagio'],
+        obj: { category: 'isSingleStage' },
+        label: 'Não possui evolução (Estágio Único)?',
+    },
+    {
+        terms: ['evolucao final', 'ultima evolucao', 'ultimo estagio', 'estagio final', 'ja evoluiu', 'totalmente evoluido', 'evoluido'],
+        obj: { category: 'isFinalForm' },
+        label: 'É a Evolução Final?',
+    },
+    {
+        terms: ['forma base', 'primeira evolucao', '1o estagio', 'primeiro estagio', 'forma inicial', 'nao evoluiu'],
+        obj: { category: 'isBaseForm' },
+        label: 'É a Forma Base (1º Estágio)?',
+    },
+    { terms: ['bebe', 'baby', 'filhote'], obj: { category: 'isBaby' }, label: 'É um Pokémon Bebê?' },
+    // Catch-all for the evolution family, placed after the specific ones above so
+    // they win. A bare stem also absorbs the common typos ("evolulcao", "evoluçao")
+    // that an exact-phrase list would reject outright.
+    {
+        terms: ['evolu'],
+        obj: { category: 'isEvolved' },
+        label: 'Já é uma evolução (não é forma base)?',
+    },
+
+    // --- STATUS ---
+    // Before the physical block: "status alto" must not be read as "alto" (height).
+    {
+        terms: ['status alto', 'status altos', 'bst alto', 'status bom', 'muito forte'],
+        words: ['forte'],
+        obj: { category: 'bstMin', value: 500 },
+        label: 'Total de Status Base (BST) ≥ 500?',
+    },
+    {
+        terms: ['status baixo', 'status baixos', 'bst baixo', 'status ruim'],
+        words: ['fraco', 'fraquinho'],
+        obj: { category: 'bstMax', value: 350 },
+        label: 'Total de Status Base (BST) ≤ 350?',
+    },
+    {
+        terms: ['alta velocidade', 'velocidade', 'mais rapido'],
+        words: ['rapido', 'veloz'],
+        obj: { category: 'topStatSpeed' },
+        label: 'O melhor status é Velocidade?',
+    },
+
+    // --- FÍSICO: PESO ---
+    {
+        terms: ['pesado', 'pesa muito', 'peso alto', 'muito peso'],
+        words: ['gordo'],
+        obj: { category: 'weightMin', value: 100 },
+        label: 'Pesa 100kg ou mais (é pesado)?',
+    },
+    {
+        terms: ['pesa pouco', 'peso baixo', 'levinho'],
+        words: ['leve'],
+        obj: { category: 'weightMax', value: 10 },
+        label: 'Pesa menos de 10kg (é leve)?',
+    },
+
+    // --- FÍSICO: ALTURA ---
+    // "gigante" before "grande" so the bigger claim wins when both appear.
+    {
+        terms: ['gigante', 'gigantesco', 'colossal', 'enorme', 'muito grande', 'muito alto'],
+        obj: { category: 'heightMin', value: 3 },
+        label: 'Tem 3m ou mais (é gigante)?',
+    },
+    {
+        terms: ['tamanho medio', 'medio porte', 'porte medio', 'intermediario'],
+        words: ['medio', 'media'],
+        obj: { category: 'heightRange', min: 1, max: 2 },
+        label: 'Tem entre 1m e 2m (tamanho médio)?',
+    },
+    {
+        terms: ['grandao', 'altao', 'comprido'],
+        words: ['grande', 'alto', 'alta'],
+        obj: { category: 'heightMin', value: 2 },
+        label: 'Tem 2m ou mais (é grande)?',
+    },
+    {
+        terms: ['pequenininho', 'minusculo', 'baixinho', 'pequeno porte'],
+        words: ['pequeno', 'pequena', 'baixo', 'baixa', 'miudo'],
+        obj: { category: 'heightMax', value: 1 },
+        label: 'Tem menos de 1m (é pequeno)?',
+    },
+
+    // --- GERAÇÕES & REGIÕES ---
+    { terms: ['gen 1', 'gen1', 'geracao 1', 'geracao1', 'kanto', '1a geracao', 'primeira geracao'], obj: { category: 'generation', value: 1 }, label: 'É da 1ª Geração (Kanto)?' },
+    { terms: ['gen 2', 'gen2', 'geracao 2', 'geracao2', 'johto', '2a geracao', 'segunda geracao'], obj: { category: 'generation', value: 2 }, label: 'É da 2ª Geração (Johto)?' },
+    { terms: ['gen 3', 'gen3', 'geracao 3', 'geracao3', 'hoenn', '3a geracao', 'terceira geracao'], obj: { category: 'generation', value: 3 }, label: 'É da 3ª Geração (Hoenn)?' },
+    { terms: ['gen 4', 'gen4', 'geracao 4', 'geracao4', 'sinnoh', '4a geracao', 'quarta geracao'], obj: { category: 'generation', value: 4 }, label: 'É da 4ª Geração (Sinnoh)?' },
+    { terms: ['gen 5', 'gen5', 'geracao 5', 'geracao5', 'unova', '5a geracao', 'quinta geracao'], obj: { category: 'generation', value: 5 }, label: 'É da 5ª Geração (Unova)?' },
+    { terms: ['gen 6', 'gen6', 'geracao 6', 'geracao6', 'kalos', '6a geracao', 'sexta geracao'], obj: { category: 'generation', value: 6 }, label: 'É da 6ª Geração (Kalos)?' },
+    { terms: ['gen 7', 'gen7', 'geracao 7', 'geracao7', 'alola', '7a geracao', 'setima geracao'], obj: { category: 'generation', value: 7 }, label: 'É da 7ª Geração (Alola)?' },
+    { terms: ['gen 8', 'gen8', 'geracao 8', 'geracao8', 'galar', '8a geracao', 'oitava geracao'], obj: { category: 'generation', value: 8 }, label: 'É da 8ª Geração (Galar)?' },
+    { terms: ['gen 9', 'gen9', 'geracao 9', 'geracao9', 'paldea', '9a geracao', 'nona geracao'], obj: { category: 'generation', value: 9 }, label: 'É da 9ª Geração (Paldea)?' },
+
+    // --- ESPECIAIS & CONCEITOS ---
+    { terms: ['lendario', 'mitico', 'legendary', 'mythical'], obj: { category: 'isLegendary' }, label: 'É Lendário ou Mítico?' },
+    { terms: ['inicial', 'starter'], obj: { category: 'isStarter' }, label: 'É um Pokémon Inicial?' },
+    { terms: ['fossil', 'prehistorico', 'dinossauro'], obj: { category: 'isFossil' }, label: 'É um Fóssil Pré-Histórico?' },
+    { terms: ['pikaclone', 'clone do pikachu', 'rato eletrico'], obj: { category: 'isPikaclone' }, label: 'É um Pikaclone?' },
+    { terms: ['comida', 'comestivel', 'sobremesa'], words: ['doce', 'fruta', 'bolo'], obj: { category: 'isFoodBased' }, label: 'É baseado em Comida?' },
+    { terms: ['animal real', 'parece um animal', 'bicho', 'fauna'], words: ['animal'], obj: { category: 'isRealAnimal' }, label: 'É parecido com um Animal Real?' },
+    { terms: ['objeto', 'ferramenta', 'utensilio', 'maquina'], words: ['item', 'coisa'], obj: { category: 'isObjectBased' }, label: 'É baseado em Objeto ou Utensílio?' },
+
+    // --- PESSOAL & FAVORITOS ---
+    {
+        terms: ['favorito', 'favoritos', 'meu xodo', 'xodo', 'eu gosto', 'gosto dele', 'amo ele', 'amo esse', 'adoro ele', 'adoro esse', 'curto ele'],
+        words: ['amo', 'adoro', 'curto'],
+        obj: { category: 'isUserFavorite' },
+        label: 'Está na minha lista de Favoritos?',
+    },
+];
+
+const matchesIntent = (text, tokens, intent) => {
+    if (intent.terms && hasAny(text, intent.terms)) return true;
+    if (intent.words && intent.words.some((word) => tokens.includes(word))) return true;
+    return false;
+};
+
+/**
+ * Parse a free-text question typed by the user into an evaluable question object.
+ *
+ * Returns `null` when nothing matched. Callers MUST treat null as "I did not
+ * understand" and ask again — submitting an unparsed question used to log it as
+ * `custom`, which the evaluator answered "NÃO", so the board filled with
+ * confident wrong answers to questions like "maior que 1m?".
+ *
+ * @param {string} textInput
+ * @returns {{ obj: object, label: string } | null}
  */
 export const parseFreeTextQuestion = (textInput) => {
     if (!textInput || typeof textInput !== 'string') return null;
-    const norm = normalizePokemonQuizInput(textInput);
 
-    // --- TIPAGEM & QUANTIDADE DE TIPOS ---
-    if (
-        norm.includes('duas tipagens') ||
-        norm.includes('dois tipos') ||
-        norm.includes('2 tipos') ||
-        norm.includes('2 tipagens') ||
-        norm.includes('tipo duplo') ||
-        norm.includes('dual type') ||
-        norm.includes('dupla tipagem') ||
-        norm.includes('segundo tipo')
-    ) {
-        return { obj: { category: 'isDualType' }, label: 'Possui 2 Tipos (Dual Type)?' };
+    const norm = normalizeQuestionText(textInput);
+    if (!norm) return null;
+    const tokens = norm.split(' ');
+
+    // Explicit measurements win over every fuzzy bucket: "mais de 1,5m" is a
+    // precise ask and must not be swallowed by the "grande" heuristic.
+    const kilos = parseMeasure(norm, 'kg|quilos?|kilos?');
+    if (kilos !== null) {
+        return hasAny(norm, SMALLER_TERMS)
+            ? { obj: { category: 'weightMax', value: kilos }, label: `Pesa menos de ${formatKilos(kilos)}?` }
+            : { obj: { category: 'weightMin', value: kilos }, label: `Pesa ${formatKilos(kilos)} ou mais?` };
     }
 
-    if (
-        norm.includes('um tipo') ||
-        norm.includes('1 tipo') ||
-        norm.includes('tipo unico') ||
-        norm.includes('so 1 tipo') ||
-        norm.includes('apenas um tipo') ||
-        norm.includes('monotipo')
-    ) {
-        return { obj: { category: 'isDualType', invert: true }, label: 'Possui apenas 1 Tipo (Monotipo)?' };
+    const centimeters = parseMeasure(norm, 'cm|centimetros?');
+    const meters = centimeters !== null ? centimeters / 100 : parseMeasure(norm, 'm|metros?');
+    if (meters !== null) {
+        return hasAny(norm, SMALLER_TERMS)
+            ? { obj: { category: 'heightMax', value: meters }, label: `Tem menos de ${formatMeters(meters)} de altura?` }
+            : { obj: { category: 'heightMin', value: meters }, label: `Tem ${formatMeters(meters)} ou mais de altura?` };
     }
 
-    // --- ELEMNTOS / TIPOS ---
-    if (norm.includes('fogo') || norm.includes('fire') || norm.includes('chama') || norm.includes('queima'))
-        return { obj: { category: 'type', value: 'fire' }, label: 'É do tipo Fogo?' };
-
-    if (norm.includes('agua') || norm.includes('water') || norm.includes('aquatico') || norm.includes('marino'))
-        return { obj: { category: 'type', value: 'water' }, label: 'É do tipo Água?' };
-
-    if (norm.includes('planta') || norm.includes('grass') || norm.includes('grama') || norm.includes('folha'))
-        return { obj: { category: 'type', value: 'grass' }, label: 'É do tipo Planta?' };
-
-    if (norm.includes('eletric') || norm.includes('raio') || norm.includes('trovao') || norm.includes('choque'))
-        return { obj: { category: 'type', value: 'electric' }, label: 'É do tipo Elétrico?' };
-
-    if (norm.includes('dragao') || norm.includes('dragon'))
-        return { obj: { category: 'type', value: 'dragon' }, label: 'É do tipo Dragão?' };
-
-    if (norm.includes('fantasma') || norm.includes('ghost') || norm.includes('assombrad') || norm.includes('espirito'))
-        return { obj: { category: 'type', value: 'ghost' }, label: 'É do tipo Fantasma?' };
-
-    if (norm.includes('psiquic') || norm.includes('psychic') || norm.includes('mente') || norm.includes('telepat'))
-        return { obj: { category: 'type', value: 'psychic' }, label: 'É do tipo Psíquico?' };
-
-    if (norm.includes('gelo') || norm.includes('ice') || norm.includes('neve') || norm.includes('congelad'))
-        return { obj: { category: 'type', value: 'ice' }, label: 'É do tipo Gelo?' };
-
-    if (norm.includes('lutador') || norm.includes('fighting') || norm.includes('luta') || norm.includes('artes marciais'))
-        return { obj: { category: 'type', value: 'fighting' }, label: 'É do tipo Lutador?' };
-
-    if (norm.includes('veneno') || norm.includes('poison') || norm.includes('toxico'))
-        return { obj: { category: 'type', value: 'poison' }, label: 'É do tipo Veneno?' };
-
-    if (norm.includes('terra') || norm.includes('ground') || norm.includes('terrestre'))
-        return { obj: { category: 'type', value: 'ground' }, label: 'É do tipo Terrestre?' };
-
-    if (norm.includes('voador') || norm.includes('flying') || norm.includes('asa') || norm.includes('voa'))
-        return { obj: { category: 'type', value: 'flying' }, label: 'É do tipo Voador?' };
-
-    if (norm.includes('inseto') || norm.includes('bug') || norm.includes('besouro'))
-        return { obj: { category: 'type', value: 'bug' }, label: 'É do tipo Inseto?' };
-
-    if (norm.includes('pedra') || norm.includes('rock') || norm.includes('rocha'))
-        return { obj: { category: 'type', value: 'rock' }, label: 'É do tipo Pedra?' };
-
-    if (norm.includes('sombrio') || norm.includes('dark') || norm.includes('noturno') || norm.includes('trevas'))
-        return { obj: { category: 'type', value: 'dark' }, label: 'É do tipo Sombrio?' };
-
-    if (norm.includes('aco') || norm.includes('steel') || norm.includes('metal') || norm.includes('ferro'))
-        return { obj: { category: 'type', value: 'steel' }, label: 'É do tipo Aço?' };
-
-    if (norm.includes('fada') || norm.includes('fairy') || norm.includes('magico'))
-        return { obj: { category: 'type', value: 'fairy' }, label: 'É do tipo Fada?' };
-
-    // --- EVOLUÇÃO & ESTÁGIOS ---
-    if (
-        norm.includes('nao evolui') ||
-        norm.includes('sem evolucao') ||
-        norm.includes('estagio unico') ||
-        norm.includes('nao tem evolucao')
-    ) {
-        return { obj: { category: 'isSingleStage' }, label: 'Não possui evolução (Estágio Único)?' };
+    // Explicit BST threshold: "bst maior que 500", "status acima de 450".
+    if (hasAny(norm, ['bst', 'status', 'stats'])) {
+        const bstMatch = norm.match(/\b(\d{3})\b/);
+        if (bstMatch) {
+            const threshold = Number(bstMatch[1]);
+            return hasAny(norm, SMALLER_TERMS)
+                ? { obj: { category: 'bstMax', value: threshold }, label: `Total de Status Base (BST) ≤ ${threshold}?` }
+                : { obj: { category: 'bstMin', value: threshold }, label: `Total de Status Base (BST) ≥ ${threshold}?` };
+        }
     }
 
-    if (
-        norm.includes('evolucao final') ||
-        norm.includes('ultima evolucao') ||
-        norm.includes('ultimo estagio') ||
-        norm.includes('estagio final') ||
-        norm.includes('ja evoluiu') ||
-        norm.includes('totalmente evoluido')
-    ) {
-        return { obj: { category: 'isFinalForm' }, label: 'É a Evolução Final?' };
+    // Generation with the number on either side — people type both "gen 3" and
+    // "3 gen" / "3a geracao", and the word order should not decide whether it works.
+    const genMatch = norm.match(/\bgen(?:eration|eracao)?\s*([1-9])\b/)
+        || norm.match(/\b([1-9])\s*a?\s*(?:gen|geracao|generation)\b/);
+    if (genMatch) {
+        const genNumber = Number(genMatch[1]);
+        return { obj: { category: 'generation', value: genNumber }, label: `É da ${genNumber}ª Geração?` };
     }
 
-    if (
-        norm.includes('forma base') ||
-        norm.includes('primeira evolucao') ||
-        norm.includes('1o estagio') ||
-        norm.includes('primeiro estagio') ||
-        norm.includes('forma inicial')
-    ) {
-        return { obj: { category: 'isBaseForm' }, label: 'É a Forma Base (1º Estágio)?' };
-    }
+    const intent = QUESTION_INTENTS.find((candidate) => matchesIntent(norm, tokens, candidate));
+    if (!intent) return null;
 
-    if (norm.includes('bebe') || norm.includes('baby') || norm.includes('filhote')) {
-        return { obj: { category: 'isBaby' }, label: 'É um Pokémon Bebê?' };
-    }
-
-    // --- VELOCIDADE & STATUS ---
-    if (
-        norm.includes('rapido') ||
-        norm.includes('veloz') ||
-        norm.includes('velocidade') ||
-        norm.includes('alta velocidade')
-    ) {
-        return { obj: { category: 'topStatSpeed' }, label: 'O melhor status é Velocidade?' };
-    }
-
-    if (
-        norm.includes('mais de 500') ||
-        norm.includes('bst 500') ||
-        norm.includes('status alto') ||
-        norm.includes('bst maior 500') ||
-        norm.includes('forte')
-    ) {
-        return { obj: { category: 'bstMin', value: 500 }, label: 'Total de Status Base (BST) > 500?' };
-    }
-
-    // --- GERAÇÕES & REGIÕES ---
-    if (norm.includes('gen1') || norm.includes('geracao 1') || norm.includes('geracao1') || norm.includes('kanto') || norm.includes('1a geracao'))
-        return { obj: { category: 'generation', value: 1 }, label: 'É da 1ª Geração (Kanto)?' };
-
-    if (norm.includes('gen2') || norm.includes('geracao 2') || norm.includes('geracao2') || norm.includes('johto') || norm.includes('2a geracao'))
-        return { obj: { category: 'generation', value: 2 }, label: 'É da 2ª Geração (Johto)?' };
-
-    if (norm.includes('gen3') || norm.includes('geracao 3') || norm.includes('geracao3') || norm.includes('hoenn') || norm.includes('3a geracao'))
-        return { obj: { category: 'generation', value: 3 }, label: 'É da 3ª Geração (Hoenn)?' };
-
-    if (norm.includes('gen4') || norm.includes('geracao 4') || norm.includes('sinnoh'))
-        return { obj: { category: 'generation', value: 4 }, label: 'É da 4ª Geração (Sinnoh)?' };
-
-    if (norm.includes('gen5') || norm.includes('geracao 5') || norm.includes('unova'))
-        return { obj: { category: 'generation', value: 5 }, label: 'É da 5ª Geração (Unova)?' };
-
-    if (norm.includes('gen6') || norm.includes('geracao 6') || norm.includes('kalos'))
-        return { obj: { category: 'generation', value: 6 }, label: 'É da 6ª Geração (Kalos)?' };
-
-    if (norm.includes('gen7') || norm.includes('geracao 7') || norm.includes('alola'))
-        return { obj: { category: 'generation', value: 7 }, label: 'É da 7ª Geração (Alola)?' };
-
-    if (norm.includes('gen8') || norm.includes('geracao 8') || norm.includes('galar'))
-        return { obj: { category: 'generation', value: 8 }, label: 'É da 8ª Geração (Galar)?' };
-
-    if (norm.includes('gen9') || norm.includes('geracao 9') || norm.includes('paldea'))
-        return { obj: { category: 'generation', value: 9 }, label: 'É da 9ª Geração (Paldea)?' };
-
-    // --- ESPECIAIS & CONCEITOS ---
-    if (norm.includes('lendario') || norm.includes('mitico') || norm.includes('legendary'))
-        return { obj: { category: 'isLegendary' }, label: 'É Lendário ou Mítico?' };
-
-    if (norm.includes('inicial') || norm.includes('starter'))
-        return { obj: { category: 'isStarter' }, label: 'É um Pokémon Inicial?' };
-
-    if (norm.includes('comida') || norm.includes('doce') || norm.includes('fruta') || norm.includes('comestivel'))
-        return { obj: { category: 'isFoodBased' }, label: 'É baseado em Comida?' };
-
-    if (norm.includes('animal') || norm.includes('bicho') || norm.includes('fauna'))
-        return { obj: { category: 'isRealAnimal' }, label: 'É parecido com um Animal Real?' };
-
-    if (norm.includes('objeto') || norm.includes('ferramenta') || norm.includes('item'))
-        return { obj: { category: 'isObjectBased' }, label: 'É baseado em Objeto ou Utensílio?' };
-
-    if (norm.includes('favorito') || norm.includes('gosto') || norm.includes('curto'))
-        return { obj: { category: 'isUserFavorite' }, label: 'Está na minha lista de Favoritos?' };
-
-    if (norm.includes('fossil') || norm.includes('prehistorico') || norm.includes('dinossauro'))
-        return { obj: { category: 'isFossil' }, label: 'É um Fóssil Pré-Histórico?' };
-
-    if (norm.includes('pikaclone') || norm.includes('clone do pikachu') || norm.includes('rato eletrico'))
-        return { obj: { category: 'isPikaclone' }, label: 'É um Pikaclone?' };
-
-    return null;
+    return { obj: { ...intent.obj }, label: intent.label };
 };
+
+/**
+ * Stable identity for a question, used to tell "already asked" from "similar".
+ *
+ * The category alone is NOT the identity: `generation 2` and `generation 5` are
+ * different questions, as are `heightMin 1` and `heightMin 2`. Comparing on
+ * category only made the first question of a family block all the others.
+ *
+ * `invert` is deliberately excluded — "tem 2 tipos?" and "é monotipo?" are the
+ * same attribute read in opposite directions, so asking one really does answer
+ * the other and the pair should collapse to one key.
+ */
+export const buildQuestionKey = (question) => {
+    if (!question?.category) return '';
+
+    const parts = [question.category];
+    if (question.value !== undefined && question.value !== null) parts.push(`v=${question.value}`);
+    if (question.min !== undefined && question.min !== null) parts.push(`min=${question.min}`);
+    if (question.max !== undefined && question.max !== null) parts.push(`max=${question.max}`);
+
+    return parts.join('|');
+};
+
+/** Suggestions shown when a typed question could not be understood. */
+export const QUESTION_EXAMPLES = Object.freeze([
+    'É do tipo fogo?',
+    'Tem mais de 1m?',
+    'É pequeno?',
+    'É lendário?',
+    'É da geração 1?',
+    'É pesado?',
+    'É um inicial?',
+    'É rápido?',
+]);

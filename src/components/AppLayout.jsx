@@ -11,6 +11,7 @@ import { useActiveTeam } from '../hooks/useActiveTeam';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
 import { useReferenceStore } from '../store/useReferenceStore';
+import { useNotifications } from '../hooks/useNotifications';
 
 import { PATCH_NOTES_VERSION, THEME_META } from '../constants/theme';
 import { pageGuideTips, PageGuide } from './PageGuide';
@@ -222,6 +223,7 @@ export default function AppLayout() {
         if (path.includes('/teams')) return 'allTeams';
         if (path.includes('/guesser')) return 'categoryGuesser';
         if (path.includes('/quiz')) return 'generationQuiz';
+        if (path.includes('/pokeroom')) return 'secretRoom';
         if (path.includes('/battles')) return 'battles';
         if (path.includes('/friends')) return 'friends';
         if (path.includes('/favorites')) return 'favorites';
@@ -300,7 +302,10 @@ export default function AppLayout() {
 
     // Native browser Notification popups for battles — must live somewhere
     // mounted for the whole session (not just inside the battle views) so a
-    // popup can fire while the trainer is looking at something else entirely.
+    // Custom hooks for domain logic & real-time updates
+    useNotifications();
+    useFriends();
+    useBattles();
     useBattleNotifications();
 
     // The signed-in trainer's own avatar, with their pokemon/trainer choice
@@ -1563,7 +1568,7 @@ export default function AppLayout() {
                         )}
                     </main>
 
-                    {currentPage !== 'feed' && currentPage !== 'generationQuiz' && (
+                    {currentPage !== 'feed' && currentPage !== 'generationQuiz' && currentPage !== 'secretRoom' && !location.pathname.startsWith('/pokeroom') && (
                         <footer className="app-shell__footer">
                             <div className="app-shell__footer-row">
                                 <div className="app-shell__footer-credit">

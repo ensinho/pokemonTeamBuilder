@@ -1,23 +1,24 @@
 import React, { useId, useState } from 'react';
 
 export function PokemonGenerationQuizAutocomplete({
-    value,
-    onChange,
-    onKeyDown,
-    suggestions,
-    activeIndex,
-    onSelectSuggestion,
-    disabled,
-    inputRef,
-    helperText,
-    placeholder,
-    minCharacters,
+    value = '',
+    onChange = () => {},
+    onKeyDown = () => {},
+    suggestions = [],
+    activeIndex = 0,
+    onSelectSuggestion = () => {},
+    disabled = false,
+    inputRef = null,
+    helperText = '',
+    placeholder = '',
+    minCharacters = 2,
 }) {
     const listboxId = useId();
     const [isInputArmed, setIsInputArmed] = useState(false);
-    const trimmedValue = value.trim();
-    const isOpen = !disabled && trimmedValue.length >= minCharacters && suggestions.length > 0;
-    const activeSuggestion = isOpen ? suggestions[activeIndex] : null;
+    const safeValue = String(value || '');
+    const trimmedValue = safeValue.trim();
+    const isOpen = !disabled && trimmedValue.length >= minCharacters && (suggestions || []).length > 0;
+    const activeSuggestion = isOpen ? (suggestions || [])[activeIndex] : null;
 
     return (
         <div className="generation-quiz-autocomplete">

@@ -10,8 +10,6 @@ import { appId } from '../constants/firebase';
 export function useSecretRoom(roomIdParam) {
     const currentRoom = useSecretRoomStore((state) => state.currentRoom);
     const isLoadingRoom = useSecretRoomStore((state) => state.isLoadingRoom);
-    const stealthMode = useSecretRoomStore((state) => state.stealthMode);
-    const toggleStealthMode = useSecretRoomStore((state) => state.toggleStealthMode);
 
     const createRoom = useSecretRoomStore((state) => state.createRoom);
     const joinRoom = useSecretRoomStore((state) => state.joinRoom);
@@ -53,20 +51,20 @@ export function useSecretRoom(roomIdParam) {
                 gameMode: currentRoom.gameMode,
                 createdAt: new Date().toISOString(),
             });
-            showToast('Invite sent to friend!', 'success');
+            showToast('Convite enviado!', 'success');
             return true;
         } catch (err) {
             console.error('Failed to invite friend:', err);
-            showToast('Could not send invite.', 'error');
+            showToast('Não foi possível enviar o convite.', 'error');
             return false;
         }
     }, [currentRoom, authUser]);
 
     return {
+        // The signed-in user's id — the view needs it to know whose turn it is.
+        authUserId: authUser,
         currentRoom,
         isLoadingRoom,
-        stealthMode,
-        toggleStealthMode,
         friends,
         createRoom,
         joinRoom,

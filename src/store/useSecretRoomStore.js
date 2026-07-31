@@ -1,25 +1,100 @@
 import { create } from 'zustand';
 import {
-    collection,
     doc,
     getDoc,
     setDoc,
     updateDoc,
     onSnapshot,
     deleteDoc,
-    arrayUnion,
-    arrayRemove,
 } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
-import { loadPokemonIndex } from '../services/pokemonDataCache';
+import {
+    loadPokemonIndex,
+    getPokemonApiData,
+    getPokemonSpeciesData,
+    getEvolutionChainData,
+} from '../services/pokemonDataCache';
 import { evaluateAttributeQuestion, comparePokemonGuess, getPokemonGeneration } from '../utils/pokemonQuestionEvaluator';
 
 const pokeroomsPath = () => `artifacts/${appId}/pokerooms`;
 
 let roomUnsub = null;
+
+/** Depth of `speciesName` within an evolution chain node (1-based), or null. */
+const findChainDepth = (node, speciesName, depth = 1) => {
+    if (!node) return null;
+    if (node.species?.name === speciesName) return depth;
+    for (const next of node.evolves_to || []) {
+        const found = findChainDepth(next, speciesName, depth + 1);
+        if (found) return found;
+    }
+    return null;
+};
+
+/** Longest path through an evolution chain, i.e. how many stages the line has. */
+const chainMaxDepth = (node, depth = 1) => {
+    const children = node?.evolves_to || [];
+    if (!children.length) return depth;
+    return Math.max(...children.map((child) => chainMaxDepth(child, depth + 1)));
+};
+
+/**
+ * Build the record the room stores as its secret.
+ *
+ * The Pokémon index carries only id/name/types/generation/baseStats, so
+ * questions about height, weight or evolution stage had no data to read and
+ * every one of them was answered "no". This resolves those once — when the
+ * secret is drawn — so all clients evaluate against the same complete record
+ * without any per-question fetching.
+ *
+ * Every field is explicitly null-defaulted: Firestore rejects `undefined`.
+ */
+const buildSecretRecord = async (entry) => {
+    const base = {
+        id: Number(entry.id),
+        name: entry.name,
+        types: Array.isArray(entry.types) ? entry.types : [],
+        generation: entry.generation || null,
+        baseStats: entry.baseStats || null,
+        heightDm: null,
+        weightHg: null,
+        evolutionStage: null,
+        evolutionStageCount: null,
+        isBaby: false,
+    };
+
+    try {
+        const detail = await getPokemonApiData(base.id);
+        if (Number.isFinite(Number(detail?.height))) base.heightDm = Number(detail.height);
+        if (Number.isFinite(Number(detail?.weight))) base.weightHg = Number(detail.weight);
+    } catch (_) {
+        // Offline / API down — height & weight questions will report "unknown"
+        // rather than a wrong "no".
+    }
+
+    try {
+        const species = await getPokemonSpeciesData(base.id);
+        base.isBaby = Boolean(species?.is_baby);
+
+        const chainUrl = species?.evolution_chain?.url;
+        if (chainUrl) {
+            const chainData = await getEvolutionChainData(chainUrl);
+            const root = chainData?.chain;
+            if (root) {
+                const speciesName = species?.name || base.name;
+                base.evolutionStage = findChainDepth(root, speciesName);
+                base.evolutionStageCount = chainMaxDepth(root);
+            }
+        }
+    } catch (_) {
+        // Same contract: absent stage data yields "unknown", never a false "no".
+    }
+
+    return base;
+};
 
 const generateRoomCode = () => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -33,10 +108,7 @@ const generateRoomCode = () => {
 export const useSecretRoomStore = create((set, get) => ({
     currentRoom: null,
     isLoadingRoom: false,
-    stealthMode: false,
     pokemonIndexCache: [],
-
-    toggleStealthMode: () => set((state) => ({ stealthMode: !state.stealthMode })),
 
     loadIndex: async () => {
         if (get().pokemonIndexCache.length > 0) return get().pokemonIndexCache;
@@ -92,7 +164,9 @@ export const useSecretRoomStore = create((set, get) => ({
                         lastActivityAt: new Date().toISOString(),
                     });
                 }
-            } catch (_) {}
+            } catch (_) {
+                // Best-effort cleanup — leaving locally must succeed regardless.
+            }
         }
         set({ currentRoom: null });
     },
@@ -100,10 +174,10 @@ export const useSecretRoomStore = create((set, get) => ({
     createRoom: async ({ gameMode = 'secret-pokemon', genFilter = 'all', maxRounds = 5 }) => {
         const authState = useAuthStore.getState();
         const showToast = useToastStore.getState().showToast;
-        const { userId, isAnonymous } = authState;
+        const { userId } = authState;
 
         if (!db || !userId) {
-            showToast('Sign in to create a room.', 'warning');
+            showToast('Entre na sua conta para criar uma sala.', 'warning');
             return null;
         }
 
@@ -141,11 +215,11 @@ export const useSecretRoomStore = create((set, get) => ({
             });
 
             get().subscribeToRoom(roomCode);
-            showToast(`Room ${roomCode} created!`, 'success');
+            showToast(`Sala ${roomCode} criada!`, 'success');
             return roomCode;
         } catch (err) {
             console.error('Failed to create room:', err);
-            showToast('Could not create room.', 'error');
+            showToast('Não foi possível criar a sala.', 'error');
             return null;
         }
     },
@@ -163,7 +237,7 @@ export const useSecretRoomStore = create((set, get) => ({
         try {
             const snap = await getDoc(roomRef);
             if (!snap.exists()) {
-                showToast('Room not found!', 'error');
+                showToast('Sala não encontrada!', 'error');
                 return false;
             }
 
@@ -173,7 +247,7 @@ export const useSecretRoomStore = create((set, get) => ({
 
             if (!isAlreadyIn) {
                 if (data.status !== 'lobby') {
-                    showToast('Game already in progress!', 'warning');
+                    showToast('A partida já começou!', 'warning');
                     return false;
                 }
 
@@ -193,11 +267,11 @@ export const useSecretRoomStore = create((set, get) => ({
             }
 
             get().subscribeToRoom(code);
-            showToast('Joined room!', 'success');
+            showToast('Você entrou na sala!', 'success');
             return true;
         } catch (err) {
             console.error('Failed to join room:', err);
-            showToast('Could not join room.', 'error');
+            showToast('Não foi possível entrar na sala.', 'error');
             return false;
         }
     },
@@ -225,7 +299,7 @@ export const useSecretRoomStore = create((set, get) => ({
         const now = new Date().toISOString();
 
         if (currentRoom.gameMode === 'secret-pokemon') {
-            const secret = getRandomPokemon();
+            const secret = await buildSecretRecord(getRandomPokemon());
             await updateDoc(roomRef, {
                 status: 'playing',
                 sharedSecretPokemon: secret,
@@ -235,9 +309,11 @@ export const useSecretRoomStore = create((set, get) => ({
             });
         } else {
             // "Quem Sou Eu?": Assign a secret Pokemon to each player
-            const updatedPlayers = (currentRoom.players || []).map((p) => ({
+            const players = currentRoom.players || [];
+            const secrets = await Promise.all(players.map(() => buildSecretRecord(getRandomPokemon())));
+            const updatedPlayers = players.map((p, index) => ({
                 ...p,
-                secretPokemon: getRandomPokemon(),
+                secretPokemon: secrets[index],
             }));
 
             await updateDoc(roomRef, {
@@ -253,13 +329,13 @@ export const useSecretRoomStore = create((set, get) => ({
     submitQuestion: async (questionObj, questionLabel, userFavorites = []) => {
         const { currentRoom } = get();
         const { userId, trainerDisplayName } = useAuthStore.getState();
-        if (!db || !currentRoom || !userId) return;
+        if (!db || !currentRoom || !userId) return { rejected: true };
 
         const players = currentRoom.players || [];
         const currentPlayer = players[currentRoom.currentTurnIndex];
         if (currentPlayer?.userId !== userId) {
-            useToastStore.getState().showToast('Wait for your turn!', 'warning');
-            return;
+            useToastStore.getState().showToast('Espere a sua vez!', 'warning');
+            return { rejected: true };
         }
 
         // Determine target secret Pokemon
@@ -270,9 +346,20 @@ export const useSecretRoomStore = create((set, get) => ({
             targetSecret = currentPlayer.secretPokemon;
         }
 
-        if (!targetSecret) return;
+        if (!targetSecret) return { rejected: true };
 
         const evalResult = evaluateAttributeQuestion(questionObj, targetSecret, userFavorites);
+
+        // An unanswerable question must not be logged: a "NÃO" would read as a
+        // fact about the secret Pokémon when it only means the evaluator lacked
+        // the data (or never understood the question). Keep the player's turn.
+        if (evalResult.unknown) {
+            useToastStore.getState().showToast(
+                evalResult.hint ? `Não foi possível responder: ${evalResult.hint}.` : 'Não entendi essa pergunta.',
+                'warning'
+            );
+            return { rejected: true, hint: evalResult.hint || null };
+        }
 
         const logEntry = {
             id: `q-${Date.now()}`,
@@ -294,20 +381,22 @@ export const useSecretRoomStore = create((set, get) => ({
             currentTurnIndex: nextTurnIndex,
             lastActivityAt: new Date().toISOString(),
         });
+
+        return { rejected: false, answer: evalResult.answer };
     },
 
     submitDirectGuess: async (guessedPokemon) => {
         const { currentRoom } = get();
         const { userId, trainerDisplayName } = useAuthStore.getState();
         const showToast = useToastStore.getState().showToast;
-        if (!db || !currentRoom || !userId || !guessedPokemon) return;
+        if (!db || !currentRoom || !userId || !guessedPokemon) return { rejected: true };
 
         const players = currentRoom.players || [];
         const turnPlayerIndex = currentRoom.currentTurnIndex;
         const currentPlayer = players[turnPlayerIndex];
         if (currentPlayer?.userId !== userId) {
-            showToast('Wait for your turn!', 'warning');
-            return;
+            showToast('Espere a sua vez!', 'warning');
+            return { rejected: true };
         }
 
         let targetSecret = null;
@@ -317,7 +406,7 @@ export const useSecretRoomStore = create((set, get) => ({
             targetSecret = currentPlayer.secretPokemon;
         }
 
-        if (!targetSecret) return;
+        if (!targetSecret) return { rejected: true };
 
         const comparison = comparePokemonGuess(guessedPokemon, targetSecret);
         const isCorrect = comparison.isExact;
@@ -356,7 +445,8 @@ export const useSecretRoomStore = create((set, get) => ({
                 lastActivityAt: new Date().toISOString(),
             });
 
-            showToast('Correct guess! Point awarded!', 'success');
+            showToast('Acertou! +100 pontos.', 'success');
+            return { rejected: false, isCorrect: true };
         } else {
             const nextTurnIndex = (turnPlayerIndex + 1) % players.length;
             await updateDoc(roomRef, {
@@ -364,7 +454,8 @@ export const useSecretRoomStore = create((set, get) => ({
                 currentTurnIndex: nextTurnIndex,
                 lastActivityAt: new Date().toISOString(),
             });
-            showToast('Incorrect guess!', 'error');
+            showToast('Palpite incorreto!', 'error');
+            return { rejected: false, isCorrect: false };
         }
     },
 
@@ -373,9 +464,11 @@ export const useSecretRoomStore = create((set, get) => ({
         if (!db || !currentRoom) return;
 
         const roomRef = doc(db, pokeroomsPath(), currentRoom.id);
+        // Deliberately *not* passing through 'lobby': `startGame()` below sets
+        // 'playing' one round-trip later, and with rounds advancing automatically
+        // that intermediate state would flash the waiting room on every client.
         await updateDoc(roomRef, {
             currentRound: currentRoom.currentRound + 1,
-            status: 'lobby',
             winnerId: null,
             lastActivityAt: new Date().toISOString(),
         });
