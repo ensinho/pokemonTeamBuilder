@@ -20,4 +20,5 @@ export { PokemonDetailView } from './PokemonDetailView';
 export { DamageCalculatorView } from './DamageCalculatorView';
 export { SpeedTiersView } from './SpeedTiersView';
 export { TournamentsView } from './TournamentsView';
+export { SecretRoomGuesserView } from './SecretRoomGuesserView';
 export { NotFoundView } from './NotFoundView';

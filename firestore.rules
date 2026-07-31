@@ -406,6 +406,15 @@ service cloud.firestore {
         allow read: if true;
         allow write: if false;
       }
+
+      // PokéRoom - Multiplayer Guesser Rooms & Notifications
+      match /pokerooms/{roomId} {
+        allow read, create, update, delete: if isSignedIn();
+      }
+
+      match /notifications/{notifId} {
+        allow read, create, delete: if isSignedIn();
+      }
     }
   }
 }

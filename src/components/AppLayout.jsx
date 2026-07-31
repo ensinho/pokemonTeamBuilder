@@ -50,7 +50,7 @@ import {
     ErrorToastIcon, WarningToastIcon, MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
-import { BoxIcon, Puzzle, Medal, TrendingUp } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, TrendingUp, Users } from 'lucide-react';
 
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -61,6 +61,7 @@ const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then(
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
 const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
 const CategoryGuesserView = lazy(() => import('./views/CategoryGuesserView').then((m) => ({ default: m.CategoryGuesserView })));
+const SecretRoomGuesserView = lazy(() => import('./views/SecretRoomGuesserView').then((m) => ({ default: m.SecretRoomGuesserView })));
 const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
@@ -645,6 +646,7 @@ export default function AppLayout() {
             {
                 title: t('nav.guessing'),
                 items: [
+                    { key: 'pokeroom', label: 'PokéRoom', path: '/pokeroom', icon: <Users className="w-5 h-5 shrink-0" /> },
                     { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
@@ -1446,6 +1448,8 @@ export default function AppLayout() {
                                                 }}
                                             />
                                         } />
+                                         <Route path="/pokeroom" element={<SecretRoomGuesserView />} />
+                                         <Route path="/pokeroom/:roomId" element={<SecretRoomGuesserView />} />
                                          <Route path="/guesser" element={
                                              <CategoryGuesserView
                                                  showDetails={showDetails}
