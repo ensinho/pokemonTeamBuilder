@@ -234,7 +234,7 @@ export default function AppLayout() {
     }, [location.pathname]);
 
     // Zustand Stores
-    const { toasts, showToast, maxToasts } = useToastStore();
+    const { toasts, showToast, maxToasts, dismissToast } = useToastStore();
     const { theme, colors, toggleTheme, changeTheme, homeWallpaperId, setHomeWallpaperPreference } = useThemeStore();
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
@@ -1014,6 +1014,18 @@ export default function AppLayout() {
                             )}
                             <span className="truncate">{toast.message}</span>
                         </div>
+                        {toast.action && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    toast.action.onClick?.();
+                                    dismissToast(toast.id);
+                                }}
+                                className="shrink-0 rounded-md bg-white/20 px-2.5 py-1 text-xs font-bold uppercase tracking-wide hover:bg-white/30"
+                            >
+                                {toast.action.label}
+                            </button>
+                        )}
                         {toast.spriteUrl && (
                             <img
                                 src={toast.spriteUrl}

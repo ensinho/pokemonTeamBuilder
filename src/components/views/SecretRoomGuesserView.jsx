@@ -42,11 +42,7 @@ const GAME_MODES = {
     'secret-pokemon': {
         name: 'Pokinator',
         desc: 'Um segredo coletivo — todos perguntam sobre o mesmo Pokémon',
-    },
-    'quem-sou-eu': {
-        name: 'Who Poke Am I',
-        desc: 'Um segredo por jogador — cada um tem o seu',
-    },
+    }
 };
 
 const modeName = (gameMode) => GAME_MODES[gameMode]?.name || 'Pokinator';
@@ -162,11 +158,25 @@ export function SecretRoomGuesserView() {
 
     const turnPlayerName = currentRoom?.players?.[currentRoom.currentTurnIndex]?.displayName || 'outro treinador';
 
+    // "Who Poke Am I" gives every player their own hidden Pokémon, and the store
+    // already evaluates each question against the asker's own secret. The card
+    // must therefore show *my* secret — showing whoever's turn it was meant the
+    // board described someone else's Pokémon.
+    const isOwnSecretMode = currentRoom?.gameMode !== 'secret-pokemon';
+
     const secretPokemon = useMemo(() => {
         if (!currentRoom) return null;
-        if (currentRoom.gameMode === 'secret-pokemon') return currentRoom.sharedSecretPokemon;
-        return currentRoom.players?.[currentRoom.currentTurnIndex]?.secretPokemon;
-    }, [currentRoom]);
+        if (!isOwnSecretMode) return currentRoom.sharedSecretPokemon;
+        return currentRoom.players?.find((p) => p.userId === authUserId)?.secretPokemon || null;
+    }, [currentRoom, isOwnSecretMode, authUserId]);
+
+    // In own-secret mode only my own questions describe my Pokémon; everyone
+    // else's answers are about theirs.
+    const myQuestionsLog = useMemo(() => {
+        const log = currentRoom?.questionsLog || [];
+        if (!isOwnSecretMode) return log;
+        return log.filter((entry) => entry.userId === authUserId);
+    }, [currentRoom?.questionsLog, isOwnSecretMode, authUserId]);
 
     const isRevealed = currentRoom?.status === 'roundResult' || currentRoom?.status === 'ended';
 
@@ -261,12 +271,12 @@ export function SecretRoomGuesserView() {
     // "geração 2" made every other generation look already-asked.
     const askedKeys = useMemo(() => {
         const keys = new Set();
-        (currentRoom?.questionsLog || []).forEach((entry) => {
+        myQuestionsLog.forEach((entry) => {
             const key = buildQuestionKey(entry.questionObj);
             if (key) keys.add(key);
         });
         return keys;
-    }, [currentRoom?.questionsLog]);
+    }, [myQuestionsLog]);
 
     const alreadyAsked = useCallback(
         (questionObj) => askedKeys.has(buildQuestionKey(questionObj)),
@@ -367,10 +377,9 @@ export function SecretRoomGuesserView() {
 
     const revealed = useMemo(() => {
         const info = { types: [], generation: null, stage: null, special: null, size: null };
-        const log = currentRoom?.questionsLog || [];
 
         // Oldest first, so later answers refine earlier ones.
-        [...log].reverse().forEach((entry) => {
+        [...myQuestionsLog].reverse().forEach((entry) => {
             if (!entry.answer || !entry.questionObj) return;
             const { category, value, min, max } = entry.questionObj;
 
@@ -393,7 +402,7 @@ export function SecretRoomGuesserView() {
         });
 
         return info;
-    }, [currentRoom?.questionsLog]);
+    }, [myQuestionsLog]);
 
     const revealedCount = [
         revealed.types.length > 0,
@@ -448,7 +457,7 @@ export function SecretRoomGuesserView() {
                 <header className="pokeroom-tcg__head">
                     <span className="pokeroom-tcg__label">
                         <SparklesIcon />
-                        Pokémon Secreto
+                        {isOwnSecretMode ? 'Você é...' : 'Pokémon Secreto'}
                     </span>
                     <span className="pokeroom-tcg__round">
                         Rodada {currentRoom.currentRound}/{currentRoom.maxRounds}
@@ -688,24 +697,6 @@ export function SecretRoomGuesserView() {
                                             </span>
                                             <span className="pokeroom__option-desc">
                                                 {GAME_MODES['secret-pokemon'].desc}
-                                            </span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            aria-pressed={selectedMode === 'quem-sou-eu'}
-                                            onClick={() => setSelectedMode('quem-sou-eu')}
-                                            className="pokeroom__option"
-                                        >
-                                            <span className="pokeroom__option-head">
-                                                <AccountIcon />
-                                                {selectedMode === 'quem-sou-eu' && <Check />}
-                                            </span>
-                                            <span className="pokeroom__option-title">
-                                                {GAME_MODES['quem-sou-eu'].name}
-                                            </span>
-                                            <span className="pokeroom__option-desc">
-                                                {GAME_MODES['quem-sou-eu'].desc}
                                             </span>
                                         </button>
                                     </div>

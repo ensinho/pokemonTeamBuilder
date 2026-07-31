@@ -32,16 +32,27 @@ export function useNotifications() {
                     if (change.type === 'added') {
                         const notif = { id: change.doc.id, ...change.doc.data() };
                         if (notif.type === 'room_invite' && notif.roomCode) {
+                            // The toast used to *say* "clique para entrar" while having no
+                            // click handler at all, so an invite was a dead end. The action
+                            // navigates; the room view joins on arrival.
                             showToast(
-                                `Convite de PokéRoom! Código: ${notif.roomCode}. Clique para entrar!`,
+                                `Convite de PokéRoom! Sala ${notif.roomCode}`,
                                 'info',
-                                10000
+                                {
+                                    duration: 15000,
+                                    action: {
+                                        label: 'Entrar',
+                                        onClick: () => navigate(`/pokeroom/${notif.roomCode}`),
+                                    },
+                                }
                             );
 
                             // Auto-delete notification after receipt to avoid duplicate toasts
                             try {
                                 await deleteDoc(doc(db, `artifacts/${appId}/notifications`, notif.id));
-                            } catch (_) {}
+                            } catch (_) {
+                                // A stale notification is harmless — the toast already fired.
+                            }
                         }
                     }
                 });

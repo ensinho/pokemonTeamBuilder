@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useSecretRoomStore } from '../store/useSecretRoomStore';
 import { useFriendsStore } from '../store/useFriendsStore';
 import { useAuthStore } from '../store/useAuthStore';
@@ -36,6 +36,34 @@ export function useSecretRoom(roomIdParam) {
             subscribeToRoom(roomIdParam);
         }
     }, [roomIdParam, currentRoom, subscribeToRoom]);
+
+    /**
+     * Landing on /pokeroom/:code must actually *enter* the room.
+     *
+     * `subscribeToRoom` only opens a listener — it never adds you to `players`,
+     * so following an invite link left you watching from outside: not in the
+     * scoreboard, never given a turn. This joins as soon as the doc arrives and
+     * shows you are not a member yet.
+     *
+     * Keyed on the room id so a failed attempt (game already started, room gone)
+     * is not retried on every snapshot.
+     */
+    const joinAttemptRef = useRef(null);
+
+    useEffect(() => {
+        if (!roomIdParam || !authUser || !currentRoom) return;
+        if (currentRoom.id !== roomIdParam) return;
+
+        const isMember = (currentRoom.players || []).some((p) => p.userId === authUser);
+        if (isMember) {
+            joinAttemptRef.current = null;
+            return;
+        }
+
+        if (joinAttemptRef.current === roomIdParam) return;
+        joinAttemptRef.current = roomIdParam;
+        joinRoom(roomIdParam);
+    }, [roomIdParam, authUser, currentRoom, joinRoom]);
 
     const inviteFriendToRoom = useCallback(async (friendUserId) => {
         const showToast = useToastStore.getState().showToast;
