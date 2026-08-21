@@ -13,6 +13,7 @@ import { AvatarSprite } from '../AvatarSprite';
 import { FriendActionButton } from '../FriendActionButton';
 import { UserProfileModal } from '../modals/UserProfileModal';
 import { TeamsTopicNotice } from '../TeamsTopicNotice';
+import { TrainerBadge } from '../TrainerBadge';
 import {
     MessageIcon,
     PlusIcon,
@@ -590,7 +591,8 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         name: message.creatorName,
                                                         avatar: message.creatorAvatar,
                                                         isShiny: message.creatorAvatarIsShiny,
-                                                        trainerSprite: message.creatorTrainerSprite
+                                                        trainerSprite: message.creatorTrainerSprite,
+                                                        selectedBadgeId: message.creatorBadgeId || null,
                                                     })}
                                                 >
                                                     <AvatarSprite
@@ -604,18 +606,20 @@ export function FeedView({ colors, showToast, navigate }) {
 
                                             <div className="forum-message-bubble">
                                                 <div className="forum-message-header">
-                                                    <div>
+                                                    <div className="flex items-center gap-1.5 flex-wrap">
                                                         <span
-                                                            className="forum-message-author cursor-pointer hover:underline"
+                                                            className="forum-message-author cursor-pointer hover:underline flex items-center gap-1"
                                                             onClick={() => setSelectedProfile({
                                                                 userId: message.createdBy,
                                                                 name: message.creatorName,
                                                                 avatar: message.creatorAvatar,
                                                                 isShiny: message.creatorAvatarIsShiny,
-                                                                trainerSprite: message.creatorTrainerSprite
+                                                                trainerSprite: message.creatorTrainerSprite,
+                                                                selectedBadgeId: message.creatorBadgeId || null,
                                                             })}
                                                         >
-                                                            @{message.creatorName}
+                                                            <span>@{message.creatorName}</span>
+                                                            {message.creatorBadgeId && <TrainerBadge badgeId={message.creatorBadgeId} size="xs" />}
                                                         </span>
                                                         {isMsgAdmin && (
                                                             <span className="forum-message-author-badge">

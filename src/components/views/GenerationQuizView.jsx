@@ -28,6 +28,7 @@ import {
 } from '../icons';
 import { ConfirmDialog, QuizCelebrationModal } from '../modals';
 import { useQuizRuns } from '../../hooks/useQuizRuns';
+import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
@@ -108,6 +109,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [consoleWidth, setConsoleWidth] = useState(0);
     const detailCacheRef = useRef({});
     const { t, language } = useTranslation();
+    const { checkBadgeCelebration } = useTrainerBadges();
     useDocumentMeta({
         title: 'Generation Quiz',
         description: 'Guess which generation a Pokémon is from and test your Pokédex knowledge.',
@@ -443,9 +445,12 @@ export function GenerationQuizView({ showDetails, showToast }) {
         // Open with a beat of delay: the last guess commits while the user is
         // still typing, and an immediate open lets their trailing Enter press
         // land on the modal's focused action button (closing it instantly).
-        const timer = window.setTimeout(() => setIsCelebrationOpen(true), 750);
+        const timer = window.setTimeout(() => {
+            setIsCelebrationOpen(true);
+            checkBadgeCelebration();
+        }, 750);
         return () => window.clearTimeout(timer);
-    }, [isComplete, quizStarted, showToast, activeEntries, language]);
+    }, [isComplete, quizStarted, showToast, activeEntries, language, checkBadgeCelebration]);
 
     useEffect(() => {
         if (!quizStarted) return;

@@ -463,12 +463,12 @@ export function HomeView({
     const getGreeting = () => {
         const hour = new Date().getHours();
         if (hour >= 5 && hour < 12) {
-            return { text: t('home.greetingMorning'), emoji: '☀️', pokemon: 'espeon', period: 'morning' };
+            return { text: t('home.greetingMorning'), pokemon: 'espeon', period: 'morning' };
         }
         if (hour >= 12 && hour < 18) {
-            return { text: t('home.greetingAfternoon'), emoji: '🌤️', pokemon: 'pikachu', period: 'afternoon' };
+            return { text: t('home.greetingAfternoon'), pokemon: 'pikachu', period: 'afternoon' };
         }
-        return { text: t('home.greetingEvening'), emoji: '🌙', pokemon: 'umbreon', period: 'night' };
+        return { text: t('home.greetingEvening'), pokemon: 'umbreon', period: 'night' };
     };
 
     const greeting = getGreeting();

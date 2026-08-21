@@ -369,16 +369,16 @@ export function BattleDetailView() {
             let summaryText = '';
             if (view.winner === userId) {
                 summaryText = language === 'pt'
-                    ? `🏆 Venci a batalha contra @${opponent}!`
-                    : `🏆 I won the battle against @${opponent}!`;
+                    ? `Venci a batalha contra @${opponent}!`
+                    : `I won the battle against @${opponent}!`;
             } else if (view.winner) {
                 summaryText = language === 'pt'
-                    ? `⚔️ @${opponent} venceu a batalha contra mim.`
-                    : `⚔️ @${opponent} won the battle against me.`;
+                    ? `@${opponent} venceu a batalha contra mim.`
+                    : `@${opponent} won the battle against me.`;
             } else {
                 summaryText = language === 'pt'
-                    ? `🤝 Batalha empatada contra @${opponent}!`
-                    : `🤝 Battle tied against @${opponent}!`;
+                    ? `Batalha empatada contra @${opponent}!`
+                    : `Battle tied against @${opponent}!`;
             }
 
             const replayUrl = `${window.location.origin}${window.location.pathname}#/battles/${battleId}`;

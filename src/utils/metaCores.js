@@ -17,7 +17,7 @@ const titleCase = (slug = '') => slug.replace(/-/g, ' ').replace(/\b\w/g, (c) =>
  */
 export const CORES = [
     {
-        id: 'rain', name: 'Rain', emoji: '🌧️', accent: '#3b82f6',
+        id: 'rain', name: 'Rain', accent: '#3b82f6',
         summary: { en: 'Drizzle sets rain; Swift Swim sweepers and boosted Water moves clean up.', pt: 'Drizzle traz a chuva; varredores com Swift Swim e golpes de Água potencializados fecham o jogo.' },
         setterAbilities: ['drizzle'], setterMoves: ['rain-dance'],
         abuserAbilities: ['swift-swim'], abuserMoves: ['electro-shot', 'wave-crash', 'hydro-pump', 'surf', 'weather-ball', 'water-spout', 'muddy-water'],
@@ -27,7 +27,7 @@ export const CORES = [
         },
     },
     {
-        id: 'sun', name: 'Sun', emoji: '☀️', accent: '#f59e0b',
+        id: 'sun', name: 'Sun', accent: '#f59e0b',
         summary: { en: 'Drought powers Fire attacks; Chlorophyll & Protosynthesis sweepers snowball.', pt: 'Drought potencializa ataques de Fogo; varredores Chlorophyll e Protosynthesis dominam.' },
         setterAbilities: ['drought', 'orichalcum-pulse'], setterMoves: ['sunny-day'],
         abuserAbilities: ['chlorophyll', 'solar-power', 'protosynthesis'], abuserMoves: ['weather-ball', 'heat-wave', 'flamethrower', 'overheat', 'fire-blast', 'solar-beam'],
@@ -37,7 +37,7 @@ export const CORES = [
         },
     },
     {
-        id: 'sand', name: 'Sand', emoji: '🏜️', accent: '#d97706',
+        id: 'sand', name: 'Sand', accent: '#d97706',
         summary: { en: 'Sand Stream chips the field and powers Sand Rush / Sand Force attackers.', pt: 'Sand Stream desgasta o campo e potencializa atacantes Sand Rush / Sand Force.' },
         setterAbilities: ['sand-stream'], setterMoves: ['sandstorm'],
         abuserAbilities: ['sand-rush', 'sand-force', 'sand-veil'],
@@ -47,7 +47,7 @@ export const CORES = [
         },
     },
     {
-        id: 'snow', name: 'Snow', emoji: '❄️', accent: '#7dd3fc',
+        id: 'snow', name: 'Snow', accent: '#7dd3fc',
         summary: { en: 'Snow Warning + Aurora Veil walls hits; Slush Rush sweepers race ahead.', pt: 'Snow Warning + Aurora Veil bloqueiam dano; varredores Slush Rush disparam à frente.' },
         setterAbilities: ['snow-warning'], setterMoves: ['snowscape', 'chilly-reception'],
         abuserAbilities: ['slush-rush', 'ice-body'], abuserMoves: ['blizzard', 'icicle-crash', 'ice-spinner'], keyMoves: ['aurora-veil'],
@@ -57,7 +57,7 @@ export const CORES = [
         },
     },
     {
-        id: 'trickroom', name: 'Trick Room', emoji: '🔄', accent: '#a855f7',
+        id: 'trickroom', name: 'Trick Room', accent: '#a855f7',
         summary: { en: 'Reverse the speed order for 5 turns so slow, powerful attackers move first.', pt: 'Inverte a ordem de velocidade por 5 turnos para que atacantes lentos e fortes ajam primeiro.' },
         setterMoves: ['trick-room'], abuserBySlowIv: true,
         guide: {
@@ -66,7 +66,7 @@ export const CORES = [
         },
     },
     {
-        id: 'tailwind', name: 'Tailwind', emoji: '🪶', accent: '#22d3ee',
+        id: 'tailwind', name: 'Tailwind', accent: '#22d3ee',
         summary: { en: 'Double your team\'s Speed for 4 turns — the most flexible offensive engine.', pt: 'Dobra a Velocidade do time por 4 turnos — o motor ofensivo mais flexível.' },
         setterMoves: ['tailwind'],
         guide: {
@@ -75,7 +75,7 @@ export const CORES = [
         },
     },
     {
-        id: 'psyterrain', name: 'Psychic Terrain', emoji: '🔮', accent: '#ec4899',
+        id: 'psyterrain', name: 'Psychic Terrain', accent: '#ec4899',
         summary: { en: 'Blocks priority and boosts Psychic moves — a fortress for slower setups.', pt: 'Bloqueia prioridade e potencializa golpes Psíquicos — uma fortaleza para setups lentos.' },
         setterAbilities: ['psychic-surge'], setterMoves: ['psychic-terrain'],
         abuserMoves: ['expanding-force', 'psychic', 'psyshock', 'psystrike'],
@@ -85,7 +85,7 @@ export const CORES = [
         },
     },
     {
-        id: 'eleterrain', name: 'Electric Terrain', emoji: '⚡', accent: '#eab308',
+        id: 'eleterrain', name: 'Electric Terrain', accent: '#eab308',
         summary: { en: 'Powers Electric moves and blocks sleep; Quark Drive Paradoxes thrive.', pt: 'Potencializa golpes Elétricos e bloqueia sono; Paradoxos com Quark Drive prosperam.' },
         setterAbilities: ['electric-surge', 'hadron-engine'], setterMoves: ['electric-terrain'],
         abuserAbilities: ['quark-drive'], abuserMoves: ['rising-voltage', 'thunderbolt', 'thunder', 'thunderclap'],
@@ -95,7 +95,7 @@ export const CORES = [
         },
     },
     {
-        id: 'grassyterrain', name: 'Grassy Terrain', emoji: '🌿', accent: '#22c55e',
+        id: 'grassyterrain', name: 'Grassy Terrain', accent: '#22c55e',
         summary: { en: 'Grassy Surge heals and boosts Grass moves; activates Grassy Glide.', pt: 'Grassy Surge cura e potencializa golpes Planta; ativa Grassy Glide.' },
         setterAbilities: ['grassy-surge'], setterMoves: ['grassy-terrain'],
         abuserAbilities: ['grass-pelt'], abuserMoves: ['grassy-glide', 'wood-hammer', 'leaf-storm', 'power-whip'],

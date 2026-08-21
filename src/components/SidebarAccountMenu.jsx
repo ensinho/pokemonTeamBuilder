@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnchoredPopover } from './AnchoredPopover';
 import { MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
+import { TrainerBadge } from './TrainerBadge';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -18,6 +19,7 @@ export function SidebarAccountMenu({
     onSignOut,
 }) {
     const { t, language, setLanguage } = useTranslation();
+    const selectedBadgeId = useAuthStore((s) => s.selectedBadgeId);
     const [isOpen, setIsOpen] = useState(false);
     const anchorRef = useRef(null);
     const popoverRef = useRef(null);
@@ -140,8 +142,9 @@ export function SidebarAccountMenu({
                 >
                     <span className="app-shell__account-avatar">{avatar}</span>
                     <div className="app-shell__account-copy">
-                        <p className="app-shell__account-name" title={accountName}>
-                            {accountName}
+                        <p className="app-shell__account-name flex items-center gap-1.5" title={accountName}>
+                            <span className="truncate">{accountName}</span>
+                            {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
                         </p>
                         <p className="app-shell__account-subline">{t('accountMenu.profileLabel')}</p>
                     </div>
@@ -164,8 +167,9 @@ export function SidebarAccountMenu({
                 >
                     <span className="app-shell__account-avatar">{avatar}</span>
                     <div className="app-shell__account-copy">
-                        <p className="app-shell__account-name" title={accountName}>
-                            {accountName}
+                        <p className="app-shell__account-name flex items-center gap-1.5" title={accountName}>
+                            <span className="truncate">{accountName}</span>
+                            {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
                         </p>
                     </div>
                 </button>
@@ -220,7 +224,10 @@ export function SidebarAccountMenu({
                     <div className="app-shell__account-popover-head">
                         <span className="app-shell__account-popover-avatar">{avatar}</span>
                         <div className="app-shell__account-popover-copy">
-                            <p className="app-shell__account-popover-name">{accountName}</p>
+                            <p className="app-shell__account-popover-name flex items-center gap-1.5">
+                                <span className="truncate">{accountName}</span>
+                                {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
+                            </p>
                             {email ? (
                                 <p className="app-shell__account-popover-email" title={email}>
                                     {email}

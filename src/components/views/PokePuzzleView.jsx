@@ -14,6 +14,7 @@ import QRCode from 'qrcode';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
 import { doc, deleteDoc } from 'firebase/firestore';
+import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import '../../styles/pokepuzzle-view.css';
 import { typeColors } from '../../constants/types';
 import { getDailyPokemonIndex } from '../../utils/pokePuzzle';
@@ -161,6 +162,7 @@ export default function PokePuzzleView() {
     const { colors } = useThemeStore();
     const navigate = useNavigate();
     const { userId, pokePuzzleMigrationTick, bumpPokePuzzleStreak } = useAuthStore();
+    const { checkBadgeCelebration } = useTrainerBadges();
 
     const [selectedDate, setSelectedDate] = useState(() => getTodayDateString());
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -603,6 +605,7 @@ export default function PokePuzzleView() {
         if (guessStr === targetNormalized) {
             setStatus('WON');
             showToast(t('pokepuzzle.winTitle'), 'success');
+            setTimeout(() => checkBadgeCelebration(), 500);
             return;
         }
 
@@ -716,6 +719,7 @@ export default function PokePuzzleView() {
         if (norm === targetNormalized) {
             setStatus('WON');
             showToast(t('pokepuzzle.winTitle'), 'success');
+            setTimeout(() => checkBadgeCelebration(), 500);
         } else if (nextCount >= MAX_ATTEMPTS) {
             setStatus('LOST');
             showToast(t('pokepuzzle.loseTitle'), 'error');

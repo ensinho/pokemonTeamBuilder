@@ -216,6 +216,7 @@ export const useForumStore = create((set, get) => ({
                 creatorAvatar: authorAvatar.pokemonId,
                 creatorAvatarIsShiny: authorAvatar.isShiny,
                 creatorTrainerSprite: authorAvatar.trainerSprite,
+                creatorBadgeId: authState.selectedBadgeId || null,
                 lastActivityAt: new Date().toISOString(),
                 messageCount: 1,
                 lastMessageText: firstMessageText ? firstMessageText.substring(0, 100) : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : '')
@@ -232,6 +233,7 @@ export const useForumStore = create((set, get) => ({
                 creatorAvatar: authorAvatar.pokemonId,
                 creatorAvatarIsShiny: authorAvatar.isShiny,
                 creatorTrainerSprite: authorAvatar.trainerSprite,
+                creatorBadgeId: authState.selectedBadgeId || null,
                 sharedTeam: serializedAttachedTeam
             };
             await setDoc(firstMsgRef, firstMsgData);
@@ -297,6 +299,7 @@ export const useForumStore = create((set, get) => ({
                 creatorAvatar: authorAvatar.pokemonId,
                 creatorAvatarIsShiny: authorAvatar.isShiny,
                 creatorTrainerSprite: authorAvatar.trainerSprite,
+                creatorBadgeId: authState.selectedBadgeId || null,
                 sharedTeam: serializedAttachedTeam,
                 replyTo: replyRef
             };

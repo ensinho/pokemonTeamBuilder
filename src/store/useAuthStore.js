@@ -207,6 +207,8 @@ export const useAuthStore = create((set, get) => {
         greetingPokemonId: getInitialGreeting().id,
         greetingPokemonIsShiny: getInitialGreeting().isShiny,
         streak: getInitialStreak(),
+        selectedBadgeId: typeof window !== 'undefined' ? localStorage.getItem('selectedBadgeId') || null : null,
+        newlyUnlockedBadge: null,
         showSyncPrompt: false,
         // Bumped after PokePuzzle progress is migrated onto a freshly
         // authenticated account, so PokePuzzleView reloads from the new
@@ -265,6 +267,16 @@ export const useAuthStore = create((set, get) => {
                             }
                             if (data.avatarPreference === 'trainer' || data.avatarPreference === 'pokemon') {
                                 set({ avatarPreference: data.avatarPreference });
+                            }
+
+                            // 2.2 Selected Badge
+                            if (typeof data.selectedBadgeId === 'string' || data.selectedBadgeId === null) {
+                                const bId = data.selectedBadgeId || null;
+                                set({ selectedBadgeId: bId });
+                                try {
+                                    if (bId) localStorage.setItem('selectedBadgeId', bId);
+                                    else localStorage.removeItem('selectedBadgeId');
+                                } catch (_) { /* ignore */ }
                             }
 
                             // 3. Greeting Pokemon
@@ -380,7 +392,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, selectedBadgeId, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -398,6 +410,7 @@ export const useAuthStore = create((set, get) => {
                 greetingPokemonIsShiny,
                 homeWallpaperId: homeWallpaperId || null,
                 streak,
+                selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
                 isAnonymous,
                 updatedAt: Date.now()
@@ -444,7 +457,7 @@ export const useAuthStore = create((set, get) => {
          * resolver, and the rules only accept a write that leaves it untouched.
          */
         syncPublicProfile: async () => {
-            const { userId, isAnonymous } = get();
+            const { userId, isAnonymous, selectedBadgeId } = get();
             if (!db || !userId || isAnonymous || !profileHydratedFromFirestore) return;
 
             const name = get().trainerDisplayName();
@@ -459,6 +472,7 @@ export const useAuthStore = create((set, get) => {
                     avatarPokemonId: avatar.pokemonId,
                     avatarIsShiny: avatar.isShiny,
                     trainerSprite: avatar.trainerSprite,
+                    selectedBadgeId: selectedBadgeId || null,
                     updatedAt: new Date().toISOString(),
                 }, { merge: true });
             } catch (e) {
@@ -467,6 +481,20 @@ export const useAuthStore = create((set, get) => {
                 console.error('Failed to sync public profile:', e);
             }
         },
+
+        setSelectedBadgeId: (badgeId) => {
+            const next = badgeId || null;
+            set({ selectedBadgeId: next });
+            try {
+                if (next) localStorage.setItem('selectedBadgeId', next);
+                else localStorage.removeItem('selectedBadgeId');
+            } catch (_) { /* ignore */ }
+            get().savePreferences({ selectedBadgeId: next });
+            get().syncPublicProfile();
+        },
+
+        setNewlyUnlockedBadge: (badge) => set({ newlyUnlockedBadge: badge }),
+        clearNewlyUnlockedBadge: () => set({ newlyUnlockedBadge: null }),
 
         setDisplayName: (name) => {
             set({ displayName: name });

@@ -40,7 +40,7 @@ const CoresSuggestionsVisual = ({ colors, t, language }) => {
                     {pt ? 'Core Detectado' : 'Detected Core'}
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold text-white bg-blue-500">
-                    <span>🌧️ {pt ? 'Chuva' : 'Rain'}</span>
+                    <span>{pt ? 'Chuva' : 'Rain'}</span>
                 </span>
             </div>
 
@@ -268,7 +268,7 @@ const PokePuzzleVisual = ({ colors, t, language }) => {
                 )}
                 {step === 3 && (
                     <span className="text-success animate-bounce flex items-center gap-1">
-                        🎉 {language === 'pt'
+                        {language === 'pt'
                             ? 'Acertou! Gengar em 2 tentativas!'
                             : 'Correct! Gengar in 2 tries!'}
                     </span>

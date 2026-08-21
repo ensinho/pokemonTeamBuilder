@@ -54,13 +54,14 @@ service cloud.firestore {
           let d = request.resource.data;
           let avatarId = d.get('avatarPokemonId', null);
           let sprite = d.get('trainerSprite', null);
+          let badgeId = d.get('selectedBadgeId', null);
           let record = d.get('battleRecord', { 'wins': 0, 'losses': 0 });
           let priorRecord = resource == null
             ? { 'wins': 0, 'losses': 0 }
             : resource.data.get('battleRecord', { 'wins': 0, 'losses': 0 });
           return d.keys().hasOnly([
               'displayName', 'displayNameLower', 'avatarPokemonId',
-              'avatarIsShiny', 'trainerSprite', 'battleRecord', 'updatedAt'
+              'avatarIsShiny', 'trainerSprite', 'selectedBadgeId', 'battleRecord', 'updatedAt'
             ])
             && d.displayName is string
             && d.displayName.size() >= 1 && d.displayName.size() <= 40
@@ -72,6 +73,7 @@ service cloud.firestore {
                 || (avatarId is int && avatarId > 0 && avatarId <= 1025))
             && d.get('avatarIsShiny', false) is bool
             && (sprite == null || (sprite is string && sprite.size() <= 40))
+            && (badgeId == null || (badgeId is string && badgeId.size() <= 50))
             && d.updatedAt is string
             // Win/loss is written by the battle resolver (admin SDK, which
             // bypasses these rules). A client may only ever leave it untouched,

@@ -8,5 +8,6 @@ export { SyncPromptModal } from './SyncPromptModal';
 export { TeamPokemonEditorModal } from './TeamPokemonEditorModal';
 export { TrainerSpriteSelectorModal } from './TrainerSpriteSelectorModal';
 export { QuizCelebrationModal } from './QuizCelebrationModal';
+export { BadgeUnlockModal } from './BadgeUnlockModal';
 export { VersionUpdateModal } from './VersionUpdateModal';
 export { TeamBuilderOnboardingModal } from './TeamBuilderOnboardingModal';

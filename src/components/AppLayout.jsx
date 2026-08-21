@@ -41,7 +41,8 @@ import {
     ShareSnippetModal,
     SyncPromptModal,
     TeamPokemonEditorModal,
-    VersionUpdateModal
+    VersionUpdateModal,
+    BadgeUnlockModal
 } from './modals';
 
 import {
@@ -980,6 +981,8 @@ export default function AppLayout() {
                     onDismiss={handleDismissSyncPrompt}
                 />
             )}
+
+            <BadgeUnlockModal />
 
             <ConfirmDialog
                 isOpen={deleteConfirmation.isOpen}

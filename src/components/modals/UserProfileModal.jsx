@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
-import { PokeballIcon, SwordsIcon, CloseIcon } from '../icons';
+import { PokeballIcon, SwordsIcon, CloseIcon, SavedTeamsIcon } from '../icons';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { Download } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { AvatarSprite } from '../AvatarSprite';
+import { TrainerBadge } from '../TrainerBadge';
 
 /**
  * `friendAction` is injected rather than built here: this modal is rendered from
@@ -78,7 +79,8 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                     {/* Trainer Info */}
                     <div className="space-y-1">
                         <h3 id="user-profile-modal-title" className="text-lg font-bold text-fg flex items-center gap-1.5">
-                            @{name}
+                            <span>@{name}</span>
+                            {profile.selectedBadgeId && <TrainerBadge badgeId={profile.selectedBadgeId} size="sm" />}
                         </h3>
                         <p className="text-xs text-muted">
                             {language === 'pt' ? 'Membro ativo da comunidade Gengar Team Builder.' : 'Active member of the Gengar Team Builder community.'}
@@ -103,7 +105,10 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                                 {userSharedTeams.map((team, idx) => (
                                     <div key={idx} className="bg-surface-raised border border-border rounded-lg p-2.5 flex flex-col gap-2 transition-colors hover:border-primary-border">
                                         <div className="flex items-center justify-between gap-2">
-                                            <span className="text-xs font-bold text-fg truncate">🎒 {team.name}</span>
+                                            <span className="text-xs font-bold text-fg truncate flex items-center gap-1.5">
+                                                <SavedTeamsIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                <span>{team.name}</span>
+                                            </span>
                                             <button
                                                 onClick={() => {
                                                     handleImportTeam(team);

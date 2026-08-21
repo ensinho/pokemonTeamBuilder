@@ -5,6 +5,8 @@ import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../../hooks/useTrainerSprites';
 import { resolveAvatar } from '../../store/useAuthStore';
 import { Sprite } from '../Sprite';
+import { TrainerBadge } from '../TrainerBadge';
+import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useTranslation } from '../../hooks/useTranslation';
 import { auth } from '../../services/firebase';
 import { sendEmailVerification } from 'firebase/auth';
@@ -13,7 +15,7 @@ import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon,
 } from '../icons';
-import { Flame } from 'lucide-react';
+import { Flame, Medal, Lock, Check, Sparkles } from 'lucide-react';
 
 const EmailVerifyRow = () => {
     const showToast = useToastStore((state) => state.showToast);
@@ -135,6 +137,7 @@ export function ProfileView({
     db,
 }) {
     const { t } = useTranslation();
+    const { badges, unlockedCount, totalBadgesCount, selectedBadgeId, toggleEquip } = useTrainerBadges();
     const [nameDraft, setNameDraft] = useState(displayName || '');
     const [editingName, setEditingName] = useState(false);
 
@@ -233,7 +236,10 @@ export function ProfileView({
                                 className="profile-hero__name-button"
                                 title="Edit trainer name"
                             >
-                                <h2 className="profile-hero__name">{trainerLabel}</h2>
+                                <h2 className="profile-hero__name flex items-center gap-2">
+                                    <span className="truncate">{trainerLabel}</span>
+                                    {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="md" showTooltip />}
+                                </h2>
                                 <EditIcon className="w-4 h-4" color="currentColor" />
                             </button>
                         )}
@@ -559,6 +565,103 @@ export function ProfileView({
                         )}
                     </SectionCard>
                 </div>
+
+                {/* Trainer Badges & Achievements Section */}
+                <SectionCard
+                    className="profile-card--badges profile-card--fullwidth"
+                    meta={
+                        <span className="profile-pill profile-pill--accent flex items-center gap-1">
+                            <Sparkles className="w-3 h-3" />
+                            {t('profile.badgesProgress', { current: unlockedCount, total: totalBadgesCount })}
+                        </span>
+                    }
+                    title={t('profile.sectionBadges')}
+                    subtitle={language === 'pt' ? 'Escolha 1 insígnia para exibir no perfil' : 'Choose 1 badge to display on profile'}
+                    icon={<Medal className="w-5 h-5" />}
+                >
+                    <div className="profile-badges-grid">
+                        {badges.map((badge) => {
+                            const BadgeIcon = badge.Icon;
+                            const badgeName = language === 'pt' ? badge.namePt : badge.nameEn;
+                            const badgeReq = language === 'pt' ? badge.reqPt : badge.reqEn;
+                            const isEquipped = badge.isEquipped;
+                            const isUnlocked = badge.isUnlocked;
+                            const progress = badge.progress;
+
+                            return (
+                                <div
+                                    key={badge.id}
+                                    className={`profile-badge-card ${isEquipped ? 'is-equipped' : ''} ${!isUnlocked ? 'is-locked' : ''}`}
+                                >
+                                    <div className="profile-badge-card__top">
+                                        <div
+                                            className="profile-badge-card__icon-wrap"
+                                            style={{
+                                                borderColor: isEquipped ? 'var(--color-primary)' : isUnlocked ? `${badge.accentColor}60` : 'var(--color-border)',
+                                                boxShadow: isUnlocked ? `0 6px 20px -4px ${badge.accentColor}40` : 'none',
+                                            }}
+                                        >
+                                            <BadgeIcon className="w-full h-full object-contain" />
+                                        </div>
+                                        <div className="profile-badge-card__info">
+                                            <div className="profile-badge-card__title-row">
+                                                <h4 className="profile-badge-card__name">
+                                                    {badgeName}
+                                                </h4>
+                                                {isEquipped && (
+                                                    <span className="profile-badge-tag-equipped">
+                                                        <Check className="w-2.5 h-2.5" />
+                                                        <span>{t('profile.badgeEquippedTag')}</span>
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="profile-badge-card__req">
+                                                {badgeReq}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="profile-badge-progress-wrap">
+                                        <div className="profile-badge-progress-info">
+                                            <span>{progress.current} / {progress.target}</span>
+                                            <span>{progress.percent}%</span>
+                                        </div>
+                                        <div className="profile-badge-progress-track">
+                                            <div
+                                                className={`profile-badge-progress-fill ${progress.percent >= 100 ? 'is-complete' : ''}`}
+                                                style={{ width: `${progress.percent}%`, backgroundColor: isUnlocked ? badge.accentColor : undefined }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="profile-badge-card__action">
+                                        {isUnlocked ? (
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleEquip(badge.id)}
+                                                className={`profile-badge-btn ${isEquipped ? 'profile-badge-btn--equipped' : 'profile-badge-btn--equip'}`}
+                                            >
+                                                {isEquipped ? (
+                                                    <>
+                                                        <Check className="w-3.5 h-3.5" />
+                                                        <span>{t('profile.badgeEquippedBtn')}</span>
+                                                    </>
+                                                ) : (
+                                                    <span>{t('profile.badgeEquipBtn')}</span>
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <div className="profile-badge-locked-state">
+                                                <Lock className="w-3 h-3 text-muted shrink-0" />
+                                                <span>{t('profile.badgeLockedBtn')}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </SectionCard>
             </div>
         </div>
     );
