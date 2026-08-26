@@ -10,6 +10,11 @@ import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/team
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
     let favoritesUnsubscribe = null;
+    // Names claimed by a duplication that is still in flight. `savedTeams` only
+    // catches up when the snapshot lands, so without this a double-click would
+    // hand both copies the same name — and the user's first save on either one
+    // would then bounce off the duplicate-name guard.
+    const pendingDuplicateNames = new Set();
 
     return {
         savedTeams: [],
@@ -118,12 +123,13 @@ export const useFirestoreTeamsStore = create((set, get) => {
 
             const name = buildDuplicateTeamName(
                 team.name,
-                get().savedTeams.map((saved) => saved.name),
+                [...get().savedTeams.map((saved) => saved.name), ...pendingDuplicateNames],
                 language,
             );
             const payload = buildDuplicateTeamPayload(team, name);
             const teamId = doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
 
+            pendingDuplicateNames.add(name);
             try {
                 await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), payload);
                 return { id: teamId, ...payload };
@@ -133,6 +139,8 @@ export const useFirestoreTeamsStore = create((set, get) => {
                     'error',
                 );
                 return null;
+            } finally {
+                pendingDuplicateNames.delete(name);
             }
         },
 
