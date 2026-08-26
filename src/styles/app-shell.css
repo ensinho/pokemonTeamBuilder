@@ -341,6 +341,91 @@
     gap: 0.1rem;
 }
 
+/* Section header doubles as the fold control. It has to read as a quiet label
+   first and a button second, so the affordance only firms up on hover/focus. */
+.app-shell__nav-group-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: 100%;
+    margin: 0 0 0.3rem;
+    padding: 0.2rem 0.4rem 0.2rem 0.6rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    cursor: pointer;
+    color: var(--color-muted);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__nav-group-toggle:hover,
+.app-shell__nav-group-toggle:focus-visible {
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+}
+
+.app-shell__nav-group-toggle .app-shell__nav-group-label {
+    flex: 1;
+    margin: 0;
+    padding-left: 0;
+    text-align: left;
+    color: inherit;
+}
+
+.app-shell__nav-group-toggle:hover .app-shell__nav-group-label,
+.app-shell__nav-group-toggle:focus-visible .app-shell__nav-group-label {
+    opacity: 0.85;
+}
+
+/* The current page lives inside this folded section. */
+.app-shell__nav-group-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.app-shell__nav-group-chevron {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex-shrink: 0;
+    opacity: 0.6;
+    transform: rotate(-90deg);
+    transition: transform var(--duration-normal) var(--ease-smooth);
+}
+
+.app-shell__nav-group-toggle.is-open .app-shell__nav-group-chevron {
+    transform: rotate(0deg);
+}
+
+/* grid-template-rows 0fr -> 1fr animates to the content's own height without
+   hard-coding one — the sections have different item counts. */
+.app-shell__nav-group-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--duration-normal) var(--ease-smooth);
+}
+
+.app-shell__nav-group-panel.is-open {
+    grid-template-rows: 1fr;
+}
+
+/* `visibility` (not just zero height) so folded links leave the tab order —
+   otherwise keyboard users tab through items they cannot see. It transitions
+   rather than snaps, so the links stay visible while the fold animates out. */
+.app-shell__nav-group-panel > .app-shell__nav-group-list {
+    overflow: hidden;
+    min-height: 0;
+    visibility: hidden;
+    transition: visibility var(--duration-normal) var(--ease-smooth);
+}
+
+.app-shell__nav-group-panel.is-open > .app-shell__nav-group-list {
+    visibility: visible;
+}
+
 .app-shell__nav-control {
     margin-bottom: 0.35rem;
 }

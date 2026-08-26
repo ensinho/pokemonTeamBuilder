@@ -17,6 +17,7 @@ import { PATCH_NOTES_VERSION, THEME_META } from '../constants/theme';
 import { pageGuideTips, PageGuide } from './PageGuide';
 import { FooterFeedback } from './FooterFeedback';
 import { SidebarAccountMenu } from './SidebarAccountMenu';
+import { ShellNavGroup } from './ShellNavGroup';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
@@ -188,6 +189,19 @@ const readSidebarCollapsePref = () => {
     } catch { return null; }
 };
 
+// Which nav sections the user folded away. Only the folded ones are stored, so
+// a new section added later shows up open instead of inheriting someone's old
+// preference. Keyed by a stable section key, never by the translated title.
+const SIDEBAR_GROUPS_KEY = 'ptb-sidebar-collapsed-groups';
+
+const readCollapsedGroups = () => {
+    try {
+        const raw = window.localStorage.getItem(SIDEBAR_GROUPS_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        return new Set(Array.isArray(parsed) ? parsed.filter((key) => typeof key === 'string') : []);
+    } catch { return new Set(); }
+};
+
 // On the small-laptop band (1024–1279px) the fixed sidebar steals too much
 // width, so default it to the icon rail. At ≥1280px there's room to expand it.
 const autoCollapseForWidth = (w) => w >= BREAKPOINTS.lg && w < BREAKPOINTS.xl;
@@ -286,6 +300,8 @@ export default function AppLayout() {
         if (pref !== null) return pref;                 // deliberate choice wins
         return autoCollapseForWidth(window.innerWidth); // otherwise decide by width
     });
+    const [collapsedNavGroups, setCollapsedNavGroups] = useState(() =>
+        (typeof window === 'undefined' ? new Set() : readCollapsedGroups()));
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
@@ -316,6 +332,19 @@ export default function AppLayout() {
         () => resolveAvatar({ avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny }),
         [avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny],
     );
+
+    // Fold/unfold one nav section. Persisted immediately: the sidebar is the one
+    // piece of chrome on every route, so re-folding it each visit would be a tax.
+    const toggleNavGroup = useCallback((groupKey) => {
+        setCollapsedNavGroups((previous) => {
+            const next = new Set(previous);
+            if (next.has(groupKey)) next.delete(groupKey);
+            else next.add(groupKey);
+            try { window.localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify([...next])); }
+            catch { /* preference is best-effort */ }
+            return next;
+        });
+    }, []);
 
     // Explicit collapse/expand from the sidebar controls. Persists the choice so
     // it overrides the width-based auto behavior from then on.
@@ -620,6 +649,7 @@ export default function AppLayout() {
     const navigationGroups = useMemo(() => {
         const groups = [
             {
+                key: 'dashboard',
                 title: t('nav.dashboard'),
                 items: [
                     { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
@@ -629,6 +659,7 @@ export default function AppLayout() {
                 ]
             },
             {
+                key: 'teamBuilding',
                 title: t('nav.teamBuilding'),
                 items: [
                     { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
@@ -639,6 +670,7 @@ export default function AppLayout() {
                 ]
             },
             {
+                key: 'database',
                 title: t('nav.database'),
                 items: [
                     { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
@@ -650,6 +682,7 @@ export default function AppLayout() {
                 ]
             },
             {
+                key: 'guessing',
                 title: t('nav.guessing'),
                 items: [
                     { key: 'pokeroom', label: 'PokéRoom', path: '/pokeroom', icon: <Users className="w-5 h-5 shrink-0" /> },
@@ -662,6 +695,7 @@ export default function AppLayout() {
 
         if (isAdmin) {
             groups.push({
+                key: 'management',
                 title: t('nav.management'),
                 items: [
                     { key: 'admin', label: t('nav.admin'), path: '/admin', icon: <ChartColumnIcon className="w-5 h-5 shrink-0" /> }
@@ -1097,28 +1131,31 @@ export default function AppLayout() {
                             <nav className="app-shell__nav" aria-label="Primary">
                                 <ul className="app-shell__nav-list">
                                     {navigationGroups.map((group) => (
-                                        <li key={group.title} className="app-shell__nav-group">
-                                            <p className={`app-shell__nav-group-label ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
-                                                {group.title}
-                                            </p>
-                                            <ul className="app-shell__nav-group-list">
-                                                {group.items.map((item) => (
-                                                    <li key={item.key}>
-                                                        <ShellNavButton
-                                                            active={currentPage === item.key}
-                                                            collapsed={isSidebarCollapsed}
-                                                            label={item.label}
-                                                            icon={item.icon}
-                                                            badge={item.badge || 0}
-                                                            onClick={() => {
-                                                                navigate(item.path);
-                                                                setIsSidebarOpen(false);
-                                                            }}
-                                                        />
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        </li>
+                                        <ShellNavGroup
+                                            key={group.key}
+                                            title={group.title}
+                                            railCollapsed={isSidebarCollapsed}
+                                            isOpen={!collapsedNavGroups.has(group.key)}
+                                            hasActiveItem={group.items.some((item) => currentPage === item.key)}
+                                            onToggle={() => toggleNavGroup(group.key)}
+                                            panelId={`app-shell-nav-${group.key}`}
+                                        >
+                                            {group.items.map((item) => (
+                                                <li key={item.key}>
+                                                    <ShellNavButton
+                                                        active={currentPage === item.key}
+                                                        collapsed={isSidebarCollapsed}
+                                                        label={item.label}
+                                                        icon={item.icon}
+                                                        badge={item.badge || 0}
+                                                        onClick={() => {
+                                                            navigate(item.path);
+                                                            setIsSidebarOpen(false);
+                                                        }}
+                                                    />
+                                                </li>
+                                            ))}
+                                        </ShellNavGroup>
                                     ))}
                                 </ul>
                             </nav>
