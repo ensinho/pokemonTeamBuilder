@@ -5,7 +5,7 @@
 // for: on a small monitor the point is to fit more on screen, not just to read
 // larger text.
 
-export const UI_SCALE_STEPS = [0.9, 1, 1.1, 1.25];
+export const UI_SCALE_STEPS = [0.8,0.9, 1, 1.1, 1.25];
 export const DEFAULT_UI_SCALE = 1;
 
 const EPSILON = 0.001;
