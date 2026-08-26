@@ -11,6 +11,7 @@ import { FriendActionButton } from '../FriendActionButton';
 import { MessageIcon, PlusIcon, ClipIcon, HeartIcon, ReplyIcon } from '../icons';
 import { doc, getDoc } from 'firebase/firestore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useComposerFocus } from '../../hooks/useComposerFocus';
 import { TRANSLATIONS } from '../../constants/translations';
 
 import '../../styles/home-view.css';
@@ -255,6 +256,7 @@ export function HomeView({
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const [selectedProfile, setSelectedProfile] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null);
+    const { composerRef: replyInputRef, focusComposer } = useComposerFocus();
 
     // Setup Daily PokéPuzzle states for HomeView
     const [dailyPokePuzzleSummary, setDailyPokePuzzleSummary] = useState(null);
@@ -390,6 +392,7 @@ export function HomeView({
             teamName: team?.name || null,
             teamSprites,
         });
+        focusComposer();
     };
 
     // Scroll the timeline to a quoted message and briefly flash it.
@@ -1333,6 +1336,7 @@ export function HomeView({
                                 </div>
 
                                 <input
+                                    ref={replyInputRef}
                                     type="text"
                                     value={replyText}
                                     onChange={(e) => setReplyText(e.target.value)}

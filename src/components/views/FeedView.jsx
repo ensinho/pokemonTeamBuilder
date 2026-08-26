@@ -5,6 +5,7 @@ import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useComposerFocus } from '../../hooks/useComposerFocus';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { getStaticPokemonDetail } from '../../services/pokemonDataCache';
@@ -105,7 +106,7 @@ export function FeedView({ colors, showToast, navigate }) {
 
     const messageListRef = useRef(null);
     const messageListEndRef = useRef(null);
-    const replyInputRef = useRef(null);
+    const { composerRef: replyInputRef, focusComposer } = useComposerFocus();
     const prevTopicIdRef = useRef(currentTopicId);
     const prevMessagesLengthRef = useRef(messages.length);
 
@@ -240,7 +241,7 @@ export function FeedView({ colors, showToast, navigate }) {
             teamName: team?.name || null,
             teamSprites,
         });
-        replyInputRef.current?.focus();
+        focusComposer();
     };
 
     // Scroll the thread to the original message a reply quotes, and flash it.
