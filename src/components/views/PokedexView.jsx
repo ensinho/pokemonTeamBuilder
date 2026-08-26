@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../../hooks/useTranslation';
 import { Search, Star, X, SlidersHorizontal } from 'lucide-react';
@@ -13,6 +13,7 @@ import { StarIcon } from '../icons';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 
 const MobilePokedexPokemonCard = ({
     pokemon,
@@ -104,6 +105,7 @@ export function PokedexView({
     selectedGame,
     setSelectedGame,
     isInitialLoading,
+    listSignature = '',
     colors,
     favoritePokemons,
     onToggleFavoritePokemon,
@@ -123,12 +125,22 @@ export function PokedexView({
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
     const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+    const desktopResultsRef = useRef(null);
 
     const displayedPokemons = useMemo(() => {
         return showOnlyFavorites
             ? pokemons.filter((pokemon) => favoritePokemons.has(Number(pokemon.id)))
             : pokemons;
     }, [pokemons, showOnlyFavorites, favoritePokemons]);
+
+    // Opening a Pokémon leaves this page and comes back through a fresh render,
+    // so the browser has nothing to restore — put the user back where they were
+    // instead of at the top of 1025 Pokémon. Mobile scrolls the app shell;
+    // desktop scrolls the results panel.
+    useScrollRestoration(listSignature, {
+        ready: !isInitialLoading && displayedPokemons.length > 0,
+        containerRef: isMobile ? undefined : desktopResultsRef,
+    });
 
     // Count of active filters (excluding search + favorites, which stay inline) —
     // drives the badge on the mobile "Filtros" button.
@@ -434,7 +446,7 @@ export function PokedexView({
                                 <div className="team-builder-spinner" aria-hidden="true"></div>
                             </div>
                         ) : (
-                            <div className="team-builder-results__scroll custom-scrollbar">
+                            <div ref={desktopResultsRef} className="team-builder-results__scroll custom-scrollbar">
                                 <div className="team-builder-results__grid grid gap-4 p-1 py-4 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
                                     {displayedPokemons.map((pokemon, index) => (
                                         <PokemonCard

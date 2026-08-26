@@ -1408,6 +1408,7 @@ export default function AppLayout() {
                                                 selectedGame={pokedex.pokedexSelectedGame}
                                                 setSelectedGame={pokedex.setPokedexSelectedGame}
                                                 isInitialLoading={pokedex.isLoading}
+                                                listSignature={pokedex.listSignature}
                                                 colors={colors}
                                                 showDetails={showDetails}
                                                 favoritePokemons={favoritePokemons}

@@ -3,8 +3,16 @@ import { loadPokemonIndex, loadGames } from '../services/pokemonDataCache';
 import { useToastStore } from './useToastStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 import { matchesPokemonSearch } from '../utils/pokemonSprites';
+import { buildListSignature } from '../utils/pokedexListKey';
 
 const PAGE_SIZE = 50;
+
+// How far the user had scrolled each list open, keyed by list signature. Leaving
+// the Pokédex for a detail page flips this store back to the Builder's filters
+// and back again, which used to collapse 150 revealed cards to the first 50 —
+// so the count is remembered per list rather than per store. Session-scoped on
+// purpose: it belongs to this visit, like the in-memory index cache.
+const revealedBySignature = new Map();
 
 // The full static index is loaded once and cached here for the session.
 let fullIndexPromise = null;
@@ -83,6 +91,7 @@ export const usePokedexStore = create((set, get) => ({
     pokemons: [],          // currently visible (paged) slice
     filteredPokemons: [],  // full filtered result set (client-side)
     visibleCount: PAGE_SIZE,
+    listSignature: '',   // identity of the list currently in `filteredPokemons`
     hasMore: true,
     isLoading: false,
     isFetchingMore: false,
@@ -121,9 +130,10 @@ export const usePokedexStore = create((set, get) => ({
         });
     },
 
-    // Load the full index once, apply the active filters, and reveal the first page.
+    // Load the full index once, apply the active filters, and reveal the pages the
+    // user had already revealed for this exact list (first page for a new one).
     fetchInitial: async (isPokedex) => {
-        set({ isLoading: true, visibleCount: PAGE_SIZE });
+        set({ isLoading: true });
 
         try {
             const all = await getFullIndex();
@@ -158,15 +168,31 @@ export const usePokedexStore = create((set, get) => ({
                 favoritePokemons: useFirestoreTeamsStore.getState().favoritePokemons,
             });
 
+            const signature = buildListSignature({
+                mode: isPokedex ? 'pokedex' : 'builder',
+                generation: isPokedex ? state.pokedexSelectedGeneration : state.selectedGeneration,
+                game: gameKey,
+                types: isPokedex ? state.pokedexSelectedTypes : state.selectedTypes,
+                search: isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm,
+                favoritesOnly: isPokedex ? state.pokedexShowOnlyFavorites : state.showOnlyFavorites,
+            });
+            // Clamped: the same filters can yield fewer results than last time
+            // (a favorite removed, a team member added) and we must not slice
+            // past the end or claim there is more to reveal.
+            const remembered = revealedBySignature.get(signature) || PAGE_SIZE;
+            const visibleCount = Math.min(Math.max(remembered, PAGE_SIZE), Math.max(filtered.length, PAGE_SIZE));
+
             set({
+                listSignature: signature,
                 filteredPokemons: filtered,
-                pokemons: filtered.slice(0, PAGE_SIZE),
-                hasMore: filtered.length > PAGE_SIZE,
+                pokemons: filtered.slice(0, visibleCount),
+                visibleCount,
+                hasMore: filtered.length > visibleCount,
             });
         } catch (error) {
             console.error("Error loading Pokémon index:", error);
             useToastStore.getState().showToast("Error loading Pokémon list.", "error");
-            set({ pokemons: [], filteredPokemons: [], hasMore: false });
+            set({ pokemons: [], filteredPokemons: [], hasMore: false, visibleCount: PAGE_SIZE });
         } finally {
             set({ isLoading: false });
         }
@@ -174,12 +200,13 @@ export const usePokedexStore = create((set, get) => ({
 
     // Reveal the next page — pure client-side slice, no network.
     fetchMore: () => {
-        const { isFetchingMore, hasMore, visibleCount, filteredPokemons } = get();
+        const { isFetchingMore, hasMore, visibleCount, filteredPokemons, listSignature } = get();
         if (isFetchingMore || !hasMore) return;
 
         set({ isFetchingMore: true });
         try {
             const nextCount = visibleCount + PAGE_SIZE;
+            if (listSignature) revealedBySignature.set(listSignature, nextCount);
             set({
                 pokemons: filteredPokemons.slice(0, nextCount),
                 visibleCount: nextCount,

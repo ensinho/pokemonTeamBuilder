@@ -21,6 +21,7 @@ export function usePokedex() {
     const isFetchingMore = usePokedexStore(state => state.isFetchingMore);
     const hasMore = usePokedexStore(state => state.hasMore);
     const gameSets = usePokedexStore(state => state.gameSets);
+    const listSignature = usePokedexStore(state => state.listSignature);
 
     const selectedGeneration = usePokedexStore(state => state.selectedGeneration);
     const selectedGame = usePokedexStore(state => state.selectedGame);
@@ -131,6 +132,7 @@ export function usePokedex() {
         lastPokemonElementRef,
         gamePokemonIds,
         gameDexes,
+        listSignature,
 
         // Builder filters & actions
         selectedGeneration,
