@@ -21,8 +21,8 @@ export function TextSizeControl({ variant = 'menu' }) {
     const applyScale = (nextScale) => {
         if (nextScale === uiScale) return;
         setUiScale(nextScale);
-        // Signed-in trainers keep the choice across sessions on this account;
-        // a no-op for guests, whose localStorage value is the whole story.
+        // Follows the account across devices, like theme and language do.
+        // A no-op for guests — their localStorage value is the whole story.
         useAuthStore.getState().savePreferences({ uiScale: nextScale });
     };
 

@@ -75,9 +75,9 @@ export const useThemeStore = create((set) => {
             });
         },
 
-        // Interface scale. Stored locally (it is a per-device choice — the same
-        // account on a phone and on a 27" monitor wants different values), and
-        // mirrored to the profile by the caller when the user is signed in.
+        // Interface scale. Written to localStorage so it survives a reload before
+        // auth resolves; the caller also mirrors it to the signed-in profile, so
+        // it follows the account across devices exactly like the theme does.
         setUiScale: (scale) => {
             const nextScale = normalizeUiScale(scale);
             applyUiScale(nextScale);
