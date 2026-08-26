@@ -1,6 +1,9 @@
 import { create } from 'zustand';
-import { THEMES, applyTheme } from '../constants/theme';
+import { THEMES, applyTheme, applyUiScale } from '../constants/theme';
 import { getBackgroundById } from '../assets/backgrounds';
+import { normalizeUiScale, DEFAULT_UI_SCALE } from '../utils/uiScale';
+
+const UI_SCALE_KEY = 'ptbUiScale';
 
 const getInitialTheme = () => {
     if (typeof window === 'undefined') return 'dark';
@@ -9,6 +12,15 @@ const getInitialTheme = () => {
         return saved && THEMES[saved] ? saved : 'dark';
     } catch (_) {
         return 'dark';
+    }
+};
+
+const getInitialUiScale = () => {
+    if (typeof window === 'undefined') return DEFAULT_UI_SCALE;
+    try {
+        return normalizeUiScale(localStorage.getItem(UI_SCALE_KEY));
+    } catch (_) {
+        return DEFAULT_UI_SCALE;
     }
 };
 
@@ -24,12 +36,17 @@ const getInitialWallpaper = () => {
 
 export const useThemeStore = create((set) => {
     const initialTheme = getInitialTheme();
+    const initialUiScale = getInitialUiScale();
     // Apply initial theme immediately to DOM
     applyTheme(initialTheme);
+    // Same for the interface scale — before first paint, so the app never
+    // renders at 100% and then jumps to the user's size.
+    applyUiScale(initialUiScale);
 
     return {
         theme: initialTheme,
         colors: THEMES[initialTheme],
+        uiScale: initialUiScale,
         homeWallpaperId: getInitialWallpaper(),
 
         changeTheme: (nextTheme) => {
@@ -56,6 +73,20 @@ export const useThemeStore = create((set) => {
                 }
                 return { theme: nextTheme, colors: THEMES[nextTheme] };
             });
+        },
+
+        // Interface scale. Stored locally (it is a per-device choice — the same
+        // account on a phone and on a 27" monitor wants different values), and
+        // mirrored to the profile by the caller when the user is signed in.
+        setUiScale: (scale) => {
+            const nextScale = normalizeUiScale(scale);
+            applyUiScale(nextScale);
+            try {
+                localStorage.setItem(UI_SCALE_KEY, String(nextScale));
+            } catch (_) {
+                /* preference is best-effort */
+            }
+            set({ uiScale: nextScale });
         },
 
         setHomeWallpaperPreference: (backgroundId) => {

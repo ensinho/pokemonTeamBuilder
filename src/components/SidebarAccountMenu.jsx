@@ -4,6 +4,7 @@ import { MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
 import { TrainerBadge } from './TrainerBadge';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAuthStore } from '../store/useAuthStore';
+import { TextSizeControl } from './TextSizeControl';
 
 export function SidebarAccountMenu({
     collapsed = false,
@@ -276,6 +277,11 @@ export function SidebarAccountMenu({
                                 </div>
                             ))}
                         </div>
+                    </div>
+
+                    <div className="app-shell__account-popover-section">
+                        <p className="app-shell__account-popover-label">{t('accountMenu.textSizeLabel')}</p>
+                        <TextSizeControl variant="menu" />
                     </div>
 
                     <div className="app-shell__account-popover-section">

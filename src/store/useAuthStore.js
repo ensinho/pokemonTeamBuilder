@@ -255,6 +255,13 @@ export const useAuthStore = create((set, get) => {
                             if (data.language) {
                                 useLanguageStore.getState().setLanguage(data.language);
                             }
+
+                            // 1.2 Interface scale. Only applied when the profile
+                            // actually carries one, so signing in on a device the
+                            // user already tuned doesn't silently reset it.
+                            if (data.uiScale !== undefined && data.uiScale !== null) {
+                                useThemeStore.getState().setUiScale(data.uiScale);
+                            }
                             
                             // 2. Display Name
                             if (typeof data.displayName === 'string') {
@@ -397,10 +404,12 @@ export const useAuthStore = create((set, get) => {
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
             const theme = useThemeStore.getState().theme;
+            const uiScale = useThemeStore.getState().uiScale;
             const language = useLanguageStore.getState().language;
 
             const updates = {
                 theme,
+                uiScale,
                 language,
                 displayName,
                 trainerSprite: trainerSprite || null,

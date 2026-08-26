@@ -265,6 +265,14 @@
     --shadow-xl: var(--elevation-4);
 }
 
+/* Interface scale (see applyUiScale in constants/theme.js). Percent, not rem:
+   it resolves against the browser's default size, so a user who runs a larger
+   default keeps it. The shell is sized in rem, so this scales spacing with the
+   type rather than only the glyphs. */
+html {
+    font-size: calc(100% * var(--ui-scale, 1));
+}
+
 html, body {
     font-family: var(--font-body);
     -webkit-text-size-adjust: 100%;
@@ -635,3 +643,82 @@ input[type='checkbox']:checked + div + div {
 .type-badge--fairy    { background-color: #D685AD; color: #fff; }
 .type-badge--unknown  { background-color: #777777; color: #fff; }
 .type-badge--shadow   { background-color: #3D3D8F; color: #fff; }
+/* ============================================================
+   TEXT SIZE CONTROL — interface scale stepper (A− 100% A+)
+   Sized in em so it tracks whatever scale it is currently setting.
+   ============================================================ */
+.text-size-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.15rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+}
+
+.text-size-control--menu {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.text-size-control__step,
+.text-size-control__value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.text-size-control__step {
+    width: 1.75rem;
+    height: 1.5rem;
+}
+
+.text-size-control__value {
+    min-width: 3rem;
+    height: 1.5rem;
+    padding: 0 0.35rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg);
+}
+
+.text-size-control--menu .text-size-control__step {
+    flex: 1;
+}
+
+.text-size-control__step:hover:not(:disabled),
+.text-size-control__value:hover {
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+}
+
+.text-size-control__step:active:not(:disabled),
+.text-size-control__value:active {
+    transform: scale(0.96);
+}
+
+.text-size-control__step:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+/* The two glyphs are the affordance — the sizes have to read as different at a
+   glance without the buttons changing size. */
+.text-size-control__glyph {
+    font-weight: 700;
+    line-height: 1;
+}
+
+.text-size-control__glyph--small { font-size: 0.7rem; }
+.text-size-control__glyph--large { font-size: 1rem; }

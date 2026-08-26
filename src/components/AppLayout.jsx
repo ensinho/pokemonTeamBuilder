@@ -18,6 +18,7 @@ import { pageGuideTips, PageGuide } from './PageGuide';
 import { FooterFeedback } from './FooterFeedback';
 import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { ShellNavGroup } from './ShellNavGroup';
+import { TextSizeControl } from './TextSizeControl';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
@@ -1647,6 +1648,9 @@ export default function AppLayout() {
                                 </div>
 
                                 <div className="app-shell__footer-links">
+                                    {/* Also in the account menu — but the footer is the one place a
+                                        signed-out visitor can reach it. */}
+                                    <TextSizeControl variant="compact" />
                                     <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
                                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
                                 </div>

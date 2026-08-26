@@ -1,3 +1,5 @@
+import { normalizeUiScale } from '../utils/uiScale';
+
 // ============================================================
 // THEME — single source of truth for colors.
 // Values are mirrored as CSS variables in index.css under
@@ -134,4 +136,15 @@ export function applyTheme(theme) {
     root.style.setProperty('--color-danger', t.danger);
     root.style.setProperty('--color-warning', t.warning);
     root.style.setProperty('--color-info', t.info);
+}
+
+// Interface scale. Lives here next to applyTheme because both are the same kind
+// of thing: a stored preference written onto the document root at boot.
+//
+// `calc(100% * ...)` resolves against the browser's own default font size, so a
+// user who set a larger default in their browser keeps it — the preference
+// scales their baseline instead of replacing it.
+export function applyUiScale(scale) {
+    if (typeof document === 'undefined') return;
+    document.documentElement.style.setProperty('--ui-scale', String(normalizeUiScale(scale)));
 }

@@ -199,10 +199,17 @@ export const TRANSLATIONS = {
             resetPromptMsg: 'Would you like to re-enable cloud sync reminders?',
             resetPromptConfirm: 'Yes, remind me'
         },
+        textSize: {
+            label: 'Text size',
+            decrease: 'Decrease text size',
+            increase: 'Increase text size',
+            reset: 'Reset text size to 100%'
+        },
         accountMenu: {
             profileLabel: 'Profile',
             profileNote: 'Open trainer settings and preferences',
             themeLabel: 'Theme preferences',
+            textSizeLabel: 'Text size',
             languageLabel: 'Language',
             signOutLabel: 'Sign out',
             signOutNote: 'Keep using the app with a fresh guest session',
@@ -1223,10 +1230,17 @@ export const TRANSLATIONS = {
             resetPromptMsg: 'Gostaria de reativar os lembretes de sincronização na nuvem?',
             resetPromptConfirm: 'Sim, me lembre'
         },
+        textSize: {
+            label: 'Tamanho do texto',
+            decrease: 'Diminuir o tamanho do texto',
+            increase: 'Aumentar o tamanho do texto',
+            reset: 'Voltar o tamanho do texto para 100%'
+        },
         accountMenu: {
             profileLabel: 'Perfil',
             profileNote: 'Abrir configurações e preferências do treinador',
             themeLabel: 'Preferências de tema',
+            textSizeLabel: 'Tamanho do texto',
             languageLabel: 'Idioma',
             signOutLabel: 'Sair',
             signOutNote: 'Continuar usando o aplicativo com uma sessão de convidado',
