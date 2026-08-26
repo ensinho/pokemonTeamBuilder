@@ -256,8 +256,8 @@ export default function AppLayout() {
 
     const {
         favoritePokemons, handleToggleFavoritePokemon, deleteConfirmation,
-        setDeleteConfirmation, handleDeleteTeam, handleToggleFavorite, savedTeams,
-        activeTeamId, setActiveTeamId
+        setDeleteConfirmation, handleDeleteTeam, handleToggleFavorite, handleDuplicateTeam,
+        savedTeams, activeTeamId, setActiveTeamId
     } = useFirestoreTeams();
 
     const activeTeam = useMemo(() => {
@@ -819,6 +819,19 @@ export default function AppLayout() {
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId]);
+
+    // Duplicate a saved team, then offer to open the copy in the builder. The
+    // toast action (rather than an automatic redirect) keeps the user wherever
+    // they were — duplicating from a list is usually a batch action.
+    const handleDuplicateSavedTeam = useCallback(async (team) => {
+        const duplicate = await handleDuplicateTeam(team);
+        if (!duplicate) return;
+        showToast(
+            t('savedTeams.duplicated', { name: duplicate.name }),
+            'success',
+            { duration: 6000, action: { label: t('common.edit'), onClick: () => handleEditTeam(duplicate) } },
+        );
+    }, [handleDuplicateTeam, showToast, t, handleEditTeam]);
 
     // Single source of truth for Pokémon detail: the /pokemon/:id page. We stash
     // the originating route in history state so the detail page's back button can
@@ -1460,6 +1473,7 @@ export default function AppLayout() {
                                                     onShare: handleShareSavedTeam,
                                                     requestDelete: (id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name }),
                                                     onToggleFavorite: handleToggleFavorite,
+                                                    onDuplicate: handleDuplicateSavedTeam,
                                                     searchTerm: teamSearchTerm,
                                                     setSearchTerm: setTeamSearchTerm,
                                                     colors,
@@ -1495,6 +1509,7 @@ export default function AppLayout() {
                                                 onExport={handleExportSavedTeamToShowdown}
                                                 requestDelete={(id, name) => setDeleteConfirmation({ isOpen: true, teamId: id, teamName: name })}
                                                 onToggleFavorite={handleToggleFavorite}
+                                                onDuplicate={handleDuplicateSavedTeam}
                                                 activeTeamId={activeTeamId}
                                                 setActiveTeamId={setActiveTeamId}
                                                 colors={colors}

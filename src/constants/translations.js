@@ -535,6 +535,9 @@ export const TRANSLATIONS = {
             exportBtn: 'Export',
             deleteBtn: 'Delete',
             editBtn: 'Edit',
+            duplicateBtn: 'Duplicate',
+            duplicateTitle: 'Duplicate this team',
+            duplicated: 'Duplicated as "{{name}}"',
             noMatchesTitle: 'No teams found',
             noMatchesDesc: 'Try adjusting your search query.'
         },
@@ -1556,6 +1559,9 @@ export const TRANSLATIONS = {
             exportBtn: 'Exportar',
             deleteBtn: 'Deletar',
             editBtn: 'Editar',
+            duplicateBtn: 'Duplicar',
+            duplicateTitle: 'Duplicar este time',
+            duplicated: 'Duplicado como "{{name}}"',
             noMatchesTitle: 'Nenhum time encontrado',
             noMatchesDesc: 'Tente ajustar o termo de pesquisa.'
         },

@@ -7,7 +7,7 @@ import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { useTranslation } from '../../hooks/useTranslation';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
-import { Eye, Pencil, Check, ExternalLink } from 'lucide-react';
+import { Eye, Pencil, Check, ExternalLink, Copy } from 'lucide-react';
 
 const timestampToDate = (value) => {
     if (!value) return null;
@@ -142,7 +142,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
     );
 };
 
-export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, activeTeamId, setActiveTeamId }) {
+export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, requestDelete, onToggleFavorite, searchTerm, setSearchTerm, activeTeamId, setActiveTeamId }) {
     const [layoutMode, setLayoutMode] = React.useState('grid'); // 'grid' | 'list'
     const { t, language } = useTranslation();
     const navigate = useNavigate();
@@ -302,6 +302,15 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                              >
                                                  <Pencil className="w-4 h-4" />
                                              </button>
+                                             <button
+                                                 type="button"
+                                                 onClick={() => onDuplicate?.(team)}
+                                                 aria-label={t('savedTeams.duplicateTitle')}
+                                                 className="btn btn-outline !p-2"
+                                                 title={t('savedTeams.duplicateTitle')}
+                                             >
+                                                 <Copy className="w-4 h-4" />
+                                             </button>
                                              {(() => {
                                                  const isActive = team.id === activeTeamId || (activeTeamId === null && teams[0]?.id === team.id);
                                                  return (
@@ -418,6 +427,15 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, requestDelete, 
                                                      title={t('common.edit')}
                                                  >
                                                      <Pencil className="w-4 h-4" />
+                                                 </button>
+                                                 <button
+                                                     type="button"
+                                                     onClick={() => onDuplicate?.(team)}
+                                                     aria-label={t('savedTeams.duplicateTitle')}
+                                                     className="btn btn-outline !p-2"
+                                                     title={t('savedTeams.duplicateTitle')}
+                                                 >
+                                                     <Copy className="w-4 h-4" />
                                                  </button>
                                                  {(() => {
                                                      const isActive = team.id === activeTeamId || (activeTeamId === null && teams[0]?.id === team.id);

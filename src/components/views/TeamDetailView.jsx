@@ -1,7 +1,7 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-    ChevronLeft, Pencil, Share2, Star, Trash2, Trophy, Shield, Swords,
+    ChevronLeft, Copy, Pencil, Share2, Star, Trash2, Trophy, Shield, Swords,
     AlertTriangle, Gauge, Sparkles, CircleCheck, ArrowUpRight,
 } from 'lucide-react';
 
@@ -69,6 +69,7 @@ export function TeamDetailView({
     onEdit,
     onShare,
     onExport,
+    onDuplicate,
     requestDelete,
     onToggleFavorite,
     activeTeamId,
@@ -233,6 +234,9 @@ export function TeamDetailView({
                             style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
                         >
                             {isActive ? `★ ${t('common.active')}` : (pt ? 'Ativar' : 'Set Active')}
+                        </button>
+                        <button type="button" onClick={() => onDuplicate?.(team)} className="btn btn-outline !p-2" title={t('savedTeams.duplicateTitle')} aria-label={t('savedTeams.duplicateTitle')}>
+                            <Copy className="w-4 h-4" />
                         </button>
                         <button type="button" onClick={() => onToggleFavorite?.(team)} className={`btn btn-outline !p-2 ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`} title={pt ? 'Favoritar' : 'Favorite'}>
                             <Star className="w-4 h-4" fill={team.isFavorite ? 'currentColor' : 'none'} />

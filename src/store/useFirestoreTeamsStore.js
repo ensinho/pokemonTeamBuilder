@@ -4,6 +4,8 @@ import { collection, doc, query, orderBy, onSnapshot, setDoc, deleteDoc } from '
 import { appId } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
 import { useToastStore } from './useToastStore';
+import { useLanguageStore } from './useLanguageStore';
+import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/teamDuplication';
 
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
@@ -94,6 +96,43 @@ export const useFirestoreTeamsStore = create((set, get) => {
                 useToastStore.getState().showToast("Team deleted.", 'info');
             } catch (e) {
                 useToastStore.getState().showToast("Error deleting team.", 'error');
+            }
+        },
+
+        // Copy a saved team into a new document so the user can experiment on the
+        // copy without touching the original. The copy is built from the stored
+        // doc (already serialized), so no Pokémon details have to be re-resolved.
+        // Returns the new team (id + data) so callers can offer to open it.
+        handleDuplicateTeam: async (team) => {
+            const userId = useAuthStore.getState().userId;
+            const language = useLanguageStore.getState().language;
+            const pt = language === 'pt';
+
+            if (!db || !userId || !team) {
+                useToastStore.getState().showToast(
+                    pt ? 'Não foi possível duplicar o time.' : 'Could not duplicate team.',
+                    'error',
+                );
+                return null;
+            }
+
+            const name = buildDuplicateTeamName(
+                team.name,
+                get().savedTeams.map((saved) => saved.name),
+                language,
+            );
+            const payload = buildDuplicateTeamPayload(team, name);
+            const teamId = doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
+
+            try {
+                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), payload);
+                return { id: teamId, ...payload };
+            } catch (e) {
+                useToastStore.getState().showToast(
+                    pt ? 'Erro ao duplicar o time.' : 'Error duplicating team.',
+                    'error',
+                );
+                return null;
             }
         },
 
