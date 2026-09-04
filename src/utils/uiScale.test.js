@@ -11,7 +11,7 @@ describe('normalizeUiScale', () => {
 
     it('snaps an arbitrary number to the nearest step', () => {
         expect(normalizeUiScale(1.06)).toBe(1.1);
-        expect(normalizeUiScale(0.5)).toBe(0.9);
+        expect(normalizeUiScale(0.5)).toBe(0.8);
         expect(normalizeUiScale(3)).toBe(1.25);
     });
 
@@ -33,8 +33,9 @@ describe('stepUiScale', () => {
     });
 
     it('clamps at both ends instead of wrapping', () => {
-        expect(stepUiScale(0.9, -1)).toBe(0.9);
+        expect(stepUiScale(UI_SCALE_STEPS[0], -1)).toBe(UI_SCALE_STEPS[0]);
         expect(stepUiScale(1.25, 1)).toBe(1.25);
+        expect(stepUiScale(0.9, -1)).toBe(0.8);
     });
 
     it('steps from an unsupported value via its nearest step', () => {
@@ -44,13 +45,15 @@ describe('stepUiScale', () => {
 
 describe('bounds and formatting', () => {
     it('reports the ends', () => {
-        expect(isMinUiScale(0.9)).toBe(true);
+        expect(isMinUiScale(0.8)).toBe(true);
+        expect(isMinUiScale(0.9)).toBe(false);
         expect(isMinUiScale(1)).toBe(false);
         expect(isMaxUiScale(1.25)).toBe(true);
         expect(isMaxUiScale(1.1)).toBe(false);
     });
 
     it('formats as a whole percentage', () => {
+        expect(formatUiScale(0.8)).toBe('80%');
         expect(formatUiScale(0.9)).toBe('90%');
         expect(formatUiScale(1)).toBe('100%');
         expect(formatUiScale(1.25)).toBe('125%');
