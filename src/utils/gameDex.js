@@ -67,6 +67,11 @@ export function buildGameSections({ fullIndex = [], gameDexes, game, matches = (
         if (mons.length) sections.push({ key: dex.key, name: dex.name, mons });
     }
 
+    // A closed-roster game (Champions) has no National section: its Pokédex is
+    // the entire legal roster, so listing "everything else from gen IX" would
+    // offer ~800 Pokémon the game cannot use.
+    if (game?.closedRoster) return sections;
+
     // National Pokédex: every base species available by this game's generation
     // that isn't already in a regional sub-dex, in national order.
     const gi = genIndex(game?.generation);

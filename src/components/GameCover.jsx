@@ -5,6 +5,13 @@ import { useModalA11y } from '../hooks/useModalA11y';
 import { useTranslation } from '../hooks/useTranslation';
 import { getGameLogo, getGameAccent, POKEMON_LOGO } from '../assets/gameLogos';
 
+// Usage-index regulation groups → the game key whose cover art represents them.
+// `group` comes from public/data/usage-index.json (built by build-usage-stats).
+const REGULATION_GAME_KEYS = {
+    'Pokémon Champions': 'champions',
+    'Scarlet & Violet': 'scarlet-violet',
+};
+
 // ---------------------------------------------------------------------------
 // Game cover banner — the prominent, clickable logo at the top of the builder.
 // Shows the selected game's cover (or the franchise logo for "All games") and
@@ -124,6 +131,9 @@ export function GamePickerModal({
     // Pokédex, so keep the modal open so the user can also pick a game.
     const chooseRegulation = (id) => onSelectRegulation?.(id);
     const hasRegulations = regulations.length > 0 && typeof onSelectRegulation === 'function';
+    // A regulation belongs to a game family ("Pokémon Champions", "Scarlet &
+    // Violet"): show that family's cover rather than one logo for all of them.
+    const regulationLogo = (group) => getGameLogo(REGULATION_GAME_KEYS[group] || 'champions');
 
     return (
         <div
@@ -172,7 +182,7 @@ export function GamePickerModal({
                                 {regulations.map((reg) => (
                                     <GameCard
                                         key={reg.id}
-                                        logo={getGameLogo('pokemonChampionsLogo')}
+                                        logo={regulationLogo(reg.group)}
                                         label={reg.label}
                                         sub={reg.group}
                                         accent={getGameAccent('generation-ix')}

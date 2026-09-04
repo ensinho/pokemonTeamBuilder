@@ -30,6 +30,13 @@ const GAMES = [
     { key: 'bdsp', label: 'Brilliant Diamond / Shining Pearl', generation: 'generation-viii', pokedexes: ['extended-sinnoh', 'original-sinnoh'], forms: [] },
     { key: 'legends-arceus', label: 'Legends: Arceus', generation: 'generation-viii', pokedexes: ['hisui'], forms: ['hisui'] },
     { key: 'scarlet-violet', label: 'Scarlet / Violet', generation: 'generation-ix', pokedexes: ['paldea', 'kitakami', 'blueberry'], forms: ['paldea'] },
+    // Champions is battle-only: its 208-species Pokédex IS the whole legal roster,
+    // with nothing transferable in from earlier generations — hence `closedRoster`.
+    // Forms come from what the Reg M-A/M-B usage data actually shows being played:
+    // regional variants (Alolan Ninetales, Hisuian Arcanine, Galarian Slowking,
+    // Paldean Tauros…) and Mega Evolution (Venusaurite is the format's top item).
+    // No Primal (Kyogre/Groudon aren't in the dex) and no Gmax (no Dynamax).
+    { key: 'champions', label: 'Pokémon Champions', generation: 'generation-ix', pokedexes: ['champions'], forms: ['mega', 'alola', 'galar', 'hisui', 'paldea'], closedRoster: true },
 ];
 
 const FORM_SUFFIX_RE = {
@@ -109,6 +116,12 @@ const main = async () => {
             const matched = game.forms.some((suffix) => FORM_SUFFIX_RE[suffix]?.test(form.apiName));
             if (!matched) continue;
             if (/-mega(-[xy])?$/.test(form.apiName) && form.id > 10090) continue;
+            // A closed roster cannot reach a form whose base species it doesn't
+            // have: without this, "Pokémon Champions" would list Mega Mewtwo,
+            // Mega Rayquaza and Mega Latios — the restricted legendaries the
+            // format exists to exclude (48 of 102 matched forms were orphans).
+            // Open games keep the looser behaviour: their bases are transferable.
+            if (game.closedRoster && !speciesIds.has(form.baseId)) continue;
             formIds.push(form.id);
         }
 
@@ -119,6 +132,9 @@ const main = async () => {
             generation: game.generation,
             count: pokemonIds.length,
             formSuffixes: game.forms,
+            // Only set when true, so the flag reads as an exception rather than a
+            // field every game has to think about.
+            ...(game.closedRoster ? { closedRoster: true } : {}),
             dexes,
             pokemonIds,
         });

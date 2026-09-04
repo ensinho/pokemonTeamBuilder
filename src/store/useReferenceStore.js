@@ -6,7 +6,10 @@ export const useReferenceStore = create((set, get) => ({
     generations: [],
     items: [],
     natures: [],
-    // Selectable games for the "by game" filter (lightweight: key/label/generation).
+    // Selectable games for the "by game" filter. Deliberately projected down to
+    // the fields the UI needs (the raw entries carry ~1000 ids each) — anything a
+    // view reads off a game object must be added to the projection below, or it
+    // silently arrives undefined.
     games: [],
     isLoading: false,
 
@@ -27,7 +30,7 @@ export const useReferenceStore = create((set, get) => ({
                 generations: data.generations || [],
                 items: data.items || [],
                 natures: data.natures || [],
-                games: (games || []).map((g) => ({ key: g.key, label: g.label, generation: g.generation, count: g.count, formSuffixes: g.formSuffixes || [] })),
+                games: (games || []).map((g) => ({ key: g.key, label: g.label, generation: g.generation, count: g.count, formSuffixes: g.formSuffixes || [], closedRoster: Boolean(g.closedRoster) })),
                 isLoading: false
             });
         } catch (error) {
