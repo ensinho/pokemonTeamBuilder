@@ -17,6 +17,10 @@ const GAMES = [
     { key: 'red-blue-yellow', label: 'Red / Blue / Yellow', generation: 'generation-i', pokedexes: ['kanto'], forms: [] },
     { key: 'gold-silver-crystal', label: 'Gold / Silver / Crystal', generation: 'generation-ii', pokedexes: ['original-johto'], forms: [] },
     { key: 'ruby-sapphire-emerald', label: 'Ruby / Sapphire / Emerald', generation: 'generation-iii', pokedexes: ['hoenn'], forms: [] },
+    // Same Kanto 151 as Red/Blue/Yellow (PokéAPI lists `firered-leafgreen` among
+    // that Pokédex's version groups), but gen III — so the abilities, natures and
+    // split special stats a planner cares about come from the right generation.
+    { key: 'firered-leafgreen', label: 'FireRed / LeafGreen', generation: 'generation-iii', pokedexes: ['kanto'], forms: [] },
     { key: 'diamond-pearl-platinum', label: 'Diamond / Pearl / Platinum', generation: 'generation-iv', pokedexes: ['extended-sinnoh', 'original-sinnoh'], forms: [] },
     { key: 'heartgold-soulsilver', label: 'HeartGold / SoulSilver', generation: 'generation-iv', pokedexes: ['updated-johto'], forms: [] },
     { key: 'black-white', label: 'Black / White', generation: 'generation-v', pokedexes: ['original-unova'], forms: [] },
