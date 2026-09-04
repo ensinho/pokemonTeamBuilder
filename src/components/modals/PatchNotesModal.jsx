@@ -3,280 +3,95 @@ import { useNavigate } from 'react-router-dom';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { ChartColumnIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MapPinIcon, PokeballIcon, StarsIcon } from '../icons';
+import { CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, PokeballIcon, SparklesIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
+import { getGameLogo } from '../../assets/gameLogos';
+
+const CHAMPIONS_LOGO = getGameLogo('champions');
 
 const SPRITE_BASE = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon';
 
-const LikeFeedbackVisual = ({ t }) => (
-    <div
-        className="flex items-center justify-center gap-2 rounded-md bg-bg p-3"
-        aria-hidden="true"
-    >
-        <span className="text-[10px] text-muted">
-            {t('patchNotes.developedBy')}
-        </span>
-        <span className="inline-flex items-center gap-1 rounded-full border border-primary bg-primary px-2 py-0.5 text-[10px] font-semibold text-white">
-            <HeartIcon className="w-3 h-3 shrink-0" />
-            <span>1</span>
-        </span>
-        <span className="text-[9px] text-muted underline">
-            {t('patchNotes.haveSuggestion')}
+// Champions Pokédex — the cover the user will look for in the picker, over the
+// roster it unlocks. Same grammar as the other two visuals: tiles, then caption.
+const ChampionsDexVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <span className="flex h-10 w-32 items-center justify-center rounded-md bg-surface-raised p-1.5">
+                <img src={CHAMPIONS_LOGO} alt="" className="max-h-full max-w-full object-contain" />
+            </span>
+            <div className="flex items-center gap-2">
+                {[3, 727, 149].map((id) => (
+                    <span key={id} className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
+                        <img
+                            src={`${SPRITE_BASE}/${id}.png`}
+                            alt=""
+                            className="h-10 w-10 object-contain"
+                            style={{ imageRendering: 'pixelated' }}
+                        />
+                        {id === 3 && (
+                            <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-[0.5rem] font-bold uppercase tracking-wide text-white">
+                                Mega
+                            </span>
+                        )}
+                    </span>
+                ))}
+            </div>
+            <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
+                {pt ? '262 Pokémon · 208 espécies' : '262 Pokémon · 208 species'}
+            </span>
+        </div>
+    );
+};
+
+// Playthrough mode — the whole point is what stops appearing, so show the same
+// two cards with and without the meta pill.
+const PlaythroughVisual = ({ t }) => (
+    <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+        <div className="flex items-center gap-2.5">
+            {[25, 6].map((id) => (
+                <span key={id} className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
+                    <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-10 w-10 object-contain" style={{ imageRendering: 'pixelated' }} />
+                    <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-[0.5rem] font-bold uppercase tracking-wide text-white">
+                        Meta
+                    </span>
+                </span>
+            ))}
+            <span className="px-1 text-sm font-bold text-muted">→</span>
+            {[25, 6].map((id) => (
+                <span key={id} className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
+                    <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-10 w-10 object-contain" style={{ imageRendering: 'pixelated' }} />
+                </span>
+            ))}
+        </div>
+        <span className="rounded-full bg-surface-raised px-2.5 py-1 text-[0.62rem] font-bold text-muted">
+            {t('builder.playthroughBadge')}
         </span>
     </div>
 );
 
-const CoresSuggestionsVisual = ({ colors, t, language }) => {
+// FireRed / LeafGreen — the Kanto 151, which is the whole ask.
+const FireRedVisual = ({ language }) => {
     const pt = language === 'pt';
-
     return (
-        <div className="rounded-md bg-bg p-3 text-left flex flex-col gap-2 relative overflow-hidden h-[150px] justify-center" aria-hidden="true">
-            {/* Background design accents */}
-            <div className="absolute top-0 right-0 w-24 h-24 rounded-full bg-blue-500/10 blur-xl pointer-events-none" />
-
-            {/* Row 1: Weather Core Header + Badges */}
-            <div className="flex items-center justify-between">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted">
-                    {pt ? 'Core Detectado' : 'Detected Core'}
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold text-white bg-blue-500">
-                    <span>{pt ? 'Chuva' : 'Rain'}</span>
-                </span>
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex items-center gap-2">
+                {[1, 4, 7].map((id) => (
+                    <span key={id} className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
+                        <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-10 w-10 object-contain" style={{ imageRendering: 'pixelated' }} />
+                    </span>
+                ))}
             </div>
-
-            {/* Row 2: Rain setters/abusers on team */}
-            <div className="flex items-center gap-1.5 bg-surface/50 border border-border rounded-lg p-1.5">
-                <div className="flex -space-x-2">
-                    <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                        <img
-                            src={`${SPRITE_BASE}/279.png`}
-                            alt="Pelipper"
-                            className="w-8 h-8 object-contain"
-                            style={{ imageRendering: 'pixelated' }}
-                        />
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
-                        <img
-                            src={`${SPRITE_BASE}/260.png`}
-                            alt="Swampert"
-                            className="w-8 h-8 object-contain"
-                            style={{ imageRendering: 'pixelated' }}
-                        />
-                    </div>
-                </div>
-                <div className="min-w-0 flex-1">
-                    <div className="text-[9px] font-bold text-fg leading-tight">Pelipper + Swampert</div>
-                    <div className="text-[7px] text-muted truncate">{pt ? 'Drizzle + Damp/Swift Swim' : 'Drizzle + Damp/Swift Swim'}</div>
-                </div>
-            </div>
-
-            {/* Row 3: Synergy Suggestions section */}
-            <div className="space-y-1">
-                <div className="text-[8px] font-bold text-muted uppercase tracking-wider">
-                    {pt ? 'Sugestões de Sinergia' : 'Synergy Suggestions'}
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                    {/* Suggestion 1: Ludicolo */}
-                    <div className="flex items-center gap-1 rounded-lg border border-border bg-surface/30 p-1">
-                        <img
-                            src={`${SPRITE_BASE}/272.png`}
-                            alt="Ludicolo"
-                            className="w-6 h-6 object-contain shrink-0"
-                            style={{ imageRendering: 'pixelated' }}
-                        />
-                        <div className="min-w-0 flex-1">
-                            <div className="text-[8px] font-bold text-fg truncate">Ludicolo</div>
-                            <div className="text-[6px] font-semibold text-primary truncate">
-                                {pt ? 'Swift Swim Payoff' : 'Swift Swim Payoff'}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Suggestion 2: Amoonguss */}
-                    <div className="flex items-center gap-1 rounded-lg border border-border bg-surface/30 p-1">
-                        <img
-                            src={`${SPRITE_BASE}/591.png`}
-                            alt="Amoonguss"
-                            className="w-6 h-6 object-contain shrink-0"
-                            style={{ imageRendering: 'pixelated' }}
-                        />
-                        <div className="min-w-0 flex-1">
-                            <div className="text-[8px] font-bold text-fg truncate">Amoonguss</div>
-                            <div className="text-[6px] font-semibold text-success truncate">
-                                {pt ? 'Cobre Elétrico/Planta' : 'Covers Grass/Elec'}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div className="flex flex-col items-center gap-1">
+                <span className="text-[0.72rem] font-bold text-fg">FireRed / LeafGreen</span>
+                <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
+                    {pt ? '151 Pokémon · Geração III' : '151 Pokémon · Generation III'}
+                </span>
             </div>
         </div>
     );
 };
 
-const PokePuzzleVisual = ({ colors, t, language }) => {
-    const [step, setStep] = React.useState(0); // 0: Silhouette/Empty, 1: Typing, 2: Flipping, 3: Revealed/Solved
-    const [typedLetters, setTypedLetters] = React.useState([]);
-    const targetName = 'GENGAR';
-    const firstGuessName = 'PIKACH'; // 6 letters
-
-    React.useEffect(() => {
-        let timer;
-        if (step === 0) {
-            setTypedLetters([]);
-            timer = setTimeout(() => {
-                setStep(1);
-            }, 1200);
-        } else if (step === 1) {
-            let charIndex = 0;
-            const interval = setInterval(() => {
-                if (charIndex <= targetName.length) {
-                    setTypedLetters(targetName.slice(0, charIndex).split(''));
-                    charIndex++;
-                } else {
-                    clearInterval(interval);
-                    setStep(2);
-                }
-            }, 180);
-            return () => clearInterval(interval);
-        } else if (step === 2) {
-            timer = setTimeout(() => {
-                setStep(3);
-            }, 1000);
-        } else if (step === 3) {
-            timer = setTimeout(() => {
-                setStep(0);
-            }, 3000);
-        }
-        return () => clearTimeout(timer);
-    }, [step]);
-
-    return (
-        <div className="rounded-md bg-bg p-3 flex flex-col items-center justify-center gap-3 relative overflow-hidden h-[150px]" aria-hidden="true">
-            <style>{`
-                @keyframes mini-tile-flip {
-                    0% { transform: rotateY(0deg); }
-                    45% { transform: rotateY(90deg); }
-                    55% { transform: rotateY(90deg); }
-                    100% { transform: rotateY(0deg); }
-                }
-                .mini-tile-flip {
-                    animation: mini-tile-flip 0.4s ease forwards;
-                }
-            `}</style>
-
-            {/* Background decorative glow */}
-            <div className="absolute inset-0 bg-gradient-to-b from-violet-900/10 to-transparent pointer-events-none" />
-
-            <div className="flex w-full items-center justify-around gap-2 z-10">
-                {/* Pokémon Silhouette / Reveal Frame */}
-                <div className="relative w-16 h-16 rounded-xl border border-border bg-surface/50 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
-                    <img
-                        src="https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/pokemon/other/official-artwork/94.png"
-                        alt="Gengar"
-                        className="w-14 h-14 object-contain transition-all duration-700"
-                        style={{
-                            filter: step === 3
-                                ? 'none'
-                                : 'brightness(0) drop-shadow(0 0 4px rgba(124, 58, 237, 0.6))',
-                            transform: step === 3 ? 'scale(1) rotate(0deg)' : 'scale(0.85) rotate(2deg)'
-                        }}
-                    />
-                    {step !== 3 && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/10 text-white font-extrabold text-lg select-none">
-                            ?
-                        </div>
-                    )}
-                </div>
-
-                {/* Guess Grid */}
-                <div className="flex flex-col gap-1.5 flex-1 max-w-[180px]">
-                    {/* Row 1: Previous Guess "PIKACH" (P:absent, I:absent, K:absent, A:present, C:absent, H:absent) */}
-                    <div className="grid grid-cols-6 gap-1 w-full">
-                        {firstGuessName.split('').map((char, idx) => {
-                            const isPresent = char === 'A';
-                            return (
-                                <div
-                                    key={idx}
-                                    className="text-[10px] font-bold text-white flex items-center justify-center rounded w-full aspect-square border"
-                                    style={{
-                                        backgroundColor: isPresent ? '#f59e0b' : '#3b3954',
-                                        borderColor: isPresent ? '#f59e0b' : '#4a4868'
-                                    }}
-                                >
-                                    {char}
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    {/* Row 2: Current Typing / Revealed Guess */}
-                    <div className="grid grid-cols-6 gap-1 w-full">
-                        {Array.from({ length: 6 }).map((_, idx) => {
-                            const letter = typedLetters[idx] || '';
-                            const isFilled = letter !== '';
-
-                            let bgColor = 'rgba(255, 255, 255, 0.03)';
-                            let borderColor = 'rgba(255, 255, 255, 0.1)';
-                            let textColor = 'var(--color-fg)';
-                            let animationStyle = '';
-
-                            if (isFilled && step === 1) {
-                                borderColor = 'var(--color-muted)';
-                            } else if (step >= 2) {
-                                bgColor = '#10b981';
-                                borderColor = '#10b981';
-                                textColor = '#ffffff';
-                                animationStyle = 'mini-tile-flip 0.4s ease forwards';
-                            }
-
-                            return (
-                                <div
-                                    key={idx}
-                                    className="text-[10px] font-bold flex items-center justify-center rounded w-full aspect-square border"
-                                    style={{
-                                        backgroundColor: bgColor,
-                                        borderColor: borderColor,
-                                        color: textColor,
-                                        animation: animationStyle,
-                                        animationDelay: step === 2 ? `${idx * 100}ms` : '0ms'
-                                    }}
-                                >
-                                    {letter}
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-
-            {/* Subtitle / Action State Banner */}
-            <div className="text-[10px] font-bold z-10 flex items-center gap-1.5 h-4">
-                {step === 0 && (
-                    <span className="text-muted">
-                        {t('pokepuzzle.homeTeaserSubtitle') || "Who's That Pokémon?"}
-                    </span>
-                )}
-                {step === 1 && (
-                    <span className="text-primary animate-pulse">
-                        {language === 'pt' ? 'Digitando palpite...' : 'Typing guess...'}
-                    </span>
-                )}
-                {step === 2 && (
-                    <span className="text-warning">
-                        {language === 'pt' ? 'Verificando resposta...' : 'Checking answer...'}
-                    </span>
-                )}
-                {step === 3 && (
-                    <span className="text-success animate-bounce flex items-center gap-1">
-                        {language === 'pt'
-                            ? 'Acertou! Gengar em 2 tentativas!'
-                            : 'Correct! Gengar in 2 tries!'}
-                    </span>
-                )}
-            </div>
-        </div>
-    );
-};
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {
     const { t, language } = useTranslation();
@@ -287,33 +102,36 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
         navigate(path);
     }, [navigate, onClose]);
 
+    // This release only. Every entry here came from a suggestion in the footer
+    // feedback box — when the list changes, bump PATCH_NOTES_VERSION in
+    // constants/theme.js so the modal reopens for everyone.
     const notes = [
         {
-            key: 'pokepuzzle',
+            key: 'champions-dex',
             Icon: PokeballIcon,
-            title: t('patchNotes.pokepuzzleTitle'),
-            description: t('patchNotes.pokepuzzleDesc'),
-            cta: t('patchNotes.pokepuzzleCta'),
-            path: '/pokepuzzle',
-            Visual: PokePuzzleVisual,
-        },
-        {
-            key: 'cores-suggestions',
-            Icon: StarsIcon,
-            title: t('patchNotes.synergyTitle'),
-            description: t('patchNotes.synergyDesc'),
-            cta: t('patchNotes.synergyCta'),
+            title: t('patchNotes.championsTitle'),
+            description: t('patchNotes.championsDesc'),
+            cta: t('patchNotes.championsCta'),
             path: '/builder',
-            Visual: CoresSuggestionsVisual,
+            Visual: ChampionsDexVisual,
         },
         {
-            key: 'like',
-            Icon: HeartIcon,
-            title: t('patchNotes.likeTitle'),
-            description: t('patchNotes.likeDesc'),
-            cta: t('patchNotes.likeCta'),
-            path: '/',
-            Visual: LikeFeedbackVisual,
+            key: 'playthrough-mode',
+            Icon: SparklesIcon,
+            title: t('patchNotes.playthroughTitle'),
+            description: t('patchNotes.playthroughDesc'),
+            cta: t('patchNotes.playthroughCta'),
+            path: '/builder',
+            Visual: PlaythroughVisual,
+        },
+        {
+            key: 'firered-leafgreen',
+            Icon: PokeballIcon,
+            title: t('patchNotes.fireRedTitle'),
+            description: t('patchNotes.fireRedDesc'),
+            cta: t('patchNotes.fireRedCta'),
+            path: '/builder',
+            Visual: FireRedVisual,
         },
     ];
 
@@ -343,8 +161,17 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                         </h2>
                     </div>
                     <p className="mt-1 text-sm text-muted">
-                        Version {PATCH_NOTES_VERSION} • June 2026
+                        {t('patchNotes.releaseLine', { version: PATCH_NOTES_VERSION })}
                     </p>
+                </div>
+
+                <div className="shrink-0 px-5 pt-4">
+                    <div className="flex items-start gap-3 rounded-xl bg-surface-raised p-3">
+                        <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
+                            <HeartIcon className="w-4 h-4" />
+                        </span>
+                        <p className="text-sm text-fg">{t('patchNotes.thanksBody')}</p>
+                    </div>
                 </div>
 
                 <div className="space-y-4 px-5 py-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
@@ -357,7 +184,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                                 key={key}
                                 type="button"
                                 onClick={() => goTo(path)}
-                                className="w-full rounded-xl bg-surface-raised p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="w-full rounded-xl bg-surface-raised p-4 text-left transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 aria-label={`${title} – ${cta}`}
                             >
                                 <div className="mb-3 overflow-hidden rounded-lg bg-surface">

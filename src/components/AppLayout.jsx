@@ -176,6 +176,21 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0 }) 
     );
 };
 
+// Two module-scope latches for the patch-notes effect, both there because React's
+// StrictMode runs it twice in development while it mutates localStorage and then
+// reloads the page.
+//
+// `versionBumpHandled`: the first run detects the bump, flags the notes, clears
+// the caches and schedules a reload. The second run then re-reads the version it
+// just wrote, sees a match, takes the "show" branch and consumes the flag — on a
+// page that is about to be thrown away, so the reloaded page had nothing left and
+// the notes never appeared in dev (production, mounting once, was unaffected).
+//
+// `patchNotesOwed`: same double mount on the reloaded page, where the first run
+// legitimately consumes the flag; this keeps the second run from rendering nothing.
+let versionBumpHandled = false;
+let patchNotesOwed = false;
+
 // Sidebar collapse preference. A fresh key (not the legacy 'ptb-sidebar-collapsed',
 // which was auto-persisted on every change) so that only a *deliberate* toggle
 // counts as a preference; absence means "let the viewport width decide".
@@ -554,8 +569,11 @@ export default function AppLayout() {
         const seenVersion = localStorage.getItem('patchNotesVersion');
         const showAfterReload = localStorage.getItem('showPatchNotesAfterReload') === '1';
 
+        if (versionBumpHandled) return;
+
         if (seenVersion && seenVersion !== PATCH_NOTES_VERSION) {
             // Version has been bumped!
+            versionBumpHandled = true;
 
             // Set flag to show patch notes after the reload
             localStorage.setItem('showPatchNotesAfterReload', '1');
@@ -574,13 +592,36 @@ export default function AppLayout() {
 
             // 3. Clear non-essential localStorage keys
             try {
+                // The sweep exists to drop stale CACHED DATA after a format
+                // change — never the user's settings. Anything a person chose
+                // deliberately belongs here, or a release silently resets it.
+                // (Found the hard way: the 1.8.0 bump would have wiped the text
+                // size — an accessibility setting — the sidebar layout, the
+                // builder guide's "seen" flag and the new playthrough mode.)
                 const preservedKeys = [
+                    // Appearance & interface preferences
                     'theme',
                     'language',
+                    'ptbUiScale',
+                    'homeWallpaperId',
+                    'ptb-sidebar-collapse-pref',
+                    'ptb-sidebar-collapsed-groups',
+                    'ptb:battleAnimatedSprites',
+                    // Builder state the user set
+                    'ptbActiveTeamId',
+                    'tb-regulation',
+                    'tb-filters-expanded',
+                    // Trainer profile & progress
                     'trainerStreak',
                     'greetingPokemon',
-                    'ptbActiveTeamId',
+                    'selectedBadgeId',
+                    'ptb:celebratedBadges',
+                    'generationQuizActiveRunId',
+                    // "Don't show me this again" acknowledgements
                     'syncPromptDismissed',
+                    'tb-onboarding-seen',
+                    'teamsTopicNoticeDismissed',
+                    'ptb:browserNotifications',
                     'showPatchNotesAfterReload'
                 ];
                 const shouldPreserve = (key) => {
@@ -607,7 +648,8 @@ export default function AppLayout() {
             }, 100);
         } else {
             // Same version, or first load. Show patch notes if flagged from a recent reload
-            if (showAfterReload) {
+            if (showAfterReload || patchNotesOwed) {
+                patchNotesOwed = true;
                 setShowPatchNotes(true);
                 localStorage.removeItem('showPatchNotesAfterReload');
             }
@@ -618,6 +660,7 @@ export default function AppLayout() {
     }, []);
 
     const handleClosePatchNotes = useCallback(() => {
+        patchNotesOwed = false;
         setShowPatchNotes(false);
     }, []);
 
