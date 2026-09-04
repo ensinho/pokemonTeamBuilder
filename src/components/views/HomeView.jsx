@@ -333,6 +333,16 @@ export function HomeView({
     const popoverRef = useRef(null);
     const messageListRef = useRef(null);
     const messageListEndRef = useRef(null);
+    // The home rail shows the *latest* activity, not the whole forum. Rendering
+    // every message here put ~200 interactive controls (avatar, like, reply per
+    // row) into a sidebar widget, which is most of what made the home screen
+    // feel dense. The full thread is one click away via "Ver Fórum".
+    const HOME_TIMELINE_LIMIT = 5;
+    const homeTimelineMessages = useMemo(
+        () => messages.slice(-HOME_TIMELINE_LIMIT),
+        [messages]
+    );
+
     const prevMessagesLengthRef = useRef(messages.length);
 
     useEffect(() => {
@@ -1067,7 +1077,7 @@ export function HomeView({
                                     {language === 'pt' ? 'Nenhuma atividade registrada.' : 'No activity logged.'}
                                 </div>
                             ) : (
-                                messages.map((message) => {
+                                homeTimelineMessages.map((message) => {
                                     const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
                                     const likeCount = message.likeCount || message.likedBy?.length || 0;
                                     const likedByMe = !!userId && Array.isArray(message.likedBy) && message.likedBy.includes(userId);

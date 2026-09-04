@@ -1,5 +1,9 @@
 .app-shell {
-    --app-shell-sidebar-width: 13rem;
+    /* 13rem left Portuguese labels like "Calculadora de Dano" wrapping onto two
+       lines once the group children were indented. 14.5rem clears the longest
+       label in both languages and brings the rail nearer the reference this
+       design follows, which runs wider still. */
+    --app-shell-sidebar-width: 14.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;
     --app-shell-gutter: 0.75rem;
     --app-shell-rail-button-size: 2.5rem;
@@ -338,23 +342,45 @@
     pointer-events: none;
 }
 
+/* Children are indented past the header's chevron and share a hairline guide,
+   so the parent/child relationship is stated by the layout instead of being
+   inferred from proximity. The guide starts inside the chevron's column, which
+   is what makes it read as "these belong to the row above". */
 .app-shell__nav-group-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-0_5);
+    /* The guide sits under the header's chevron column and the children clear it
+       by one step. Kept deliberately shallow: the rail is ~200px, and a deeper
+       indent wrapped "Calculadora de Dano" onto two lines, which costs more
+       legibility than the extra indent buys in hierarchy. The header's row shape
+       is doing most of the parent/child work anyway. */
+    margin-left: var(--space-2_5);
+    padding-left: var(--space-1_5);
+    border-left: 1px solid var(--color-border);
+}
+
+/* Children give back the width the indent took, so long labels stay on one line. */
+.app-shell__nav-group-list .app-shell__nav-link {
+    padding-inline: var(--space-2);
 }
 
 /* Section header doubles as the fold control. It has to read as a quiet label
    first and a button second, so the affordance only firms up on hover/focus. */
+/* The section header is shaped exactly like a nav item — same height, padding,
+   radius and hover fill — because that is what it is: a row you click. Its
+   chevron sits in the icon column, so the header's glyph lines up with the
+   icons of the links it owns and the whole section reads as one object. */
 .app-shell__nav-group-toggle {
     display: flex;
     align-items: center;
-    gap: var(--space-1_5);
+    gap: var(--space-2_5);
     width: 100%;
-    margin: 0 0 var(--space-1);
-    padding: var(--space-1) var(--space-1_5) var(--space-1) var(--space-2_5);
+    min-height: 2.25rem;
+    margin: 0;
+    padding: var(--space-2) var(--space-2_5);
     border: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     background: transparent;
     cursor: pointer;
     color: var(--color-muted);
@@ -364,7 +390,7 @@
 
 .app-shell__nav-group-toggle:hover,
 .app-shell__nav-group-toggle:focus-visible {
-    background: var(--color-surface-raised);
+    background: var(--color-surface-hover);
     color: var(--color-fg);
 }
 
@@ -374,11 +400,8 @@
     padding-left: 0;
     text-align: left;
     color: inherit;
-}
-
-.app-shell__nav-group-toggle:hover .app-shell__nav-group-label,
-.app-shell__nav-group-toggle:focus-visible .app-shell__nav-group-label {
-    opacity: 0.85;
+    font-size: 0.8125rem;
+    font-weight: 500;
 }
 
 /* The current page lives inside this folded section. */
@@ -390,11 +413,13 @@
     flex-shrink: 0;
 }
 
+/* Sized to the nav icon box so the header's glyph sits in the same column as
+   the icons of the links it owns. Points right when folded, down when open. */
 .app-shell__nav-group-chevron {
-    width: 0.85rem;
-    height: 0.85rem;
+    width: 1.25rem;
+    height: 1.25rem;
     flex-shrink: 0;
-    opacity: 0.6;
+    opacity: 0.75;
     transform: rotate(-90deg);
     transition: transform var(--duration-normal) var(--ease-smooth);
 }

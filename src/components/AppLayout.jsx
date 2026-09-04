@@ -203,6 +203,13 @@ const readCollapsedGroups = () => {
     } catch { return new Set(); }
 };
 
+/** Whether the user has ever folded a section themselves. If they have, their
+ *  choice wins over the default below. */
+const hasStoredGroupPreference = () => {
+    try { return window.localStorage.getItem(SIDEBAR_GROUPS_KEY) !== null; }
+    catch { return false; }
+};
+
 // On the small-laptop band (1024–1279px) the fixed sidebar steals too much
 // width, so default it to the icon rail. At ≥1280px there's room to expand it.
 const autoCollapseForWidth = (w) => w >= BREAKPOINTS.lg && w < BREAKPOINTS.xl;
@@ -637,9 +644,24 @@ export default function AppLayout() {
             'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
             'friends': { title: t('nav.friends'), subtitle: language === 'pt' ? 'Seus amigos treinadores e pedidos pendentes' : 'Your trainer friends and pending requests' },
             'battles': { title: t('nav.battles'), subtitle: language === 'pt' ? 'Batalhas por turno contra seus amigos' : 'Turn-by-turn battles against your friends' },
+            'gyms': {
+                title: language === 'pt' ? 'Ginásios' : 'Gyms',
+                subtitle: language === 'pt'
+                    ? 'Líderes de ginásio e os times exatos que eles usam'
+                    : 'Gym leaders and the exact teams they run',
+            },
+            'secretRoom': {
+                title: 'PokéRoom',
+                subtitle: language === 'pt'
+                    ? 'Salas privadas para adivinhar Pokémon com amigos'
+                    : 'Private rooms to guess Pokémon with friends',
+            },
             'notFound': { title: '404', subtitle: '' },
         };
-        return pages[currentPage] || pages['home'];
+        // Falling back to the Home entry made a missing key look like a working
+        // header — /gyms and /pokeroom both shipped showing "Início" for exactly
+        // that reason. An unknown route now shows nothing rather than a lie.
+        return pages[currentPage] || { title: '', subtitle: '' };
     }, [currentPage, t, language]);
 
     const pageFrameClassName = useMemo(() => {
@@ -706,6 +728,28 @@ export default function AppLayout() {
 
         return groups;
     }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe]);
+
+    // Twenty links across five sections is a wall — the reference this design
+    // follows keeps its rail to a handful of rows. On a first visit we therefore
+    // open only the section holding the current page and fold the rest, so the
+    // sidebar starts at roughly five headers plus one short list instead of all
+    // twenty links. It is a default, not a lock: one click opens any section,
+    // and from the first click the user's own choice is what persists.
+    const appliedGroupDefaultRef = useRef(false);
+    useEffect(() => {
+        if (appliedGroupDefaultRef.current) return;
+        if (!navigationGroups.length) return;
+        appliedGroupDefaultRef.current = true;
+        if (hasStoredGroupPreference()) return;
+        const activeGroup = navigationGroups.find((g) =>
+            g.items.some((item) => currentPage === item.key));
+        setCollapsedNavGroups(new Set(
+            navigationGroups
+                .filter((g) => g.key !== (activeGroup ? activeGroup.key : 'dashboard'))
+                .map((g) => g.key)
+        ));
+    }, [navigationGroups, currentPage]);
+
 
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {

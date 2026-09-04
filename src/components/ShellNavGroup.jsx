@@ -10,8 +10,10 @@ import { ChevronDownIcon } from './icons';
  * - Icon rail (`railCollapsed`): labels are hidden by the shell's own rules and
  *   there is nothing left to click, so the section renders as it always did —
  *   plain label, always-open list.
- * - Expanded sidebar: the label becomes the toggle. A folded section that holds
- *   the current page keeps a dot on its header, so "where am I" survives the fold.
+ * - Expanded sidebar: the whole header is the toggle, shaped like a nav item so
+ *   it reads as a row you click. Its chevron occupies the icon column, lining up
+ *   with the icons of the links below it. A folded section that holds the current
+ *   page keeps a dot on its header, so "where am I" survives the fold.
  */
 export function ShellNavGroup({
     title,
@@ -40,9 +42,9 @@ export function ShellNavGroup({
                 aria-controls={panelId}
                 className={`app-shell__nav-group-toggle ${isOpen ? 'is-open' : ''}`}
             >
+                <ChevronDownIcon className="app-shell__nav-group-chevron" />
                 <span className="app-shell__nav-group-label">{title}</span>
                 {!isOpen && hasActiveItem && <span className="app-shell__nav-group-dot" aria-hidden="true" />}
-                <ChevronDownIcon className="app-shell__nav-group-chevron" />
             </button>
 
             <div id={panelId} className={`app-shell__nav-group-panel ${isOpen ? 'is-open' : ''}`}>

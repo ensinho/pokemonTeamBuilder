@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { TrendingUp, Search, Layers, X, Users, ArrowUpRight } from 'lucide-react';
+import { Search, Layers, X, Users, ArrowUpRight } from 'lucide-react';
 
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
@@ -140,9 +140,6 @@ export function MetaUsageView() {
     return (
         <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-5 sm:py-5">
             <header className="mb-4 sm:mb-5">
-                <h1 className="flex items-center gap-2 text-xl font-extrabold text-fg sm:text-3xl">
-                    <TrendingUp className="h-5 w-5 text-primary sm:h-6 sm:w-6" /> {pt ? 'Meta & Uso' : 'Meta & Usage'}
-                </h1>
                 <p className="mt-1 line-clamp-2 max-w-2xl text-[13px] text-muted sm:line-clamp-none sm:text-sm">
                     {usingSmogon && format
                         ? (pt

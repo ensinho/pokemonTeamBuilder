@@ -46,8 +46,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    width: 8.5rem;
+    /* 8.5rem is the comfortable size, but it was pinned with flex-shrink: 0 —
+       so in a narrow column the artwork kept all 136px and the game name beside
+       it was left with ~30px. It now yields once it would take more than half
+       the card; the logo is object-fit: contain, so it just scales. */
+    flex: 0 1 8.5rem;
+    max-width: 50%;
     height: 3.75rem;
 }
 
@@ -61,6 +65,11 @@
 .game-cover__meta {
     display: flex;
     flex-direction: column;
+    /* `min-width: 0` without a flex basis let this column shrink below its own
+       content — at a narrow card width the game name and the "Trocar jogo"
+       control collapsed to ~40px. `flex: 1` makes it claim what the artwork
+       leaves instead of yielding everything. */
+    flex: 1;
     min-width: 0;
     gap: var(--space-0_5);
 }

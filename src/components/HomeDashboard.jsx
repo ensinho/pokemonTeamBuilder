@@ -5,57 +5,15 @@ import { useMetaUsage } from '../hooks/useMetaUsage';
 import { useTranslation } from '../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { Flame, Puzzle } from 'lucide-react';
-import {
-    SwordsIcon, SavedTeamsIcon, TrophyIcon, CalculatorIcon, GaugeIcon,
-    PokeballIcon, ScrollIcon, SparklesIcon, BagIcon,
-} from './icons';
+import { SavedTeamsIcon, SwordsIcon, PokeballIcon } from './icons';
+import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
+import { getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
+import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 
-const CORE_SHORTCUTS = [
-    { 
-        key: 'builder', 
-        path: '/builder', 
-        icon: <SwordsIcon className="w-5 h-5" />,
-        desc: {
-            pt: 'Monte e analise seu time competitivo de Pokémon.',
-            en: 'Build and analyze your competitive Pokémon team.'
-        }
-    },
-    { 
-        key: 'pokemonList', 
-        path: '/pokedex', 
-        icon: <PokeballIcon className="w-5 h-5" />,
-        desc: {
-            pt: 'Consulte a Pokédex completa e estatísticas base.',
-            en: 'Browse the complete Pokedex and base stats.'
-        }
-    },
-    {
-        key: 'pokepuzzle',
-        path: '/pokepuzzle',
-        icon: <Puzzle className="w-5 h-5" />,
-        desc: {
-            pt: 'Adivinhe o Pokémon do dia e teste seus conhecimentos.',
-            en: 'Guess the daily Pokémon and test your knowledge.'
-        }
-    },
-    {
-        key: 'tournaments',
-        path: '/tournaments',
-        icon: <TrophyIcon className="w-5 h-5" />,
-        desc: {
-            pt: 'Explore times e o meta da VGC de torneios oficiais.',
-            en: 'Explore winning teams and the tournament VGC meta.'
-        }
-    },
-];
-
-const UTILITY_SHORTCUTS = [
-    { key: 'savedTeams', path: '/favorites?tab=teams', icon: <SavedTeamsIcon className="w-5 h-5" /> },
-    { key: 'damageCalc', path: '/damage-calculator', icon: <CalculatorIcon className="w-5 h-5" /> },
-    { key: 'speedTiers', path: '/speed-tiers', icon: <GaugeIcon className="w-5 h-5" /> },
-    { key: 'moves', path: '/moves', icon: <ScrollIcon className="w-5 h-5" /> },
-    { key: 'abilities', path: '/abilities', icon: <SparklesIcon className="w-5 h-5" /> },
-    { key: 'items', path: '/items', icon: <BagIcon className="w-5 h-5" /> },
+const QUICK_LINKS = [
+    { key: 'builder',    path: '/builder',    labelKey: 'nav.builder',     icon: <SwordsIcon /> },
+    { key: 'pokedex',    path: '/pokedex',    labelKey: 'nav.pokemonList', icon: <PokeballIcon /> },
+    { key: 'pokepuzzle', path: '/pokepuzzle', labelKey: 'nav.pokepuzzle',  icon: <Puzzle className="w-5 h-5 shrink-0" /> },
 ];
 
 export function HomeDashboard({ navigate, puzzleCard }) {
@@ -65,6 +23,11 @@ export function HomeDashboard({ navigate, puzzleCard }) {
     // (same source as the Meta page), falling back to tournament counts while it loads.
     const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
     const [activePokemonId, setActivePokemonId] = React.useState(null);
+
+    // savedTeams already arrives ordered by updatedAt desc from the store's
+    // Firestore query, so "recent" is just the head of that list.
+    const { savedTeams } = useFirestoreTeams();
+    const recentTeams = React.useMemo(() => (savedTeams || []).slice(0, 3), [savedTeams]);
 
     const usingMeta = metaRanked.length > 0;
     const topPopular = (usingMeta ? metaRanked : popular).slice(0, 15);
@@ -86,40 +49,95 @@ export function HomeDashboard({ navigate, puzzleCard }) {
 
     return (
         <div className="hd-stack">
-            {/* Quick access — dual-tiered launcher for the whole app */}
+            {/* Continue where you left off. This slot used to hold a 10-tile
+                launcher, but 9 of those 10 pointed at routes the sidebar already
+                lists permanently — a second copy of the nav, a few inches to the
+                right of the first. What belongs on a home screen is the user's
+                own work, so this shows their most recently touched teams. */}
             <section className="hd-panel">
                 <div className="hd-panel__head">
-                    <span className="hd-panel__title"><SwordsIcon className="w-4 h-4" /> {t('home.shortcuts')}</span>
+                    <span className="hd-panel__title"><SavedTeamsIcon className="w-4 h-4" /> {t('home.continueTitle')}</span>
+                    {recentTeams.length > 0 && (
+                        <button type="button" className="hd-panel__link" onClick={() => navigate('/teams')}>
+                            {t('home.continueAll')} →
+                        </button>
+                    )}
                 </div>
-                <div className="hd-panel__body">
-                    {/* Primary Core Tools Grid */}
-                    <div className="hd-core-grid">
-                        {CORE_SHORTCUTS.map((l) => (
-                            <button key={l.key} type="button" className="hd-core-tile" onClick={() => navigate(l.path)}>
-                                <div className="hd-core-tile__icon-wrap">
-                                    <span className="hd-core-tile__icon" aria-hidden="true">{l.icon}</span>
-                                </div>
-                                <div className="hd-core-tile__info">
-                                    <span className="hd-core-tile__label">{t(`nav.${l.key}`)}</span>
-                                    <span className="hd-core-tile__desc">{l.desc[language] || l.desc['en']}</span>
-                                </div>
-                            </button>
-                        ))}
+                {/* Two shapes, because the panel has two jobs. With saved teams
+                    the work leads and the shortcuts sit beside it as a quiet
+                    aside. With none, there is nothing to continue — so the
+                    shortcuts become the content and the panel's job is simply
+                    to send you somewhere. */}
+                {recentTeams.length === 0 ? (
+                    <div className="hd-panel__body hd-continue-start">
+                        <p className="hd-continue-start__title">{t('home.continueEmptyTitle')}</p>
+                        <p className="hd-continue-start__body">{t('home.continueEmptyBody')}</p>
+                        <div className="hd-continue-start__links">
+                            {QUICK_LINKS.map((l) => (
+                                <button
+                                    key={l.key}
+                                    type="button"
+                                    className="hd-quick-link hd-quick-link--lead"
+                                    onClick={() => navigate(l.path)}
+                                >
+                                    <span className="hd-quick-link__icon" aria-hidden="true">{l.icon}</span>
+                                    <span className="hd-quick-link__label">{t(l.labelKey)}</span>
+                                </button>
+                            ))}
+                        </div>
                     </div>
-                    
-                    {/* Divider and Secondary Utilities Grid */}
-                    <div className="hd-divider-title">
-                        {language === 'pt' ? 'Bancos de Dados e Utilitários' : 'Databases & Utilities'}
+                ) : (
+                    <div className="hd-panel__body hd-continue-split">
+                        <div className="hd-continue-main">
+                            <div className="hd-continue-grid">
+                                {recentTeams.map((team) => {
+                                    const members = team.pokemons || [];
+                                    return (
+                                        <button
+                                            key={team.id}
+                                            type="button"
+                                            className="hd-continue-card"
+                                            onClick={() => navigate(`/teams/${team.id}`)}
+                                        >
+                                            <span className="hd-continue-card__name">{team.name}</span>
+                                            <span className="hd-continue-card__meta">
+                                                {members.length} {members.length === 1 ? t('home.continueMember') : t('home.continueMembers')}
+                                            </span>
+                                            <span className="hd-continue-card__roster">
+                                                {members.slice(0, 6).map((mon, i) => (
+                                                    <img
+                                                        key={mon.instanceId || `${team.id}-${mon.id}-${i}`}
+                                                        src={getTeamPokemonDisplaySprite(mon)}
+                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                        alt=""
+                                                        aria-hidden="true"
+                                                    />
+                                                ))}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        <div className="hd-continue-aside">
+                            <p className="hd-continue-aside__label">{t('home.continueJumpTo')}</p>
+                            <div className="hd-continue-links">
+                                {QUICK_LINKS.map((l) => (
+                                    <button
+                                        key={l.key}
+                                        type="button"
+                                        className="hd-quick-link"
+                                        onClick={() => navigate(l.path)}
+                                    >
+                                        <span className="hd-quick-link__icon" aria-hidden="true">{l.icon}</span>
+                                        <span className="hd-quick-link__label">{t(l.labelKey)}</span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <div className="hd-tiles">
-                        {UTILITY_SHORTCUTS.map((l) => (
-                            <button key={l.key} type="button" className="hd-tile" onClick={() => navigate(l.path)}>
-                                <span className="hd-tile__icon" aria-hidden="true">{l.icon}</span>
-                                <span className="hd-tile__label">{t(`nav.${l.key}`)}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                )}
             </section>
 
             {/* Daily PokéPuzzle teaser — featured right below the shortcuts on
