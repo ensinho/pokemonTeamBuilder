@@ -153,7 +153,7 @@ export function TournamentTeamView({ onImport, colors }) {
                                 href={team.pokepaste || team.sourceUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3.5 py-1 text-[12px] font-bold text-fg transition-all hover:border-primary active:scale-95"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1 text-[12px] font-bold text-fg transition-all active:scale-95"
                                 title={team.pokepaste ? 'Poképaste' : (pt ? 'Fonte' : 'Source')}
                             >
                                 <ExternalLink className="h-3.5 w-3.5" /> {team.pokepaste ? 'Poképaste' : (pt ? 'Fonte' : 'Source')}

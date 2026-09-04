@@ -28,7 +28,7 @@
     border-top: 1px solid var(--color-border);
     border-top-left-radius: var(--radius-xl);
     border-top-right-radius: var(--radius-xl);
-    box-shadow: 0 -12px 40px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg);
     padding-bottom: env(safe-area-inset-bottom, 0px);
     animation: bs-slide 280ms var(--ease-out-expo);
 }
@@ -36,8 +36,8 @@
 .bottom-sheet__handle {
     width: 2.25rem;
     height: 0.28rem;
-    margin: 0.6rem auto 0.2rem;
-    border-radius: 999px;
+    margin: var(--space-2_5) auto var(--space-1);
+    border-radius: var(--radius-full);
     background: var(--color-border);
 }
 
@@ -45,8 +45,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.4rem 1rem 0.7rem;
+    gap: var(--space-2);
+    padding: var(--space-1_5) var(--space-4) var(--space-3);
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -79,7 +79,7 @@
 }
 
 .bottom-sheet__body {
-    padding: 1rem;
+    padding: var(--space-4);
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }

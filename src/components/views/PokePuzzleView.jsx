@@ -1107,7 +1107,7 @@ export default function PokePuzzleView() {
                                         <span className="text-[10px] uppercase font-bold text-accent bg-accent/10 border border-accent px-2 py-0.5 rounded">
                                             {language === 'pt' ? `Geração ${getGenerationByPokemonId(targetPokemon.id)}` : `Gen ${getGenerationByPokemonId(targetPokemon.id)}`}
                                         </span>
-                                        <span className="text-[10px] uppercase font-bold text-muted bg-surface-raised border border-border px-2 py-0.5 rounded">
+                                        <span className="text-[10px] uppercase font-bold text-muted bg-surface-raised px-2 py-0.5 rounded">
                                             {guesses.length} / {MAX_ATTEMPTS} {language === 'pt' ? 'tentativas' : 'tries'}
                                         </span>
                                     </div>

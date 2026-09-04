@@ -23,17 +23,33 @@
     --duration-entrance: 350ms;
     --duration-blur-reveal: 1.2s;  /* intentional slow sprite blur reveal */
 
-    /* Spacing scale — 4px base unit */
-    --space-1: 0.25rem;  /* 4px  */
-    --space-2: 0.5rem;   /* 8px  */
-    --space-3: 0.75rem;  /* 12px */
-    --space-4: 1rem;     /* 16px */
-    --space-5: 1.25rem;  /* 20px */
-    --space-6: 1.5rem;   /* 24px */
-    --space-8: 2rem;     /* 32px */
-    --space-10: 2.5rem;  /* 40px */
-    --space-12: 3rem;    /* 48px */
-    --space-16: 4rem;    /* 64px */
+    /* ---- Spacing scale — the strict grid --------------------------------
+       Two tiers, both landing on a 2px grid: fine control below 16px where
+       components live, coarse rhythm above it where layout lives.
+
+       Every padding/margin/gap in the app resolves to one of these. That is
+       the whole point — alignment is produced by *repetition*, not by picking
+       a pleasing number per element. This app previously ran on 58 distinct
+       ad-hoc values (0.3 / 0.35 / 0.375 / 0.4rem all in play at once); the
+       sub-pixel misalignment that produced is what read as "loose".
+
+       Defaults to reach for first: --space-2, -3, -4, -6.
+       Underscore, not dot, in the fractional names: a `.` is legal in a custom
+       property but breaks Tailwind's arbitrary-value parser. */
+    --space-0_5: 0.125rem; /* 2px  — hairline nudge, optical centering */
+    --space-1:   0.25rem;  /* 4px  — tightest gap (icon↔label) */
+    --space-1_5: 0.375rem; /* 6px  — chip padding, dense inline gaps */
+    --space-2:   0.5rem;   /* 8px  — default small gap */
+    --space-2_5: 0.625rem; /* 10px — compact button padding-inline */
+    --space-3:   0.75rem;  /* 12px — default component padding */
+    --space-3_5: 0.875rem; /* 14px — input padding-inline */
+    --space-4:   1rem;     /* 16px — default card padding / section gap */
+    --space-5:   1.25rem;  /* 20px — roomy card padding */
+    --space-6:   1.5rem;   /* 24px — section separation */
+    --space-8:   2rem;     /* 32px — major block separation */
+    --space-10:  2.5rem;   /* 40px — page-level rhythm */
+    --space-12:  3rem;     /* 48px — hero padding */
+    --space-16:  4rem;     /* 64px — page top/bottom */
 
     /* Border radius scale (Ref 2 — shadcn/ui) */
     --radius-sm: 0.375rem;  /* 6px  — badges, chips */
@@ -263,6 +279,27 @@
     --shadow-md: var(--elevation-2);
     --shadow-lg: var(--elevation-3);
     --shadow-xl: var(--elevation-4);
+
+    /* ---- Interaction surfaces ------------------------------------------
+       Late-bound like the shadow aliases, so these single definitions work
+       across all six themes and stay correct in light ones (where "raise on
+       hover" has to mean *darker*, not lighter — mixing toward --color-fg
+       gets that right in both directions automatically).
+
+       Use these instead of writing color-mix() inline at each call site: a
+       hover tint repeated by hand drifts, and drift is what made this app
+       feel loose in the first place. */
+    --color-surface-hover:  color-mix(in srgb, var(--color-fg)  7%, var(--color-surface-raised));
+    --color-surface-active: color-mix(in srgb, var(--color-fg) 12%, var(--color-surface-raised));
+
+    /* Foreground for text/icons sitting on a filled --color-primary or
+       --color-danger. Every theme's primary is dark enough for white; this
+       exists so the value is named rather than 56 loose #fff literals. */
+    --color-on-primary: #ffffff;
+
+    /* Selection ring. A border resizes the element and reflows its
+       neighbours when selection moves; an inset ring never does. */
+    --ring-primary: inset 0 0 0 1px var(--color-primary);
 }
 
 /* Interface scale (see applyUiScale in constants/theme.js). Percent, not rem:
@@ -304,6 +341,11 @@ body {
 .custom-scrollbar {
     scrollbar-width: thin;                                  /* Firefox */
     scrollbar-color: var(--color-border) transparent;       /* Firefox: thumb / track */
+    /* Stop scroll chaining: reaching the end of an inner panel must not hand the
+       remaining momentum to the page behind it. That hand-off is what makes a
+       list feel like it "slips" — you scroll a sidebar and the whole app moves.
+       `contain` keeps the gesture inside the panel it started in. */
+    overscroll-behavior: contain;
 }
 .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
@@ -314,7 +356,7 @@ body {
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: color-mix(in srgb, var(--color-border) 80%, transparent);
-    border-radius: 20px;
+    border-radius: var(--radius-xl);
     border: 2px solid transparent;
     background-clip: content-box;
 }
@@ -335,7 +377,7 @@ body {
     appearance: none;
     width: 100%;
     height: 0.5rem;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     cursor: pointer;
     outline: none;
 }
@@ -361,7 +403,7 @@ body {
 }
 .ev-slider::-moz-range-track {
     background: transparent;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     height: 0.5rem;
 }
 .ev-slider::-moz-range-thumb {
@@ -556,7 +598,7 @@ input[type='checkbox']:checked + div + div {
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-sm);
-    padding: 0.15rem 0.45rem;
+    padding: var(--space-0_5) var(--space-2);
     font-size: 0.675rem;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -590,7 +632,7 @@ input[type='checkbox']:checked + div + div {
     border-radius: var(--radius-md);
     background: var(--color-surface);
     color: var(--color-fg);
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
     font-size: 0.875rem;
     transition: border-color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth);
@@ -650,8 +692,8 @@ input[type='checkbox']:checked + div + div {
 .text-size-control {
     display: inline-flex;
     align-items: center;
-    gap: 0.15rem;
-    padding: 0.15rem;
+    gap: var(--space-0_5);
+    padding: var(--space-0_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
@@ -685,7 +727,7 @@ input[type='checkbox']:checked + div + div {
 .text-size-control__value {
     min-width: 3rem;
     height: 1.5rem;
-    padding: 0 0.35rem;
+    padding: 0 var(--space-1_5);
     font-family: var(--font-mono);
     font-size: 0.7rem;
     font-weight: 600;

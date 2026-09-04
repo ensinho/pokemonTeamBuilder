@@ -767,7 +767,7 @@ export function HomeView({
                                     {randomMessage}
                                 </p>
                                 <div className="flex items-center gap-2 pt-1.5">
-                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface border border-border text-[10px] text-muted font-bold font-mono">
+                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface text-[10px] text-muted font-bold font-mono">
                                         <Flame className="w-3 h-3 text-warning shrink-0" />
                                         {streak?.count || 0} {language === 'pt' ? 'Dias Seguidos' : 'Days Streak'}
                                     </span>
@@ -1145,7 +1145,7 @@ export function HomeView({
                                                                     @{message.creatorName}
                                                                 </span>
                                                                 <span>merged team:</span>
-                                                                <span className="font-mono bg-surface px-1.5 py-0.5 rounded border border-border text-primary font-bold">{message.sharedTeam.name}</span>
+                                                                <span className="font-mono bg-surface px-1.5 py-0.5 rounded text-primary font-bold">{message.sharedTeam.name}</span>
                                                             </div>
                                                             <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
                                                         </div>
@@ -1238,7 +1238,7 @@ export function HomeView({
                                                         type="button"
                                                         onClick={() => handleStartReply(message)}
                                                         title={language === 'pt' ? 'Responder' : 'Reply'}
-                                                        className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised px-2 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:text-fg"
+                                                        className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:text-fg"
                                                     >
                                                         <ReplyIcon className="w-3 h-3 shrink-0" />
                                                         <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
@@ -1281,7 +1281,7 @@ export function HomeView({
                             )}
 
                             {attachedTeam && (
-                                <div className="forum-attached-team-preview py-1.5 px-2.5 text-[11px] gap-1.5 flex items-center mb-2 bg-surface-raised border border-border rounded-lg">
+                                <div className="forum-attached-team-preview py-1.5 px-2.5 text-[11px] gap-1.5 flex items-center mb-2 bg-surface-raised rounded-lg">
                                     <ClipIcon className="w-3 h-3 text-success shrink-0" />
                                     <span className="truncate">{attachedTeam.name}</span>
                                     <button type="button" onClick={() => setAttachedTeam(null)} className="ml-auto hover:text-danger text-muted">

@@ -516,10 +516,10 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             {isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
                         </span>
                         {leader.badge && (
-                            <span className="rounded-xl border border-border bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{leader.badge}</span>
+                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{leader.badge}</span>
                         )}
                         {leader.levelCap && (
-                            <span className="rounded-xl border border-border bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} {leader.levelCap}</span>
+                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} {leader.levelCap}</span>
                         )}
                         {onAddToTeam && (
                             <button

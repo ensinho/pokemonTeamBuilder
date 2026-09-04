@@ -19,13 +19,13 @@
 
 @keyframes radar-pulse {
     0% {
-        box-shadow: 0 0 0 0px rgba(124, 58, 237, 0.3);
+        box-shadow: 0 0 0 0px color-mix(in srgb, var(--color-primary) 30%, transparent);
     }
     70% {
-        box-shadow: 0 0 0 6px rgba(124, 58, 237, 0);
+        box-shadow: 0 0 0 6px transparent;
     }
     100% {
-        box-shadow: 0 0 0 0px rgba(124, 58, 237, 0);
+        box-shadow: 0 0 0 0px transparent;
     }
 }
 
@@ -39,7 +39,7 @@
 .home-dashboard,
 .home-story-grid {
     display: grid;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 /* Dashboard Panels Base */
@@ -109,7 +109,7 @@
     background-repeat: no-repeat;
     background-size: cover;
     opacity: 0.6;
-    transition: opacity 0.25s ease;
+    transition: opacity var(--duration-slow) var(--ease-smooth);
 }
 
 .home-panel--feature {
@@ -154,7 +154,7 @@
     opacity: 1;
     background: rgba(0, 0, 0, 0.55);
     border-color: rgba(255, 255, 255, 0.25);
-    color: #ffffff;
+    color: var(--color-on-primary);
 }
 
 .home-hero__wallpaper-btn svg {
@@ -182,7 +182,7 @@
 }
 
 .home-panel__title {
-    margin: 0.35rem 0 0;
+    margin: var(--space-1_5) 0 0;
     font-size: clamp(1.15rem, 1.6vw, 1.6rem);
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -201,11 +201,11 @@
 
 .home-panel__title--daily {
     font-size: clamp(1.25rem, 1.7vw, 1.65rem);
-    margin-top: 0.2rem;
+    margin-top: var(--space-1);
 }
 
 .home-panel__section-title {
-    margin: 0.25rem 0 0;
+    margin: var(--space-1) 0 0;
     font-size: 0.95rem;
     font-weight: 600;
     letter-spacing: -0.01em;
@@ -219,7 +219,7 @@
 }
 
 .home-panel__description {
-    margin: 0.45rem 0 0;
+    margin: var(--space-2) 0 0;
     font-size: 0.8125rem;
 }
 
@@ -238,7 +238,7 @@
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    gap: 1.5rem;
+    gap: var(--space-6);
     max-width: 100%;
 }
 
@@ -249,7 +249,7 @@
 
 .home-hero__lead .home-panel__description {
     font-size: 0.9375rem;
-    margin-top: 0.6rem;
+    margin-top: var(--space-2_5);
     opacity: 0.85;
     max-width: 30rem;
 }
@@ -265,7 +265,7 @@
     height: 192px;
     flex-shrink: 0;
     border-radius: var(--radius-lg);
-    padding: 0.85rem;
+    padding: var(--space-3_5);
     background: rgba(20, 20, 28, 0.55) !important;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -293,7 +293,7 @@
     top: 0.5rem;
     right: 0.5rem;
     display: flex;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     z-index: 5;
     opacity: 0;
     transition: opacity var(--duration-fast) var(--ease-smooth);
@@ -314,12 +314,12 @@
     border: 1px solid var(--color-border);
     color: var(--color-muted);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 
 .home-partner-card__action-btn:hover {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
     border-color: transparent;
 }
 
@@ -354,7 +354,7 @@
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: var(--space-1);
 }
 
 .home-partner-card__meta {
@@ -374,7 +374,7 @@
 
 .home-partner-card__types {
     display: flex;
-    gap: 0.2rem;
+    gap: var(--space-1);
 }
 
 .home-partner-card__types img {
@@ -394,7 +394,7 @@
 .home-team-slots {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     width: 100%;
 }
 
@@ -450,7 +450,7 @@
 .home-action-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .home-button {
@@ -458,14 +458,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     border: 1px solid transparent;
     border-radius: var(--radius-md);
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 
 .home-button svg {
@@ -476,7 +476,7 @@
 .home-button--primary {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
 }
 
 .home-button--primary:hover {
@@ -495,7 +495,7 @@
 }
 
 .home-button--inline {
-    padding: 0.35rem 0.6rem;
+    padding: var(--space-1_5) var(--space-2_5);
     border-color: var(--color-border);
     background: transparent;
     color: var(--color-muted);
@@ -540,7 +540,7 @@
     color: var(--color-muted);
     background: var(--color-surface-raised);
     border: 1px solid var(--color-border);
-    padding: 0.15rem 0.45rem;
+    padding: var(--space-0_5) var(--space-2);
     border-radius: var(--radius-sm);
     font-variant-numeric: tabular-nums;
 }
@@ -549,7 +549,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 0.35rem;
+    margin-top: var(--space-1_5);
     width: 100%;
     flex: 1;
     justify-content: space-between;
@@ -594,7 +594,7 @@
     border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
     cursor: pointer;
 }
 
@@ -624,7 +624,7 @@
 .home-shortcuts-container {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: var(--space-1_5);
 }
 
 .home-mobile-shortcuts-section {
@@ -638,18 +638,18 @@
 /* Shortcuts */
 .home-quick-grid {
     display: grid;
-    gap: 0.5rem;
+    gap: var(--space-2);
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
 .home-list-button {
     display: flex;
     align-items: flex-start;
-    gap: 0.65rem;
+    gap: var(--space-2_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 0.65rem;
+    padding: var(--space-2_5);
     text-align: left;
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth);
@@ -674,7 +674,7 @@
 
 .home-list-button:hover .home-list-button__icon {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
 }
 
 .home-list-button__icon svg {
@@ -686,7 +686,7 @@
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: var(--space-0_5);
 }
 
 .home-list-button__title {
@@ -712,8 +712,8 @@
     justify-content: space-between;
     align-items: flex-start;
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.6rem;
-    margin-bottom: 0.2rem;
+    padding-bottom: var(--space-2_5);
+    margin-bottom: var(--space-1);
 }
 
 .home-trainer-card__barcode {
@@ -725,11 +725,11 @@
 
 .home-stat-grid {
     display: grid;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
 }
 
 .home-stat-card {
-    padding: 0.65rem 0.4rem;
+    padding: var(--space-2_5) var(--space-1_5);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     border: 1px solid transparent;
@@ -754,7 +754,7 @@
     border-radius: 50%;
     background: var(--color-primary-soft);
     color: var(--color-primary);
-    margin-bottom: 0.35rem;
+    margin-bottom: var(--space-1_5);
 }
 
 .home-stat-card__icon svg {
@@ -776,7 +776,7 @@
 
 .home-stat-card__value {
     display: block;
-    margin-top: 0.25rem;
+    margin-top: var(--space-1);
     font-size: 0.9375rem;
     font-weight: 700;
     color: var(--color-fg);
@@ -785,7 +785,7 @@
 /* Pinned Favorites */
 .home-favorite-grid {
     display: grid;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));
 }
 
@@ -798,11 +798,11 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0.5rem 0.3rem;
+    padding: var(--space-2) var(--space-1);
     text-align: center;
     transition: border-color var(--duration-fast) var(--ease-smooth);
 }
@@ -833,7 +833,7 @@
     border: 1px dashed var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 0.85rem;
+    padding: var(--space-3_5);
 }
 
 .home-empty-state__icon {
@@ -856,14 +856,14 @@
 }
 
 .home-empty-state__copy {
-    margin: 0.15rem 0 0;
+    margin: var(--space-0_5) 0 0;
     font-size: 0.75rem;
     line-height: 1.45;
     color: var(--color-muted);
 }
 
 .home-empty-state__stat {
-    padding: 0.5rem 0.35rem;
+    padding: var(--space-2) var(--space-1_5);
     text-align: center;
     border-radius: var(--radius-md);
 }
@@ -886,7 +886,7 @@
     align-items: center;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
-    padding: 0.2rem 0.45rem;
+    padding: var(--space-1) var(--space-2);
     font-size: 0.675rem;
     font-weight: 600;
     line-height: 1;
@@ -895,12 +895,12 @@
 .home-inline-meta {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .home-inline-meta div {
     border-top: 1px solid var(--color-border);
-    padding-top: 0.45rem;
+    padding-top: var(--space-2);
 }
 
 .home-inline-meta dt {
@@ -913,7 +913,7 @@
 }
 
 .home-inline-meta dd {
-    margin: 0.15rem 0 0;
+    margin: var(--space-0_5) 0 0;
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-fg);
@@ -937,7 +937,7 @@
         align-self: start;
         border-left: none;
         padding-left: 0;
-        gap: 1.1rem;
+        gap: var(--space-4);
     }
 }
 
@@ -963,17 +963,17 @@
     .home-hero__content {
         flex-direction: column;
         align-items: stretch;
-        gap: 1.25rem;
+        gap: var(--space-5);
     }
 
     .home-partner-card {
         width: 100%;
         height: auto;
         flex-direction: row;
-        gap: 1rem;
+        gap: var(--space-4);
         justify-content: flex-start;
         align-items: center;
-        padding: 0.7rem;
+        padding: var(--space-3);
         opacity: 0.85;
     }
 
@@ -993,7 +993,7 @@
 
     .home-partner-card__meta {
         justify-content: flex-start;
-        gap: 0.75rem;
+        gap: var(--space-3);
     }
 }
 
@@ -1015,7 +1015,7 @@
 
     .home-panel--hero {
         min-height: auto;
-        padding: 0.85rem !important;
+        padding: var(--space-3_5) !important;
     }
 
     .home-panel__title--hero {
@@ -1024,12 +1024,12 @@
 
     .home-hero__lead .home-panel__description {
         font-size: 0.8125rem;
-        margin-top: 0.35rem;
+        margin-top: var(--space-1_5);
     }
 
     .home-partner-card {
-        padding: 0.55rem;
-        gap: 0.65rem;
+        padding: var(--space-2);
+        gap: var(--space-2_5);
     }
 
     .home-partner-card__sprite-container {
@@ -1057,7 +1057,7 @@
 
     .home-list-button {
         align-items: center;
-        padding: 0.6rem;
+        padding: var(--space-2_5);
     }
 
     .home-panel--stats,
@@ -1075,7 +1075,7 @@
         border: 1px solid var(--color-border) !important;
         border-radius: var(--radius-lg) !important;
         box-shadow: none !important;
-        padding: 0.85rem !important;
+        padding: var(--space-3_5) !important;
         max-width: 100% !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
@@ -1087,17 +1087,17 @@
 
     .home-forum-chat-messages {
         max-height: 320px;
-        padding: 0.5rem 0.25rem 0.5rem 0;
-        gap: 0.5rem;
+        padding: var(--space-2) var(--space-1) var(--space-2) 0;
+        gap: var(--space-2);
     }
 
     .home-forum-chat-header {
-        padding: 0 0 0.65rem 0;
+        padding: 0 0 var(--space-2_5) 0;
     }
 
     .home-forum-chat-title {
         font-size: 0.8rem;
-        gap: 0.3rem;
+        gap: var(--space-1);
     }
 
     .home-forum-chat-title svg {
@@ -1120,7 +1120,7 @@
         background: var(--color-surface) !important;
         border: 1px solid var(--color-border) !important;
         border-radius: var(--radius-lg) !important;
-        padding: 0.85rem !important;
+        padding: var(--space-3_5) !important;
     }
 
     .home-sidebar-section:last-of-type {
@@ -1130,13 +1130,13 @@
     .home-sidebar-section--daily {
         margin-left: 0 !important;
         width: 100% !important;
-        padding: 0.85rem !important;
+        padding: var(--space-3_5) !important;
     }
 
     /* ---- Active team panel compact ---- */
     .home-panel--feature {
         min-height: auto !important;
-        padding: 0.65rem !important;
+        padding: var(--space-2_5) !important;
     }
 
     .home-panel--feature .home-panel__description {
@@ -1149,18 +1149,18 @@
 
     .home-active-badge {
         font-size: 0.65rem !important;
-        padding: 0.15rem 0.35rem !important;
+        padding: var(--space-0_5) var(--space-1_5) !important;
     }
 
     .home-action-row {
-        gap: 0.35rem;
-        margin-top: 0.5rem !important;
+        gap: var(--space-1_5);
+        margin-top: var(--space-2) !important;
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
     }
 
     .home-button {
-        padding: 0.3rem 0.45rem !important;
+        padding: var(--space-1) var(--space-2) !important;
         font-size: 0.7rem !important;
         justify-content: center !important;
         width: 100% !important;
@@ -1178,7 +1178,7 @@
     }
 
     .home-panel--feature .home-team-slots {
-        gap: 0.2rem !important;
+        gap: var(--space-1) !important;
     }
 
     .home-btn-text-desktop {
@@ -1197,9 +1197,9 @@
     .home-shortcuts-container {
         display: grid !important;
         grid-template-columns: repeat(4, 1fr) !important;
-        gap: 0.35rem !important;
+        gap: var(--space-1_5) !important;
         width: 100% !important;
-        margin: 0.25rem 0 0.5rem 0 !important;
+        margin: var(--space-1) 0 var(--space-2) 0 !important;
     }
 
     .home-shortcuts-container .home-list-button {
@@ -1207,8 +1207,8 @@
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        padding: 0.4rem 0.15rem !important;
-        gap: 0.35rem !important;
+        padding: var(--space-1_5) var(--space-0_5) !important;
+        gap: var(--space-1_5) !important;
         height: auto !important;
         background: transparent !important;
         border: none !important;
@@ -1240,7 +1240,7 @@
         justify-content: center !important;
         margin: 0 !important;
         box-shadow: var(--elevation-1) !important;
-        transition: all var(--duration-fast) var(--ease-smooth) !important;
+        transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
     }
 
     .home-shortcuts-container .home-list-button__icon svg {
@@ -1250,7 +1250,7 @@
 
     .home-shortcuts-container .home-list-button:hover .home-list-button__icon {
         background: var(--color-primary) !important;
-        color: #ffffff !important;
+        color: var(--color-on-primary) !important;
         border-color: transparent !important;
         box-shadow: 0 4px 12px var(--color-primary-soft) !important;
     }
@@ -1272,14 +1272,14 @@
 
     /* ---- Forum editor compact on mobile ---- */
     .home-forum-chat-card-wrapper .forum-editor {
-        padding: 1rem 0 0 0;
-        gap: 0.35rem;
+        padding: var(--space-4) 0 0 0;
+        gap: var(--space-1_5);
     }
 
     .home-forum-chat-card-wrapper .forum-editor-textarea {
         font-size: 0.8rem;
         min-height: 34px;
-        padding: 0.4rem 0.6rem;
+        padding: var(--space-1_5) var(--space-2_5);
     }
 
     /* Hide Trainer Card and Sidebar Shortcuts on mobile */
@@ -1291,7 +1291,7 @@
     /* Show Mobile-only Shortcuts Section at the top */
     .home-mobile-shortcuts-section {
         display: block !important;
-        margin-top: 0.25rem;
+        margin-top: var(--space-1);
         margin-bottom: 0;
         width: 100%;
     }
@@ -1304,14 +1304,14 @@
     .home-sidebar-section .home-favorite-grid--sidebar {
         display: flex !important;
         justify-content: flex-start !important;
-        gap: 0.4rem !important;
-        margin-top: 0.4rem !important;
+        gap: var(--space-1_5) !important;
+        margin-top: var(--space-1_5) !important;
     }
 
     .home-sidebar-section .home-favorite-card {
         background: rgba(255, 255, 255, 0.04) !important;
         border: 1px solid transparent !important;
-        padding: 0.25rem !important;
+        padding: var(--space-1) !important;
         border-radius: 50% !important;
         width: 2.2rem !important;
         height: 2.2rem !important;
@@ -1320,7 +1320,7 @@
         align-items: center !important;
         justify-content: center !important;
         box-shadow: none !important;
-        transition: all var(--duration-fast) var(--ease-smooth) !important;
+        transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
     }
 
     .home-sidebar-section .home-favorite-card:hover {
@@ -1352,11 +1352,11 @@
 
     .home-team-slots {
         grid-template-columns: repeat(6, 1fr);
-        gap: 0.25rem;
+        gap: var(--space-1);
     }
 
     .home-panel--hero {
-        padding: 0.75rem !important;
+        padding: var(--space-3) !important;
     }
 
     .home-panel__title--hero {
@@ -1365,7 +1365,7 @@
     }
 
     .home-hero__content {
-        gap: 0.75rem;
+        gap: var(--space-3);
     }
 
     .home-hero__wallpaper-btn {
@@ -1404,18 +1404,18 @@
     }
 
     .home-forum-chat-card-wrapper {
-        padding: 0.65rem !important;
+        padding: var(--space-2_5) !important;
     }
 
     /* Sidebar sections tighter on small screens */
     .home-sidebar-section {
-        padding: 0.65rem !important;
+        padding: var(--space-2_5) !important;
     }
 
     .home-sidebar-section .home-collapsible-trigger {
         margin-left: -0.35rem !important;
         width: calc(100% + 0.7rem) !important;
-        padding: 0.25rem 0.35rem !important;
+        padding: var(--space-1) var(--space-1_5) !important;
     }
 }
 
@@ -1426,7 +1426,7 @@
     font-family: inherit;
     appearance: none;
     -webkit-appearance: none;
-    padding-right: 1.35rem !important;
+    padding-right: var(--space-5) !important;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(156, 163, 175, 0.8)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 4px center;
@@ -1479,7 +1479,7 @@
     border: 1px solid var(--color-border);
     color: var(--color-muted);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 
 .home-active-header-btn:hover {
@@ -1501,7 +1501,7 @@
 
 .home-active-header-btn--primary:hover {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
     border-color: transparent;
 }
 
@@ -1513,7 +1513,7 @@
         background: var(--color-surface) !important;
         border: 1px solid var(--color-border) !important;
         border-radius: var(--radius-lg) !important;
-        padding: 1rem !important;
+        padding: var(--space-4) !important;
         box-shadow: var(--elevation-1) !important;
         transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
     }
@@ -1526,11 +1526,11 @@
 
 /* Collapsible trigger buttons inside sidebar section */
 .home-sidebar-section .home-collapsible-trigger {
-    padding: 0.35rem 0.5rem !important;
+    padding: var(--space-1_5) var(--space-2) !important;
     margin-left: -0.5rem !important;
     width: calc(100% + 1rem) !important;
     border-radius: var(--radius-md) !important;
-    transition: all var(--duration-fast) var(--ease-smooth) !important;
+    transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
 }
 
 .home-sidebar-section .home-collapsible-trigger:hover {
@@ -1559,19 +1559,19 @@
 /* Stat blocks: clean modern small cards with micro-hover */
 .home-sidebar-section .home-stat-grid {
     display: grid;
-    gap: 0.5rem;
-    margin-top: 0.6rem;
+    gap: var(--space-2);
+    margin-top: var(--space-2_5);
 }
 
 .home-sidebar-section .home-stat-card {
     background: var(--color-surface-raised) !important;
     border: 1px solid var(--color-border) !important;
     border-radius: var(--radius-md) !important;
-    padding: 0.45rem 0.5rem !important;
+    padding: var(--space-2) var(--space-2) !important;
     align-items: flex-start !important;
     text-align: left !important;
     box-shadow: none !important;
-    transition: all var(--duration-fast) var(--ease-smooth) !important;
+    transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
 }
 
 .home-sidebar-section .home-stat-card:hover {
@@ -1594,7 +1594,7 @@
 }
 
 .home-sidebar-section .home-stat-card__value {
-    margin-top: 0.2rem !important;
+    margin-top: var(--space-1) !important;
     font-size: 0.95rem !important;
     font-weight: 700 !important;
     color: var(--color-fg) !important;
@@ -1605,7 +1605,7 @@
     .home-sidebar-section .home-shortcuts-container {
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
-        gap: 0.5rem !important;
+        gap: var(--space-2) !important;
     }
 
     .home-sidebar-section .home-list-button {
@@ -1613,12 +1613,12 @@
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        padding: 0.85rem 0.5rem !important;
-        gap: 0.45rem !important;
+        padding: var(--space-3_5) var(--space-2) !important;
+        gap: var(--space-2) !important;
         background: var(--color-surface-raised) !important;
         border: 1px solid var(--color-border) !important;
         border-radius: var(--radius-lg) !important;
-        transition: all var(--duration-fast) var(--ease-smooth) !important;
+        transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
         box-shadow: none !important;
         cursor: pointer;
     }
@@ -1640,12 +1640,12 @@
         align-items: center !important;
         justify-content: center !important;
         margin: 0 auto !important;
-        transition: all var(--duration-fast) var(--ease-smooth) !important;
+        transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
     }
 
     .home-sidebar-section .home-list-button:hover .home-list-button__icon {
         background: var(--color-primary) !important;
-        color: #ffffff !important;
+        color: var(--color-on-primary) !important;
         box-shadow: 0 4px 10px var(--color-primary-soft) !important;
     }
 
@@ -1668,11 +1668,11 @@
     background: var(--color-surface-raised) !important;
     border: 1px solid var(--color-border) !important;
     border-radius: var(--radius-md) !important;
-    padding: 0.25rem 0.65rem !important;
+    padding: var(--space-1) var(--space-2_5) !important;
     font-size: 10px !important;
     color: var(--color-muted) !important;
     font-weight: 600 !important;
-    transition: all var(--duration-fast) var(--ease-smooth) !important;
+    transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
 }
 
 .home-sidebar-section .home-button--inline:hover {
@@ -1691,10 +1691,10 @@
 .home-sidebar-section .home-favorite-card {
     background: var(--color-surface-raised) !important;
     border: 1px solid var(--color-border) !important;
-    padding: 0.5rem 0.35rem !important;
+    padding: var(--space-2) var(--space-1_5) !important;
     border-radius: var(--radius-md) !important;
     box-shadow: none !important;
-    transition: all var(--duration-fast) var(--ease-smooth) !important;
+    transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
 }
 
 .home-sidebar-section .home-favorite-card:hover {
@@ -1718,33 +1718,33 @@
 .home-sidebar-section--daily {
     margin-left: 0 !important;
     width: 100% !important;
-    background: linear-gradient(135deg, var(--color-surface), rgba(124, 58, 237, 0.04)) !important;
+    background: linear-gradient(135deg, var(--color-surface), color-mix(in srgb, var(--color-primary) 4%, transparent)) !important;
     border: 1px solid var(--color-border) !important;
     border-radius: var(--radius-lg) !important;
-    padding: 1rem !important;
+    padding: var(--space-4) !important;
     box-shadow: var(--elevation-1) !important;
     transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth) !important;
 }
 
 .home-sidebar-section--daily:hover {
-    border-color: #7c3aed !important;
-    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.15), var(--elevation-2) !important;
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 15%, transparent), var(--elevation-2) !important;
 }
 
 .home-sidebar-section--daily .home-daily__sprite-container {
     border: 1px solid var(--color-border) !important;
     background: var(--color-surface) !important;
     border-radius: var(--radius-md) !important;
-    transition: all var(--duration-fast) var(--ease-smooth) !important;
+    transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
 }
 
 .home-sidebar-section--daily .home-daily__sprite-container.is-unsolved {
     animation: radar-pulse 2s infinite;
-    border-color: rgba(124, 58, 237, 0.4) !important;
+    border-color: color-mix(in srgb, var(--color-primary) 40%, transparent) !important;
 }
 
 .home-sidebar-section--daily:hover .home-daily__sprite-container {
-    border-color: #7c3aed !important;
+    border-color: var(--color-primary) !important;
     transform: scale(1.05);
 }
 
@@ -1759,7 +1759,7 @@
     justify-content: center !important;
     color: var(--color-muted) !important;
     cursor: pointer !important;
-    transition: all var(--duration-fast) var(--ease-smooth) !important;
+    transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
 }
 
 .home-sidebar-section--daily .home-daily__fav-btn:hover {
@@ -1789,7 +1789,7 @@
 .home-readme-header {
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface-raised);
-    padding: 0.5rem 1rem;
+    padding: var(--space-2) var(--space-4);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1818,7 +1818,7 @@
 .pinned-repo-header {
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface-raised);
-    padding: 0.5rem 1rem;
+    padding: var(--space-2) var(--space-4);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1826,8 +1826,8 @@
 
 .pinned-repo-footer {
     border-top: 1px solid var(--color-border);
-    padding-top: 0.75rem;
-    margin-top: 0.75rem;
+    padding-top: var(--space-3);
+    margin-top: var(--space-3);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1866,7 +1866,7 @@
     background: var(--color-surface-raised);
     color: var(--color-muted);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 
 .home-active-header-btn:hover {
@@ -1883,7 +1883,7 @@
 
 .home-active-header-btn--primary:hover {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
     border-color: transparent;
 }
 
@@ -1892,8 +1892,8 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    padding-left: 2.5rem !important;
+    gap: var(--space-5);
+    padding-left: var(--space-10) !important;
 }
 
 .home-timeline-container::before {
@@ -1911,7 +1911,7 @@
 .home-timeline-item {
     position: relative;
     display: flex;
-    gap: 0.75rem;
+    gap: var(--space-3);
     z-index: 1;
     width: 100%;
 }
@@ -1966,21 +1966,22 @@
 
 /* Speech/Talk Bubbles */
 /* Speech/Talk Bubbles */
+/* One flat filled block per comment. This list runs to 40+ bubbles, and each one
+   previously drew three lines — its own border, its shadow, and the header's
+   divider — inside a panel that already has a border. Fill separates them from
+   the panel just as well, with nothing left to stack up. */
 .github-comment-bubble {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
+    border: none;
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
     overflow: hidden;
-    box-shadow: var(--elevation-1);
     position: relative;
-    margin-left: 0.5rem;
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth);
+    margin-left: var(--space-2);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
 .github-comment-bubble:hover {
-    border-color: var(--color-border-hover);
-    box-shadow: 0 4px 12px -5px rgba(0, 0, 0, 0.25), var(--elevation-2);
+    background: color-mix(in srgb, var(--color-fg) 5%, var(--color-surface-raised));
 }
 
 .github-comment-bubble::before,
@@ -1992,9 +1993,11 @@
     pointer-events: none;
 }
 
+/* The arrow was two stacked triangles faking a bordered point. With the bubble
+   borderless it is a single solid one — this half just matches the fill. */
 .github-comment-bubble::before {
     right: 100%;
-    border-right-color: var(--color-border);
+    border-right-color: var(--color-surface-raised);
 }
 
 .github-comment-bubble::after {
@@ -2003,9 +2006,8 @@
 }
 
 .github-comment-header {
-    background-color: var(--color-surface-raised);
-    border-bottom: 1px solid var(--color-border);
-    padding: 0.5rem 0.75rem;
+    background-color: transparent;
+    padding: var(--space-2) var(--space-3);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2016,11 +2018,11 @@
     text-transform: uppercase;
     font-weight: 700;
     border-radius: var(--radius-sm);
-    padding: 0.05rem 0.25rem;
+    padding: var(--space-0_5) var(--space-1);
 }
 
 .github-comment-body {
-    padding: 0.75rem;
+    padding: var(--space-3);
     background-color: var(--color-surface);
 }
 
@@ -2029,10 +2031,10 @@
     border: 1px solid var(--color-primary-soft);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0.75rem;
+    padding: var(--space-3);
     box-shadow: var(--elevation-1);
     position: relative;
-    margin-left: 0.5rem;
+    margin-left: var(--space-2);
     transition: border-color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth);
 }
@@ -2063,15 +2065,15 @@
 
 .github-pr-header {
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.5rem;
-    margin-bottom: 0.5rem;
+    padding-bottom: var(--space-2);
+    margin-bottom: var(--space-2);
 }
 
 .github-pr-body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: var(--space-4);
     flex-wrap: wrap;
 }
 
@@ -2097,18 +2099,19 @@
 
 .github-pr-merge-btn {
     background-color: var(--color-primary);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--color-on-primary);
+    /* A solid primary fill needs neither a border nor a shadow to read as a
+       button; both were literal rgba values that mistint in half the themes. */
+    border: none;
     border-radius: var(--radius-md);
-    padding: 0.35rem 0.75rem;
+    padding: var(--space-1_5) var(--space-3);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
     transition: opacity var(--duration-fast) var(--ease-smooth);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
 }
 
 .github-pr-merge-btn:hover {
@@ -2116,8 +2119,8 @@
 }
 
 .github-pr-comment {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
     border-top: 1px solid var(--color-border);
     font-size: 0.75rem;
     color: var(--color-muted);
@@ -2129,7 +2132,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 1rem;
+    padding: var(--space-4);
     display: flex;
     flex-direction: column;
     box-shadow: var(--elevation-1);
@@ -2138,7 +2141,7 @@
 .home-profile-card-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     width: 100%;
 }
 
@@ -2181,12 +2184,12 @@
     justify-content: center;
     cursor: pointer;
     box-shadow: var(--elevation-1);
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 
 .home-profile-avatar-edit-btn:hover {
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
     border-color: transparent;
 }
 
@@ -2207,7 +2210,7 @@
 }
 
 .home-profile-username {
-    margin: 0.05rem 0 0;
+    margin: var(--space-0_5) 0 0;
     font-size: 0.675rem;
     color: var(--color-muted);
     font-family: var(--font-mono);
@@ -2218,9 +2221,9 @@
     background: var(--color-surface-raised);
     color: var(--color-muted);
     border-radius: var(--radius-sm);
-    padding: 0.35rem;
+    padding: var(--space-1_5);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
     box-shadow: var(--elevation-1);
 }
 
@@ -2233,14 +2236,14 @@
 .home-profile-meta-list {
     width: 100%;
     border-top: 1px solid var(--color-border);
-    margin-top: 0.6rem;
-    padding-top: 0.6rem;
+    margin-top: var(--space-2_5);
+    padding-top: var(--space-2_5);
 }
 
 .home-profile-meta-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.45rem;
+    gap: var(--space-2);
     text-align: left;
     width: 100%;
 }
@@ -2250,22 +2253,22 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 1rem;
+    padding: var(--space-4);
     box-shadow: var(--elevation-1);
 }
 
 .home-pinned-repos-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-    margin-top: 0.5rem;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
 }
 
 .github-repo-card {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0.75rem;
+    padding: var(--space-3);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -2287,7 +2290,7 @@
 .github-repo-title {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     font-family: var(--font-mono);
     font-size: 0.75rem;
     font-weight: 600;
@@ -2298,13 +2301,13 @@
     font-size: 0.65rem;
     color: var(--color-muted);
     line-height: 1.4;
-    margin: 0.35rem 0 0.65rem 0;
+    margin: var(--space-1_5) 0 var(--space-2_5) 0;
 }
 
 .github-repo-meta {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     font-family: var(--font-mono);
     font-size: 0.6rem;
     color: var(--color-muted);
@@ -2333,7 +2336,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    padding: 1rem;
+    padding: var(--space-4);
     position: relative;
     box-shadow: var(--elevation-1);
 }
@@ -2343,19 +2346,19 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 1rem;
+    padding: var(--space-4);
     box-shadow: var(--elevation-1);
 }
 
 /* Active Team - Compact Layout */
 .home-panel--pinned-repo .p-4 {
-    padding: 1rem !important;
+    padding: var(--space-4) !important;
 }
 
 .home-panel--pinned-repo .home-team-slots {
     max-width: 250px;
-    gap: 0.25rem;
-    margin-top: 0.45rem;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
 }
 
 .home-panel--pinned-repo .home-team-slot {
@@ -2372,8 +2375,8 @@
 }
 
 .home-panel--pinned-repo .pinned-repo-footer {
-    margin-top: 0.55rem;
-    padding-top: 0.55rem;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
 }
 
 .home-desktop-widgets-grid {
@@ -2383,54 +2386,54 @@
 @media (min-width: 1280px) {
     /* Tighten overall layout gaps */
     .home-github-layout {
-        gap: 1rem !important;
+        gap: var(--space-4) !important;
     }
     
     .home-main-col {
-        gap: 1rem !important;
+        gap: var(--space-4) !important;
     }
 
     .home-desktop-widgets-grid {
         display: grid !important;
         grid-template-columns: repeat(2, 1fr) !important;
-        gap: 1rem !important;
+        gap: var(--space-4) !important;
         align-items: stretch !important;
         width: 100% !important;
     }
 
     /* Make banner and active team cards more compact */
     .home-readme-panel .p-4 {
-        padding: 0.85rem 1rem !important;
+        padding: var(--space-3_5) var(--space-4) !important;
     }
 
     .home-panel--pinned-repo .p-4 {
-        padding: 0.85rem 1rem !important;
+        padding: var(--space-3_5) var(--space-4) !important;
     }
 
     /* Shortcuts Card spans full width (2 columns) */
     .home-shortcuts-sidebar-card {
         grid-column: span 2 !important;
-        padding: 0.75rem 1rem !important;
+        padding: var(--space-3) var(--space-4) !important;
     }
 
     /* Shortcuts grid uses 4 columns side-by-side on desktop */
     .home-shortcuts-sidebar-card .home-pinned-repos-grid {
         grid-template-columns: repeat(4, 1fr) !important;
-        gap: 0.5rem !important;
-        margin-top: 0.4rem !important;
+        gap: var(--space-2) !important;
+        margin-top: var(--space-1_5) !important;
     }
 
     .github-repo-card {
-        padding: 0.5rem 0.75rem !important;
+        padding: var(--space-2) var(--space-3) !important;
     }
 
     .github-repo-desc {
-        margin: 0.25rem 0 0.45rem 0 !important;
+        margin: var(--space-1) 0 var(--space-2) 0 !important;
     }
 
     /* Profile Card adjustments */
     .home-profile-sidebar-card {
-        padding: 0.75rem 1rem !important;
+        padding: var(--space-3) var(--space-4) !important;
         height: 100% !important;
         display: flex !important;
         flex-direction: column !important;
@@ -2438,14 +2441,14 @@
     }
 
     .home-profile-sidebar-card .home-profile-meta-list {
-        margin-top: 0.5rem !important;
-        padding-top: 0.5rem !important;
+        margin-top: var(--space-2) !important;
+        padding-top: var(--space-2) !important;
     }
 
     .home-profile-sidebar-card .home-profile-meta-grid {
         grid-template-columns: repeat(4, auto) !important;
         justify-content: space-between !important;
-        gap: 0.5rem !important;
+        gap: var(--space-2) !important;
     }
 
     /* Daily Guess Card adjustments */
@@ -2453,13 +2456,13 @@
         height: 100% !important;
         display: flex !important;
         align-items: center !important;
-        padding: 0.75rem 1rem !important;
+        padding: var(--space-3) var(--space-4) !important;
     }
 
     /* Favorites and Tip Box adjustments */
     .home-sidebar-section-favorites,
     .github-tip-banner {
-        padding: 0.65rem 0.85rem !important;
+        padding: var(--space-2_5) var(--space-3_5) !important;
         height: 100% !important;
     }
 
@@ -2479,14 +2482,14 @@
     .home-sidebar-section-favorites .border-b {
         border-bottom: none !important;
         padding-bottom: 0 !important;
-        margin-bottom: 0.15rem !important;
+        margin-bottom: var(--space-0_5) !important;
     }
 
     .home-sidebar-section-favorites .home-favorite-card--compact {
         background: transparent !important;
         border: 1px solid transparent !important;
         box-shadow: none !important;
-        padding: 0.25rem !important;
+        padding: var(--space-1) !important;
     }
 
     .home-sidebar-section-favorites .home-favorite-card--compact:hover {
@@ -2518,7 +2521,7 @@
     .home-sidebar .home-desktop-widgets-grid {
         display: flex !important;
         flex-direction: column !important;
-        gap: 0.75rem !important;
+        gap: var(--space-3) !important;
         flex: 0 0 auto !important;
         width: 100% !important;
     }
@@ -2550,7 +2553,7 @@
     .home-github-layout {
         display: flex !important;
         flex-direction: column !important;
-        gap: 1.25rem !important;
+        gap: var(--space-5) !important;
     }
 
     .home-main-col,
@@ -2612,7 +2615,7 @@
     /* Shortcuts as simple compact icon row on mobile */
     .home-pinned-repos-grid {
         grid-template-columns: repeat(4, 1fr) !important;
-        gap: 0.35rem !important;
+        gap: var(--space-1_5) !important;
     }
 
     .github-repo-card {
@@ -2620,15 +2623,15 @@
         align-items: center !important;
         justify-content: center !important;
         text-align: center !important;
-        padding: 0.5rem 0.25rem !important;
-        gap: 0.25rem !important;
+        padding: var(--space-2) var(--space-1) !important;
+        gap: var(--space-1) !important;
         height: auto !important;
     }
 
     .github-repo-title {
         flex-direction: column !important;
         align-items: center !important;
-        gap: 0.25rem !important;
+        gap: var(--space-1) !important;
         font-size: 0.625rem !important;
         text-align: center !important;
     }
@@ -2652,12 +2655,12 @@
 
     /* Active team card compact on mobile */
     .home-panel--pinned-repo .p-4 {
-        padding: 0.85rem !important;
+        padding: var(--space-3_5) !important;
     }
 
     .home-panel--pinned-repo .home-team-slots {
-        margin-top: 0.35rem !important;
-        gap: 0.2rem !important;
+        margin-top: var(--space-1_5) !important;
+        gap: var(--space-1) !important;
     }
 
     .home-panel--pinned-repo .home-team-slot {
@@ -2666,8 +2669,8 @@
     }
 
     .home-panel--pinned-repo .pinned-repo-footer {
-        margin-top: 0.35rem !important;
-        padding-top: 0.35rem !important;
+        margin-top: var(--space-1_5) !important;
+        padding-top: var(--space-1_5) !important;
     }
 
     .home-active-team-select-wrapper {
@@ -2676,13 +2679,13 @@
 
     .home-active-team-name-mobile {
         display: inline-block !important;
-        margin-left: 0.25rem;
+        margin-left: var(--space-1);
     }
 }
 
 @media (max-width: 640px) {
     .home-timeline-container {
-        padding-left: 1.5rem !important;
+        padding-left: var(--space-6) !important;
     }
 
     .home-timeline-container::before {

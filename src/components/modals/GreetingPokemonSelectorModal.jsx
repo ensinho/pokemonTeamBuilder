@@ -224,7 +224,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                     <div className="mb-3 flex justify-center">
                         <button
                             onClick={() => onSelect({ pokemonId: null, isShiny: false })}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised px-3 py-1 text-xs font-medium text-muted transition-colors hover:text-fg"
+                            className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised px-3 py-1 text-xs font-medium text-muted transition-colors hover:text-fg"
                         >
                             <span aria-hidden="true">✨</span>
                             {t('modals.greetingSelectorRemoveCustom')}

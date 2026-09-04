@@ -3,7 +3,7 @@
    Built on the home README/panel aesthetic.
    ============================================================ */
 
-.hd-stack { display: flex; flex-direction: column; gap: 1rem; }
+.hd-stack { display: flex; flex-direction: column; gap: var(--space-4); }
 
 /* On mobile the home columns flatten (display:contents) and order by value;
    keep the dashboard right after the greeting. */
@@ -24,7 +24,7 @@
 
 .hd-panel {
     border: 1px solid var(--color-border);
-    border-radius: 0.875rem;
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
     overflow: hidden;
 }
@@ -32,64 +32,68 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.625rem 0.875rem;
+    gap: var(--space-2);
+    padding: var(--space-2_5) var(--space-3_5);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface-raised);
 }
+/* Section title. Sentence case, not 800-weight caps at 0.08em — a panel heading
+   is a title, not a label, and it was the loudest element on a page it was only
+   meant to organise. Size goes up because losing the caps loses apparent size. */
 .hd-panel__title {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    gap: var(--space-2);
+    font-size: 0.875rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     color: var(--color-fg);
 }
 .hd-panel__title svg { width: 0.95rem; height: 0.95rem; color: var(--color-primary); }
 .hd-panel__link {
-    font-size: 0.6875rem;
-    font-weight: 700;
+    font-size: 0.8125rem;
+    font-weight: 500;
     color: var(--color-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0;
     cursor: pointer;
     background: none;
     border: none;
 }
 .hd-panel__link:hover { text-decoration: underline; }
-.hd-panel__body { padding: 0.875rem; }
+.hd-panel__body { padding: var(--space-3_5); }
 
 /* Quick access: a single compact grid of icon tiles */
 .hd-tiles {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
+/* Filled surface, no border. These tiles sit inside .hd-panel, which is already
+   bordered — drawing a second box inside the first is what makes the page read
+   as busy, and the dashed variant read as an empty-state placeholder on top of
+   that. A subtle fill against the panel's --color-surface separates them just as
+   clearly, with no extra lines. */
 .hd-tile {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    padding: 0.6rem 0.35rem;
-    border-radius: 0.75rem;
-    border: 1px dashed var(--color-border);
-    background: transparent;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-2);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--color-surface-raised);
     color: var(--color-muted);
     cursor: pointer;
-    transition: border-color 0.12s ease, color 0.12s ease, transform 0.1s ease, background 0.12s ease;
+    transition: color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
 }
 .hd-tile:hover {
-    border-style: solid;
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-    transform: translateY(-2px);
+    color: var(--color-fg);
+    background: var(--color-surface-hover);
 }
-.hd-tile__icon { display: inline-flex; color: var(--color-muted); transition: color 0.12s ease; }
-.hd-tile:hover .hd-tile__icon { color: var(--color-primary); }
+.hd-tile__icon { display: inline-flex; color: var(--color-muted); transition: color var(--duration-fast) var(--ease-smooth); }
+.hd-tile:hover .hd-tile__icon { color: var(--color-fg); }
 .hd-tile__icon svg { width: 1.25rem; height: 1.25rem; }
 .hd-tile__label {
     font-size: 0.6875rem;
@@ -101,7 +105,7 @@
 .hd-tile:hover .hd-tile__label { color: var(--color-primary); }
 
 /* Popular Pokémon row */
-.hd-popular { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.25rem; }
+.hd-popular { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
 .hd-mon {
     position: relative;
     flex: 0 0 auto;
@@ -109,13 +113,13 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.15rem;
-    padding: 0.4rem 0.25rem;
-    border-radius: 0.75rem;
+    gap: var(--space-0_5);
+    padding: var(--space-1_5) var(--space-1);
+    border-radius: var(--radius-lg);
     border: 1px solid transparent;
     background: var(--color-bg);
     cursor: pointer;
-    transition: border-color 0.12s ease, transform 0.1s ease;
+    transition: border-color var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 .hd-mon:hover { border-color: var(--color-primary); transform: translateY(-2px); }
 .hd-mon img { width: 2.75rem; height: 2.75rem; image-rendering: pixelated; }
@@ -129,35 +133,35 @@
     font-family: ui-monospace, monospace;
     color: var(--color-primary);
     background: var(--color-primary-soft);
-    border-radius: 999px;
-    padding: 0.05rem 0.3rem;
+    border-radius: var(--radius-full);
+    padding: var(--space-0_5) var(--space-1);
 }
 
 /* Tournament mini-cards */
-.hd-trn { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.625rem; }
+.hd-trn { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-2_5); }
 .hd-trn-card {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: 0.75rem;
+    gap: var(--space-2);
+    padding: var(--space-3);
     border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
     background: var(--color-bg);
     cursor: pointer;
-    transition: border-color 0.12s ease, transform 0.1s ease;
+    transition: border-color var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 .hd-trn-card:hover { border-color: var(--color-primary); transform: translateY(-2px); }
 .hd-trn-card__title { font-size: 0.8125rem; font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hd-trn-card__meta { font-size: 0.6875rem; color: var(--color-muted); display: flex; align-items: center; gap: 0.375rem; }
-.hd-trn-card__badge { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: 0.1rem 0.4rem; border-radius: 999px; background: var(--color-primary-soft); color: var(--color-primary); }
-.hd-trn-card__roster { display: flex; gap: 0.15rem; flex-wrap: wrap; }
-.hd-trn-card__roster img { width: 2rem; height: 2rem; image-rendering: pixelated; background: var(--color-surface); border-radius: 0.4rem; }
+.hd-trn-card__meta { font-size: 0.6875rem; color: var(--color-muted); display: flex; align-items: center; gap: var(--space-1_5); }
+.hd-trn-card__badge { font-size: 0.55rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; padding: var(--space-0_5) var(--space-1_5); border-radius: var(--radius-full); background: var(--color-primary-soft); color: var(--color-primary); }
+.hd-trn-card__roster { display: flex; gap: var(--space-0_5); flex-wrap: wrap; }
+.hd-trn-card__roster img { width: 2rem; height: 2rem; image-rendering: pixelated; background: var(--color-surface); border-radius: var(--radius-sm); }
 
 /* Loading skeletons — shown while tournament + Pokémon data load. Mirror the
    real layouts (popular row + tournament cards) so there's no shift on ready. */
 @keyframes hd-skel-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.85; } }
 
-.hd-skel { background: var(--color-border); border-radius: 0.5rem; animation: hd-skel-pulse 1.2s ease-in-out infinite; }
+.hd-skel { background: var(--color-border); border-radius: var(--radius-md); animation: hd-skel-pulse 1.2s ease-in-out infinite; }
 
 .hd-skel-mon {
     flex: 0 0 auto;
@@ -165,16 +169,16 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.4rem 0.25rem;
+    gap: var(--space-1);
+    padding: var(--space-1_5) var(--space-1);
 }
-.hd-skel-mon__sprite { width: 2.75rem; height: 2.75rem; border-radius: 0.6rem; }
+.hd-skel-mon__sprite { width: 2.75rem; height: 2.75rem; border-radius: var(--radius-md); }
 .hd-skel-mon__name { width: 80%; height: 0.55rem; }
 
 .hd-skel-card__title { width: 65%; height: 0.8rem; }
 .hd-skel-card__meta { width: 45%; height: 0.6rem; }
-.hd-skel-card__roster { display: flex; gap: 0.15rem; }
-.hd-skel-card__roster .hd-skel { width: 2rem; height: 2rem; border-radius: 0.4rem; }
+.hd-skel-card__roster { display: flex; gap: var(--space-0_5); }
+.hd-skel-card__roster .hd-skel { width: 2rem; height: 2rem; border-radius: var(--radius-sm); }
 
 /* Staggered entrance animation for dashboard panels */
 .hd-panel {
@@ -188,51 +192,50 @@
 .hd-core-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
 }
 
+/* Flat surface + hairline border, and that is all. These four tiles previously
+   carried five decorations doing the same job — a primary-tinted gradient, a
+   primary-tinted border, an accent rail, a shadow, and a hover lift with a
+   coloured shadow. When every tile is highlighted none of them is, and the
+   accumulated tint is what made this panel read as noisy. The accent now appears
+   only on hover, where it actually carries information. */
 .hd-core-tile {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.85rem 1rem;
-    border-radius: 0.875rem;
-    border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
-    background: linear-gradient(135deg,
-                var(--color-surface-raised),
-                color-mix(in srgb, var(--color-primary) 9%, var(--color-bg)));
+    gap: var(--space-3);
+    padding: var(--space-3_5) var(--space-4);
+    border-radius: var(--radius-lg);
+    border: none;
+    background: var(--color-surface-raised);
     color: var(--color-fg);
     text-align: left;
     cursor: pointer;
-    box-shadow: var(--elevation-1);
     overflow: hidden;
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth),
-                transform var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
-/* Accent rail down the leading edge — marks these as the primary actions */
+/* Accent rail down the leading edge — hidden at rest, it grows in on hover so
+   the pointer gets a clear target without the panel shouting at idle. */
 .hd-core-tile::before {
     content: '';
     position: absolute;
     inset: 0 auto 0 0;
-    width: 3px;
+    width: 2px;
     background: var(--color-primary);
-    opacity: 0.55;
-    transition: opacity var(--duration-fast) var(--ease-smooth),
-                width var(--duration-fast) var(--ease-smooth);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 
 .hd-core-tile:hover {
-    border-color: var(--color-primary);
-    background: linear-gradient(135deg,
-                var(--color-surface-raised),
-                var(--color-primary-soft));
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px -10px var(--color-primary-soft), var(--elevation-2);
+    background: var(--color-surface-hover);
+}
+
+.hd-core-tile:hover::before {
+    opacity: 1;
 }
 
 .hd-core-tile:hover::before {
@@ -250,13 +253,13 @@
     border-radius: 50%;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 
 .hd-core-tile:hover .hd-core-tile__icon-wrap {
     background: var(--color-primary);
     border-color: transparent;
-    color: #ffffff;
+    color: var(--color-on-primary);
     box-shadow: 0 4px 10px var(--color-primary-soft);
 }
 
@@ -267,13 +270,13 @@
 }
 
 .hd-core-tile:hover .hd-core-tile__icon {
-    color: #ffffff;
+    color: var(--color-on-primary);
 }
 
 .hd-core-tile__info {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: var(--space-0_5);
     min-width: 0;
 }
 
@@ -299,51 +302,48 @@
 }
 
 .hd-divider-title {
-    font-size: 0.65rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0;
     color: var(--color-muted);
     border-top: 1px solid var(--color-border);
-    padding-top: 1rem;
-    margin-top: 1.25rem;
-    margin-bottom: 0.75rem;
+    padding-top: var(--space-4);
+    margin-top: var(--space-5);
+    margin-bottom: var(--space-3);
 }
 
 /* Fused Tournament Meta Section Grid */
 .hd-meta-mons-grid {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
+/* Borderless fill — ten of these in a row inside an already-bordered panel was
+   ten more boxes competing with the panel that contains them. */
 .hd-meta-mon-btn {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.45rem 0.25rem;
-    background: var(--color-bg);
-    border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1);
+    background: var(--color-surface-raised);
+    border: none;
+    border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth),
-                transform var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
 .hd-meta-mon-btn:hover {
-    border-color: var(--color-primary);
-    background: var(--color-surface-raised);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    background: var(--color-surface-hover);
 }
 
+/* Selected: an inset ring rather than a border, so selecting a chip doesn't
+   change its size and shift the row. Tokenised — the old rule hardcoded a raw hex
+   and a literal rgba glow, which was wrong in five of the six themes. */
 .hd-meta-mon-btn.is-active {
-    border-color: #7c3aed !important;
-    background: rgba(124, 58, 237, 0.08) !important;
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.2) !important;
+    background: var(--color-primary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 .hd-meta-mon-icon-wrap {
@@ -371,16 +371,16 @@
     font-family: monospace;
     color: var(--color-primary);
     background: var(--color-primary-soft);
-    border-radius: 999px;
-    padding: 0.05rem 0.25rem;
+    border-radius: var(--radius-full);
+    padding: var(--space-0_5) var(--space-1);
     border: 1px solid var(--color-border);
     line-height: 1;
 }
 
 .hd-meta-mon-btn.is-active .hd-meta-mon-badge {
-    color: #7c3aed;
-    background: rgba(124, 58, 237, 0.15);
-    border-color: rgba(124, 58, 237, 0.3);
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .hd-meta-mon-name {
@@ -404,7 +404,7 @@
 .hd-meta-teams-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .hd-meta-teams-empty {
@@ -415,11 +415,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.6rem;
-    padding: 0.65rem 0.85rem;
+    gap: var(--space-2_5);
+    padding: var(--space-2_5) var(--space-3_5);
     background: var(--color-bg);
     border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth),
                 background-color var(--duration-fast) var(--ease-smooth),
@@ -435,7 +435,7 @@
 .hd-meta-team-info {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: var(--space-0_5);
     min-width: 0;
     text-align: left;
 }
@@ -453,7 +453,7 @@
 .hd-meta-team-details {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     font-size: 0.65rem;
     color: var(--color-muted);
 }
@@ -462,15 +462,15 @@
     font-size: 0.55rem;
     font-weight: 800;
     text-transform: uppercase;
-    padding: 0.05rem 0.35rem;
+    padding: var(--space-0_5) var(--space-1_5);
     background: var(--color-primary-soft);
     color: var(--color-primary);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
 }
 
 .hd-meta-team-roster {
     display: flex;
-    gap: 0.2rem;
+    gap: var(--space-1);
     flex-shrink: 0;
 }
 
@@ -503,10 +503,10 @@
 }
 
 .hd-meta-team-roster-sprite-wrap.is-highlighted {
-    border-color: #7c3aed !important;
-    background: rgba(124, 58, 237, 0.15) !important;
+    border-color: var(--color-primary) !important;
+    background: color-mix(in srgb, var(--color-primary) 15%, transparent) !important;
     transform: scale(1.15) translateY(-1px);
-    box-shadow: 0 0 8px rgba(124, 58, 237, 0.4);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
 }
 
 /* Skeleton Loaders */
@@ -514,8 +514,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.45rem 0.25rem;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1);
 }
 
 .hd-skel-mon-icon {
@@ -533,16 +533,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.6rem;
-    padding: 0.65rem 0.85rem;
+    gap: var(--space-2_5);
+    padding: var(--space-2_5) var(--space-3_5);
     border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
 }
 
 .hd-skel-team-info {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: var(--space-1);
     width: 40%;
 }
 
@@ -558,7 +558,7 @@
 
 .hd-skel-team-roster {
     display: flex;
-    gap: 0.2rem;
+    gap: var(--space-1);
     flex-shrink: 0;
 }
 
@@ -592,15 +592,15 @@
        with the label underneath, no card chrome — reads like a native launcher. */
     .hd-core-grid {
         grid-template-columns: repeat(4, 1fr);
-        gap: 0.3rem;
-        margin-bottom: 0.25rem;
+        gap: var(--space-1);
+        margin-bottom: var(--space-1);
     }
     .hd-core-tile {
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.15rem;
+        gap: var(--space-1_5);
+        padding: var(--space-1_5) var(--space-0_5);
         background: transparent;
         border-color: transparent;
         box-shadow: none;
@@ -633,11 +633,11 @@
     .hd-meta-mons-grid {
         display: flex;
         grid-template-columns: none;
-        gap: 0.5rem;
+        gap: var(--space-2);
         overflow-x: auto;
         scroll-snap-type: x proximity;
         -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.35rem;
+        padding-bottom: var(--space-1_5);
         scrollbar-width: none;
     }
     .hd-meta-mons-grid::-webkit-scrollbar {
@@ -661,7 +661,7 @@
     /* Tighter launcher: the shortcuts row is the only content in this panel on
        phones, so trim the body padding and icon chips that left it feeling airy. */
     .hd-panel__body {
-        padding: 0.7rem;
+        padding: var(--space-3);
     }
     .hd-core-tile__icon-wrap {
         width: 2.8rem;
@@ -671,7 +671,7 @@
     /* Popular mons render as a horizontal rail on mobile (see the <=767 block);
        no column grid or 6-item cap here. */
     .hd-meta-mon-btn {
-        padding: 0.5rem 0.25rem;
+        padding: var(--space-2) var(--space-1);
     }
     .hd-meta-mon-icon-wrap {
         width: 2.6rem;
@@ -687,7 +687,7 @@
 
     .hd-meta-teams-list {
         grid-template-columns: 1fr;
-        gap: 0.6rem;
+        gap: var(--space-2_5);
     }
 
     /* Mobile: stack the team meta above a full-width roster so every one of
@@ -695,12 +695,12 @@
     .hd-meta-team-row {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.6rem;
-        padding: 0.7rem 0.8rem;
+        gap: var(--space-2_5);
+        padding: var(--space-3) var(--space-3);
     }
     .hd-meta-team-roster {
         width: 100%;
-        gap: 0.3rem;
+        gap: var(--space-1);
         justify-content: space-between;
     }
     .hd-meta-team-roster-sprite-wrap {
@@ -709,7 +709,7 @@
         height: auto;
         aspect-ratio: 1 / 1;
         max-width: 3rem;
-        border-radius: 0.6rem;
+        border-radius: var(--radius-md);
     }
     .hd-meta-team-roster-sprite-wrap img {
         width: 78%;
@@ -720,14 +720,14 @@
     .hd-skel-team-row {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.6rem;
+        gap: var(--space-2_5);
     }
     .hd-skel-team-info {
         width: 100%;
     }
     .hd-skel-team-roster {
         width: 100%;
-        gap: 0.3rem;
+        gap: var(--space-1);
         justify-content: space-between;
     }
     .hd-skel-roster-icon {
@@ -736,7 +736,7 @@
         height: auto;
         aspect-ratio: 1 / 1;
         max-width: 3rem;
-        border-radius: 0.6rem;
+        border-radius: var(--radius-md);
     }
 }
 

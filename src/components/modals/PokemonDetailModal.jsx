@@ -339,14 +339,14 @@ export function PokemonDetailModal({
                                 <button
                                     type="button"
                                     onClick={() => { onClose(); navigate(`/pokedex?pokemon=${pokemon.id}`); }}
-                                    className="text-[11px] flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface-raised hover:border-primary hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="text-[11px] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-raised hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                     {t('modals.pokedexViewLocations')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => { onClose(); navigate(`/pokemon/${pokemon.id}`); }}
-                                    className="text-[11px] flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-surface-raised hover:border-primary hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="text-[11px] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-raised hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                     {t('pdetail.viewFullPage')}
                                 </button>
@@ -382,7 +382,7 @@ export function PokemonDetailModal({
                                         </summary>
                                         <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                             {neutralTypes.map((tName) => (
-                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised/40 px-2 py-0.5 text-[11px] font-semibold capitalize text-muted/70">
+                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full bg-surface-raised/40 px-2 py-0.5 text-[11px] font-semibold capitalize text-muted/70">
                                                     <img src={typeIcons[tName]} alt={tName} className="h-3.5 w-3.5 shrink-0 opacity-60" />
                                                     {tName}
                                                 </span>

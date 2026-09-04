@@ -781,7 +781,7 @@ export function PokemonDetailPanel({
                                                     </summary>
                                                     <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                                         {neutralTypes.map((tName) => (
-                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
+                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
                                                                 <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0 opacity-60" />{tName}
                                                             </span>
                                                         ))}
@@ -862,7 +862,7 @@ export function PokemonDetailPanel({
                                                         return Array.from(distinctDetails).map((detail, dIdx) => {
                                                             const IconComp = METHOD_ICON_MAP[detail.methodKey] || Compass;
                                                             return (
-                                                                <div key={`${ver.name}-${dIdx}`} className="flex flex-wrap items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-surface border border-border transition-colors">
+                                                                <div key={`${ver.name}-${dIdx}`} className="flex flex-wrap items-center justify-between gap-3 py-1.5 px-3 rounded-lg bg-surface transition-colors">
                                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                                         <span className="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider border shrink-0 text-center" style={{ borderColor: `${conf.color}55`, backgroundColor: `${conf.color}18`, color: conf.color }}>{conf.label}</span>
                                                                         <span className="flex items-center gap-1.5 text-xs text-muted truncate">

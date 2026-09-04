@@ -2,7 +2,7 @@
     width: 100%;
     max-width: 72rem;
     margin: 0 auto;
-    padding: 0.2rem 0 2rem;
+    padding: var(--space-1) 0 var(--space-8);
 }
 
 .profile-hero,
@@ -20,18 +20,18 @@
     position: relative;
     overflow: hidden;
     display: grid;
-    gap: 0.85rem;
+    gap: var(--space-3_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-xl);
     background: var(--color-surface);
-    padding: 1.15rem;
+    padding: var(--space-5);
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .profile-hero__main {
     display: flex;
     align-items: flex-start;
-    gap: 0.85rem;
+    gap: var(--space-3_5);
     min-width: 0;
 }
 
@@ -164,7 +164,7 @@
     min-width: 0;
     flex: 1;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
 }
 
 .profile-hero__eyebrow,
@@ -173,17 +173,16 @@
 .profile-overview-stat__label,
 .profile-sync-row__label {
     margin: 0;
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0;
     color: var(--color-muted);
 }
 
 .profile-hero__name-button {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: var(--space-2);
     width: fit-content;
     max-width: 100%;
     color: var(--color-fg);
@@ -210,7 +209,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
 }
 
 .profile-hero__email,
@@ -231,7 +230,7 @@
 }
 
 .profile-hero__hint {
-    margin: 0.1rem 0 0;
+    margin: var(--space-0_5) 0 0;
     max-width: 32rem;
     font-size: 0.75rem;
     line-height: 1.5;
@@ -245,7 +244,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
-    padding: 0.2rem 0.5rem;
+    padding: var(--space-1) var(--space-2);
     font-size: 0.625rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -262,7 +261,7 @@
 
 .profile-hero__side {
     display: grid;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
 }
 
 .profile-streak-card,
@@ -273,19 +272,19 @@
 }
 
 .profile-streak-card {
-    padding: 0.75rem 0.85rem;
+    padding: var(--space-3) var(--space-3_5);
 }
 
 .profile-streak-card__value-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.6rem;
-    margin-top: 0.4rem;
+    gap: var(--space-2_5);
+    margin-top: var(--space-1_5);
 }
 
 .profile-streak-card__value {
-    margin: 0.45rem 0 0;
+    margin: var(--space-2) 0 0;
     font-size: 1.75rem;
     font-weight: 800;
     letter-spacing: -0.05em;
@@ -294,7 +293,7 @@
 }
 
 .profile-streak-card__value span {
-    margin-left: 0.15rem;
+    margin-left: var(--space-0_5);
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--color-muted);
@@ -303,11 +302,11 @@
 .profile-overview-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.6rem;
+    gap: var(--space-2_5);
 }
 
 .profile-overview-stat {
-    padding: 0.7rem;
+    padding: var(--space-3);
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
@@ -317,7 +316,7 @@
 .profile-overview-stat__top {
     display: flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: var(--space-2);
 }
 
 .profile-overview-stat__icon {
@@ -333,7 +332,7 @@
 }
 
 .profile-overview-stat__value {
-    margin: 0.45rem 0 0;
+    margin: var(--space-2) 0 0;
     font-size: 1.35rem;
     font-weight: 800;
     letter-spacing: -0.03em;
@@ -341,28 +340,28 @@
 }
 
 .profile-overview-stat__hint {
-    margin: 0.15rem 0 0;
+    margin: var(--space-0_5) 0 0;
     font-size: 0.7rem;
     color: var(--color-muted);
 }
 
 .profile-layout {
     display: grid;
-    gap: 0.75rem;
-    margin-top: 0.85rem;
+    gap: var(--space-3);
+    margin-top: var(--space-3_5);
 }
 
 .profile-layout__column {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .profile-card {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 0.85rem;
+    padding: var(--space-3_5);
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
@@ -370,14 +369,14 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.7rem;
-    margin-bottom: 0.75rem;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
 }
 
 .profile-card__header-main {
     display: flex;
     min-width: 0;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
 }
 
 .profile-card__icon {
@@ -405,7 +404,7 @@
 
 .profile-card__subtitle,
 .profile-support-copy {
-    margin: 0.2rem 0 0;
+    margin: var(--space-1) 0 0;
     font-size: 0.75rem;
     line-height: 1.5;
     color: var(--color-muted);
@@ -414,18 +413,18 @@
 .profile-theme-groups {
     display: flex;
     flex-direction: column;
-    gap: 0.85rem;
+    gap: var(--space-3_5);
 }
 
+/* Sentence case — a group heading, not a klaxon. See the design-system skill. */
 .profile-theme-group__label {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    margin: 0 0 0.5rem;
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    gap: var(--space-1_5);
+    margin: 0 0 var(--space-2);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0;
     color: var(--color-muted);
 }
 
@@ -443,7 +442,7 @@
 
 .profile-theme-grid {
     display: grid;
-    gap: 0.5rem;
+    gap: var(--space-2);
     grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 
@@ -452,7 +451,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    padding: 0.7rem;
+    padding: var(--space-3);
     color: var(--color-fg);
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
@@ -473,7 +472,7 @@
 .profile-theme-card__header {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .profile-theme-card__swatch {
@@ -502,7 +501,7 @@
 }
 
 .profile-theme-card__hint {
-    margin: 0.35rem 0 0;
+    margin: var(--space-1_5) 0 0;
     font-size: 0.7rem;
     line-height: 1.45;
     color: var(--color-muted);
@@ -513,7 +512,7 @@
 .profile-avatar-actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .profile-account-row,
@@ -521,11 +520,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    padding: 0.6rem 0.7rem;
+    padding: var(--space-2_5) var(--space-3);
 }
 
 .profile-account-row__value,
@@ -536,7 +535,7 @@
 }
 
 .profile-account-row__value {
-    margin: 0.1rem 0 0;
+    margin: var(--space-0_5) 0 0;
     max-width: 16rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -546,23 +545,23 @@
 .profile-button-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .profile-button-row--tight {
-    margin-top: 0.65rem;
+    margin-top: var(--space-2_5);
 }
 
 .profile-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     min-height: 2.35rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--color-fg);
@@ -571,7 +570,7 @@
 .profile-button--primary {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
 }
 
 .profile-button--danger {
@@ -585,7 +584,7 @@
 .profile-avatar-card {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .profile-avatar-preview {
@@ -615,7 +614,7 @@
 .profile-name-editor {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     max-width: 32rem;
 }
 
@@ -625,7 +624,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface);
-    padding: 0.55rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--color-fg);
@@ -648,31 +647,31 @@
 /* Badges & Achievements Section - Clean Aesthetic Design */
 .profile-card--fullwidth {
     grid-column: 1 / -1;
-    margin-top: 1rem;
+    margin-top: var(--space-4);
 }
 
 .profile-badges-filter-bar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
+    gap: var(--space-1_5);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
     border-bottom: 1px solid color-mix(in srgb, var(--color-border) 60%, transparent);
 }
 
 .profile-badges-filter-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.75rem;
+    gap: var(--space-1_5);
+    padding: var(--space-1_5) var(--space-3);
     border-radius: var(--radius-full, 9999px);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-muted);
     font-size: 0.75rem;
     font-weight: 600;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
     cursor: pointer;
 }
 
@@ -686,15 +685,14 @@
     color: var(--color-primary);
     border-color: var(--color-primary-border, var(--color-primary));
     background: var(--color-primary-soft);
-    box-shadow: 0 0 10px rgba(var(--color-primary-rgb, 99, 102, 241), 0.1);
 }
 
 .profile-badges-filter-count {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.1rem 0.4rem;
-    border-radius: 9999px;
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-full);
     font-size: 0.65rem;
     font-weight: 700;
     background: var(--color-surface-raised);
@@ -704,7 +702,7 @@
 .profile-badges-grid {
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 0.85rem;
+    gap: var(--space-3_5);
 }
 
 @media (min-width: 640px) {
@@ -729,27 +727,32 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    gap: 0.5rem;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
+    gap: var(--space-2);
+    /* Borderless fill — these sit inside an already-bordered panel, and each
+       badge used to draw three boxes (card, icon wrap, locked pill). The only
+       line left in a badge is the dashed one that actually means "locked".
+       `backdrop-filter` was pointless behind an opaque background and costly to
+       composite; `transition: all` animated layout properties too. */
+    border: none;
+    border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    padding: 0.75rem 0.85rem;
+    padding: var(--space-3) var(--space-3_5);
     position: relative;
     overflow: hidden;
-    backdrop-filter: blur(8px);
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
 .profile-badge-card:hover {
-    border-color: var(--color-border-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.25);
+    background: var(--color-surface-hover);
 }
 
+/* Equipped: tinted fill + inset ring. The old glow used `--color-primary-rgb`,
+   which is defined nowhere — so it always fell back to a hardcoded indigo and
+   was the wrong colour in every theme. */
 .profile-badge-card.is-equipped {
-    border-color: var(--color-primary);
-    background: linear-gradient(145deg, color-mix(in srgb, var(--color-primary-soft) 40%, var(--color-surface-raised)), var(--color-surface-raised));
-    box-shadow: 0 0 0 1px var(--color-primary), 0 6px 20px -6px rgba(var(--color-primary-rgb, 99, 102, 241), 0.25);
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface-raised));
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 .profile-badge-card.is-locked {
@@ -764,7 +767,7 @@
 .profile-badge-card__top {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .profile-badge-card__icon-wrap {
@@ -774,10 +777,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
-    background: linear-gradient(145deg, var(--color-surface-raised), var(--color-surface));
-    border: 1px solid var(--color-border);
-    padding: 0.25rem;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    border: none;
+    padding: var(--space-1);
     position: relative;
     transition: transform var(--duration-fast) var(--ease-smooth);
 }
@@ -799,8 +802,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.35rem;
-    margin-bottom: 0.15rem;
+    gap: var(--space-1_5);
+    margin-bottom: var(--space-0_5);
 }
 
 .profile-badge-card__name {
@@ -818,9 +821,9 @@
 .profile-badge-tag-equipped {
     display: inline-flex;
     align-items: center;
-    gap: 0.2rem;
-    padding: 0.1rem 0.35rem;
-    border-radius: 9999px;
+    gap: var(--space-1);
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-full);
     font-size: 0.575rem;
     font-weight: 700;
     letter-spacing: 0.03em;
@@ -843,7 +846,7 @@
 }
 
 .profile-badge-progress-wrap {
-    margin: 0.15rem 0;
+    margin: var(--space-0_5) 0;
 }
 
 .profile-badge-progress-info {
@@ -853,14 +856,14 @@
     font-size: 0.6rem;
     font-weight: 700;
     color: var(--color-muted);
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--space-1);
     letter-spacing: 0.03em;
 }
 
 .profile-badge-progress-track {
     width: 100%;
     height: 3px;
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
     background: var(--color-surface);
     border: 1px solid color-mix(in srgb, var(--color-border) 70%, transparent);
     overflow: hidden;
@@ -868,9 +871,9 @@
 
 .profile-badge-progress-fill {
     height: 100%;
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
     background: var(--color-primary);
-    transition: width 0.3s ease;
+    transition: width var(--duration-slow) var(--ease-smooth);
 }
 
 .profile-badge-progress-fill.is-complete {
@@ -886,12 +889,12 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.65rem;
-    border-radius: 7px;
+    gap: var(--space-1_5);
+    padding: var(--space-1_5) var(--space-2_5);
+    border-radius: var(--radius-sm);
     font-size: 0.72rem;
     font-weight: 700;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
     cursor: pointer;
 }
 
@@ -904,8 +907,7 @@
 .profile-badge-btn--equip:hover {
     background: var(--color-primary);
     border-color: var(--color-primary);
-    color: #fff;
-    box-shadow: 0 3px 12px rgba(var(--color-primary-rgb, 99, 102, 241), 0.25);
+    color: var(--color-on-primary);
 }
 
 .profile-badge-btn--equipped {
@@ -923,10 +925,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
-    padding: 0.32rem;
-    border-radius: 7px;
+    gap: var(--space-1);
+    padding: var(--space-1_5);
+    border-radius: var(--radius-sm);
     background: color-mix(in srgb, var(--color-surface) 60%, transparent);
+    /* The one line kept in a badge — dashed here genuinely means "locked". */
     border: 1px dashed var(--color-border);
     font-size: 0.65rem;
     font-weight: 600;
@@ -943,7 +946,7 @@
 @media (min-width: 1024px) {
     .profile-hero {
         grid-template-columns: minmax(0, 1.5fr) minmax(16rem, 0.85fr);
-        padding: 1.25rem;
+        padding: var(--space-5);
     }
 
     .profile-layout {
@@ -960,12 +963,12 @@
 
 @media (max-width: 767px) {
     .profile-view {
-        padding-bottom: 1.5rem;
+        padding-bottom: var(--space-6);
     }
 
     .profile-hero {
-        padding: 0.9rem;
-        gap: 0.7rem;
+        padding: var(--space-3_5);
+        gap: var(--space-3);
     }
 
     /* Trim the technical uid on phones — it's noise on a compact profile card. */
@@ -988,7 +991,7 @@
        grid so all three tiles become direct columns of __side. */
     .profile-hero__side {
         grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 0.5rem;
+        gap: var(--space-2);
         align-items: stretch;
     }
 
@@ -998,14 +1001,14 @@
 
     .profile-streak-card,
     .profile-overview-stat {
-        padding: 0.6rem 0.55rem;
+        padding: var(--space-2_5) var(--space-2);
     }
 
     .profile-streak-card__value-row {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.3rem;
-        margin-top: 0.3rem;
+        gap: var(--space-1);
+        margin-top: var(--space-1);
     }
 
     .profile-streak-card__value {
@@ -1013,7 +1016,7 @@
     }
 
     .profile-streak-card .profile-pill {
-        padding: 0.12rem 0.35rem;
+        padding: var(--space-0_5) var(--space-1_5);
         font-size: 0.5rem;
         letter-spacing: 0.03em;
     }
@@ -1024,7 +1027,7 @@
     }
 
     .profile-overview-stat__value {
-        margin-top: 0.35rem;
+        margin-top: var(--space-1_5);
         font-size: 1.3rem;
     }
 

@@ -642,7 +642,7 @@ export function DamageCalculatorView() {
                     <span className="text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5" style={{ color: accent }}>
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />
                         {side === 'p1' ? 'Pokémon 1' : 'Pokémon 2'}
-                        {pState.isMega && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surface-raised text-muted border border-border">MEGA</span>}
+                        {pState.isMega && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surface-raised text-muted">MEGA</span>}
                     </span>
                     <div className="flex gap-1">{(pState.types || []).map(tp => <TypeBadge key={tp} type={tp} />)}</div>
                 </div>
@@ -761,7 +761,7 @@ export function DamageCalculatorView() {
                                     />
                                 </div>
                                 {m.name && m.power > 0 && (
-                                    <span className="text-[9px] font-extrabold uppercase px-1.5 py-1 rounded bg-surface-raised border border-border text-muted font-mono leading-none shrink-0">{m.power}</span>
+                                    <span className="text-[9px] font-extrabold uppercase px-1.5 py-1 rounded bg-surface-raised text-muted font-mono leading-none shrink-0">{m.power}</span>
                                 )}
                                 {m.name && <TypeBadge type={getEffectiveMoveType(m.type, pState.ability, m.name)} />}
                             </div>

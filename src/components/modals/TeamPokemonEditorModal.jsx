@@ -507,7 +507,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     <button
                                         type="button"
                                         onClick={() => { onClose(); navigate(fmtId ? `/meta/${pokemon.id}?fmt=${fmtId}` : `/meta/${pokemon.id}`, { state: linkState }); }}
-                                        className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2.5 py-1 text-[11px] font-semibold text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8"
+                                        className="inline-flex items-center gap-1 rounded-lg bg-surface-raised px-2.5 py-1 text-[11px] font-semibold text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8"
                                     >
                                         <TrendingUp className="h-3.5 w-3.5" /> {pt ? 'Página completa' : 'Full usage page'} <ArrowUpRight className="h-3 w-3" />
                                     </button>

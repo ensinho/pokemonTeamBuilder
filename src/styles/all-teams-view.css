@@ -1,7 +1,7 @@
 .all-teams-view {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: var(--space-5);
 }
 
 .all-teams-view__header {
@@ -9,16 +9,16 @@
     flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem 1.25rem;
+    gap: var(--space-3) var(--space-5);
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.85rem;
+    padding-bottom: var(--space-3_5);
 }
 
 .all-teams-view__heading-row {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .all-teams-view__title {
@@ -36,7 +36,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem 0.45rem;
+    gap: var(--space-1_5) var(--space-2);
 }
 
 .all-teams-view__summary,
@@ -47,10 +47,10 @@
 .all-teams-view__toolbar {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
-    gap: 0.75rem;
+    gap: var(--space-3);
     align-items: end;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+    margin-top: var(--space-4);
+    margin-bottom: var(--space-4);
 }
 
 .all-teams-view__search-control {
@@ -60,12 +60,12 @@
 .all-teams-view__grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .all-teams-view__card {
     min-height: 100%;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
@@ -99,7 +99,7 @@
 .all-teams-view__card-head {
     display: flex;
     align-items: flex-start;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     justify-content: space-between;
 }
 
@@ -122,14 +122,14 @@
 .all-teams-view__status {
     border: 1px solid var(--color-accent);
     background: var(--color-accent-soft);
-    padding: 0.18rem 0.45rem;
+    padding: var(--space-0_5) var(--space-2);
     color: var(--color-accent);
 }
 
 .all-teams-view__meta-pill {
     border: 1px solid var(--color-border);
     background: var(--color-bg);
-    padding: 0.16rem 0.4rem;
+    padding: var(--space-0_5) var(--space-1_5);
     color: var(--color-muted);
 }
 
@@ -141,7 +141,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-bg);
-    padding: 0.75rem;
+    padding: var(--space-3);
     min-height: 5rem;
 }
 
@@ -170,16 +170,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    padding-top: 0.85rem;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+    padding-top: var(--space-3_5);
     border-top: 1px solid var(--color-border);
     width: 100%;
 }
 
 .all-teams-view__empty {
     align-items: flex-start;
-    gap: 0.55rem;
+    gap: var(--space-2);
 }
 
 .all-teams-view__empty-copy {
@@ -202,11 +202,11 @@
 @media (max-width: 640px) {
     /* Compact the whole view on phones: trim outer gaps + panel padding. */
     .all-teams-view {
-        gap: 0.85rem;
+        gap: var(--space-3_5);
     }
 
     .all-teams-view__panel {
-        padding: 1rem !important;
+        padding: var(--space-4) !important;
     }
 
     /* Drop secondary chrome that only adds height on a phone: the subtitle,
@@ -220,36 +220,36 @@
     }
 
     .all-teams-view__header {
-        gap: 0.35rem 0.75rem;
-        padding-bottom: 0.65rem;
+        gap: var(--space-1_5) var(--space-3);
+        padding-bottom: var(--space-2_5);
     }
 
     .all-teams-view__toolbar {
-        margin-top: 0.85rem;
-        margin-bottom: 0.85rem;
+        margin-top: var(--space-3_5);
+        margin-bottom: var(--space-3_5);
     }
 
     .all-teams-view__card-head {
-        gap: 0.45rem;
+        gap: var(--space-2);
     }
 
     /* Shorter sprite preview so the card reads at a glance. */
     .all-teams-view__preview {
         min-height: 3.5rem;
-        padding: 0.55rem;
+        padding: var(--space-2);
     }
 
     /* Actions as two balanced rows of full-width icon buttons — thumb-friendly,
        no wrapping into ragged lines. */
     .all-teams-view__actions {
-        gap: 0.5rem;
-        margin-top: 0.75rem;
-        padding-top: 0.7rem;
+        gap: var(--space-2);
+        margin-top: var(--space-3);
+        padding-top: var(--space-3);
     }
 
     .all-teams-view__actions > .flex {
         flex: 1;
-        gap: 0.4rem;
+        gap: var(--space-1_5);
     }
 
     .all-teams-view__actions > .flex > .btn {
@@ -274,7 +274,7 @@
 .all-teams-view__list-item {
     display: flex;
     align-items: center;
-    padding: 0.7rem 1rem;
+    padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--color-border);
     transition: background-color var(--duration-fast) var(--ease-smooth);
 }
@@ -291,7 +291,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-right: 0.85rem;
+    margin-right: var(--space-3_5);
     align-self: stretch;
     width: 1.25rem;
 }
@@ -302,7 +302,7 @@
     font-weight: 600;
     color: var(--color-muted);
     line-height: 1;
-    margin-bottom: 0.25rem;
+    margin-bottom: var(--space-1);
     opacity: 0.5;
 }
 
@@ -321,7 +321,7 @@
     display: flex;
     flex: 1;
     align-items: center;
-    gap: 1.25rem;
+    gap: var(--space-5);
     min-width: 0;
 }
 
@@ -355,7 +355,7 @@
 .all-teams-view__list-item-sprites {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     flex-wrap: wrap;
 }
 
@@ -388,7 +388,7 @@
 .all-teams-view__list-item-actions {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     flex-shrink: 0;
     margin-left: auto;
 }
@@ -403,7 +403,7 @@
     .all-teams-view__list-item-main {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.65rem;
+        gap: var(--space-2_5);
     }
 
     .all-teams-view__list-item-info {
@@ -416,14 +416,14 @@
     .all-teams-view__list-item {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.75rem;
+        gap: var(--space-3);
     }
 
     .all-teams-view__list-item-actions {
         width: 100%;
         justify-content: flex-start;
         border-top: 1px solid var(--color-border);
-        padding-top: 0.6rem;
+        padding-top: var(--space-2_5);
         margin-left: 0;
     }
 

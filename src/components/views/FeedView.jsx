@@ -737,7 +737,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         type="button"
                                                         onClick={() => handleStartReply(message)}
                                                         title={language === 'pt' ? 'Responder' : 'Reply'}
-                                                        className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-muted transition-colors hover:text-fg"
+                                                        className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-muted transition-colors hover:text-fg"
                                                     >
                                                         <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
                                                         <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
@@ -756,7 +756,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setConfirmingDeleteId(null)}
-                                                                    className="rounded-full border border-border bg-surface-raised px-2 py-0.5 text-muted transition-colors hover:text-fg"
+                                                                    className="rounded-full bg-surface-raised px-2 py-0.5 text-muted transition-colors hover:text-fg"
                                                                 >
                                                                     {t('common.cancel')}
                                                                 </button>

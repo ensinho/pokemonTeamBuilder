@@ -184,7 +184,7 @@ export function PokemonUsageView() {
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all hover:border-primary active:scale-95">
+                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all active:scale-95">
                                 <BookOpen className="h-3.5 w-3.5" /> {pt ? 'Ficha completa' : 'Full Pokédex entry'}
                             </Link>
                             {format && <span className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-[11px] font-semibold text-muted">{format.label}{format.cutoff ? ` · ${format.cutoff}+` : ''}</span>}
@@ -342,17 +342,17 @@ export function PokemonUsageView() {
                                     </div>
                                     <div className="mb-3 flex flex-wrap gap-1.5 text-[11px]">
                                         {set.item && (
-                                            <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                            <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                                 <img src={itemSpriteUrl(slugify(set.item))} alt="" className="h-4 w-4 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                                 {pretty(set.item)}
                                             </button>
                                         )}
                                         {set.ability && (
-                                            <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
+                                            <button type="button" onClick={(e) => goToAbility(set.ability, e)} className="rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                                 {pretty(set.ability)}
                                             </button>
                                         )}
-                                        {set.nature && <span className="rounded-md border border-border bg-surface-raised px-1.5 py-0.5 text-fg">{set.nature}</span>}
+                                        {set.nature && <span className="rounded-md bg-surface-raised px-1.5 py-0.5 text-fg">{set.nature}</span>}
                                         {set.tera?.length > 0 && (
                                             <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-semibold" style={{ color: typeColors[set.tera[0]?.toLowerCase()] || 'var(--color-primary)', backgroundColor: `${typeColors[set.tera[0]?.toLowerCase()] || '#888'}1f` }}>
                                                 <Sparkles className="h-3 w-3 shrink-0" /> {pt ? 'Tera' : 'Tera'} {set.tera[0]}

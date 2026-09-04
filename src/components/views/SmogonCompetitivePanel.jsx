@@ -18,7 +18,7 @@ const pretty = (slug = '') => String(slug).replace(/-/g, ' ');
 function MetaPill({ icon, label, value, style, onClick }) {
     if (!value) return null;
     return (
-        <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-raised px-2.5 py-1 text-xs font-semibold text-fg" style={style}>
+        <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-raised px-2.5 py-1 text-xs font-semibold text-fg" style={style}>
             {icon}
             <span className="text-[10px] uppercase tracking-[0.06em] text-muted">{label}</span>
             {onClick
@@ -62,7 +62,7 @@ function LiveUsageBlock({ pokemonId }) {
                     <span className="font-bold text-fg">{usage.usage}%</span>
                     <span className="text-muted">{pt ? 'uso' : 'usage'}</span>
                     {rank && <span className="rounded bg-surface-raised px-1.5 py-0.5 font-bold text-muted">#{rank}</span>}
-                    <Link to={`/meta/${pokemonId}`} state={linkState} className="inline-flex items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 font-semibold text-fg transition-colors hover:border-primary hover:text-primary">
+                    <Link to={`/meta/${pokemonId}`} state={linkState} className="inline-flex items-center gap-1 rounded-lg bg-surface-raised px-2 py-1 font-semibold text-fg transition-colors hover:text-primary">
                         {pt ? 'Ver tudo' : 'Full breakdown'} <ArrowUpRight className="w-3 h-3" />
                     </Link>
                 </div>
@@ -112,7 +112,7 @@ function LiveUsageBlock({ pokemonId }) {
                             key={ab.name}
                             type="button"
                             onClick={(e) => goToAbility(ab.name, e)}
-                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg border border-border bg-surface-raised px-2 py-1 text-[11px] font-semibold capitalize text-fg transition-colors hover:border-primary hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-surface-raised px-2 py-1 text-[11px] font-semibold capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             <Zap className="w-3 h-3 text-accent" /> {pretty(ab.name)} <span className="text-muted">{pctOf(ab.count, n)}%</span>
                         </button>
@@ -265,7 +265,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
 
                                     <div className="flex flex-wrap gap-1.5">
                                         {set.item && (
-                                            <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-raised px-2.5 py-1 text-xs font-semibold text-fg">
+                                            <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-raised px-2.5 py-1 text-xs font-semibold text-fg">
                                                 <img src={itemSpriteUrl(set.item)} alt="" className="w-4 h-4 image-pixelated" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                                                 <button type="button" onClick={(e) => goToItem(set.item, e)} className="capitalize transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">
                                                     {pretty(set.item)}
@@ -293,7 +293,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
 
                                     <div className="flex flex-wrap gap-1.5">
                                         {set.moves.map((slot, j) => (
-                                            <span key={j} className="inline-flex items-center gap-1 rounded-md border border-border bg-surface-raised px-2 py-1 text-xs font-semibold capitalize text-fg">
+                                            <span key={j} className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-2 py-1 text-xs font-semibold capitalize text-fg">
                                                 <Swords className="w-3 h-3 text-muted" />
                                                 {slot.map((mv, k) => (
                                                     <React.Fragment key={mv}>

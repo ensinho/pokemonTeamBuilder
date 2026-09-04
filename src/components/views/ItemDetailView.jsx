@@ -82,11 +82,11 @@ export function ItemDetailView() {
                         </h1>
                         {data.effect && <p className="edv-lead">{data.effect}</p>}
                         <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold">
-                            <span className="rounded-md border border-border bg-surface-raised px-2 py-0.5 text-fg">
+                            <span className="rounded-md bg-surface-raised px-2 py-0.5 text-fg">
                                 <span className="text-muted">{t('db.colCost')}:</span> {data.cost > 0 ? data.cost : '—'}
                             </span>
                             {data.flingPower != null && (
-                                <span className="rounded-md border border-border bg-surface-raised px-2 py-0.5 text-fg">
+                                <span className="rounded-md bg-surface-raised px-2 py-0.5 text-fg">
                                     <span className="text-muted">{t('db.flingPower')}:</span> {data.flingPower}
                                 </span>
                             )}

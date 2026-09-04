@@ -31,18 +31,18 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .team-builder-panel__header--compact {
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
 }
 
 .team-builder-current-head {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .team-builder-panel__eyebrow,
@@ -56,7 +56,7 @@
 }
 
 .team-builder-panel__title {
-    margin: 0.25rem 0 0;
+    margin: var(--space-1) 0 0;
     font-size: 1.1rem;
     font-weight: 700;
     letter-spacing: -0.02em;
@@ -73,7 +73,7 @@
 }
 
 .team-builder-panel__copy {
-    margin: 0.5rem 0 0;
+    margin: var(--space-2) 0 0;
     max-width: 20rem;
     font-size: 0.8125rem;
     line-height: 1.5;
@@ -87,7 +87,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
-    padding: 0.3rem 0.55rem;
+    padding: var(--space-1) var(--space-2);
     font-size: 0.675rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -96,7 +96,7 @@
 }
 
 .team-builder-panel__meta--compact {
-    padding: 0.25rem 0.5rem;
+    padding: var(--space-1) var(--space-2);
     font-size: 0.625rem;
 }
 
@@ -104,11 +104,11 @@
     display: flex;
     min-width: 0;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
 }
 
 .team-builder-control--compact {
-    gap: 0.25rem;
+    gap: var(--space-1);
 }
 
 .team-builder-control__label--compact {
@@ -124,7 +124,7 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-fg);
-    padding: 0.55rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
     box-sizing: border-box;
     transition: border-color var(--duration-fast) var(--ease-smooth),
         box-shadow var(--duration-fast) var(--ease-smooth),
@@ -134,7 +134,7 @@
 .team-builder-field--compact {
     border-radius: var(--radius-md);
     height: 2.15rem;
-    padding: 0 0.65rem;
+    padding: 0 var(--space-2_5);
     font-size: 0.8125rem;
 }
 
@@ -144,14 +144,14 @@
     background-repeat: no-repeat;
     background-position: right 0.65rem center;
     background-size: 0.875rem;
-    padding-right: 2rem !important;
+    padding-right: var(--space-8) !important;
 }
 
 .team-builder-toggle {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
@@ -160,9 +160,9 @@
 .team-builder-toggle--compact {
     min-height: 2.15rem;
     height: 2.15rem;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     border-radius: var(--radius-md);
-    padding: 0 0.65rem;
+    padding: 0 var(--space-2_5);
     font-size: 0.8125rem;
 }
 
@@ -196,13 +196,13 @@
 .team-builder-slots {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     min-height: 10rem;
-    margin-top: 0.4rem;
+    margin-top: var(--space-1_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-bg);
-    padding: 0.55rem;
+    padding: var(--space-2);
 }
 
 .team-builder-slot {
@@ -212,10 +212,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.2rem;
+    gap: var(--space-1);
     border: 1px solid transparent;
     border-radius: var(--radius-md);
-    padding: 0.35rem 0.25rem;
+    padding: var(--space-1_5) var(--space-1);
     text-align: center;
     background: transparent;
 }
@@ -229,9 +229,14 @@
 }
 
 .team-builder-recent-card:hover,
-.team-builder-mobile-card:hover,
 .team-builder-mobile__recent-card:hover {
     border-color: var(--color-border-hover);
+}
+
+/* This one is borderless (see .team-builder-mobile-card), so hover has to land
+   on the fill rather than a border that is no longer there. */
+.team-builder-mobile-card:hover {
+    background: var(--color-surface-hover);
 }
 
 .team-builder-recent-card:hover .team-builder-icon-button:not(.team-builder-icon-button--danger):not(.team-builder-icon-button--accent) {
@@ -317,22 +322,22 @@
 .team-builder-action-row,
 .team-builder-recent-card__actions {
     display: flex;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .team-builder-action-row {
-    margin-top: 0.75rem;
+    margin-top: var(--space-3);
 }
 
 .team-builder-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0.5rem 0.75rem;
+    padding: var(--space-2) var(--space-3);
     font-size: 0.8125rem;
     font-weight: 500;
     color: var(--color-fg);
@@ -346,7 +351,7 @@
 .team-builder-icon-button--primary {
     border-color: var(--color-primary);
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
 }
 
 .team-builder-button--primary:hover,
@@ -355,21 +360,21 @@
 }
 
 .team-builder-button--inline {
-    padding: 0.4rem 0.65rem;
+    padding: var(--space-1_5) var(--space-2_5);
     font-size: 0.75rem;
     color: var(--color-primary);
 }
 
 .team-builder-button--inline-compact {
-    padding: 0.3rem 0.5rem;
+    padding: var(--space-1) var(--space-2);
     font-size: 0.7rem;
 }
 
 .team-builder-button--small {
     min-height: 1.85rem;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     border-radius: var(--radius-md);
-    padding: 0.35rem 0.55rem;
+    padding: var(--space-1_5) var(--space-2);
     font-size: 0.7rem;
 }
 
@@ -404,16 +409,16 @@
     display: flex;
     max-height: 24rem;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
     overflow-y: auto;
-    padding-right: 0.2rem;
+    padding-right: var(--space-1);
 }
 
 .team-builder-recent-list--wide {
     display: grid;
     max-height: none;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.5rem;
+    gap: var(--space-2);
     overflow: visible;
     padding-right: 0;
 }
@@ -423,7 +428,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    padding: 0.75rem;
+    padding: var(--space-3);
 }
 
 .team-builder-recent-card--wide {
@@ -432,13 +437,13 @@
     min-height: 100%;
     flex-direction: column;
     border-radius: var(--radius-lg);
-    padding: 0.6rem;
+    padding: var(--space-2_5);
 }
 
 .team-builder-recent-card__main {
     display: flex;
     align-items: flex-start;
-    gap: 0.45rem;
+    gap: var(--space-2);
 }
 
 .team-builder-recent-card__title {
@@ -452,17 +457,17 @@
 }
 
 .team-builder-recent-card__actions {
-    gap: 0.35rem;
-    margin-top: 0.6rem;
+    gap: var(--space-1_5);
+    margin-top: var(--space-2_5);
 }
 
 .team-builder-recent-card--wide .team-builder-recent-card__actions {
     margin-top: auto;
-    padding-top: 0.6rem;
+    padding-top: var(--space-2_5);
 }
 
 .team-builder-recent-card--wide .team-builder-sprite-stack {
-    margin-top: 0.35rem;
+    margin-top: var(--space-1_5);
 }
 
 .team-builder-sprite-stack {
@@ -485,28 +490,28 @@
 
 .team-builder-filter-layout {
     display: grid;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     grid-template-columns: minmax(0, 1.35fr) minmax(160px, 0.85fr) minmax(160px, 0.85fr);
 }
 
 .team-builder-filter-layout--compact {
-    gap: 0.5rem;
+    gap: var(--space-2);
     grid-template-columns: minmax(0, 1.55fr) minmax(140px, 0.72fr) minmax(150px, 0.82fr);
 }
 
 .team-builder-panel__header--picker {
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .team-builder-picker-heading-row {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
-    margin-top: 0.25rem;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
 }
 
 .team-builder-picker-heading-row--compact {
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     margin-top: 0;
 }
 
@@ -515,9 +520,9 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.55rem 0.7rem;
+    gap: var(--space-2) var(--space-3);
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.55rem;
+    padding-bottom: var(--space-2);
 }
 
 .team-builder-picker-toolbar--compact {
@@ -530,7 +535,7 @@
     flex: 1;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.4rem 0.55rem;
+    gap: var(--space-1_5) var(--space-2);
 }
 
 .team-builder-picker-summary {
@@ -542,7 +547,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0 0.7rem;
+    padding: 0 var(--space-3);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -579,7 +584,7 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
-    padding: 0 0.2rem;
+    padding: 0 var(--space-1);
     scrollbar-gutter: stable;
 }
 
@@ -611,14 +616,14 @@
 .team-builder-type-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.35rem;
+    gap: var(--space-1_5);
 }
 
 .team-builder-type-grid--compact {
     display: flex;
     flex: 1;
     flex-wrap: wrap;
-    gap: 0.25rem;
+    gap: var(--space-1);
 }
 
 .team-builder-type-button {
@@ -628,13 +633,13 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    padding: 0.35rem;
+    padding: var(--space-1_5);
 }
 
 .team-builder-type-button--compact {
     width: 1.85rem;
     height: 1.85rem;
-    padding: 0.3rem;
+    padding: var(--space-1);
 }
 
 .team-builder-type-button.is-active {
@@ -644,14 +649,14 @@
 
 .team-builder-analysis-grid {
     display: grid;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .team-builder-analysis-card {
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    padding: 0.7rem;
+    padding: var(--space-3);
 
     animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
@@ -673,7 +678,7 @@
 }
 
 .team-builder-analysis-card__title {
-    margin: 0 0 0.55rem;
+    margin: 0 0 var(--space-2);
     font-size: 0.675rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -701,7 +706,7 @@
 .team-builder-header-input {
     border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
-    padding: 0.3rem 0.55rem;
+    padding: var(--space-1) var(--space-2);
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-fg);
@@ -722,7 +727,7 @@
 }
 
 .team-builder-empty-note {
-    padding: 0.75rem;
+    padding: var(--space-3);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-muted);
@@ -735,32 +740,32 @@
     margin: 0 -1rem;
     border-bottom: 1px solid var(--color-border);
     background: var(--color-bg);
-    padding: 0.6rem 0.85rem 0.75rem;
+    padding: var(--space-2_5) var(--space-3_5) var(--space-3);
     backdrop-filter: blur(12px);
 }
 
 .team-builder-mobile__composer {
     box-shadow: var(--elevation-2);
     /* Tighter top so the name row sits closer to the card edge. */
-    padding-top: 0.7rem;
+    padding-top: var(--space-3);
 }
 
 /* Slightly shorter team-name input than the shared field default. */
 .team-builder-mobile__composer-top .team-builder-field {
-    padding-top: 0.4rem;
-    padding-bottom: 0.4rem;
+    padding-top: var(--space-1_5);
+    padding-bottom: var(--space-1_5);
 }
 
 .team-builder-mobile__composer-row {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
 }
 
 .team-builder-mobile__slots {
     display: grid;
     grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.3rem;
+    gap: var(--space-1);
 }
 
 /* Compact search-and-filter bar: search always visible, the rest of the
@@ -768,7 +773,7 @@
 .team-builder-mobile__filter-bar {
     display: flex;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .team-builder-mobile__search {
@@ -789,7 +794,7 @@
 }
 
 .team-builder-mobile__search-field {
-    padding-left: 2.15rem;
+    padding-left: var(--space-8);
 }
 
 .team-builder-mobile__filter-toggle {
@@ -797,8 +802,8 @@
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0 0.7rem;
+    gap: var(--space-1);
+    padding: 0 var(--space-3);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
@@ -827,10 +832,10 @@
     justify-content: center;
     min-width: 1.05rem;
     height: 1.05rem;
-    padding: 0 0.25rem;
-    border-radius: 999px;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-full);
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     font-size: 0.625rem;
     font-weight: 800;
     line-height: 1;
@@ -838,7 +843,7 @@
 
 .team-builder-mobile__filters {
     display: grid;
-    gap: 0.55rem;
+    gap: var(--space-2);
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -849,7 +854,7 @@
 .team-builder-mobile__filter-group {
     display: flex;
     align-items: stretch;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     width: 100%;
 }
 
@@ -868,36 +873,37 @@
     justify-content: center;
 }
 
+/* Filled, borderless. The results grid renders 75+ of these inside an already
+   bordered panel — that was 75 boxes drawn inside one box. Fill separates them
+   from the panel without adding a single line. */
 .team-builder-mobile-card {
     position: relative;
     overflow: hidden;
-    border: 1px solid var(--color-border);
+    border: none;
     border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    padding: 0.4rem 0.4rem 0.45rem;
+    background: var(--color-surface-raised);
+    padding: var(--space-1_5) var(--space-1_5) var(--space-2);
     text-align: left;
 }
 
+/* Suggested: tinted fill plus an inset ring. A real border would resize the card
+   and reflow the grid every time the suggestion set changes. */
 .team-builder-mobile-card.is-suggested {
-    border-color: color-mix(in srgb, var(--color-success) 24%, var(--color-border));
-    background: color-mix(in srgb, var(--color-success) 4%, var(--color-surface));
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface-raised));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-success) 35%, transparent);
 }
 
-/* ── Mobile synergy-pick card ──────────────────────────────────────── */
+/* ── Mobile synergy-pick card ──────────────────────────────────────────
+   A quiet tint plus an inset ring. This previously drew a gradient border and
+   ran an infinite pulsing glow — on a full results grid that meant ~50 cards
+   pulsing at once, which reads as an alarm rather than a recommendation (and
+   animates 50 shadows forever). The corner icon already says "synergy pick";
+   the card only has to agree with it, not shout. */
 .team-builder-mobile-card.is-synergy {
     --synergy-color: var(--color-primary);
     overflow: visible;
-    background:
-        linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
-        linear-gradient(135deg, var(--synergy-color), color-mix(in srgb, var(--synergy-color) 60%, #fff)) border-box;
-    border: 1.5px solid transparent;
-    box-shadow: 0 0 8px -2px color-mix(in srgb, var(--synergy-color) 35%, transparent);
-    animation: synergy-pulse-m 2.6s ease-in-out infinite alternate;
-}
-
-@keyframes synergy-pulse-m {
-    0%   { box-shadow: 0 0  6px -2px color-mix(in srgb, var(--synergy-color) 30%, transparent); }
-    100% { box-shadow: 0 0 14px -1px color-mix(in srgb, var(--synergy-color) 50%, transparent); }
+    background: color-mix(in srgb, var(--synergy-color) 8%, var(--color-surface-raised));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--synergy-color) 40%, transparent);
 }
 
 .team-builder-mobile-card__reason-icon {
@@ -912,7 +918,7 @@
     height: 1.15rem;
     border-radius: 50%;
     background: var(--synergy-color);
-    color: #fff;
+    color: var(--color-on-primary);
     box-shadow: 0 0 0 2px var(--color-surface);
 }
 
@@ -924,7 +930,7 @@
 .team-builder-mobile-card__reason-label {
     display: block;
     width: 100%;
-    margin-top: 0.05rem;
+    margin-top: var(--space-0_5);
     font-size: 0.45rem;
     font-weight: 700;
     text-transform: capitalize;
@@ -942,7 +948,7 @@
     border-radius: var(--radius-sm);
     border: 1px solid color-mix(in srgb, var(--color-success) 20%, var(--color-border));
     background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
-    padding: 0.15rem 0.35rem;
+    padding: var(--space-0_5) var(--space-1_5);
     font-size: 0.475rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -957,7 +963,7 @@
     border: 1px solid var(--color-border);
     border-radius: 50%;
     background: var(--color-surface-raised);
-    padding: 0.3rem;
+    padding: var(--space-1);
     color: var(--color-muted);
 }
 
@@ -968,10 +974,10 @@
 }
 
 .team-builder-mobile-card__media {
-    margin-top: 0.1rem;
+    margin-top: var(--space-0_5);
     border-radius: var(--radius-md);
     background: color-mix(in srgb, var(--color-bg) 55%, transparent);
-    padding: 0.12rem;
+    padding: var(--space-0_5);
 }
 
 .team-builder-mobile-card__name {
@@ -1016,7 +1022,7 @@
     border: 1px solid var(--color-danger);
     border-radius: 50%;
     background: var(--color-danger);
-    color: #ffffff;
+    color: var(--color-on-primary);
 }
 
 .team-builder-mobile__recent-card {
@@ -1070,7 +1076,7 @@
    ============================================================ */
 .team-builder-unified-toolbar {
     display: flex;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     width: 100%;
     background: transparent;
     border-radius: 0;
@@ -1084,7 +1090,7 @@
 .team-builder-filterbar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     flex-wrap: wrap;
 }
 
@@ -1187,8 +1193,8 @@
 }
 
 .team-builder-search-input {
-    padding-left: 1.85rem !important;
-    padding-right: 1.85rem !important;
+    padding-left: var(--space-8) !important;
+    padding-right: var(--space-8) !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -1212,7 +1218,7 @@
     cursor: pointer;
     display: flex;
     align-items: center;
-    padding: 2px;
+    padding: var(--space-0_5);
     border-radius: var(--radius-sm);
     transition: color var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth);
 }
@@ -1294,20 +1300,20 @@
 /* Horizontally Scrollable Type Filter Row */
 .pokedex-mobile-types-container {
     width: auto;
-    margin: 0.25rem -0.875rem 0;
-    padding: 0 0.875rem;
+    margin: var(--space-1) -0.875rem 0;
+    padding: 0 var(--space-3_5);
     overflow: hidden;
 }
 
 .pokedex-mobile-types {
     display: flex;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     /* Firefox */
-    padding: 0.35rem 0.25rem;
+    padding: var(--space-1_5) var(--space-1);
 }
 
 .pokedex-mobile-types::-webkit-scrollbar {
@@ -1318,13 +1324,13 @@
 .pokedex-mobile-type-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     border: 1px solid var(--color-border);
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
     background: var(--color-surface-raised);
-    padding: 0.35rem 0.65rem;
+    padding: var(--space-1_5) var(--space-2_5);
     color: var(--color-fg);
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
     flex-shrink: 0;
     cursor: pointer;
 }
@@ -1332,7 +1338,7 @@
 .pokedex-mobile-type-badge.is-active {
     background: var(--type-color, var(--color-primary)) !important;
     border-color: var(--type-color, var(--color-primary)) !important;
-    color: #ffffff !important;
+    color: var(--color-on-primary) !important;
     box-shadow: 0 2px 8px color-mix(in srgb, var(--type-color) 40%, transparent);
 }
 
@@ -1344,7 +1350,7 @@
 .pokedex-sprites-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.65rem;
+    gap: var(--space-2_5);
 }
 
 @media (min-width: 480px) {
@@ -1357,7 +1363,7 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: 0.65rem;
+    padding: var(--space-2_5);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1375,25 +1381,25 @@
 
     .pokedex-moves-table th,
     .pokedex-moves-table td {
-        padding: 0.45rem 0.25rem !important;
+        padding: var(--space-2) var(--space-1) !important;
         font-size: 0.72rem !important;
     }
 
     .pokedex-moves-table th:first-child,
     .pokedex-moves-table td:first-child {
-        padding-left: 0.45rem !important;
+        padding-left: var(--space-2) !important;
     }
 
     .pokedex-moves-table th:last-child,
     .pokedex-moves-table td:last-child {
-        padding-right: 0.45rem !important;
+        padding-right: var(--space-2) !important;
     }
 }
 
 /* Mobile results panel details */
 @media (max-width: 1023px) {
     .team-builder-panel--picker {
-        padding: 0.65rem 0.55rem !important;
+        padding: var(--space-2_5) var(--space-2) !important;
     }
 
     .team-builder-results {
@@ -1403,28 +1409,28 @@
     .pokedex-mobile-picker-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-        gap: 0.45rem !important;
-        padding: 0.45rem 0.1rem 2.5rem !important;
+        gap: var(--space-2) !important;
+        padding: var(--space-2) var(--space-0_5) var(--space-10) !important;
     }
 }
 
 @media (min-width: 480px) and (max-width: 767px) {
     .pokedex-mobile-picker-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-        gap: 0.55rem !important;
+        gap: var(--space-2) !important;
     }
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
     .pokedex-mobile-picker-grid {
         grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-        gap: 0.65rem !important;
+        gap: var(--space-2_5) !important;
     }
 }
 
 .pokedex-mobile-filters {
     display: grid;
-    gap: 0.5rem;
+    gap: var(--space-2);
     grid-template-columns: repeat(2, minmax(0, 1fr));
     width: 100%;
 }
@@ -1437,7 +1443,7 @@
 .pokedex-mobile-filterbar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     width: 100%;
 }
 
@@ -1485,10 +1491,10 @@
     justify-content: center;
     min-width: 1.05rem;
     height: 1.05rem;
-    padding: 0 0.25rem;
-    border-radius: 999px;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-full);
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     font-size: 0.625rem;
     font-weight: 700;
     line-height: 1;
@@ -1497,7 +1503,7 @@
 
 /* Filter bottom-sheet sections */
 .pokedex-sheet-label {
-    margin: 0 0 0.5rem;
+    margin: 0 0 var(--space-2);
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
@@ -1508,24 +1514,24 @@
 .pokedex-sheet-types {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.5rem;
+    gap: var(--space-1_5);
+    margin-bottom: var(--space-2);
 }
 
 /* Team Builder mobile: compact picker toolbar (game chip · Core chip · count). */
 .team-builder-mobile__picker-tools {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .team-builder-mobile__core-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     flex-shrink: 0;
     height: 2.5rem;
-    padding: 0 0.75rem;
+    padding: 0 var(--space-3);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
@@ -1548,10 +1554,10 @@
     justify-content: center;
     min-width: 1.1rem;
     height: 1.1rem;
-    padding: 0 0.25rem;
-    border-radius: 999px;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-full);
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     font-size: 0.625rem;
     font-weight: 700;
 }
@@ -1561,13 +1567,13 @@
 .team-builder-mobile__composer-top {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .team-builder-mobile__composer-actions {
     display: flex;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: var(--space-2);
     /* Collapsible: the whole actions row folds away when the header condenses. */
     max-height: 4rem;
     overflow: hidden;
@@ -1585,7 +1591,7 @@
     display: flex;
     flex: 1;
     min-width: 0;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
 }
 
 /* Icons stretch to share the remaining width evenly (bigger tap targets). */
@@ -1612,7 +1618,7 @@
 
 .team-builder-mobile__save-compact {
     min-height: auto;
-    padding: 0.4rem 0.6rem;
+    padding: var(--space-1_5) var(--space-2_5);
     opacity: 0;
     transform: scale(0.8);
     pointer-events: none;
@@ -1662,7 +1668,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 /* Result count above the picker grid (game & Core moved to the Filtros sheet). */
@@ -1703,13 +1709,13 @@
     right: -0.35rem;
     min-width: 1rem;
     height: 1rem;
-    padding: 0 0.25rem;
+    padding: 0 var(--space-1);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     font-size: 0.6rem;
     font-weight: 700;
     line-height: 1;
@@ -1719,22 +1725,22 @@
 .team-builder-mobile__filters {
     display: flex;
     flex-direction: column;
-    gap: 1.1rem;
+    gap: var(--space-4);
 }
 
 .team-builder-mobile__filter-block {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .team-builder-mobile__sheet-core {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--space-2);
     width: 100%;
-    padding: 0.65rem 0.75rem;
+    padding: var(--space-2_5) var(--space-3);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
@@ -1755,7 +1761,7 @@
 .team-builder-mobile__filter-row {
     display: flex;
     align-items: stretch;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 /* Favorites toggle as a square icon button, inline beside the Core control. */
@@ -1783,7 +1789,7 @@
 
 /* Extra breathing room under the Tipos grid before the sheet footer. */
 .team-builder-mobile__filter-block--types {
-    padding-bottom: 0.35rem;
+    padding-bottom: var(--space-1_5);
 }
 
 /* Saved-teams trigger — opens the saved teams in a bottom sheet. */
@@ -1797,11 +1803,11 @@
     color: var(--color-primary);
     opacity: 0.85;
     border-bottom: 1px solid var(--color-border);
-    padding: 0.25rem 0 0.5rem;
-    margin: 0.5rem 0.35rem 0.6rem;
+    padding: var(--space-1) 0 var(--space-2);
+    margin: var(--space-2) var(--space-1_5) var(--space-2_5);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
     user-select: none;
 }
 
@@ -1812,5 +1818,5 @@
 
 .pokedex-section-title--mobile {
     font-size: 0.625rem;
-    margin: 1.25rem 0.25rem 0.5rem;
+    margin: var(--space-5) var(--space-1) var(--space-2);
 }

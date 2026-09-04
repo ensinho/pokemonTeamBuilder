@@ -143,7 +143,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
                     </button>
                     {showDisclaimerTooltip && (
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-30">
-                            <div className="px-2.5 py-1 bg-surface-raised border border-border text-[10px] text-fg rounded-md shadow-lg whitespace-nowrap animate-footer-tooltip">
+                            <div className="px-2.5 py-1 bg-surface-raised text-[10px] text-fg rounded-md shadow-lg whitespace-nowrap animate-footer-tooltip">
                                 {t('layout.disclaimerTitle')}
                             </div>
                         </div>

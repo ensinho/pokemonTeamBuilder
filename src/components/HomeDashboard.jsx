@@ -178,7 +178,7 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                     <div className="hd-panel__body space-y-4">
                         {/* Popular Mons Icon Row - Grid style, no scroll */}
                         <div>
-                            <p className="text-[10px] text-muted font-bold uppercase tracking-wider mb-2.5">
+                            <p className="text-[13px] text-muted font-medium mb-2.5">
                                 {language === 'pt' ? 'Pokémon Populares ' : 'Popular Pokémon '}
                                 <span className="hidden sm:inline">{language === 'pt' ? '(Passe o mouse para filtrar)' : '(Hover to filter)'}</span>
                                 <span className="sm:hidden">{language === 'pt' ? '(Toque para filtrar)' : '(Tap to filter)'}</span>
@@ -207,7 +207,7 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                         {/* Filtered Team List */}
                         <div className="border-t border-border pt-4">
                             <div className="flex justify-between items-center mb-3">
-                                <p className="text-[10px] text-muted font-bold uppercase tracking-wider">
+                                <p className="text-[13px] text-muted font-medium">
                                     {activePokemonId ? (
                                         <span>
                                             {language === 'pt' 

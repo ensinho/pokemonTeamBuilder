@@ -8,8 +8,8 @@
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    padding-bottom: 2rem;
+    gap: var(--space-4);
+    padding-bottom: var(--space-8);
 }
 
 /* Two-column body on wide screens: identity/effect on the left, the tall
@@ -19,13 +19,13 @@
 .edv-main {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
+    gap: var(--space-4);
     align-items: start;
 }
 .edv-col {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: var(--space-4);
     min-width: 0;
 }
 @media (min-width: 1100px) {
@@ -37,32 +37,32 @@
     align-self: flex-start;
     display: inline-flex;
     align-items: center;
-    gap: 0.375rem;
-    padding: 0.375rem 0.75rem;
+    gap: var(--space-1_5);
+    padding: var(--space-1_5) var(--space-3);
     border: 1px solid var(--color-border);
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     background: var(--color-surface);
     color: var(--color-muted);
     font-size: 0.75rem;
     font-weight: 700;
     cursor: pointer;
-    transition: color 0.12s ease, border-color 0.12s ease;
+    transition: color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
 .edv-back:hover { color: var(--color-primary); border-color: var(--color-primary); }
 
 /* Header card */
 .edv-header {
-    padding: 1.25rem 1.25rem 1.125rem;
+    padding: var(--space-5) var(--space-5) var(--space-5);
     border: 1px solid var(--color-border);
-    border-radius: 0.875rem;
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
 }
 .edv-kicker {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.375rem;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1_5);
     font-size: 0.6875rem;
     font-weight: 800;
     letter-spacing: 0.1em;
@@ -78,7 +78,7 @@
     color: var(--color-fg);
 }
 .edv-lead {
-    margin: 0.5rem 0 0;
+    margin: var(--space-2) 0 0;
     font-size: 0.9375rem;
     line-height: 1.55;
     color: var(--color-muted);
@@ -88,20 +88,20 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.375rem;
-    margin-top: 0.75rem;
+    gap: var(--space-1_5);
+    margin-top: var(--space-3);
 }
 
 /* Stat tiles (move pages: power / accuracy / PP / priority / target) */
 .edv-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 .edv-stat {
-    padding: 0.625rem 0.75rem;
+    padding: var(--space-2_5) var(--space-3);
     border: 1px solid var(--color-border);
-    border-radius: 0.75rem;
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
 }
 .edv-stat__label {
@@ -111,7 +111,7 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--color-muted);
-    margin-bottom: 0.125rem;
+    margin-bottom: var(--space-0_5);
 }
 .edv-stat__value {
     font-size: 1rem;
@@ -123,13 +123,13 @@
 
 /* Content sections */
 .edv-section {
-    padding: 1rem 1.25rem 1.125rem;
+    padding: var(--space-4) var(--space-5) var(--space-5);
     border: 1px solid var(--color-border);
-    border-radius: 0.875rem;
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
 }
 .edv-section__title {
-    margin: 0 0 0.625rem;
+    margin: 0 0 var(--space-2_5);
     font-size: 0.6875rem;
     font-weight: 800;
     letter-spacing: 0.1em;
@@ -143,7 +143,7 @@
     color: var(--color-fg);
     white-space: pre-line;
 }
-.edv-effect + .edv-effect { margin-top: 0.625rem; }
+.edv-effect + .edv-effect { margin-top: var(--space-2_5); }
 
 /* Game-descriptions table */
 .edv-table-wrap { overflow-x: auto; }
@@ -154,7 +154,7 @@
 }
 .edv-table th {
     text-align: left;
-    padding: 0.375rem 0.75rem 0.375rem 0;
+    padding: var(--space-1_5) var(--space-3) var(--space-1_5) 0;
     font-size: 0.625rem;
     font-weight: 800;
     letter-spacing: 0.1em;
@@ -165,7 +165,7 @@
 }
 .edv-table td {
     vertical-align: top;
-    padding: 0.5rem 0.75rem 0.5rem 0;
+    padding: var(--space-2) var(--space-3) var(--space-2) 0;
     border-bottom: 1px solid var(--color-border);
     line-height: 1.5;
 }
@@ -181,6 +181,6 @@
 
 @media (max-width: 640px) {
     .edv-title { font-size: 1.25rem; }
-    .edv-header, .edv-section { padding: 0.875rem 1rem; }
+    .edv-header, .edv-section { padding: var(--space-3_5) var(--space-4); }
     .edv-table__games { width: 9rem; min-width: 8rem; }
 }

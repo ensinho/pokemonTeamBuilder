@@ -6,16 +6,16 @@
 .greeting-selector__types {
     display: flex;
     flex-direction: column;
-    gap: 0.55rem;
+    gap: var(--space-2);
     border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.7rem;
+    padding-bottom: var(--space-3);
 }
 
 .greeting-selector__types-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
 }
 
 .greeting-selector__types-label {
@@ -42,7 +42,7 @@
 .greeting-selector__types-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(2.25rem, 1fr));
-    gap: 0.45rem;
+    gap: var(--space-2);
     justify-items: center;
 }
 
@@ -53,7 +53,7 @@
     max-width: 2.5rem;
     aspect-ratio: 1 / 1;
     height: auto;
-    padding: 0.3rem;
+    padding: var(--space-1);
     border-radius: var(--radius-md);
     transition: border-color var(--duration-fast) var(--ease-smooth),
         background-color var(--duration-fast) var(--ease-smooth);
@@ -90,6 +90,6 @@
 @media (max-width: 640px) {
     .greeting-selector__types-grid {
         grid-template-columns: repeat(auto-fill, minmax(2.1rem, 1fr));
-        gap: 0.4rem;
+        gap: var(--space-1_5);
     }
 }

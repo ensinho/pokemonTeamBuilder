@@ -75,7 +75,7 @@
 .app-shell__header-team {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     justify-content: center;
 }
 
@@ -126,7 +126,7 @@
     font-size: 0.5rem;
     font-weight: 700;
     background: var(--color-primary);
-    color: #ffffff;
+    color: var(--color-on-primary);
     width: 0.85rem;
     height: 0.85rem;
     border-radius: 50%;
@@ -139,7 +139,7 @@
 .app-shell__sidebar-bottom {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
     width: 100%;
     margin-top: auto;
     padding: 0;
@@ -150,18 +150,18 @@
     align-items: center;
     justify-content: space-around;
     width: 100%;
-    padding: 0 0.5rem;
+    padding: 0 var(--space-2);
 }
 
 .app-shell__sidebar-controls.is-collapsed {
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 
 .app-shell__brand,
 .app-shell__account {
-    padding: 0.5rem;
+    padding: var(--space-2);
 }
 
 .app-shell__brand {
@@ -170,9 +170,9 @@
     box-sizing: border-box;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: var(--space-2);
     border-bottom: 1px solid var(--color-border);
-    padding-block: 0.75rem;
+    padding-block: var(--space-3);
 }
 
 .app-shell__brand.is-collapsed {
@@ -181,14 +181,14 @@
     justify-content: center;
     gap: 0;
     padding-inline: 0;
-    padding-block: 0.65rem;
+    padding-block: var(--space-2_5);
 }
 
 .app-shell__brand-main {
     display: flex;
     min-width: 0;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
 }
 
 .app-shell__brand.is-collapsed .app-shell__brand-main {
@@ -235,7 +235,7 @@
 }
 
 .app-shell__brand-title {
-    margin: 0.15rem 0 0;
+    margin: var(--space-0_5) 0 0;
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--color-fg);
@@ -249,7 +249,7 @@
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: 0.6rem var(--app-shell-gutter);
+    padding: var(--space-2_5) var(--app-shell-gutter);
     /* Firefox: thin, theme-tinted scrollbar instead of the default chunky one. */
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
@@ -274,7 +274,7 @@
 
 .app-shell__nav::-webkit-scrollbar-thumb {
     background-color: transparent;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     transition: background-color var(--duration-slow) var(--ease-smooth);
 }
 
@@ -290,13 +290,13 @@
 .app-shell__nav-list {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
+    gap: var(--space-0_5);
 }
 
 .app-shell__nav-group {
     display: flex;
     flex-direction: column;
-    margin-top: 0.85rem;
+    margin-top: var(--space-3_5);
 }
 
 .app-shell__nav-group:first-child {
@@ -304,8 +304,8 @@
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav-group {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
+    margin-top: var(--space-2);
+    padding-top: var(--space-2);
     border-top: 1px solid var(--color-border);
 }
 
@@ -316,14 +316,17 @@
 }
 
 .app-shell__nav-group-label {
-    margin: 0 0 0.3rem;
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    margin: 0 0 var(--space-1);
+    /* Sentence case, not uppercase. A 10px all-caps label at 0.08em tracking
+       reads as shouting *and* is harder to scan — and stacking opacity 0.5 on
+       an already-muted color pushed it to the edge of legibility, which is its
+       own kind of "loose". Muted color alone carries the de-emphasis. */
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0;
     color: var(--color-muted);
-    padding-left: 0.6rem;
-    opacity: 0.5;
+    padding-left: var(--space-2_5);
+    opacity: 1;
     transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 
@@ -338,7 +341,7 @@
 .app-shell__nav-group-list {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: var(--space-0_5);
 }
 
 /* Section header doubles as the fold control. It has to read as a quiet label
@@ -346,10 +349,10 @@
 .app-shell__nav-group-toggle {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
     width: 100%;
-    margin: 0 0 0.3rem;
-    padding: 0.2rem 0.4rem 0.2rem 0.6rem;
+    margin: 0 0 var(--space-1);
+    padding: var(--space-1) var(--space-1_5) var(--space-1) var(--space-2_5);
     border: none;
     border-radius: var(--radius-sm);
     background: transparent;
@@ -427,7 +430,7 @@
 }
 
 .app-shell__nav-control {
-    margin-bottom: 0.35rem;
+    margin-bottom: var(--space-1_5);
 }
 
 .app-shell__nav-link--control {
@@ -446,43 +449,38 @@
     transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth);
 }
 
+/* Nav item. No border — not even a transparent one: a nav list is text, not a
+   stack of boxes, and reserved border space invites someone to fill it in later.
+   Padding is a step more generous than a dense control would use, because a
+   sidebar is read at rest rather than scanned under pressure. */
 .app-shell__nav-link,
 .app-shell__account-button {
     display: flex;
     width: 100%;
     align-items: center;
     min-height: 2.25rem;
-    gap: 0.6rem;
-    border: 1px solid transparent;
+    gap: var(--space-2_5);
+    border: none;
     border-radius: var(--radius-md);
-    padding: 0.4rem 0.6rem;
+    padding: var(--space-2) var(--space-2_5);
     color: var(--color-muted);
     text-align: left;
 }
 
 .app-shell__nav-link:hover,
 .app-shell__account-button:hover {
-    background: var(--color-surface-raised);
+    background: var(--color-surface-hover);
     color: var(--color-fg);
 }
 
+/* Active is a fill plus a foreground colour — nothing else. The 3px accent bar
+   that used to sit on the leading edge meant every page opened with a coloured
+   marker in the corner of the eye; a filled row already reads as selected, and
+   the weight bump finishes the job. */
 .app-shell__nav-link.is-active {
-    position: relative;
-    border-color: transparent;
-    background: var(--color-surface-raised);
+    background: var(--color-surface-active);
     color: var(--color-fg);
-}
-
-/* Active indicator bar (Ref 1 pattern) */
-.app-shell__nav-link.is-active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.45rem;
-    bottom: 0.45rem;
-    width: 3px;
-    border-radius: 0 3px 3px 0;
-    background: var(--color-primary);
+    font-weight: 500;
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav,
@@ -493,11 +491,6 @@
 .app-shell__sidebar.is-collapsed .app-shell__nav-list,
 .app-shell__sidebar.is-collapsed .app-shell__nav-group-list {
     align-items: center;
-}
-
-.app-shell__nav-link.is-collapsed.is-active::before {
-    left: 0;
-    border-radius: 0 3px 3px 0;
 }
 
 .app-shell__nav-link.is-collapsed,
@@ -534,10 +527,10 @@
     min-width: 1.15rem;
     height: 1.15rem;
     margin-left: auto;
-    padding: 0 0.3rem;
-    border-radius: 999px;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-full);
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     font-size: 0.625rem;
     font-weight: 800;
     font-variant-numeric: tabular-nums;
@@ -584,8 +577,8 @@
     z-index: var(--z-tooltip, 1200);
     transform: translateY(-50%);
     white-space: nowrap;
-    padding: 0.3rem 0.55rem;
-    border-radius: var(--radius-sm, 0.375rem);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-sm, var(--radius-sm));
     border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
     color: var(--color-fg);
@@ -631,9 +624,9 @@
 .app-shell__account-card {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     border-radius: var(--radius-lg);
-    padding: 0.2rem;
+    padding: var(--space-1);
 }
 
 .app-shell__account-menu {
@@ -658,11 +651,11 @@
     min-width: 0;
     flex: 1;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     border: 1px solid transparent;
     border-radius: var(--radius-md);
     background: transparent;
-    padding: 0.25rem;
+    padding: var(--space-1);
     text-align: left;
 }
 
@@ -702,9 +695,9 @@
     min-width: 0;
     flex: 1;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     border-radius: var(--radius-md);
-    padding: 0.25rem;
+    padding: var(--space-1);
     text-align: left;
 }
 
@@ -737,7 +730,7 @@
 }
 
 .app-shell__account-email {
-    margin: 0.2rem 0 0;
+    margin: var(--space-1) 0 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -784,13 +777,13 @@
 
 .app-shell__account-popover-head,
 .app-shell__account-popover-section {
-    padding: 0.75rem;
+    padding: var(--space-3);
 }
 
 .app-shell__account-popover-head {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-surface-raised);
 }
@@ -805,14 +798,14 @@
 .app-shell__account-popover-email,
 .app-shell__account-menu-item-note,
 .app-shell__account-theme-hint {
-    margin: 0.15rem 0 0;
+    margin: var(--space-0_5) 0 0;
     font-size: 0.7rem;
     line-height: 1.4;
     color: var(--color-muted);
 }
 
 .app-shell__account-popover-label {
-    margin: 0 0 0.45rem;
+    margin: 0 0 var(--space-2);
     font-size: 0.625rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -824,17 +817,24 @@
     border-top: 1px solid var(--color-border);
 }
 
+/* A menu row, not a card. It lives inside a bordered popover, so its own border
+   and fill were a box inside a box — and a list of them read as a stack of
+   buttons rather than a menu. At rest it is plain; hover does the work. */
 .app-shell__account-menu-item {
     display: flex;
     width: 100%;
     align-items: flex-start;
-    gap: 0.6rem;
-    border: 1px solid var(--color-border);
+    gap: var(--space-2_5);
+    border: none;
     border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    padding: 0.6rem;
+    background: transparent;
+    padding: var(--space-2) var(--space-2_5);
     text-align: left;
     color: var(--color-fg);
+}
+
+.app-shell__account-menu-item:hover {
+    background: var(--color-surface-hover);
 }
 
 .app-shell__account-menu-item:hover,
@@ -906,8 +906,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.2rem 0;
+    gap: var(--space-1_5);
+    padding: var(--space-1) 0;
 }
 
 .app-shell__account-theme-dot {
@@ -934,14 +934,14 @@
 .app-shell__account-theme-groups {
     display: flex;
     flex-direction: column;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
 }
 
 .app-shell__account-theme-group {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
-    padding: 0.3rem 0.45rem;
+    gap: var(--space-2_5);
+    padding: var(--space-1) var(--space-2);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
@@ -950,7 +950,7 @@
 .app-shell__account-theme-group-tag {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
     flex-shrink: 0;
     width: 4.25rem;
     font-size: 0.625rem;
@@ -980,10 +980,10 @@
 .app-shell__account-theme-dots {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: var(--space-2_5);
     flex: 1;
     justify-content: space-between;
-    padding-right: 0.15rem;
+    padding-right: var(--space-0_5);
 }
 
 /* Header settings icon (mobile) — opens the account & preferences menu */
@@ -1006,7 +1006,7 @@
 .app-shell__account-summary-block.is-shortcut {
     display: flex;
     align-items: center;
-    gap: 0.55rem;
+    gap: var(--space-2);
     width: 100%;
 }
 
@@ -1016,7 +1016,7 @@
 }
 
 .app-shell__account-subline {
-    margin: 0.05rem 0 0;
+    margin: var(--space-0_5) 0 0;
     font-size: 0.65rem;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -1040,22 +1040,22 @@
 
 /* Compact, calmer spacing for the mobile (header) account menu */
 .app-shell__account-popover.is-header .app-shell__account-popover-head {
-    padding: 0.6rem 0.7rem;
-    gap: 0.5rem;
+    padding: var(--space-2_5) var(--space-3);
+    gap: var(--space-2);
 }
 
 .app-shell__account-popover.is-header .app-shell__account-popover-section {
-    padding: 0.55rem 0.7rem;
+    padding: var(--space-2) var(--space-3);
 }
 
 .app-shell__account-popover.is-header .app-shell__account-popover-label {
-    margin-bottom: 0.4rem;
+    margin-bottom: var(--space-1_5);
 }
 
 .app-shell__account-popover.is-header .app-shell__account-menu-item {
     align-items: center;
-    padding: 0.5rem 0.55rem;
-    gap: 0.55rem;
+    padding: var(--space-2) var(--space-2);
+    gap: var(--space-2);
 }
 
 .app-shell__account-popover.is-header .app-shell__account-menu-item-note {
@@ -1065,7 +1065,7 @@
 
 .app-shell__account-popover.is-header .app-shell__account-menu-item--danger {
     /* Sign-out needs no descriptive note on the compact menu — the label says it. */
-    padding: 0.55rem;
+    padding: var(--space-2);
 }
 
 .app-shell__account-popover.is-header .app-shell__account-menu-item--danger .app-shell__account-menu-item-note {
@@ -1073,7 +1073,7 @@
 }
 
 .app-shell__account-popover.is-header .app-shell__account-theme-groups {
-    gap: 0.4rem;
+    gap: var(--space-1_5);
 }
 
 .app-shell__account-popover.is-header .app-shell__account-theme-dot {
@@ -1082,13 +1082,13 @@
 }
 
 .app-shell__account-popover.is-header .app-shell__account-lang-btn {
-    padding: 0.3rem;
+    padding: var(--space-1);
     font-size: 0.72rem;
 }
 
 .app-shell__account-language-row {
     display: flex;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     width: 100%;
 }
 
@@ -1097,7 +1097,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.35rem;
+    padding: var(--space-1_5);
     font-size: 0.75rem;
     font-weight: 600;
     border: 1px solid var(--color-border);
@@ -1105,7 +1105,7 @@
     background: var(--color-surface-raised);
     color: var(--color-fg);
     cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
 
 .app-shell__account-lang-btn:hover {
@@ -1119,7 +1119,7 @@
 }
 
 .app-shell__account-signout {
-    padding: 0.4rem 0.6rem;
+    padding: var(--space-1_5) var(--space-2_5);
     font-size: 0.7rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -1131,15 +1131,33 @@
     width: 1.85rem;
 }
 
+/* The app's single scroll container. It is a flex column so the footer can be
+   pushed to the bottom on short pages (`margin-top: auto` below) instead of
+   floating up under the content — which left dead space beneath it and, on a
+   page just under viewport height, produced a scrollbar whose only purpose was
+   to reveal the footer. */
 .app-shell__content {
     position: relative;
+    display: flex;
+    flex-direction: column;
     flex: 1;
     min-width: 0;
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    /* Explicit, not inherited from .custom-scrollbar: this is the root scroller,
+       so `contain` here also suppresses Android's pull-to-refresh. That is
+       deliberate — an accidental pull mid-team-build would reload the app. Body
+       never scrolls, so nothing else is lost. */
+    overscroll-behavior-y: contain;
     background: var(--color-bg);
+}
+
+/* Grow to fill the leftover column height, but never shrink below content —
+   `1 0 auto` is what keeps long pages scrolling normally. */
+.app-shell__body {
+    flex: 1 0 auto;
 }
 
 .app-shell__header {
@@ -1147,16 +1165,17 @@
     top: 0;
     z-index: var(--z-dropdown);
     display: flex;
+    flex-shrink: 0;
     height: var(--app-shell-top-band-height);
     box-sizing: border-box;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: var(--space-3);
     border-bottom: 1px solid var(--color-border);
     background: color-mix(in srgb, var(--color-bg) 92%, transparent);
     backdrop-filter: blur(12px) saturate(1.15);
     -webkit-backdrop-filter: blur(12px) saturate(1.15);
-    padding: 0 1rem;
+    padding: 0 var(--space-4);
 }
 
 .app-shell__header-main {
@@ -1164,7 +1183,7 @@
     min-width: 0;
     flex: 1;
     align-items: center;
-    gap: 0.65rem;
+    gap: var(--space-2_5);
 }
 
 .app-shell__header-copy {
@@ -1177,7 +1196,7 @@
 .app-shell__header-title-row {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
 }
 
 .app-shell__header-title {
@@ -1200,7 +1219,7 @@
 }
 
 .app-shell__header-subtitle {
-    margin-top: 0.1rem;
+    margin-top: var(--space-0_5);
     font-size: 0.75rem;
     line-height: 1.2;
 }
@@ -1214,7 +1233,7 @@
 .app-shell__header-actions {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
 }
 
 .app-shell__body {
@@ -1229,8 +1248,12 @@
 }
 
 .app-shell__footer {
+    /* Pinned to the bottom of the column on short pages; flows after the
+       content on long ones. See .app-shell__content. */
+    margin-top: auto;
+    flex-shrink: 0;
     border-top: 1px solid var(--color-border);
-    padding: 1rem;
+    padding: var(--space-4);
 }
 
 .app-shell__footer-row {
@@ -1238,14 +1261,14 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: var(--space-3);
 }
 
 .app-shell__footer-credit {
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.4rem;
+    gap: var(--space-1_5);
     font-size: 0.8rem;
 }
 
@@ -1253,7 +1276,7 @@
     color: var(--color-border);
     font-size: 0.75rem;
     user-select: none;
-    margin-inline: 0.15rem;
+    margin-inline: var(--space-0_5);
 }
 
 @keyframes footer-tooltip-fade-in {
@@ -1275,7 +1298,7 @@
 .app-shell__footer-links {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-2);
 }
 
 .app-shell__footer-link {
@@ -1309,7 +1332,7 @@
     }
 
     .app-shell__header {
-        padding: 1.85rem 1.15rem;
+        padding: var(--space-8) var(--space-5);
     }
 
     /* Body gutter is handled fluidly on .app-shell__body itself; keep the footer
@@ -1326,7 +1349,7 @@
         align-items: center;
         justify-content: center;
         text-align: center;
-        gap: 0.75rem;
+        gap: var(--space-3);
     }
 
     /* Stack the credit line above the feedback pills, both centered. */
@@ -1335,14 +1358,14 @@
         align-items: center;
         justify-content: center;
         width: 100%;
-        gap: 0.6rem;
+        gap: var(--space-2_5);
     }
 
     /* Center the pill group; drop the inline left offset. */
     .app-shell__footer-feedback {
         margin-left: 0;
         justify-content: center;
-        gap: 0.5rem;
+        gap: var(--space-2);
     }
 
     /* The "•" dividers only read as separators when items sit inline.
@@ -1384,21 +1407,21 @@
 
     /* Roomier nav so items are easy to tap with a thumb. */
     .app-shell__nav {
-        padding: 0.75rem var(--app-shell-gutter);
+        padding: var(--space-3) var(--app-shell-gutter);
     }
 
     .app-shell__nav-list {
-        gap: 0.25rem;
+        gap: var(--space-1);
     }
 
     .app-shell__nav-group-list {
-        gap: 0.25rem;
+        gap: var(--space-1);
     }
 
     .app-shell__nav-link,
     .app-shell__account-button {
         min-height: 2.75rem;
-        padding: 0.55rem 0.7rem;
+        padding: var(--space-2) var(--space-3);
         font-size: 0.95rem;
     }
 
@@ -1425,7 +1448,7 @@
    Empty State Styles
    ============================================================ */
 .empty-state {
-    padding: 2.5rem 1.5rem;
+    padding: var(--space-10) var(--space-6);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1434,7 +1457,7 @@
     border-radius: var(--radius-lg);
     border: 1px dashed var(--color-border);
     background: var(--color-surface);
-    margin-top: 1.25rem;
+    margin-top: var(--space-5);
     position: relative;
     overflow: hidden;
 }
@@ -1444,10 +1467,10 @@
 }
 
 .empty-state.is-compact {
-    padding: 1.25rem 1rem;
+    padding: var(--space-5) var(--space-4);
     border: none;
     background: transparent;
-    margin-top: 0.5rem;
+    margin-top: var(--space-2);
 }
 
 .empty-state__illustration-container {
@@ -1455,7 +1478,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
+    margin-bottom: var(--space-4);
 }
 
 .empty-state__illustration {
@@ -1471,13 +1494,13 @@
     color: var(--color-fg);
     font-weight: 600;
     font-size: 1.1rem;
-    margin-bottom: 0.35rem;
+    margin-bottom: var(--space-1_5);
     letter-spacing: -0.01em;
 }
 
 .empty-state.is-compact .empty-state__title {
     font-size: 0.95rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: var(--space-1);
 }
 
 .empty-state__message {
@@ -1485,7 +1508,7 @@
     font-size: 0.8125rem;
     max-width: 22rem;
     line-height: 1.5;
-    margin-bottom: 0.35rem;
+    margin-bottom: var(--space-1_5);
 }
 
 .empty-state.is-compact .empty-state__message {
@@ -1494,15 +1517,15 @@
 }
 
 .empty-state__action {
-    margin-top: 1rem;
+    margin-top: var(--space-4);
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 1rem;
+    gap: var(--space-1_5);
+    padding: var(--space-2) var(--space-4);
     border-radius: var(--radius-md);
     font-weight: 500;
     font-size: 0.8125rem;
-    color: #ffffff;
+    color: var(--color-on-primary);
     background: var(--color-primary);
     border: none;
     cursor: pointer;
@@ -1532,7 +1555,7 @@
     display: flex;
     align-items: stretch;
     justify-content: space-around;
-    gap: 0.25rem;
+    gap: var(--space-1);
     padding: 0.3rem 0.4rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
     background: color-mix(in srgb, var(--color-surface) 92%, transparent);
     backdrop-filter: blur(12px) saturate(1.15);
@@ -1563,10 +1586,10 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.15rem;
+    gap: var(--space-0_5);
     min-width: 0;
     min-height: 2.9rem;
-    padding: 0.3rem 0.2rem;
+    padding: var(--space-1) var(--space-1);
     border: none;
     border-radius: var(--radius-md);
     background: transparent;

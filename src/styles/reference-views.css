@@ -14,16 +14,15 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.625rem;
-    margin-bottom: 0.875rem;
+    gap: var(--space-2_5);
+    margin-bottom: var(--space-3_5);
 }
 
 .ref-toolbar__count {
     margin-left: auto;
     font-size: 0.75rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0;
     color: var(--color-muted);
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
@@ -35,7 +34,7 @@
     min-height: 0;
     overflow-y: auto;
     border: 1px solid var(--color-border);
-    border-radius: 0.875rem;
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
 }
 
@@ -46,8 +45,8 @@
     z-index: 2;
     display: grid;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 1rem;
+    gap: var(--space-3);
+    padding: var(--space-2_5) var(--space-4);
     background: var(--color-surface-raised);
     border-bottom: 1px solid var(--color-border);
     font-size: 0.6875rem;
@@ -60,7 +59,7 @@
 .ref-head__btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--space-1);
     background: none;
     border: none;
     padding: 0;
@@ -69,7 +68,7 @@
     text-transform: inherit;
     color: inherit;
     cursor: pointer;
-    transition: color 0.15s ease;
+    transition: color var(--duration-fast) var(--ease-smooth);
 }
 .ref-head__btn:hover { color: var(--color-fg); }
 .ref-head__btn.is-active { color: var(--color-primary); }
@@ -79,9 +78,9 @@
 .ref-row {
     display: grid;
     align-items: center;
-    gap: 0.75rem;
+    gap: var(--space-3);
     width: 100%;
-    padding: 0.625rem 1rem;
+    padding: var(--space-2_5) var(--space-4);
     border: none;
     border-bottom: 1px solid var(--color-border);
     background: transparent;
@@ -89,7 +88,7 @@
     cursor: pointer;
     font: inherit;
     color: var(--color-fg);
-    transition: background 0.12s ease;
+    transition: background var(--duration-fast) var(--ease-smooth);
 }
 .ref-row:last-of-type { border-bottom: none; }
 .ref-row:hover { background: var(--color-surface-raised); }
@@ -102,7 +101,7 @@
 .ref-row__name {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: var(--space-0_5);
     font-weight: 700;
     text-transform: capitalize;
     line-height: 1.2;
@@ -125,8 +124,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 0.125rem 0.5rem;
-    border-radius: 999px;
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
     font-size: 0.6875rem;
     font-weight: 700;
     text-transform: capitalize;
@@ -144,29 +143,29 @@
     grid-column: 1 / -1;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.375rem;
-    margin-top: 0.625rem;
+    gap: var(--space-1_5);
+    margin-top: var(--space-2_5);
 }
 .ref-mon {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.2rem 0.55rem 0.2rem 0.25rem;
-    border-radius: 999px;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-1);
+    border-radius: var(--radius-full);
     border: 1px solid var(--color-border);
     background: var(--color-bg);
     color: var(--color-fg);
     font-size: 0.75rem;
     text-transform: capitalize;
     cursor: pointer;
-    transition: border-color 0.12s ease, color 0.12s ease;
+    transition: border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
 .ref-mon:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .ref-mon img { width: 1.5rem; height: 1.5rem; image-rendering: pixelated; }
 .ref-mon--hidden { border-style: dashed; }
 .ref-mon-more {
-    padding: 0.2rem 0.65rem;
-    border-radius: 999px;
+    padding: var(--space-1) var(--space-2_5);
+    border-radius: var(--radius-full);
     border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
     color: var(--color-muted);
@@ -177,7 +176,7 @@
 .ref-mon-more:hover { color: var(--color-fg); }
 .ref-mons-label {
     grid-column: 1 / -1;
-    margin-top: 0.5rem;
+    margin-top: var(--space-2);
     font-size: 0.6875rem;
     font-weight: 700;
     letter-spacing: 0.08em;
@@ -188,8 +187,8 @@
 /* Inline expandable effect text */
 .ref-effect {
     grid-column: 1 / -1;
-    padding-top: 0.5rem;
-    margin-top: 0.125rem;
+    padding-top: var(--space-2);
+    margin-top: var(--space-0_5);
     border-top: 1px dashed var(--color-border);
     font-size: 0.8125rem;
     line-height: 1.5;
@@ -219,7 +218,7 @@
 .ref-skeleton {
     height: 0.75rem;
     width: 2.5rem;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     background: var(--color-border);
     opacity: 0.6;
     animation: ref-pulse 1.2s ease-in-out infinite;
@@ -229,7 +228,7 @@
 
 .ref-type-cell {
     display: inline-flex;
-    gap: 0.25rem;
+    gap: var(--space-1);
     flex-wrap: wrap;
 }
 
@@ -238,7 +237,7 @@
 .ref-loadmore {
     display: block;
     width: 100%;
-    padding: 0.75rem;
+    padding: var(--space-3);
     border: none;
     background: transparent;
     color: var(--color-primary);

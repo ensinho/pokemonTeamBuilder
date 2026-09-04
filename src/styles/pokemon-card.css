@@ -9,7 +9,7 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: 0.6rem 0.55rem 0.55rem;
+    padding: var(--space-2_5) var(--space-2) var(--space-2);
     text-align: center;
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth),
@@ -54,7 +54,7 @@
     height: 1.25rem;
     border-radius: 50%;
     background: var(--synergy-color);
-    color: #fff;
+    color: var(--color-on-primary);
     box-shadow: 0 0 0 2px var(--color-surface);
 }
 
@@ -67,9 +67,9 @@
 .pokemon-card__reason-label {
     display: block;
     width: 100%;
-    padding: 0 0.15rem;
+    padding: 0 var(--space-0_5);
     margin-top: -0.1rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: var(--space-1);
     font-size: 0.575rem;
     font-weight: 700;
     text-transform: capitalize;
@@ -107,14 +107,14 @@
     width: 100%;
     align-items: center;
     justify-content: space-between;
-    gap: 0.35rem;
+    gap: var(--space-1_5);
 }
 
 .pokemon-card__meta {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 0.3rem;
+    gap: var(--space-1);
     min-width: 0;
 }
 
@@ -125,7 +125,7 @@
     border-radius: var(--radius-sm);
     border: 1px solid color-mix(in srgb, var(--color-success) 20%, var(--color-border));
     background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
-    padding: 0.15rem 0.4rem;
+    padding: var(--space-0_5) var(--space-1_5);
     font-size: 0.55rem;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -156,7 +156,7 @@
     width: 100%;
     max-width: 5.5rem;
     aspect-ratio: 1 / 1;
-    margin: 0.15rem auto 0;
+    margin: var(--space-0_5) auto 0;
     transition: transform var(--duration-fast) var(--ease-smooth);
 }
 
@@ -165,7 +165,7 @@
 }
 
 .pokemon-card__name {
-    margin: 0.35rem 0.25rem;
+    margin: var(--space-1_5) var(--space-1);
     font-size: 0.8125rem;
     font-weight: 600;
     text-transform: capitalize;
@@ -176,7 +176,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    gap: 0.2rem;
+    gap: var(--space-1);
     min-height: 1rem;
 }
 
@@ -188,7 +188,7 @@
     opacity: 0.75;
     letter-spacing: -0.02em;
     line-height: 1;
-    margin-right: 0.15rem;
+    margin-right: var(--space-0_5);
     user-select: none;
     flex-shrink: 0;
 }
@@ -203,12 +203,12 @@
     width: 100%;
     align-items: center;
     justify-content: center;
-    gap: 0.3rem;
+    gap: var(--space-1);
     margin-top: auto;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: transparent;
-    padding: 0.2rem 0.4rem;
+    padding: var(--space-1) var(--space-1_5);
     font-size: 0.675rem;
     font-weight: 600;
     color: var(--color-muted);
@@ -224,16 +224,16 @@
 @media (max-width: 640px) {
     .pokemon-card {
         min-height: auto !important;
-        padding: 0.45rem 0.35rem 0.35rem !important;
+        padding: var(--space-2) var(--space-1_5) var(--space-1_5) !important;
     }
     
     .pokemon-card__media {
         max-width: 4rem !important;
-        margin-top: 0.1rem !important;
+        margin-top: var(--space-0_5) !important;
     }
     
     .pokemon-card__name {
-        margin: 0.25rem 0.1rem 0 !important;
+        margin: var(--space-1) var(--space-0_5) 0 !important;
         font-size: 0.72rem !important;
         line-height: 1.25 !important;
         white-space: nowrap !important;
