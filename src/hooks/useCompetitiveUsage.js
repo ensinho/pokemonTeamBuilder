@@ -15,12 +15,15 @@ const staticUrl = () =>
  * move frequencies per species, aggregated from the pokepastes of tournament
  * teams. Returns a `usageFor(id)` lookup plus the raw map and ready status.
  */
-export function useCompetitiveUsage() {
+export function useCompetitiveUsage({ enabled = true } = {}) {
     const [byId, setById] = useState({});
     const [totalTeams, setTotalTeams] = useState(0);
     const [status, setStatus] = useState('loading');
 
     useEffect(() => {
+        // `enabled: false` (Team Builder playthrough mode) skips the download
+        // entirely — nothing on screen consumes it there.
+        if (!enabled) { setStatus('ready'); return undefined; }
         let cancelled = false;
         (async () => {
             try {
@@ -39,7 +42,7 @@ export function useCompetitiveUsage() {
             }
         })();
         return () => { cancelled = true; };
-    }, []);
+    }, [enabled]);
 
     const usageFor = useMemo(() => (id) => byId[id] || null, [byId]);
 

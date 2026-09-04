@@ -16,11 +16,14 @@ const staticUrl = () =>
  * usage — i.e. how often each species appears across tournament teams. Shared by
  * the Tournaments view and the Home dashboard so the fetch is requested once.
  */
-export function useTournamentData() {
+export function useTournamentData({ enabled = true } = {}) {
     const [teams, setTeams] = useState([]);
     const [status, setStatus] = useState('loading');
 
     useEffect(() => {
+        // `enabled: false` (Team Builder playthrough mode) skips the download
+        // entirely — nothing on screen consumes it there.
+        if (!enabled) { setStatus('ready'); return undefined; }
         let cancelled = false;
         (async () => {
             try {
@@ -36,7 +39,7 @@ export function useTournamentData() {
             }
         })();
         return () => { cancelled = true; };
-    }, []);
+    }, [enabled]);
 
     const popular = useMemo(() => {
         const counts = new Map();

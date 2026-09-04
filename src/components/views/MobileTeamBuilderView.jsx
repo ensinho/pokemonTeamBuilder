@@ -374,6 +374,7 @@ export const MobileTeamBuilderView = ({
     games = [],
     regulations = [],
     selectedRegulation,
+    isPlaythrough = false,
     onSelectRegulation,
     generations,
     isInitialLoading,
@@ -433,11 +434,12 @@ export const MobileTeamBuilderView = ({
             if (raf) cancelAnimationFrame(raf);
         };
     }, []);
-    const { byId: smogonById } = useSmogonData();
-    const { byId: usageById } = useCompetitiveUsage();
+    const wantsMeta = { enabled: !isPlaythrough };
+    const { byId: smogonById } = useSmogonData(wantsMeta);
+    const { byId: usageById } = useCompetitiveUsage(wantsMeta);
     const teamCores = React.useMemo(
-        () => detectTeamCores(currentTeam.map((p) => p.id), { smogonById, usageById }),
-        [currentTeam, smogonById, usageById]
+        () => (isPlaythrough ? [] : detectTeamCores(currentTeam.map((p) => p.id), { smogonById, usageById })),
+        [currentTeam, smogonById, usageById, isPlaythrough]
     );
 
     // Filter suggestions by active user filters (type, generation, favorites, search)
@@ -663,7 +665,7 @@ export const MobileTeamBuilderView = ({
                             teamSize={currentTeam.length}
                             colors={colors}
                         />
-                        {currentTeam.length > 0 && (
+                        {currentTeam.length > 0 && !isPlaythrough && (
                             <button
                                 type="button"
                                 onClick={() => setThreatsOpen(true)}
@@ -725,9 +727,13 @@ export const MobileTeamBuilderView = ({
                             )}
 
                             <div className="team-builder-mobile__filter-block">
-                                <span className="team-builder-control__label">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
+                                <span className="team-builder-control__label">
+                                    {isPlaythrough
+                                        ? (language === 'pt' ? 'Favoritos' : 'Favorites')
+                                        : (language === 'pt' ? 'Core do Meta' : 'Meta Core')}
+                                </span>
                                 <div className="team-builder-mobile__filter-row">
-                                    <button
+                                    {!isPlaythrough && <button
                                         type="button"
                                         onClick={() => { setFiltersExpanded(false); setIsCoresOpen(true); }}
                                         className="team-builder-mobile__sheet-core min-w-0 flex-1"
@@ -741,7 +747,7 @@ export const MobileTeamBuilderView = ({
                                             </span>
                                         </span>
                                         <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
-                                    </button>
+                                    </button>}
                                     <button
                                         type="button"
                                         onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}

@@ -97,6 +97,31 @@
     color: color-mix(in srgb, var(--cover-accent, var(--color-primary)) 80%, var(--color-fg));
 }
 
+/* Replaces the "change game" hint while playthrough mode is on, so the state is
+   visible on the page and not only inside the picker that sets it. A pill (not
+   more accent text) because it reports a mode rather than inviting a click. */
+.game-cover__note {
+    align-self: flex-start;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--color-muted);
+}
+
+/* Stand-in for a cover logo on the one card that isn't a game. Sits on the same
+   light art plate as the logos, so it takes a themed colour rather than muted. */
+.game-card__icon {
+    width: 1.6rem;
+    height: 1.6rem;
+    color: var(--color-primary);
+}
+
 /* Compact variant — used when the cover is fused into a panel header. */
 .game-cover--compact {
     padding: var(--space-2) var(--space-3_5);

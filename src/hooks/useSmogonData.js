@@ -18,11 +18,14 @@ const staticUrl = () =>
  * actually ran* (real but thin), this gives a *robust, full-meta baseline* with
  * the reasoning behind each set. Returns a `smogonFor(id)` lookup + ready status.
  */
-export function useSmogonData() {
+export function useSmogonData({ enabled = true } = {}) {
     const [byId, setById] = useState({});
     const [status, setStatus] = useState('loading');
 
     useEffect(() => {
+        // `enabled: false` (Team Builder playthrough mode) skips the download
+        // entirely — nothing on screen consumes it there.
+        if (!enabled) { setStatus('ready'); return undefined; }
         let cancelled = false;
         (async () => {
             try {
@@ -38,7 +41,7 @@ export function useSmogonData() {
             }
         })();
         return () => { cancelled = true; };
-    }, []);
+    }, [enabled]);
 
     const smogonFor = useMemo(() => (id) => byId[id] || null, [byId]);
 

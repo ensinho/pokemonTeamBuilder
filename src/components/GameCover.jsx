@@ -1,9 +1,10 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { Map as MapIcon, X } from 'lucide-react';
 import '../styles/game-cover.css';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { useTranslation } from '../hooks/useTranslation';
 import { getGameLogo, getGameAccent, POKEMON_LOGO } from '../assets/gameLogos';
+import { NO_REGULATION } from '../constants/regulations';
 
 // Usage-index regulation groups → the game key whose cover art represents them.
 // `group` comes from public/data/usage-index.json (built by build-usage-stats).
@@ -18,7 +19,7 @@ const REGULATION_GAME_KEYS = {
 // opens the game picker on click. Purely presentational; the owner supplies
 // `onOpen` and renders <GamePickerModal> once.
 // ---------------------------------------------------------------------------
-export function GameCoverBanner({ games = [], selectedGame, onOpen, className = '' }) {
+export function GameCoverBanner({ games = [], selectedGame, onOpen, note = null, className = '' }) {
     const { t, language } = useTranslation();
     const current = selectedGame && selectedGame !== 'all'
         ? games.find((g) => g.key === selectedGame)
@@ -45,7 +46,9 @@ export function GameCoverBanner({ games = [], selectedGame, onOpen, className = 
                 <span className="game-cover__label">
                     {current ? current.label : t('builder.allGames')}
                 </span>
-                <span className="game-cover__hint">{t('builder.changeGame')}</span>
+                {note
+                    ? <span className="game-cover__note">{note}</span>
+                    : <span className="game-cover__hint">{t('builder.changeGame')}</span>}
             </span>
         </button>
     );
@@ -81,7 +84,7 @@ export function GameFilterChip({ games = [], selectedGame, onOpen, className = '
 // ---------------------------------------------------------------------------
 // GameCard — a single selectable cover inside the picker grid.
 // ---------------------------------------------------------------------------
-function GameCard({ logo, label, sub, accent, active, onClick }) {
+function GameCard({ logo, art = null, label, sub, accent, active, onClick }) {
     return (
         <button
             type="button"
@@ -90,8 +93,10 @@ function GameCard({ logo, label, sub, accent, active, onClick }) {
             style={{ '--cover-accent': accent }}
             aria-pressed={active}
         >
+            {/* `art` covers the one option that isn't a game and so has no cover
+                logo (playthrough mode); everything else passes a `logo`. */}
             <span className="game-card__art">
-                <img src={logo} alt="" className="game-card__logo" loading="lazy" />
+                {art || <img src={logo} alt="" className="game-card__logo" loading="lazy" />}
             </span>
             <span className="game-card__label">{label}</span>
             {sub && <span className="game-card__sub">{sub}</span>}
@@ -173,12 +178,18 @@ export function GamePickerModal({
                                     {pt ? 'Regulamento competitivo' : 'Competitive regulation'}
                                 </h3>
                                 <p className="game-picker__section-sub">
-                                    {pt
-                                        ? 'Alinha as sugestões e os dados de uso ao meta escolhido'
-                                        : 'Pairs the builder’s suggestions & usage data to the chosen meta'}
+                                    {t('builder.regulationSectionSub')}
                                 </p>
                             </div>
                             <div className="game-picker__grid game-picker__grid--flush">
+                                <GameCard
+                                    art={<MapIcon className="game-card__icon" aria-hidden="true" />}
+                                    label={t('builder.playthroughTitle')}
+                                    sub={t('builder.playthroughSub')}
+                                    accent="var(--color-primary)"
+                                    active={selectedRegulation === NO_REGULATION}
+                                    onClick={() => chooseRegulation(NO_REGULATION)}
+                                />
                                 {regulations.map((reg) => (
                                     <GameCard
                                         key={reg.id}

@@ -23,6 +23,7 @@ import { buildSynergySuggestions } from '../../utils/synergySuggestions';
 import { buildTeamThreats } from '../../utils/teamThreats';
 import { TeamThreats } from '../TeamThreats';
 import { buildGameSections } from '../../utils/gameDex';
+import { isPlaythroughMode } from '../../constants/regulations';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
@@ -196,15 +197,23 @@ export function TeamBuilderView({
     // index — not just the Pokémon currently visible in the picker.
     const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
-    const { popular, synergy } = useTournamentData();
-    const { byId: smogonById } = useSmogonData();
-    const { byId: usageById } = useCompetitiveUsage();
     // Competitive regulation the user has paired the builder with (persisted).
-    // null → use the default regulation from the usage index.
+    // null → use the default regulation from the usage index; NO_REGULATION →
+    // playthrough mode. Read before the dataset hooks below so they can skip
+    // their downloads entirely in that mode.
     const [selectedRegulation, setSelectedRegulation] = React.useState(() => {
         if (typeof window === 'undefined') return null;
         return window.localStorage.getItem('tb-regulation') || null;
     });
+    // Playthrough mode: the user asked for a builder that doesn't push the meta at
+    // them. Type coverage stays (a playthrough team still wants to know it has no
+    // Water resist) — what goes is everything ranked by competitive usage, and the
+    // ~2.6MB of datasets behind it.
+    const isPlaythrough = isPlaythroughMode(selectedRegulation);
+    const wantsMeta = { enabled: !isPlaythrough };
+    const { popular, synergy } = useTournamentData(wantsMeta);
+    const { byId: smogonById } = useSmogonData(wantsMeta);
+    const { byId: usageById } = useCompetitiveUsage(wantsMeta);
     React.useEffect(() => {
         if (typeof window === 'undefined') return;
         if (selectedRegulation) window.localStorage.setItem('tb-regulation', selectedRegulation);
@@ -224,13 +233,14 @@ export function TeamBuilderView({
 
     // Which meta core(s) the current roster already commits to (has a setter for).
     const teamCores = React.useMemo(
-        () => detectTeamCores(currentTeam.map((p) => p.id), { smogonById, usageById }),
-        [currentTeam, smogonById, usageById]
+        () => (isPlaythrough ? [] : detectTeamCores(currentTeam.map((p) => p.id), { smogonById, usageById })),
+        [currentTeam, smogonById, usageById, isPlaythrough]
     );
 
     // Team-aware synergy suggestions: by ability/core, tournament partner, and
     // type coverage — ranked across the whole relevant dex, reactive to the team.
     const synergySuggestions = React.useMemo(() => {
+        if (isPlaythrough) return [];
         if (currentTeam.length >= 6) return [];
         // When a game filter is active, keep suggestions to that game's obtainable
         // Pokémon so they respect in-game availability (types/weather cores still rank).
@@ -246,7 +256,7 @@ export function TeamBuilderView({
             limit: 30,
             allowedIds,
         });
-    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds]);
+    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds, isPlaythrough]);
 
     const suggestionIndexById = React.useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
     const addSuggestion = React.useCallback(
@@ -258,13 +268,14 @@ export function TeamBuilderView({
     // regulation) that pressure the current team. Join usage/win-rate from the
     // usage dataset with types from the index, then rank against the roster.
     const teamThreats = React.useMemo(() => {
+        if (isPlaythrough) return [];
         const teamIds = new Set(currentTeam.map((p) => p.id));
         const meta = Object.entries(metaById || {}).map(([id, e]) => {
             const nid = Number(id);
             return { id: nid, name: e.name, types: suggestionIndexById.get(nid)?.types || [], usage: e.usage, winRate: e.winRate };
         });
         return buildTeamThreats(currentTeam, meta, { limit: 6, excludeIds: teamIds });
-    }, [currentTeam, metaById, suggestionIndexById]);
+    }, [currentTeam, metaById, suggestionIndexById, isPlaythrough]);
     // Filter suggestions by active user filters (type, generation, favorites, search)
     const activeFilteredSuggestions = React.useMemo(() => {
         if (!synergySuggestions.length) return [];
@@ -376,6 +387,7 @@ export function TeamBuilderView({
                     regulations={regulations}
                     selectedRegulation={activeRegulationId}
                     onSelectRegulation={setSelectedRegulation}
+                    isPlaythrough={isPlaythrough}
                     generations={generations}
                     isInitialLoading={isInitialLoading}
                     displayedPokemons={displayedPokemons}
@@ -405,7 +417,7 @@ export function TeamBuilderView({
             {isDesktopLayout ? <main className="team-builder grid grid-cols-12 gap-6 xl:gap-7">
                 <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-6 lg:self-start">
                     <div className="flex items-center gap-2">
-                        <button
+                        {!isPlaythrough && <button
                             type="button"
                             onClick={() => setIsCoresOpen(true)}
                             className="team-builder-panel flex flex-1 items-center gap-2.5 p-3 text-left transition-all hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
@@ -435,7 +447,7 @@ export function TeamBuilderView({
                                 </span>
                             </span>
                             <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted" />
-                        </button>
+                        </button>}
                         <button
                             type="button"
                             onClick={() => setIsOnboardingOpen(true)}
@@ -591,7 +603,8 @@ export function TeamBuilderView({
                         <div role="tablist" aria-label={t('builder.analysisTitle')} className="flex gap-1 border-b border-border">
                             {[
                                 { id: 'analysis', label: t('builder.analysisTitle') },
-                                { id: 'threats', label: t('builder.threatsTitle') },
+                                // Meta threats are ranked by competitive usage — no tab in playthrough mode.
+                                ...(isPlaythrough ? [] : [{ id: 'threats', label: t('builder.threatsTitle') }]),
                             ].map((tb) => (
                                 <button
                                     key={tb.id}
@@ -606,7 +619,7 @@ export function TeamBuilderView({
                             ))}
                         </div>
 
-                        {analysisTab === 'analysis' ? (
+                        {(analysisTab === 'analysis' || isPlaythrough) ? (
                             <div className="team-builder-analysis-grid mt-4">
                                 <div className="team-builder-analysis-card">
                                     <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive coverage'}</h4>
@@ -667,6 +680,7 @@ export function TeamBuilderView({
                             <GameCoverBanner
                                 games={games}
                                 selectedGame={selectedGame}
+                                note={isPlaythrough ? t('builder.playthroughBadge') : null}
                                 onOpen={() => setIsGamePickerOpen(true)}
                                 className="game-cover--compact"
                             />
