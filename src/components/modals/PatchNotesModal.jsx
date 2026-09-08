@@ -70,28 +70,44 @@ const PlaythroughVisual = ({ t }) => (
     </div>
 );
 
-// FireRed / LeafGreen — the Kanto 151, which is the whole ask.
-const FireRedVisual = ({ language }) => {
+// The two games imported this release, side by side — each with its own
+// starters so the pair reads as "two new games", not one entry with a footnote.
+const NEW_GAMES = [
+    { key: 'firered-leafgreen', label: 'FireRed / LeafGreen', count: 151, starters: [1, 4, 7] },
+    { key: 'legends-za', label: 'Legends: Z-A', count: 412, starters: [650, 653, 656] },
+];
+
+const NewGamesVisual = ({ language }) => {
     const pt = language === 'pt';
     return (
         <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
-            <div className="flex items-center gap-2">
-                {[1, 4, 7].map((id) => (
-                    <span key={id} className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
-                        <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-10 w-10 object-contain" style={{ imageRendering: 'pixelated' }} />
-                    </span>
+            <div className="flex w-full items-stretch justify-center gap-2">
+                {NEW_GAMES.map((game) => (
+                    <div key={game.key} className="flex flex-1 flex-col items-center gap-1.5 rounded-lg bg-surface-raised p-2">
+                        <div className="flex items-center gap-1">
+                            {game.starters.map((id) => (
+                                <img
+                                    key={id}
+                                    src={`${SPRITE_BASE}/${id}.png`}
+                                    alt=""
+                                    className="h-8 w-8 object-contain"
+                                    style={{ imageRendering: 'pixelated' }}
+                                />
+                            ))}
+                        </div>
+                        <span className="text-[0.68rem] font-bold leading-tight text-fg">{game.label}</span>
+                        <span className="font-mono text-[0.55rem] font-semibold tabular-nums text-muted">
+                            {game.count} Pokémon
+                        </span>
+                    </div>
                 ))}
             </div>
-            <div className="flex flex-col items-center gap-1">
-                <span className="text-[0.72rem] font-bold text-fg">FireRed / LeafGreen</span>
-                <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
-                    {pt ? '151 Pokémon · Geração III' : '151 Pokémon · Generation III'}
-                </span>
-            </div>
+            <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
+                {pt ? '2 jogos novos no seletor' : '2 new games in the picker'}
+            </span>
         </div>
     );
 };
-
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {
     const { t, language } = useTranslation();
@@ -125,13 +141,13 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
             Visual: PlaythroughVisual,
         },
         {
-            key: 'firered-leafgreen',
+            key: 'new-games',
             Icon: PokeballIcon,
-            title: t('patchNotes.fireRedTitle'),
-            description: t('patchNotes.fireRedDesc'),
-            cta: t('patchNotes.fireRedCta'),
+            title: t('patchNotes.newGamesTitle'),
+            description: t('patchNotes.newGamesDesc'),
+            cta: t('patchNotes.newGamesCta'),
             path: '/builder',
-            Visual: FireRedVisual,
+            Visual: NewGamesVisual,
         },
     ];
 
