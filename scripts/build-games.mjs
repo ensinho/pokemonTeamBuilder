@@ -33,6 +33,15 @@ const GAMES = [
     { key: 'sword-shield', label: 'Sword / Shield', generation: 'generation-viii', pokedexes: ['galar', 'isle-of-armor', 'crown-tundra'], forms: ['galar', 'gmax'] },
     { key: 'bdsp', label: 'Brilliant Diamond / Shining Pearl', generation: 'generation-viii', pokedexes: ['extended-sinnoh', 'original-sinnoh'], forms: [] },
     { key: 'legends-arceus', label: 'Legends: Arceus', generation: 'generation-viii', pokedexes: ['hisui'], forms: ['hisui'] },
+    // Z-A ships two dexes: Lumiose (232) and Hyperspace (132), the Mega Dimension
+    // DLC's — same shape as Sword/Shield's expansions. Closed roster: what those
+    // two dexes list is what the game can hold, and its generation-ix National
+    // section would otherwise offer ~1000 Pokémon that never appear in Lumiose.
+    // NOTE: only the 48 PokéAPI Megas are attached, per `forms: ['mega']`. Z-A's
+    // own new Megas live in pokemon-index.json at locally-assigned ids (10278+)
+    // that `isOfficialForm` in utils/gameDex.js filters out of every real game —
+    // see docs/wounds.md 2026-09-08 before changing that.
+    { key: 'legends-za', label: 'Legends: Z-A', generation: 'generation-ix', pokedexes: ['lumiose-city', 'hyperspace'], forms: ['mega'], closedRoster: true },
     { key: 'scarlet-violet', label: 'Scarlet / Violet', generation: 'generation-ix', pokedexes: ['paldea', 'kitakami', 'blueberry'], forms: ['paldea'] },
     // Champions is battle-only: its 208-species Pokédex IS the whole legal roster,
     // with nothing transferable in from earlier generations — hence `closedRoster`.
