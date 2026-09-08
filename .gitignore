@@ -27,7 +27,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Markdown is ignored by default — scratch notes, per-machine agent memory and
+# working drafts should not land in the repo.
 *.md
 
+# ...except the agent knowledge base, which is the whole point of CLAUDE.md: it
+# has to travel with the code. A doc that only exists on one machine drifts from
+# the codebase silently (docs/wounds.md 2026-06-18, and again 2026-09-04: the
+# routing docs described HashRouter for two months after the switch to
+# BrowserRouter, advising a change that would have broken every deep link).
+# Negations must come after the `*.md` rule, and `docs/` must NOT be excluded as
+# a directory — git cannot re-include a file inside an excluded directory.
+!CLAUDE.md
+!docs/**/*.md
+!.claude/skills/**/*.md
+
 /design-references
-/docs
