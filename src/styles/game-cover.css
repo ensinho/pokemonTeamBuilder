@@ -228,10 +228,8 @@
 }
 
 .game-picker__section-title {
-    font-size: 0.7rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.85rem;
+    font-weight: 700;
     color: var(--color-fg);
 }
 
@@ -263,30 +261,25 @@
     align-items: center;
     gap: var(--space-1_5);
     padding: var(--space-3) var(--space-2_5) var(--space-2_5);
-    border: 1px solid var(--color-border);
+    border: none;
     border-radius: var(--radius-lg);
-    background: var(--color-surface);
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                transform var(--duration-fast) var(--ease-smooth),
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
 .game-card:hover,
 .game-card:focus-visible {
-    border-color: color-mix(in srgb, var(--cover-accent, var(--color-primary)) 60%, var(--color-border));
-    transform: translateY(-2px);
-    box-shadow: 0 12px 26px -16px color-mix(in srgb, var(--cover-accent, var(--color-primary)) 90%, transparent);
+    background: var(--color-surface-hover);
     outline: none;
 }
 
+/* Selected: an inset ring in the game's own accent, so picking a different card
+   never shifts its neighbours the way a real border would. The tint is flat —
+   a gradient here would be decoration, not information. */
 .game-card.is-active {
-    border-color: var(--cover-accent, var(--color-primary));
-    background:
-        radial-gradient(120% 120% at 50% 0%,
-            color-mix(in srgb, var(--cover-accent, var(--color-primary)) 16%, transparent) 0%,
-            transparent 60%),
-        var(--color-surface);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--cover-accent, var(--color-primary)) 55%, transparent);
+    background: color-mix(in srgb, var(--cover-accent, var(--color-primary)) 12%, var(--color-surface-raised));
+    box-shadow: inset 0 0 0 1px var(--cover-accent, var(--color-primary));
 }
 
 .game-card__art {
@@ -296,6 +289,10 @@
     width: 100%;
     height: 3.6rem;
     border-radius: var(--radius-md);
+    /* Deliberate raw white: this is a plate for third-party cover art, not an
+       interface surface. The logos are fixed artwork with their own colours and
+       need a consistently light ground to read against in the dark themes —
+       the same exception the design system makes for scrims over photography. */
     background: color-mix(in srgb, var(--color-bg) 70%, #fff 30%);
     padding: var(--space-1_5);
 }
@@ -322,8 +319,8 @@
 
 .game-card__check {
     position: absolute;
-    top: 0.4rem;
-    right: 0.4rem;
+    top: var(--space-1_5);
+    right: var(--space-1_5);
     display: inline-flex;
     align-items: center;
     justify-content: center;

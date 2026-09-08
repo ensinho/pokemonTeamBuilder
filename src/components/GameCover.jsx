@@ -152,7 +152,7 @@ export function GamePickerModal({
                 aria-modal="true"
                 aria-labelledby="game-picker-title"
                 tabIndex={-1}
-                className="game-picker w-full max-w-3xl rounded-2xl border border-border bg-surface shadow-2xl focus:outline-none"
+                className="game-picker w-full max-w-3xl rounded-2xl bg-surface shadow-elevation-3 focus:outline-none"
                 onClick={(event) => event.stopPropagation()}
             >
                 <div className="game-picker__head">
