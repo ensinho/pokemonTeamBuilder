@@ -260,7 +260,10 @@ export const useForumStore = create((set, get) => ({
         }
     },
 
-    sendMessage: async (topicId, text, attachedTeam = null, replyTo = null) => {
+    // `battleInvite` is {battleId, mode, challengerName}: a pointer to an open
+    // battle, not a copy of its state — the card reads the live document so
+    // everyone sees the moment it is claimed.
+    sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, battleInvite = null) => {
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -272,7 +275,7 @@ export const useForumStore = create((set, get) => ({
         }
 
         const cleanText = text.trim();
-        if (!cleanText && !attachedTeam) {
+        if (!cleanText && !attachedTeam && !battleInvite) {
             return false;
         }
 
@@ -317,6 +320,13 @@ export const useForumStore = create((set, get) => ({
                 creatorTrainerSprite: authorAvatar.trainerSprite,
                 creatorBadgeId: authState.selectedBadgeId || null,
                 sharedTeam: serializedAttachedTeam,
+                battleInvite: battleInvite && battleInvite.battleId
+                    ? {
+                        battleId: battleInvite.battleId,
+                        mode: battleInvite.mode === 'random' ? 'random' : 'standard',
+                        challengerName: creatorName,
+                    }
+                    : null,
                 replyTo: replyRef
             };
 
@@ -326,7 +336,9 @@ export const useForumStore = create((set, get) => ({
             await updateDoc(topicDocRef, {
                 lastActivityAt: new Date().toISOString(),
                 messageCount: increment(1),
-                lastMessageText: cleanText ? cleanText.substring(0, 100) : `Shared team: ${serializedAttachedTeam.name}`
+                lastMessageText: cleanText
+                    ? cleanText.substring(0, 100)
+                    : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : 'Battle invite')
             });
 
             return true;

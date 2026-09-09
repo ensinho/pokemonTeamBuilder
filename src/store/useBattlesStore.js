@@ -3,6 +3,7 @@ import {
     collection,
     doc,
     getDoc,
+    runTransaction,
     onSnapshot,
     orderBy,
     query,
@@ -205,6 +206,130 @@ export const useBattlesStore = create((set, get) => ({
             toast.error(t('toast.challengeError'));
             return null;
         }
+    },
+
+    /**
+     * Post an open challenge to the forum. Nobody is invited: the battle is
+     * created with a single player and the first trainer to claim it becomes
+     * the second, which is what lets people battle without being friends.
+     *
+     * Returns the battle id so the caller can attach it to a forum message.
+     */
+    createPublicInvite: async ({ mode = 'standard' } = {}) => {
+        const authState = useAuthStore.getState();
+        const { userId, isAnonymous } = authState;
+
+        if (!db || !userId) return null;
+        if (isAnonymous) {
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForBattles'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
+            return null;
+        }
+
+        const isRandom = mode === 'random';
+        const now = new Date().toISOString();
+
+        try {
+            const battleRef = doc(collection(db, battlesPath()));
+            await setDoc(battleRef, {
+                // One player until it is claimed. The rules only permit the
+                // second slot to be filled while this array still has one entry.
+                players: [userId],
+                challenger: userId,
+                isPublicInvite: true,
+                status: 'open',
+                playerNames: { [userId]: authState.trainerDisplayName() },
+                playerAvatars: { [userId]: authState.publicAvatar() },
+                mode: isRandom ? 'random' : 'standard',
+                format: isRandom ? RANDOM_BATTLE_FORMAT : BATTLE_FORMAT,
+                level: isRandom ? null : BATTLE_LEVEL,
+                randomTeamsRolledAt: null,
+                ready: {},
+                seed: null,
+                engineVersion: null,
+                turn: 0,
+                awaitingChoiceFrom: [],
+                winner: null,
+                endedAt: null,
+                claimedAt: null,
+                createdAt: now,
+                lastActivityAt: now,
+            });
+            return battleRef.id;
+        } catch (err) {
+            console.error('Failed to open the invite:', err);
+            toast.error(t('toast.challengeError'));
+            return null;
+        }
+    },
+
+    /**
+     * Take an open invite. Runs in a transaction so two people accepting at the
+     * same moment cannot both end up in the battle — the loser is told it was
+     * taken rather than silently overwriting the winner. The rules enforce the
+     * same compare-and-set, so a hand-rolled write cannot get around it either.
+     */
+    claimPublicInvite: async (battleId) => {
+        const authState = useAuthStore.getState();
+        const { userId, isAnonymous } = authState;
+
+        if (!db || !battleId || !userId) return false;
+        if (isAnonymous) {
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForBattles'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
+            return false;
+        }
+
+        const battleRef = doc(db, battlesPath(), battleId);
+        const now = new Date().toISOString();
+        let mode = 'standard';
+
+        try {
+            await runTransaction(db, async (tx) => {
+                const snap = await tx.get(battleRef);
+                if (!snap.exists()) throw new Error('missing');
+
+                const battle = snap.data();
+                const players = Array.isArray(battle.players) ? battle.players : [];
+                if (!battle.isPublicInvite || battle.status !== 'open' || players.length !== 1) {
+                    throw new Error('taken');
+                }
+                if (players[0] === userId) throw new Error('own');
+                mode = battle.mode === 'random' ? 'random' : 'standard';
+
+                tx.update(battleRef, {
+                    players: [players[0], userId],
+                    playerNames: { ...(battle.playerNames || {}), [userId]: authState.trainerDisplayName() },
+                    playerAvatars: { ...(battle.playerAvatars || {}), [userId]: authState.publicAvatar() },
+                    status: 'teamSelect',
+                    claimedAt: now,
+                    lastActivityAt: now,
+                });
+            });
+        } catch (err) {
+            if (err?.message === 'taken') {
+                toast.info(t('toast.inviteTaken'), { description: t('toast.inviteTakenDesc') });
+            } else if (err?.message === 'own') {
+                toast.info(t('toast.inviteOwn'));
+            } else {
+                console.error('Failed to claim the invite:', err);
+                toast.error(t('toast.challengeError'));
+            }
+            return false;
+        }
+
+        // A random battle has nothing to pick, so it goes straight to the field.
+        if (mode === 'random') await get().rollRandomTeams(battleId);
+
+        toast.success(t('toast.inviteClaimed'), {
+            description: t('toast.inviteClaimedDesc'),
+            actions: [{ label: t('toast.openBattle'), onClick: () => navigateTo(`/battles/${battleId}`) }],
+        });
+        return true;
     },
 
     /**

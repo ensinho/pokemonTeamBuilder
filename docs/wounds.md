@@ -12,6 +12,16 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-09-10 — Forum threads opened at the top, and the fix had to be found three times `bug`
+- **Symptom:** "automaticamente descer a mensagem do forum para a mais recente, em todos os topicos, atualmente nao eh assim, vem na do topo." Measured: switching topics reset the list to the top and then smooth-scrolled down over ~900ms, and in the reported cases never arrived.
+- **Root cause — three, stacked:**
+  1. **The signal was keyed off the topic id.** `useForumStore` empties `messages` and re-listens in cases where the id never changes — re-selecting the current topic, or the listener rebinding. The effect then saw neither an opening (its remembered count was still the previous thread's) nor growth (23 is not more than 23), so nothing scrolled while the remounted list sat at the top. **This is what the report was hitting:** the feed auto-selects `general` on load, so the user's first topic click was a re-selection. The first two versions of my own replacement hook reproduced it, because they keyed off the id too.
+  2. **`behavior: 'smooth'` from the top.** A long animated travel *is* what "it comes at the top" looks like, and a re-render mid-flight strands it partway.
+  3. **The jump aimed at a height with no sprites in it.** A thread of team cards hotlinks ~100 sprites, so the content keeps growing after the messages render; when those sprites are already cached there is no `load` event to react to either, only a taller layout.
+- **Fix:** `src/hooks/useChatAutoScroll.js`. **The list going empty is the opening signal**, not the id. Opening jumps instantly; smooth is kept only for a message arriving while already at the bottom. The bottom is then re-asserted every frame for ~1.2s, and every sprite that lands pushes that deadline out — so the pin lasts exactly as long as the thread is still growing. Scrolling away from the bottom releases it immediately.
+- **Correct pattern:** for any "stick to the newest" list, **derive the reset from the data emptying, not from an id changing** — a store that clears and re-listens will fire the same id twice. And never aim a single scroll at a height that media has not filled yet: either pin over a window, or measure after load.
+- **Files:** `src/hooks/useChatAutoScroll.js`, `src/components/views/FeedView.jsx`
+
 ### 2026-09-09 — The whole app was outline-defined, in all six themes `dispattern`
 - **Symptom:** the UI read as busy and boxy no matter how many individual borders were removed. Removing ~40 nested borders from Home barely changed how it felt.
 - **Root cause:** measured per theme, **the step from `--color-surface` to `--color-border` was larger than the step from `--color-bg` to `--color-surface`** — in every one of the six. In `dark`, bg→surface was 13 luminance units and surface→border was 22. So a card's *outline* was doing more work than its *fill*, and every region in the app was defined by a line. That is a token-level property: you cannot fix it by deleting borders one at a time, because the ones that remain still dominate.

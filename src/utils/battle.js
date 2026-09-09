@@ -73,7 +73,16 @@ export const buildBattleTeamText = (teamMembers = []) => {
     return { text, errors };
 };
 
-export const BATTLE_STATUSES = ['pending', 'teamSelect', 'active', 'ended', 'declined', 'cancelled'];
+export const BATTLE_STATUSES = ['pending', 'open', 'teamSelect', 'active', 'ended', 'declined', 'cancelled'];
+
+/**
+ * A public invite posted to the forum, not yet claimed: one player, status
+ * 'open'. The first trainer to accept becomes the second player and the battle
+ * carries on exactly like an accepted challenge — so this shape only exists
+ * between posting and claiming.
+ */
+export const isPublicInvite = (battle) =>
+    Boolean(battle?.isPublicInvite) && battle?.status === 'open';
 
 /** The other player's uid, or null if this battle doesn't involve `userId`. */
 export const battleOpponentId = (battle, userId) => {
@@ -90,6 +99,38 @@ export const battleOpponentId = (battle, userId) => {
  * "don't render", rather than leaking someone else's battle into the UI.
  */
 export const describeBattle = (battle, userId) => {
+    // An unclaimed public invite has no opponent yet, so it has to be described
+    // before `battleOpponentId` (which would return null and hide it entirely).
+    // Both sides of it are meaningful: its author sees a pending invite in their
+    // battle list, and a stranger sees something they may claim.
+    if (isPublicInvite(battle)) {
+        const mine = battle.challenger === userId;
+        return {
+            battleId: battle.id,
+            status: 'open',
+            isPublicInvite: true,
+            opponentId: null,
+            opponentName: null,
+            opponentAvatar: null,
+            isChallenger: mine,
+            myReady: false,
+            theirReady: false,
+            isOpen: true,
+            isOver: false,
+            // Nobody owes a move on an invite: it waits on whoever takes it.
+            waitingOn: null,
+            isRandom: isRandomBattle(battle),
+            canAccept: false,
+            canDecline: false,
+            canCancel: mine,
+            canClaim: !mine && Boolean(userId),
+            canSubmitTeam: false,
+            canStart: false,
+            canRollRandomTeams: false,
+            canDelete: mine,
+        };
+    }
+
     const opponentId = battleOpponentId(battle, userId);
     if (!opponentId) return null;
 
@@ -147,6 +188,10 @@ export const describeBattle = (battle, userId) => {
         canStart: status === 'teamSelect' && myReady && theirReady && !isRandom,
         canRollRandomTeams: isRandom && status === 'teamSelect' && !rolled,
         canDelete: true,
+        // Claimed invites keep the flag on the document, but there is nothing
+        // left to claim — the battle is an ordinary one from here on.
+        isPublicInvite: false,
+        canClaim: false,
     };
 };
 

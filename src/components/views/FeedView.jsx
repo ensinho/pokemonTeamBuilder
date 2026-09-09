@@ -7,6 +7,8 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useComposerFocus } from '../../hooks/useComposerFocus';
 import { useChatAutoScroll } from '../../hooks/useChatAutoScroll';
+import { BattleInviteCard } from '../BattleInviteCard';
+import { useBattlesStore } from '../../store/useBattlesStore';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { getStaticPokemonDetail } from '../../services/pokemonDataCache';
@@ -194,6 +196,19 @@ export function FeedView({ colors, showToast, navigate }) {
             setAttachedTeam(null);
             setIsCreatingTopic(false);
             setCurrentTopicId(id);
+        }
+    };
+
+    // Post an open challenge into this thread. The battle is created first so
+    // the message can point at it; if that fails there is nothing to announce.
+    const handlePostBattleInvite = async (mode) => {
+        setIsAttachDropdownOpen(false);
+        const battleId = await useBattlesStore.getState().createPublicInvite({ mode });
+        if (!battleId) return;
+        const posted = await sendMessage(currentTopicId, replyText, null, replyingTo, { battleId, mode });
+        if (posted) {
+            setReplyText('');
+            setReplyingTo(null);
         }
     };
 
@@ -650,6 +665,10 @@ export function FeedView({ colors, showToast, navigate }) {
                                                     <p className="forum-message-text">{message.text}</p>
                                                 )}
 
+                                                {message.battleInvite?.battleId && (
+                                                    <BattleInviteCard invite={message.battleInvite} />
+                                                )}
+
                                                 {/* Render Shared Team snippet inside post */}
                                                 {message.sharedTeam && (
                                                     <div className="forum-team-share-card">
@@ -817,6 +836,26 @@ export function FeedView({ colors, showToast, navigate }) {
                                     {isAttachDropdownOpen && (
                                         <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
                                             <p className="text-xs text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
+                                                {t('forum.inviteSectionLabel')}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => handlePostBattleInvite('random')}
+                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate flex items-center gap-1.5"
+                                            >
+                                                <SwordsIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                {t('forum.inviteRandomOption')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handlePostBattleInvite('standard')}
+                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate flex items-center gap-1.5"
+                                            >
+                                                <SwordsIcon className="w-3.5 h-3.5 text-muted shrink-0" />
+                                                {t('forum.inviteTeamOption')}
+                                            </button>
+
+                                            <p className="text-xs text-muted font-bold px-2 py-1 mt-1 uppercase tracking-wider border-b border-border mb-1">
                                                 {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
                                             </p>
                                             {currentTeam.length > 0 && (

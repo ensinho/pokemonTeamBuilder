@@ -129,6 +129,9 @@ one pending"* instead of something generic.
 ```mermaid
 stateDiagram-v2
     [*] --> pending: challenger creates<br/>(rules: must be friends)
+    [*] --> open: challenger posts a<br/>public forum invite<br/>(no friendship)
+    open --> teamSelect: **first** taker claims it<br/>(compare-and-set)
+    open --> cancelled: challenger withdraws
     pending --> declined: opponent declines
     pending --> cancelled: challenger withdraws
     pending --> teamSelect: opponent accepts
@@ -139,6 +142,24 @@ stateDiagram-v2
     cancelled --> [*]
     ended --> [*]
 ```
+
+### Public invites — battling without a friendship
+
+An invite is a battle document with **one** player and `status: 'open'`,
+`isPublicInvite: true`, announced by a forum message that stores only its id. The
+message never holds the invite's state, so every card in the thread shows the
+live document and changes the instant somebody claims it.
+
+Claiming is a **compare-and-set**, in both the client transaction and the rules:
+the update is permitted only while `players` still has one entry and the caller
+is not the challenger, so two people accepting at the same moment cannot both
+win — the loser's write is rejected and they are told it was taken. From
+`teamSelect` on it is an ordinary battle.
+
+Direct challenges stay friends-only on purpose: an unsolicited battle from a
+stranger is a spam vector, while nobody *receives* a public invite — people opt
+into it. That asymmetry is the whole reason the friendship check could be
+dropped for one path and not the other.
 
 Clients own **only** this pre-battle lifecycle. `describeBattle(battle, userId)`
 ([src/utils/battle.js](../../src/utils/battle.js)) derives which buttons the viewer may
@@ -257,7 +278,7 @@ read access per document, so anything private gets its own document keyed by uid
 | `publicProfiles/{uid}` | read, write (not `battleRecord`) | read | full |
 | `friendRequests/{a}_{b}` | read, create, delete | read (if party) | — |
 | `friendships/{a}_{b}` | read, create (needs pending request), delete | — | — |
-| `battles/{id}` | read; only the 4 lifecycle transitions | read | full |
+| `battles/{id}` | read; only the 5 lifecycle transitions | read (+ **anyone** signed in, while `isPublicInvite`) | full |
 | `battles/{id}/teams/{uid}` | read, write | **none** | full |
 | `battles/{id}/playerLogs/{uid}/**` | read | **none** | write |
 | `battles/{id}/choices/{round}_{uid}` | create once | read | full |
@@ -335,7 +356,14 @@ possible without Firebase or a browser.
 3. **`@pkmn/sim` stays pinned exactly** (no caret) and stamped on the battle as
    `engineVersion`. A minor bump can change turn outcomes and break an in-flight replay.
 4. **`describeBattle` must mirror the rules.** If they diverge, the UI offers buttons the
-   server rejects.
+   server rejects. It now describes an unclaimed public invite *before* resolving an
+   opponent, because there isn't one yet — returning null there would hide the invite from
+   its own author's battle list.
+9. **A public invite is world-readable by design.** Its document carries no secret (teams,
+   logs and choices are subcollections with owner-only rules), and the seed it holds is
+   already visible to both players — a spectator learning it grants no power, since only
+   the two players can write a choice. Do not move anything private onto the battle
+   document without revisiting that read rule.
 5. **Accept-friend writes the friendship before clearing the request.** Inverting it
    deadlocks every accept.
 6. **The log write path stays delta-based.** Keep the "replay logs extend" tests green.

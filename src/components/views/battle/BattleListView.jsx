@@ -167,7 +167,9 @@ export function BattleListView() {
                                 </span>
                                 <span className="battle-card__identity">
                                     <span className="battle-card__name">
-                                        {view.opponentName || t('friends.unknownTrainer')}
+                                        {view.isPublicInvite
+                                            ? t('battle.openInviteOpponent')
+                                            : (view.opponentName || t('friends.unknownTrainer'))}
                                     </span>
                                     <span className="battle-card__status">{statusLabel(view)}</span>
                                 </span>

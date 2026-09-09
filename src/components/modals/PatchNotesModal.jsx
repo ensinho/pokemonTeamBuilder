@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, PokeballIcon, SparklesIcon } from '../icons';
+import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MessageIcon, PokeballIcon, SparklesIcon, SwordsIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
 
@@ -160,6 +160,66 @@ const HistoryVisual = ({ language }) => (
     </div>
 );
 
+// Open forum invites — two trainers who were never friends, and the invite card
+// that put them in the same battle.
+const InvitesVisual = ({ t, language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex w-full max-w-[15rem] items-center justify-between gap-2 rounded-lg bg-surface-raised px-2.5 py-2">
+                <span className="flex items-center gap-1.5 text-[0.68rem] font-bold text-fg">
+                    <SwordsIcon className="h-3.5 w-3.5 shrink-0 text-primary" />
+                    {t('forum.inviteTitle')}
+                </span>
+                <span className="rounded-full bg-primary px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-white">
+                    {t('forum.inviteAccept')}
+                </span>
+            </div>
+            <div className="flex items-center gap-3">
+                {[6, 9].map((id, i) => (
+                    <React.Fragment key={id}>
+                        {i === 1 && <span className="font-mono text-[0.6rem] font-bold text-muted">VS</span>}
+                        <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
+                            <img
+                                src={`${SPRITE_BASE}/${id}.png`}
+                                alt=""
+                                className="h-10 w-10 object-contain"
+                                style={{ imageRendering: 'pixelated' }}
+                            />
+                        </span>
+                    </React.Fragment>
+                ))}
+            </div>
+            <span className="font-mono text-[0.58rem] font-semibold tabular-nums text-muted">
+                {pt ? 'primeiro a aceitar entra' : 'first to accept takes it'}
+            </span>
+        </div>
+    );
+};
+
+// Threads opening on the newest message.
+const LatestVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-1.5 bg-bg p-3" aria-hidden="true">
+            {[0, 1, 2].map((i) => (
+                <div key={i} className="flex w-full max-w-[13rem] items-center gap-2 rounded-md bg-surface-raised px-2 py-1 opacity-60">
+                    <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-muted" />
+                    <span className="h-1 flex-1 rounded-full bg-muted/40" />
+                </div>
+            ))}
+            <div className="flex w-full max-w-[13rem] items-center gap-2 rounded-md bg-primary-soft px-2 py-1">
+                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                <span className="h-1 flex-1 rounded-full bg-primary/50" />
+                <ChevronDownIcon className="h-3 w-3 shrink-0 text-primary" />
+            </div>
+            <span className="mt-0.5 font-mono text-[0.58rem] font-semibold text-muted">
+                {pt ? 'abre na mais recente' : 'opens on the newest'}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -167,6 +227,8 @@ const NOTE_ICONS = {
     sparkles: SparklesIcon,
     heart: HeartIcon,
     flower: FlowerIcon,
+    swords: SwordsIcon,
+    message: MessageIcon,
 };
 
 const NOTE_VISUALS = {
@@ -175,6 +237,8 @@ const NOTE_VISUALS = {
     newGames: NewGamesVisual,
     tera: TeraVisual,
     history: HistoryVisual,
+    invites: InvitesVisual,
+    latest: LatestVisual,
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {

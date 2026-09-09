@@ -264,3 +264,75 @@ describe('battleAttentionNotice', () => {
         expect(battleAttentionNotice(view).titleKey).toBe('battle.notifyRandomTitle');
     });
 });
+
+describe('describeBattle — public forum invites', () => {
+    const invite = (over = {}) => ({
+        id: 'inv1',
+        challenger: 'alice',
+        players: ['alice'],
+        status: 'open',
+        isPublicInvite: true,
+        mode: 'random',
+        playerNames: { alice: 'Alice' },
+        ready: {},
+        ...over,
+    });
+
+    it('describes an unclaimed invite for its author: cancellable, not claimable', () => {
+        const view = describeBattle(invite(), 'alice');
+        expect(view).not.toBeNull();
+        expect(view.status).toBe('open');
+        expect(view.isPublicInvite).toBe(true);
+        expect(view.isChallenger).toBe(true);
+        expect(view.canCancel).toBe(true);
+        expect(view.canClaim).toBe(false);
+        expect(view.opponentId).toBeNull();
+    });
+
+    it('offers the claim to anyone else', () => {
+        const view = describeBattle(invite(), 'bob');
+        expect(view.canClaim).toBe(true);
+        expect(view.canCancel).toBe(false);
+        expect(view.isChallenger).toBe(false);
+    });
+
+    it('never offers a pre-battle action on an invite', () => {
+        for (const uid of ['alice', 'bob']) {
+            const view = describeBattle(invite(), uid);
+            expect(view.canAccept).toBe(false);
+            expect(view.canDecline).toBe(false);
+            expect(view.canSubmitTeam).toBe(false);
+            expect(view.canStart).toBe(false);
+            expect(view.canRollRandomTeams).toBe(false);
+        }
+    });
+
+    it('waits on nobody while it is open, so it never nags either party', () => {
+        expect(describeBattle(invite(), 'alice').waitingOn).toBeNull();
+        expect(describeBattle(invite(), 'bob').waitingOn).toBeNull();
+        expect(battleAttentionNotice(describeBattle(invite(), 'alice'))).toBeNull();
+    });
+
+    it('becomes an ordinary battle once claimed', () => {
+        const claimed = invite({
+            players: ['alice', 'bob'],
+            status: 'teamSelect',
+            playerNames: { alice: 'Alice', bob: 'Bob' },
+        });
+        const view = describeBattle(claimed, 'bob');
+        expect(view.isPublicInvite).toBe(false);
+        expect(view.canClaim).toBe(false);
+        expect(view.opponentId).toBe('alice');
+        expect(view.status).toBe('teamSelect');
+    });
+
+    it('is invisible to a stranger once claimed', () => {
+        const claimed = invite({ players: ['alice', 'bob'], status: 'active' });
+        expect(describeBattle(claimed, 'carol')).toBeNull();
+    });
+
+    it('carries the mode through, so a random invite still skips team select', () => {
+        expect(describeBattle(invite(), 'bob').isRandom).toBe(true);
+        expect(describeBattle(invite({ mode: 'standard' }), 'bob').isRandom).toBe(false);
+    });
+});
