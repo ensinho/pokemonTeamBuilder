@@ -6,6 +6,7 @@ import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useComposerFocus } from '../../hooks/useComposerFocus';
+import { useChatAutoScroll } from '../../hooks/useChatAutoScroll';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { getStaticPokemonDetail } from '../../services/pokemonDataCache';
@@ -107,8 +108,6 @@ export function FeedView({ colors, showToast, navigate }) {
     const messageListRef = useRef(null);
     const messageListEndRef = useRef(null);
     const { composerRef: replyInputRef, focusComposer } = useComposerFocus();
-    const prevTopicIdRef = useRef(currentTopicId);
-    const prevMessagesLengthRef = useRef(messages.length);
 
     // Initialize listeners
     useEffect(() => {
@@ -130,29 +129,13 @@ export function FeedView({ colors, showToast, navigate }) {
         }
     }, [topics, currentTopicId, setCurrentTopicId]);
 
-    // Auto-scroll messages container to bottom conditionally (WITHOUT scrolling the screen)
-    useEffect(() => {
-        const container = messageListRef.current;
-        if (container && messages.length > 0) {
-            const isTopicChange = prevTopicIdRef.current !== currentTopicId;
-            const hasNewMessage = messages.length > prevMessagesLengthRef.current;
-            const isInitialLoad = prevMessagesLengthRef.current === 0;
-
-            const lastMessage = messages[messages.length - 1];
-            const sentByMe = lastMessage && lastMessage.createdBy === userId;
-
-            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
-
-            if (isTopicChange || isInitialLoad || sentByMe || (hasNewMessage && isAtBottom)) {
-                container.scrollTo({
-                    top: container.scrollHeight,
-                    behavior: 'smooth'
-                });
-            }
-        }
-        prevTopicIdRef.current = currentTopicId;
-        prevMessagesLengthRef.current = messages.length;
-    }, [messages, currentTopicId, userId]);
+    // Newest message first, on every topic: see useChatAutoScroll for why the
+    // opening jump is instant and re-asserted while sprites load.
+    useChatAutoScroll(messageListRef, {
+        threadKey: currentTopicId,
+        count: messages.length,
+        lastIsMine: messages[messages.length - 1]?.createdBy === userId,
+    });
 
     // Drop a pending reply/attachment when the user switches topics.
     useEffect(() => {
