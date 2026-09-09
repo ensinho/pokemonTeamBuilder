@@ -26,7 +26,6 @@
 }
 
 .trainer-selector__tile:hover {
-    transform: translateY(-2px);
     border-color: var(--color-border-hover);
 }
 

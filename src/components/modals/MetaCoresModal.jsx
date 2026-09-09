@@ -134,14 +134,14 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
     const loading = smogonStatus !== 'ready' && cores.length === 0;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-3 backdrop-blur-sm sm:p-4" onClick={onClose} role="presentation">
+        <div className="modal-scrim" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="meta-cores-title"
                 tabIndex={-1}
-                className="relative flex max-h-[90vh] w-full max-w-4xl flex-col rounded-2xl bg-surface shadow-xl animate-scale-in focus:outline-none"
+                className="modal-panel modal-panel--2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

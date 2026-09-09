@@ -60,14 +60,14 @@ export function ChallengeModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+        <div className="modal-scrim">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="challenge-modal-title"
                 tabIndex={-1}
-                className="relative w-full max-w-sm bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden animate-scale-in outline-none flex flex-col"
+                className="modal-panel modal-panel--sm"
             >
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-border">

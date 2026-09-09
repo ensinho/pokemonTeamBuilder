@@ -131,21 +131,27 @@
         background-color var(--duration-fast) var(--ease-smooth);
 }
 
+/* 2.25rem, not 2.15rem: it is the height every other control in the app uses
+   (.btn, .input-clean, .select-clean), and an editor row mixing 34.4px and 36px
+   controls never lines up along its baseline. */
 .team-builder-field--compact {
     border-radius: var(--radius-md);
-    height: 2.15rem;
-    padding: 0 var(--space-2_5);
-    font-size: 0.8125rem;
+    height: 2.25rem;
+    padding: 0 var(--space-3);
+    font-size: var(--text-sm);
 }
 
+/* The local field padding above would otherwise close the gutter the shared
+   select primitive reserves for its chevron, running the label under it. */
 .team-builder-select {
-    appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239CA3AF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 0.65rem center;
-    background-size: 0.875rem;
-    padding-right: var(--space-8) !important;
+    padding-right: var(--space-8);
 }
+
+/* Appearance, chevron and focus all come from `.select-clean` in index.css,
+   which lists this class explicitly. This file used to redraw the whole control
+   — a chevron at a different size and offset, hardcoded grey (wrong in the light
+   themes), and its own focus ring — so a select here and a select in the damage
+   calculator were visibly different controls. */
 
 .team-builder-toggle {
     display: inline-flex;
@@ -173,13 +179,11 @@
 }
 
 .team-builder-field:focus-visible,
-.team-builder-select:focus-visible,
-.team-builder-field:focus,
-.team-builder-select:focus {
+.team-builder-field:focus {
     outline: none;
     border-color: var(--color-primary);
     background-color: var(--color-surface);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 .team-builder-toggle:focus-visible,
@@ -478,7 +482,7 @@
 .team-builder-sprite-stack__item {
     width: 1.5rem;
     height: 1.5rem;
-    margin-left: -0.3rem;
+    margin-left: calc(var(--space-1) * -1);
     border: 2px solid var(--color-surface-raised);
     border-radius: 50%;
     background: var(--color-surface);
@@ -683,10 +687,9 @@
 
 .team-builder-analysis-card__title {
     margin: 0 0 var(--space-2);
-    font-size: 0.675rem;
+    font-size: var(--text-sm);
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
 }
 
 .team-builder-analysis-card__title--success {
@@ -741,7 +744,7 @@
     position: sticky;
     top: 0;
     z-index: 20;
-    margin: 0 -1rem;
+    margin: 0 calc(var(--space-4) * -1);
     border-bottom: 1px solid var(--color-border);
     background: var(--color-bg);
     padding: var(--space-2_5) var(--space-3_5) var(--space-3);
@@ -1304,7 +1307,7 @@
 /* Horizontally Scrollable Type Filter Row */
 .pokedex-mobile-types-container {
     width: auto;
-    margin: var(--space-1) -0.875rem 0;
+    margin: var(--space-1) calc(var(--space-3_5) * -1) 0;
     padding: 0 var(--space-3_5);
     overflow: hidden;
 }
@@ -1800,13 +1803,10 @@
 /* Regional / National Pokedex Section Headers in Grid */
 .pokedex-section-title {
     grid-column: 1 / -1;
-    font-size: 0.675rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    letter-spacing: 0;
     color: var(--color-primary);
-    opacity: 0.85;
-    border-bottom: 1px solid var(--color-border);
     padding: var(--space-1) 0 var(--space-2);
     margin: var(--space-2) var(--space-1_5) var(--space-2_5);
     display: flex;

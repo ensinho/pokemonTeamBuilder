@@ -12,6 +12,52 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-09-09 — The whole app was outline-defined, in all six themes `dispattern`
+- **Symptom:** the UI read as busy and boxy no matter how many individual borders were removed. Removing ~40 nested borders from Home barely changed how it felt.
+- **Root cause:** measured per theme, **the step from `--color-surface` to `--color-border` was larger than the step from `--color-bg` to `--color-surface`** — in every one of the six. In `dark`, bg→surface was 13 luminance units and surface→border was 22. So a card's *outline* was doing more work than its *fill*, and every region in the app was defined by a line. That is a token-level property: you cannot fix it by deleting borders one at a time, because the ones that remain still dominate.
+- **Fix:** rebalanced `--color-bg` / `--color-surface` / `--color-surface-raised` / `--color-border` in all six themes (and their `theme.js` mirror) so the fill step exceeds the line step everywhere — dark surfaces raised, borders pulled back toward their surface. Lines are now whispers and fill separates regions.
+- **Correct pattern:** before adding or auditing borders, check the ratio. A region should be legible with its border removed; the border is a refinement, not the definition. There is a check in the tooling notes below — if a theme reports `LINE WINS`, that theme is outline-defined and no amount of per-component border-pruning will make it feel calm.
+
+```bash
+# Run from src/. Every theme must print "fill wins".
+python3 - <<'EOF'
+import re
+s=open('index.css').read()
+def lum(h):
+    h=h.lstrip('#'); r,g,b=(int(h[i:i+2],16) for i in (0,2,4)); return 0.2126*r+0.7152*g+0.0722*b
+for blk in re.split(r'(?=:root)', s):
+    m=re.search(r"data-theme='(\w+)'", blk)
+    if not m: continue
+    g=lambda k:(re.search(rf'--color-{k}:\s*(#[0-9a-fA-F]{{6}})',blk) or [None,None])[1]
+    bg,su,bo=g('bg'),g('surface'),g('border')
+    if not all([bg,su,bo]): continue
+    fill=abs(lum(su)-lum(bg)); line=abs(lum(bo)-lum(su))
+    print(f"{m.group(1):9} fill {fill:5.1f} line {line:5.1f} {'fill wins' if fill>line else 'LINE WINS'}")
+EOF
+```
+- **Files:** `src/index.css`, `src/constants/theme.js`
+
+### 2026-09-09 — Copy on a photographic scrim followed the theme `bug`
+- **Symptom:** on the three light themes the home hero's greeting ("Boa tarde.") was near-invisible — dark text on a dark image.
+- **Root cause:** the hero's scrim is a fixed `rgba(17,17,19,0.62)` set inline in `HomeView`, so the panel is dark in **every** theme — correct, since a scrim over photography is theme-independent. But the copy on it used `text-fg` / `text-muted`, which on the light themes resolve to near-black. Half the pair was theme-independent and half was not. The streak pill had the same fault via `bg-surface` (white on the light themes).
+- **Fix:** added `--color-on-scrim` / `--color-on-scrim-muted` and pinned the hero's copy and pill to them.
+- **Correct pattern:** if a surface is theme-independent, **everything on it must be too**. Reach for the on-scrim tokens rather than `text-fg`/`text-muted`/`bg-surface` inside any element whose background is a photo, a video, or a fixed scrim.
+- **Files:** `src/index.css`, `src/styles/home-view.css`, `src/components/views/HomeView.jsx`
+
+### 2026-09-09 — A media query cannot outrank a state class `bug`
+- **Symptom:** the desktop sidebar carried a compositor layer it had no use for. `@media (min-width: 1024px) { .app-shell__sidebar { transform: translateX(0) } }` was written to undo the mobile drawer's transform, and never applied.
+- **Root cause:** **a media query adds no specificity.** The rule inside it is `(0,1,0)`; the drawer's open state is `.app-shell__sidebar.is-open` at `(0,2,0)`, so the state class won at every viewport. It went unnoticed for as long as it did precisely *because* both rules set `translateX(0)` — the losing rule changed nothing visible while still promoting the element to its own layer.
+- **Fix:** the desktop rule now repeats the state selector (`.app-shell__sidebar, .app-shell__sidebar.is-open`) and sets `transform: none`, so the rail is a plain flex column on desktop and a transformed drawer only below `lg`.
+- **Correct pattern:** when a media query overrides a rule that carries a state class (`.is-open`, `.is-active`, `.is-collapsed`), **match the specificity inside the query**. And be suspicious of an override that sets the same value it is overriding: it is either dead code or, as here, doing something invisible that you did not intend. Two rules agreeing on a value is not evidence the right one is winning.
+- **Files:** `src/styles/app-shell.css`
+
+### 2026-09-09 — A breakpoint-specific preference leaked across breakpoints `bug`
+- **Symptom:** collapsing the sidebar once on a desktop screen left the **mobile drawer** rendering as a 60px column of unlabelled icons. The control that expands it is `hidden lg:inline-flex`, so on a phone the drawer was a dead end — no labels, no way out except clearing site data.
+- **Root cause:** `ptb-sidebar-collapse-pref` is stored per user, not per breakpoint, and `isSidebarCollapsed` initialises from it at any viewport. An effect (`if (isMobile) setIsSidebarCollapsed(false)`) existed to correct this, but a value that has to be corrected after the fact can always be observed mid-correction — and it was, on every mobile load that read the stored pref.
+- **Fix:** the sidebar renders from a derived `const isRailCollapsed = isSidebarCollapsed && !isMobile`, so the collapsed-drawer state is unrepresentable rather than merely corrected. The effect is kept as belt-and-braces.
+- **Correct pattern:** if a stored preference only means something at one breakpoint, **derive the render value at render time** rather than trying to keep the stored state honest with an effect. And whenever a mode hides labels, check that the control which restores them is reachable *in that mode* — the icon rail's expand button being desktop-only is what turned a cosmetic leak into a trap.
+- **Files:** `src/components/AppLayout.jsx`
+
 ### 2026-09-09 — Toasts told users what happened and then abandoned them `dispattern`
 - **Symptom:** every toast in the app was a dead end. "Create an account to add friends" named a requirement and gave no way to meet it; "Team saved!" left the user to go find their teams; a PokéRoom invite carrying the only copy of the room code expired on a timer they could not stop. 130 call sites, exactly one of which offered an action.
 - **Root causes, four separate ones:**

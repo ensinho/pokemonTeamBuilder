@@ -208,24 +208,18 @@ const readSidebarCollapsePref = () => {
     } catch { return null; }
 };
 
-// Which nav sections the user folded away. Only the folded ones are stored, so
-// a new section added later shows up open instead of inheriting someone's old
-// preference. Keyed by a stable section key, never by the translated title.
-const SIDEBAR_GROUPS_KEY = 'ptb-sidebar-collapsed-groups';
+// Which nav section is open. Exactly one, or none — see the accordion note on
+// `openNavGroup` below. Stores the open key rather than the folded ones, because
+// "at most one" is the invariant and a single string cannot express a broken
+// state the way a set of five could. Keyed by a stable section key, never by the
+// translated title.
+const SIDEBAR_GROUP_KEY = 'ptb-sidebar-open-group';
 
-const readCollapsedGroups = () => {
+const readOpenGroup = () => {
     try {
-        const raw = window.localStorage.getItem(SIDEBAR_GROUPS_KEY);
-        const parsed = raw ? JSON.parse(raw) : null;
-        return new Set(Array.isArray(parsed) ? parsed.filter((key) => typeof key === 'string') : []);
-    } catch { return new Set(); }
-};
-
-/** Whether the user has ever folded a section themselves. If they have, their
- *  choice wins over the default below. */
-const hasStoredGroupPreference = () => {
-    try { return window.localStorage.getItem(SIDEBAR_GROUPS_KEY) !== null; }
-    catch { return false; }
+        const raw = window.localStorage.getItem(SIDEBAR_GROUP_KEY);
+        return raw || null;
+    } catch { return null; }
 };
 
 // On the small-laptop band (1024–1279px) the fixed sidebar steals too much
@@ -332,8 +326,8 @@ export default function AppLayout() {
         if (pref !== null) return pref;                 // deliberate choice wins
         return autoCollapseForWidth(window.innerWidth); // otherwise decide by width
     });
-    const [collapsedNavGroups, setCollapsedNavGroups] = useState(() =>
-        (typeof window === 'undefined' ? new Set() : readCollapsedGroups()));
+    const [openNavGroup, setOpenNavGroup] = useState(() =>
+        (typeof window === 'undefined' ? null : readOpenGroup()));
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
 
     // Lets a store-raised toast open the auth modal. Every "you need an account
@@ -372,15 +366,21 @@ export default function AppLayout() {
         [avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny],
     );
 
-    // Fold/unfold one nav section. Persisted immediately: the sidebar is the one
-    // piece of chrome on every route, so re-folding it each visit would be a tax.
+    // Open one nav section, closing whichever was open. An accordion, not a set
+    // of independent folds: with five sections and twenty links, "each folds on
+    // its own" means the rail's height is whatever the user last left it at, and
+    // in practice that was everything open and a scrollbar. Exactly one open
+    // section keeps the rail a fixed, short shape on every screen.
+    //
+    // Persisted immediately — the sidebar is the one piece of chrome on every
+    // route, so re-folding it each visit would be a tax.
     const toggleNavGroup = useCallback((groupKey) => {
-        setCollapsedNavGroups((previous) => {
-            const next = new Set(previous);
-            if (next.has(groupKey)) next.delete(groupKey);
-            else next.add(groupKey);
-            try { window.localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify([...next])); }
-            catch { /* preference is best-effort */ }
+        setOpenNavGroup((previous) => {
+            const next = previous === groupKey ? null : groupKey;
+            try {
+                if (next) window.localStorage.setItem(SIDEBAR_GROUP_KEY, next);
+                else window.localStorage.removeItem(SIDEBAR_GROUP_KEY);
+            } catch { /* preference is best-effort */ }
             return next;
         });
     }, []);
@@ -488,6 +488,16 @@ export default function AppLayout() {
     useEffect(() => {
         if (isMobile) setIsSidebarCollapsed(false);
     }, [isMobile]);
+
+    // What the sidebar actually renders as. The icon rail is a *desktop*
+    // affordance: below lg the sidebar is an off-canvas drawer, and a collapsed
+    // drawer is 60px of unlabelled icons whose only expand control is itself
+    // desktop-only — a dead end you reach just by having collapsed the rail once
+    // on a bigger screen, since the preference is stored per user, not per
+    // breakpoint. The effect above tries to correct the state and is kept, but
+    // state that has to be corrected can always be observed mid-correction;
+    // deriving it at render makes the 60px drawer unrepresentable.
+    const isRailCollapsed = isSidebarCollapsed && !isMobile;
 
     const [searchParams] = useSearchParams();
     const isMobileDetailsOpen = useMemo(() => {
@@ -735,23 +745,31 @@ export default function AppLayout() {
     // router is defined once; home used to escape it via a duplicated <Routes>.
     const pageFrameClassName = 'app-shell__page-frame';
 
+    // Gates the header's team strip. Nothing in the active team means nothing to
+    // put in the header — see the note at its render site.
+    const hasActiveTeamMembers = (activeTeam?.pokemons?.length ?? 0) > 0;
+
+    // The four destinations that carry the app. They sit unlabelled at the top of
+    // the rail and never fold, so the things people actually came for are always
+    // one click away and always in the same place — the rail's shape does not
+    // change as you move around it. Everything else lives in the folding sections
+    // below and is reached in two.
+    const primaryNavItems = useMemo(() => ([
+        { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
+        { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
+        { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
+        { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
+    ]), [t]);
+
+    // Sections hold the long tail only — a link promoted to `primaryNavItems`
+    // above is deliberately absent here. Listing it twice would put the same
+    // destination in two places in one 200px column, which reads as a bug.
     const navigationGroups = useMemo(() => {
         const groups = [
-            {
-                key: 'dashboard',
-                title: t('nav.dashboard'),
-                items: [
-                    { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
-                    { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
-                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <AccountIcon className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
-                    { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <SwordsIcon className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
-                ]
-            },
             {
                 key: 'teamBuilding',
                 title: t('nav.teamBuilding'),
                 items: [
-                    { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
                     { key: 'meta', label: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
                     { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
                     { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
@@ -762,9 +780,8 @@ export default function AppLayout() {
                 key: 'database',
                 title: t('nav.database'),
                 items: [
-                    { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
-                    { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                     { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <BoxIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                     { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
                     { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
@@ -779,7 +796,15 @@ export default function AppLayout() {
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
                 ]
-            }
+            },
+            {
+                key: 'dashboard',
+                title: t('nav.dashboard'),
+                items: [
+                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <AccountIcon className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
+                    { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <SwordsIcon className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
+                ]
+            },
         ];
 
         if (isAdmin) {
@@ -795,25 +820,17 @@ export default function AppLayout() {
         return groups;
     }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe]);
 
-    // Twenty links across five sections is a wall — the reference this design
-    // follows keeps its rail to a handful of rows. On a first visit we therefore
-    // open only the section holding the current page and fold the rest, so the
-    // sidebar starts at roughly five headers plus one short list instead of all
-    // twenty links. It is a default, not a lock: one click opens any section,
-    // and from the first click the user's own choice is what persists.
-    const appliedGroupDefaultRef = useRef(false);
+    // The open section follows the route. Land on a page that lives inside a
+    // section and that section opens, so "where am I" is answered by the rail
+    // itself rather than by a dot on a folded header. Navigating to one of the
+    // pinned primary links leaves the sections as they are — those four are not
+    // in any section, so there is nothing to reveal and snapping the rail shut
+    // on every trip Home would just make it flicker.
     useEffect(() => {
-        if (appliedGroupDefaultRef.current) return;
-        if (!navigationGroups.length) return;
-        appliedGroupDefaultRef.current = true;
-        if (hasStoredGroupPreference()) return;
         const activeGroup = navigationGroups.find((g) =>
             g.items.some((item) => currentPage === item.key));
-        setCollapsedNavGroups(new Set(
-            navigationGroups
-                .filter((g) => g.key !== (activeGroup ? activeGroup.key : 'dashboard'))
-                .map((g) => g.key)
-        ));
+        if (!activeGroup) return;
+        setOpenNavGroup(activeGroup.key);
     }, [navigationGroups, currentPage]);
 
 
@@ -1173,10 +1190,10 @@ export default function AppLayout() {
                     />
                 )}
                 {!isMobileDetailsOpen && (
-                    <aside className={`app-shell__sidebar ${isSidebarCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}>
+                    <aside className={`app-shell__sidebar ${isRailCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}>
                         <div className="app-shell__sidebar-inner">
                             {/* Top: Gengar Logo + Title */}
-                            <div className={`app-shell__brand ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+                            <div className={`app-shell__brand ${isRailCollapsed ? 'is-collapsed' : ''}`}>
                                 <div className="app-shell__brand-main">
                                     <img
                                         src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'}
@@ -1185,11 +1202,28 @@ export default function AppLayout() {
                                         onClick={() => navigate('/')}
                                         title={t('layout.goHome')}
                                     />
-                                    <div className={`app-shell__brand-copy ${isSidebarCollapsed ? 'is-hidden' : ''}`}>
-                                        <p className="app-shell__brand-label">Pokémon</p>
-                                        <h2 className="app-shell__brand-title">Team Builder</h2>
+                                    <div className={`app-shell__brand-copy ${isRailCollapsed ? 'is-hidden' : ''}`}>
+                                        {/* One wordmark, sentence case. It was a 10px
+                                            all-caps "POKÉMON" eyebrow stacked over
+                                            "Team Builder" — two type sizes and a caps
+                                            treatment to say one name. */}
+                                        <h2 className="app-shell__brand-title">Pokémon Team Builder</h2>
                                     </div>
                                 </div>
+                                {/* The rail's own collapse control lives in the rail.
+                                    It used to sit in the content header, ahead of
+                                    the page title — which pushed every page title
+                                    ~40px right of the content it titled, so nothing
+                                    in the main column shared a left edge. */}
+                                <button
+                                    onClick={() => setSidebarCollapsedManual(!isRailCollapsed)}
+                                    type="button"
+                                    aria-label={isRailCollapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
+                                    title={isRailCollapsed ? t('layout.expandSidebar') : t('layout.collapseSidebar')}
+                                    className="app-shell__icon-button app-shell__collapse-toggle hidden lg:inline-flex"
+                                >
+                                    {isRailCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}
+                                </button>
                                 <button
                                     onClick={() => setIsSidebarOpen(false)}
                                     type="button"
@@ -1202,13 +1236,32 @@ export default function AppLayout() {
 
                             {/* Middle: Navigation menu */}
                             <nav className="app-shell__nav" aria-label="Primary">
+                                {/* Pinned block — no heading. Four rows that never move. */}
+                                <ul className="app-shell__nav-list app-shell__nav-list--primary">
+                                    {primaryNavItems.map((item) => (
+                                        <li key={item.key}>
+                                            <ShellNavButton
+                                                active={currentPage === item.key}
+                                                collapsed={isRailCollapsed}
+                                                label={item.label}
+                                                icon={item.icon}
+                                                badge={item.badge || 0}
+                                                onClick={() => {
+                                                    navigate(item.path);
+                                                    setIsSidebarOpen(false);
+                                                }}
+                                            />
+                                        </li>
+                                    ))}
+                                </ul>
+
                                 <ul className="app-shell__nav-list">
                                     {navigationGroups.map((group) => (
                                         <ShellNavGroup
                                             key={group.key}
                                             title={group.title}
-                                            railCollapsed={isSidebarCollapsed}
-                                            isOpen={!collapsedNavGroups.has(group.key)}
+                                            railCollapsed={isRailCollapsed}
+                                            isOpen={openNavGroup === group.key}
                                             hasActiveItem={group.items.some((item) => currentPage === item.key)}
                                             onToggle={() => toggleNavGroup(group.key)}
                                             panelId={`app-shell-nav-${group.key}`}
@@ -1217,7 +1270,7 @@ export default function AppLayout() {
                                                 <li key={item.key}>
                                                     <ShellNavButton
                                                         active={currentPage === item.key}
-                                                        collapsed={isSidebarCollapsed}
+                                                        collapsed={isRailCollapsed}
                                                         label={item.label}
                                                         icon={item.icon}
                                                         badge={item.badge || 0}
@@ -1252,35 +1305,21 @@ export default function AppLayout() {
                                         </button>
                                     </div>
                                 )}
-                                {isSidebarCollapsed && (
-                                    <div className="app-shell__sidebar-controls is-collapsed">
-                                        <button
-                                            onClick={() => setSidebarCollapsedManual(false)}
-                                            type="button"
-                                            aria-label={t('layout.expandSidebar')}
-                                            title={t('layout.expandSidebar')}
-                                            className="app-shell__icon-button hidden lg:inline-flex"
-                                        >
-                                            <CollapseRightIcon />
-                                        </button>
-                                    </div>
-                                )}
-
-                                <div className={`app-shell__account ${isSidebarCollapsed ? 'is-collapsed' : ''}`}>
+                                <div className={`app-shell__account ${isRailCollapsed ? 'is-collapsed' : ''}`}>
                                     {isAnonymous ? (
                                         <button
                                             type="button"
                                             onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
                                             aria-label={t('nav.signIn')}
                                             title={t('nav.signIn')}
-                                            className={`app-shell__nav-link ${isSidebarCollapsed ? 'is-collapsed' : ''}`}
+                                            className={`app-shell__nav-link ${isRailCollapsed ? 'is-collapsed' : ''}`}
                                         >
                                             <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
-                                            <span className={`app-shell__nav-text ${isSidebarCollapsed ? 'is-hidden' : ''}`}>{t('nav.signIn')}</span>
+                                            <span className={`app-shell__nav-text ${isRailCollapsed ? 'is-hidden' : ''}`}>{t('nav.signIn')}</span>
                                         </button>
                                     ) : (
                                         <SidebarAccountMenu
-                                            collapsed={isSidebarCollapsed}
+                                            collapsed={isRailCollapsed}
                                             isMobile={isMobile}
                                             avatar={<TrainerAvatar pokemonId={ownAvatar.pokemonId} isShiny={ownAvatar.isShiny} trainerSprite={ownAvatar.trainerSprite} color={colors.primary} />}
                                             displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
@@ -1316,18 +1355,6 @@ export default function AppLayout() {
                                     {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
                                 </button>
 
-                                {!isSidebarCollapsed && (
-                                    <button
-                                        onClick={() => setSidebarCollapsedManual(true)}
-                                        type="button"
-                                        aria-label={t('layout.collapseSidebar')}
-                                        title={t('layout.collapseSidebar')}
-                                        className="app-shell__icon-button hidden lg:inline-flex"
-                                    >
-                                        <CollapseLeftIcon />
-                                    </button>
-                                )}
-
                                 <div className="app-shell__header-copy">
                                     <div className="app-shell__header-title-row">
                                         <h1 className="app-shell__header-title">{pageInfo.title}</h1>
@@ -1347,9 +1374,14 @@ export default function AppLayout() {
                                 </div>
                             </div>
 
-                            {/* Horizontal Active Team Slots */}
+                            {/* Horizontal Active Team Slots. Rendered only once the
+                                active team actually holds something: six dashed
+                                empty rings sat in the header of every page,
+                                permanently, saying nothing — the top-right of the
+                                app read as a row of broken placeholders. With no
+                                team there is nothing to show, so we show nothing. */}
                             <div className="app-shell__header-team">
-                                {Array.from({ length: 6 }).map((_, index) => {
+                                {hasActiveTeamMembers && Array.from({ length: 6 }).map((_, index) => {
                                     const pokemon = activeTeam?.pokemons?.[index];
                                     if (pokemon) {
                                         return (

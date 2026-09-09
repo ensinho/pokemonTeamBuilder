@@ -33,14 +33,14 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
     const isMsgAdmin = profile.userId === 'system' || profile.userEmail === 'enzopo625@gmail.com' || name === 'Professor Oak';
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-fade-in">
+        <div className="modal-scrim">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="user-profile-modal-title"
                 tabIndex={-1}
-                className="relative w-full max-w-md bg-surface border border-border rounded-xl shadow-2xl overflow-hidden animate-scale-in outline-none"
+                className="modal-panel modal-panel--md"
             >
                 {/* Close Button */}
                 <button

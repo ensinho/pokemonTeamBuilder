@@ -91,27 +91,6 @@
     border-color: var(--color-border-hover);
 }
 
-.home-panel--hero {
-    isolation: isolate;
-    min-height: 12rem;
-    border-color: var(--home-hero-accent-border, var(--color-border));
-    background: var(--color-surface);
-    overflow: hidden;
-}
-
-.home-panel--hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    background-image: var(--home-hero-wallpaper-image);
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    opacity: 0.6;
-    transition: opacity var(--duration-slow) var(--ease-smooth);
-}
-
 .home-panel--feature {
     background: var(--color-surface);
 }
@@ -122,8 +101,6 @@
 
 .home-panel--interactive:hover {
     border-color: var(--color-primary);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px -10px var(--color-primary-soft), var(--elevation-2);
 }
 
 /* Wallpaper shuffle button — top-right corner of the hero card */
@@ -168,17 +145,16 @@
 }
 
 /* Typography Hierarchy */
+/* Sentence case. A caps eyebrow at 0.08em tracking sitting above every panel
+   title made the app's quietest label its loudest type — and caps are slower to
+   scan. Losing the caps loses apparent size, so the size steps up and the
+   tracking goes back to normal. */
 .home-panel__eyebrow {
     margin: 0;
-    font-size: 0.675rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    letter-spacing: 0;
     color: var(--color-primary);
-}
-
-.home-panel--hero .home-panel__eyebrow {
-    color: var(--home-hero-accent, var(--color-primary));
 }
 
 .home-panel__title {
@@ -281,7 +257,6 @@
     box-shadow: 0 8px 25px -4px var(--partner-type-glow, rgba(0, 0, 0, 0.45)), 
                 0 0 15px var(--partner-type-glow, rgba(0, 0, 0, 0.15)),
                 var(--elevation-2);
-    transform: translateY(-4px);
 }
 
 .home-partner-card:hover {
@@ -711,8 +686,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--space-2_5);
+    padding-bottom: var(--space-3);
     margin-bottom: var(--space-1);
 }
 
@@ -1013,11 +987,6 @@
         display: none;
     }
 
-    .home-panel--hero {
-        min-height: auto;
-        padding: var(--space-3_5) !important;
-    }
-
     .home-panel__title--hero {
         font-size: clamp(1.2rem, 5vw, 1.6rem);
     }
@@ -1220,8 +1189,6 @@
     .home-shortcuts-container .home-list-button:hover {
         border-color: transparent !important;
         background: transparent !important;
-        transform: translateY(-3px) !important;
-        box-shadow: none !important;
     }
 
     .home-shortcuts-container .home-list-button:active {
@@ -1252,7 +1219,6 @@
         background: var(--color-primary) !important;
         color: var(--color-on-primary) !important;
         border-color: transparent !important;
-        box-shadow: 0 4px 12px var(--color-primary-soft) !important;
     }
 
     .home-shortcuts-container .home-list-button__title {
@@ -1355,10 +1321,6 @@
         gap: var(--space-1);
     }
 
-    .home-panel--hero {
-        padding: var(--space-3) !important;
-    }
-
     .home-panel__title--hero {
         font-size: 1.1rem;
         line-height: 1.2;
@@ -1413,7 +1375,7 @@
     }
 
     .home-sidebar-section .home-collapsible-trigger {
-        margin-left: -0.35rem !important;
+        margin-left: calc(var(--space-1_5) * -1) !important;
         width: calc(100% + 0.7rem) !important;
         padding: var(--space-1) var(--space-1_5) !important;
     }
@@ -1520,14 +1482,13 @@
 
     .home-sidebar-section:hover {
         border-color: var(--color-border-hover) !important;
-        box-shadow: var(--elevation-2) !important;
     }
 }
 
 /* Collapsible trigger buttons inside sidebar section */
 .home-sidebar-section .home-collapsible-trigger {
     padding: var(--space-1_5) var(--space-2) !important;
-    margin-left: -0.5rem !important;
+    margin-left: calc(var(--space-2) * -1) !important;
     width: calc(100% + 1rem) !important;
     border-radius: var(--radius-md) !important;
     transition: background-color var(--duration-fast) var(--ease-smooth) !important, border-color var(--duration-fast) var(--ease-smooth) !important, color var(--duration-fast) var(--ease-smooth) !important, box-shadow var(--duration-fast) var(--ease-smooth) !important, opacity var(--duration-fast) var(--ease-smooth) !important, transform var(--duration-fast) var(--ease-smooth) !important;
@@ -1577,8 +1538,6 @@
 .home-sidebar-section .home-stat-card:hover {
     border-color: var(--color-primary) !important;
     background: var(--color-surface) !important;
-    transform: translateY(-2px);
-    box-shadow: var(--elevation-1) !important;
 }
 
 .home-sidebar-section .home-stat-card__icon {
@@ -1626,8 +1585,6 @@
     .home-sidebar-section .home-list-button:hover {
         background: var(--color-surface) !important;
         border-color: var(--color-primary) !important;
-        transform: translateY(-3px) !important;
-        box-shadow: var(--elevation-1) !important;
     }
 
     .home-sidebar-section .home-list-button__icon {
@@ -1646,7 +1603,6 @@
     .home-sidebar-section .home-list-button:hover .home-list-button__icon {
         background: var(--color-primary) !important;
         color: var(--color-on-primary) !important;
-        box-shadow: 0 4px 10px var(--color-primary-soft) !important;
     }
 
     .home-sidebar-section .home-list-button__title {
@@ -1679,8 +1635,6 @@
     border-color: var(--color-primary) !important;
     color: var(--color-primary) !important;
     background: var(--color-surface) !important;
-    transform: translateY(-1.5px);
-    box-shadow: var(--elevation-1) !important;
 }
 
 .home-sidebar-section .home-button--inline:active {
@@ -1700,8 +1654,7 @@
 .home-sidebar-section .home-favorite-card:hover {
     background: var(--color-surface) !important;
     border-color: var(--color-primary) !important;
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: var(--elevation-1) !important;
+    transform: scale(1.04);
 }
 
 .home-sidebar-section .home-favorite-card__sprite {
@@ -1728,7 +1681,6 @@
 
 .home-sidebar-section--daily:hover {
     border-color: var(--color-primary) !important;
-    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-primary) 15%, transparent), var(--elevation-2) !important;
 }
 
 .home-sidebar-section--daily .home-daily__sprite-container {
@@ -1767,7 +1719,6 @@
     color: var(--color-accent) !important;
     background: var(--color-accent-soft) !important;
     transform: scale(1.1);
-    box-shadow: 0 0 8px var(--color-accent-soft) !important;
 }
 
 /* ==========================================================================
@@ -1786,9 +1737,35 @@
     box-shadow: var(--elevation-1);
 }
 
+/* The hero's background is a photograph under a fixed dark scrim (applied inline
+   in HomeView), so it reads dark in all six themes. Its copy is pinned to the
+   on-scrim tokens for the same reason — see their note in index.css. Scoped to
+   the panel so nothing outside the scrim is affected. */
+.home-readme-panel,
+.home-readme-panel .home-readme-header {
+    color: var(--color-on-scrim);
+}
+
+.home-readme-panel :is(h1, h2, h3) {
+    color: var(--color-on-scrim);
+}
+
+.home-readme-panel .home-readme-description,
+.home-readme-panel .home-readme-header,
+.home-readme-panel .text-muted,
+.home-readme-panel .text-muted-more {
+    color: var(--color-on-scrim-muted);
+}
+
+/* Sits on the scrim, so it cannot use `bg-surface` — that resolves to white on
+   the light themes and swallowed its own label. */
+.home-hero__pill {
+    background: color-mix(in srgb, #000 38%, transparent);
+    color: var(--color-on-scrim-muted);
+}
+
 .home-readme-header {
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
+    background: color-mix(in srgb, #000 28%, transparent);
     padding: var(--space-2) var(--space-4);
     display: flex;
     align-items: center;
@@ -1811,12 +1788,9 @@
 
 .home-panel--pinned-repo:hover {
     border-color: var(--color-primary);
-    transform: translateY(-2px);
-    box-shadow: var(--elevation-2);
 }
 
 .pinned-repo-header {
-    border-bottom: 1px solid var(--color-border);
     background: var(--color-surface-raised);
     padding: var(--space-2) var(--space-4);
     display: flex;
@@ -1922,7 +1896,7 @@
     justify-content: center;
     align-items: flex-start;
     width: 1.5rem;
-    margin-left: -1.25rem;
+    margin-left: calc(var(--space-5) * -1);
     /* Center the avatar exactly on the timeline line */
 }
 
@@ -2041,7 +2015,6 @@
 
 .github-pr-card:hover {
     border-color: var(--color-primary);
-    box-shadow: 0 4px 15px -4px var(--color-primary-soft), var(--elevation-2);
 }
 
 .github-pr-card::before,
@@ -2064,8 +2037,7 @@
 }
 
 .github-pr-header {
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--space-2);
+    padding-bottom: var(--space-1);
     margin-bottom: var(--space-2);
 }
 
@@ -2077,24 +2049,25 @@
     flex-wrap: wrap;
 }
 
+/* A fill, not a border. Eighteen of these sit inside an already-bordered panel,
+   so eighteen boxes were drawn inside a box — the single biggest contributor to
+   Home reading as busy. The container owns the line; the slots own a fill. */
 .github-pr-slot {
-    border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
+    border: none;
+    background-color: var(--color-surface-raised);
     border-radius: var(--radius-sm);
     width: 2.25rem;
     height: 2.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth),
+    transition: background-color var(--duration-fast) var(--ease-smooth),
                 transform var(--duration-fast) var(--ease-smooth);
 }
 
 .github-pr-slot:hover {
-    border-color: var(--color-primary);
-    transform: translateY(-1.5px) scale(1.06);
-    box-shadow: 0 3px 8px var(--color-primary-soft);
+    background-color: var(--color-surface-hover);
+    transform: scale(1.06);
 }
 
 .github-pr-merge-btn {
@@ -2283,8 +2256,6 @@
 .github-repo-card:hover {
     border-color: var(--color-primary);
     background: var(--color-surface);
-    transform: translateY(-2px);
-    box-shadow: var(--elevation-2);
 }
 
 .github-repo-title {
@@ -2693,7 +2664,7 @@
     }
 
     .home-timeline-avatar-wrap {
-        margin-left: -1.25rem;
+        margin-left: calc(var(--space-5) * -1);
     }
 
     .github-comment-bubble::before,

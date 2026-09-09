@@ -110,11 +110,11 @@
     --color-accent: #FBBF24;
     --color-accent-soft: rgba(251, 191, 36, 0.12);
     --color-bg: #09090b;
-    --color-surface: #111113;
-    --color-surface-raised: #1a1a1e;
+    --color-surface: #18181c;
+    --color-surface-raised: #212127;
     --color-fg: #fafafa;
     --color-muted: #a1a1aa;
-    --color-border: #27272a;
+    --color-border: #232329;
     --color-border-hover: color-mix(in srgb, #7c6ae8 25%, #3f3f46);
     --color-success: #34D399;
     --color-danger: #F87171;
@@ -136,12 +136,12 @@
     --color-primary-soft: rgba(99, 83, 179, 0.1);
     --color-accent: #B45309;
     --color-accent-soft: rgba(180, 83, 9, 0.08);
-    --color-bg: #f4f4f5;
+    --color-bg: #f2f2f3;
     --color-surface: #ffffff;
-    --color-surface-raised: #f4f4f5;
+    --color-surface-raised: #f6f6f7;
     --color-fg: #09090b;
     --color-muted: #71717a;
-    --color-border: #e4e4e7;
+    --color-border: #f7f7f7;
     --color-border-hover: color-mix(in srgb, #6353b3 20%, #d4d4d8);
     --color-success: #047857;
     --color-danger: #B91C1C;
@@ -163,12 +163,12 @@
     --color-primary-soft: rgba(37, 99, 235, 0.1);
     --color-accent: #0EA5E9;
     --color-accent-soft: rgba(14, 165, 233, 0.08);
-    --color-bg: #f0f4ff;
+    --color-bg: #eef2fb;
     --color-surface: #ffffff;
-    --color-surface-raised: #eef2fb;
+    --color-surface-raised: #f4f7fd;
     --color-fg: #0f172a;
     --color-muted: #64748b;
-    --color-border: #cbd5e1;
+    --color-border: #f4f7fc;
     --color-border-hover: color-mix(in srgb, #2563EB 20%, #cbd5e1);
     --color-success: #047857;
     --color-danger: #B91C1C;
@@ -191,11 +191,11 @@
     --color-accent: #c084fc;
     --color-accent-soft: rgba(192, 132, 252, 0.12);
     --color-bg: #050505;
-    --color-surface: #0a0a0a;
-    --color-surface-raised: #171717;
+    --color-surface: #141414;
+    --color-surface-raised: #1e1e1e;
     --color-fg: #fafafa;
     --color-muted: #737373;
-    --color-border: #262626;
+    --color-border: #1f1f1f;
     --color-border-hover: color-mix(in srgb, #a78bfa 25%, #3f3f46);
     --color-success: #34D399;
     --color-danger: #FB7185;
@@ -218,11 +218,11 @@
     --color-accent: #22D3EE;
     --color-accent-soft: rgba(34, 211, 238, 0.1);
     --color-bg: #0a0f1a;
-    --color-surface: #0f1629;
-    --color-surface-raised: #172036;
+    --color-surface: #151f38;
+    --color-surface-raised: #1d2a45;
     --color-fg: #e2e8f0;
     --color-muted: #94a3b8;
-    --color-border: #1e293b;
+    --color-border: #1e2a43;
     --color-border-hover: color-mix(in srgb, #38BDF8 20%, #334155);
     --color-success: #34D399;
     --color-danger: #FB7185;
@@ -244,12 +244,12 @@
     --color-primary-soft: rgba(202, 138, 4, 0.1);
     --color-accent: #d97706;
     --color-accent-soft: rgba(217, 119, 6, 0.1);
-    --color-bg: #fefdf5;
+    --color-bg: #f5f2e2;
     --color-surface: #ffffff;
-    --color-surface-raised: #fef9e7;
+    --color-surface-raised: #fbf9ef;
     --color-fg: #1c1917;
     --color-muted: #78716c;
-    --color-border: #e7e5e4;
+    --color-border: #f9f7ed;
     --color-border-hover: color-mix(in srgb, #ca8a04 20%, #d6d3d1);
     --color-success: #047857;
     --color-danger: #B91C1C;
@@ -300,14 +300,54 @@
     /* Selection ring. A border resizes the element and reflows its
        neighbours when selection moves; an inset ring never does. */
     --ring-primary: inset 0 0 0 1px var(--color-primary);
+
+    /* ---- Text on a photographic scrim ----------------------------------
+       Fixed light-on-dark in every theme. This is the documented exception to
+       never-write-a-raw-colour: a scrim is an absence of light, not a themed
+       surface, so the copy over it cannot follow the theme's foreground. The
+       home hero proved why — its scrim is a fixed dark rgba, so on the light
+       themes `text-fg` resolved to near-black and the greeting vanished. */
+    --color-on-scrim: #f7f7f8;
+    --color-on-scrim-muted: rgba(247, 247, 248, 0.74);
+
+    /* ---- Focus ring -----------------------------------------------------
+       One ring for every focusable thing in the app. Two stacked outer
+       shadows: a bg-coloured spacer so the ring never touches the control,
+       then the ring itself. Outer (not inset) so it reads identically on a
+       filled button, a transparent ghost and an input.
+
+       Written as a shadow rather than `outline` because half the app's
+       controls sit inside `overflow: hidden` containers that clip an outline
+       drawn outside the border box — which is why focus was invisible on the
+       rail, the popover rows and the modal close buttons. */
+    --ring-focus: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-primary);
+
+    /* ---- Overlay scrim --------------------------------------------------
+       The one backdrop. The app shipped five different ones (black at 40%,
+       60%, 65%, 75% and 80%) across seventeen modals plus three blur radii,
+       so moving between two dialogs visibly changed how dark the room was.
+       Black regardless of theme is correct here — a scrim is an absence of
+       light, not a surface. */
+    --scrim: rgba(0, 0, 0, 0.62);
+    --scrim-blur: 6px;
 }
 
 /* Interface scale (see applyUiScale in constants/theme.js). Percent, not rem:
    it resolves against the browser's default size, so a user who runs a larger
    default keeps it. The shell is sized in rem, so this scales spacing with the
-   type rather than only the glyphs. */
+   type rather than only the glyphs.
+
+   --ui-density is the app's own baseline, separate from the user's --ui-scale so
+   the two stay independently adjustable and the stepper still reads 100% at
+   rest. It exists because the app was drawn a full step tighter than it should
+   be: 14px body, 13px nav, 12px meta, with paddings to match. Every size in the
+   app is in rem, so moving the root moves type *and* spacing together and the
+   proportions are preserved exactly — which is the point. This is the one knob
+   that changes density everywhere at once, including the Tailwind text-* and
+   p-* utilities that never went through the token scale. */
 html {
-    font-size: calc(100% * var(--ui-scale, 1));
+    --ui-density: 1.06;
+    font-size: calc(100% * var(--ui-density) * var(--ui-scale, 1));
 }
 
 html, body {
@@ -772,3 +812,363 @@ input[type='checkbox']:checked + div + div {
 
 .text-size-control__glyph--small { font-size: 0.7rem; }
 .text-size-control__glyph--large { font-size: 1rem; }
+
+/* ============================================================
+   OVERLAY PRIMITIVES — one scrim, one panel, one motion
+   Seventeen modals each hand-rolled their own backdrop, radius,
+   shadow and entrance. Opening two of them in a row visibly
+   changed the room. These are the shared shapes; a modal should
+   set its width and its content, nothing else.
+   ============================================================ */
+
+.modal-scrim {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+    background: var(--scrim);
+    backdrop-filter: blur(var(--scrim-blur));
+    -webkit-backdrop-filter: blur(var(--scrim-blur));
+    animation: fade-in var(--duration-fast) var(--ease-smooth);
+}
+
+/* Scrolls the scrim, not the panel, when a dialog is taller than the viewport.
+   A panel that scrolls internally *and* sits in a centred flex parent gets its
+   top clipped past the viewport edge with no way to reach it. */
+.modal-scrim.is-scrollable {
+    align-items: flex-start;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-block: var(--space-8);
+}
+
+.modal-panel {
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    max-height: calc(100vh - var(--space-8));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    /* The one place a border and a shadow legitimately coexist: the panel is
+       genuinely floating, and the border is what keeps its edge legible where
+       the shadow washes out against a dark scrim. */
+    box-shadow: var(--shadow-xl);
+    animation: modal-panel-in var(--duration-slow) var(--ease-out-expo);
+}
+
+.modal-panel:focus,
+.modal-panel:focus-visible { outline: none; }
+
+/* Width steps. These are named modifiers rather than Tailwind's `max-w-*`
+   because these rules are appended after `@tailwind utilities` and would
+   silently beat the utility — a modal marked `max-w-4xl` would come out 32rem
+   wide with nothing to show why. */
+.modal-panel--sm  { max-width: 24rem; }
+.modal-panel--md  { max-width: 28rem; }
+.modal-panel--lg  { max-width: 42rem; }
+.modal-panel--xl  { max-width: 48rem; }
+.modal-panel--2xl { max-width: 56rem; }
+.modal-panel--3xl { max-width: 64rem; }
+.modal-panel--full { max-width: 80rem; }
+
+/* For panels whose content is one undivided scrolling block (a picker grid, say)
+   rather than a header/body/footer sandwich. The panel itself scrolls; it must
+   not stay `overflow: hidden` or the content below the fold is unreachable. */
+.modal-panel--scroll {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Rises and settles. Six pixels and a hair of scale — enough to read as
+   arriving, not enough to read as a bounce. */
+@keyframes modal-panel-in {
+    from { opacity: 0; transform: translateY(8px) scale(0.985); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* Header / body / footer. No dividers by default — the type hierarchy and the
+   footer's own fill carry the structure. */
+.modal-header {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    flex-shrink: 0;
+    padding: var(--space-5) var(--space-5) var(--space-3);
+}
+
+.modal-title {
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: var(--color-fg);
+}
+
+.modal-subtitle {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 var(--space-5) var(--space-5);
+}
+
+/* A fill, not a border — the panel already owns the only line in this box. */
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    flex-shrink: 0;
+    padding: var(--space-4) var(--space-5);
+    background: var(--color-surface-raised);
+}
+
+@media (max-width: 640px) {
+    /* Reverse so the affirmative action is nearest the thumb, and let both
+       buttons take the full width rather than sit half-width and stranded. */
+    .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+}
+
+/* The close affordance every panel puts in its top-right. */
+.modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.875rem;
+    height: 1.875rem;
+    margin: calc(var(--space-0_5) * -1) calc(var(--space-1) * -1) 0 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.modal-close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.modal-close svg { width: 1rem; height: 1rem; }
+
+/* ============================================================
+   MENU / POPOVER SURFACE
+   Dropdowns, account menus, autocomplete lists. Same shape
+   everywhere: one border, one shadow, rows that separate by fill.
+   ============================================================ */
+
+.menu-surface {
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-1);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-lg);
+    animation: menu-surface-in var(--duration-fast) var(--ease-smooth);
+}
+
+@keyframes menu-surface-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Inner radius one step below the surface's --radius-lg, per the nesting rule. */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2_5);
+    width: 100%;
+    min-height: 2.25rem;
+    padding: var(--space-2) var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg);
+    font-size: var(--text-base);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.menu-item:hover { background: var(--color-surface-hover); }
+.menu-item.is-active { background: var(--color-surface-active); }
+.menu-item--danger { color: var(--color-danger); }
+
+.menu-item svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+
+/* Whitespace between groups, not a line. */
+.menu-separator {
+    height: 1px;
+    margin: var(--space-1) calc(var(--space-1) * -1);
+    background: var(--color-border);
+    border: none;
+}
+
+/* ============================================================
+   FORM CONTROLS
+   One height, one radius, one focus ring across input, select
+   and textarea, so a form row lines up without per-field nudges.
+   ============================================================ */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.field-label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-muted);
+}
+
+.field-hint {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--color-muted);
+}
+
+/* `.team-builder-select` / `.dmg-select` are the two local select systems this
+   primitive replaced. They are listed here rather than swapped out across 24
+   call sites, so the shared appearance reaches them without touching the JSX;
+   their own files now carry only their genuine differences. */
+.input-clean,
+.select-clean,
+.textarea-clean,
+.team-builder-select,
+.dmg-select {
+    width: 100%;
+    min-width: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-family: inherit;
+    font-size: var(--text-base);
+    line-height: 1.4;
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.input-clean,
+.select-clean,
+.team-builder-select,
+.dmg-select {
+    height: 2.25rem;
+    padding: 0 var(--space-3);
+}
+
+.textarea-clean {
+    padding: var(--space-2) var(--space-3);
+    resize: vertical;
+    min-height: 4.5rem;
+}
+
+.input-clean::placeholder,
+.textarea-clean::placeholder { color: var(--color-muted); }
+
+.input-clean:hover:not(:disabled),
+.select-clean:hover:not(:disabled),
+.textarea-clean:hover:not(:disabled),
+.team-builder-select:hover:not(:disabled),
+.dmg-select:hover:not(:disabled) { border-color: var(--color-border-hover); }
+
+.input-clean:focus,
+.input-clean:focus-visible,
+.select-clean:focus,
+.select-clean:focus-visible,
+.textarea-clean:focus,
+.textarea-clean:focus-visible,
+.team-builder-select:focus,
+.team-builder-select:focus-visible,
+.dmg-select:focus,
+.dmg-select:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    /* Inset, so focusing a field never nudges the row it sits in. */
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.input-clean:disabled,
+.select-clean:disabled,
+.textarea-clean:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Native select chevrons differ per platform and none of them match the app's.
+   Draw our own and reserve room for it. currentColor keeps it theme-correct
+   without a raw colour, so the arrow is inlined rather than referenced. */
+.select-clean,
+.team-builder-select,
+.dmg-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding-right: var(--space-8);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23888' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-3) center;
+    background-size: 1rem 1rem;
+    cursor: pointer;
+}
+
+/* The dropdown list itself is drawn by the OS; only its colours are ours to
+   set, and without these it renders white-on-white in the dark themes. */
+.select-clean option,
+.team-builder-select option,
+.dmg-select option {
+    background: var(--color-surface);
+    color: var(--color-fg);
+}
+
+/* ============================================================
+   FOCUS — one visible ring, everywhere, keyboard only
+   ============================================================ */
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+/* Fields already draw their own inset focus treatment above; without this the
+   generic rule stacks a second ring outside it. */
+.input-clean:focus-visible,
+.select-clean:focus-visible,
+.textarea-clean:focus-visible,
+.team-builder-select:focus-visible,
+.dmg-select:focus-visible {
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}

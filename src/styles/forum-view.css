@@ -66,7 +66,6 @@
 
 .btn-github-new:hover {
     opacity: 0.9;
-    box-shadow: 0 2px 8px -2px var(--color-primary-soft);
 }
 
 .forum-sidebar__search-wrap {

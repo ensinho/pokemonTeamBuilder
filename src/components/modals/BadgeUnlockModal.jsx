@@ -37,14 +37,14 @@ export function BadgeUnlockModal() {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
+        <div className="modal-scrim z-[100]">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="badge-unlock-title"
                 tabIndex={-1}
-                className="relative w-full max-w-md bg-surface border-2 border-primary/40 rounded-2xl shadow-2xl overflow-hidden animate-scale-in text-center p-6 outline-none"
+                className="modal-panel modal-panel--md text-center p-6"
                 style={{
                     boxShadow: '0 20px 50px -10px rgba(0, 0, 0, 0.7), 0 0 30px rgba(var(--color-primary-rgb, 99, 102, 241), 0.25)',
                 }}

@@ -74,7 +74,6 @@
 .locations-card-btn:hover {
     transform: translateY(-1px);
     border-color: var(--color-border-hover);
-    box-shadow: var(--elevation-1);
     background: var(--color-surface);
 }
 

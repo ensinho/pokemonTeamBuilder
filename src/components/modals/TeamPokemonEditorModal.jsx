@@ -200,14 +200,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     const fieldLabelClassName = 'mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text-muted';
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-3 sm:p-4" onClick={onClose} role="presentation">
+        <div className="modal-scrim" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="team-editor-title"
                 tabIndex={-1}
-                className="relative flex w-full max-w-4xl max-h-[88vh] flex-col rounded-2xl bg-surface shadow-xl animate-scale-in focus:outline-none sm:max-h-[90vh]"
+                className="modal-panel modal-panel--2xl"
                 onClick={(event) => event.stopPropagation()}
             >
                 <header className="border-b border-surface-raised px-4 pb-3 pt-4 sm:px-6 sm:pt-5">

@@ -146,7 +146,6 @@
 .team-detail-roster__chip:hover {
     transform: translateY(-3px);
     border-color: var(--color-primary);
-    box-shadow: var(--elevation-2);
 }
 
 .team-detail-roster__sprite {
@@ -485,7 +484,6 @@
 }
 
 .team-detail-partner:hover {
-    transform: translateY(-2px);
     border-color: var(--color-primary);
 }
 

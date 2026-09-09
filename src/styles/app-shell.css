@@ -1,12 +1,15 @@
 .app-shell {
     /* 13rem left Portuguese labels like "Calculadora de Dano" wrapping onto two
-       lines once the group children were indented. 14.5rem clears the longest
-       label in both languages and brings the rail nearer the reference this
-       design follows, which runs wider still. */
-    --app-shell-sidebar-width: 14.5rem;
+       lines once the group children were indented. 15.5rem clears the longest
+       label in both languages *and* the "Pokémon Team Builder" wordmark beside
+       the logo, and matches the reference this design follows. */
+    --app-shell-sidebar-width: 15.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;
     --app-shell-gutter: 0.75rem;
     --app-shell-rail-button-size: 2.5rem;
+    /* Mobile tab bar row height. The bar's own padding is added on top of this
+       wherever the content column reserves space for it. */
+    --app-shell-tab-height: 2.9rem;
     --app-shell-top-band-height: 3.75rem;
     display: flex;
     height: 100vh;
@@ -168,22 +171,30 @@
     padding: var(--space-2);
 }
 
+/* No divider under the brand. The rail already has a border down its right edge;
+   a second line across its top cut the column into two boxes to separate a logo
+   from a list that no one was going to confuse anyway. Height matches the
+   header band opposite it so the two align across the seam. */
 .app-shell__brand {
     display: flex;
-    height: 3.75rem;
+    height: var(--app-shell-top-band-height);
     box-sizing: border-box;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    border-bottom: 1px solid var(--color-border);
     padding-block: var(--space-3);
+    padding-inline: var(--app-shell-gutter);
 }
 
+/* The icon rail stacks the logo over the expand control, so the band grows past
+   the header's height — the only place the two columns deliberately disagree,
+   because a 60px-wide rail has no room to sit them side by side. */
 .app-shell__brand.is-collapsed {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0;
+    height: auto;
+    gap: var(--space-1);
     padding-inline: 0;
     padding-block: var(--space-2_5);
 }
@@ -239,14 +250,35 @@
 }
 
 .app-shell__brand-title {
-    margin: var(--space-0_5) 0 0;
-    font-size: 0.8rem;
-    font-weight: 700;
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
     color: var(--color-fg);
 }
 
+/* Quiet at rest, present on hover. It is chrome for the chrome — it should never
+   be the first thing the eye lands on when the sidebar opens. */
 .app-shell__collapse-toggle {
     flex-shrink: 0;
+    border-color: transparent;
+    background: transparent;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__sidebar:hover .app-shell__collapse-toggle,
+.app-shell__collapse-toggle:focus-visible {
+    opacity: 1;
+}
+
+/* On the icon rail it is the only control in the band, so it always shows —
+   there is no logo-plus-wordmark for it to compete with. */
+.app-shell__brand.is-collapsed .app-shell__collapse-toggle {
+    opacity: 1;
 }
 
 .app-shell__nav {
@@ -297,39 +329,44 @@
     gap: var(--space-0_5);
 }
 
+/* The pinned block. Separated from the sections by whitespace alone — a divider
+   here drew a line across a 200px column to say something one step of gap
+   already says. */
+.app-shell__nav-list--primary {
+    margin-bottom: var(--space-4);
+}
+
 .app-shell__nav-group {
     display: flex;
     flex-direction: column;
-    margin-top: var(--space-3_5);
+    margin-top: var(--space-2);
 }
 
 .app-shell__nav-group:first-child {
     margin-top: 0;
 }
 
+/* Icon rail: sections are separated by a step of whitespace. They used to carry
+   a border-top each, which drew four full-width lines across a 60px column —
+   the rail read as a stack of trays rather than a column of icons. */
 .app-shell__sidebar.is-collapsed .app-shell__nav-group {
-    margin-top: var(--space-2);
-    padding-top: var(--space-2);
-    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-3);
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav-group:first-child {
     margin-top: 0;
-    padding-top: 0;
-    border-top: none;
 }
 
 .app-shell__nav-group-label {
-    margin: 0 0 var(--space-1);
+    margin: 0;
     /* Sentence case, not uppercase. A 10px all-caps label at 0.08em tracking
        reads as shouting *and* is harder to scan — and stacking opacity 0.5 on
        an already-muted color pushed it to the edge of legibility, which is its
        own kind of "loose". Muted color alone carries the de-emphasis. */
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: var(--text-xs);
+    font-weight: 600;
     letter-spacing: 0;
     color: var(--color-muted);
-    padding-left: var(--space-2_5);
     opacity: 1;
     transition: opacity var(--duration-fast) var(--ease-smooth);
 }
@@ -342,43 +379,30 @@
     pointer-events: none;
 }
 
-/* Children are indented past the header's chevron and share a hairline guide,
-   so the parent/child relationship is stated by the layout instead of being
-   inferred from proximity. The guide starts inside the chevron's column, which
-   is what makes it read as "these belong to the row above". */
+/* Children sit on the same left edge as the pinned rows above them. The hairline
+   guide and the indent that used to state the parent/child relationship are both
+   gone: a border inside an already-bordered rail is a box in a box, and the
+   indent cost the width that wrapped "Calculadora de Dano" onto two lines. The
+   header's own quietness is what marks the hierarchy now — a muted 12px label
+   over 16px-tall rows of foreground text reads as a heading without a line. */
 .app-shell__nav-group-list {
     display: flex;
     flex-direction: column;
     gap: var(--space-0_5);
-    /* The guide sits under the header's chevron column and the children clear it
-       by one step. Kept deliberately shallow: the rail is ~200px, and a deeper
-       indent wrapped "Calculadora de Dano" onto two lines, which costs more
-       legibility than the extra indent buys in hierarchy. The header's row shape
-       is doing most of the parent/child work anyway. */
-    margin-left: var(--space-2_5);
-    padding-left: var(--space-1_5);
-    border-left: 1px solid var(--color-border);
 }
 
-/* Children give back the width the indent took, so long labels stay on one line. */
-.app-shell__nav-group-list .app-shell__nav-link {
-    padding-inline: var(--space-2);
-}
-
-/* Section header doubles as the fold control. It has to read as a quiet label
-   first and a button second, so the affordance only firms up on hover/focus. */
-/* The section header is shaped exactly like a nav item — same height, padding,
-   radius and hover fill — because that is what it is: a row you click. Its
-   chevron sits in the icon column, so the header's glyph lines up with the
-   icons of the links it owns and the whole section reads as one object. */
+/* Section header: a label you can click, not a row you navigate to. Shorter than
+   a nav item, unpadded vertically, and with its chevron on the trailing edge so
+   the leading edge stays a clean column with the icons below it. The affordance
+   only firms up on hover — at rest this is meant to read as organisation. */
 .app-shell__nav-group-toggle {
     display: flex;
     align-items: center;
-    gap: var(--space-2_5);
+    gap: var(--space-2);
     width: 100%;
-    min-height: 2.25rem;
+    min-height: 1.75rem;
     margin: 0;
-    padding: var(--space-2) var(--space-2_5);
+    padding: 0 var(--space-2_5);
     border: none;
     border-radius: var(--radius-md);
     background: transparent;
@@ -390,18 +414,19 @@
 
 .app-shell__nav-group-toggle:hover,
 .app-shell__nav-group-toggle:focus-visible {
-    background: var(--color-surface-hover);
     color: var(--color-fg);
+}
+
+.app-shell__nav-group-toggle:hover .app-shell__nav-group-chevron,
+.app-shell__nav-group-toggle:focus-visible .app-shell__nav-group-chevron {
+    opacity: 1;
 }
 
 .app-shell__nav-group-toggle .app-shell__nav-group-label {
     flex: 1;
     margin: 0;
-    padding-left: 0;
     text-align: left;
     color: inherit;
-    font-size: 0.8125rem;
-    font-weight: 500;
 }
 
 /* The current page lives inside this folded section. */
@@ -413,15 +438,17 @@
     flex-shrink: 0;
 }
 
-/* Sized to the nav icon box so the header's glyph sits in the same column as
-   the icons of the links it owns. Points right when folded, down when open. */
+/* Trailing-edge affordance. Small and half-present at rest so the header reads
+   as a label; it comes up to full on hover. Points right when folded, down when
+   open. */
 .app-shell__nav-group-chevron {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 0.875rem;
+    height: 0.875rem;
     flex-shrink: 0;
-    opacity: 0.75;
+    opacity: 0.5;
     transform: rotate(-90deg);
-    transition: transform var(--duration-normal) var(--ease-smooth);
+    transition: transform var(--duration-normal) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth);
 }
 
 .app-shell__nav-group-toggle.is-open .app-shell__nav-group-chevron {
@@ -447,6 +474,10 @@
     overflow: hidden;
     min-height: 0;
     visibility: hidden;
+    /* Padding, not margin: it lives inside the box the 0fr row clips, so the
+       gap under the header appears with the panel instead of holding space open
+       while the section is folded. */
+    padding-top: var(--space-1);
     transition: visibility var(--duration-normal) var(--ease-smooth);
 }
 
@@ -1219,8 +1250,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
-    border-bottom: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+    background: color-mix(in srgb, var(--color-bg) 88%, transparent);
     backdrop-filter: blur(12px) saturate(1.15);
     -webkit-backdrop-filter: blur(12px) saturate(1.15);
     padding: 0 var(--space-4);
@@ -1286,8 +1316,11 @@
 
 .app-shell__body {
     /* Fluid horizontal gutter: 1rem on phones, scaling to 2rem on wide screens
-       so the 1024–1536 laptop band breathes without a hard breakpoint snap. */
-    padding: 1rem clamp(1rem, 0.6rem + 1.2vw, 2rem);
+       so the 1024–1536 laptop band breathes without a hard breakpoint snap. The
+       clamp is the one legitimate non-token spacing here; its endpoints are
+       --space-4 and --space-8. */
+    padding-block: var(--space-6) var(--space-10);
+    padding-inline: clamp(1rem, 0.6rem + 1.2vw, 2rem);
 }
 
 /* The page column. Deliberately unconstrained: a max-width was tried here on
@@ -1310,7 +1343,6 @@
        content on long ones. See .app-shell__content. */
     margin-top: auto;
     flex-shrink: 0;
-    border-top: 1px solid var(--color-border);
     padding: var(--space-4);
 }
 
@@ -1379,9 +1411,20 @@
         --app-shell-top-band-height: 3.5rem;
     }
 
-    .app-shell__sidebar {
+    /* `transform: none`, not `translateX(0)`. The rail is a drawer only below
+       1024px; on desktop it is a column in the flex row, and an identity
+       transform still costs it a compositor layer for nothing.
+
+       The `.is-open` selector is repeated because that rule is (0,2,0) and a
+       media query adds no specificity: `.app-shell__sidebar` alone loses to it,
+       so the desktop rule here never actually applied. It went unnoticed
+       because both rules set `translateX(0)` — the losing one changed nothing
+       visible while still holding the layer open. */
+    .app-shell__sidebar,
+    .app-shell__sidebar.is-open {
         position: relative;
-        transform: translateX(0);
+        transform: none;
+        transition: width var(--duration-fast) var(--ease-smooth);
         box-shadow: none;
     }
 
@@ -1389,8 +1432,15 @@
         width: var(--app-shell-sidebar-collapsed-width);
     }
 
+    /* Inline only. This was `var(--space-8) var(--space-5)`, i.e. 2rem of block
+       padding inside a border-box element with a fixed 3.5rem height — the
+       padding could not fit, and only `align-items: center` kept the row from
+       looking broken. The header's height is the height token; nothing else
+       gets a say. Gutter matches .app-shell__body so the title sits on the same
+       left edge as the content under it. */
     .app-shell__header {
-        padding: var(--space-8) var(--space-5);
+        padding-block: 0;
+        padding-inline: clamp(1rem, 0.6rem + 1.2vw, 2rem);
     }
 
     /* Body gutter is handled fluidly on .app-shell__body itself; keep the footer
@@ -1613,7 +1663,7 @@
     align-items: stretch;
     justify-content: space-around;
     gap: var(--space-1);
-    padding: 0.3rem 0.4rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+    padding: var(--space-1_5) var(--space-2) calc(var(--space-2_5) + env(safe-area-inset-bottom, 0px));
     background: color-mix(in srgb, var(--color-surface) 92%, transparent);
     backdrop-filter: blur(12px) saturate(1.15);
     -webkit-backdrop-filter: blur(12px) saturate(1.15);
@@ -1626,10 +1676,15 @@
     }
 }
 
-/* Reserve space so scrolled content + footer clear the fixed bar. */
+/* Reserve space so scrolled content + footer clear the fixed bar. Derived from
+   the bar's own parts rather than restated as a magic 3.9rem, which was already
+   0.025rem out and would drift further the next time the bar's padding moved. */
 @media (max-width: 1023px) {
     .app-shell__content {
-        padding-bottom: calc(3.9rem + env(safe-area-inset-bottom, 0px));
+        padding-bottom: calc(
+            var(--app-shell-tab-height) + var(--space-1_5) + var(--space-2_5)
+            + env(safe-area-inset-bottom, 0px)
+        );
     }
 
     .app-shell__body.is-mobile-detail {
@@ -1645,8 +1700,8 @@
     justify-content: center;
     gap: var(--space-0_5);
     min-width: 0;
-    min-height: 2.9rem;
-    padding: var(--space-1) var(--space-1);
+    min-height: var(--app-shell-tab-height);
+    padding: var(--space-1);
     border: none;
     border-radius: var(--radius-md);
     background: transparent;

@@ -34,20 +34,19 @@
 .motion-stagger > *:nth-child(10) { animation-delay: 360ms; }
 .motion-stagger > *:nth-child(n+11) { animation-delay: 360ms; }
 
-/* Consistent interactive hover: lift + soften shadow + accent the border.
-   Add to any card/tile that should read as clickable. */
+/* Consistent interactive hover for a card or tile.
+   Fill and border, not lift. The lift was `translateY(-2px)` plus a shadow, and
+   on a grid of cards that is a page that wobbles under the cursor — the "mole"
+   complaint in docs/wounds.md, and the reason the design system bans transform
+   on large surfaces. Hover belongs in colour; transform is for small objects
+   that clearly read as pressable. */
 .interactive-lift {
-    transition: transform var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth),
+    transition: background-color var(--duration-fast) var(--ease-smooth),
                 border-color var(--duration-fast) var(--ease-smooth);
 }
 .interactive-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    background-color: var(--color-surface-hover);
     border-color: var(--color-border-hover);
-}
-.interactive-lift:active {
-    transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -120,14 +120,14 @@ export function TeamBuilderOnboardingModal({ onClose }) {
     const activeLastAdded = simulatedTeam[simulatedTeam.length - 1];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-3 backdrop-blur-md sm:p-4" onClick={onClose} role="presentation">
+        <div className="modal-scrim" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="onboarding-modal-title"
                 tabIndex={-1}
-                className="relative flex max-h-[95vh] w-full max-w-4xl flex-col rounded-3xl border border-border bg-surface shadow-2xl animate-scale-in focus:outline-none overflow-hidden"
+                className="modal-panel modal-panel--2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

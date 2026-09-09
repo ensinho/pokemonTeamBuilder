@@ -236,7 +236,7 @@
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
 }
-.pdv__form:hover { border-color: var(--color-primary); transform: translateY(-2px); }
+.pdv__form:hover { border-color: var(--color-primary); }
 .pdv__form img { width: 3.5rem; height: 3.5rem; image-rendering: pixelated; }
 .pdv__form span { font-size: 0.6875rem; text-transform: capitalize; color: var(--color-fg); line-height: 1.2; text-align: center; }
 

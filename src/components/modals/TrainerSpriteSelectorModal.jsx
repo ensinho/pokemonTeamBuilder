@@ -48,14 +48,14 @@ export function TrainerSpriteSelectorModal({ onClose, onSelect, currentSpriteId,
     });
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4" onClick={onClose} role="presentation">
+        <div className="modal-scrim" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="trainer-selector-title"
                 tabIndex={-1}
-                className="trainer-selector relative w-full max-w-5xl max-h-[85vh] overflow-y-auto rounded-xl border border-border bg-surface p-4 sm:p-6 shadow-lg custom-scrollbar animate-scale-in focus:outline-none"
+                className="trainer-selector modal-panel modal-panel--3xl modal-panel--scroll custom-scrollbar p-4 sm:p-6"
                 style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >

@@ -885,8 +885,6 @@
 .pokepuzzle-unlock-btn:hover {
     background: var(--color-primary);
     color: var(--color-on-primary);
-    transform: translateY(-1.5px);
-    box-shadow: 0 4px 10px var(--color-primary-soft);
 }
 
 .pokepuzzle-unlock-btn:hover .text-primary {
@@ -1109,7 +1107,6 @@
 
 .pokepuzzle-history-sidebar .pokepuzzle-history__item:hover {
     border-color: var(--color-primary-soft);
-    box-shadow: var(--elevation-1);
     transform: translateY(-1px);
 }
 
@@ -1390,7 +1387,6 @@
 .pokepuzzle-view.is-archive-mode .pokepuzzle-unlock-btn:hover {
     background: var(--color-accent);
     color: var(--color-on-primary);
-    box-shadow: 0 4px 10px color-mix(in srgb, var(--color-accent) 25%, transparent);
 }
 
 .pokepuzzle-view.is-archive-mode .pokepuzzle-unlock-btn:hover .text-primary {

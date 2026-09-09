@@ -9,7 +9,7 @@ export function VersionUpdateModal({ onRefresh, onDismiss }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-fade-in"
+            className="modal-scrim"
             onMouseDown={(e) => { if (e.target === e.currentTarget) onDismiss?.(); }}
         >
             <div
@@ -18,7 +18,7 @@ export function VersionUpdateModal({ onRefresh, onDismiss }) {
                 aria-modal="true"
                 aria-labelledby="version-update-title"
                 tabIndex={-1}
-                className="w-full max-w-md rounded-2xl border border-border bg-surface p-5 shadow-2xl animate-scale-in focus:outline-none"
+                className="modal-panel modal-panel--md p-5"
             >
                 <header className="flex items-start justify-between gap-4">
                     <div className="flex items-center gap-2.5">

@@ -4,16 +4,24 @@ import { ChevronDownIcon } from './icons';
 /**
  * One labelled section of the sidebar navigation.
  *
- * Nineteen links across five sections overflow the rail on a short laptop
- * screen, so each section folds away. Two shapes:
+ * The four destinations that carry the app are pinned above these, unlabelled
+ * and unfoldable. What is left is the long tail, and it is an accordion: at most
+ * one section is open at a time (see `toggleNavGroup` in AppLayout), which is
+ * what keeps the rail a fixed short shape instead of growing to whatever the
+ * user last left open.
+ *
+ * Two shapes:
  *
  * - Icon rail (`railCollapsed`): labels are hidden by the shell's own rules and
- *   there is nothing left to click, so the section renders as it always did —
- *   plain label, always-open list.
- * - Expanded sidebar: the whole header is the toggle, shaped like a nav item so
- *   it reads as a row you click. Its chevron occupies the icon column, lining up
- *   with the icons of the links below it. A folded section that holds the current
- *   page keeps a dot on its header, so "where am I" survives the fold.
+ *   there is nothing left to click, so the section renders as a plain always-open
+ *   list of icons.
+ * - Expanded sidebar: the header is a *quiet label* first and a control second —
+ *   smaller and shorter than a nav row, muted, with the chevron on the trailing
+ *   edge. It deliberately does not mimic a nav item: a header shaped like a
+ *   destination competes with the destinations under it, and with five of them
+ *   the rail read as ten things to click rather than four plus some organisation.
+ *   A folded section holding the current page keeps a dot, so "where am I"
+ *   survives the fold.
  */
 export function ShellNavGroup({
     title,
@@ -42,9 +50,9 @@ export function ShellNavGroup({
                 aria-controls={panelId}
                 className={`app-shell__nav-group-toggle ${isOpen ? 'is-open' : ''}`}
             >
-                <ChevronDownIcon className="app-shell__nav-group-chevron" />
                 <span className="app-shell__nav-group-label">{title}</span>
                 {!isOpen && hasActiveItem && <span className="app-shell__nav-group-dot" aria-hidden="true" />}
+                <ChevronDownIcon className="app-shell__nav-group-chevron" />
             </button>
 
             <div id={panelId} className={`app-shell__nav-group-panel ${isOpen ? 'is-open' : ''}`}>

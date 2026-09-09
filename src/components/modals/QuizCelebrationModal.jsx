@@ -167,7 +167,7 @@ export function QuizCelebrationModal({
 
     return createPortal(
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-md p-4 animate-fade-in"
+            className="modal-scrim"
             onClick={onClose}
             role="presentation"
         >
@@ -181,18 +181,12 @@ export function QuizCelebrationModal({
                 aria-modal="true"
                 aria-labelledby="celebration-title"
                 tabIndex={-1}
-                className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-surface/90 shadow-elevation-3 p-8 focus:outline-none text-center select-none backdrop-saturate-150 animate-scale-in"
-                style={{
-                    background: 'radial-gradient(circle at center, rgba(125, 101, 225, 0.08) 0%, var(--color-surface) 100%)',
-                }}
+                className="modal-panel modal-panel--md z-10 p-8 text-center select-none"
                 onClick={(event) => event.stopPropagation()}
             >
-                {/* Background Glow */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none z-0" />
-
                 <div className="relative z-10 space-y-6">
                     {/* Badge */}
-                    <div className="mx-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent-soft text-accent text-xs font-bold uppercase tracking-wider animate-pulse">
+                    <div className="mx-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent-soft text-accent text-xs font-bold uppercase tracking-wider">
                         {t('quiz.celebrationBadge')}
                     </div>
 

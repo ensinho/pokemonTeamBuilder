@@ -193,14 +193,14 @@ export function PokemonDetailModal({
     const neutralTypes = Object.entries(typeDefenses).filter(([, m]) => m === 1).map(([t]) => t);
 
     return (
-        <div className="fixed inset-0 bg-black/65 backdrop-blur-sm h-[100vh] flex items-center justify-center z-50 p-3 sm:p-6" onClick={onClose} role="presentation">
+        <div className="modal-scrim" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="pokemon-detail-title"
                 tabIndex={-1}
-                className="relative flex w-full max-w-3xl max-h-[85vh] flex-col overflow-hidden rounded-2xl border border-surface-raised bg-surface shadow-2xl animate-scale-in focus:outline-none sm:max-h-[90vh] font-mono"
+                className="modal-panel modal-panel--xl font-mono"
                 style={{
                     '--scrollbar-track-color': colors.card,
                     '--scrollbar-thumb-color': colors.primary,

@@ -745,7 +745,7 @@ export function HomeView({
                             borderColor: heroAccentBorder,
                         }}
                     >
-                        <div className="home-readme-header flex items-center justify-between px-4 py-2 border-b border-border bg-surface-raised/40 text-xs text-muted font-mono">
+                        <div className="home-readme-header flex items-center justify-between px-4 py-2 bg-surface-raised/40 text-xs text-muted font-mono">
                             <div className="flex items-center gap-2">
                                 <BookOpen className="w-3.5 h-3.5" />
                                 <span>{userId ? resolvedUsername : 'guest'} / </span>
@@ -777,7 +777,7 @@ export function HomeView({
                                     {randomMessage}
                                 </p>
                                 <div className="flex items-center gap-2 pt-1.5">
-                                    <span className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-surface text-[10px] text-muted font-bold font-mono">
+                                    <span className="home-hero__pill flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono">
                                         <Flame className="w-3 h-3 text-warning shrink-0" />
                                         {streak?.count || 0} {language === 'pt' ? 'Dias Seguidos' : 'Days Streak'}
                                     </span>
@@ -857,7 +857,7 @@ export function HomeView({
                             }}
                             aria-label={`Continue editing team ${activeTeam.name}`}
                         >
-                            <div className="pinned-repo-header flex items-center justify-between px-4 py-2 border-b border-border bg-surface-raised">
+                            <div className="pinned-repo-header flex items-center justify-between px-4 py-2 bg-surface-raised">
                                 <div className="flex items-center gap-2 text-xs font-bold text-fg">
                                     <Folder className="w-4 h-4 text-primary shrink-0" />
                                     <span>active</span>
@@ -944,7 +944,7 @@ export function HomeView({
                         </section>
                     ) : (
                         <section className="home-panel home-panel--pinned-repo p-0 xl:hidden">
-                            <div className="pinned-repo-header flex items-center gap-2 px-4 py-2 border-b border-border bg-surface-raised text-xs font-bold text-fg">
+                            <div className="pinned-repo-header flex items-center gap-2 px-4 py-2 bg-surface-raised text-xs font-bold text-fg">
                                 <Folder className="w-4 h-4 text-primary shrink-0" />
                                 <span>team</span>
                             </div>
@@ -1051,7 +1051,7 @@ export function HomeView({
 
                     {/* Activity feed — bottom half of the right column */}
                     <div className="home-forum-chat-card-wrapper home-forum-chat-card p-0">
-                        <div className="home-forum-chat-header px-4 py-3 border-b border-border flex items-center justify-between">
+                        <div className="home-forum-chat-header px-4 py-3 flex items-center justify-between">
                             <h3 className="home-forum-chat-title text-sm font-bold text-fg flex items-center gap-2 w-full">
                                 <MessageIcon className="w-4 h-4 text-primary shrink-0" />
                                 {language === 'pt' ? 'Linha do Tempo' : 'Timeline'}
@@ -1312,7 +1312,7 @@ export function HomeView({
                                     </button>
                                     {isAttachDropdownOpen && (
                                         <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
-                                            <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
+                                            <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider mb-1">
                                                 {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
                                             </p>
                                             {activeRoster.length > 0 && (

@@ -9,7 +9,7 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-end justify-center bg-black/65 backdrop-blur-sm p-4 animate-fade-in sm:items-center"
+            className="modal-scrim items-end sm:items-center"
             onMouseDown={(e) => { if (e.target === e.currentTarget) onDismiss?.(); }}
         >
             <div
@@ -18,7 +18,7 @@ export function SyncPromptModal({ onSignUp, onSignIn, onDismiss }) {
                 aria-modal="true"
                 aria-labelledby="sync-prompt-title"
                 tabIndex={-1}
-                className="w-full max-w-md rounded-xl bg-surface text-fg shadow-2xl animate-scale-in"
+                className="modal-panel modal-panel--md"
             >
                 <header className="flex items-start justify-between gap-2 border-b border-surface-raised px-5 py-4">
                     <div className="flex items-center gap-2">

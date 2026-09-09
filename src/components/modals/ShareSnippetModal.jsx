@@ -1062,7 +1062,7 @@ export const ShareSnippetModal = ({
 
     return (
         <div
-            className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center z-[60] p-3 sm:p-4"
+            className="modal-scrim z-[60]"
             onClick={onClose}
             role="presentation"
         >
@@ -1072,7 +1072,7 @@ export const ShareSnippetModal = ({
                 aria-modal="true"
                 aria-labelledby="share-snippet-title"
                 tabIndex={-1}
-                className="w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden rounded-2xl border border-surface-raised bg-surface shadow-2xl animate-scale-in focus:outline-none"
+                className="modal-panel modal-panel--lg"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Modal Header */}

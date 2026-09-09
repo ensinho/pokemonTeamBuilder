@@ -45,7 +45,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-fade-in"
+            className="modal-scrim"
             onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}
         >
             <div
@@ -54,7 +54,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                 aria-modal="true"
                 aria-labelledby="auth-modal-title"
                 tabIndex={-1}
-                className="w-full max-w-sm rounded-xl bg-surface text-fg shadow-2xl animate-scale-in"
+                className="modal-panel modal-panel--sm"
             >
                 <header className="flex items-center justify-between border-b border-surface-raised px-5 py-4">
                     <h2 id="auth-modal-title" className="text-lg font-bold text-primary">

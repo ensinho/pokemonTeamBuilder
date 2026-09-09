@@ -37,8 +37,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    padding: var(--space-2_5) var(--space-3_5);
-    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-3) var(--space-4);
     background: var(--color-surface-raised);
 }
 /* Section title. Sentence case, not 800-weight caps at 0.08em — a panel heading
@@ -145,14 +144,15 @@
     background: var(--color-primary-soft);
     border-radius: var(--radius-full);
     padding: var(--space-0_5) var(--space-1);
-    border: 1px solid var(--color-border);
+    /* No border: this badge is pinned to the corner of a tile that already has
+       one, and a ring around a 9px number reads as a defect. */
+    border: none;
     line-height: 1;
 }
 
 .hd-meta-mon-btn.is-active .hd-meta-mon-badge {
     color: var(--color-primary);
     background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
 }
 
 .hd-meta-mon-name {
@@ -245,12 +245,14 @@
     flex-shrink: 0;
 }
 
+/* Twelve of these sit two borders deep — inside a team card inside a panel.
+   Fill only; the circle is legible from its own shape. */
 .hd-meta-team-roster-sprite-wrap {
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
+    border: none;
+    background: var(--color-surface-raised);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -267,14 +269,16 @@
     image-rendering: pixelated;
 }
 
+/* The one place a border comes back: dashed means "absent", and an empty roster
+   slot is exactly that. Re-declared in full because the base rule no longer has
+   a border for a border-style to modify. */
 .hd-meta-team-roster-sprite-wrap.is-empty {
-    border-style: dashed;
-    border-color: color-mix(in srgb, var(--color-border) 60%, transparent);
+    border: 1px dashed color-mix(in srgb, var(--color-border) 60%, transparent);
     background: transparent;
 }
 
 .hd-meta-team-roster-sprite-wrap.is-highlighted {
-    border-color: var(--color-primary) !important;
+    box-shadow: var(--ring-primary);
     background: color-mix(in srgb, var(--color-primary) 15%, transparent) !important;
     transform: scale(1.15) translateY(-1px);
     box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
@@ -511,7 +515,7 @@
     width: 2rem;
     height: 2rem;
     flex-shrink: 0;
-    margin-left: -0.7rem;
+    margin-left: calc(var(--space-3) * -1);
     border-radius: var(--radius-full);
     background: var(--color-surface);
     box-shadow: 0 0 0 2px var(--color-surface-raised);
