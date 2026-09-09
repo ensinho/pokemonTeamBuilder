@@ -16,9 +16,11 @@ import { describeBattle } from '../utils/battle';
  * the battle views use, so the buttons here can never offer a transition the
  * rules would reject.
  *
- * Deliberately reuses the shared-team card's classes: an invite is the same
- * kind of object in a thread, and it should not introduce a second visual
- * language for it.
+ * Deliberately reuses the shared-team card's shell: an invite is the same kind
+ * of object in a thread, and it should not introduce a second visual language
+ * for it. Its *head* is its own (`forum-invite-card__*`) because an invite
+ * carries a live status and an action alongside the title, which the team
+ * card's single `space-between` row had no room for on a phone.
  */
 export function BattleInviteCard({ invite }) {
     const { t } = useTranslation();
@@ -38,23 +40,25 @@ export function BattleInviteCard({ invite }) {
         ? battle.playerNames?.[battle.players[1]] || t('forum.inviteSomeone')
         : null;
 
-    const body = () => {
+    // The invite's live half: a status line, an action, or both. Returned as a
+    // fragment so the head's flex row (not a nested div) does the wrapping.
+    const action = () => {
         if (status === 'loading') {
-            return <span className="text-xs text-muted">{t('common.loading')}</span>;
+            return <span className="forum-invite-card__status">{t('common.loading')}</span>;
         }
         if (status === 'gone' || !battle) {
-            return <span className="text-xs text-muted">{t('forum.inviteUnavailable')}</span>;
+            return <span className="forum-invite-card__status">{t('forum.inviteUnavailable')}</span>;
         }
         if (battle.status === 'cancelled' || battle.status === 'declined') {
-            return <span className="text-xs text-muted">{t('forum.inviteCancelled')}</span>;
+            return <span className="forum-invite-card__status">{t('forum.inviteCancelled')}</span>;
         }
 
         // Still open.
         if (view?.isPublicInvite) {
             if (view.canCancel) {
                 return (
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted">{t('forum.inviteWaiting')}</span>
+                    <>
+                        <span className="forum-invite-card__status">{t('forum.inviteWaiting')}</span>
                         <button
                             type="button"
                             onClick={() => cancelChallenge(battle.id)}
@@ -62,7 +66,7 @@ export function BattleInviteCard({ invite }) {
                         >
                             {t('forum.inviteCancel')}
                         </button>
-                    </div>
+                    </>
                 );
             }
             return (
@@ -81,8 +85,8 @@ export function BattleInviteCard({ invite }) {
         // the race, which is why the document stays publicly readable.
         const iAmIn = Array.isArray(battle.players) && battle.players.includes(userId);
         return (
-            <div className="flex items-center gap-2">
-                <span className="text-xs text-muted">
+            <>
+                <span className="forum-invite-card__status">
                     {t('forum.inviteTakenBy', { name: claimedBy })}
                 </span>
                 {iAmIn && (
@@ -94,21 +98,21 @@ export function BattleInviteCard({ invite }) {
                         {t('forum.inviteOpenBattle')}
                     </button>
                 )}
-            </div>
+            </>
         );
     };
 
     return (
         <div className="forum-team-share-card">
-            <div className="forum-team-share-header">
-                <h5 className="forum-team-share-title flex items-center gap-1">
+            <div className="forum-invite-card__head">
+                <h5 className="forum-invite-card__title">
                     <SwordsIcon className="w-3.5 h-3.5 text-primary shrink-0" />
                     {t('forum.inviteTitle')}
-                    <span className="badge badge-outline ml-1">{modeLabel}</span>
                 </h5>
-                {body()}
+                <span className="badge forum-invite-card__mode">{modeLabel}</span>
+                <div className="forum-invite-card__action">{action()}</div>
             </div>
-            <p className="mt-1 text-[0.68rem] text-muted">{t('forum.inviteHint')}</p>
+            <p className="forum-invite-card__hint">{t('forum.inviteHint')}</p>
         </div>
     );
 }
