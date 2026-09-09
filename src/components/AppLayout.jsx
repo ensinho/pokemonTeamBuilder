@@ -730,20 +730,10 @@ export default function AppLayout() {
         return pages[currentPage] || { title: '', subtitle: '' };
     }, [currentPage, t, language]);
 
-    // Which measure each route's column gets. Everything is constrained now —
-    // the frame previously had no max-width at all, so every page ran the full
-    // width of the shell and fell apart on wide monitors. `wide` is for views
-    // whose value really is more columns (card grids, the two-pane builder);
-    // `prose` is for single-column reading. Default is the page measure.
-    const WIDE_PAGES = useMemo(() => new Set([
-        'pokedex', 'pokemonDetail', 'allTeams', 'favorites', 'builder',
-        'moves', 'abilities', 'items', 'gyms', 'meta', 'speedTiers', 'admin',
-    ]), []);
-
-    const pageFrameClassName = useMemo(() => {
-        const base = 'app-shell__page-frame';
-        return WIDE_PAGES.has(currentPage) ? `${base} ${base}--wide` : base;
-    }, [currentPage, WIDE_PAGES]);
+    // One wrapper for every route. It carries no width cap — see the note on
+    // .app-shell__page-frame — but it stays a single shared element so the
+    // router is defined once; home used to escape it via a duplicated <Routes>.
+    const pageFrameClassName = 'app-shell__page-frame';
 
     const navigationGroups = useMemo(() => {
         const groups = [
