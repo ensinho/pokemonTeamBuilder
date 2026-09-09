@@ -102,6 +102,34 @@ Account section at the bottom of the sidebar. Shows: greeting Pokémon avatar, t
 
 ---
 
+### PatchNotesModal + the release ledger
+**Files:** `src/components/modals/PatchNotesModal.jsx`, `src/constants/patchNotes.js`
+
+Releases live in **`constants/patchNotes.js`** as data — `RELEASES`, newest first,
+each `{ version, month: 'YYYY-MM', notes: [{ key, title, … }] }`. The modal renders
+the first entry in full (icon, illustration, CTA) and the rest as a collapsed
+history, so an announcement can be re-read after it is dismissed.
+
+**Shipping a release:**
+1. Bump `PATCH_NOTES_VERSION` in `constants/theme.js` — that constant gates the
+   modal *and* supplies the ledger's first version, so the two cannot disagree.
+2. Push the previous release down the ledger, keeping only its note **titles**
+   (history rows are titles; descriptions and illustrations belong to the current
+   release only). Its title keys must stay in `translations.js`.
+3. Add the new notes with `icon` and `visual` names, resolved to components by
+   `NOTE_ICONS` / `NOTE_VISUALS` in the modal — the ledger stays JSX-free so it
+   can be unit-tested.
+4. Dates are formatted from `month` per language (`formatReleaseMonth`), so a
+   release never needs new date copy.
+
+`patchNotes.test.js` guards the invariants: head version equals
+`PATCH_NOTES_VERSION`, versions descend, none repeat, every release has a month
+and notes, and the current release carries the illustration data.
+
+**Reopening:** the footer version button (`app-shell__footer-version`, the only
+entry point a guest can reach) and the account menu's "What's new" item, both
+wired to `handleOpenPatchNotes` in `AppLayout`.
+
 ### ShellNavGroup
 **File:** `src/components/ShellNavGroup.jsx`
 

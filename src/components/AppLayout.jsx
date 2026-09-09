@@ -676,6 +676,12 @@ export default function AppLayout() {
         }
     }, []);
 
+    // Deliberately does not set `patchNotesOwed`: that latch means "this page load
+    // owes the user the notes"; opening them by hand is just opening them.
+    const handleOpenPatchNotes = useCallback(() => {
+        setShowPatchNotes(true);
+    }, []);
+
     const handleClosePatchNotes = useCallback(() => {
         patchNotesOwed = false;
         setShowPatchNotes(false);
@@ -1295,6 +1301,7 @@ export default function AppLayout() {
                                                 navigate('/profile');
                                                 setIsSidebarOpen(false);
                                             }}
+                                            onOpenPatchNotes={handleOpenPatchNotes}
                                             onChangeTheme={changeTheme}
                                             onSignOut={handleSignOut}
                                         />
@@ -1410,6 +1417,7 @@ export default function AppLayout() {
                                         currentTheme={theme}
                                         themes={THEME_META}
                                         onOpenProfile={() => navigate('/profile')}
+                                        onOpenPatchNotes={handleOpenPatchNotes}
                                         onChangeTheme={changeTheme}
                                         onSignOut={handleSignOut}
                                     />
@@ -1696,6 +1704,14 @@ export default function AppLayout() {
                                         {t('layout.developedBy')} <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
                                     </span>
                                     <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} showToast={showToast} />
+                                    <button
+                                        type="button"
+                                        onClick={handleOpenPatchNotes}
+                                        className="app-shell__footer-link app-shell__footer-version"
+                                        title={t('patchNotes.openLabel')}
+                                    >
+                                        v{PATCH_NOTES_VERSION}
+                                    </button>
                                 </div>
 
                                 <div className="app-shell__footer-links">
