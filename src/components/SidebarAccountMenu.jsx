@@ -1,9 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnchoredPopover } from './AnchoredPopover';
-import { MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
+import { FlowerIcon, MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
 import { TrainerBadge } from './TrainerBadge';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAuthStore } from '../store/useAuthStore';
+import { useThemeStore } from '../store/useThemeStore';
 import { TextSizeControl } from './TextSizeControl';
 
 export function SidebarAccountMenu({
@@ -16,11 +17,14 @@ export function SidebarAccountMenu({
     currentTheme,
     themes,
     onOpenProfile,
+    onOpenPatchNotes,
     onChangeTheme,
     onSignOut,
 }) {
     const { t, language, setLanguage } = useTranslation();
     const selectedBadgeId = useAuthStore((s) => s.selectedBadgeId);
+    const showTeraType = useThemeStore((s) => s.showTeraType);
+    const setShowTeraType = useThemeStore((s) => s.setShowTeraType);
     const [isOpen, setIsOpen] = useState(false);
     const anchorRef = useRef(null);
     const popoverRef = useRef(null);
@@ -64,11 +68,23 @@ export function SidebarAccountMenu({
         setIsOpen(false);
     };
 
+    const handleOpenPatchNotes = () => {
+        onOpenPatchNotes?.();
+        setIsOpen(false);
+    };
+
     const handleThemeChange = (themeId) => {
         onChangeTheme?.(themeId);
         // Also save preference to Firestore
         useAuthStore.getState().savePreferences({ theme: themeId });
         setIsOpen(false);
+    };
+
+    const handleTeraTypeChange = (show) => {
+        if (show === showTeraType) return;
+        setShowTeraType(show);
+        // Follows the account across devices, like theme, scale and language.
+        useAuthStore.getState().savePreferences({ showTeraType: show });
     };
 
     const handleLanguageChange = (lang) => {
@@ -249,6 +265,20 @@ export function SidebarAccountMenu({
                         </button>
                     </div>
 
+                    {typeof onOpenPatchNotes === 'function' && (
+                        <div className="app-shell__account-popover-section">
+                            <button type="button" onClick={handleOpenPatchNotes} className="app-shell__account-menu-item">
+                                <span className="app-shell__account-menu-item-icon">
+                                    <FlowerIcon />
+                                </span>
+                                <span className="app-shell__account-menu-item-copy">
+                                    <span className="app-shell__account-menu-item-label">{t('accountMenu.patchNotesLabel')}</span>
+                                    <span className="app-shell__account-menu-item-note">{t('accountMenu.patchNotesNote')}</span>
+                                </span>
+                            </button>
+                        </div>
+                    )}
+
                     <div className="app-shell__account-popover-section">
                         <p className="app-shell__account-popover-label">{t('accountMenu.themeLabel')}</p>
                         <div className="app-shell__account-theme-groups">
@@ -302,6 +332,29 @@ export function SidebarAccountMenu({
                                 Português
                             </button>
                         </div>
+                    </div>
+
+                    <div className="app-shell__account-popover-section">
+                        <p className="app-shell__account-popover-label">{t('accountMenu.teraTypeLabel')}</p>
+                        <div className="app-shell__account-language-row">
+                            <button
+                                type="button"
+                                onClick={() => handleTeraTypeChange(true)}
+                                aria-pressed={showTeraType}
+                                className={`app-shell__account-lang-btn ${showTeraType ? 'is-active' : ''}`}
+                            >
+                                {t('accountMenu.teraTypeShow')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleTeraTypeChange(false)}
+                                aria-pressed={!showTeraType}
+                                className={`app-shell__account-lang-btn ${!showTeraType ? 'is-active' : ''}`}
+                            >
+                                {t('accountMenu.teraTypeHide')}
+                            </button>
+                        </div>
+                        <p className="app-shell__account-popover-note">{t('accountMenu.teraTypeNote')}</p>
                     </div>
 
                     <div className="app-shell__account-popover-section">

@@ -263,6 +263,11 @@ export const useAuthStore = create((set, get) => {
                             if (data.uiScale !== undefined && data.uiScale !== null) {
                                 useThemeStore.getState().setUiScale(data.uiScale);
                             }
+
+                            // 1.3 Tera Type visibility — same rule.
+                            if (typeof data.showTeraType === 'boolean') {
+                                useThemeStore.getState().setShowTeraType(data.showTeraType);
+                            }
                             
                             // 2. Display Name
                             if (typeof data.displayName === 'string') {
@@ -409,11 +414,13 @@ export const useAuthStore = create((set, get) => {
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
             const theme = useThemeStore.getState().theme;
             const uiScale = useThemeStore.getState().uiScale;
+            const showTeraType = useThemeStore.getState().showTeraType;
             const language = useLanguageStore.getState().language;
 
             const updates = {
                 theme,
                 uiScale,
+                showTeraType,
                 language,
                 displayName,
                 trainerSprite: trainerSprite || null,

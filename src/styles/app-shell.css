@@ -474,6 +474,19 @@
     transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth);
 }
 
+/* The version number doubles as the way back into the release notes — the
+   conventional place people look for a changelog, and reachable for guests, who
+   have no account menu. A footer link that happens to be a button. */
+.app-shell__footer-version {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-variant-numeric: tabular-nums;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
 /* Nav item. No border — not even a transparent one: a nav list is text, not a
    stack of boxes, and reserved border space invites someone to fill it in later.
    Padding is a step more generous than a dense control would use, because a
@@ -1111,6 +1124,16 @@
     font-size: 0.72rem;
 }
 
+/* One-line rationale under a settings row — used where the setting's name isn't
+   self-explanatory (Tera Type being a generation IX mechanic). Muted colour is
+   the whole de-emphasis; no extra opacity on top. */
+.app-shell__account-popover-note {
+    margin: var(--space-1_5) 0 0;
+    font-size: 0.65rem;
+    line-height: 1.35;
+    color: var(--color-muted);
+}
+
 .app-shell__account-language-row {
     display: flex;
     gap: var(--space-1_5);
@@ -1267,20 +1290,19 @@
     padding: 1rem clamp(1rem, 0.6rem + 1.2vw, 2rem);
 }
 
-/* The page column. `max-width` is the whole point of this element — it shipped
-   with `width: 100%` and nothing else, which made it a no-op, so every route ran
-   the full width of the shell. Two measures, picked per route in AppLayout: the
-   default `page` for panels, forms and detail views, `--wide` for the grids that
-   genuinely earn the extra columns. Add a third only alongside the route that
-   needs it; an unused modifier here is how the no-op happened the first time. */
+/* The page column. Deliberately unconstrained: a max-width was tried here on
+   2026-09-09 (76rem default / 96rem for grids) and Enzo's read was immediate —
+   too tight. The app's own layouts already manage their internal rhythm, and
+   the views that matter most are wide grids that use every pixel they are
+   given, so centring the column inside a gutter only took width away from them.
+   The horizontal breathing room comes from .app-shell__body's fluid padding.
+
+   The element stays even though it now only sets `width: 100%` — it is what
+   lets every route share one <Routes> tree in AppLayout. Home used to opt out
+   of it by rendering a second, duplicated copy of the router. */
 .app-shell__page-frame {
     width: 100%;
-    max-width: var(--measure-page);
     margin: 0 auto;
-}
-
-.app-shell__page-frame--wide {
-    max-width: var(--measure-wide);
 }
 
 .app-shell__footer {

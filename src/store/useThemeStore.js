@@ -4,6 +4,7 @@ import { getBackgroundById } from '../assets/backgrounds';
 import { normalizeUiScale, DEFAULT_UI_SCALE } from '../utils/uiScale';
 
 const UI_SCALE_KEY = 'ptbUiScale';
+const TERA_TYPE_KEY = 'ptbShowTeraType';
 
 const getInitialTheme = () => {
     if (typeof window === 'undefined') return 'dark';
@@ -21,6 +22,19 @@ const getInitialUiScale = () => {
         return normalizeUiScale(localStorage.getItem(UI_SCALE_KEY));
     } catch (_) {
         return DEFAULT_UI_SCALE;
+    }
+};
+
+// Tera Type is a generation IX mechanic. Someone building teams for older games
+// asked to have it out of the way, so it is a display preference: the field stays
+// on every saved team (turning it back on restores every choice) — it just stops
+// being shown or offered. Defaults to on, since most players are on gen IX.
+const getInitialShowTeraType = () => {
+    if (typeof window === 'undefined') return true;
+    try {
+        return localStorage.getItem(TERA_TYPE_KEY) !== '0';
+    } catch (_) {
+        return true;
     }
 };
 
@@ -47,6 +61,7 @@ export const useThemeStore = create((set) => {
         theme: initialTheme,
         colors: THEMES[initialTheme],
         uiScale: initialUiScale,
+        showTeraType: getInitialShowTeraType(),
         homeWallpaperId: getInitialWallpaper(),
 
         changeTheme: (nextTheme) => {
@@ -87,6 +102,17 @@ export const useThemeStore = create((set) => {
                 /* preference is best-effort */
             }
             set({ uiScale: nextScale });
+        },
+
+        // Mirrored to the signed-in profile by the caller, like theme and scale.
+        setShowTeraType: (show) => {
+            const next = Boolean(show);
+            try {
+                localStorage.setItem(TERA_TYPE_KEY, next ? '1' : '0');
+            } catch (_) {
+                /* preference is best-effort */
+            }
+            set({ showTeraType: next });
         },
 
         setHomeWallpaperPreference: (backgroundId) => {

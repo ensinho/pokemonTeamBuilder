@@ -282,7 +282,7 @@ export default function AppLayout() {
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
-    const { theme, colors, toggleTheme, changeTheme, homeWallpaperId, setHomeWallpaperPreference } = useThemeStore();
+    const { theme, colors, toggleTheme, changeTheme, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType } = useThemeStore();
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
@@ -619,6 +619,7 @@ export default function AppLayout() {
                     'theme',
                     'language',
                     'ptbUiScale',
+                    'ptbShowTeraType',
                     'homeWallpaperId',
                     'ptb-sidebar-collapse-pref',
                     'ptb-sidebar-collapsed-groups',
@@ -1644,6 +1645,11 @@ export default function AppLayout() {
                                             onChangeLanguage={(lang) => {
                                                 useLanguageStore.getState().setLanguage(lang);
                                                 useAuthStore.getState().savePreferences({ language: lang });
+                                            }}
+                                            showTeraType={showTeraType}
+                                            onChangeShowTeraType={(show) => {
+                                                setShowTeraType(show);
+                                                useAuthStore.getState().savePreferences({ showTeraType: show });
                                             }}
                                             displayName={displayName}
                                             onChangeDisplayName={setDisplayName}

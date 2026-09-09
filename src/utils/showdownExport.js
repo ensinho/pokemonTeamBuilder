@@ -24,10 +24,17 @@ const STAT_MAP = { hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': 'S
 
 /**
  * Build a Pokémon Showdown paste from a list of team members.
+ *
+ * `includeTeraType` follows the user's Tera Type preference: the line is
+ * optional in Showdown's own format (gen IX defaults it, older formats ignore
+ * it), so someone playing pre-gen-IX can leave it out entirely. The saved team
+ * keeps its `teraType` either way — this only decides what gets pasted.
+ *
  * @param {Array} teamMembers - members with optional `customization`
+ * @param {{ includeTeraType?: boolean }} [options]
  * @returns {string} Showdown-formatted export text
  */
-export const buildShowdownExportText = (teamMembers = []) => {
+export const buildShowdownExportText = (teamMembers = [], { includeTeraType = true } = {}) => {
     return teamMembers.map((member) => {
         const baseCustomization = getDefaultCustomization(member);
         const savedCustomization = member.customization || {};
@@ -50,7 +57,7 @@ export const buildShowdownExportText = (teamMembers = []) => {
             `Ability: ${formatShowdownCase(customization.ability || 'Unknown')}`,
             'Level: 50',
             customization.isShiny ? 'Shiny: Yes' : null,
-            `Tera Type: ${formatShowdownCase(customization.teraType || 'normal')}`,
+            includeTeraType ? `Tera Type: ${formatShowdownCase(customization.teraType || 'normal')}` : null,
             evsString ? `EVs: ${evsString}` : null,
             `${formatShowdownCase(customization.nature || 'serious')} Nature`,
             ivsString || null,

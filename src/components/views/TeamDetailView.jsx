@@ -17,6 +17,7 @@ import { CompactStatBar, getPokemonWeaknessEntries, WeaknessBadge } from '../mod
 import { useTranslation } from '../../hooks/useTranslation';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useReferenceStore } from '../../store/useReferenceStore';
+import { useThemeStore } from '../../store/useThemeStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useSmogonData } from '../../hooks/useSmogonData';
@@ -81,6 +82,7 @@ export function TeamDetailView({
     const { id } = useParams();
     const navigate = useNavigate();
     const { t, language } = useTranslation();
+    const showTeraType = useThemeStore((state) => state.showTeraType);
     const { goToMove, goToAbility, goToItem } = useEntityNavigate();
     const pt = language === 'pt';
 
@@ -378,7 +380,7 @@ export function TeamDetailView({
                                             {cz.ability.replace(/-/g, ' ')}
                                         </button>
                                     )}
-                                    {cz.teraType && (
+                                    {showTeraType && cz.teraType && (
                                         <span className="team-detail-build-pill team-detail-build-pill--tera" style={{ color: typeColors[cz.teraType] }}>
                                             <Sparkles className="w-3 h-3" /> {pt ? 'Tera' : 'Tera'} {cz.teraType}
                                         </span>

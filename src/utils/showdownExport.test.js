@@ -80,3 +80,26 @@ describe('buildShowdownExportText', () => {
         expect(buildShowdownExportText([])).toBe('');
     });
 });
+
+describe('buildShowdownExportText — Tera Type line', () => {
+    const member = {
+        name: 'garchomp',
+        customization: { item: 'life-orb', ability: 'rough-skin', nature: 'jolly', teraType: 'steel', moves: ['earthquake'] },
+    };
+
+    it('includes the Tera Type line by default', () => {
+        expect(buildShowdownExportText([member])).toContain('Tera Type: Steel');
+    });
+
+    it('omits it when the preference is off, leaving the rest intact', () => {
+        const text = buildShowdownExportText([member], { includeTeraType: false });
+        expect(text).not.toContain('Tera Type');
+        expect(text).toContain('Ability: Rough Skin');
+        expect(text).toContain('Jolly Nature');
+        expect(text).toContain('- Earthquake');
+    });
+
+    it('leaves no blank line where the Tera line was', () => {
+        expect(buildShowdownExportText([member], { includeTeraType: false })).not.toMatch(/\n\n/);
+    });
+});

@@ -13,7 +13,7 @@ import { sendEmailVerification } from 'firebase/auth';
 import { useToastStore } from '../../store/useToastStore';
 import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
-    SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon,
+    SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon, SparklesIcon,
 } from '../icons';
 import { Flame, Medal, Lock, Check, Sparkles } from 'lucide-react';
 
@@ -114,6 +114,8 @@ export function ProfileView({
     onChangeTheme,
     language,
     onChangeLanguage,
+    showTeraType,
+    onChangeShowTeraType,
     displayName,
     onChangeDisplayName,
     greetingPokemonId,
@@ -362,6 +364,33 @@ export function ProfileView({
                                 className={`profile-button ${language === 'pt' ? 'profile-button--primary' : ''}`}
                             >
                                 Português (pt-BR)
+                            </button>
+                        </div>
+                    </SectionCard>
+
+                    <SectionCard
+                        className="profile-card--gameplay"
+                        meta={<span className="profile-pill profile-pill--accent">{showTeraType ? t('accountMenu.teraTypeShow') : t('accountMenu.teraTypeHide')}</span>}
+                        title={t('profile.sectionTeraTitle')}
+                        subtitle={t('profile.sectionTeraDesc')}
+                        icon={<SparklesIcon className="w-5 h-5" />}
+                    >
+                        <div className="profile-button-row">
+                            <button
+                                type="button"
+                                onClick={() => onChangeShowTeraType(true)}
+                                aria-pressed={showTeraType}
+                                className={`profile-button ${showTeraType ? 'profile-button--primary' : ''}`}
+                            >
+                                {t('accountMenu.teraTypeShow')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => onChangeShowTeraType(false)}
+                                aria-pressed={!showTeraType}
+                                className={`profile-button ${!showTeraType ? 'profile-button--primary' : ''}`}
+                            >
+                                {t('accountMenu.teraTypeHide')}
                             </button>
                         </div>
                     </SectionCard>

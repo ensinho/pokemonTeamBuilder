@@ -14,6 +14,7 @@ import { navigateTo } from '../utils/navigation';
 import { usePokedexStore } from './usePokedexStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 import { useLanguageStore } from './useLanguageStore';
+import { useThemeStore } from './useThemeStore';
 import { megaDisplayName } from '../hooks/useMegaStones';
 
 // Monotonic counter so instanceIds stay unique even when several members are
@@ -289,7 +290,9 @@ export const useActiveTeamStore = create((set, get) => ({
         }
     },
 
-    buildShowdownExportText: (teamMembers) => buildShowdownText(teamMembers),
+    buildShowdownExportText: (teamMembers) => buildShowdownText(teamMembers, {
+        includeTeraType: useThemeStore.getState().showTeraType,
+    }),
 
     copyTextToClipboard: async (text, successMessage) => {
         try {

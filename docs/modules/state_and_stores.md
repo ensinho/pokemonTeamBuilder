@@ -114,6 +114,14 @@ Active language code (`en`, `pt-BR`, etc.) and list of available languages. Pers
 
 Active theme key and `PATCH_NOTES_VERSION` gate (whether the patch notes modal has been shown for the current version). Calls `applyTheme()` from `src/constants/theme.js` to inject CSS variables onto `:root`.
 
+Also owns **`showTeraType`** — whether Tera Type (a generation IX mechanic) is
+shown at all. It gates the Tera field in the team editor, the Tera pill on team
+pages, the Terastallize block in the damage calculator, and the `Tera Type:` line
+in Showdown exports; it deliberately does **not** touch Smogon set descriptions,
+the move Tera Blast, meta/usage panels or the battle simulator, which describe
+other people's play rather than the user's own build. Saved teams keep their
+`teraType` either way, so switching it back on restores every choice.
+
 Also owns **`uiScale`** — the interface scale (`setUiScale()` → `applyUiScale()` sets `--ui-scale`, which `html { font-size: calc(100% * var(--ui-scale)) }` in `index.css` consumes). Steps and clamping are pure helpers in `src/utils/uiScale.js`. Both theme and scale are applied at store construction, before first paint. The scale is stored in `localStorage` (`ptbUiScale`) and mirrored to the signed-in profile alongside theme/language, so it follows the account.
 
 ---

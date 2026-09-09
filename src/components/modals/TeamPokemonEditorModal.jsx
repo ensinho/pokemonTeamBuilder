@@ -20,6 +20,7 @@ import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useThemeStore } from '../../store/useThemeStore';
 
 // Slugify a display name ("Rock Slide" → "rock-slide") to match the slugs used
 // by the move/ability selects and the Showdown export.
@@ -46,6 +47,8 @@ const STAT_ABBR = { hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': '
 
 export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => { } }) {
     const { t, language } = useTranslation();
+    // Tera Type is gen IX only — hidden entirely when the user has it switched off.
+    const showTeraType = useThemeStore((state) => state.showTeraType);
     const pt = language === 'pt';
     const navigate = useNavigate();
     const { linkState } = useEntityNavigate();
@@ -328,12 +331,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         {(natures && natures.length >= 25 ? natures : ALL_NATURES).map((nature) => <option key={nature.name} value={nature.name}>{natureLabel(nature.name)}</option>)}
                                     </select>
                                 </div>
-                                <div>
-                                    <label htmlFor="editor-tera" className={fieldLabelClassName}>{t('modals.editorModalTeraLabel')}</label>
-                                    <select id="editor-tera" value={customization.teraType} onChange={(event) => handleCustomizationChange('teraType', event.target.value)} className={controlClassName}>
-                                        {Object.keys(typeColors).map((type) => <option key={type} value={type} className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</option>)}
-                                    </select>
-                                </div>
+                                {showTeraType && (
+                                    <div>
+                                        <label htmlFor="editor-tera" className={fieldLabelClassName}>{t('modals.editorModalTeraLabel')}</label>
+                                        <select id="editor-tera" value={customization.teraType} onChange={(event) => handleCustomizationChange('teraType', event.target.value)} className={controlClassName}>
+                                            {Object.keys(typeColors).map((type) => <option key={type} value={type} className="capitalize">{t(`types.${type.toLowerCase()}`, { defaultValue: type })}</option>)}
+                                        </select>
+                                    </div>
+                                )}
                                 <div>
                                     <label htmlFor="editor-ability" className={fieldLabelClassName}>{t('modals.editorModalAbilityLabel')}</label>
                                     <select id="editor-ability" value={customization.ability} onChange={(event) => handleCustomizationChange('ability', event.target.value)} className={controlClassName}>
@@ -607,7 +612,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         </section>
                                     )}
 
-                                    {teraList.length > 0 && (
+                                    {showTeraType && teraList.length > 0 && (
                                         <section className="rounded-xl border border-border bg-bg p-3">
                                             <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
                                                 <Sparkles className="h-3.5 w-3.5 text-primary" /> {pt ? 'Tipo Tera' : 'Tera type'}

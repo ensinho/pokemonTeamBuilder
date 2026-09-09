@@ -3,6 +3,7 @@ import '../../styles/tools-views.css';
 import { resolvePokemonDetail, getMoveDetails } from '../../services/pokemonDataCache';
 import { calcDamage, calcStat, getEffectiveMoveType, NATURE_MODIFIERS, natureMultiplier } from '../../utils/damageCalc';
 import { useReferenceStore } from '../../store/useReferenceStore';
+import { useThemeStore } from '../../store/useThemeStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { PokemonPicker } from '../PokemonPicker';
@@ -320,6 +321,7 @@ export function DamageCalculatorView() {
     });
     const allPokemons = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
+    const showTeraType = useThemeStore((s) => s.showTeraType);
     const items = useReferenceStore((s) => s.items);
     const fetchReferenceData = useReferenceStore((s) => s.fetchReferenceData);
     const battleItems = useBattleItems();
@@ -683,18 +685,22 @@ export function DamageCalculatorView() {
                     </div>
                 </div>
 
-                {/* Tera */}
-                <div className="bg-bg/40 p-2.5 rounded-lg border border-border flex items-center justify-between gap-3">
-                    <ToggleSwitch checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label="Terastallize" activeColor={accentBg} />
-                    <select
-                        className="dmg-select text-xs py-1 w-28"
-                        value={pState.teraType}
-                        onChange={(e) => setP(prev => ({ ...prev, teraType: e.target.value }))}
-                        disabled={!pState.isTerastallized}
-                    >
-                        {TYPES.map(tp => <option key={tp} value={tp}>{capitalize(tp)}</option>)}
-                    </select>
-                </div>
+                {/* Tera — hidden when the user has Tera Type off. `isTerastallized`
+                    only ever becomes true through this toggle, so the maths below
+                    simply never sees it. */}
+                {showTeraType && (
+                    <div className="bg-bg/40 p-2.5 rounded-lg border border-border flex items-center justify-between gap-3">
+                        <ToggleSwitch checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label="Terastallize" activeColor={accentBg} />
+                        <select
+                            className="dmg-select text-xs py-1 w-28"
+                            value={pState.teraType}
+                            onChange={(e) => setP(prev => ({ ...prev, teraType: e.target.value }))}
+                            disabled={!pState.isTerastallized}
+                        >
+                            {TYPES.map(tp => <option key={tp} value={tp}>{capitalize(tp)}</option>)}
+                        </select>
+                    </div>
+                )}
 
                 {/* Nature + stats */}
                 <div className="bg-bg/40 p-2.5 rounded-lg border border-border">
