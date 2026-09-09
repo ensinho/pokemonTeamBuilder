@@ -610,7 +610,7 @@
     font-size: 0.75rem;
     font-weight: 600;
     line-height: 1.2;
-    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.25));
+    box-shadow: var(--shadow-md);
     pointer-events: none;
     animation: app-shell-tooltip-in var(--duration-fast, 120ms) var(--ease-smooth, ease-out);
 }
@@ -1267,9 +1267,20 @@
     padding: 1rem clamp(1rem, 0.6rem + 1.2vw, 2rem);
 }
 
+/* The page column. `max-width` is the whole point of this element — it shipped
+   with `width: 100%` and nothing else, which made it a no-op, so every route ran
+   the full width of the shell. Two measures, picked per route in AppLayout: the
+   default `page` for panels, forms and detail views, `--wide` for the grids that
+   genuinely earn the extra columns. Add a third only alongside the route that
+   needs it; an unused modifier here is how the no-op happened the first time. */
 .app-shell__page-frame {
     width: 100%;
+    max-width: var(--measure-page);
     margin: 0 auto;
+}
+
+.app-shell__page-frame--wide {
+    max-width: var(--measure-wide);
 }
 
 .app-shell__footer {
@@ -1426,8 +1437,7 @@
     }
 
     .app-shell__sidebar.is-open {
-        box-shadow: 18px 0 48px -12px rgba(0, 0, 0, 0.55),
-            0 0 0 1px var(--color-border);
+        box-shadow: var(--shadow-xl), 0 0 0 1px var(--color-border);
     }
 
     /* Roomier nav so items are easy to tap with a thumb. */

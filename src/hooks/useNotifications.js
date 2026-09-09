@@ -36,14 +36,18 @@ export function useNotifications() {
                             // click handler at all, so an invite was a dead end. The action
                             // navigates; the room view joins on arrival.
                             showToast(
-                                `Convite de PokéRoom! Sala ${notif.roomCode}`,
+                                'Convite de PokéRoom',
                                 'info',
                                 {
+                                    description: `Sala ${notif.roomCode}`,
+                                    // An invite is worth holding on screen: it is
+                                    // the only place the room code ever appears,
+                                    // and it arrives unprompted.
                                     duration: 15000,
-                                    action: {
+                                    actions: [{
                                         label: 'Entrar',
                                         onClick: () => navigate(`/pokeroom/${notif.roomCode}`),
-                                    },
+                                    }],
                                 }
                             );
 

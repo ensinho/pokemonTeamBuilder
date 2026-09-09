@@ -556,11 +556,15 @@
     color: var(--color-muted);
 }
 
+/* Borderless: this sits directly inside .team-builder-panel, which already
+   draws the box. Two outlines 16px apart is the "box inside a box" that reads
+   as busy — the recessed --color-bg fill separates the results from the panel
+   chrome on its own, and does it without adding a line. */
 .team-builder-results,
 .team-builder-mobile__available {
     flex: 1;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    border: none;
+    border-radius: var(--radius-md);
     background: var(--color-bg);
 }
 

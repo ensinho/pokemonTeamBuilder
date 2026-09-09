@@ -16,7 +16,9 @@ import {
 } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
+import { navigateTo, promptSignIn } from '../utils/navigation';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { megaDisplayName } from '../hooks/useMegaStones';
 
@@ -178,13 +180,16 @@ export const useForumStore = create((set, get) => ({
         if (!db) return null;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
-            useToastStore.getState().showToast("You must be logged in to create topics.", "error");
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForTopics'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
             return null;
         }
 
         const cleanTitle = title.trim();
         if (!cleanTitle) {
-            useToastStore.getState().showToast("Topic title cannot be empty.", "warning");
+            toast.warning(t('toast.topicTitleRequired'));
             return null;
         }
 
@@ -238,11 +243,19 @@ export const useForumStore = create((set, get) => ({
             };
             await setDoc(firstMsgRef, firstMsgData);
 
-            useToastStore.getState().showToast("Topic created successfully!", "success");
+            toast.success(t('toast.topicCreated'), {
+                description: cleanTitle,
+                // The feed picks its topic from the store, not the URL, so
+                // select it before navigating or /feed lands on 'general'.
+                actions: [{
+                    label: t('toast.openTopic'),
+                    onClick: () => { get().setCurrentTopicId(topicId); navigateTo('/feed'); },
+                }],
+            });
             return topicId;
         } catch (err) {
             console.error("Error creating topic:", err);
-            useToastStore.getState().showToast("Error creating topic.", "error");
+            toast.error(t('toast.topicCreateError'));
             return null;
         }
     },
@@ -251,7 +264,10 @@ export const useForumStore = create((set, get) => ({
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
-            useToastStore.getState().showToast("You must be logged in to post messages.", "error");
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForTopics'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
             return false;
         }
 
@@ -316,7 +332,7 @@ export const useForumStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error("Error sending message:", err);
-            useToastStore.getState().showToast("Error sending message.", "error");
+            toast.error(t('toast.messageSendError'));
             return false;
         }
     },
@@ -328,7 +344,10 @@ export const useForumStore = create((set, get) => ({
         const authState = useAuthStore.getState();
         const uid = authState.userId;
         if (!uid) {
-            useToastStore.getState().showToast("You must be logged in to like messages.", "error");
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForLikes'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
             return;
         }
 
@@ -343,7 +362,7 @@ export const useForumStore = create((set, get) => ({
             });
         } catch (err) {
             console.error("Error toggling message like:", err);
-            useToastStore.getState().showToast("Could not update like.", "error");
+            toast.error(t('toast.likeError'));
         }
     },
 
@@ -364,7 +383,7 @@ export const useForumStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error("Error deleting message:", err);
-            useToastStore.getState().showToast("Could not delete message.", "error");
+            toast.error(t('toast.messageDeleteError'));
             return false;
         }
     }

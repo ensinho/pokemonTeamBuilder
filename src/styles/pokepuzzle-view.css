@@ -488,7 +488,7 @@
     border-radius: var(--radius-xl);
     overflow: hidden;
     transition: transform var(--duration-normal) var(--ease-spring);
-    box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.15);
+    box-shadow: inset 0 0 12px color-mix(in srgb, var(--color-fg) 12%, transparent);
 }
 
 .pokepuzzle-result-sprite-box:hover {

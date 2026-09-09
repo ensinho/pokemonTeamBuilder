@@ -51,6 +51,19 @@
     --space-12:  3rem;     /* 48px — hero padding */
     --space-16:  4rem;     /* 64px — page top/bottom */
 
+    /* ---- Content measure -----------------------------------------------
+       The width the page column is allowed to reach. Without these the shell
+       let content run the full viewport, so a 2560px monitor rendered ~2250px
+       line lengths and cards stretched until their internal rhythm broke —
+       the layout read as "unfinished" on exactly the screens people demo on.
+
+       Every calm reference (PrimeNG's docs, claude.ai) constrains the column
+       and centres it; the sidebar supplies the asymmetry, not the content.
+         page — the default: forms, panels, detail views
+         wide — grid-heavy views that genuinely earn the extra columns */
+    --measure-page: 76rem;  /* 1216px */
+    --measure-wide: 96rem;  /* 1536px */
+
     /* Border radius scale (Ref 2 — shadcn/ui) */
     --radius-sm: 0.375rem;  /* 6px  — badges, chips */
     --radius-md: 0.5rem;    /* 8px  — buttons, inputs */
@@ -392,6 +405,10 @@ body {
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid var(--color-primary);
+    /* Deliberate literal, both engines: the thumb is a white physical knob (see
+       the #ffffff above), so this is a real drop shadow rather than theme
+       elevation — the same black in every theme is what makes it read as an
+       object resting on the track. */
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
     transition: transform var(--duration-fast) var(--ease-spring);
 }
@@ -412,6 +429,10 @@ body {
     border-radius: 50%;
     background: #ffffff;
     border: 2px solid var(--color-primary);
+    /* Deliberate literal, both engines: the thumb is a white physical knob (see
+       the #ffffff above), so this is a real drop shadow rather than theme
+       elevation — the same black in every theme is what makes it read as an
+       object resting on the track. */
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
     transition: transform var(--duration-fast) var(--ease-spring);
 }
@@ -589,7 +610,7 @@ input[type='checkbox']:checked + div + div {
 
 .btn-danger:hover:not(:disabled) {
     opacity: 0.9;
-    box-shadow: 0 2px 8px -2px rgba(248, 113, 113, 0.4);
+    box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--color-danger) 40%, transparent);
 }
 
 /* Badge Base & Variants */

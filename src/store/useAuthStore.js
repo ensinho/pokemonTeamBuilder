@@ -14,7 +14,8 @@ import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { appId, ADMIN_EMAILS } from '../constants/firebase';
 import { PATCH_NOTES_VERSION } from '../constants/theme';
 import { useThemeStore } from './useThemeStore';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { migrateLocalProgress, listLocalSuffixesForUid, ppLocalKey, pickBestState } from '../utils/pokePuzzleMigration';
 import { resolveAvatar } from '../utils/avatar';
@@ -365,7 +366,10 @@ export const useAuthStore = create((set, get) => {
                             await signInAnonymously(auth);
                         }
                     } catch (error) {
-                        useToastStore.getState().showToast('Authentication failed. Please refresh.', 'error');
+                        toast.error(t('toast.authFailed'), {
+                            description: t('toast.authFailedDesc'),
+                            actions: [{ label: t('toast.retry'), onClick: () => window.location.reload() }],
+                        });
                         set({ isAuthReady: true });
                     }
                 }
@@ -571,7 +575,7 @@ export const useAuthStore = create((set, get) => {
                 localStorage.removeItem('syncPromptDismissed');
             } catch (_) { /* ignore */ }
             set({ showSyncPrompt: false });
-            useToastStore.getState().showToast('Reminders re-enabled.', 'info');
+            toast.info(t('toast.remindersOn'));
             startSyncNudgeTimer();
         },
 
@@ -590,7 +594,9 @@ export const useAuthStore = create((set, get) => {
                     isAdmin: Boolean(result.user.email && ADMIN_EMAILS.includes(result.user.email.trim().toLowerCase())),
                 });
 
-                useToastStore.getState().showToast(`Account created — synced as ${result.user.email || email}.`, 'success');
+                toast.success(t('toast.accountCreated'), {
+                    description: t('toast.accountCreatedDesc', { email: result.user.email || email }),
+                });
             } else {
                 // No anonymous session to link → a brand-new uid. Migrate any
                 // progress saved under the previous anonymous uid (if present).
@@ -610,7 +616,7 @@ export const useAuthStore = create((set, get) => {
                     userEmail: result.user.email || email,
                     isAdmin: Boolean(result.user.email && ADMIN_EMAILS.includes(result.user.email.trim().toLowerCase())),
                 });
-                useToastStore.getState().showToast(`Welcome, ${result.user.email || email}!`, 'success');
+                toast.success(t('toast.welcomeBack', { email: result.user.email || email }));
             }
             set({ showSyncPrompt: false });
         },
@@ -637,7 +643,7 @@ export const useAuthStore = create((set, get) => {
                 userEmail: result.user.email || email,
                 isAdmin: Boolean(result.user.email && ADMIN_EMAILS.includes(result.user.email.trim().toLowerCase())),
             });
-            useToastStore.getState().showToast(`Signed in as ${result.user.email || email}.`, 'success');
+            toast.success(t('toast.signedIn', { email: result.user.email || email }));
             set({ showSyncPrompt: false });
         },
 
@@ -648,9 +654,11 @@ export const useAuthStore = create((set, get) => {
                 // will then write a fresh anonymous snapshot.
                 clearAuthSnapshot();
                 await signOut(auth);
-                useToastStore.getState().showToast('Signed out.', 'info');
+                toast.info(t('toast.signedOut'));
             } catch (e) {
-                useToastStore.getState().showToast('Could not sign out. Try again.', 'error');
+                toast.error(t('toast.signOutError'), {
+                    actions: [{ label: t('toast.retry'), onClick: () => get().handleSignOut() }],
+                });
             }
         }
     };

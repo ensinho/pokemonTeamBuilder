@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { loadPokemonReferenceData, loadPokemonIndex, loadGames } from '../services/pokemonDataCache';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
 
 export const useReferenceStore = create((set, get) => ({
     generations: [],
@@ -34,7 +35,7 @@ export const useReferenceStore = create((set, get) => ({
                 isLoading: false
             });
         } catch (error) {
-            useToastStore.getState().showToast("Failed to load filter data.", "error");
+            toast.error(t('toast.filterDataError'));
             set({ isLoading: false });
         }
     },

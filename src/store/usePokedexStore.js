@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { loadPokemonIndex, loadGames } from '../services/pokemonDataCache';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 import { matchesPokemonSearch } from '../utils/pokemonSprites';
 import { buildListSignature } from '../utils/pokedexListKey';
@@ -191,7 +192,9 @@ export const usePokedexStore = create((set, get) => ({
             });
         } catch (error) {
             console.error("Error loading Pokémon index:", error);
-            useToastStore.getState().showToast("Error loading Pokémon list.", "error");
+            toast.error(t('toast.pokedexLoadError'), {
+                actions: [{ label: t('toast.retry'), onClick: () => window.location.reload() }],
+            });
             set({ pokemons: [], filteredPokemons: [], hasMore: false, visibleCount: PAGE_SIZE });
         } finally {
             set({ isLoading: false });

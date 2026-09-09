@@ -202,6 +202,18 @@ ones:
 A hover tint written inline at each call site drifts, and drift is the whole
 reason this document exists.
 
+**Known defect — `--color-on-primary` is white in every theme, and in four of
+them that fails.** Measured white-on-`--color-primary` contrast: `midnight`
+2.14, `eclipse` 2.72, `solar` 2.94, `dark` 4.13 — all under the 4.5 AA needs for
+body text (`light` 6.14 and `daybreak` 5.17 pass). Dark ink would score 8.80 /
+6.93 / 6.42 / 4.56 on those same four. Fixing it means computing the token from
+the primary's luminance in `applyTheme` (which already writes the theme's colors
+onto `:root` as inline properties, so CSS alone cannot do it). That flips the
+text on every filled button in four themes, so it is a deliberate visual
+decision, not a sweep — do not change it without asking. Until then, a filled
+primary button is legible but not AA-compliant on the dark themes; prefer it for
+short labels, never for body copy.
+
 **Never write a raw colour.** No hex, no `rgb()`, no `rgba()` for anything that
 is part of the interface. Brand colours written as raw triples (`rgba(124, 58,
 237, …)`) do not follow the theme — the app shipped 41 of them plus a

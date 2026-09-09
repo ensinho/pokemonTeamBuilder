@@ -142,20 +142,38 @@ export const SuccessToastIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-export const ErrorToastIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572" />
-        <path d="M12 6l-2 4l4 3l-2 4v3" />
+/* Toast severity marks. One family, one stroke weight, one 24-box — the old
+   trio was drawn from three different sets (a badge-check, a *heart*, and an
+   info circle) at fixed 24px with no className, so they could not be sized and
+   never read as a set. */
+export const CheckCircleIcon = ({ className = 'w-5 h-5' }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9 12l2 2l4 -4" />
     </svg>
 );
 
-export const WarningToastIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-        <path d="M12 8v4" />
-        <path d="M12 16h.01" />
+export const XCircleIcon = ({ className = 'w-5 h-5' }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M9.5 9.5l5 5" />
+        <path d="M14.5 9.5l-5 5" />
+    </svg>
+);
+
+export const AlertTriangleIcon = ({ className = 'w-5 h-5' }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10.24 4.5l-8.02 13a2 2 0 0 0 1.76 3h16.04a2 2 0 0 0 1.76 -3l-8.02 -13a2 2 0 0 0 -3.52 0z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+    </svg>
+);
+
+export const InfoCircleIcon = ({ className = 'w-5 h-5' }) => (
+    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 8h.01" />
+        <path d="M11 12h1v4h1" />
     </svg>
 );
 

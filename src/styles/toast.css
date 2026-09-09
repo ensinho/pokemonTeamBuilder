@@ -1,0 +1,308 @@
+/* ============================================================================
+   TOAST
+
+   Layout follows the reference set (PrimeNG's toast docs, and the action-toast
+   pattern claude.ai uses): a tinted severity mark in its own column, a title
+   and an optional supporting line, then the actions that continue whatever the
+   user was doing. Everything left-aligns on one text column, so a one-line
+   toast and a three-line one read as the same object.
+
+   The old toast painted the *entire* surface in the severity colour with white
+   text on top. That fails twice: on the dark themes `--color-success` is a
+   bright mint and `--color-warning` a bright amber, so white text sits at
+   roughly 1.6:1 — unreadable; and a saturated block is the loudest thing on
+   screen for a message as ordinary as "team saved". Severity now lives in a
+   small tinted mark, which is enough to identify it and quiet enough to sit
+   over a page the user is still reading.
+   ============================================================================ */
+
+.toast-stack {
+    position: fixed;
+    z-index: var(--z-tooltip);
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    pointer-events: none;   /* the page stays usable around the stack */
+
+    /* Phone-first: bottom of the screen, clear of the notch and inside thumb
+       reach, spanning the width minus a gutter. The desktop rules below move
+       it to the top-right corner once there is a corner worth using. */
+    right: var(--space-4);
+    bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+    left: var(--space-4);
+}
+
+.toast-stack > * {
+    pointer-events: auto;
+}
+
+@media (min-width: 640px) {
+    .toast-stack {
+        top: calc(var(--app-shell-top-band-height, 4rem) + var(--space-3));
+        right: var(--space-4);
+        bottom: auto;
+        left: auto;
+        width: min(24rem, calc(100vw - var(--space-8)));
+    }
+}
+
+/* ---- The item wrapper -----------------------------------------------------
+   Separate from `.toast` so leaving can collapse the row's height. A grid row
+   animating `1fr → 0fr` is the only way to transition to content height
+   without hardcoding one, and it is what stops the rest of the stack from
+   jumping when a toast in the middle expires. */
+.toast-item {
+    display: grid;
+    grid-template-rows: 1fr;
+    /* The gap lives on the item, not on the stack, so it collapses with it. */
+    padding-bottom: var(--space-2);
+    transition:
+        grid-template-rows var(--duration-slow) var(--ease-out-expo),
+        padding-bottom var(--duration-slow) var(--ease-out-expo),
+        opacity var(--duration-fast) var(--ease-smooth),
+        transform var(--duration-slow) var(--ease-out-expo);
+}
+
+.toast-item > .toast {
+    min-height: 0;   /* required for the 0fr row to actually collapse */
+}
+
+.toast-item.is-entering {
+    opacity: 0;
+    transform: translateY(var(--space-3)) scale(0.97);
+}
+
+@media (min-width: 640px) {
+    .toast-item.is-entering {
+        transform: translateX(var(--space-4)) scale(0.97);
+    }
+}
+
+.toast-item.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+.toast-item.is-leaving {
+    grid-template-rows: 0fr;
+    padding-bottom: 0;
+    opacity: 0;
+    transform: scale(0.97);
+}
+
+/* ---- The surface --------------------------------------------------------- */
+.toast {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-3);
+    overflow: hidden;
+    box-sizing: border-box;
+    padding: var(--space-3_5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+    /* Border *and* shadow, against the usual rule. A toast floats over
+       arbitrary page content, so it needs the shadow to separate — but on the
+       three dark themes a shadow over a near-black background is invisible and
+       the panel would bleed into the page. The border is what guarantees an
+       edge in every theme. */
+    box-shadow: var(--shadow-lg);
+}
+
+/* ---- Severity mark ------------------------------------------------------- */
+.toast__icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-full);
+    /* Per-severity colour is set once, on .toast--*, and both the tint and the
+       glyph read from it — so a new severity is one declaration, not three. */
+    background: color-mix(in srgb, var(--toast-accent) 14%, transparent);
+    color: var(--toast-accent);
+}
+
+.toast__glyph {
+    width: 1.0625rem;
+    height: 1.0625rem;
+}
+
+.toast--success {
+    --toast-accent: var(--color-success);
+}
+
+.toast--error {
+    --toast-accent: var(--color-danger);
+}
+
+.toast--warning {
+    --toast-accent: var(--color-warning);
+}
+
+.toast--info {
+    --toast-accent: var(--color-info);
+}
+
+.toast__sprite {
+    width: 1.75rem;
+    height: 1.75rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* ---- Copy ---------------------------------------------------------------- */
+.toast__body {
+    min-width: 0;
+    /* Optical centring: the 28px mark is taller than a 20px line, so the title
+       needs a nudge to sit on its centre rather than its top. */
+    padding-top: var(--space-0_5);
+}
+
+.toast__title {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--color-fg);
+    /* Long messages wrap instead of being cut. The old toast used `truncate`,
+       which silently ate the end of every sentence longer than the box. */
+    overflow-wrap: anywhere;
+}
+
+.toast__desc {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--color-muted);
+    overflow-wrap: anywhere;
+}
+
+/* ---- Actions ------------------------------------------------------------- */
+.toast__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+}
+
+.toast__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* 32px tall. Below the 44px touch minimum on purpose: the whole toast is
+       the target for dismissal, and these sit inside an already-small floating
+       surface where a 44px button would dominate the message. They are padded
+       wide enough to stay comfortably hittable. */
+    min-height: 2rem;
+    padding: var(--space-1_5) var(--space-3);
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+        background-color var(--duration-fast) var(--ease-smooth),
+        color var(--duration-fast) var(--ease-smooth);
+}
+
+.toast__action.primary {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.toast__action.primary:hover {
+    background: color-mix(in srgb, var(--color-fg) 12%, var(--color-primary));
+}
+
+.toast__action.ghost {
+    background: transparent;
+    color: var(--color-muted);
+    /* The only outlined thing in the toast, so the two buttons in the
+       reference pair read as "leave" and "continue" rather than as two equal
+       options. Inset so it cannot shift the row on hover. */
+    box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.toast__action.ghost:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+/* ---- Close --------------------------------------------------------------- */
+.toast__close {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin: var(--space-0_5) calc(-1 * var(--space-1)) 0 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+        background-color var(--duration-fast) var(--ease-smooth),
+        color var(--duration-fast) var(--ease-smooth);
+}
+
+.toast__close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+/* ---- Countdown ----------------------------------------------------------- */
+.toast__timer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    width: 100%;
+    transform-origin: left;
+    background: var(--toast-accent);
+    opacity: 0.45;
+    animation-name: toast-timer;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    /* animation-duration is set inline from the toast's own duration — the old
+       implementation hardcoded 3s in a Tailwind keyframe while the store used
+       the caller's value, so a 15s toast faded out at 3s and then held its slot
+       in the stack, invisible, for another twelve. */
+}
+
+/* One flip pauses every countdown at once, matching the store freezing every
+   dismiss timer while the stack is hovered or focused. */
+.toast-stack.is-paused .toast__timer {
+    animation-play-state: paused;
+}
+
+@keyframes toast-timer {
+    from { transform: scaleX(1); }
+    to   { transform: scaleX(0); }
+}
+
+/* Entrances and the countdown are motion for its own sake to anyone who has
+   asked for less of it; the toast still appears, still dismisses, still shows
+   its actions. */
+@media (prefers-reduced-motion: reduce) {
+    .toast-item,
+    .toast-item.is-entering,
+    .toast-item.is-leaving {
+        transition-duration: 1ms;
+        transform: none;
+    }
+
+    .toast__timer {
+        display: none;
+    }
+}

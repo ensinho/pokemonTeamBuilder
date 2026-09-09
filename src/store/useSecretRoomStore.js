@@ -10,7 +10,9 @@ import {
 import { db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
+import { promptSignIn } from '../utils/navigation';
 import {
     loadPokemonIndex,
     getPokemonApiData,
@@ -173,11 +175,13 @@ export const useSecretRoomStore = create((set, get) => ({
 
     createRoom: async ({ gameMode = 'secret-pokemon', genFilter = 'all', maxRounds = 5 }) => {
         const authState = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         const { userId } = authState;
 
         if (!db || !userId) {
-            showToast('Entre na sua conta para criar uma sala.', 'warning');
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForRooms'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
             return null;
         }
 
@@ -215,18 +219,17 @@ export const useSecretRoomStore = create((set, get) => ({
             });
 
             get().subscribeToRoom(roomCode);
-            showToast(`Sala ${roomCode} criada!`, 'success');
+            toast.success(`Sala ${roomCode} criada!`);
             return roomCode;
         } catch (err) {
             console.error('Failed to create room:', err);
-            showToast('Não foi possível criar a sala.', 'error');
+            toast.error('Não foi possível criar a sala.');
             return null;
         }
     },
 
     joinRoom: async (roomCodeInput) => {
         const authState = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         const { userId } = authState;
 
         if (!db || !userId) return false;
@@ -237,7 +240,7 @@ export const useSecretRoomStore = create((set, get) => ({
         try {
             const snap = await getDoc(roomRef);
             if (!snap.exists()) {
-                showToast('Sala não encontrada!', 'error');
+                toast.error('Sala não encontrada!');
                 return false;
             }
 
@@ -247,7 +250,7 @@ export const useSecretRoomStore = create((set, get) => ({
 
             if (!isAlreadyIn) {
                 if (data.status !== 'lobby') {
-                    showToast('A partida já começou!', 'warning');
+                    toast.warning('A partida já começou!');
                     return false;
                 }
 
@@ -267,11 +270,11 @@ export const useSecretRoomStore = create((set, get) => ({
             }
 
             get().subscribeToRoom(code);
-            showToast('Você entrou na sala!', 'success');
+            toast.success('Você entrou na sala!');
             return true;
         } catch (err) {
             console.error('Failed to join room:', err);
-            showToast('Não foi possível entrar na sala.', 'error');
+            toast.error('Não foi possível entrar na sala.');
             return false;
         }
     },
@@ -334,7 +337,7 @@ export const useSecretRoomStore = create((set, get) => ({
         const players = currentRoom.players || [];
         const currentPlayer = players[currentRoom.currentTurnIndex];
         if (currentPlayer?.userId !== userId) {
-            useToastStore.getState().showToast('Espere a sua vez!', 'warning');
+            toast.warning('Espere a sua vez!');
             return { rejected: true };
         }
 
@@ -354,9 +357,9 @@ export const useSecretRoomStore = create((set, get) => ({
         // fact about the secret Pokémon when it only means the evaluator lacked
         // the data (or never understood the question). Keep the player's turn.
         if (evalResult.unknown) {
-            useToastStore.getState().showToast(
-                evalResult.hint ? `Não foi possível responder: ${evalResult.hint}.` : 'Não entendi essa pergunta.',
-                'warning'
+            toast.warning(
+                evalResult.hint ? 'Não foi possível responder' : 'Não entendi essa pergunta',
+                { description: evalResult.hint || undefined },
             );
             return { rejected: true, hint: evalResult.hint || null };
         }
@@ -388,14 +391,13 @@ export const useSecretRoomStore = create((set, get) => ({
     submitDirectGuess: async (guessedPokemon) => {
         const { currentRoom } = get();
         const { userId, trainerDisplayName } = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         if (!db || !currentRoom || !userId || !guessedPokemon) return { rejected: true };
 
         const players = currentRoom.players || [];
         const turnPlayerIndex = currentRoom.currentTurnIndex;
         const currentPlayer = players[turnPlayerIndex];
         if (currentPlayer?.userId !== userId) {
-            showToast('Espere a sua vez!', 'warning');
+            toast.warning('Espere a sua vez!');
             return { rejected: true };
         }
 
@@ -445,7 +447,7 @@ export const useSecretRoomStore = create((set, get) => ({
                 lastActivityAt: new Date().toISOString(),
             });
 
-            showToast('Acertou! +100 pontos.', 'success');
+            toast.success('Acertou! +100 pontos.');
             return { rejected: false, isCorrect: true };
         } else {
             const nextTurnIndex = (turnPlayerIndex + 1) % players.length;
@@ -454,7 +456,7 @@ export const useSecretRoomStore = create((set, get) => ({
                 currentTurnIndex: nextTurnIndex,
                 lastActivityAt: new Date().toISOString(),
             });
-            showToast('Palpite incorreto!', 'error');
+            toast.error('Palpite incorreto!');
             return { rejected: false, isCorrect: false };
         }
     },

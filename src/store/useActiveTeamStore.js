@@ -8,7 +8,9 @@ import { analyzeTeam } from '../utils/teamAnalysis';
 import { buildShowdownExportText as buildShowdownText } from '../utils/showdownExport';
 import { competitivePresetFor } from '../utils/loadCompetitivePreset';
 import { useAuthStore } from './useAuthStore';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
+import { navigateTo } from '../utils/navigation';
 import { usePokedexStore } from './usePokedexStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 import { useLanguageStore } from './useLanguageStore';
@@ -122,7 +124,10 @@ export const useActiveTeamStore = create((set, get) => ({
     handleAddPokemon: async (pokemon) => {
         const { currentTeam } = get();
         if (currentTeam.length >= 6) {
-            useToastStore.getState().showToast("Your team is full (6 Pokémon)!", 'warning');
+            toast.warning(t('toast.teamFull'), {
+                description: t('toast.teamFullDesc'),
+                actions: [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }],
+            });
             return;
         }
 
@@ -137,7 +142,9 @@ export const useActiveTeamStore = create((set, get) => ({
         if (!pokemon.abilities?.length || !pokemon.moves?.length) {
             const resolved = await resolvePokemonDetail(pokemon.id);
             if (!resolved) {
-                useToastStore.getState().showToast("Couldn't load this Pokémon's data. Try again.", 'error');
+                toast.error(t('toast.pokemonLoadError'), {
+                    actions: [{ label: t('toast.retry'), onClick: () => get().handleAddPokemon(pokemon) }],
+                });
                 return;
             }
             // Keep any list-provided fields (e.g. derived sprites) but layer the fat data on top.
@@ -163,7 +170,7 @@ export const useActiveTeamStore = create((set, get) => ({
             }
         }
         if (candidates.length === 0) {
-            useToastStore.getState().showToast('No Pokémon available to randomize.', 'warning');
+            toast.warning(t('toast.teamRandomizeEmpty'));
             return;
         }
 
@@ -187,9 +194,13 @@ export const useActiveTeamStore = create((set, get) => ({
             }));
             set({ currentTeam: resolved, editingTeamId: null });
             get().recalculateAnalysis();
-            useToastStore.getState().showToast(`Randomized a team of ${resolved.length}!`, 'success');
+            toast.success(t('toast.teamRandomized', { count: resolved.length }), {
+                actions: [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }],
+            });
         } catch (_) {
-            useToastStore.getState().showToast('Could not randomize a team. Try again.', 'error');
+            toast.error(t('toast.teamRandomizeError'), {
+                actions: [{ label: t('toast.retry'), onClick: () => get().handleRandomizeTeam(pool, count) }],
+            });
         } finally {
             set({ isRandomizing: false });
         }
@@ -233,20 +244,20 @@ export const useActiveTeamStore = create((set, get) => ({
         const userId = useAuthStore.getState().userId;
 
         if (!db || !userId) {
-            useToastStore.getState().showToast("Database connection not ready.", 'error');
+            toast.error(t('toast.dbNotReady'), { description: t('toast.dbNotReadyDesc') });
             return;
         }
         if (currentTeam.length === 0) {
-            useToastStore.getState().showToast("Your team is empty!", 'warning');
+            toast.warning(t('toast.teamEmpty'), { description: t('toast.teamEmptyDesc') });
             return;
         }
         if (!teamName.trim()) {
-            useToastStore.getState().showToast("Please name your team.", 'warning');
+            toast.warning(t('toast.teamNameRequired'));
             return;
         }
 
         if (savedTeams && savedTeams.some(team => team.name === teamName && team.id !== editingTeamId)) {
-            useToastStore.getState().showToast("A team with this name already exists.", "warning");
+            toast.warning(t('toast.teamNameTaken'));
             return;
         }
 
@@ -263,13 +274,18 @@ export const useActiveTeamStore = create((set, get) => ({
 
         try {
             await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
-            useToastStore.getState().showToast(`Team "${teamName}" saved!`, 'success');
+            toast.success(t('toast.teamSaved', { name: teamName }), {
+                description: t('toast.teamSavedDesc', { count: currentTeam.length }),
+                actions: [{ label: t('toast.viewTeams'), onClick: () => navigateTo('/teams') }],
+            });
             useFirestoreTeamsStore.getState().setActiveTeamId(teamId);
             // Keep the roster on screen so the save doesn't feel like the team vanished.
             // Switch into edit mode for the just-saved team (button becomes "Update team").
             set({ editingTeamId: teamId });
         } catch (e) {
-            useToastStore.getState().showToast("Error saving team.", 'error');
+            toast.error(t('toast.teamSaveError'), {
+                actions: [{ label: t('toast.retry'), onClick: () => get().handleSaveTeam(savedTeams) }],
+            });
         }
     },
 
@@ -279,7 +295,7 @@ export const useActiveTeamStore = create((set, get) => ({
         try {
             await navigator.clipboard.writeText(text);
             if (successMessage) {
-                useToastStore.getState().showToast(successMessage, 'success');
+                toast.success(successMessage);
             }
         } catch {
             try {
@@ -292,10 +308,10 @@ export const useActiveTeamStore = create((set, get) => ({
                 document.execCommand('copy');
                 ta.remove();
                 if (successMessage) {
-                    useToastStore.getState().showToast(successMessage, 'success');
+                    toast.success(successMessage);
                 }
             } catch {
-                useToastStore.getState().showToast('Failed to copy team.', 'error');
+                toast.error(t('toast.teamCopyError'));
             }
         }
     },
@@ -303,7 +319,7 @@ export const useActiveTeamStore = create((set, get) => ({
     handleExportToShowdown: async () => {
         const { currentTeam, buildShowdownExportText, copyTextToClipboard, teamName } = get();
         if (currentTeam.length === 0) {
-            useToastStore.getState().showToast('Your team is empty!', 'warning');
+            toast.warning(t('toast.teamEmpty'), { description: t('toast.teamEmptyDesc') });
             return;
         }
         const exportText = buildShowdownExportText(currentTeam);
@@ -314,7 +330,7 @@ export const useActiveTeamStore = create((set, get) => ({
         const msg = lang === 'pt'
             ? `Time${teamNameText} copiado! Redirecionando para o Pokémon Showdown em 2 segundos...`
             : `Team${teamNameText} copied! Redirecting to Pokémon Showdown in 2 seconds...`;
-        useToastStore.getState().showToast(msg, 'success');
+        toast.success(msg);
 
         await copyTextToClipboard(exportText, null);
 
@@ -327,11 +343,11 @@ export const useActiveTeamStore = create((set, get) => ({
     shareTeamByData: async (teamMembers, providedName = 'Unnamed Team') => {
         const isAuthReady = useAuthStore.getState().isAuthReady;
         if (!db || !isAuthReady) {
-            useToastStore.getState().showToast('Database not ready.', 'error');
+            toast.error(t('toast.dbNotReady'), { description: t('toast.dbNotReadyDesc') });
             return;
         }
         if (teamMembers.length === 0) {
-            useToastStore.getState().showToast('Cannot share an empty team!', 'warning');
+            toast.warning(t('toast.shareEmptyTeam'), { description: t('toast.teamEmptyDesc') });
             return;
         }
 
@@ -380,7 +396,7 @@ export const useActiveTeamStore = create((set, get) => ({
             });
         } catch {
             set({ shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' } });
-            useToastStore.getState().showToast('Could not generate share link.', 'error');
+            toast.error(t('toast.shareLinkError'));
         }
     },
 

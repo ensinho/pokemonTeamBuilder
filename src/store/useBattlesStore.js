@@ -15,7 +15,9 @@ import {
 import { auth, db } from '../services/firebase';
 import { appId, BATTLE_TURN_ENDPOINT, BATTLE_RANDOM_ENDPOINT } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
+import { navigateTo, promptSignIn } from '../utils/navigation';
 import {
     BATTLE_FORMAT, BATTLE_LEVEL, RANDOM_BATTLE_FORMAT,
     battleOpponentId, buildBattleTeamText,
@@ -140,12 +142,14 @@ export const useBattlesStore = create((set, get) => ({
      */
     challengeFriend: async (friend, { mode = 'standard' } = {}) => {
         const authState = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         const { userId, isAnonymous } = authState;
 
         if (!db || !userId) return null;
         if (isAnonymous) {
-            showToast('Create an account to battle.', 'warning');
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForBattles'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
             return null;
         }
         if (!friend?.userId || friend.userId === userId) return null;
@@ -191,11 +195,14 @@ export const useBattlesStore = create((set, get) => ({
                 createdAt: now,
                 lastActivityAt: now,
             });
-            showToast('Challenge sent!', 'success');
+            toast.success(t('toast.challengeSent'), {
+                description: t('toast.challengeSentDesc'),
+                actions: [{ label: t('toast.openBattle'), onClick: () => navigateTo(`/battles/${battleRef.id}`) }],
+            });
             return battleRef.id;
         } catch (err) {
             console.error('Failed to send the challenge:', err);
-            showToast('Could not send the challenge.', 'error');
+            toast.error(t('toast.challengeError'));
             return null;
         }
     },
@@ -220,18 +227,17 @@ export const useBattlesStore = create((set, get) => ({
 
     /** Status transitions the rules allow a client to make. */
     setStatus: async (battleId, status, successMessage) => {
-        const showToast = useToastStore.getState().showToast;
         if (!db || !battleId) return false;
         try {
             await updateDoc(doc(db, battlesPath(), battleId), {
                 status,
                 lastActivityAt: new Date().toISOString(),
             });
-            if (successMessage) showToast(successMessage, 'success');
+            if (successMessage) toast.success(successMessage);
             return true;
         } catch (err) {
             console.error(`Failed to move battle to '${status}':`, err);
-            showToast('Could not update the battle.', 'error');
+            toast.error(t('toast.battleUpdateError'));
             return false;
         }
     },
@@ -250,7 +256,6 @@ export const useBattlesStore = create((set, get) => ({
      */
     submitTeam: async (battleId, team, teamName) => {
         const { userId } = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         if (!db || !userId || !battleId) return false;
 
         const members = Array.isArray(team) ? team.filter(Boolean) : [];
@@ -258,11 +263,14 @@ export const useBattlesStore = create((set, get) => ({
 
         if (errors.length > 0) {
             const first = errors[0];
-            showToast(
-                first.reason === 'empty'
-                    ? 'Pick a team with at least one Pokémon.'
-                    : `${first.name} has no moves — a Pokémon needs at least one to battle.`,
-                'warning',
+            toast.warning(
+                first.reason === 'empty' ? t('toast.teamEmpty') : t('toast.teamSubmitError'),
+                {
+                    description: first.reason === 'empty'
+                        ? t('toast.teamEmptyDesc')
+                        : t('toast.memberHasNoMoves', { name: first.name }),
+                    actions: [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }],
+                },
             );
             return false;
         }
@@ -286,11 +294,11 @@ export const useBattlesStore = create((set, get) => ({
             });
             await batch.commit();
 
-            showToast('Team locked in!', 'success');
+            toast.success(t('toast.teamLockedIn'), { description: t('toast.teamLockedInDesc') });
             return true;
         } catch (err) {
             console.error('Failed to submit the team:', err);
-            showToast('Could not submit your team.', 'error');
+            toast.error(t('toast.teamSubmitError'));
             return false;
         }
     },
@@ -309,7 +317,6 @@ export const useBattlesStore = create((set, get) => ({
      * path for a roll that failed halfway.
      */
     rollRandomTeams: async (battleId) => {
-        const showToast = useToastStore.getState().showToast;
         if (!battleId) return null;
 
         set({ isRollingTeams: true });
@@ -320,7 +327,14 @@ export const useBattlesStore = create((set, get) => ({
                 { serverErrorMessage: 'Server error (500) dealing the random teams.' },
             );
             if (!ok) {
-                showToast(error === 'signedOut' ? 'Sign in again to keep battling.' : error, 'error');
+                if (error === 'signedOut') {
+                    toast.error(t('toast.sessionExpired'), {
+                        description: t('toast.sessionExpiredDesc'),
+                        actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signIn') }],
+                    });
+                } else {
+                    toast.error(error);
+                }
                 return null;
             }
             // The roll wrote this player's team; pull it in so the reveal doesn't
@@ -329,7 +343,7 @@ export const useBattlesStore = create((set, get) => ({
             return payload;
         } catch (err) {
             console.error('Failed to roll the random teams:', err);
-            showToast('Could not reach the battle server.', 'error');
+            toast.error(t('toast.battleServerError'));
             return null;
         } finally {
             set({ isRollingTeams: false });
@@ -337,14 +351,13 @@ export const useBattlesStore = create((set, get) => ({
     },
 
     deleteBattle: async (battleId) => {
-        const showToast = useToastStore.getState().showToast;
         if (!db || !battleId) return false;
         try {
             await deleteDoc(doc(db, battlesPath(), battleId));
             return true;
         } catch (err) {
             console.error('Failed to delete the battle:', err);
-            showToast('Could not remove the battle.', 'error');
+            toast.error(t('toast.battleRemoveError'));
             return false;
         }
     },
@@ -412,7 +425,6 @@ export const useBattlesStore = create((set, get) => ({
      * turn that the opponent has already answered.
      */
     submitChoice: async (battleId, choice = null) => {
-        const showToast = useToastStore.getState().showToast;
         if (!battleId) return null;
 
         set({ isResolvingTurn: true });
@@ -423,13 +435,20 @@ export const useBattlesStore = create((set, get) => ({
                 { serverErrorMessage: 'Server error (500) resolving turn.' },
             );
             if (!ok) {
-                showToast(error === 'signedOut' ? 'Sign in again to keep battling.' : error, 'error');
+                if (error === 'signedOut') {
+                    toast.error(t('toast.sessionExpired'), {
+                        description: t('toast.sessionExpiredDesc'),
+                        actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signIn') }],
+                    });
+                } else {
+                    toast.error(error);
+                }
                 return null;
             }
             return payload;
         } catch (err) {
             console.error('Failed to reach the battle resolver:', err);
-            showToast('Could not reach the battle server.', 'error');
+            toast.error(t('toast.battleServerError'));
             return null;
         } finally {
             set({ isResolvingTurn: false });
@@ -448,7 +467,6 @@ export const useBattlesStore = create((set, get) => ({
 
     sendChatMessage: async (battleId, text) => {
         const authState = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         const cleaned = (text || '').trim();
         if (!db || !battleId || !cleaned || !authState.userId) return false;
 
@@ -466,7 +484,7 @@ export const useBattlesStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error('Failed to send the battle message:', err);
-            showToast('Could not send the message.', 'error');
+            toast.error(t('toast.battleMessageError'));
             return false;
         }
     },

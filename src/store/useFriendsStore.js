@@ -18,7 +18,9 @@ import {
 import { db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
-import { useToastStore } from './useToastStore';
+import { toast } from './useToastStore';
+import { t } from '../utils/translate';
+import { navigateTo, promptSignIn } from '../utils/navigation';
 
 const profilesPath = () => `artifacts/${appId}/publicProfiles`;
 const requestsPath = () => `artifacts/${appId}/friendRequests`;
@@ -192,7 +194,7 @@ export const useFriendsStore = create((set, get) => ({
             });
         } catch (err) {
             console.error('Trainer search failed:', err);
-            useToastStore.getState().showToast('Could not search trainers.', 'error');
+            toast.error(t('toast.friendSearchError'));
             set({ searchResults: [], isSearching: false });
         }
     },
@@ -210,11 +212,12 @@ export const useFriendsStore = create((set, get) => ({
 
     sendRequest: async (toUserId) => {
         const { userId, isAnonymous } = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
-
         if (!db || !userId) return false;
         if (isAnonymous) {
-            showToast('Create an account to add friends.', 'warning');
+            toast.warning(t('toast.signInRequired'), {
+                description: t('toast.signInForFriends'),
+                actions: [{ label: t('toast.signIn'), onClick: () => promptSignIn('signUp') }],
+            });
             return false;
         }
         if (!toUserId || toUserId === userId) return false;
@@ -226,13 +229,15 @@ export const useFriendsStore = create((set, get) => ({
                 status: 'pending',
                 createdAt: new Date().toISOString(),
             });
-            showToast('Friend request sent.', 'success');
+            toast.success(t('toast.friendRequestSent'), {
+                actions: [{ label: t('toast.viewFriends'), onClick: () => navigateTo('/friends') }],
+            });
             return true;
         } catch (err) {
             console.error('Failed to send friend request:', err);
             // The deterministic id means a leftover declined request blocks a new
             // one; say so rather than failing silently.
-            showToast('Could not send the request. You may already have one pending.', 'error');
+            toast.error(t('toast.friendRequestError'), { description: t('toast.friendRequestErrorDesc') });
             return false;
         }
     },
@@ -248,7 +253,6 @@ export const useFriendsStore = create((set, get) => ({
      */
     acceptRequest: async (fromUserId) => {
         const { userId } = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         if (!db || !userId || !fromUserId) return false;
 
         const members = [userId, fromUserId].sort();
@@ -264,11 +268,14 @@ export const useFriendsStore = create((set, get) => ({
             batch.delete(doc(db, requestsPath(), requestId(userId, fromUserId)));
             await batch.commit();
 
-            showToast('You are now friends!', 'success');
+            toast.success(t('toast.friendsNow'), {
+                description: t('toast.friendsNowDesc'),
+                actions: [{ label: t('toast.openBattle'), onClick: () => navigateTo('/battles') }],
+            });
             return true;
         } catch (err) {
             console.error('Failed to accept friend request:', err);
-            showToast('Could not accept the request.', 'error');
+            toast.error(t('toast.friendAcceptError'));
             return false;
         }
     },
@@ -280,7 +287,6 @@ export const useFriendsStore = create((set, get) => ({
      */
     declineRequest: async (fromUserId) => {
         const { userId } = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         if (!db || !userId || !fromUserId) return false;
 
         try {
@@ -291,28 +297,26 @@ export const useFriendsStore = create((set, get) => ({
             return true;
         } catch (err) {
             console.error('Failed to decline friend request:', err);
-            showToast('Could not decline the request.', 'error');
+            toast.error(t('toast.friendDeclineError'));
             return false;
         }
     },
 
     /** Cancel one you sent (or clear a declined one). */
     removeRequest: async (fromUserId, toUserId) => {
-        const showToast = useToastStore.getState().showToast;
         if (!db) return false;
         try {
             await deleteDoc(doc(db, requestsPath(), requestId(fromUserId, toUserId)));
             return true;
         } catch (err) {
             console.error('Failed to remove friend request:', err);
-            showToast('Could not cancel the request.', 'error');
+            toast.error(t('toast.friendCancelError'));
             return false;
         }
     },
 
     removeFriend: async (otherUserId) => {
         const { userId } = useAuthStore.getState();
-        const showToast = useToastStore.getState().showToast;
         if (!db || !userId || !otherUserId) return false;
 
         try {
@@ -323,11 +327,11 @@ export const useFriendsStore = create((set, get) => ({
                 deleteDoc(doc(db, requestsPath(), requestId(userId, otherUserId))),
                 deleteDoc(doc(db, requestsPath(), requestId(otherUserId, userId))),
             ]);
-            showToast('Friend removed.', 'info');
+            toast.info(t('toast.friendRemoved'));
             return true;
         } catch (err) {
             console.error('Failed to remove friend:', err);
-            showToast('Could not remove the friend.', 'error');
+            toast.error(t('toast.friendRemoveError'));
             return false;
         }
     },

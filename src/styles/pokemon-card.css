@@ -19,26 +19,24 @@
 }
 
 /* ── Synergy-pick cards ─────────────────────────────────────────────── */
+/* A suggestion is highlighted by a ring and a tint, not by a gradient border
+   and a glow that breathes forever. The whole point of the synergy row is that
+   *every* card in it qualifies, so an animation there carries no information —
+   it is just a dozen shadows recompositing on a loop. It also stacked a
+   1.5px gradient border on a card that already has one, which is why these
+   sat a half-pixel off their neighbours in the grid. */
 .pokemon-card--synergy {
     --synergy-color: var(--color-primary);
     overflow: visible;
-    border-color: var(--synergy-color);
-    background:
-        linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
-        linear-gradient(135deg, var(--synergy-color), color-mix(in srgb, var(--synergy-color) 60%, #fff)) border-box;
-    border: 1.5px solid transparent;
-    box-shadow: 0 0 8px -2px color-mix(in srgb, var(--synergy-color) 35%, transparent);
-    animation: synergy-pulse 2.6s ease-in-out infinite alternate, fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
-}
-
-@keyframes synergy-pulse {
-    0%   { box-shadow: 0 0  6px -2px color-mix(in srgb, var(--synergy-color) 30%, transparent); }
-    100% { box-shadow: 0 0 14px -1px color-mix(in srgb, var(--synergy-color) 50%, transparent); }
+    border-color: transparent;
+    background: color-mix(in srgb, var(--synergy-color) 7%, var(--color-surface));
+    box-shadow: inset 0 0 0 1px var(--synergy-color);
+    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
 }
 
 .pokemon-card--synergy:hover {
-    box-shadow: 0 0 16px -1px color-mix(in srgb, var(--synergy-color) 55%, transparent);
-    border-color: var(--synergy-color);
+    background: color-mix(in srgb, var(--synergy-color) 12%, var(--color-surface));
+    border-color: transparent;
 }
 
 /* Floating reason icon pill — positioned top-right outside the card padding */
@@ -123,8 +121,8 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-sm);
-    border: 1px solid color-mix(in srgb, var(--color-success) 20%, var(--color-border));
-    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+    border: none;
+    background: color-mix(in srgb, var(--color-success) 14%, var(--color-surface));
     padding: var(--space-0_5) var(--space-1_5);
     font-size: 0.55rem;
     font-weight: 600;
@@ -139,15 +137,22 @@
     justify-content: center;
     width: 1.6rem;
     height: 1.6rem;
-    border: 1px solid var(--color-border);
+    /* Borderless: the card already owns a border, and a bordered control inside
+       a bordered card is the nesting that made the grid read as busy. The
+       raised fill is what separates it. */
+    border: none;
     border-radius: 50%;
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+.pokemon-card__favorite:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
 }
 
 .pokemon-card__favorite.is-active {
-    border-color: var(--color-accent);
     background: var(--color-accent-soft);
     color: var(--color-accent);
 }
@@ -205,20 +210,19 @@
     justify-content: center;
     gap: var(--space-1);
     margin-top: auto;
-    border: 1px solid var(--color-border);
+    border: none;
     border-radius: var(--radius-md);
-    background: transparent;
+    background: var(--color-surface-raised);
     padding: var(--space-1) var(--space-1_5);
     font-size: 0.675rem;
     font-weight: 600;
     color: var(--color-muted);
-    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
 }
 
 .pokemon-card__action:hover {
-    background: var(--color-surface-raised);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
 }
 
 @media (max-width: 640px) {

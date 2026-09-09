@@ -12,6 +12,31 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-09-09 — Toasts told users what happened and then abandoned them `dispattern`
+- **Symptom:** every toast in the app was a dead end. "Create an account to add friends" named a requirement and gave no way to meet it; "Team saved!" left the user to go find their teams; a PokéRoom invite carrying the only copy of the room code expired on a timer they could not stop. 130 call sites, exactly one of which offered an action.
+- **Root causes, four separate ones:**
+  - **The dismiss timer was unstoppable.** No pause on hover, so a toast could expire mid-sentence — or while the user was reaching for the one button that existed.
+  - **`duration` was a lie.** The store dismissed on the caller's value, but the visuals ran on a Tailwind keyframe hardcoded to `3s`. A `duration: 15000` invite faded out at 3s and then held its slot in the stack, invisible, for twelve more seconds.
+  - **Severity was painted as a full-bleed background** with `text-white` on top. On the dark themes `--color-success` is a bright mint and `--color-warning` a bright amber, so the text sat near 1.6:1 — the success message was the least readable thing on screen.
+  - **The copy never reached i18n.** The stores raise most of the app's toasts and could not call the `useTranslation` hook, so ~70 English strings shipped into a bilingual UI ("Could not fetch saved teams." to a pt-BR user).
+- **Fix:** rewrote `useToastStore` around a pausable timer map, a `phase` state machine (`entering`/`visible`/`leaving`) so the stack can collapse a departing row instead of snapping, dedupe by key, and a queue so a burst is delayed rather than dropped. New `ToastStack.jsx` + `styles/toast.css` render title / description / actions with the severity as a small tinted mark. `utils/translate.js` extracts the resolver out of the hook so stores can translate; `utils/navigation.js` registers the router and the auth modal so a store-raised toast can actually take the next step.
+- **Correct pattern:** a toast is a **title** plus an optional description plus the action that continues the flow — `toast.success(t('toast.teamSaved', { name }), { description, actions: [...] })`. Reach for `toast.success/error/warning/info` from `useToastStore`, not the positional `showToast(msg, type)` (still supported for the older call sites). Put the copy in the `toast:` namespace in `translations.js`. If a message tells the user they cannot do something, the toast owes them the button that lets them.
+- **Files:** `src/store/useToastStore.js`, `src/components/ToastStack.jsx`, `src/styles/toast.css`, `src/utils/translate.js`, `src/utils/navigation.js`, `src/hooks/useTranslation.js`, `src/constants/translations.js`, and every store that raises a toast.
+
+### 2026-09-09 — The page column had no maximum width, and home escaped the router `bug`
+- **Symptom:** on a wide monitor every route ran the full width of the shell — 1614px at 1920, and ~2250px at 2560. Line lengths and card grids stretched until their internal rhythm broke.
+- **Root cause:** `.app-shell__page-frame` was `{ width: 100%; margin: 0 auto; }` — no `max-width`, so the element existed but did nothing. Worse, `pageFrameClassName` returned `''` for home specifically to opt it out, which forced a **duplicated `<Routes>` tree** in `AppLayout` (a second copy of the home route plus a catch-all `<Navigate to="/" replace />`) purely to render home outside the frame.
+- **Fix:** three measure tokens in `index.css` (`--measure-prose` 48rem / `--measure-page` 76rem / `--measure-wide` 96rem), applied per route via modifier classes. Home now uses the frame like everything else, so the duplicate branch is gone.
+- **Correct pattern:** a route that needs a different width takes a `--wide` / `--prose` modifier — never an escape hatch that forks the router. If you find yourself duplicating `<Routes>`, the thing you actually want is a class.
+- **Files:** `src/index.css`, `src/styles/app-shell.css`, `src/components/AppLayout.jsx`
+
+### 2026-09-09 — Three borders per Pokémon card `dispattern`
+- **Symptom:** the builder rendered **290** bordered containers, **283** of them nested; the Pokédex 126/125. The grid read as busy no matter how well spaced it was.
+- **Root cause:** `.pokemon-card` has a border, and so did `.pokemon-card__favorite`, `.pokemon-card__action` and `.pokemon-card__badge` inside it — three outlines per card, times 75 cards. `.team-builder-results` then drew a fourth box 16px inside `.team-builder-panel`'s. Separately, `.pokemon-card--synergy` ran `synergy-pulse … infinite` on every suggestion, so a full grid of "Top Meta Pick" cards was a dozen shadows recompositing forever — and its `1.5px` gradient border sat those cards a half-pixel off their neighbours.
+- **Fix:** children inside the card separate with fill (`--color-surface-raised`, `--color-surface-hover`), not lines. The synergy state is an inset ring plus a tint, static.
+- **Result:** builder 290 → 139 bordered (283 → 132 nested), Pokédex 126 → 76 (125 → 75), infinite animations → 0.
+- **Files:** `src/styles/pokemon-card.css`, `src/styles/team-builder-view.css`
+
 ### 2026-09-08 — The index's newer Mega forms sit on ids that mean something else in PokéAPI `dispattern`
 - **Symptom:** none visible yet, but it decides what a game's dex may contain. `utils/gameDex.js` and `scripts/build-games.mjs` both drop any `-mega` form with `id > 10090`, commented as "project-added hypothetical mega". That rule silently governs six games' dexes and blocked Legends: Z-A — the game whose entire hook is Mega Evolution — from showing its own Megas.
 - **What is actually true:** `pokemon-index.json` carries **94** `-mega` forms. 48 are PokéAPI's gen-VI Megas at ids 10033–10090. The other **46 sit at 10278–10326**, and those id slots belong to unrelated forms in PokéAPI: 10278 is `scatterbug-marine`, 10300 is `spewpa-sandstorm`, 10326 is `weezing-galar` (verified against `/pokemon-form/{id}`). So they are locally-assigned ids, not API entries — the guard is right that they aren't official *PokéAPI* data.
