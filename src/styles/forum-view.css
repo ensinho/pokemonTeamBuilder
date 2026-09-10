@@ -96,8 +96,8 @@
 }
 
 .forum-category-btn {
-    font-size: 0.675rem;
-    padding: var(--space-1) var(--space-2);
+    font-size: 0.75rem;
+    padding: var(--space-1) var(--space-2_5);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
@@ -131,8 +131,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--space-1_5);
-    padding: var(--space-1) var(--space-1_5);
+    gap: var(--space-2);
+    padding: var(--space-1_5) var(--space-2);
     border-radius: var(--radius-sm);
     background: transparent;
     border: 1px solid transparent;
@@ -184,7 +184,7 @@
 }
 
 .forum-topic-card__title {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: var(--color-fg);
     margin: 0;
@@ -204,13 +204,34 @@
 }
 
 .forum-main__header {
-    padding: var(--space-2) 0 var(--space-3_5) 0;
+    padding: var(--space-2) 0 var(--space-3) 0;
     border-bottom: 1px solid var(--color-border);
     background: transparent;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: var(--space-4);
+    gap: var(--space-3);
+}
+
+/* Back to the topic list. Only a phone needs it — from 640px up the list is
+   already on screen beside the thread, and a back button pointing at something
+   the user can see is noise. The mobile block turns it on. */
+.forum-main__back {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-main__back:hover {
+    background: var(--color-surface-hover);
 }
 
 .forum-main__title {
@@ -218,12 +239,18 @@
     font-weight: 700;
     color: var(--color-fg);
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
+/* The byline wraps rather than pushing the header wide; on a narrow pane
+   "Teams · Created by @Professor Oak · 64d ago" is three facts, not one line. */
 .forum-main__meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2);
+    gap: var(--space-1) var(--space-2);
     font-size: 0.75rem;
     color: var(--color-muted);
     margin-top: var(--space-1);
@@ -607,6 +634,90 @@
     justify-content: space-between;
 }
 
+/* --- Message actions -----------------------------------------------------
+   One vocabulary for the row under every message. These were four different
+   ad-hoc Tailwind pills before, two of which wrote raw `red-500` — a colour
+   that does not follow the theme — and all of which were 20px tall, half a tap
+   target. Like and Reply lead; Delete is pushed to the far end, because a
+   destructive control sitting one thumb-width from Reply is a mis-tap waiting
+   to happen.
+   ------------------------------------------------------------------------ */
+.forum-msg-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    margin-top: var(--space-2);
+}
+
+.forum-msg-actions__end,
+.forum-msg-actions__confirm {
+    margin-left: auto;
+}
+
+.forum-msg-actions__confirm {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+/* Fill, not outline: these sit inside a thread that already uses a rule per
+   message to separate one from the next, and a pill outline on top of that is
+   the second box the design system exists to prevent. */
+.forum-msg-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: 1.75rem;
+    padding: var(--space-0_5) var(--space-2);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-msg-action:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.forum-msg-action:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.forum-msg-action--icon {
+    width: 1.75rem;
+    padding: 0;
+}
+
+.forum-msg-action.is-liked {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+/* There is no --color-danger-soft token, and inventing one here would be a
+   seventh definition to keep in sync across six themes. Mixed from the theme's
+   own danger colour instead, the way .badge-success mixes from success. */
+.forum-msg-action.is-danger {
+    background: color-mix(in srgb, var(--color-danger) 12%, var(--color-surface));
+    color: var(--color-danger);
+}
+
+.forum-msg-action.is-danger:hover {
+    background: color-mix(in srgb, var(--color-danger) 20%, transparent);
+    color: var(--color-danger);
+}
+
+.forum-msg-action--icon:hover {
+    color: var(--color-danger);
+}
+
 /* Forum Chat Input Editor */
 .forum-editor {
     padding: var(--space-3) 0;
@@ -986,18 +1097,47 @@
     }
 }
 
-/* True Mobile: Stacked view (< 640px) */
+/* True mobile (< 640px): two screens, not two bands of one screen.
+   A phone used to get a fixed 175px navigation block pinned above the
+   conversation — title row, search, category chips and an 85px topic list that
+   showed two rows and gave no sign it scrolled — leaving barely half the screen
+   for the thread it was there to reach. Below 640px the sidebar and the thread
+   are now separate panes and exactly one is on screen, which is what every
+   other forum on a phone does: a list you can actually read, and a thread that
+   owns the full height. `.forum-main__back` is the way between them. */
 @media (max-width: 639px) {
     .forum-view {
         display: flex;
         flex-direction: column;
     }
 
-    .forum-sidebar {
-        height: 175px;
-        flex-shrink: 0;
-        border-bottom: 1px solid var(--color-border);
-        padding-bottom: var(--space-1_5);
+    .forum-view.is-pane-thread .forum-sidebar,
+    .forum-view.is-pane-topics .forum-main {
+        display: none;
+    }
+
+    .forum-sidebar,
+    .forum-main {
+        flex: 1;
+        min-height: 0;
+        height: auto;
+        overflow: hidden;
+    }
+
+    /* The list is the whole screen now, so its rows can be a comfortable size
+       rather than the 85px-band compression they were squeezed into. */
+    .forum-topics-list {
+        max-height: none;
+        gap: var(--space-0_5);
+    }
+
+    .forum-topic-card {
+        padding: var(--space-2_5) var(--space-2);
+        min-height: 2.75rem;
+    }
+
+    .forum-topic-card__title {
+        font-size: 0.875rem;
     }
 
     .forum-categories {
@@ -1005,21 +1145,54 @@
         overflow-x: auto;
         padding-bottom: var(--space-1);
         -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .forum-categories::-webkit-scrollbar {
+        display: none;
     }
 
     .forum-category-btn {
         flex-shrink: 0;
+        min-height: 2rem;
+        padding: var(--space-1) var(--space-3);
     }
 
-    .forum-topics-list {
-        max-height: 85px;
+    /* The thread header is the only route back to the list, so the control is
+       real and thumb-sized rather than an edge gesture. */
+    .forum-main__back {
+        display: inline-flex;
     }
 
-    .forum-main {
-        flex: 1;
-        min-height: 0;
-        overflow: hidden;
+    .forum-main__header {
+        gap: var(--space-2);
+        padding-block: var(--space-1) var(--space-2_5);
     }
+
+    .forum-main__title {
+        font-size: 1rem;
+    }
+
+    /* The message list runs to the pane edge on a phone — an inset gutter on a
+       390px screen is width the text needed. */
+    .forum-message-list {
+        padding: var(--space-3) 0;
+        gap: var(--space-3_5);
+    }
+
+    /* Room for a thumb. These were 20px tall (0.5 × --space-0_5 padding on
+       11px text), which is half of what a tap target needs. */
+    .forum-msg-action {
+        min-height: 2rem;
+        padding: var(--space-1) var(--space-2_5);
+        font-size: 0.75rem;
+    }
+
+    .forum-msg-action--icon {
+        width: 2rem;
+        padding: 0;
+    }
+
 }
 
 /* Home general chat mobile layout adaptations */
@@ -1156,4 +1329,26 @@
     opacity: 0.4;
     cursor: not-allowed;
     transform: none;
+}
+
+/* The composer is the one control on the thread screen that is always
+   reachable, so on a phone it gets full-size targets and room for the 16px
+   field the iOS zoom guard already forces — the 1.85rem box was cropping it.
+   This block lives at the end of the file deliberately: the base .forum-chat-*
+   rules below the mobile section would otherwise win at equal specificity. */
+@media (max-width: 639px) {
+    .forum-chat-input-wrapper {
+        padding: var(--space-1_5);
+        gap: var(--space-1_5);
+    }
+
+    .forum-chat-attach-btn,
+    .forum-chat-send-btn {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .forum-chat-input-field {
+        height: 2.25rem;
+    }
 }

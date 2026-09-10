@@ -34,7 +34,7 @@ import {
 } from '../icons';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import '../../styles/forum-view.css';
-import { Download } from 'lucide-react';
+import { ChevronLeft, Download } from 'lucide-react';
 
 // Helper to format relative time
 const formatRelativeTime = (isoString, language = 'en') => {
@@ -92,6 +92,12 @@ export function FeedView({ colors, showToast, navigate }) {
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [topicSearch, setTopicSearch] = useState('');
     const [isCreatingTopic, setIsCreatingTopic] = useState(false);
+    // Which of the two panes a phone is showing. Below 640px the sidebar and the
+    // thread are separate screens rather than two bands of one screen: the old
+    // layout pinned a 175px navigation block above the conversation, of which
+    // 85px was a topic list showing two rows with no sign that it scrolled.
+    // Ignored from 640px up, where both panes are visible at once.
+    const [mobilePane, setMobilePane] = useState('thread');
     const [newTopicTitle, setNewTopicTitle] = useState('');
     const [newTopicCategory, setNewTopicCategory] = useState('general');
     const [newTopicText, setNewTopicText] = useState('');
@@ -137,6 +143,10 @@ export function FeedView({ colors, showToast, navigate }) {
         threadKey: currentTopicId,
         count: messages.length,
         lastIsMine: messages[messages.length - 1]?.createdBy === userId,
+        // On a phone the thread pane is `display: none` while the topic list is
+        // up, which resets its scrollTop; coming back has to re-pin or the
+        // thread reappears at the top.
+        pinKey: mobilePane,
     });
 
     // Drop a pending reply/attachment when the user switches topics.
@@ -321,8 +331,8 @@ export function FeedView({ colors, showToast, navigate }) {
     }, [hoveredSlot]);
 
     return (
-        <div className="forum-view">
-            {/* Left Sidebar: Topic List */}
+        <div className={`forum-view is-pane-${mobilePane}`}>
+            {/* Left Sidebar: Topic List — its own screen on a phone */}
             <aside className="forum-sidebar">
                 <div className="forum-sidebar__header">
                     <div className="forum-sidebar__title-row">
@@ -330,7 +340,7 @@ export function FeedView({ colors, showToast, navigate }) {
                             {language === 'pt' ? 'Tópicos populares' : 'Top topics'}
                         </span>
                         <button
-                            onClick={() => setIsCreatingTopic(true)}
+                            onClick={() => { setIsCreatingTopic(true); setMobilePane('thread'); }}
                             className="btn-github-new"
                         >
                             <PlusIcon className="w-3.5 h-3.5" />
@@ -387,7 +397,11 @@ export function FeedView({ colors, showToast, navigate }) {
                         filteredTopics.map((topic) => (
                             <button
                                 key={topic.id}
-                                onClick={() => { setCurrentTopicId(topic.id); setIsCreatingTopic(false); }}
+                                onClick={() => {
+                                    setCurrentTopicId(topic.id);
+                                    setIsCreatingTopic(false);
+                                    setMobilePane('thread');
+                                }}
                                 className={`forum-topic-card ${currentTopicId === topic.id && !isCreatingTopic ? 'is-active' : ''}`}
                             >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -551,7 +565,15 @@ export function FeedView({ colors, showToast, navigate }) {
                     /* Chat Thread Screen */
                     <div className="flex flex-col h-full overflow-hidden">
                         <div className="forum-main__header">
-                            <div>
+                            <button
+                                type="button"
+                                className="forum-main__back"
+                                onClick={() => setMobilePane('topics')}
+                                aria-label={language === 'pt' ? 'Voltar aos tópicos' : 'Back to topics'}
+                            >
+                                <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
+                            </button>
+                            <div className="min-w-0">
                                 <h3 className="forum-main__title">{activeTopic.title}</h3>
                                 <div className="forum-main__meta">
                                     <span className={`forum-topic-card__badge forum-topic-card__badge--${activeTopic.category}`}>
@@ -721,15 +743,18 @@ export function FeedView({ colors, showToast, navigate }) {
                                                     </div>
                                                 )}
 
-                                                {/* Message actions: like + (author/admin) delete */}
-                                                <div className="flex items-center gap-2 mt-2">
+                                                {/* Message actions. Like and Reply lead; Delete is pushed to
+                                                    the far end of the row by the stylesheet, because a
+                                                    destructive control one thumb-width from Reply is a
+                                                    mis-tap waiting to happen. */}
+                                                <div className="forum-msg-actions">
                                                     <button
                                                         type="button"
                                                         onClick={() => toggleMessageLike(currentTopicId, message.id)}
                                                         disabled={!userId}
                                                         aria-pressed={likedByMe}
                                                         title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
-                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${likedByMe ? 'border-primary bg-primary text-white' : 'border-border bg-surface-raised text-muted hover:text-fg'}`}
+                                                        className={`forum-msg-action ${likedByMe ? 'is-liked' : ''}`}
                                                     >
                                                         <HeartIcon className="w-3.5 h-3.5 shrink-0" />
                                                         {likeCount > 0 && <span>{likeCount}</span>}
@@ -739,7 +764,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         type="button"
                                                         onClick={() => handleStartReply(message)}
                                                         title={language === 'pt' ? 'Responder' : 'Reply'}
-                                                        className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[11px] font-semibold text-muted transition-colors hover:text-fg"
+                                                        className="forum-msg-action"
                                                     >
                                                         <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
                                                         <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
@@ -747,18 +772,18 @@ export function FeedView({ colors, showToast, navigate }) {
 
                                                     {canDeleteMessage && (
                                                         confirmingDeleteId === message.id ? (
-                                                            <span className="inline-flex items-center gap-1 text-[11px]">
+                                                            <span className="forum-msg-actions__confirm">
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleConfirmDeleteMessage(message.id)}
-                                                                    className="rounded-full border border-red-500/50 bg-red-500/10 px-2 py-0.5 font-semibold text-red-500 transition-colors hover:bg-red-500/20"
+                                                                    className="forum-msg-action is-danger"
                                                                 >
                                                                     {language === 'pt' ? 'Excluir' : 'Delete'}
                                                                 </button>
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setConfirmingDeleteId(null)}
-                                                                    className="rounded-full bg-surface-raised px-2 py-0.5 text-muted transition-colors hover:text-fg"
+                                                                    className="forum-msg-action"
                                                                 >
                                                                     {t('common.cancel')}
                                                                 </button>
@@ -769,7 +794,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                                 onClick={() => setConfirmingDeleteId(message.id)}
                                                                 title={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
                                                                 aria-label={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
-                                                                className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface-raised text-muted transition-colors hover:text-red-500"
+                                                                className="forum-msg-action forum-msg-action--icon forum-msg-actions__end"
                                                             >
                                                                 <TrashIcon className="w-3.5 h-3.5" />
                                                             </button>

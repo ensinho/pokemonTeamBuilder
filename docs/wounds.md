@@ -12,6 +12,23 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-09-10 — The forum put a navigation block where the conversation should be `dispattern`
+- **Symptom:** "a tela de fórum tá pouco otimizada em móbile, com campos meio apertados e não claros como interagir." The phone screenshot shows why: a fixed band at the top holding a title row, a search field, four category chips and a two-row topic list, with the thread squeezed into what was left.
+- **Root cause — the phone was given the desktop layout, compressed:**
+  1. **`.forum-sidebar { height: 175px }` with `.forum-topics-list { max-height: 85px }`.** Below 640px the two-column desktop layout was stacked rather than replaced, so ~23% of a 746px screen was permanently spent on navigation *while reading a thread*. The 85px list showed two rows with no scrollbar and no cut-off row, so nothing said it was a list you could scroll — that is the "não claro como interagir" exactly.
+  2. **Tap targets at half size.** The like / reply / delete row was four different ad-hoc Tailwind pills at `py-0.5` on 11px text — **20px tall**, against the ~44px a thumb needs. The composer's controls were `1.85rem` (29.6px) boxes holding the 16px text the iOS zoom guard forces globally, so the field was cropping its own content.
+  3. **Delete sat one thumb-width from Reply**, in a row with no separation between a routine action and a destructive one.
+  4. Two of those pills wrote raw `red-500` — a colour that does not follow the theme, which the design system forbids outright.
+- **Fix:** below 640px the sidebar and the thread are **two screens, not two bands of one screen** — `.forum-view.is-pane-topics` / `.is-pane-thread` show exactly one, with a back control in the thread header (`.forum-main__back`, hidden from 640px up where the list is already visible beside the thread). Measured at 390×844: the topic list goes from **85px to 622px** with 47px rows, and the message list from ~430px to **603px**. One `.forum-msg-action` vocabulary replaces the four pills — filled not outlined, `--color-danger` not `red-500`, 34px tall on a phone, with Delete pushed to the far end of the row (`margin-left: auto`, 149px from Reply at 390px). Composer controls go to 2.25rem on a phone. Desktop keeps both panes and gains breathing room: topic rows `--space-1` → `--space-1_5`, titles 0.75 → 0.8125rem, chips 0.675 → 0.75rem.
+- **The trap this fix walked into, and the guard:** hiding a pane with `display: none` **resets its `scrollTop` to 0**, so returning to the thread would have landed it at the top — re-opening the wound of 2026-09-10 ("Forum threads opened at the top") in a new way, from CSS rather than from a hook. `useChatAutoScroll` gained a `pinKey`: when it changes, jump to the bottom and run the existing settle pin. `FeedView` passes the pane.
+- **Correct pattern:**
+  - **A phone is not a narrow desktop.** When a two-pane layout does not fit, replace it with a flow between two screens; do not stack both and shrink each until they technically fit. A pane compressed to two rows costs the space of a pane and does the job of nothing.
+  - **A list must look like a list.** Fixed heights that happen to land between rows hide the one cue that says "there is more here" — either show a clipped row or let it scroll to the pane edge.
+  - **A destructive control belongs at the opposite end of the row from the routine ones**, not next in line after them.
+  - **`display: none` is not free for a scroll container.** Anything that hides and restores a scrollable region owns re-establishing its position.
+  - **Repeated ad-hoc Tailwind pills are a component that was never written.** Four near-identical class strings is how a raw `red-500` gets in and how a 20px tap target survives review.
+- **Files:** `src/components/views/FeedView.jsx`, `src/hooks/useChatAutoScroll.js`, `src/styles/forum-view.css`
+
 ### 2026-09-10 — The battle header shoved its own controls off screen, and the sync poll fought the player `bug`
 - **Symptom:** "header da batalha… o layout tá meio feio e desorganizado" with a phone screenshot: the back button at full width, the opponent's format line wrapping to three lines, and **Discard** clipped mid-word at the right edge. Separately, the same screen was reported as not fluid. And on Home, three saved teams filled the phone screen on their own.
 - **Root cause — three:**
