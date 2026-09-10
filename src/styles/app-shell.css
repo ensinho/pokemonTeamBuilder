@@ -5,14 +5,29 @@
        the logo, and matches the reference this design follows. */
     --app-shell-sidebar-width: 15.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;
-    --app-shell-gutter: 0.75rem;
+    --app-shell-gutter: var(--space-3);
+    /* Inline inset shared by a nav row and the section label above it. They must
+       resolve to the same value or the label's first letter lands a few pixels
+       off the column of icons under it — the "nearly aligned" failure, which is
+       worse than either edge on its own. One variable, so a responsive override
+       moves both. */
+    --app-shell-row-inset: var(--space-2_5);
     --app-shell-rail-button-size: 2.5rem;
     /* --app-shell-tab-height lives on :root (index.css), not here: modals that
        portal to <body> sit outside .app-shell and still need to reserve the
        bar's band. */
     --app-shell-top-band-height: 3.75rem;
     display: flex;
+    /* `dvh`, not `vh`. On a phone `100vh` is the *large* viewport — the height
+       the page would have if the URL bar were collapsed — so the shell was
+       ~90px taller than what is actually on screen. The bottom of the scroll
+       container sat below the fold, which is exactly the "rolar alem da tela
+       tipo website" complaint: the page kept going after the screen ran out.
+       Body never scrolls, so the URL bar never collapses and `dvh` stays put —
+       no reflow-while-scrolling, just the right height. `vh` first as the
+       fallback for engines without `dvh`. */
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
 }
 
@@ -285,7 +300,11 @@
     flex: 1;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    padding: var(--space-2_5) var(--app-shell-gutter);
+    padding: var(--space-3) var(--app-shell-gutter);
+    /* Momentum stops at the rail. Without it, hitting the end of the nav list
+       hands the rest of the scroll to the page behind it and the whole app
+       lurches. */
+    overscroll-behavior: contain;
     /* Firefox: thin, theme-tinted scrollbar instead of the default chunky one. */
     scrollbar-width: thin;
     scrollbar-color: transparent transparent;
@@ -336,10 +355,14 @@
     margin-bottom: var(--space-4);
 }
 
+/* Sections are separated by a full step of section spacing, and the space above
+   a label is deliberately much larger than the space below it: that asymmetry is
+   the entire reason a heading reads as belonging to the list *under* it without
+   a rule or a box to say so. */
 .app-shell__nav-group {
     display: flex;
     flex-direction: column;
-    margin-top: var(--space-2);
+    margin-top: var(--space-4);
 }
 
 .app-shell__nav-group:first-child {
@@ -357,26 +380,23 @@
     margin-top: 0;
 }
 
-.app-shell__nav-group-label {
-    margin: 0;
-    /* Sentence case, not uppercase. A 10px all-caps label at 0.08em tracking
-       reads as shouting *and* is harder to scan — and stacking opacity 0.5 on
-       an already-muted color pushed it to the edge of legibility, which is its
-       own kind of "loose". Muted color alone carries the de-emphasis. */
-    font-size: var(--text-xs);
-    font-weight: 600;
-    letter-spacing: 0;
-    color: var(--color-muted);
-    opacity: 1;
-    transition: opacity var(--duration-fast) var(--ease-smooth);
-}
+/* Sentence case, not uppercase: a 10px all-caps label at 0.08em tracking reads
+   as shouting *and* is harder to scan — and stacking opacity 0.5 on an already
+   muted colour pushed it to the edge of legibility, which is its own kind of
+   "loose". Muted colour alone carries the de-emphasis, and 500 rather than 600
+   keeps it under the rows it heads.
 
-.app-shell__nav-group-label.is-hidden {
-    opacity: 0;
-    height: 0;
+   Pure typography: the toggle around it owns the box, the inset and the colour,
+   so the two can never disagree about where the text starts. */
+.app-shell__nav-group-label {
+    flex: 1;
     margin: 0;
-    overflow: hidden;
-    pointer-events: none;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: 0;
+    text-align: left;
+    color: inherit;
 }
 
 /* Children sit on the same left edge as the pinned rows above them. The hairline
@@ -391,10 +411,14 @@
     gap: var(--space-0_5);
 }
 
-/* Section header: a label you can click, not a row you navigate to. Shorter than
-   a nav item, unpadded vertically, and with its chevron on the trailing edge so
-   the leading edge stays a clean column with the icons below it. The affordance
-   only firms up on hover — at rest this is meant to read as organisation. */
+/* Section header: a label you can click, not a row you navigate to. It keeps the
+   label's own type and colour and is shorter than a nav row, so the affordance
+   is carried by the chevron alone — a header shaped like a destination competes
+   with the destinations under it, and with five of them the rail read as ten
+   things to click rather than four plus some organisation.
+
+   Padding-inline is the shared row inset, so the label's first letter lands on
+   the same left edge as the icons below it. */
 .app-shell__nav-group-toggle {
     display: flex;
     align-items: center;
@@ -402,16 +426,18 @@
     width: 100%;
     min-height: 1.75rem;
     margin: 0;
-    padding: 0 var(--space-2_5);
+    padding-block: 0;
+    padding-inline: var(--app-shell-row-inset);
     border: none;
     border-radius: var(--radius-md);
     background: transparent;
     cursor: pointer;
     color: var(--color-muted);
-    transition: background-color var(--duration-fast) var(--ease-smooth),
-                color var(--duration-fast) var(--ease-smooth);
+    transition: color var(--duration-fast) var(--ease-smooth);
 }
 
+/* Colour only — no fill. A hover fill here would give the header the one visual
+   property that marks a nav row as selected. */
 .app-shell__nav-group-toggle:hover,
 .app-shell__nav-group-toggle:focus-visible {
     color: var(--color-fg);
@@ -420,13 +446,6 @@
 .app-shell__nav-group-toggle:hover .app-shell__nav-group-chevron,
 .app-shell__nav-group-toggle:focus-visible .app-shell__nav-group-chevron {
     opacity: 1;
-}
-
-.app-shell__nav-group-toggle .app-shell__nav-group-label {
-    flex: 1;
-    margin: 0;
-    text-align: left;
-    color: inherit;
 }
 
 /* The current page lives inside this folded section. */
@@ -438,9 +457,9 @@
     flex-shrink: 0;
 }
 
-/* Trailing-edge affordance. Small and half-present at rest so the header reads
-   as a label; it comes up to full on hover. Points right when folded, down when
-   open. */
+/* Trailing-edge affordance. Small and half-present at rest so the header still
+   reads as a label; it comes up to full on hover. Points right when folded,
+   down when open. */
 .app-shell__nav-group-chevron {
     width: 0.875rem;
     height: 0.875rem;
@@ -477,7 +496,7 @@
     /* Padding, not margin: it lives inside the box the 0fr row clips, so the
        gap under the header appears with the panel instead of holding space open
        while the section is folded. */
-    padding-top: var(--space-1);
+    padding-top: var(--space-1_5);
     transition: visibility var(--duration-normal) var(--ease-smooth);
 }
 
@@ -520,36 +539,38 @@
 
 /* Nav item. No border — not even a transparent one: a nav list is text, not a
    stack of boxes, and reserved border space invites someone to fill it in later.
-   Padding is a step more generous than a dense control would use, because a
-   sidebar is read at rest rather than scanned under pressure. */
+   32px tall: the whole tail is visible at once now, so the rail buys its calm by
+   being an even, quiet column rather than by being short.
+
+   The row sits at full foreground, not muted. Dimming every label made the rail
+   read as permanently disabled and left the active row as the only legible thing
+   on it — hierarchy that costs you the ability to read your own navigation. The
+   icons carry the de-emphasis instead (see .app-shell__nav-icon), which is what
+   lets the labels stay crisp while the column still reads as chrome. */
 .app-shell__nav-link,
 .app-shell__account-button {
     display: flex;
     width: 100%;
     align-items: center;
-    min-height: 2.25rem;
+    min-height: 2rem;
     gap: var(--space-2_5);
     border: none;
     border-radius: var(--radius-md);
-    padding: var(--space-2) var(--space-2_5);
-    color: var(--color-muted);
+    padding: var(--space-1) var(--app-shell-row-inset);
+    color: var(--color-fg);
     text-align: left;
 }
 
 .app-shell__nav-link:hover,
 .app-shell__account-button:hover {
     background: var(--color-surface-hover);
-    color: var(--color-fg);
 }
 
-/* Active is a fill plus a foreground colour — nothing else. The 3px accent bar
-   that used to sit on the leading edge meant every page opened with a coloured
-   marker in the corner of the eye; a filled row already reads as selected, and
-   the weight bump finishes the job. */
+/* Active is a fill and nothing else — no accent bar, no weight bump, no border.
+   The row is already at foreground colour, so the fill is the whole signal, and
+   one fill is enough for a list where exactly one item is ever selected. */
 .app-shell__nav-link.is-active {
     background: var(--color-surface-active);
-    color: var(--color-fg);
-    font-weight: 500;
 }
 
 .app-shell__sidebar.is-collapsed .app-shell__nav,
@@ -577,6 +598,11 @@
     padding: 0;
 }
 
+/* The icon is the quiet half of the row. Muted at rest so the column of glyphs
+   sits behind the column of labels rather than competing with it — twenty
+   full-strength icons in a 248px rail is a texture, not a wayfinding aid. It
+   comes up to foreground on hover and on the active row, which is what makes
+   those two states read without touching the label at all. */
 .app-shell__nav-icon {
     display: inline-flex;
     height: 1.25rem;
@@ -584,8 +610,16 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-smooth);
     /* Anchors the collapsed-rail notification dot. */
     position: relative;
+}
+
+.app-shell__nav-link:hover .app-shell__nav-icon,
+.app-shell__nav-link.is-active .app-shell__nav-icon,
+.app-shell__account-button:hover .app-shell__nav-icon {
+    color: var(--color-fg);
 }
 
 /* Pending-count badge on a nav entry (e.g. incoming friend requests). */
@@ -1221,7 +1255,9 @@
     flex-direction: column;
     flex: 1;
     min-width: 0;
+    /* Matches .app-shell — see the note there on why this is not `vh`. */
     height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -1405,9 +1441,43 @@
     text-underline-offset: 2px;
 }
 
+/* ---- Mobile drawer tail -------------------------------------------------
+   The site footer's contents, relocated into the drawer on phones (the footer
+   itself is hidden below 1024px — see the note at .app-shell__footer there).
+   Separated from the account block above it by whitespace and nothing else:
+   the rail already carries an edge, and the brand at the other end of the
+   column deliberately has no divider either, so a rule here would be the only
+   line in the drawer. Hidden on desktop, where the real footer still runs. */
+.app-shell__drawer-meta {
+    display: none;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-2) var(--space-2);
+}
+
+.app-shell__drawer-meta-tail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+}
+
+.app-shell__drawer-meta-credit {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--color-muted);
+}
+
+.app-shell__drawer-meta-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
 @media (min-width: 1024px) {
     .app-shell {
-        --app-shell-gutter: 0.75rem;
+        --app-shell-gutter: var(--space-3);
         --app-shell-top-band-height: 3.5rem;
     }
 
@@ -1499,7 +1569,9 @@
        targets, a rounded leading edge and a depth shadow when open. */
     .app-shell {
         --app-shell-sidebar-width: min(17rem, 82vw);
-        --app-shell-gutter: 0.85rem;
+        --app-shell-gutter: var(--space-3_5);
+        /* Thumb-sized rows want a wider inset; the section labels follow it. */
+        --app-shell-row-inset: var(--space-3);
     }
 
     .app-shell__sidebar {
@@ -1528,7 +1600,6 @@
     .app-shell__nav-link,
     .app-shell__account-button {
         min-height: 2.75rem;
-        padding: var(--space-2) var(--space-3);
         font-size: 0.95rem;
     }
 
@@ -1544,6 +1615,41 @@
 
     .app-shell__brand {
         height: 4rem;
+    }
+
+    /* The site footer is a desktop object. On a phone it was 191px — 23% of an
+       844px screen — of credit, likes, suggestion, disclaimer, version, text
+       size and social links, parked at the end of *every* page's scroll, so
+       reaching the bottom of Home meant scrolling out of the app and into a
+       website. Its contents move into the drawer (.app-shell__drawer-meta);
+       pages now simply end where their content ends. */
+    .app-shell__footer {
+        display: none;
+    }
+
+    .app-shell__drawer-meta {
+        display: flex;
+    }
+
+    /* Desktop spends --space-6 above and --space-10 below every page. On a phone
+       that is 64px of nothing per screen, and on Meta it stacked with the view's
+       own padding into ~50px of blank band under the header. The tab bar already
+       reserves the bottom, so a page only needs a breath at either end. */
+    .app-shell__body {
+        padding-block: var(--space-4) var(--space-6);
+    }
+
+    /* viewport-fit=cover (index.html) is what makes env(safe-area-inset-*) real
+       at all; without it the tab bar's bottom inset was always 0 and sat under
+       the home indicator. The price is that content may now reach under a notch
+       in landscape, so the scroller and the drawer take the side insets back. */
+    .app-shell__content {
+        padding-left: env(safe-area-inset-left, 0px);
+        padding-right: env(safe-area-inset-right, 0px);
+    }
+
+    .app-shell__sidebar {
+        padding-left: env(safe-area-inset-left, 0px);
     }
 }
 
@@ -1663,7 +1769,13 @@
     align-items: stretch;
     justify-content: space-around;
     gap: var(--space-1);
-    padding: var(--space-1_5) var(--space-2) calc(var(--space-2_5) + env(safe-area-inset-bottom, 0px));
+    padding-block: var(--space-1_5) calc(var(--space-2_5) + env(safe-area-inset-bottom, 0px));
+    padding-inline: max(var(--space-2), env(safe-area-inset-left, 0px)) max(var(--space-2), env(safe-area-inset-right, 0px));
+    /* A long press on a tab must not select its label or raise the link
+       callout — both are browser behaviour leaking through app chrome. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
     background: color-mix(in srgb, var(--color-surface) 92%, transparent);
     backdrop-filter: blur(12px) saturate(1.15);
     -webkit-backdrop-filter: blur(12px) saturate(1.15);

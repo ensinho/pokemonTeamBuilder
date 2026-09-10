@@ -116,6 +116,7 @@ export const TRANSLATIONS = {
             pokedexLoadError: 'Could not load the Pokédex',
         },
         common: {
+            showMore: 'Show more ({{count}} left)',
             loading: 'Loading...',
             save: 'Save',
             cancel: 'Cancel',
@@ -397,6 +398,7 @@ export const TRANSLATIONS = {
         },
         pokedex: {
             searchPlaceholder: 'Search Pokémon by name or #ID...',
+            searchPlaceholderShort: 'Name or #',
             favoritesOnly: 'Favorites only',
             selectedTypes: 'Types ({{count}})',
             typesFilterLabel: 'Types',
@@ -1324,6 +1326,7 @@ export const TRANSLATIONS = {
             pokedexLoadError: 'Não foi possível carregar a Pokédex',
         },
         common: {
+            showMore: 'Ver mais ({{count}} restantes)',
             loading: 'Carregando...',
             save: 'Salvar',
             cancel: 'Cancelar',
@@ -1605,6 +1608,7 @@ export const TRANSLATIONS = {
         },
         pokedex: {
             searchPlaceholder: 'Pesquisar Pokémon por nome ou ID...',
+            searchPlaceholderShort: 'Nome ou nº',
             favoritesOnly: 'Apenas favoritos',
             selectedTypes: 'Tipos ({{count}})',
             typesFilterLabel: 'Tipos',

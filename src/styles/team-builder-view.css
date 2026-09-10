@@ -963,19 +963,22 @@
     color: var(--color-success);
 }
 
+/* Borderless. It sits inside a filled card, and a ringed circle there was a box
+   inside a box on every one of the grid's cards — and its 2px of border were
+   part of what pushed the card header past its width. The fill appears only
+   when favourited, which is the one state worth marking. */
 .team-builder-mobile-card__favorite {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
-    background: var(--color-surface-raised);
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
     padding: var(--space-1);
     color: var(--color-muted);
 }
 
 .team-builder-mobile-card__favorite.is-active {
-    border-color: var(--color-accent);
     background: var(--color-accent-soft);
     color: var(--color-accent);
 }
@@ -1454,6 +1457,87 @@
     width: 100%;
 }
 
+/* The Pokédex search sticks under the header. A 1025-card list is the longest
+   scroll in the app, and flinging back to the top to search again is website
+   behaviour; a phone app keeps its search within reach.
+
+   No panel around it: the field and its two buttons are already three bordered
+   controls, and the box that wrapped them cost 34px of width — enough that the
+   placeholder was cut off mid-word — to draw a fourth.
+
+   The bleed (spread shadow clipped to the band's own height) paints the page
+   colour out to the screen edges, so cards scrolling underneath never show in
+   the gutters, without touching layout. */
+.pokedex-mobile-filterbar-band {
+    position: sticky;
+    top: var(--app-shell-top-band-height);
+    z-index: var(--z-content);
+    padding-block: var(--space-2);
+    background: var(--color-bg);
+    box-shadow: 0 0 0 100vmax var(--color-bg);
+    clip-path: inset(0 -100vmax);
+}
+
+/* Pokédex cards sit straight on the page now, not inside a panel, so they take
+   the surface fill rather than the raised one. Raised was chosen to read
+   against the panel's surface; against the page it disappears in the light
+   themes (light: #f6f6f7 on #f2f2f3). Scoped here because the Team Builder
+   renders the same card inside a panel, where raised is still right. */
+.pokedex-mobile-grid .team-builder-mobile-card {
+    background: var(--color-surface);
+}
+
+.pokedex-mobile-grid .team-builder-mobile-card:hover {
+    background: var(--color-surface-hover);
+}
+
+/* Touch has no hover, and a phone is where this grid lives — the press itself
+   is the feedback. Fill only, no scale: a card that shrinks under the thumb on
+   a 3-column grid reads as the whole grid wobbling. */
+.pokedex-mobile-grid .team-builder-mobile-card:active {
+    background: var(--color-surface-active);
+}
+
+/* The favourite star, pinned to the sprite box's corner instead of sharing the
+   card's header row (see the note in MobilePokedexPokemonCard). A translucent
+   surface chip keeps it legible over artwork that fills the box, and the larger
+   padding makes it a 28px target rather than 22px — it is the one control on a
+   card that is not the card itself. Stops propagation in JSX, so a miss still
+   lands on the card. */
+.pokedex-mobile-grid .team-builder-mobile-card__media {
+    position: relative;
+}
+
+.team-builder-mobile-card__favorite--overlay {
+    position: absolute;
+    top: var(--space-1);
+    right: var(--space-1);
+    z-index: 1;
+    padding: var(--space-1_5);
+    background: color-mix(in srgb, var(--color-surface) 72%, transparent);
+}
+
+.team-builder-mobile-card__favorite--overlay.is-active {
+    background: var(--color-accent-soft);
+}
+
+/* Card stars were 22–28px targets. On a coarse pointer each gets a hit area a
+   --space-1_5 wider on every side, without changing how it looks. The header-
+   row star (Team Builder) needs `relative` for the pseudo-element; the overlay
+   star is already absolute. The card's own `overflow: hidden` clips the reach at
+   the card edge, which is right — it only ever grows into its own card. */
+@media (pointer: coarse) {
+    .team-builder-mobile-card__favorite:not(.team-builder-mobile-card__favorite--overlay) {
+        position: relative;
+    }
+
+    .team-builder-mobile-card__favorite::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-1_5));
+    }
+}
+
 .pokedex-mobile-iconbtn {
     position: relative;
     display: inline-flex;
@@ -1823,4 +1907,19 @@
 .pokedex-section-title--mobile {
     font-size: 0.625rem;
     margin: var(--space-5) var(--space-1) var(--space-2);
+}
+/* The condensed composer's compact Save is 25px tall. On a coarse pointer it
+   keeps its size and gets an invisible hit area; while it is faded out its
+   `pointer-events: none` is inherited by the pseudo-element too, so the
+   larger target never catches taps meant for the count underneath. */
+@media (pointer: coarse) {
+    .team-builder-mobile__save-compact {
+        position: relative;
+    }
+
+    .team-builder-mobile__save-compact::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-2));
+    }
 }

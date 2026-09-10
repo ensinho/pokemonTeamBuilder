@@ -9,6 +9,10 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { SourceCredit } from './metaShared';
 import { PokeballIcon, TrophyIcon, ShowdownIcon, ShareIcon, ClearIcon } from '../icons';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
+import { maxWidthBelow } from '../../constants/breakpoints';
+import { ShowMoreButton } from '../ShowMoreButton';
 
 // Match a team against the search term across its Pokémon, title/player,
 // tournament name, placement, format and date — so any of those finds it.
@@ -111,6 +115,13 @@ export function TournamentsView({ onOpenTeam }) {
         };
     }, [teams, query]);
 
+    // At one column on a phone, 40 featured + 80 tournament cards were ~30,000px
+    // of scroll and 720 sprites loaded up front. Reveal each section in pages
+    // there; desktop's multi-column grid keeps them all. A search starts over.
+    const isMobile = useMediaQuery(maxWidthBelow('lg'));
+    const featuredReveal = useProgressiveReveal(featured.length, { initial: 4, step: 10, enabled: isMobile, resetKey: query });
+    const tournamentReveal = useProgressiveReveal(tournament.length, { initial: 6, step: 10, enabled: isMobile, resetKey: query });
+
     if (status === 'loading') {
         return (
             <div className="flex items-center justify-center" style={{ minHeight: '40vh', color: 'var(--color-primary)' }} role="status" aria-label="Loading">
@@ -155,8 +166,9 @@ export function TournamentsView({ onOpenTeam }) {
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.featuredTeams')}</h2>
                     <div className="trn-grid motion-stagger">
-                        {featured.map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
+                        {featured.slice(0, featuredReveal.limit).map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
+                    {featuredReveal.hasMore && <ShowMoreButton remaining={featuredReveal.remaining} onClick={featuredReveal.showMore} />}
                 </section>
             )}
 
@@ -164,8 +176,9 @@ export function TournamentsView({ onOpenTeam }) {
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.tournamentTeams')}</h2>
                     <div className="trn-grid motion-stagger">
-                        {tournament.map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
+                        {tournament.slice(0, tournamentReveal.limit).map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
+                    {tournamentReveal.hasMore && <ShowMoreButton remaining={tournamentReveal.remaining} onClick={tournamentReveal.showMore} />}
                 </section>
             )}
 

@@ -49,42 +49,48 @@ const MobilePokedexPokemonCard = ({
             onKeyDown={handleKeyDown}
             className="team-builder-mobile-card"
         >
-            <div className="flex items-center justify-between gap-1">
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="font-mono text-[10px] font-semibold text-muted opacity-75 tracking-tight shrink-0 select-none">
-                        #{String(pokemon.id).padStart(4, '0')}
-                    </span>
-                    <div className="flex items-center gap-1 overflow-hidden">
-                        {(pokemon.types || []).map((type) => (
-                            <img
-                                key={type}
-                                src={typeIcons[type]}
-                                alt={type}
-                                className="h-4 w-4 rounded-full"
-                            />
-                        ))}
-                    </div>
-                </div>
+            {/* Types only. Id, types and the favourite star on one row needed
+                98px of a 98px card at 390px wide — and more than a 360px phone
+                has — so something was always cut: first the second type icon,
+                then the id. The star lives on the sprite and the number beside
+                the name now (Enzo's call), so this row has nothing to fight. */}
+            <div className="flex items-center gap-1">
+                {(pokemon.types || []).map((type) => (
+                    <img
+                        key={type}
+                        src={typeIcons[type]}
+                        alt={type}
+                        className="h-4 w-4 rounded-full"
+                    />
+                ))}
+            </div>
+
+            <div className="team-builder-mobile-card__media">
                 <button
                     onClick={handleFavoriteClick}
-                    className={`team-builder-mobile-card__favorite ${isFavorite ? 'is-active' : ''}`}
+                    className={`team-builder-mobile-card__favorite team-builder-mobile-card__favorite--overlay ${isFavorite ? 'is-active' : ''}`}
                     aria-label={isFavorite ? `Remove ${pokemon.name} from favorites` : `Add ${pokemon.name} to favorites`}
                     title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
                 >
                     <StarIcon className="w-3.5 h-3.5" isFavorite={isFavorite} color="currentColor" />
                 </button>
-            </div>
-
-            <div className="team-builder-mobile-card__media">
                 <div className="mx-auto aspect-square w-full max-w-[84px]">
                     <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>
 
-            <div className="mt-0">
-                <p className="team-builder-mobile-card__name font-bold capitalize">
+            {/* Name left, number right. The name is what people read, so it
+                is the one that gives way when a long name meets a narrow card;
+                the number never truncates. No leading zeros here — right-aligned
+                numbers already line up at their edge, and "#0005" spent 18px a
+                name could use. */}
+            <div className="flex items-baseline justify-between gap-1">
+                <p className="team-builder-mobile-card__name min-w-0 font-bold capitalize">
                     {pokemon.name}
                 </p>
+                <span className="shrink-0 font-mono text-[10px] font-semibold tabular-nums text-muted select-none">
+                    #{pokemon.id}
+                </span>
             </div>
         </article>
     );
@@ -177,7 +183,7 @@ export function PokedexView({
     if (isMobile) {
         return (
             <div className="team-builder-mobile space-y-4 font-mono">
-                <section className="team-builder-panel p-4">
+                <section className="pokedex-mobile-filterbar-band">
                     <div className="pokedex-mobile-filterbar">
                         <div className="relative flex-1 min-w-0">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none flex items-center">
@@ -185,7 +191,7 @@ export function PokedexView({
                             </span>
                             <input
                                 type="text"
-                                placeholder={t('pokedex.searchPlaceholder')}
+                                placeholder={t('pokedex.searchPlaceholderShort')}
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}
                                 className="team-builder-field w-full pl-9 pr-8"
@@ -304,14 +310,18 @@ export function PokedexView({
                     </BottomSheet>
                 )}
 
-                <section className="team-builder-panel p-4">
+                {/* No panel: the cards are filled, so they separate from the page
+                    on their own. The box that wrapped them spent 34px of width to
+                    draw a line around ~1000 cards, and those pixels were exactly
+                    what the card header needed to stop clipping its type icons. */}
+                <section>
                     {isInitialLoading ? (
                         <div className="flex items-center justify-center py-20">
                             <div className="team-builder-spinner" aria-hidden="true"></div>
                         </div>
                     ) : (
                         <>
-                            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                            <div className="pokedex-mobile-grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                                 {displayedPokemons.map((pokemon, index) => (
                                     <MobilePokedexPokemonCard
                                         key={pokemon.id}

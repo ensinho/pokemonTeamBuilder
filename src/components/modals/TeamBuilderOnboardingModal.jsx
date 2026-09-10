@@ -215,7 +215,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                                     className="group relative flex flex-col items-center justify-center rounded-xl border border-border bg-surface p-2 text-center transition-all hover:border-danger cursor-pointer shadow-sm animate-scale-in"
                                                     title={pt ? 'Clique para remover' : 'Click to remove'}
                                                 >
-                                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-[9px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-[9px] font-bold text-white opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
                                                         <X className="h-2.5 w-2.5" />
                                                     </span>
                                                     <div className="relative h-10 w-10 flex items-center justify-center">

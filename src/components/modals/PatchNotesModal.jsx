@@ -223,15 +223,21 @@ const LatestVisual = ({ language }) => {
 // Sharing a PokéPuzzle board — the grid travels, the answer does not.
 const PuzzleShareVisual = ({ language }) => {
     const pt = language === 'pt';
-    const rows = ['aapaaaa', 'apacaaa', 'ccacpaa', 'ccccccc'];
+    // Four attempts taken, four never needed — the same shape the forum card
+    // draws, so the announcement shows the thing that actually ships.
+    const rows = ['aapaaaa', 'apacaaa', 'ccacpaa', 'ccccccc', '', '', '', ''];
     const tone = { c: 'bg-success', p: 'bg-warning', a: 'bg-border' };
+    const pending = 'aaaaaaa';
     return (
         <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
-            <div className="flex flex-col gap-1 rounded-lg bg-surface-raised p-2.5">
+            <div className="flex flex-col gap-0.5 rounded-lg bg-surface-raised p-2.5">
                 {rows.map((row, rowIndex) => (
-                    <div key={rowIndex} className="flex gap-1">
-                        {row.split('').map((code, cellIndex) => (
-                            <span key={cellIndex} className={`h-2.5 w-2.5 rounded-sm ${tone[code]}`} />
+                    <div key={rowIndex} className="flex gap-0.5">
+                        {(row || pending).split('').map((code, cellIndex) => (
+                            <span
+                                key={cellIndex}
+                                className={`h-2 w-2 rounded-sm bg-border ${row ? tone[code] : 'opacity-40'}`}
+                            />
                         ))}
                     </div>
                 ))}

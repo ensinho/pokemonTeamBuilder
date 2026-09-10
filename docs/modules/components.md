@@ -91,7 +91,7 @@ Contextual help tooltip system. `pageGuideTips` is a map of route → tip array.
 ### FooterFeedback
 **File:** `src/components/FooterFeedback.jsx`
 
-Sticky footer feedback button visible on all views. Opens a small form that submits to Firestore. Shown only once per session after a delay.
+Like counter, "Have a suggestion?" form (submits to Firestore) and fan disclaimer. Rendered in two places: the page footer on desktop, and the drawer tail (`.app-shell__drawer-meta`) below 1024px, where the footer is hidden. Both dialogs are `createPortal`ed to `<body>` — the drawer moves with `transform`, which would otherwise become the containing block for their `position: fixed` and trap them inside it.
 
 ---
 
@@ -150,19 +150,28 @@ history, so an announcement can be re-read after it is dismissed.
 `PATCH_NOTES_VERSION`, versions descend, none repeat, every release has a month
 and notes, and the current release carries the illustration data.
 
-**Reopening:** the footer version button (`app-shell__footer-version`, the only
-entry point a guest can reach) and the account menu's "What's new" item, both
-wired to `handleOpenPatchNotes` in `AppLayout`.
+**Reopening:** the version button (`app-shell__footer-version` — in the page
+footer on desktop and in the drawer tail on phones; the only entry point a guest
+can reach) and the account menu's "What's new" item, all wired to
+`handleOpenPatchNotes` in `AppLayout`.
 
 ### ShellNavGroup
 **File:** `src/components/ShellNavGroup.jsx`
 
-One labelled section of the sidebar navigation, foldable. Renders a plain always-open list when the sidebar is in icon-rail mode (labels are hidden there, so there is nothing to click); otherwise the label becomes the toggle and the item list sits in a `grid-template-rows: 0fr/1fr` panel. A folded section holding the current page shows a dot on its header. Fold state lives in `AppLayout` and persists to `localStorage` (`ptb-sidebar-collapsed-groups`), keyed by a stable slug — never by the translated title.
+One labelled section of the sidebar navigation, foldable — with **at most two sections open at once**.
+
+The header keeps the type of a quiet label (12px, muted, 500) and is shorter than a nav row, so only the chevron marks it as a control; a folded section holding the current page shows a dot. On the icon rail it renders **no header at all** — labels are hidden there, so a header would be an empty control — just the bare list carrying its name on `aria-label`.
+
+**The two-open cap is the design.** Independent folds let the rail grow to whatever the user last left open (everything, plus a scrollbar); a strict accordion left it empty — four chevron rows over 400px of nothing, the tail invisible *and* two clicks away (both logged in `docs/wounds.md`, 2026-09-10). Opening a third section closes the least recently opened, so the cap enforces itself and no click is ever refused.
+
+State lives in `AppLayout` as an **ordered, oldest-first list** (`openNavGroups`, capped by `MAX_OPEN_NAV_GROUPS`) and persists to `localStorage` as `ptb-sidebar-open-groups`, keyed by stable section slugs — never by the translated title. Both entry points (a click, and navigating into a folded section) append through the same `withGroupOpen` helper so they cannot disagree about which section gets evicted. First run opens `DEFAULT_OPEN_NAV_GROUPS`, because landing on an empty rail is the failure the whole shape exists to avoid.
+
+Section labels and nav rows share one inline inset, `--app-shell-row-inset` on `.app-shell`, so the label's first letter lands on the same left edge as the icons under it at every breakpoint. Change it there, never per-rule.
 
 ### TextSizeControl
 **File:** `src/components/TextSizeControl.jsx`
 
-A− / percentage / A+ stepper for the interface scale (`useThemeStore.uiScale`). Two variants: `menu` (account popover, full width) and `compact` (page footer — the only one of the two a signed-out visitor can reach). The percentage doubles as the reset to 100%.
+A− / percentage / A+ stepper for the interface scale (`useThemeStore.uiScale`). Two variants: `menu` (account popover, full width) and `compact` (desktop page footer). Below 1024px the footer is hidden and the drawer tail renders the `menu` variant instead — together these are the only places a signed-out visitor can reach it. The percentage doubles as the reset to 100%.
 
 ### icons.jsx
 **File:** `src/components/icons.jsx`
@@ -193,3 +202,8 @@ Autocomplete input for the quiz answer field. Filters `pokemon-index.json` clien
 - Shared components never import from `views/` or `modals/` — that would create circular dependencies.
 - New shared components belong in `src/components/`. View-specific sub-components that will never be reused belong inline in the view file or as a local component in the same file.
 - If a component needs a lot of CSS, create or extend the relevant `src/styles/*.css` file rather than adding a large Tailwind `className` string.
+
+### ShowMoreButton
+**File:** `src/components/ShowMoreButton.jsx`
+
+"Show more (N left)" under a list revealed in pages. Pair it with `useProgressiveReveal(total, { initial, step, enabled, resetKey })` (`src/hooks/useProgressiveReveal.js`), which returns `{ limit, remaining, hasMore, showMore }` — render `items.slice(0, limit)`. The math is the pure, tested `getRevealState` (`src/utils/progressiveReveal.js`); `resetKey` is a string (format, sort, search…) that snaps the list back to its first page when what the list *is* changes. Used below `lg` on Meta (12, +24) and Tournaments (4 / 6, +10), gated by `useMediaQuery(maxWidthBelow('lg'))` (`src/hooks/useMediaQuery.js`, a `useSyncExternalStore` over `matchMedia`).

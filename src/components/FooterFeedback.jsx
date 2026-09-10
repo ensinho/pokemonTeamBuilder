@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
     doc,
     onSnapshot,
@@ -171,11 +172,17 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
     );
 };
 
+/* Portaled to <body>, deliberately. These dialogs are `position: fixed`, and
+   the component is now also rendered from inside the mobile drawer — which is
+   moved with `transform: translateX()`. A transformed ancestor becomes the
+   containing block for a fixed child, so an inline dialog would be positioned
+   and clipped inside the 272px drawer instead of covering the screen. Portaling
+   makes the component safe to render from anywhere. */
 const DisclaimerModal = ({ onClose }) => {
     const dialogRef = useModalA11y(onClose);
     const { t } = useTranslation();
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={onClose}
@@ -238,7 +245,8 @@ const DisclaimerModal = ({ onClose }) => {
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 };
 
@@ -309,7 +317,8 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, showToas
     const remaining = 1000 - suggestion.length;
     const isContactEmailValid = isValidEmail(contactEmail);
 
-    return (
+    /* Portaled for the same reason as DisclaimerModal — see the note there. */
+    return createPortal(
         <div
             className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             onClick={onClose}
@@ -393,7 +402,8 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, showToas
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 };
 

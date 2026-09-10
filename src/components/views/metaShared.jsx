@@ -122,7 +122,7 @@ export function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'li
     const links = sources.map((k) => SOURCE_LINKS[k]).filter(Boolean);
     return (
         <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted ${className}`}>
-            <span className="inline-flex items-center gap-1 font-semibold uppercase tracking-wide opacity-70">
+            <span className="inline-flex items-center gap-1 font-medium">
                 <Info className="h-3 w-3" /> {pt ? 'Fontes' : 'Sources'}
             </span>
             {links.map((s, i) => (
@@ -132,7 +132,7 @@ export function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'li
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-0.5 underline-offset-2 transition-colors hover:text-primary hover:underline"
+                        className="touch-target inline-flex items-center gap-0.5 underline-offset-2 transition-colors hover:text-primary hover:underline"
                     >
                         {s.label}<ArrowUpRight className="h-2.5 w-2.5" />
                     </a>
