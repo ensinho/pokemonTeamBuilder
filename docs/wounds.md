@@ -12,6 +12,17 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-09-10 — The phone chrome didn't hug the edges, and the drawer's About block was a web footer in disguise `dispattern`
+- **Symptom:** Enzo, iPhone, after the fixed-shell fix: header and tab bar should "encaixar mais na borda do cel" — a visible gap between the status bar and the header row, and under the tab labels above the home indicator; the tab bar should look "mais cara de app". And the credits block in the drawer broke the rail's style: pills wrapping onto a second line, a bordered stepper, a loose credit line.
+- **Root cause:** desktop sizing carried into phone chrome. The header band stayed 60px under a status bar that already separates it from the edge; the tab bar added a fixed `--space-2_5` *on top of* the home-indicator inset (~96px total vs iOS's 83pt); a pressed tab painted a rounded fill like a web button. The About block was the footer's own markup (`FooterFeedback` pills, boxed `TextSizeControl`) moved wholesale into a navigation column instead of being rebuilt from the column's parts.
+- **Fix:** phone `--app-shell-top-band-height: 3.25rem` (52px); tab bar `padding-block: var(--space-1) max(var(--space-2), env(safe-area-inset-bottom))` with the content reservation derived from the same parts; 24px tab glyphs, 500-weight labels, press = icon `scale(0.88)` with no cell fill. New `DrawerAboutSection`: a folded `ShellNavGroup` of ordinary nav rows (`FooterFeedback variant="drawer"`, "What's new" + version, text size with an `inline` stepper) plus one quiet credit line; dead `.app-shell__drawer-meta*` rules removed. Its open state is local, not in the persisted two-slot `openNavGroups`, which is per user rather than per breakpoint.
+- **Verified (Chromium, 390×844):** header 55px (3.25rem at the current UI scale); tab bar 63px without a safe-area inset (~87px expected with an iPhone's 34px, was ~96); 25px tab glyphs, label weight 500, tab transition `color` only; About section folded by default, six rows when open, trailing values 12px from the right edge (the row inset), inline stepper borderless. Drift audits 0/0/0; tests 314/314; AppLayout lint unchanged from HEAD.
+- **Correct pattern:**
+  - **Phone chrome hugs the edges:** a safe-area inset *is* the padding, not something to add a breath on top of; the header band can be shorter than desktop's because the status bar already frames it.
+  - **When content moves between containers, rebuild it from the destination's parts** — a footer's pills in a nav column still look like a footer.
+  - **State persisted per user must not be shared by UI that only exists at one breakpoint.**
+- **Files:** `src/styles/app-shell.css`, `src/index.css`, `src/components/DrawerAboutSection.jsx`, `src/components/FooterFeedback.jsx`, `src/components/AppLayout.jsx`, `src/constants/translations.js`, `docs/modules/components.md`
+
 ### 2026-09-10 — On a real iPhone the header vanished, the drawer cut its own list, and Home stretched forever `bug`
 - **Symptom:** Enzo, on the installed PWA after the shell fix above shipped to preview: Meta "quebrou a header" — a ~20px empty band where the title should be (Home too); the drawer "mt mal otimizada" — the list cut off at "My Te…" above a ~250px pinned block of credits; "ainda consigo rolar infinitamente a tela home" — ~440px of blank opening under the last post.
 - **Root cause:**

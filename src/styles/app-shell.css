@@ -1455,47 +1455,73 @@
     text-underline-offset: 2px;
 }
 
-/* ---- Mobile drawer tail -------------------------------------------------
-   The site footer's contents, relocated into the drawer on phones (the footer
-   itself is hidden below 1024px — see the note at .app-shell__footer there).
-   Separated from the account block above it by whitespace and nothing else:
-   the rail already carries an edge, and the brand at the other end of the
-   column deliberately has no divider either, so a rule here would be the only
-   line in the drawer. Hidden on desktop, where the real footer still runs. */
-.app-shell__drawer-meta {
-    display: none;
-    flex-direction: column;
-    gap: var(--space-3);
-    /* Inline inset is the nav row's, so the credit and the pills start on the
-       same edge as the column of icons above them. */
-    padding: var(--space-6) var(--app-shell-row-inset) var(--space-2);
+/* ---- Drawer row parts (DrawerAboutSection) ------------------------------
+   The About section is built from ordinary nav rows; these are the few pieces a
+   navigation list does not already have. */
+
+/* A value shown at the row's right edge — like count, version, the text-size
+   stepper — the way a settings list shows its current values. */
+.app-shell__nav-trailing {
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    padding-left: var(--space-2);
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
 }
 
-/* FooterFeedback carries the footer's centred phone layout; in a left-aligned
-   drawer column it has to start at the edge like everything else. */
-.app-shell__drawer-meta .app-shell__footer-feedback {
-    margin-left: 0;
-    justify-content: flex-start;
+.app-shell__nav-trailing--mono {
+    font-family: var(--font-mono);
 }
 
-.app-shell__drawer-meta-tail {
+/* A row that only labels the control inside it: no hover fill, no pointer. */
+.app-shell__nav-link--static,
+.app-shell__nav-link--static:hover {
+    background: transparent;
+    cursor: default;
+}
+
+/* Liked: the one state worth marking, in the heart and the count only. */
+.app-shell__nav-link.is-liked .app-shell__nav-icon,
+.app-shell__nav-link.is-liked .app-shell__nav-trailing {
+    color: var(--color-primary);
+}
+
+/* Credit line closing the section: quiet text on the row inset, the two links
+   as small icons on the right edge. */
+.app-shell__nav-credit {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-}
-
-.app-shell__drawer-meta-credit {
+    padding: var(--space-2) var(--app-shell-row-inset);
     font-size: var(--text-xs);
     line-height: 1.4;
     color: var(--color-muted);
 }
 
-.app-shell__drawer-meta-links {
-    display: flex;
+.app-shell__nav-credit a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.app-shell__nav-credit-links {
+    display: inline-flex;
+    flex-shrink: 0;
     align-items: center;
     gap: var(--space-3);
+}
+
+.app-shell__nav-credit-links a {
+    display: inline-flex;
+    text-decoration: none;
+}
+
+.app-shell__nav-credit-links svg {
+    width: 1rem;
+    height: 1rem;
 }
 
 @media (min-width: 1024px) {
@@ -1595,6 +1621,11 @@
         --app-shell-gutter: var(--space-3_5);
         /* Thumb-sized rows want a wider inset; the section labels follow it. */
         --app-shell-row-inset: var(--space-3);
+        /* 52px, not 60. The band sits directly under the status bar on a phone,
+           and the extra height read as a gap between the two (Enzo's iPhone):
+           app headers hug the top edge. Everything keyed to the band — the
+           Pokédex search that sticks under it — follows automatically. */
+        --app-shell-top-band-height: 3.25rem;
     }
 
     .app-shell__sidebar {
@@ -1663,10 +1694,6 @@
        pages now simply end where their content ends. */
     .app-shell__footer {
         display: none;
-    }
-
-    .app-shell__drawer-meta {
-        display: flex;
     }
 
     /* Desktop spends --space-6 above and --space-10 below every page. On a phone
@@ -1807,7 +1834,11 @@
     align-items: stretch;
     justify-content: space-around;
     gap: var(--space-1);
-    padding-block: var(--space-1_5) calc(var(--space-2_5) + env(safe-area-inset-bottom, 0px));
+    /* Hugs the bottom edge like a native tab bar: the home-indicator inset *is*
+       the bottom padding, rather than a fixed breath added on top of it — that
+       extra 10px was the visible gap under the labels. `max()` keeps a floor for
+       screens with no inset. ~84px total on an iPhone; iOS's own is 83pt. */
+    padding-block: var(--space-1) max(var(--space-2), env(safe-area-inset-bottom, 0px));
     padding-inline: max(var(--space-2), env(safe-area-inset-left, 0px)) max(var(--space-2), env(safe-area-inset-right, 0px));
     /* A long press on a tab must not select its label or raise the link
        callout — both are browser behaviour leaking through app chrome. */
@@ -1832,8 +1863,8 @@
 @media (max-width: 1023px) {
     .app-shell__content {
         padding-bottom: calc(
-            var(--app-shell-tab-height) + var(--space-1_5) + var(--space-2_5)
-            + env(safe-area-inset-bottom, 0px)
+            var(--app-shell-tab-height) + var(--space-1)
+            + max(var(--space-2), env(safe-area-inset-bottom, 0px))
         );
     }
 
@@ -1857,16 +1888,19 @@
     background: transparent;
     color: var(--color-muted);
     cursor: pointer;
-    transition: color var(--duration-fast) var(--ease-smooth),
-        background-color var(--duration-fast) var(--ease-smooth);
+    transition: color var(--duration-fast) var(--ease-smooth);
 }
 
 .app-shell__tab:hover {
     color: var(--color-fg);
 }
 
-.app-shell__tab:active {
-    background: var(--color-surface-raised);
+/* A tab bar press is felt in the icon, not painted as a rounded fill behind the
+   whole cell — the fill is a web button's pressed state and made the bar read
+   as a row of buttons. A small, fast scale on a small object is the one place
+   the design system allows a transform. */
+.app-shell__tab:active .app-shell__tab-icon {
+    transform: scale(0.88);
 }
 
 .app-shell__tab.is-active {
@@ -1877,13 +1911,15 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 1.35rem;
-    width: 1.35rem;
+    height: 1.5rem;
+    width: 1.5rem;
+    transition: transform var(--duration-fast) var(--ease-smooth);
 }
 
+/* 24px glyphs over a light 10px label: the proportions of a native tab bar. */
 .app-shell__tab-icon>svg {
-    width: 1.3rem;
-    height: 1.3rem;
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
 .app-shell__tab-label {
@@ -1892,7 +1928,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 0.625rem;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
 }
