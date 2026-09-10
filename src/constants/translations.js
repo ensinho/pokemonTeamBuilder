@@ -397,6 +397,7 @@ export const TRANSLATIONS = {
         },
         pokedex: {
             searchPlaceholder: 'Search Pokémon by name or #ID...',
+            searchPlaceholderShort: 'Name or #',
             favoritesOnly: 'Favorites only',
             selectedTypes: 'Types ({{count}})',
             typesFilterLabel: 'Types',
@@ -1605,6 +1606,7 @@ export const TRANSLATIONS = {
         },
         pokedex: {
             searchPlaceholder: 'Pesquisar Pokémon por nome ou ID...',
+            searchPlaceholderShort: 'Nome ou nº',
             favoritesOnly: 'Apenas favoritos',
             selectedTypes: 'Tipos ({{count}})',
             typesFilterLabel: 'Tipos',

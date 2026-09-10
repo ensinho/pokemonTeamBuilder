@@ -363,6 +363,13 @@ html, body {
     text-rendering: optimizeLegibility;
     letter-spacing: -0.011em;
     -webkit-tap-highlight-color: transparent;
+    /* The document never scrolls — .app-shell__content does — but a phone will
+       still rubber-band the document itself on a drag, pulling the header and
+       the tab bar along with it. That whole-screen bounce is the single most
+       "website" thing a touch UI can do. `none` pins the frame; the inner
+       scroller keeps its own momentum and edge bounce, which is the native
+       behaviour for a list. */
+    overscroll-behavior: none;
 }
 
 html,

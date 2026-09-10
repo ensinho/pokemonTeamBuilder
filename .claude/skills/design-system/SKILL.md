@@ -276,3 +276,14 @@ creates a phantom scroll that exists only to reveal a footer.
 
 There is exactly one vertical scrollbar in this app. If you introduce a second,
 you have made a mistake.
+
+**Size to the screen with `dvh`, never `vh`.** On a phone `100vh` is the *large*
+viewport (URL bar collapsed), so anything sized with it runs past the visible
+screen. The shell carried exactly this until 2026-09-10 — its scroll container was
+~90px taller than the screen, and the page kept scrolling after the screen ran
+out. Write `height: 100vh; height: 100dvh;` (fallback first), or better, `100%` of
+a parent that already has a definite height.
+
+**Below 1024px there is no page footer.** Site chrome — credit, legal, version,
+social links — lives in the drawer tail (`.app-shell__drawer-meta`). A phone page
+ends where its content ends; do not add anything that re-creates a footer band.

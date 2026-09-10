@@ -208,19 +208,43 @@ const readSidebarCollapsePref = () => {
     } catch { return null; }
 };
 
-// Which nav section is open. Exactly one, or none — see the accordion note on
-// `openNavGroup` below. Stores the open key rather than the folded ones, because
-// "at most one" is the invariant and a single string cannot express a broken
-// state the way a set of five could. Keyed by a stable section key, never by the
+// Which nav sections are open. An ordered list, oldest first, capped at two —
+// see the note on ShellNavGroup for why two. Opening a third closes the least
+// recently opened, so the cap holds without the user ever having to close
+// anything, and the rail's height stays inside a known band.
+//
+// Stores the open keys rather than the folded ones: "at most two open" is the
+// invariant, and a two-element list cannot express a broken state the way a set
+// of five folded flags could. Keyed by the stable section key, never by the
 // translated title.
-const SIDEBAR_GROUP_KEY = 'ptb-sidebar-open-group';
+const SIDEBAR_GROUPS_KEY = 'ptb-sidebar-open-groups';
+const MAX_OPEN_NAV_GROUPS = 2;
 
-const readOpenGroup = () => {
+// First run opens two. Landing on an empty rail is the failure this whole shape
+// exists to avoid, so the default has to show some of the tail, and these are
+// the two sections whose contents people reach for most.
+const DEFAULT_OPEN_NAV_GROUPS = ['teamBuilding', 'database'];
+
+const readOpenGroups = () => {
     try {
-        const raw = window.localStorage.getItem(SIDEBAR_GROUP_KEY);
-        return raw || null;
+        const parsed = JSON.parse(window.localStorage.getItem(SIDEBAR_GROUPS_KEY));
+        // Truncate on read too: the cap could have been larger when this was
+        // written, and a stored list is not a promise about today's rules.
+        return Array.isArray(parsed) ? parsed.slice(-MAX_OPEN_NAV_GROUPS) : null;
     } catch { return null; }
 };
+
+const persistOpenGroups = (next) => {
+    try {
+        window.localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(next));
+    } catch { /* preference is best-effort */ }
+    return next;
+};
+
+// Append and evict in one place, so "opened by a click" and "opened because you
+// navigated into it" can never disagree about which section gets dropped.
+const withGroupOpen = (open, key) =>
+    (open.includes(key) ? open : [...open, key].slice(-MAX_OPEN_NAV_GROUPS));
 
 // On the small-laptop band (1024–1279px) the fixed sidebar steals too much
 // width, so default it to the icon rail. At ≥1280px there's room to expand it.
@@ -326,8 +350,8 @@ export default function AppLayout() {
         if (pref !== null) return pref;                 // deliberate choice wins
         return autoCollapseForWidth(window.innerWidth); // otherwise decide by width
     });
-    const [openNavGroup, setOpenNavGroup] = useState(() =>
-        (typeof window === 'undefined' ? null : readOpenGroup()));
+    const [openNavGroups, setOpenNavGroups] = useState(() =>
+        (typeof window === 'undefined' ? DEFAULT_OPEN_NAV_GROUPS : (readOpenGroups() ?? DEFAULT_OPEN_NAV_GROUPS)));
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
 
     // Lets a store-raised toast open the auth modal. Every "you need an account
@@ -366,23 +390,18 @@ export default function AppLayout() {
         [avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny],
     );
 
-    // Open one nav section, closing whichever was open. An accordion, not a set
-    // of independent folds: with five sections and twenty links, "each folds on
-    // its own" means the rail's height is whatever the user last left it at, and
-    // in practice that was everything open and a scrollbar. Exactly one open
-    // section keeps the rail a fixed, short shape on every screen.
+    // Fold or unfold a section. Unfolding a third one drops the section that has
+    // been open longest — the cap enforces itself, so the control is always a
+    // plain toggle and never refuses a click.
     //
-    // Persisted immediately — the sidebar is the one piece of chrome on every
+    // Persisted immediately: the sidebar is the one piece of chrome on every
     // route, so re-folding it each visit would be a tax.
     const toggleNavGroup = useCallback((groupKey) => {
-        setOpenNavGroup((previous) => {
-            const next = previous === groupKey ? null : groupKey;
-            try {
-                if (next) window.localStorage.setItem(SIDEBAR_GROUP_KEY, next);
-                else window.localStorage.removeItem(SIDEBAR_GROUP_KEY);
-            } catch { /* preference is best-effort */ }
-            return next;
-        });
+        setOpenNavGroups((previous) => persistOpenGroups(
+            previous.includes(groupKey)
+                ? previous.filter((key) => key !== groupKey)
+                : withGroupOpen(previous, groupKey)
+        ));
     }, []);
 
     // Explicit collapse/expand from the sidebar controls. Persists the choice so
@@ -632,7 +651,7 @@ export default function AppLayout() {
                     'ptbShowTeraType',
                     'homeWallpaperId',
                     'ptb-sidebar-collapse-pref',
-                    'ptb-sidebar-collapsed-groups',
+                    'ptb-sidebar-open-groups',
                     'ptb:battleAnimatedSprites',
                     // Builder state the user set
                     'ptbActiveTeamId',
@@ -820,17 +839,24 @@ export default function AppLayout() {
         return groups;
     }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe]);
 
-    // The open section follows the route. Land on a page that lives inside a
-    // section and that section opens, so "where am I" is answered by the rail
-    // itself rather than by a dot on a folded header. Navigating to one of the
-    // pinned primary links leaves the sections as they are — those four are not
-    // in any section, so there is nothing to reveal and snapping the rail shut
-    // on every trip Home would just make it flicker.
+    // Landing on a page that lives inside a folded section unfolds it, so "where
+    // am I" is answered by the rail itself rather than only by a dot on a folded
+    // header. It goes through the same append-and-evict as a click, so arriving
+    // at a third section closes the oldest exactly as clicking into it would.
+    //
+    // Returns `previous` untouched when the section is already open — the effect
+    // runs on every route change, and a fresh array each time would rewrite
+    // localStorage and re-render the rail for nothing. Navigating to one of the
+    // pinned primary links leaves the sections alone: those four are in no
+    // section, so there is nothing to reveal, and re-folding the rail on every
+    // trip Home would just make it flicker.
     useEffect(() => {
         const activeGroup = navigationGroups.find((g) =>
             g.items.some((item) => currentPage === item.key));
         if (!activeGroup) return;
-        setOpenNavGroup(activeGroup.key);
+        setOpenNavGroups((previous) => (previous.includes(activeGroup.key)
+            ? previous
+            : persistOpenGroups(withGroupOpen(previous, activeGroup.key))));
     }, [navigationGroups, currentPage]);
 
 
@@ -1261,7 +1287,7 @@ export default function AppLayout() {
                                             key={group.key}
                                             title={group.title}
                                             railCollapsed={isRailCollapsed}
-                                            isOpen={openNavGroup === group.key}
+                                            isOpen={openNavGroups.includes(group.key)}
                                             hasActiveItem={group.items.some((item) => currentPage === item.key)}
                                             onToggle={() => toggleNavGroup(group.key)}
                                             panelId={`app-shell-nav-${group.key}`}
@@ -1335,6 +1361,42 @@ export default function AppLayout() {
                                             onSignOut={handleSignOut}
                                         />
                                     )}
+                                </div>
+
+                                {/* The site footer's contents, on phones only.
+                                    Below 1024px .app-shell__footer is hidden: a
+                                    191px website footer sitting at the end of
+                                    every page's scroll — 23% of a 844px screen,
+                                    34 elements of credit, likes, version and
+                                    social links — is the least app-like thing
+                                    in the shell, and reaching it was the "rolar
+                                    para baixo na home" complaint. Nothing is
+                                    lost; it moves here, to the drawer tail,
+                                    which is where a phone app keeps its about
+                                    and settings. Desktop keeps the footer. */}
+                                <div className="app-shell__drawer-meta">
+                                    <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} showToast={showToast} />
+
+                                    <TextSizeControl variant="menu" />
+
+                                    <div className="app-shell__drawer-meta-tail">
+                                        <span className="app-shell__drawer-meta-credit">
+                                            {t('layout.developedBy')}{' '}
+                                            <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
+                                        </span>
+                                        <div className="app-shell__drawer-meta-links">
+                                            <button
+                                                type="button"
+                                                onClick={handleOpenPatchNotes}
+                                                className="app-shell__footer-link app-shell__footer-version"
+                                                title={t('patchNotes.openLabel')}
+                                            >
+                                                v{PATCH_NOTES_VERSION}
+                                            </button>
+                                            <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="app-shell__footer-link"><GithubIcon /></a>
+                                            <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="app-shell__footer-link"><LinkedinIcon /></a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>

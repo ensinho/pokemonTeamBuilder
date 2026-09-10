@@ -2,26 +2,32 @@ import React from 'react';
 import { ChevronDownIcon } from './icons';
 
 /**
- * One labelled section of the sidebar navigation.
+ * One labelled section of the sidebar navigation, foldable.
  *
  * The four destinations that carry the app are pinned above these, unlabelled
- * and unfoldable. What is left is the long tail, and it is an accordion: at most
- * one section is open at a time (see `toggleNavGroup` in AppLayout), which is
- * what keeps the rail a fixed short shape instead of growing to whatever the
- * user last left open.
+ * and unfoldable. What is left is the long tail, and it folds — but **at most
+ * two sections are open at a time** (`MAX_OPEN_NAV_GROUPS` in AppLayout).
+ *
+ * That cap is the whole design. Independent folds let the rail grow to whatever
+ * the user last left open, which in practice was everything plus a scrollbar. A
+ * strict accordion — one section, the previous shape — went the other way: with
+ * every section shut the rail was four chevron rows over 400px of nothing, so
+ * the tail was invisible *and* two clicks away. Two open is the state that keeps
+ * both failures out of reach, and it matches how the rail actually gets used: a
+ * section you live in, plus one you are browsing.
  *
  * Two shapes:
  *
- * - Icon rail (`railCollapsed`): labels are hidden by the shell's own rules and
- *   there is nothing left to click, so the section renders as a plain always-open
- *   list of icons.
- * - Expanded sidebar: the header is a *quiet label* first and a control second —
- *   smaller and shorter than a nav row, muted, with the chevron on the trailing
- *   edge. It deliberately does not mimic a nav item: a header shaped like a
- *   destination competes with the destinations under it, and with five of them
- *   the rail read as ten things to click rather than four plus some organisation.
- *   A folded section holding the current page keeps a dot, so "where am I"
- *   survives the fold.
+ * - Icon rail (`railCollapsed`): labels are hidden by the shell's own rules, so
+ *   a header here would be a control with nothing in it. The list renders bare
+ *   and always open, carrying its name on `aria-label` for screen readers;
+ *   whitespace separates the sections.
+ * - Expanded sidebar: the header is a *quiet label* first and a control second.
+ *   It keeps the type of the plain label — 12px, muted, 500 — and is shorter
+ *   than a nav row, so it reads as organisation rather than as a fifth
+ *   destination; only the chevron says it folds, and only at half strength
+ *   until hover. A folded section holding the current page keeps a dot, so
+ *   "where am I" survives the fold.
  */
 export function ShellNavGroup({
     title,
@@ -35,8 +41,7 @@ export function ShellNavGroup({
     if (railCollapsed) {
         return (
             <li className="app-shell__nav-group">
-                <p className="app-shell__nav-group-label is-hidden">{title}</p>
-                <ul className="app-shell__nav-group-list">{children}</ul>
+                <ul className="app-shell__nav-group-list" aria-label={title}>{children}</ul>
             </li>
         );
     }
@@ -56,7 +61,7 @@ export function ShellNavGroup({
             </button>
 
             <div id={panelId} className={`app-shell__nav-group-panel ${isOpen ? 'is-open' : ''}`}>
-                <ul className="app-shell__nav-group-list">{children}</ul>
+                <ul className="app-shell__nav-group-list" aria-label={title}>{children}</ul>
             </div>
         </li>
     );

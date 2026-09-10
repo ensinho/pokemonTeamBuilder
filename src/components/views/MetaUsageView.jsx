@@ -138,16 +138,31 @@ export function MetaUsageView() {
     const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
 
     return (
-        <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-5 sm:py-5">
+        <div className="mx-auto max-w-[1600px] sm:px-5 sm:py-5">
             <header className="mb-4 sm:mb-5">
-                <p className="mt-1 line-clamp-2 max-w-2xl text-[13px] text-muted sm:line-clamp-none sm:text-sm">
-                    {usingSmogon && format
-                        ? (pt
-                            ? `Uso real de ${format.label} no ladder competitivo${battlesLabel ? ` (${battlesLabel} partidas${month ? `, ${month}` : ''})` : ''} — clique em um Pokémon para ver exatamente o que ele roda.`
-                            : `Real ${format.label} ladder usage${battlesLabel ? ` (${battlesLabel} games${month ? `, ${month}` : ''})` : ''} — click any Pokémon to see exactly what it runs (items, moves, spreads, Tera & partners).`)
-                        : (pt
-                            ? 'Pokémon mais usados nos times recentes de torneios — clique para ver o que estão rodando.'
-                            : 'Most-used Pokémon across recent tournament teams — click any to see what they run.')}
+                {/* No padding of its own on a phone: .app-shell__body is already the
+                    gutter, and a second px-3 inside it put this text 12px right
+                    of the page title above it — and its py-4 stacked into a blank
+                    band under the header. No line clamp either: a lead paragraph
+                    cut off at "clique em um..." reads as broken. The how-to clause
+                    is for a pointer; on a phone the cards are plainly tappable,
+                    so dropping it is what lets the sentence end on its own. */}
+                <p className="max-w-2xl text-[13px] text-muted sm:text-sm">
+                    {usingSmogon && format ? (
+                        <>
+                            {pt
+                                ? `Uso real de ${format.label} no ladder competitivo${battlesLabel ? ` (${battlesLabel} partidas${month ? `, ${month}` : ''})` : ''}`
+                                : `Real ${format.label} ladder usage${battlesLabel ? ` (${battlesLabel} games${month ? `, ${month}` : ''})` : ''}`}
+                            <span className="sm:hidden">.</span>
+                            <span className="hidden sm:inline">
+                                {pt
+                                    ? ' — clique em um Pokémon para ver exatamente o que ele roda.'
+                                    : ' — click any Pokémon to see exactly what it runs (items, moves, spreads, Tera & partners).'}
+                            </span>
+                        </>
+                    ) : (pt
+                        ? 'Pokémon mais usados nos times recentes de torneios — clique para ver o que estão rodando.'
+                        : 'Most-used Pokémon across recent tournament teams — click any to see what they run.')}
                 </p>
                 <SourceCredit pt={pt} sources={['smogon', 'vgcpastes', 'pikalytics']} className="mt-2.5" />
             </header>
@@ -171,7 +186,12 @@ export function MetaUsageView() {
                 ))}
             </div>
 
-            {/* Toolbar */}
+            {/* Toolbar. On a phone the regulation select takes its own full-width
+                row first — it is the context everything below depends on — and
+                search + sort share the row under it. Left to wrap on its own,
+                the select landed alone on a second row, right-aligned against
+                a left-aligned page. The sort group stretches to the field's
+                height so the row shares one top and bottom edge. */}
             <div className="mb-5 flex flex-wrap items-center gap-2">
                 {tab === 'usage' && (
                     <div className="relative min-w-0 flex-1">
@@ -191,7 +211,7 @@ export function MetaUsageView() {
                     </div>
                 )}
                 {tab === 'usage' && hasWinRates && (
-                    <div className="inline-flex overflow-hidden rounded-xl border border-border" role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
+                    <div className="inline-flex self-stretch overflow-hidden rounded-xl border border-border" role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
                         {[
                             { id: 'usage', label: pt ? 'Uso' : 'Usage' },
                             { id: 'wr', label: pt ? 'Vitórias' : 'Win rate' },
@@ -209,8 +229,8 @@ export function MetaUsageView() {
                     </div>
                 )}
                 {formats.length > 0 && (
-                    <div className="ml-auto">
-                        <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} />
+                    <div className="order-first w-full sm:order-none sm:ml-auto sm:w-auto">
+                        <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} className="w-full sm:w-auto" />
                     </div>
                 )}
             </div>
@@ -218,7 +238,7 @@ export function MetaUsageView() {
             {tab === 'teams' ? (
                 <section>
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                        <h2 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">
+                        <h2 className="flex items-center gap-1.5 text-base font-semibold text-fg">
                             <Users className="h-4 w-4" /> {pt ? 'Times mais usados' : 'Most-used teams'}
                         </h2>
                         {!regHasTeams && format && (
@@ -236,7 +256,7 @@ export function MetaUsageView() {
                                     key={tm.ids.join('-')}
                                     type="button"
                                     onClick={() => openTeam(tm.teamId)}
-                                    className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-all hover:-translate-y-0.5 hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                     <div className="flex items-center justify-between gap-2">
                                         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-[10px] font-bold text-muted">#{i + 1}</span>
@@ -263,7 +283,7 @@ export function MetaUsageView() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                 {/* Ranked usage grid */}
                 <section className="lg:col-span-2">
-                    <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">
+                    <h2 className="mb-3 flex items-center gap-1.5 text-base font-semibold text-fg">
                         {pt ? 'Pokémon mais usados' : 'Top Pokémon'}
                     </h2>
                     {visible.length === 0 ? (
@@ -277,7 +297,7 @@ export function MetaUsageView() {
                                         key={mon.id}
                                         type="button"
                                         onClick={() => openMon(mon.id)}
-                                        className="group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-all hover:-translate-y-0.5 hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        className="group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     >
                                         <span className="absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-[10px] font-bold text-muted">{rank}</span>
                                         <MonSprite id={mon.id} name={mon.name} className="h-16 w-16 image-pixelated" />
@@ -303,7 +323,7 @@ export function MetaUsageView() {
                 {/* Common team cores (from real tournament teams) */}
                 <section className="space-y-5">
                     <div>
-                        <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">
+                        <h2 className="mb-3 flex items-center gap-1.5 text-base font-semibold text-fg">
                             <Layers className="h-4 w-4" /> {pt ? 'Duplas comuns' : 'Common pairs'}
                         </h2>
                         <div className="space-y-2">
@@ -314,7 +334,7 @@ export function MetaUsageView() {
                     </div>
                     {cores3.length > 0 && (
                         <div>
-                            <h2 className="mb-3 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">
+                            <h2 className="mb-3 flex items-center gap-1.5 text-base font-semibold text-fg">
                                 <Layers className="h-4 w-4" /> {pt ? 'Trios comuns' : 'Common trios'}
                             </h2>
                             <div className="space-y-2">
