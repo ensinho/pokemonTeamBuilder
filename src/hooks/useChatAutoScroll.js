@@ -27,8 +27,13 @@ const SETTLE_MS = 1200;
  * @param {string} options.threadKey  changes when a different thread is shown
  * @param {number} options.count      number of messages currently rendered
  * @param {boolean} options.lastIsMine follow even if scrolled up — I just posted
+ * @param {*} options.pinKey  re-pin to the bottom whenever this changes, for a
+ *   list that was laid out again without its content changing — a pane coming
+ *   back from `display: none` has had its scrollTop reset to 0, and without
+ *   this the thread reappears at the top, which is the exact complaint this
+ *   hook exists to answer.
  */
-export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMine = false }) {
+export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMine = false, pinKey = null }) {
     const prevThread = useRef(threadKey);
     const prevCount = useRef(0);
     const pinUntil = useRef(0);
@@ -84,6 +89,20 @@ export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMi
             el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
         }
     }, [containerRef, threadKey, count, lastIsMine, startPin]);
+
+    // A re-layout with the same messages: jump and pin, but never smooth — this
+    // is the same "the list is opening" case as a fresh thread, and it deserves
+    // the same instant landing.
+    const prevPinKey = useRef(pinKey);
+    useLayoutEffect(() => {
+        if (prevPinKey.current === pinKey) return;
+        prevPinKey.current = pinKey;
+
+        const el = containerRef.current;
+        if (!el || count === 0) return;
+        el.scrollTop = el.scrollHeight;
+        startPin();
+    }, [containerRef, pinKey, count, startPin]);
 
     useEffect(() => {
         const el = containerRef.current;
