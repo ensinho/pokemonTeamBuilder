@@ -163,6 +163,9 @@ export const TRANSLATIONS = {
             fairy: 'Fairy'
         },
         nav: {
+            about: 'About',
+            likeApp: 'Like the app',
+            textSizeShort: 'Text size',
             dashboard: 'Activity',
             home: 'Home',
             teamBuilding: 'Competitive',
@@ -1373,6 +1376,9 @@ export const TRANSLATIONS = {
             fairy: 'Fada'
         },
         nav: {
+            about: 'Sobre o app',
+            likeApp: 'Curtir o app',
+            textSizeShort: 'Texto',
             dashboard: 'Atividade',
             home: 'Início',
             teamBuilding: 'Competitivo',

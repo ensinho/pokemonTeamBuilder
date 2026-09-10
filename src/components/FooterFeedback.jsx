@@ -13,6 +13,9 @@ import {
 } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { HeartIcon, CloseIcon, InfoIcon, MessageIcon } from './icons';
+// Outline glyph for the drawer row: InfoIcon is filled, and it sat as the one solid
+// icon in a rail of outlines.
+import { Info } from 'lucide-react';
 import { useModalA11y } from '../hooks/useModalA11y';
 import { useTranslation } from '../hooks/useTranslation';
 
@@ -22,7 +25,7 @@ const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
  * Compact footer feedback: a small like pill (counter) and a tiny
  * "Have a suggestion?" text link that opens a modal with a textarea.
  */
-export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }) => {
+export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, variant = 'footer' }) => {
     const { t } = useTranslation();
     const [likeCount, setLikeCount] = useState(0);
     const [hasLiked, setHasLiked] = useState(false);
@@ -102,6 +105,65 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
         }
     }, [db, userId, hasLiked, isToggling, likeCount, showToast]);
 
+    const dialogs = (
+        <>
+            {showSuggestionModal && (
+                <SuggestionModal
+                    onClose={() => setShowSuggestionModal(false)}
+                    db={db}
+                    userId={userId}
+                    userEmail={userEmail}
+                    displayName={displayName}
+                    showToast={showToast}
+                />
+            )}
+
+            {showDisclaimerModal && (
+                <DisclaimerModal
+                    onClose={() => setShowDisclaimerModal(false)}
+                />
+            )}
+        </>
+    );
+
+    /* Drawer rows (DrawerAboutSection, phones). The same three actions as the
+       footer pills, built from the rail's own parts — icon column, label, and the
+       like count as a trailing value — so the section reads as navigation-column
+       content instead of a page footer squeezed into one. Rendered as <li>s:
+       the caller's ShellNavGroup owns the list. */
+    if (variant === 'drawer') {
+        return (
+            <>
+                <li>
+                    <button
+                        type="button"
+                        onClick={handleToggleLike}
+                        disabled={!db || !userId || isToggling}
+                        aria-pressed={hasLiked}
+                        className={`app-shell__nav-link ${hasLiked ? 'is-liked' : ''}`}
+                    >
+                        <span className="app-shell__nav-icon" aria-hidden="true"><HeartIcon color="currentColor" /></span>
+                        <span className="app-shell__nav-text">{t('nav.likeApp')}</span>
+                        <span className="app-shell__nav-trailing">{likeCount}</span>
+                    </button>
+                </li>
+                <li>
+                    <button type="button" onClick={() => setShowSuggestionModal(true)} className="app-shell__nav-link">
+                        <span className="app-shell__nav-icon" aria-hidden="true"><MessageIcon /></span>
+                        <span className="app-shell__nav-text">{t('layout.haveSuggestion')}</span>
+                    </button>
+                </li>
+                <li>
+                    <button type="button" onClick={() => setShowDisclaimerModal(true)} className="app-shell__nav-link">
+                        <span className="app-shell__nav-icon" aria-hidden="true"><Info /></span>
+                        <span className="app-shell__nav-text">{t('layout.fanDisclaimer')}</span>
+                    </button>
+                </li>
+                {dialogs}
+            </>
+        );
+    }
+
     return (
         <>
             <span className="app-shell__footer-feedback inline-flex items-center gap-1.5 ml-1 align-middle flex-wrap">
@@ -152,22 +214,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast }
                 </div>
             </span>
 
-            {showSuggestionModal && (
-                <SuggestionModal
-                    onClose={() => setShowSuggestionModal(false)}
-                    db={db}
-                    userId={userId}
-                    userEmail={userEmail}
-                    displayName={displayName}
-                    showToast={showToast}
-                />
-            )}
-
-            {showDisclaimerModal && (
-                <DisclaimerModal
-                    onClose={() => setShowDisclaimerModal(false)}
-                />
-            )}
+            {dialogs}
         </>
     );
 };

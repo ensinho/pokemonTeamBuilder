@@ -91,7 +91,7 @@ Contextual help tooltip system. `pageGuideTips` is a map of route → tip array.
 ### FooterFeedback
 **File:** `src/components/FooterFeedback.jsx`
 
-Like counter, "Have a suggestion?" form (submits to Firestore) and fan disclaimer. Rendered in two places: the page footer on desktop, and the drawer tail (`.app-shell__drawer-meta`) below 1024px, where the footer is hidden. Both dialogs are `createPortal`ed to `<body>` — the drawer moves with `transform`, which would otherwise become the containing block for their `position: fixed` and trap them inside it.
+Like counter, "Have a suggestion?" form (submits to Firestore) and fan disclaimer. Two variants: `footer` (default — pills in the desktop page footer) and `drawer` (three `app-shell__nav-link` rows rendered as `<li>`s inside `DrawerAboutSection`, like count as a trailing value). Below 1024px the footer is hidden and only the drawer variant renders. Both dialogs are `createPortal`ed to `<body>` — the drawer moves with `transform`, which would otherwise become the containing block for their `position: fixed` and trap them inside it.
 
 ---
 
@@ -151,7 +151,7 @@ history, so an announcement can be re-read after it is dismissed.
 and notes, and the current release carries the illustration data.
 
 **Reopening:** the version button (`app-shell__footer-version` — in the page
-footer on desktop and in the drawer tail on phones; the only entry point a guest
+footer on desktop and as the "What's new" row of the drawer's About section on phones; the only entry point a guest
 can reach) and the account menu's "What's new" item, all wired to
 `handleOpenPatchNotes` in `AppLayout`.
 
@@ -171,7 +171,7 @@ Section labels and nav rows share one inline inset, `--app-shell-row-inset` on `
 ### TextSizeControl
 **File:** `src/components/TextSizeControl.jsx`
 
-A− / percentage / A+ stepper for the interface scale (`useThemeStore.uiScale`). Two variants: `menu` (account popover, full width) and `compact` (desktop page footer). Below 1024px the footer is hidden and the drawer tail renders the `menu` variant instead — together these are the only places a signed-out visitor can reach it. The percentage doubles as the reset to 100%.
+A− / percentage / A+ stepper for the interface scale (`useThemeStore.uiScale`). Two variants: `menu` (account popover, full width) and `compact` (desktop page footer). Below 1024px the footer is hidden and the drawer's About section renders an `inline` variant (no box — the row is the container) — together these are the only places a signed-out visitor can reach it. The percentage doubles as the reset to 100%.
 
 ### icons.jsx
 **File:** `src/components/icons.jsx`
@@ -207,3 +207,8 @@ Autocomplete input for the quiz answer field. Filters `pokemon-index.json` clien
 **File:** `src/components/ShowMoreButton.jsx`
 
 "Show more (N left)" under a list revealed in pages. Pair it with `useProgressiveReveal(total, { initial, step, enabled, resetKey })` (`src/hooks/useProgressiveReveal.js`), which returns `{ limit, remaining, hasMore, showMore }` — render `items.slice(0, limit)`. The math is the pure, tested `getRevealState` (`src/utils/progressiveReveal.js`); `resetKey` is a string (format, sort, search…) that snaps the list back to its first page when what the list *is* changes. Used below `lg` on Meta (12, +24) and Tournaments (4 / 6, +10), gated by `useMediaQuery(maxWidthBelow('lg'))` (`src/hooks/useMediaQuery.js`, a `useSyncExternalStore` over `matchMedia`).
+
+### DrawerAboutSection
+**File:** `src/components/DrawerAboutSection.jsx`
+
+The drawer's "About" section, phones only (`isMobile` in `AppLayout`), where the site footer is hidden. One more `ShellNavGroup` of the rail, folded by default: like / suggestion / disclaimer rows (`FooterFeedback variant="drawer"`), "What's new" with the version as a trailing value, text size with an `inline` `TextSizeControl`, and a quiet credit line with GitHub/LinkedIn icons. Row parts it adds to the rail: `.app-shell__nav-trailing` (right-edge value), `.app-shell__nav-link--static` (a row that only labels a control), `.is-liked`, `.app-shell__nav-credit`. Its open state is **local**, deliberately outside the rail's persisted, two-slot `openNavGroups` — shared, a section opened on a phone would hold one of the desktop rail's slots without rendering there.
