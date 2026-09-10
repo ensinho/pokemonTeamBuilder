@@ -18,7 +18,7 @@ import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import '../../styles/pokepuzzle-view.css';
 import { typeColors } from '../../constants/types';
 import { getDailyPokemonIndex, checkLetters, getDaysSinceLaunch } from '../../utils/pokePuzzle';
-import { buildPuzzleShare, puzzleShareScore } from '../../utils/pokePuzzleShare';
+import { buildPuzzleShare } from '../../utils/pokePuzzleShare';
 import { useForumStore } from '../../store/useForumStore';
 
 // Constants
@@ -802,11 +802,9 @@ export default function PokePuzzleView() {
         });
         if (!share) return;
 
-        const title = share.mode === 'free'
-            ? t('forum.puzzleTitleFree')
-            : t('forum.puzzleTitleDailyNumbered', { number: share.puzzleNumber });
-        const text = `${title} — ${puzzleShareScore(share)}`;
-
+        // The card already names the puzzle and shows the score, so the message
+        // carries no text: a body repeating its own attachment word for word was
+        // the ugliest thing about the first version of this.
         // Same topic resolution the team share uses: aim at the general thread,
         // fall back to the well-known id rather than guessing.
         const topics = useForumStore.getState().topics;
@@ -814,7 +812,7 @@ export default function PokePuzzleView() {
             || topics.find((topic) => /general/i.test(topic.title || ''));
         const topicId = generalTopic ? generalTopic.id : 'general';
 
-        const ok = await useForumStore.getState().sendMessage(topicId, text, null, null, { sharedPuzzle: share });
+        const ok = await useForumStore.getState().sendMessage(topicId, '', null, null, { sharedPuzzle: share });
         if (ok) {
             showToast(t('toast.puzzleShared'), 'success');
         } else {

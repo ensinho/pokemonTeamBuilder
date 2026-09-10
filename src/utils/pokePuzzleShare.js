@@ -68,5 +68,12 @@ export function puzzleShareToEmoji(share) {
 /** "4/8" — or "X/8" for a loss, the way these results are always written. */
 export function puzzleShareScore(share) {
     if (!share) return '';
-    return `${share.won ? share.attempts : 'X'}/${share.maxAttempts}`;
+    // attempts and rows are always written together, but the drawn board is what
+    // a reader counts, so the score is derived from it when the field is missing.
+    // Otherwise a payload that predates a field renders a literal "undefined/8".
+    const attempts = Number.isFinite(share.attempts)
+        ? share.attempts
+        : (Array.isArray(share.rows) ? share.rows.length : 0);
+    const maxAttempts = Number.isFinite(share.maxAttempts) ? share.maxAttempts : attempts;
+    return `${share.won ? attempts : 'X'}/${maxAttempts}`;
 }

@@ -83,6 +83,14 @@ describe('rendering helpers', () => {
         expect(puzzleShareScore(null)).toBe('');
     });
 
+    it('counts the drawn rows when a payload carries no attempts field', () => {
+        // What the reader counts is the board, so the score follows the board
+        // rather than rendering "undefined/8" for a payload written elsewhere.
+        expect(puzzleShareScore({ won: true, maxAttempts: 8, rows: ['cccccc'] })).toBe('1/8');
+        expect(puzzleShareScore({ won: false, maxAttempts: 8, rows: ['aaaaaa'] })).toBe('X/8');
+        expect(puzzleShareScore({ won: true, rows: ['cccccc', 'cccccc'] })).toBe('2/2');
+    });
+
     it('is empty rather than throwing on junk', () => {
         expect(puzzleShareToEmoji(null)).toBe('');
         expect(puzzleShareToEmoji({ rows: [] })).toBe('');
