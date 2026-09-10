@@ -548,11 +548,20 @@ export const useBattlesStore = create((set, get) => ({
      * The client never computes an outcome: it posts the choice and the server
      * replays the battle. Passing no choice is a safe refresh — useful to nudge a
      * turn that the opponent has already answered.
+     *
+     * `silent: true` is for those background nudges, and it changes two things:
+     * `isResolvingTurn` is left alone, and a failure is swallowed rather than
+     * toasted. Both matter. `isResolvingTurn` disables every move and switch
+     * button in the view, so a poll that flips it makes the grid go dead for the
+     * length of a round-trip every few seconds — the flicker reads as the app
+     * fighting the user. And a nudge nobody asked for has no business raising an
+     * error toast when the network blips; the real channel is the Firestore
+     * listener, and it will deliver the round when it lands.
      */
-    submitChoice: async (battleId, choice = null) => {
+    submitChoice: async (battleId, choice = null, { silent = false } = {}) => {
         if (!battleId) return null;
 
-        set({ isResolvingTurn: true });
+        if (!silent) set({ isResolvingTurn: true });
         try {
             const { ok, payload, error } = await callBattleApi(
                 BATTLE_TURN_ENDPOINT,
@@ -560,6 +569,7 @@ export const useBattlesStore = create((set, get) => ({
                 { serverErrorMessage: 'Server error (500) resolving turn.' },
             );
             if (!ok) {
+                if (silent) return null;
                 if (error === 'signedOut') {
                     toast.error(t('toast.sessionExpired'), {
                         description: t('toast.sessionExpiredDesc'),
@@ -573,10 +583,10 @@ export const useBattlesStore = create((set, get) => ({
             return payload;
         } catch (err) {
             console.error('Failed to reach the battle resolver:', err);
-            toast.error(t('toast.battleServerError'));
+            if (!silent) toast.error(t('toast.battleServerError'));
             return null;
         } finally {
-            set({ isResolvingTurn: false });
+            if (!silent) set({ isResolvingTurn: false });
         }
     },
 

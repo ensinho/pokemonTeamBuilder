@@ -442,7 +442,7 @@
 .hd-continue-grid {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--space-2_5);
+    gap: var(--space-1_5);
 }
 
 @container (min-width: 34rem) {
@@ -452,24 +452,22 @@
     }
 }
 
-/* Everything inside the card shares one centre line: name, count and roster.
-   Three cards of different roster lengths sat on a ragged left edge before,
-   which read as three unrelated blocks rather than one row of the same thing. */
-/* Name and count sit at the top, the roster is pinned to the bottom by the
-   `margin-top: auto` on it. Centring the whole group instead left the content
-   floating in the middle of a card that had been stretched to match the
-   shortcuts column, with dead space above and below — height the content was
-   given but never used. */
+/* Two shapes for one card, and the narrow one is the base.
+   Stacked one-per-row, the tall centred card is the wrong object: three of them
+   filled a phone screen on their own before anything else on Home was reached.
+   So below the 34rem container width a team is a **row** — name and count on the
+   left, roster on the right, one line of height each — and only when three fit
+   side by side does it become the tall card the three-across layout wants. */
 .hd-continue-card {
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: var(--space-0_5);
-    padding: var(--space-4) var(--space-3);
+    gap: 0 var(--space-3);
+    padding: var(--space-2) var(--space-3);
     border: none;
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    text-align: center;
+    text-align: left;
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth);
 }
@@ -477,6 +475,10 @@
 .hd-continue-card:hover {
     background: var(--color-surface-hover);
 }
+
+.hd-continue-card__name { grid-area: 1 / 1; }
+.hd-continue-card__meta { grid-area: 2 / 1; }
+.hd-continue-card__roster { grid-area: 1 / 2 / span 2 / auto; }
 
 .hd-continue-card__name {
     max-width: 100%;
@@ -500,26 +502,51 @@
 /* Overlapped, the way team previews are drawn everywhere else in this app
    (.team-builder-sprite-stack). Six sprites laid out side by side had to shrink
    to 20px to fit a third-width card — overlapping lets them be 32px and read as
-   a team rather than a row of specks. `margin-top: auto` pushes the stack to the
-   bottom edge, which is what gives the card its top-to-bottom hierarchy. */
+   a team rather than a row of specks. */
 .hd-continue-card__roster {
     display: flex;
     flex-wrap: nowrap;
-    justify-content: center;
-    margin-top: auto;
-    padding-top: var(--space-2);
-    min-height: 2rem;
+    justify-content: flex-end;
+    min-height: 1.75rem;
 }
 
 .hd-continue-card__roster img {
-    width: 2rem;
-    height: 2rem;
+    width: 1.75rem;
+    height: 1.75rem;
     flex-shrink: 0;
-    margin-left: calc(var(--space-3) * -1);
+    margin-left: calc(var(--space-2_5) * -1);
     border-radius: var(--radius-full);
     background: var(--color-surface);
     box-shadow: 0 0 0 2px var(--color-surface-raised);
     image-rendering: pixelated;
+}
+
+/* Three across: back to the tall card, where the roster is pinned to the bottom
+   edge by `margin-top: auto` and that is what gives the card its top-to-bottom
+   hierarchy. Centring the whole group instead left the content floating in the
+   middle of a card stretched to match the shortcuts column. */
+@container (min-width: 34rem) {
+    .hd-continue-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-0_5);
+        padding: var(--space-4) var(--space-3);
+        text-align: center;
+    }
+
+    .hd-continue-card__roster {
+        justify-content: center;
+        margin-top: auto;
+        padding-top: var(--space-2);
+        min-height: 2rem;
+    }
+
+    .hd-continue-card__roster img {
+        width: 2rem;
+        height: 2rem;
+        margin-left: calc(var(--space-3) * -1);
+    }
 }
 
 /* The ring is what separates one sprite from the next; the first has nothing to

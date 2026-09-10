@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FileText, MessageSquare, RefreshCw, Share2 } from 'lucide-react';
+import { ArrowLeft, FileText, MessageSquare, RefreshCw, Share2, Trash2 } from 'lucide-react';
 
 import { useBattles } from '../../../hooks/useBattles';
 import { useBattlesStore } from '../../../store/useBattlesStore';
@@ -27,6 +27,11 @@ import '../../../styles/battle-view.css';
 
 const ANIMATED_SPRITES_KEY = 'ptb:battleAnimatedSprites';
 const CHOICE_STORAGE_KEY = (battleId, round) => `ptb:battleChoice:${battleId}:${round}`;
+
+// Backoff ladder for the "is the opponent done yet?" nudge, in ms. Firestore is
+// the real channel — these only cover a round that is resolvable but unresolved,
+// so they start responsive and then get out of the way. The last value repeats.
+const NUDGE_DELAYS = [4000, 8000, 15000, 30000, 60000];
 
 /**
  * Six slots of sprite icons — the team preview bar.
@@ -258,6 +263,12 @@ export function BattleDetailView() {
         }
     }, [chatMessages.length, activeSideTab]);
 
+    // Read by the once-per-round probe. A ref, not a dependency: the probe wants
+    // the log length *at the moment it answers*, and depending on it would make
+    // every new log line re-fire the request.
+    const logLengthRef = useRef(myLog.length);
+    logLengthRef.current = myLog.length;
+
     const myRequest = useMemo(() => readMyRequest(myLog), [myLog]);
     const transcript = useMemo(() => describeLogLines(myLog), [myLog]);
     const field = useMemo(() => readBattleField(myLog), [myLog]);
@@ -270,41 +281,87 @@ export function BattleDetailView() {
     const isWaitingForOpponent = myRequest.kind === 'wait'
         || (awaitingRound === currentRound && (awaitingLogLength === null || awaitingLogLength === myLog.length));
 
-    // Persistent Choice State across page switches/reloads:
+    // Restore this round's choice label across page switches and reloads, and
+    // ask the resolver once per round whether we already answered it.
+    //
+    // `myLog.length` is deliberately NOT a dependency. It used to be, which meant
+    // a POST to the serverless resolver every time a line landed in the log —
+    // dozens per battle, each one flipping `isResolvingTurn` and deadening the
+    // button grid. The question this asks ("did I already answer round N?") only
+    // has a new answer when the round changes.
     useEffect(() => {
+        if (battle?.status !== 'active' || !battleId) return undefined;
         let isMounted = true;
-        if (battle?.status === 'active' && battleId) {
-            // Restore persistent choice label if saved for this round
-            try {
-                const savedLabel = localStorage.getItem(CHOICE_STORAGE_KEY(battleId, currentRound));
-                if (savedLabel && isMounted) {
-                    setLastChoiceLabel(savedLabel);
-                }
-            } catch (_) {}
 
-            // Check choice status with server authoritative resolver
-            submitChoice(battleId, null).then((res) => {
-                if (!isMounted || !res) return;
-                if (res.waitingOnOpponent && !res.waitingOnYou) {
-                    setAwaitingRound(res.round ?? currentRound);
-                    setAwaitingLogLength(myLog.length);
-                }
-            });
-        }
+        try {
+            const savedLabel = localStorage.getItem(CHOICE_STORAGE_KEY(battleId, currentRound));
+            if (savedLabel) setLastChoiceLabel(savedLabel);
+        } catch (_) { /* the label is a nicety, never a blocker */ }
+
+        submitChoice(battleId, null, { silent: true }).then((res) => {
+            if (!isMounted || !res) return;
+            if (res.waitingOnOpponent && !res.waitingOnYou) {
+                setAwaitingRound(res.round ?? currentRound);
+                setAwaitingLogLength(logLengthRef.current);
+            }
+        });
+
         return () => { isMounted = false; };
-    }, [battleId, battle?.status, battle?.turn, submitChoice, currentRound, myLog.length]);
+    }, [battleId, battle?.status, currentRound, submitChoice]);
 
-    // Auto-sync polling every 5s while waiting for opponent to eliminate turn deadlocks
+    // Nudge polling while waiting on the opponent.
+    //
+    // This is the *backup* channel, not the primary one: `initLogListener` and
+    // the battles snapshot already push the opponent's move the instant the
+    // server writes it. The poll exists only for the case where a round is
+    // resolvable but nobody has asked the resolver to resolve it. So it backs
+    // off — quick while the opponent is plausibly still at the keyboard, then
+    // progressively cheaper — and it stops entirely while the tab is hidden,
+    // with one immediate probe when the trainer comes back. A phone left on the
+    // battle screen for ten minutes used to fire 120 serverless calls; it now
+    // fires seven, and coming back to the tab refreshes instantly instead of
+    // waiting out the remainder of an interval.
     useEffect(() => {
         if (!isWaitingForOpponent || !battleId || battle?.status !== 'active') return undefined;
-        const interval = setInterval(() => {
-            submitChoice(battleId, null).then((res) => {
-                if (res && res.waitingOnOpponent && !res.waitingOnYou) {
-                    setAwaitingRound(res.round ?? currentRound);
-                }
-            });
-        }, 5000);
-        return () => clearInterval(interval);
+
+        let cancelled = false;
+        let timer = null;
+        let attempt = 0;
+
+        const probe = () => submitChoice(battleId, null, { silent: true }).then((res) => {
+            if (cancelled) return;
+            if (res && res.waitingOnOpponent && !res.waitingOnYou) {
+                setAwaitingRound(res.round ?? currentRound);
+            }
+        });
+
+        const schedule = () => {
+            if (cancelled) return;
+            const delay = NUDGE_DELAYS[Math.min(attempt, NUDGE_DELAYS.length - 1)];
+            attempt += 1;
+            timer = setTimeout(() => { probe().finally(schedule); }, delay);
+        };
+
+        const onVisibility = () => {
+            if (document.hidden) {
+                if (timer) clearTimeout(timer);
+                timer = null;
+                return;
+            }
+            // Back on screen: probe now, then restart the ladder from the top so
+            // an opponent who moved while we were away shows up immediately.
+            attempt = 0;
+            probe().finally(schedule);
+        };
+
+        if (!document.hidden) schedule();
+        document.addEventListener('visibilitychange', onVisibility);
+
+        return () => {
+            cancelled = true;
+            if (timer) clearTimeout(timer);
+            document.removeEventListener('visibilitychange', onVisibility);
+        };
     }, [isWaitingForOpponent, battleId, battle?.status, currentRound, submitChoice]);
 
     useEffect(() => {
@@ -335,12 +392,20 @@ export function BattleDetailView() {
         }
     };
 
+    // The manual nudge spins its own button rather than raising the global
+    // `isResolvingTurn`: asking "any news?" is not the same as resolving a turn,
+    // and it should never disable the moves the trainer might still want to pick.
+    const [isManualSyncing, setIsManualSyncing] = useState(false);
     const handleManualSync = () => {
-        submitChoice(battleId, null).then((res) => {
-            if (res && res.waitingOnOpponent && !res.waitingOnYou) {
-                setAwaitingRound(res.round ?? currentRound);
-            }
-        });
+        if (isManualSyncing) return;
+        setIsManualSyncing(true);
+        submitChoice(battleId, null, { silent: true })
+            .then((res) => {
+                if (res && res.waitingOnOpponent && !res.waitingOnYou) {
+                    setAwaitingRound(res.round ?? currentRound);
+                }
+            })
+            .finally(() => setIsManualSyncing(false));
     };
 
     // Auto-confirm lead order during teamPreview without requiring manual click
@@ -427,50 +492,58 @@ export function BattleDetailView() {
 
     return (
         <div className="battle-view">
-            {/* ── Sleek top bar with inline opponent identity ───────── */}
-            <div className="battle-nav-bar flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-3">
-                    <button
-                        type="button"
-                        className="btn btn-outline btn-sm"
-                        onClick={() => navigate('/battles')}
-                    >
-                        {t('battle.backBtn')}
-                    </button>
+            {/* ── Top bar: back · opponent identity · discard ─────────
+                A three-column grid rather than a flex row, because only the
+                middle column may take the leftover width and only it may shrink.
+                As a flex row the opponent's format line ("gen9randombattle · six
+                random Pokémon…") was unshrinkable and pushed Discard off the
+                right edge of every phone. */}
+            <div className="battle-nav-bar">
+                <button
+                    type="button"
+                    className="btn btn-outline btn-sm battle-nav-bar__back"
+                    onClick={() => navigate('/battles')}
+                    aria-label={t('battle.backToList')}
+                >
+                    <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="battle-nav-bar__back-label">{t('battle.backToList')}</span>
+                </button>
 
-                    <div className="battle-nav-opponent flex items-center gap-2">
-                        <span className="battle-header__avatar battle-header__avatar--sm">
-                            <AvatarSprite
-                                trainerSprite={view.opponentAvatar?.trainerSprite}
-                                pokemonId={view.opponentAvatar?.pokemonId}
-                                isShiny={view.opponentAvatar?.isShiny}
-                                fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
-                            />
+                <div className="battle-nav-opponent">
+                    <span className="battle-header__avatar battle-header__avatar--sm">
+                        <AvatarSprite
+                            trainerSprite={view.opponentAvatar?.trainerSprite}
+                            pokemonId={view.opponentAvatar?.pokemonId}
+                            isShiny={view.opponentAvatar?.isShiny}
+                            fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                        />
+                    </span>
+                    <div className="battle-nav-opponent__text">
+                        <h2 className="battle-nav-opponent__name">
+                            {view.opponentName || t('friends.unknownTrainer')}
+                        </h2>
+                        <span className="battle-nav-opponent__meta">
+                            {view.isRandom
+                                ? t('battle.randomFormatLine', { format: battle.format })
+                                : t('battle.formatLine', { format: battle.format, level: battle.level })}
                         </span>
-                        <div className="battle-nav-opponent__text">
-                            <h2 className="battle-nav-opponent__name">
-                                {view.opponentName || t('friends.unknownTrainer')}
-                            </h2>
-                            <span className="battle-nav-opponent__meta">
-                                {view.isRandom
-                                    ? t('battle.randomFormatLine', { format: battle.format })
-                                    : t('battle.formatLine', { format: battle.format, level: battle.level })}
-                            </span>
-                        </div>
                     </div>
                 </div>
 
                 <button
                     type="button"
-                    className="btn btn-ghost btn-sm text-red-400 hover:text-red-300"
+                    className="btn btn-ghost btn-sm battle-nav-bar__discard"
                     onClick={async () => {
                         if (window.confirm(t('battle.confirmDiscard'))) {
                             const ok = await deleteBattle(battleId);
                             if (ok) navigate('/battles');
                         }
                     }}
+                    aria-label={t('battle.discardBattle')}
+                    title={t('battle.discardBattle')}
                 >
-                    {t('battle.discardBattle')}
+                    <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span className="battle-nav-bar__discard-label">{t('battle.discardBattle')}</span>
                 </button>
             </div>
 
@@ -640,7 +713,7 @@ export function BattleDetailView() {
                                             t={t}
                                             language={language}
                                             onSync={handleManualSync}
-                                            isSyncing={isResolvingTurn}
+                                            isSyncing={isManualSyncing}
                                         />
 
                                         {!isWaitingForOpponent && myRequest.kind === 'teamPreview' && (

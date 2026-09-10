@@ -270,12 +270,15 @@
     background: var(--color-surface);
 }
 
+/* Sentence case. A panel title is a section heading, and the design system
+   keeps caps for tiny pill badges only — "STATUS" set in 700-weight caps at
+   0.12em tracking was the loudest thing on a panel it only meant to organise.
+   Converting one costs apparent size, so the size steps up as the weight and
+   tracking come down. */
 .battle-panel__title {
     margin: 0;
-    font-size: 0.688rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
+    font-weight: 600;
     color: var(--color-muted);
 }
 
@@ -804,19 +807,22 @@
    is owed, a muted one the instant it's been sent. Clicking a move always
    swaps one for the other, even before the network round-trip lands. */
 
+/* No border: this sits inside .battle-panel, which already has one, and a box
+   drawn inside a box is what makes a screen read as busy. Fill separates it,
+   and the "your turn" state adds an inset ring through its glow keyframe — a
+   ring, unlike a border, does not change the strip's size when the state flips. */
 .battle-turn-banner {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
     font-size: 0.8rem;
     font-weight: 700;
 }
 
 .battle-turn-banner.is-yours {
-    border-color: var(--color-primary);
     background: var(--color-primary-soft);
     color: var(--color-primary);
     animation: battle-turn-glow 1.8s ease-in-out infinite;
@@ -904,11 +910,11 @@
 
     0%,
     100% {
-        box-shadow: 0 0 0 0 var(--color-primary-soft);
+        box-shadow: var(--ring-primary), 0 0 0 0 var(--color-primary-soft);
     }
 
     50% {
-        box-shadow: 0 0 0 4px var(--color-primary-soft);
+        box-shadow: var(--ring-primary), 0 0 0 4px var(--color-primary-soft);
     }
 }
 
@@ -1121,7 +1127,35 @@
     }
 }
 
-/* ── Navigation opponent header ───────────────────────────────────── */
+/* ── Navigation opponent header ─────────────────────────────────────
+   back · opponent · discard, as a three-column grid. Only the middle column
+   is elastic (`minmax(0, 1fr)`), so the opponent's name and format line are
+   the only things that may shrink and the two controls always keep their
+   full width. Written as a grid and not a flex row precisely because a flex
+   row let the format line refuse to shrink and shove Discard off screen. */
+.battle-nav-bar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.battle-nav-bar__back,
+.battle-nav-bar__discard {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    flex-shrink: 0;
+}
+
+.battle-nav-bar__discard {
+    color: var(--color-danger);
+}
+
+.battle-nav-bar__discard:hover {
+    background: var(--color-surface-hover);
+}
+
 .battle-header__avatar--sm {
     width: 36px;
     height: 36px;
@@ -1132,10 +1166,28 @@
     height: 36px;
 }
 
+.battle-nav-opponent {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
 .battle-nav-opponent__text {
     display: flex;
     flex-direction: column;
     gap: 0;
+    min-width: 0;
+}
+
+/* Both lines are single-line and elide. The identity is a label on a nav bar,
+   not a paragraph: a format string wrapping to three lines was what stretched
+   the bar into the tall ragged block this header is meant to be the cure for. */
+.battle-nav-opponent__name,
+.battle-nav-opponent__meta {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .battle-nav-opponent__name {
@@ -1149,6 +1201,20 @@
 .battle-nav-opponent__meta {
     font-size: 0.688rem;
     color: var(--color-muted);
+}
+
+/* On a phone the two controls keep their icons and drop their labels: a bar
+   with three full-width labels has nothing left for the name in the middle,
+   which is the one part that identifies the battle. */
+@media (max-width: 639px) {
+    .battle-nav-bar {
+        gap: var(--space-2);
+    }
+
+    .battle-nav-bar__back-label,
+    .battle-nav-bar__discard-label {
+        display: none;
+    }
 }
 
 /* ── Compact sprite toggle ────────────────────────────────────────── */
