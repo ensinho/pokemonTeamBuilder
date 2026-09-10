@@ -1423,3 +1423,18 @@
 .forum-team-share-card--puzzle .puzzle-share-play:hover:not(:disabled) {
     background: var(--color-surface-hover);
 }
+
+/* Touch: message actions are 28px pills a --space-1_5 apart. On a coarse pointer
+   each gets an invisible hit area a full --space-2 taller and only --space-0_5
+   wider, so neighbours still meet rather than overlap. Visual size unchanged. */
+@media (pointer: coarse) {
+    .forum-msg-action {
+        position: relative;
+    }
+
+    .forum-msg-action::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-2)) calc(-1 * var(--space-0_5));
+    }
+}

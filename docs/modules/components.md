@@ -202,3 +202,8 @@ Autocomplete input for the quiz answer field. Filters `pokemon-index.json` clien
 - Shared components never import from `views/` or `modals/` — that would create circular dependencies.
 - New shared components belong in `src/components/`. View-specific sub-components that will never be reused belong inline in the view file or as a local component in the same file.
 - If a component needs a lot of CSS, create or extend the relevant `src/styles/*.css` file rather than adding a large Tailwind `className` string.
+
+### ShowMoreButton
+**File:** `src/components/ShowMoreButton.jsx`
+
+"Show more (N left)" under a list revealed in pages. Pair it with `useProgressiveReveal(total, { initial, step, enabled, resetKey })` (`src/hooks/useProgressiveReveal.js`), which returns `{ limit, remaining, hasMore, showMore }` — render `items.slice(0, limit)`. The math is the pure, tested `getRevealState` (`src/utils/progressiveReveal.js`); `resetKey` is a string (format, sort, search…) that snaps the list back to its first page when what the list *is* changes. Used below `lg` on Meta (12, +24) and Tournaments (4 / 6, +10), gated by `useMediaQuery(maxWidthBelow('lg'))` (`src/hooks/useMediaQuery.js`, a `useSyncExternalStore` over `matchMedia`).

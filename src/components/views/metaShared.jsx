@@ -132,7 +132,7 @@ export function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'li
                         href={s.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-0.5 underline-offset-2 transition-colors hover:text-primary hover:underline"
+                        className="touch-target inline-flex items-center gap-0.5 underline-offset-2 transition-colors hover:text-primary hover:underline"
                     >
                         {s.label}<ArrowUpRight className="h-2.5 w-2.5" />
                     </a>

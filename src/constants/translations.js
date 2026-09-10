@@ -116,6 +116,7 @@ export const TRANSLATIONS = {
             pokedexLoadError: 'Could not load the Pokédex',
         },
         common: {
+            showMore: 'Show more ({{count}} left)',
             loading: 'Loading...',
             save: 'Save',
             cancel: 'Cancel',
@@ -1325,6 +1326,7 @@ export const TRANSLATIONS = {
             pokedexLoadError: 'Não foi possível carregar a Pokédex',
         },
         common: {
+            showMore: 'Ver mais ({{count}} restantes)',
             loading: 'Carregando...',
             save: 'Salvar',
             cancel: 'Cancelar',

@@ -210,7 +210,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                             <button
                                 type="button"
                                 onClick={() => setLayoutMode('grid')}
-                                className={`px-2 py-1 rounded text-xs font-semibold transition-all ${
+                                className={`touch-target touch-target--y px-2 py-1 rounded text-xs font-semibold transition-all ${
                                     layoutMode === 'grid'
                                         ? 'bg-surface text-primary border border-border shadow-sm'
                                         : 'text-muted hover:text-fg'
@@ -222,7 +222,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                             <button
                                 type="button"
                                 onClick={() => setLayoutMode('list')}
-                                className={`px-2 py-1 rounded text-xs font-semibold transition-all ${
+                                className={`touch-target touch-target--y px-2 py-1 rounded text-xs font-semibold transition-all ${
                                     layoutMode === 'list'
                                         ? 'bg-surface text-primary border border-border shadow-sm'
                                         : 'text-muted hover:text-fg'

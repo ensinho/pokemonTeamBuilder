@@ -2689,3 +2689,32 @@
         transition-duration: 0.001ms !important;
     }
 }
+
+/* ---- Touch --------------------------------------------------------------
+   Measured at 390px: "Criar seu primeiro time" was 27px tall, the partner
+   card's change button 25px, the avatar pencil 21px. On a coarse pointer the
+   primary buttons take a thumb's height, and the small icon buttons keep their
+   look but get an invisible hit area (same idea as .touch-target in index.css,
+   written per class because the avatar pencil is absolutely positioned and the
+   utility would reset it to relative). Inline buttons are exempt from the
+   height — they live in panel headers, where 44px would break the row. */
+@media (pointer: coarse) {
+    .home-button:not(.home-button--inline) {
+        min-height: 2.75rem;
+    }
+
+    .home-button--inline,
+    .home-partner-card__action-btn,
+    .home-profile-edit-btn {
+        position: relative;
+    }
+
+    .home-button--inline::after,
+    .home-partner-card__action-btn::after,
+    .home-profile-edit-btn::after,
+    .home-profile-avatar-edit-btn::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-2));
+    }
+}

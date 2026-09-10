@@ -731,7 +731,7 @@ export function HomeView({
                 </div>
 
                 <div className="flex justify-between items-center text-[10px]">
-                    <span className="text-muted truncate mr-2">
+                    <span className="text-muted min-w-0 mr-2">
                         {dailyPokePuzzleSummary?.solved
                             ? t('pokepuzzle.homeTeaserSolved', { attempts: dailyPokePuzzleSummary.attempts })
                             : t('pokepuzzle.homeTeaserSubtitle')
@@ -775,7 +775,7 @@ export function HomeView({
                                     <button
                                         type="button"
                                         onClick={handleCycleHeroBackground}
-                                        className="text-[10px] text-muted hover:text-fg font-semibold cursor-pointer bg-black/60 rounded px-1.5 py-0.5 bg-surface/50 transition-colors flex items-center gap-1"
+                                        className="touch-target text-[10px] text-muted hover:text-fg font-semibold cursor-pointer bg-black/60 rounded px-1.5 py-0.5 bg-surface/50 transition-colors flex items-center gap-1"
                                         title={language === 'pt' ? 'Mudar Fundo' : 'Change Background'}
                                     >
                                         <Palette className="w-3 h-3 shrink-0" />
@@ -1288,7 +1288,7 @@ export function HomeView({
                                                         disabled={!userId}
                                                         aria-pressed={likedByMe}
                                                         title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
-                                                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${likedByMe ? 'border-primary bg-primary text-white' : 'border-border bg-surface-raised text-muted hover:text-fg'}`}
+                                                        className={`touch-target inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${likedByMe ? 'border-primary bg-primary text-white' : 'border-border bg-surface-raised text-muted hover:text-fg'}`}
                                                     >
                                                         <HeartIcon className="w-3 h-3 shrink-0" />
                                                         {likeCount > 0 && <span>{likeCount}</span>}
@@ -1297,7 +1297,7 @@ export function HomeView({
                                                         type="button"
                                                         onClick={() => handleStartReply(message)}
                                                         title={language === 'pt' ? 'Responder' : 'Reply'}
-                                                        className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:text-fg"
+                                                        className="touch-target inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:text-fg"
                                                     >
                                                         <ReplyIcon className="w-3 h-3 shrink-0" />
                                                         <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>

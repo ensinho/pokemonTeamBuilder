@@ -1212,3 +1212,77 @@ input[type='checkbox']:checked + div + div {
 .dmg-select:focus-visible {
     box-shadow: inset 0 0 0 1px var(--color-primary);
 }
+
+/* ============================================================
+   TOUCH
+   ============================================================ */
+
+/* A thumb needs ~44px. Many of this app's secondary controls — like and reply
+   pills, source links, small icon buttons — are 17–28px tall, sized for a
+   pointer and for a calm, dense layout. On a coarse pointer `.touch-target`
+   extends the *hit area* with an invisible pseudo-element instead of growing
+   the control: the layout stays exactly as designed, the thumb gets a bigger
+   target. Vertical reach is a full --space-2; horizontal is half, so two
+   controls a --space-2 gap apart meet without overlapping.
+
+   It sets `position: relative`, so do not put it on an absolutely positioned
+   element — give that one its own ::after instead (see home-view.css). */
+@media (pointer: coarse) {
+    .touch-target {
+        position: relative;
+    }
+
+    .touch-target::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-2)) calc(-1 * var(--space-1));
+    }
+
+    /* Vertical reach only — for segmented controls whose buttons touch, where
+       any sideways reach would hand part of one button to its neighbour. */
+    .touch-target--y::after {
+        inset: calc(-1 * var(--space-2)) 0;
+    }
+}
+
+/* Every control tap-activates immediately: no double-tap-to-zoom gesture to
+   wait out, which is what makes a rapid second tap (a stepper, a like) zoom
+   the page instead of registering. Pinch-zoom is untouched. */
+button,
+a,
+[role="button"],
+input,
+select,
+label {
+    touch-action: manipulation;
+}
+
+/* "Show more (N left)" under a list revealed in pages (ShowMoreButton). Sits on
+   the page, not inside a panel, so it owns a border; thumb-height because it
+   only renders on a phone. */
+.show-more-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 2.75rem;
+    margin-top: var(--space-4);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: var(--text-base);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.show-more-button:hover {
+    background: var(--color-surface-hover);
+}
+
+.show-more-button:active {
+    background: var(--color-surface-active);
+}

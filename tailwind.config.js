@@ -83,5 +83,13 @@ export default {
             },
         },
     },
+    // `hover:` only where the device can hover. On a phone a hover state has no
+    // "off": tapping a card left it highlighted until the next tap elsewhere,
+    // which is website behaviour. Anything that is *hidden* until hover (e.g.
+    // `opacity-0 group-hover:opacity-100`) is now invisible on touch — give it a
+    // `[@media(hover:none)]:` state instead. See the design-system skill, Touch.
+    future: {
+        hoverOnlyWhenSupported: true,
+    },
     plugins: [],
 };

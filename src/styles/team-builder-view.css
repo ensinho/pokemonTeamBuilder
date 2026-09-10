@@ -1521,6 +1521,23 @@
     background: var(--color-accent-soft);
 }
 
+/* Card stars were 22–28px targets. On a coarse pointer each gets a hit area a
+   --space-1_5 wider on every side, without changing how it looks. The header-
+   row star (Team Builder) needs `relative` for the pseudo-element; the overlay
+   star is already absolute. The card's own `overflow: hidden` clips the reach at
+   the card edge, which is right — it only ever grows into its own card. */
+@media (pointer: coarse) {
+    .team-builder-mobile-card__favorite:not(.team-builder-mobile-card__favorite--overlay) {
+        position: relative;
+    }
+
+    .team-builder-mobile-card__favorite::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-1_5));
+    }
+}
+
 .pokedex-mobile-iconbtn {
     position: relative;
     display: inline-flex;
@@ -1890,4 +1907,19 @@
 .pokedex-section-title--mobile {
     font-size: 0.625rem;
     margin: var(--space-5) var(--space-1) var(--space-2);
+}
+/* The condensed composer's compact Save is 25px tall. On a coarse pointer it
+   keeps its size and gets an invisible hit area; while it is faded out its
+   `pointer-events: none` is inherited by the pseudo-element too, so the
+   larger target never catches taps meant for the count underneath. */
+@media (pointer: coarse) {
+    .team-builder-mobile__save-compact {
+        position: relative;
+    }
+
+    .team-builder-mobile__save-compact::after {
+        content: "";
+        position: absolute;
+        inset: calc(-1 * var(--space-2));
+    }
 }

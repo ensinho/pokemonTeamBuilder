@@ -11,6 +11,10 @@ import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
 import { MonSprite, pretty, SourceCredit, RegulationSelect } from './metaShared';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
+import { maxWidthBelow } from '../../constants/breakpoints';
+import { ShowMoreButton } from '../ShowMoreButton';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 function CoreRow({ core, rank, onOpenMon }) {
@@ -117,6 +121,18 @@ export function MetaUsageView() {
         () => (query ? ranked.filter((r) => pretty(r.name).toLowerCase().includes(query)) : ranked),
         [ranked, query],
     );
+
+    // On a phone the ranking is one two-column grid of every Pokémon in the
+    // format, stacked *above* the pairs and trios — ~12,000px of scroll before
+    // either is reachable. Reveal it in pages there; desktop keeps the full grid
+    // beside the cores. A new format, sort or search starts from the first page.
+    const isMobile = useMediaQuery(maxWidthBelow('lg'));
+    const reveal = useProgressiveReveal(visible.length, {
+        initial: 12,
+        step: 24,
+        enabled: isMobile,
+        resetKey: `${fmtId}|${sortMode}|${query}`,
+    });
 
     const setFmt = (id) => setParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', id); return p; }, { replace: true });
     const openMon = (id) => navigate(fmtId ? `/meta/${id}?fmt=${fmtId}` : `/meta/${id}`, { state: linkState });
@@ -290,7 +306,7 @@ export function MetaUsageView() {
                         <EmptyState compact title={pt ? 'Nenhum resultado' : 'No matches'} message={pt ? 'Tente outra busca.' : 'Try another search.'} />
                     ) : (
                         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 motion-stagger">
-                            {visible.map((mon, i) => {
+                            {visible.slice(0, reveal.limit).map((mon, i) => {
                                 const rank = query ? ranked.indexOf(mon) + 1 : i + 1;
                                 return (
                                     <button
@@ -317,6 +333,9 @@ export function MetaUsageView() {
                                 );
                             })}
                         </div>
+                    )}
+                    {reveal.hasMore && (
+                        <ShowMoreButton remaining={reveal.remaining} onClick={reveal.showMore} />
                     )}
                 </section>
 
