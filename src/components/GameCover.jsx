@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { Map as MapIcon, X } from 'lucide-react';
 import '../styles/game-cover.css';
 import { useModalA11y } from '../hooks/useModalA11y';
@@ -140,9 +141,12 @@ export function GamePickerModal({
     // Violet"): show that family's cover rather than one logo for all of them.
     const regulationLogo = (group) => getGameLogo(REGULATION_GAME_KEYS[group] || 'champions');
 
-    return (
+    // Portaled to <body> for the same reason <BottomSheet> is: the picker is
+    // opened *from* a sheet on mobile, and a picker left inside the page tree
+    // renders before the sheet's portal node and so paints underneath it.
+    return createPortal(
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="modal-scrim"
             onClick={onClose}
             role="presentation"
         >
@@ -242,6 +246,7 @@ export function GamePickerModal({
                     </section>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

@@ -7,9 +7,9 @@
     --app-shell-sidebar-collapsed-width: 3.75rem;
     --app-shell-gutter: 0.75rem;
     --app-shell-rail-button-size: 2.5rem;
-    /* Mobile tab bar row height. The bar's own padding is added on top of this
-       wherever the content column reserves space for it. */
-    --app-shell-tab-height: 2.9rem;
+    /* --app-shell-tab-height lives on :root (index.css), not here: modals that
+       portal to <body> sit outside .app-shell and still need to reserve the
+       bar's band. */
     --app-shell-top-band-height: 3.75rem;
     display: flex;
     height: 100vh;

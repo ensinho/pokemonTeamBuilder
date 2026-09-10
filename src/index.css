@@ -78,6 +78,11 @@
        should use these exact values (documentary — do not consume as vars):
          sm 640 · md 768 · lg 1024 · xl 1280 · 2xl 1536 */
 
+    /* Mobile tab bar row height. The bar's own padding is added on top of this
+       wherever a layer reserves space for the bar. Defined here rather than on
+       .app-shell so modals portaled to <body> can reserve it too. */
+    --app-shell-tab-height: 2.9rem;
+
     /* Z-index stacking layer */
     --z-content:         10;
     --z-dropdown:        20;
@@ -845,11 +850,33 @@ input[type='checkbox']:checked + div + div {
     padding-block: var(--space-8);
 }
 
+/* Under lg the fixed mobile tab bar owns the bottom band of the screen. Reserve
+   it here so a panel's footer — the row carrying its primary action — can never
+   land underneath the bar. Mirrors the reservation .app-shell__content makes. */
+@media (max-width: 1023px) {
+    .modal-scrim {
+        padding-bottom: calc(
+            var(--app-shell-tab-height) + var(--space-4)
+            + env(safe-area-inset-bottom, 0px)
+        );
+    }
+}
+
 .modal-panel {
     position: relative;
     width: 100%;
     max-width: 32rem;
-    max-height: calc(100vh - var(--space-8));
+    /* Measured against the scrim's content box, not the viewport. `100vh` was
+       load-bearing wrong on phones: mobile Safari resolves it to the *large*
+       viewport — the height the page would have with the URL bar collapsed — so
+       the panel ran past the bottom of what was actually on screen and its
+       footer (which carries the primary action) was clipped with no way to
+       scroll to it. `100%` also inherits whatever the scrim reserves for the
+       mobile tab bar, so the two can never disagree. The `dvh` line is the
+       fallback for the one case `100%` cannot resolve: a scrim without a
+       definite height. */
+    max-height: calc(100dvh - var(--space-8));
+    max-height: 100%;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -865,6 +892,12 @@ input[type='checkbox']:checked + div + div {
 
 .modal-panel:focus,
 .modal-panel:focus-visible { outline: none; }
+
+/* The scrollable scrim exists precisely so a panel may exceed the viewport —
+   capping it against the scrim would defeat that. */
+.modal-scrim.is-scrollable .modal-panel {
+    max-height: none;
+}
 
 /* Width steps. These are named modifiers rather than Tailwind's `max-w-*`
    because these rules are appended after `@tailwind utilities` and would

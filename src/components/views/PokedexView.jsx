@@ -255,10 +255,13 @@ export function PokedexView({
 
                             <div>
                                 <p className="pokedex-sheet-label">{language === 'pt' ? 'Jogo' : 'Game'}</p>
+                                {/* Closing the sheet before opening the picker is deliberate:
+                                    the sheet is portaled to <body>, so leaving it mounted paints
+                                    it over the picker it just opened. */}
                                 <GameFilterChip
                                     games={games}
                                     selectedGame={selectedGame}
-                                    onOpen={() => setIsGamePickerOpen(true)}
+                                    onOpen={() => { setIsFiltersOpen(false); setIsGamePickerOpen(true); }}
                                     className="w-full"
                                 />
                             </div>

@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useBattlesStore } from '../../store/useBattlesStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useToastStore } from '../../store/useToastStore';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { AvatarSprite } from '../AvatarSprite';
+import { BattleInviteCard } from '../BattleInviteCard';
 import { FriendActionButton } from '../FriendActionButton';
 import { MessageIcon, PlusIcon, ClipIcon, HeartIcon, ReplyIcon } from '../icons';
 import { doc, getDoc } from 'firebase/firestore';
@@ -385,6 +387,24 @@ export function HomeView({
         if (success) {
             setReplyText('');
             setAttachedTeam(null);
+            setReplyingTo(null);
+        }
+    };
+
+    // Post an open challenge straight from the home timeline. Same two steps as
+    // the feed's composer: create the battle first so the message can point at
+    // it, and post nothing if that fails (createPublicInvite raises its own
+    // toast for the sign-in case).
+    const handlePostBattleInvite = async (mode) => {
+        setIsAttachDropdownOpen(false);
+        if (!currentTopicId) return;
+
+        const battleId = await useBattlesStore.getState().createPublicInvite({ mode });
+        if (!battleId) return;
+
+        const posted = await sendMessage(currentTopicId, replyText, null, replyingTo, { battleId, mode });
+        if (posted) {
+            setReplyText('');
             setReplyingTo(null);
         }
     };
@@ -1137,7 +1157,36 @@ export function HomeView({
                                                     </button>
                                                 )}
 
-                                                {message.sharedTeam ? (
+                                                {message.battleInvite?.battleId ? (
+                                                    /* A battle invite is its own kind of post: the live
+                                                       card owns the status + action, so the timeline
+                                                       only supplies the byline above it. */
+                                                    <div className="github-comment-bubble">
+                                                        <div className="github-comment-header flex items-center justify-between">
+                                                            <div className="flex items-center gap-1.5 text-xs text-muted flex-wrap">
+                                                                <span
+                                                                    className="font-bold text-fg cursor-pointer hover:underline"
+                                                                    onClick={() => setSelectedProfile({
+                                                                        userId: message.createdBy,
+                                                                        name: message.creatorName,
+                                                                        avatar: message.creatorAvatar,
+                                                                        isShiny: message.creatorAvatarIsShiny
+                                                                    })}
+                                                                >
+                                                                    @{message.creatorName}
+                                                                </span>
+                                                                <span>{language === 'pt' ? 'chamou para batalhar:' : 'called for a battle:'}</span>
+                                                            </div>
+                                                            <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
+                                                        </div>
+                                                        <div className="github-comment-body p-3">
+                                                            {message.text && (
+                                                                <p className="text-xs text-fg leading-relaxed mb-2">{message.text}</p>
+                                                            )}
+                                                            <BattleInviteCard invite={message.battleInvite} />
+                                                        </div>
+                                                    </div>
+                                                ) : message.sharedTeam ? (
                                                     /* Pull Request Styled Merge Card */
                                                     <div className="github-pr-card">
                                                         <div className="github-pr-header flex items-center justify-between">
@@ -1306,13 +1355,33 @@ export function HomeView({
                                         type="button"
                                         onClick={() => setIsAttachDropdownOpen(!isAttachDropdownOpen)}
                                         className="forum-chat-attach-btn"
-                                        title={language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                                        title={language === 'pt' ? 'Anexar time ou convidar para batalha' : 'Attach a team or invite to battle'}
                                     >
                                         <PlusIcon className="w-4 h-4" />
                                     </button>
                                     {isAttachDropdownOpen && (
-                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
+                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-64 overflow-y-auto">
                                             <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider mb-1">
+                                                {t('forum.inviteSectionLabel')}
+                                            </p>
+                                            <button
+                                                type="button"
+                                                onClick={() => handlePostBattleInvite('random')}
+                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate flex items-center gap-1.5"
+                                            >
+                                                <SwordsIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                {t('forum.inviteRandomOption')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handlePostBattleInvite('standard')}
+                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate flex items-center gap-1.5"
+                                            >
+                                                <SwordsIcon className="w-3.5 h-3.5 text-muted shrink-0" />
+                                                {t('forum.inviteTeamOption')}
+                                            </button>
+
+                                            <p className="text-[10px] text-muted font-bold px-2 py-1 mt-1 uppercase tracking-wider mb-1">
                                                 {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
                                             </p>
                                             {activeRoster.length > 0 && (

@@ -89,7 +89,6 @@ const DEMO_POKEMON = [
 export function TeamBuilderOnboardingModal({ onClose }) {
     const { language } = useTranslation();
     const pt = language === 'pt';
-    const dialogRef = useModalA11y(onClose);
     const [dontShowAgain, setDontShowAgain] = useState(true);
 
     // Simulated team slots state (starts with Lucario pre-added so user sees the morph right away)
@@ -110,17 +109,24 @@ export function TeamBuilderOnboardingModal({ onClose }) {
         setSimulatedTeam([]);
     };
 
-    const handleFinish = () => {
+    // Every way out of this dialog honours the checkbox — the footer button, the
+    // X, the scrim and Escape all land here. It used to persist the flag only on
+    // the footer button, so the common exit (tap the X with "don't show again"
+    // already ticked) taught the guide nothing and it reappeared on every single
+    // visit to the builder.
+    const handleDismiss = () => {
         if (dontShowAgain && typeof window !== 'undefined') {
             window.localStorage.setItem('tb-onboarding-seen', '1');
         }
         onClose();
     };
 
+    const dialogRef = useModalA11y(handleDismiss);
+
     const activeLastAdded = simulatedTeam[simulatedTeam.length - 1];
 
     return (
-        <div className="modal-scrim" onClick={onClose} role="presentation">
+        <div className="modal-scrim" onClick={handleDismiss} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
@@ -131,13 +137,13 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
-                <header className="flex items-center justify-between gap-3 border-b border-border px-5 py-3.5 bg-surface-raised">
+                <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5 sm:py-3.5 bg-surface-raised">
                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+                        <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary sm:flex">
                             <Sparkles className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                                 <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
                                     {pt ? 'Simulador Interativo' : 'Interactive Simulator'}
                                 </span>
@@ -145,14 +151,14 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                     {pt ? 'Teste clicando no Grid abaixo' : 'Click Grid below to Test'}
                                 </span>
                             </div>
-                            <h2 id="onboarding-modal-title" className="text-base font-extrabold text-fg truncate">
+                            <h2 id="onboarding-modal-title" className="text-sm sm:text-base font-extrabold text-fg line-clamp-2 sm:truncate">
                                 {pt ? 'Como funciona a adição automática de Pokémon & Megas' : 'How automatic Pokémon & Mega additions work'}
                             </h2>
                         </div>
                     </div>
                     <button
                         type="button"
-                        onClick={onClose}
+                        onClick={handleDismiss}
                         className="rounded-xl p-2 text-muted hover:bg-surface-raised hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
                         aria-label={pt ? 'Fechar' : 'Close'}
                     >
@@ -415,7 +421,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
 
                     <button
                         type="button"
-                        onClick={handleFinish}
+                        onClick={handleDismiss}
                         className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-6 py-2.5 text-xs font-extrabold text-white hover:opacity-90 transition-opacity shadow-md w-full sm:w-auto justify-center"
                     >
                         <Check className="h-4 w-4" />

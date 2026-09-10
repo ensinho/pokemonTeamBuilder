@@ -533,6 +533,80 @@
     opacity: 0.15;
 }
 
+/* --- Battle invite card ------------------------------------------------
+   An invite is the same kind of object in a thread as a shared team, so it
+   keeps that card's shell (border, radius, raised head). What it does NOT
+   share is the team card's single-row header: an invite's head carries a
+   title, a mode pill AND a live status + action, and forcing those four onto
+   one `space-between` row crushed them into four ragged columns on a phone.
+   Here the head wraps, and the action block drops to its own full-width line
+   as soon as it cannot sit beside the title.
+   ---------------------------------------------------------------------- */
+.forum-invite-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface-raised);
+}
+
+.forum-invite-card__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--color-fg);
+}
+
+/* Filled, not outlined: the card already owns a border, and a second one
+   nested inside it is what makes a thread read as busy. */
+.forum-invite-card__mode {
+    border-color: transparent;
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+.forum-invite-card__action {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+}
+
+.forum-invite-card__status {
+    font-size: 0.72rem;
+    color: var(--color-muted);
+}
+
+.forum-invite-card__hint {
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.68rem;
+    color: var(--color-muted);
+}
+
+/* Phones, and the home rail at any width: the head has no room for a second
+   column, so the status + button own their own line. */
+@media (max-width: 639px) {
+    .forum-invite-card__action {
+        margin-left: 0;
+        width: 100%;
+        /* Status left, action right: on its own line the block owns the full
+           width, and leaving the button adjacent to the status text reads as
+           one run of prose rather than a control. */
+        justify-content: space-between;
+    }
+}
+
+.home-forum-chat-messages .forum-invite-card__action {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+}
+
 /* Forum Chat Input Editor */
 .forum-editor {
     padding: var(--space-3) 0;

@@ -189,7 +189,10 @@
 .game-picker {
     display: flex;
     flex-direction: column;
-    max-height: min(82vh, 720px);
+    /* `dvh`, not `vh`: on mobile Safari `vh` is the large viewport, which put the
+       bottom of the grid past the visible edge. Capped by `100%` of the scrim so
+       the picker also respects the band the scrim reserves for the tab bar. */
+    max-height: min(82dvh, 720px, 100%);
     overflow: hidden;
 }
 
