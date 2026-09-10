@@ -1073,8 +1073,28 @@
         overflow-y: hidden;
     }
 
+    /* The feed fills whatever the shell leaves it, through the layout, instead
+       of guessing its height. `calc(100dvh - 5.75rem)` guessed wrong twice: it
+       never subtracted the tab bar, so the composer sat 56px *under* it with no
+       way to scroll to it (measured at 390×844), and in an iOS home-screen app
+       `dvh` also counts the status bar. Here the scroller's own padding already
+       reserves the tab bar, the header takes its band, and body → page frame →
+       feed each take the rest with `flex: 1 1 0; min-height: 0`. */
+    .app-shell__content:has(.forum-view) .app-shell__body,
+    .app-shell__content:has(.forum-view) .app-shell__page-frame {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+        min-height: 0;
+    }
+
+    .app-shell__content:has(.forum-view) .app-shell__body {
+        padding-block-end: var(--space-3);
+    }
+
     .forum-view {
-        height: calc(100dvh - 5.75rem);
+        flex: 1 1 0;
+        min-height: 0;
         overflow: hidden;
         gap: var(--space-2);
     }

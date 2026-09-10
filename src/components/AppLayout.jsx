@@ -1310,6 +1310,46 @@ export default function AppLayout() {
                                         </ShellNavGroup>
                                     ))}
                                 </ul>
+
+                                {/* The site footer's contents, on phones only.
+                                    Below 1024px .app-shell__footer is hidden: a
+                                    191px website footer sitting at the end of
+                                    every page's scroll — 23% of a 844px screen,
+                                    34 elements of credit, likes, version and
+                                    social links — is the least app-like thing
+                                    in the shell, and reaching it was the "rolar
+                                    para baixo na home" complaint. Nothing is
+                                    lost; it moves here, to the drawer tail,
+                                    which is where a phone app keeps its about
+                                    and settings. Desktop keeps the footer.
+                                    It sits inside the scrolling nav, not the
+                                    pinned bottom: pinned, it took ~250px from
+                                    the list and cut the last sections off
+                                    (Enzo's iPhone, 2026-09-10). */}
+                                <div className="app-shell__drawer-meta">
+                                    <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} showToast={showToast} />
+
+                                    <TextSizeControl variant="menu" />
+
+                                    <div className="app-shell__drawer-meta-tail">
+                                        <span className="app-shell__drawer-meta-credit">
+                                            {t('layout.developedBy')}{' '}
+                                            <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
+                                        </span>
+                                        <div className="app-shell__drawer-meta-links">
+                                            <button
+                                                type="button"
+                                                onClick={handleOpenPatchNotes}
+                                                className="app-shell__footer-link app-shell__footer-version"
+                                                title={t('patchNotes.openLabel')}
+                                            >
+                                                v{PATCH_NOTES_VERSION}
+                                            </button>
+                                            <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="app-shell__footer-link"><GithubIcon /></a>
+                                            <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="app-shell__footer-link"><LinkedinIcon /></a>
+                                        </div>
+                                    </div>
+                                </div>
                             </nav>
 
                             {/* Bottom: Theme button, collapse button, account menu */}
@@ -1361,42 +1401,6 @@ export default function AppLayout() {
                                             onSignOut={handleSignOut}
                                         />
                                     )}
-                                </div>
-
-                                {/* The site footer's contents, on phones only.
-                                    Below 1024px .app-shell__footer is hidden: a
-                                    191px website footer sitting at the end of
-                                    every page's scroll — 23% of a 844px screen,
-                                    34 elements of credit, likes, version and
-                                    social links — is the least app-like thing
-                                    in the shell, and reaching it was the "rolar
-                                    para baixo na home" complaint. Nothing is
-                                    lost; it moves here, to the drawer tail,
-                                    which is where a phone app keeps its about
-                                    and settings. Desktop keeps the footer. */}
-                                <div className="app-shell__drawer-meta">
-                                    <FooterFeedback db={db} userId={userId} userEmail={userEmail} displayName={displayName} showToast={showToast} />
-
-                                    <TextSizeControl variant="menu" />
-
-                                    <div className="app-shell__drawer-meta-tail">
-                                        <span className="app-shell__drawer-meta-credit">
-                                            {t('layout.developedBy')}{' '}
-                                            <a href="https://github.com/ensinho" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link app-shell__footer-link--inline">Enzo Esmeraldo</a>
-                                        </span>
-                                        <div className="app-shell__drawer-meta-links">
-                                            <button
-                                                type="button"
-                                                onClick={handleOpenPatchNotes}
-                                                className="app-shell__footer-link app-shell__footer-version"
-                                                title={t('patchNotes.openLabel')}
-                                            >
-                                                v{PATCH_NOTES_VERSION}
-                                            </button>
-                                            <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" aria-label="GitHub" className="app-shell__footer-link"><GithubIcon /></a>
-                                            <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" className="app-shell__footer-link"><LinkedinIcon /></a>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
