@@ -8,6 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useComposerFocus } from '../../hooks/useComposerFocus';
 import { useChatAutoScroll } from '../../hooks/useChatAutoScroll';
 import { BattleInviteCard } from '../BattleInviteCard';
+import { PuzzleShareCard } from '../PuzzleShareCard';
 import { useBattlesStore } from '../../store/useBattlesStore';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
@@ -215,7 +216,7 @@ export function FeedView({ colors, showToast, navigate }) {
         setIsAttachDropdownOpen(false);
         const battleId = await useBattlesStore.getState().createPublicInvite({ mode });
         if (!battleId) return;
-        const posted = await sendMessage(currentTopicId, replyText, null, replyingTo, { battleId, mode });
+        const posted = await sendMessage(currentTopicId, replyText, null, replyingTo, { battleInvite: { battleId, mode } });
         if (posted) {
             setReplyText('');
             setReplyingTo(null);
@@ -685,6 +686,10 @@ export function FeedView({ colors, showToast, navigate }) {
 
                                                 {message.text && (
                                                     <p className="forum-message-text">{message.text}</p>
+                                                )}
+
+                                                {message.sharedPuzzle?.rows?.length > 0 && (
+                                                    <PuzzleShareCard puzzle={message.sharedPuzzle} />
                                                 )}
 
                                                 {message.battleInvite?.battleId && (

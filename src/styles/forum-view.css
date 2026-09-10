@@ -1352,3 +1352,36 @@
         height: 2.25rem;
     }
 }
+
+/* ==========================================================================
+   SHARED POKÉPUZZLE BOARD
+   A result posted into a thread. Same three states as the game's own tiles
+   (see .pokepuzzle-share-preview-tile) and the same tokens, restated here
+   because pokepuzzle-view.css is not loaded on the feed. Keep them in step.
+   ========================================================================== */
+.puzzle-share-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    margin-top: var(--space-2);
+}
+
+.puzzle-share-grid__row {
+    display: flex;
+    gap: var(--space-0_5);
+}
+
+.puzzle-share-grid__cell {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-border);
+}
+
+.puzzle-share-grid__cell.is-correct {
+    background: var(--color-success);
+}
+
+.puzzle-share-grid__cell.is-present {
+    background: var(--color-warning);
+}

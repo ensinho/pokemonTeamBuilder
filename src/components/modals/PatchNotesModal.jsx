@@ -220,6 +220,29 @@ const LatestVisual = ({ language }) => {
     );
 };
 
+// Sharing a PokéPuzzle board — the grid travels, the answer does not.
+const PuzzleShareVisual = ({ language }) => {
+    const pt = language === 'pt';
+    const rows = ['aapaaaa', 'apacaaa', 'ccacpaa', 'ccccccc'];
+    const tone = { c: 'bg-success', p: 'bg-warning', a: 'bg-border' };
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex flex-col gap-1 rounded-lg bg-surface-raised p-2.5">
+                {rows.map((row, rowIndex) => (
+                    <div key={rowIndex} className="flex gap-1">
+                        {row.split('').map((code, cellIndex) => (
+                            <span key={cellIndex} className={`h-2.5 w-2.5 rounded-sm ${tone[code]}`} />
+                        ))}
+                    </div>
+                ))}
+            </div>
+            <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
+                {pt ? '4/8 · sem spoiler' : '4/8 · no spoilers'}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -239,6 +262,7 @@ const NOTE_VISUALS = {
     history: HistoryVisual,
     invites: InvitesVisual,
     latest: LatestVisual,
+    puzzleShare: PuzzleShareVisual,
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {

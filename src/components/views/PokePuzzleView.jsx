@@ -9,7 +9,7 @@ import { useThemeStore } from '../../store/useThemeStore';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { PokeballIcon, StarsIcon, SparklesIcon, RefreshIcon, CloseIcon } from '../icons';
-import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2, Lightbulb } from 'lucide-react';
+import { Lock, PartyPopper, Frown, Sparkles, Award, FileText, Layers, Image, Delete, CornerDownLeft, Share2, Lightbulb, MessageSquare } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useAuthStore } from '../../store/useAuthStore';
 import { db } from '../../services/firebase';
@@ -17,7 +17,9 @@ import { doc, deleteDoc } from 'firebase/firestore';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import '../../styles/pokepuzzle-view.css';
 import { typeColors } from '../../constants/types';
-import { getDailyPokemonIndex } from '../../utils/pokePuzzle';
+import { getDailyPokemonIndex, checkLetters, getDaysSinceLaunch } from '../../utils/pokePuzzle';
+import { buildPuzzleShare, puzzleShareScore } from '../../utils/pokePuzzleShare';
+import { useForumStore } from '../../store/useForumStore';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -106,35 +108,6 @@ const getPastDates = () => {
         d.setDate(d.getDate() - 1);
     }
     return dates;
-};
-
-// Wordle duplicate letter checking algorithm
-const checkLetters = (guess, target) => {
-    const result = Array(guess.length).fill('absent');
-    const targetLetterCounts = {};
-
-    // Find exact matches (Green) first
-    for (let i = 0; i < guess.length; i++) {
-        const gl = guess[i];
-        const tl = target[i];
-        if (gl === tl) {
-            result[i] = 'correct';
-        } else {
-            targetLetterCounts[tl] = (targetLetterCounts[tl] || 0) + 1;
-        }
-    }
-
-    // Find matching letters in incorrect spots (Yellow)
-    for (let i = 0; i < guess.length; i++) {
-        if (result[i] === 'correct') continue;
-        const gl = guess[i];
-        if (targetLetterCounts[gl] > 0) {
-            result[i] = 'present';
-            targetLetterCounts[gl]--;
-        }
-    }
-
-    return result;
 };
 
 // A "session" is one playable game, identified by a sessionKey:
@@ -814,6 +787,41 @@ export default function PokePuzzleView() {
         }
     };
 
+    // Post the finished board to the forum. The payload is built by
+    // `buildPuzzleShare`, which by construction carries no answer and no
+    // guesses — the day's Pokémon never leaves this screen.
+    const handleShareToForum = async () => {
+        const share = buildPuzzleShare({
+            guesses,
+            target: targetNormalized,
+            maxAttempts: MAX_ATTEMPTS,
+            won: gameStatus === 'WON',
+            mode: mode === 'daily' ? 'daily' : 'free',
+            // Day 1 is launch day, so the count is 1-based for a human label.
+            puzzleNumber: mode === 'daily' ? getDaysSinceLaunch(selectedDate) + 1 : null,
+        });
+        if (!share) return;
+
+        const title = share.mode === 'free'
+            ? t('forum.puzzleTitleFree')
+            : t('forum.puzzleTitleDailyNumbered', { number: share.puzzleNumber });
+        const text = `${title} — ${puzzleShareScore(share)}`;
+
+        // Same topic resolution the team share uses: aim at the general thread,
+        // fall back to the well-known id rather than guessing.
+        const topics = useForumStore.getState().topics;
+        const generalTopic = topics.find((topic) => topic.category === 'general')
+            || topics.find((topic) => /general/i.test(topic.title || ''));
+        const topicId = generalTopic ? generalTopic.id : 'general';
+
+        const ok = await useForumStore.getState().sendMessage(topicId, text, null, null, { sharedPuzzle: share });
+        if (ok) {
+            showToast(t('toast.puzzleShared'), 'success');
+        } else {
+            showToast(t('toast.puzzleShareError'), 'error');
+        }
+    };
+
     const handleShareImage = async () => {
         showToast(language === 'pt' ? 'Gerando imagem...' : 'Generating image...', 'info');
 
@@ -1472,6 +1480,13 @@ export default function PokePuzzleView() {
                                                 <Image className="w-3.5 h-3.5" />
                                                 <span>{language === 'pt' ? 'Compartilhar Imagem' : 'Share Image'}</span>
                                             </button>
+                                            <button
+                                                onClick={handleShareToForum}
+                                                className="btn btn-secondary px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs"
+                                            >
+                                                <MessageSquare className="w-3.5 h-3.5" />
+                                                <span>{language === 'pt' ? 'Publicar no Fórum' : 'Post to Forum'}</span>
+                                            </button>
                                         </div>
                                     </section>
                                 ) : (
@@ -1538,6 +1553,16 @@ export default function PokePuzzleView() {
                                         >
                                             <RefreshIcon className="w-4 h-4" />
                                             <span>{t('pokepuzzle.playAgain')}</span>
+                                        </button>
+
+                                        {/* Free mode had no sharing at all. It gets the forum one,
+                                            since the payload already distinguishes the two modes. */}
+                                        <button
+                                            onClick={handleShareToForum}
+                                            className="btn btn-secondary px-4 py-2 flex items-center justify-center gap-2 w-full font-bold text-xs mt-2"
+                                        >
+                                            <MessageSquare className="w-3.5 h-3.5" />
+                                            <span>{language === 'pt' ? 'Publicar no Fórum' : 'Post to Forum'}</span>
                                         </button>
                                     </section>
                                 )}

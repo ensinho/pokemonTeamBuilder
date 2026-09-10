@@ -260,10 +260,15 @@ export const useForumStore = create((set, get) => ({
         }
     },
 
-    // `battleInvite` is {battleId, mode, challengerName}: a pointer to an open
-    // battle, not a copy of its state — the card reads the live document so
-    // everyone sees the moment it is claimed.
-    sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, battleInvite = null) => {
+    // Attachments a message can carry beyond a team, as one named bag rather
+    // than a growing tail of positional arguments:
+    //   battleInvite {battleId, mode} — a *pointer* to an open battle, never a
+    //     copy of its state, so the card reads the live document and everyone
+    //     sees the moment it is claimed.
+    //   sharedPuzzle — a finished PokéPuzzle board (see utils/pokePuzzleShare),
+    //     which by construction carries no answer.
+    sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, attachments = {}) => {
+        const { battleInvite = null, sharedPuzzle = null } = attachments || {};
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -275,7 +280,7 @@ export const useForumStore = create((set, get) => ({
         }
 
         const cleanText = text.trim();
-        if (!cleanText && !attachedTeam && !battleInvite) {
+        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle) {
             return false;
         }
 
@@ -327,6 +332,9 @@ export const useForumStore = create((set, get) => ({
                         challengerName: creatorName,
                     }
                     : null,
+                sharedPuzzle: sharedPuzzle && Array.isArray(sharedPuzzle.rows) && sharedPuzzle.rows.length
+                    ? sharedPuzzle
+                    : null,
                 replyTo: replyRef
             };
 
@@ -338,7 +346,9 @@ export const useForumStore = create((set, get) => ({
                 messageCount: increment(1),
                 lastMessageText: cleanText
                     ? cleanText.substring(0, 100)
-                    : (serializedAttachedTeam ? `Shared team: ${serializedAttachedTeam.name}` : 'Battle invite')
+                    : (serializedAttachedTeam
+                        ? `Shared team: ${serializedAttachedTeam.name}`
+                        : (sharedPuzzle ? 'PokéPuzzle result' : 'Battle invite'))
             });
 
             return true;

@@ -102,6 +102,30 @@ Account section at the bottom of the sidebar. Shows: greeting Pokémon avatar, t
 
 ---
 
+### Forum message attachments
+**Files:** `src/components/BattleInviteCard.jsx`, `src/components/PuzzleShareCard.jsx`
+
+A forum message can carry three things besides text, all passed through
+`sendMessage(topicId, text, team, replyTo, attachments)` — one named bag rather
+than a growing tail of positional arguments:
+
+| Attachment | Card | Shape |
+|---|---|---|
+| `sharedTeam` | inline in `FeedView` | the serialized roster |
+| `battleInvite` | `BattleInviteCard` | **a pointer** (`battleId`), so the card reads the live battle and everyone sees it claimed |
+| `sharedPuzzle` | `PuzzleShareCard` | a finished PokéPuzzle board from `utils/pokePuzzleShare` |
+
+All three reuse the `forum-team-share-card` shell, so a thread keeps one visual
+language for "somebody attached something".
+
+**The puzzle share must never carry the answer.** The daily puzzle is the same
+for everyone, so `buildPuzzleShare` takes the target and returns only per-letter
+statuses (`'c'`/`'p'`/`'a'` per row) — no target, no guesses, since for a win a
+guess *is* the answer. A test asserts the payload contains neither. The card
+renders those codes as tiles using the same tokens as the game's own board
+(`--color-success` / `--color-warning` / `--color-border`), restated in
+`forum-view.css` because `pokepuzzle-view.css` is not loaded on the feed.
+
 ### PatchNotesModal + the release ledger
 **Files:** `src/components/modals/PatchNotesModal.jsx`, `src/constants/patchNotes.js`
 

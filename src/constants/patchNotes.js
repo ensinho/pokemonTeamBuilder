@@ -18,23 +18,22 @@ export const RELEASES = [
         month: '2026-09',
         notes: [
             {
-                key: 'forum-battle-invites',
-                icon: 'swords',
-                visual: 'invites',
-                title: 'patchNotes.invitesTitle',
-                description: 'patchNotes.invitesDesc',
-                cta: 'patchNotes.invitesCta',
-                path: '/feed',
-            },
-            {
-                key: 'feed-latest-message',
+                key: 'puzzle-forum-share',
                 icon: 'message',
-                visual: 'latest',
-                title: 'patchNotes.latestTitle',
-                description: 'patchNotes.latestDesc',
-                cta: 'patchNotes.latestCta',
-                path: '/feed',
+                visual: 'puzzleShare',
+                title: 'patchNotes.puzzleShareTitle',
+                description: 'patchNotes.puzzleShareDesc',
+                cta: 'patchNotes.puzzleShareCta',
+                path: '/pokepuzzle',
             },
+        ],
+    },
+    {
+        version: '1.10.0',
+        month: '2026-09',
+        notes: [
+            { key: 'forum-battle-invites', title: 'patchNotes.invitesTitle' },
+            { key: 'feed-latest-message', title: 'patchNotes.latestTitle' },
         ],
     },
     {

@@ -84,3 +84,37 @@ export const getDailyPokemonIndex = (dateString, allowedPool) => {
     const shuffledIndices = getShuffledIndices(allowedPool.length, PUZZLE_SEED);
     return shuffledIndices[dayIndex % allowedPool.length];
 };
+
+/**
+ * Per-letter feedback for one guess, Wordle's duplicate-letter algorithm:
+ * exact matches are taken first, then the remaining letters are matched against
+ * what is left of the target, so a guess with two A's against a target with one
+ * gets a single yellow rather than two.
+ *
+ * Lived inside PokePuzzleView until the forum share needed the same answer —
+ * two copies of this would drift, and a drifting grid is a wrong grid.
+ *
+ * @returns {Array<'correct'|'present'|'absent'>} one entry per guess letter
+ */
+export const checkLetters = (guess = '', target = '') => {
+    const result = Array(guess.length).fill('absent');
+    const remaining = {};
+
+    for (let i = 0; i < guess.length; i += 1) {
+        if (guess[i] === target[i]) {
+            result[i] = 'correct';
+        } else if (target[i] !== undefined) {
+            remaining[target[i]] = (remaining[target[i]] || 0) + 1;
+        }
+    }
+
+    for (let i = 0; i < guess.length; i += 1) {
+        if (result[i] === 'correct') continue;
+        if (remaining[guess[i]] > 0) {
+            result[i] = 'present';
+            remaining[guess[i]] -= 1;
+        }
+    }
+
+    return result;
+};
