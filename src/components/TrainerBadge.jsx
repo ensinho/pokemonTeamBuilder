@@ -4,7 +4,7 @@ import { useTranslation } from '../hooks/useTranslation';
 
 const SIZE_CLASSES = {
     xs: 'w-3.5 h-3.5 min-w-[0.875rem]',
-    sm: 'w-4.5 h-4.5 min-w-[1.125rem]',
+    sm: 'w-[1.125rem] h-[1.125rem] min-w-[1.125rem]',
     md: 'w-6 h-6 min-w-[1.5rem]',
     lg: 'w-9 h-9 min-w-[2.25rem]',
     xl: 'w-16 h-16 min-w-[4rem]',
