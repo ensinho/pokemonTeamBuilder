@@ -765,6 +765,27 @@ input[type='checkbox']:checked + div + div {
     justify-content: space-between;
 }
 
+/* Trailing value in a drawer row (DrawerAboutSection): the row is the container,
+   so the stepper drops its own box — a bordered control inside a list row is the
+   box-in-a-box the design system rules out. */
+.text-size-control--inline {
+    padding: 0;
+    border: none;
+    background: transparent;
+}
+
+/* Narrower than the boxed stepper: in a 248px drawer row it shares the width
+   with an icon and a label, and at full size it pushed the label onto a second
+   line. The targets stay full row height, so a thumb loses nothing. */
+.text-size-control--inline .text-size-control__step {
+    width: 1.5rem;
+}
+
+.text-size-control--inline .text-size-control__value {
+    min-width: 0;
+    padding: 0 var(--space-1);
+}
+
 .text-size-control__step,
 .text-size-control__value {
     display: inline-flex;

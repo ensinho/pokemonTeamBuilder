@@ -277,12 +277,19 @@ creates a phantom scroll that exists only to reveal a footer.
 There is exactly one vertical scrollbar in this app. If you introduce a second,
 you have made a mistake.
 
-**Size to the screen with `dvh`, never `vh`.** On a phone `100vh` is the *large*
-viewport (URL bar collapsed), so anything sized with it runs past the visible
-screen. The shell carried exactly this until 2026-09-10 — its scroll container was
-~90px taller than the screen, and the page kept scrolling after the screen ran
-out. Write `height: 100vh; height: 100dvh;` (fallback first), or better, `100%` of
-a parent that already has a definite height.
+**Never size anything to the screen with a viewport unit — pin it or fill it.**
+`100vh` is the *large* viewport in mobile Safari, and `100dvh` counts the status
+bar in an iOS home-screen app (viewport-fit=cover) while the web view starts below
+it. Both made the shell taller than the screen on 2026-09-10; the second one
+dragged the sticky header off the top on a real iPhone. The shell is
+`position: fixed; inset: 0`, and everything inside it fills through the layout:
+`height: 100%` of a definite parent, or `flex: 1 1 0; min-height: 0` down a flex
+chain (see the feed in forum-view.css). A `calc(100dvh - Xrem)` is a guess about
+everything above and below it, and it goes stale the moment either changes.
+
+**The root scroller does not rubber-band** (`overscroll-behavior-y: none`). Mind
+`.custom-scrollbar`: its `contain` has the same specificity and loads later, so an
+override needs the compound selector — and always read the computed value back.
 
 **Below 1024px there is no page footer.** Site chrome — credit, legal, version,
 social links — lives in the drawer tail (`.app-shell__drawer-meta`). A phone page
