@@ -63,7 +63,7 @@ const formatRelativeTime = (isoString, language = 'en') => {
     return language === 'pt' ? `há ${diffDays} dias` : `${diffDays}d ago`;
 };
 
-export function FeedView({ colors, showToast, navigate }) {
+export function FeedView({ showToast, navigate }) {
     const { t, language } = useTranslation();
     useDocumentMeta({
         title: 'Community Feed',
@@ -85,7 +85,7 @@ export function FeedView({ colors, showToast, navigate }) {
         deleteMessage
     } = useForumStore();
 
-    const { userId, userEmail, isAdmin, greetingPokemonId, greetingPokemonIsShiny } = useAuthStore();
+    const { userId, isAdmin } = useAuthStore();
     const { savedTeams } = useFirestoreTeamsStore();
     const { currentTeam, teamName, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore();
 
@@ -115,7 +115,6 @@ export function FeedView({ colors, showToast, navigate }) {
     const popoverRef = useRef(null);
 
     const messageListRef = useRef(null);
-    const messageListEndRef = useRef(null);
     const { composerRef: replyInputRef, focusComposer } = useComposerFocus();
 
     // Initialize listeners
@@ -236,6 +235,27 @@ export function FeedView({ colors, showToast, navigate }) {
         }
     };
 
+    // The composer opens one line tall and grows with the text up to the cap the
+    // stylesheet sets (`max-height` on .forum-chat-textarea), then scrolls. A
+    // <textarea> has no intrinsic way to do this: left alone it claims its
+    // two-row default height, which is what put the + and send buttons a line
+    // below the text they belong to.
+    const resizeComposer = (el) => {
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
+    };
+
+    const handleReplyTextChange = (e) => {
+        setReplyText(e.target.value);
+        resizeComposer(e.target);
+    };
+
+    // Sending empties the field, so the height has to come back with it.
+    useEffect(() => {
+        if (!replyText) resizeComposer(replyInputRef.current);
+    }, [replyText, replyInputRef]);
+
     // Begin replying to a specific message: capture a compact snapshot for the
     // quote and focus the composer.
     const handleStartReply = (message) => {
@@ -342,22 +362,20 @@ export function FeedView({ colors, showToast, navigate }) {
                         </span>
                         <button
                             onClick={() => { setIsCreatingTopic(true); setMobilePane('thread'); }}
-                            className="btn-github-new"
+                            className="forum-new-btn"
                         >
                             <PlusIcon className="w-3.5 h-3.5" />
                             {language === 'pt' ? 'Novo' : 'New'}
                         </button>
                     </div>
 
-                    <div className="forum-sidebar__search-wrap">
-                        <input
-                            type="text"
-                            placeholder={language === 'pt' ? 'Buscar tópico...' : 'Find a topic...'}
-                            value={topicSearch}
-                            onChange={(e) => setTopicSearch(e.target.value)}
-                            className="forum-sidebar-search"
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        placeholder={language === 'pt' ? 'Buscar tópico...' : 'Find a topic...'}
+                        value={topicSearch}
+                        onChange={(e) => setTopicSearch(e.target.value)}
+                        className="forum-sidebar-search"
+                    />
 
                     <div className="forum-categories">
                         <button
@@ -389,11 +407,11 @@ export function FeedView({ colors, showToast, navigate }) {
 
                 <div className="forum-topics-list custom-scrollbar">
                     {isInitialLoadingTopics ? (
-                        <div className="text-center py-6 text-muted text-sm">{t('common.loading')}</div>
+                        <p className="forum-state">{t('common.loading')}</p>
                     ) : filteredTopics.length === 0 ? (
-                        <div className="text-center py-6 text-muted text-sm">
+                        <p className="forum-state">
                             {language === 'pt' ? 'Nenhum tópico encontrado' : 'No topics found'}
-                        </div>
+                        </p>
                     ) : (
                         filteredTopics.map((topic) => (
                             <button
@@ -405,13 +423,13 @@ export function FeedView({ colors, showToast, navigate }) {
                                 }}
                                 className={`forum-topic-card ${currentTopicId === topic.id && !isCreatingTopic ? 'is-active' : ''}`}
                             >
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <span className="forum-topic-card__main">
                                     <span className={`forum-category-dot forum-category-dot--${topic.category}`} title={getCategoryLabel(topic.category)}></span>
-                                    <span className="forum-topic-card__title font-semibold text-xs truncate" title={topic.title}>
+                                    <span className="forum-topic-card__title" title={topic.title}>
                                         {topic.title}
                                     </span>
-                                </div>
-                                <span className="text-[10px] text-muted flex items-center gap-0.5 shrink-0 ml-1">
+                                </span>
+                                <span className="forum-topic-card__count">
                                     <MessageIcon className="w-3 h-3" />
                                     {topic.messageCount || 0}
                                 </span>
@@ -427,144 +445,145 @@ export function FeedView({ colors, showToast, navigate }) {
             <main className="forum-main">
                 {isCreatingTopic ? (
                     /* Topic Creation Form */
-                    <div className="forum-new-topic-card p-6 flex flex-col h-full justify-between overflow-y-auto">
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between border-b border-border pb-3">
-                                <h3 className="forum-new-topic-title text-xl font-bold text-fg">
-                                    {language === 'pt' ? 'Criar Novo Tópico Público' : 'Create New Public Topic'}
-                                </h3>
-                                <button
-                                    onClick={() => setIsCreatingTopic(false)}
-                                    className="text-muted hover:text-fg p-1 rounded-lg hover:bg-surface-raised transition-colors"
-                                >
-                                    <CloseIcon className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            <form onSubmit={handleCreateTopicSubmit} className="forum-new-topic-form space-y-4">
-                                <div className="grid gap-2">
-                                    <label className="text-xs font-semibold text-muted uppercase tracking-wider">
-                                        {language === 'pt' ? 'Título do Tópico' : 'Topic Title'}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder={language === 'pt' ? "Qual o assunto principal?" : "What's the main topic?"}
-                                        value={newTopicTitle}
-                                        onChange={(e) => setNewTopicTitle(e.target.value)}
-                                        className="input-clean font-semibold"
-                                    />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <label className="text-xs font-semibold text-muted uppercase tracking-wider">
-                                        {language === 'pt' ? 'Categoria' : 'Category'}
-                                    </label>
-                                    <select
-                                        value={newTopicCategory}
-                                        onChange={(e) => setNewTopicCategory(e.target.value)}
-                                        className="home-active-team-select w-full bg-surface border border-border rounded-md px-3 py-2 text-sm text-fg"
-                                    >
-                                        <option value="general">{getCategoryLabel('general')}</option>
-                                        <option value="teams">{getCategoryLabel('teams')}</option>
-                                        <option value="strategy">{getCategoryLabel('strategy')}</option>
-                                        {isAdmin && (
-                                            <option value="announcements">{getCategoryLabel('announcements')}</option>
-                                        )}
-                                    </select>
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <label className="text-xs font-semibold text-muted uppercase tracking-wider">
-                                        {language === 'pt' ? 'Mensagem Inicial' : 'First Message'}
-                                    </label>
-                                    <textarea
-                                        required
-                                        rows={5}
-                                        placeholder={language === 'pt' ? "Escreva os detalhes..." : "Explain the details..."}
-                                        value={newTopicText}
-                                        onChange={(e) => setNewTopicText(e.target.value)}
-                                        className="forum-editor-textarea h-32"
-                                    />
-                                </div>
-
-                                {/* Attach Team Preview inside Creator */}
-                                {attachedTeam && (
-                                    <div className="forum-attached-team-preview flex items-center">
-                                        <ClipIcon className="w-3.5 h-3.5 text-success shrink-0" />
-                                        <span className="truncate">{attachedTeam.name} (Slots: {attachedTeam.pokemons.length}/6)</span>
-                                        <button type="button" onClick={() => setAttachedTeam(null)}>
-                                            <CloseIcon className="w-3.5 h-3.5" />
-                                        </button>
-                                    </div>
-                                )}
-                            </form>
+                    <div className="forum-new-topic-card">
+                        <div className="forum-new-topic-head">
+                            <h3 className="forum-new-topic-title">
+                                {language === 'pt' ? 'Criar tópico público' : 'Create a public topic'}
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setIsCreatingTopic(false)}
+                                className="forum-new-topic-close"
+                                aria-label={t('common.cancel')}
+                            >
+                                <CloseIcon className="w-4 h-4" />
+                            </button>
                         </div>
 
-                        <div className="forum-editor-actions pt-4 border-t border-border mt-6">
+                        <form onSubmit={handleCreateTopicSubmit} className="forum-new-topic-form">
+                            <div className="forum-field">
+                                <label className="forum-field__label">
+                                    {language === 'pt' ? 'Título do tópico' : 'Topic title'}
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder={language === 'pt' ? 'Qual o assunto principal?' : "What's the main topic?"}
+                                    value={newTopicTitle}
+                                    onChange={(e) => setNewTopicTitle(e.target.value)}
+                                    className="input-clean"
+                                />
+                            </div>
+
+                            <div className="forum-field">
+                                <label className="forum-field__label">
+                                    {language === 'pt' ? 'Categoria' : 'Category'}
+                                </label>
+                                <select
+                                    value={newTopicCategory}
+                                    onChange={(e) => setNewTopicCategory(e.target.value)}
+                                >
+                                    <option value="general">{getCategoryLabel('general')}</option>
+                                    <option value="teams">{getCategoryLabel('teams')}</option>
+                                    <option value="strategy">{getCategoryLabel('strategy')}</option>
+                                    {isAdmin && (
+                                        <option value="announcements">{getCategoryLabel('announcements')}</option>
+                                    )}
+                                </select>
+                            </div>
+
+                            <div className="forum-field">
+                                <label className="forum-field__label">
+                                    {language === 'pt' ? 'Mensagem inicial' : 'First message'}
+                                </label>
+                                <textarea
+                                    required
+                                    rows={5}
+                                    placeholder={language === 'pt' ? 'Escreva os detalhes...' : 'Explain the details...'}
+                                    value={newTopicText}
+                                    onChange={(e) => setNewTopicText(e.target.value)}
+                                    className="forum-editor-textarea"
+                                />
+                            </div>
+
+                            {/* Attach Team Preview inside Creator */}
+                            {attachedTeam && (
+                                <div className="forum-attached-team-preview">
+                                    <ClipIcon className="w-3.5 h-3.5 shrink-0" />
+                                    <span>{attachedTeam.name} ({attachedTeam.pokemons.length}/6)</span>
+                                    <button type="button" onClick={() => setAttachedTeam(null)} aria-label={t('common.cancel')}>
+                                        <CloseIcon className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            )}
+                        </form>
+
+                        <div className="forum-editor-actions">
                             <div className="relative">
                                 <button
                                     type="button"
                                     onClick={() => setIsAttachDropdownOpen(!isAttachDropdownOpen)}
-                                    className="btn btn-secondary text-xs flex items-center gap-1"
+                                    className="btn btn-secondary h-8 text-xs"
                                 >
                                     <ClipIcon className="w-3.5 h-3.5 shrink-0" />
-                                    {language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                                    {language === 'pt' ? 'Anexar time' : 'Attach team'}
                                 </button>
                                 {isAttachDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
-                                        <p className="text-xs text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
-                                            {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
+                                    <div className="forum-attach-menu">
+                                        <p className="forum-attach-menu__label">
+                                            {language === 'pt' ? 'Seus times salvos' : 'Your saved teams'}
                                         </p>
                                         {currentTeam.length > 0 && (
                                             <button
+                                                type="button"
                                                 onClick={() => {
                                                     setAttachedTeam({ name: teamName || 'Active Team', pokemons: currentTeam });
                                                     setIsAttachDropdownOpen(false);
                                                 }}
-                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-primary font-bold truncate flex items-center gap-1.5"
+                                                className="forum-attach-menu__item forum-attach-menu__item--accent"
                                             >
                                                 <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
-                                                {language === 'pt' ? 'Time Ativo Construtor' : 'Active Team in Builder'}
+                                                <span>{language === 'pt' ? 'Time ativo no Construtor' : 'Active team in Builder'}</span>
                                             </button>
                                         )}
                                         {savedTeams.map(team => (
                                             <button
+                                                type="button"
                                                 key={team.id}
                                                 onClick={() => {
                                                     setAttachedTeam(team);
                                                     setIsAttachDropdownOpen(false);
                                                 }}
-                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate block"
+                                                className="forum-attach-menu__item"
                                             >
-                                                {team.name}
+                                                <span>{team.name}</span>
                                             </button>
                                         ))}
                                     </div>
                                 )}
                             </div>
 
-                            <div className="flex gap-2">
+                            <div className="forum-editor-actions__group">
                                 <button
                                     type="button"
                                     onClick={() => setIsCreatingTopic(false)}
-                                    className="btn btn-secondary font-semibold"
+                                    className="btn btn-secondary h-8 text-xs"
                                 >
                                     {t('common.cancel')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={handleCreateTopicSubmit}
-                                    className="btn btn-primary font-semibold px-6"
+                                    className="btn btn-primary h-8 text-xs"
                                 >
-                                    {language === 'pt' ? 'Publicar Tópico' : 'Publish Topic'}
+                                    {language === 'pt' ? 'Publicar tópico' : 'Publish topic'}
                                 </button>
                             </div>
                         </div>
                     </div>
                 ) : activeTopic ? (
                     /* Chat Thread Screen */
-                    <div className="flex flex-col h-full overflow-hidden">
+                    <div className="forum-thread">
                         <div className="forum-main__header">
                             <button
                                 type="button"
@@ -574,15 +593,13 @@ export function FeedView({ colors, showToast, navigate }) {
                             >
                                 <ChevronLeft className="h-4 w-4 shrink-0" aria-hidden="true" />
                             </button>
-                            <div className="min-w-0">
+                            <div className="forum-main__copy">
                                 <h3 className="forum-main__title">{activeTopic.title}</h3>
                                 <div className="forum-main__meta">
-                                    <span className={`forum-topic-card__badge forum-topic-card__badge--${activeTopic.category}`}>
+                                    <span className={`forum-topic-badge forum-topic-badge--${activeTopic.category}`}>
                                         {getCategoryLabel(activeTopic.category)}
                                     </span>
-                                    <span>•</span>
                                     <span>{language === 'pt' ? 'Criado por' : 'Created by'} @{activeTopic.creatorName}</span>
-                                    <span>•</span>
                                     <span>{formatRelativeTime(activeTopic.createdAt, language)}</span>
                                 </div>
                             </div>
@@ -591,11 +608,11 @@ export function FeedView({ colors, showToast, navigate }) {
                         {/* Messages Thread list */}
                         <div ref={messageListRef} className="forum-message-list custom-scrollbar">
                             {isInitialLoadingMessages ? (
-                                <div className="text-center py-6 text-muted text-sm">{t('common.loading')}</div>
+                                <p className="forum-state">{t('common.loading')}</p>
                             ) : messages.length === 0 ? (
-                                <div className="text-center py-6 text-muted text-sm">
+                                <p className="forum-state">
                                     {language === 'pt' ? 'Nenhuma mensagem escrita neste tópico.' : 'No messages posted in this topic.'}
-                                </div>
+                                </p>
                             ) : (
                                 messages.map((message) => {
                                     const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
@@ -605,32 +622,30 @@ export function FeedView({ colors, showToast, navigate }) {
 
                                     return (
                                         <div key={message.id} id={`forum-msg-${message.id}`} className="forum-message-item">
-                                            <div className="forum-message-avatar-wrap">
-                                                <div
-                                                    className="forum-message-avatar cursor-pointer"
-                                                    onClick={() => setSelectedProfile({
-                                                        userId: message.createdBy,
-                                                        name: message.creatorName,
-                                                        avatar: message.creatorAvatar,
-                                                        isShiny: message.creatorAvatarIsShiny,
-                                                        trainerSprite: message.creatorTrainerSprite,
-                                                        selectedBadgeId: message.creatorBadgeId || null,
-                                                    })}
-                                                >
-                                                    <AvatarSprite
-                                                        trainerSprite={message.creatorTrainerSprite}
-                                                        pokemonId={message.creatorAvatar}
-                                                        isShiny={message.creatorAvatarIsShiny}
-                                                        fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
-                                                    />
-                                                </div>
+                                            <div
+                                                className="forum-message-avatar"
+                                                onClick={() => setSelectedProfile({
+                                                    userId: message.createdBy,
+                                                    name: message.creatorName,
+                                                    avatar: message.creatorAvatar,
+                                                    isShiny: message.creatorAvatarIsShiny,
+                                                    trainerSprite: message.creatorTrainerSprite,
+                                                    selectedBadgeId: message.creatorBadgeId || null,
+                                                })}
+                                            >
+                                                <AvatarSprite
+                                                    trainerSprite={message.creatorTrainerSprite}
+                                                    pokemonId={message.creatorAvatar}
+                                                    isShiny={message.creatorAvatarIsShiny}
+                                                    fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                                                />
                                             </div>
 
                                             <div className="forum-message-bubble">
                                                 <div className="forum-message-header">
-                                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <div className="forum-message-identity">
                                                         <span
-                                                            className="forum-message-author cursor-pointer hover:underline flex items-center gap-1"
+                                                            className="forum-message-author"
                                                             onClick={() => setSelectedProfile({
                                                                 userId: message.createdBy,
                                                                 name: message.creatorName,
@@ -640,7 +655,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                                 selectedBadgeId: message.creatorBadgeId || null,
                                                             })}
                                                         >
-                                                            <span>@{message.creatorName}</span>
+                                                            <span className="truncate">@{message.creatorName}</span>
                                                             {message.creatorBadgeId && <TrainerBadge badgeId={message.creatorBadgeId} size="xs" />}
                                                         </span>
                                                         {isMsgAdmin && (
@@ -700,17 +715,20 @@ export function FeedView({ colors, showToast, navigate }) {
                                                 {message.sharedTeam && (
                                                     <div className="forum-team-share-card">
                                                         <div className="forum-team-share-header">
-                                                            <h5 className="forum-team-share-title flex items-center gap-1">
+                                                            <h5 className="forum-team-share-title">
                                                                 <PokeballIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                                {message.sharedTeam.name}
+                                                                <span className="truncate">{message.sharedTeam.name}</span>
                                                             </h5>
-                                                            <button
-                                                                onClick={() => handleImportTeam(message.sharedTeam)}
-                                                                className="btn btn-primary py-1 px-2.5 h-7 text-xs font-bold flex items-center gap-1"
-                                                            >
-                                                                <Download />
-                                                                {language === 'pt' ? 'Importar Time' : 'Import Team'}
-                                                            </button>
+                                                            <div className="forum-team-share-action">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleImportTeam(message.sharedTeam)}
+                                                                    className="btn btn-primary h-7 px-2.5 text-xs font-semibold"
+                                                                >
+                                                                    <Download />
+                                                                    {language === 'pt' ? 'Importar' : 'Import'}
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                         <div className="forum-team-share-slots">
                                                             {Array.from({ length: 6 }).map((_, slotIdx) => {
@@ -737,7 +755,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                                                                 onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                                                             />
                                                                         ) : (
-                                                                            <span className="forum-team-share-empty text-xs">
+                                                                            <span className="forum-team-share-empty">
                                                                                 <PokeballIcon className="w-3.5 h-3.5" />
                                                                             </span>
                                                                         )}
@@ -811,7 +829,6 @@ export function FeedView({ colors, showToast, navigate }) {
                                     );
                                 })
                             )}
-                            <div ref={messageListEndRef} />
                         </div>
 
                         {/* Editor reply input at bottom */}
@@ -844,10 +861,10 @@ export function FeedView({ colors, showToast, navigate }) {
                             )}
 
                             {attachedTeam && (
-                                <div className="forum-attached-team-preview flex items-center mb-2">
-                                    <ClipIcon className="w-3.5 h-3.5 text-success shrink-0" />
-                                    <span className="truncate">{attachedTeam.name} (Slots: {attachedTeam.pokemons.length}/6)</span>
-                                    <button type="button" onClick={() => setAttachedTeam(null)}>
+                                <div className="forum-attached-team-preview">
+                                    <ClipIcon className="w-3.5 h-3.5 shrink-0" />
+                                    <span>{attachedTeam.name} ({attachedTeam.pokemons.length}/6)</span>
+                                    <button type="button" onClick={() => setAttachedTeam(null)} aria-label={t('common.cancel')}>
                                         <CloseIcon className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
@@ -864,29 +881,29 @@ export function FeedView({ colors, showToast, navigate }) {
                                         <PlusIcon className="w-4 h-4" />
                                     </button>
                                     {isAttachDropdownOpen && (
-                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-48 overflow-y-auto">
-                                            <p className="text-xs text-muted font-bold px-2 py-1 uppercase tracking-wider border-b border-border mb-1">
+                                        <div className="forum-attach-menu">
+                                            <p className="forum-attach-menu__label">
                                                 {t('forum.inviteSectionLabel')}
                                             </p>
                                             <button
                                                 type="button"
                                                 onClick={() => handlePostBattleInvite('random')}
-                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate flex items-center gap-1.5"
+                                                className="forum-attach-menu__item"
                                             >
                                                 <SwordsIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                {t('forum.inviteRandomOption')}
+                                                <span>{t('forum.inviteRandomOption')}</span>
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => handlePostBattleInvite('standard')}
-                                                className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate flex items-center gap-1.5"
+                                                className="forum-attach-menu__item"
                                             >
                                                 <SwordsIcon className="w-3.5 h-3.5 text-muted shrink-0" />
-                                                {t('forum.inviteTeamOption')}
+                                                <span>{t('forum.inviteTeamOption')}</span>
                                             </button>
 
-                                            <p className="text-xs text-muted font-bold px-2 py-1 mt-1 uppercase tracking-wider border-b border-border mb-1">
-                                                {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
+                                            <p className="forum-attach-menu__label">
+                                                {language === 'pt' ? 'Seus times salvos' : 'Your saved teams'}
                                             </p>
                                             {currentTeam.length > 0 && (
                                                 <button
@@ -895,10 +912,10 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         setAttachedTeam({ name: teamName || 'Active Team', pokemons: currentTeam });
                                                         setIsAttachDropdownOpen(false);
                                                     }}
-                                                    className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-primary font-bold truncate flex items-center gap-1.5"
+                                                    className="forum-attach-menu__item forum-attach-menu__item--accent"
                                                 >
                                                     <StarIcon className="w-3.5 h-3.5 text-accent shrink-0" isFavorite={true} />
-                                                    {language === 'pt' ? 'Time Ativo Construtor' : 'Active Team in Builder'}
+                                                    <span>{language === 'pt' ? 'Time ativo no Construtor' : 'Active team in Builder'}</span>
                                                 </button>
                                             )}
                                             {savedTeams.map(team => (
@@ -909,9 +926,9 @@ export function FeedView({ colors, showToast, navigate }) {
                                                         setAttachedTeam(team);
                                                         setIsAttachDropdownOpen(false);
                                                     }}
-                                                    className="w-full text-left text-xs px-2 py-1.5 hover:bg-surface-raised rounded text-fg truncate block"
+                                                    className="forum-attach-menu__item"
                                                 >
-                                                    {team.name}
+                                                    <span>{team.name}</span>
                                                 </button>
                                             ))}
                                         </div>
@@ -920,8 +937,9 @@ export function FeedView({ colors, showToast, navigate }) {
 
                                 <textarea
                                     ref={replyInputRef}
+                                    rows={1}
                                     value={replyText}
-                                    onChange={(e) => setReplyText(e.target.value)}
+                                    onChange={handleReplyTextChange}
                                     onKeyDown={handleKeyDown}
                                     placeholder={replyingTo
                                         ? (language === 'pt' ? `Respondendo a @${replyingTo.creatorName}...` : `Replying to @${replyingTo.creatorName}...`)
@@ -944,13 +962,13 @@ export function FeedView({ colors, showToast, navigate }) {
                     </div>
                 ) : (
                     /* Fallback Empty Panel */
-                    <div className="flex flex-col items-center justify-center h-full text-center p-6 text-muted">
-                        <MessageIcon className="w-12 h-12 opacity-30 mb-2" />
-                        <h4 className="font-bold text-sm text-fg">
+                    <div className="forum-state forum-state--fill">
+                        <MessageIcon className="w-10 h-10 opacity-30" />
+                        <h4 className="forum-state__title">
                             {language === 'pt' ? 'Nenhum tópico ativo' : 'No active topic'}
                         </h4>
-                        <p className="text-xs max-w-xs mt-1">
-                            {language === 'pt' ? 'Selecione um tópico na barra lateral para começar a conversar ou crie um novo!' : 'Select a topic in the sidebar to start chatting or create a new one!'}
+                        <p className="forum-state__text">
+                            {language === 'pt' ? 'Selecione um tópico na lista para começar a conversar, ou crie um novo.' : 'Pick a topic from the list to start chatting, or create a new one.'}
                         </p>
                     </div>
                 )}
@@ -966,7 +984,7 @@ export function FeedView({ colors, showToast, navigate }) {
                                 {language === 'pt' ? 'Time do Arsenal' : 'From Your Arsenal'}
                             </span>
                         </div>
-                        <p className="forum-right-card__desc truncate">
+                        <p className="forum-right-card__desc">
                             {featuredArsenalTeam.name}
                         </p>
                         <div className="forum-right-team-slots">
@@ -991,22 +1009,24 @@ export function FeedView({ colors, showToast, navigate }) {
                             })}
                         </div>
                         <button
+                            type="button"
                             onClick={() => handleImportTeam(featuredArsenalTeam)}
-                            className="btn btn-secondary w-full py-1 text-xs font-bold mt-2"
+                            className="btn btn-secondary w-full h-8 text-xs"
                         >
-                            {language === 'pt' ? 'Editar no Construtor' : 'Load in Builder'}
+                            {language === 'pt' ? 'Abrir no Construtor' : 'Load in Builder'}
                         </button>
                     </div>
                 ) : (
-                    <div className="forum-right-card p-4 text-center">
-                        <p className="text-xs text-muted font-bold">
-                            {language === 'pt' ? 'Nenhum time no arsenal' : 'No teams in arsenal'}
+                    <div className="forum-right-card">
+                        <p className="forum-right-card__text">
+                            {language === 'pt' ? 'Nenhum time no arsenal ainda.' : 'No teams in your arsenal yet.'}
                         </p>
                         <button
+                            type="button"
                             onClick={() => navigate('/builder')}
-                            className="btn btn-primary w-full py-1.5 text-xs font-bold mt-2"
+                            className="btn btn-primary w-full h-8 text-xs"
                         >
-                            {language === 'pt' ? 'Criar Time' : 'Build Team'}
+                            {language === 'pt' ? 'Criar time' : 'Build a team'}
                         </button>
                     </div>
                 )}
@@ -1018,7 +1038,7 @@ export function FeedView({ colors, showToast, navigate }) {
                             {language === 'pt' ? 'Dica de Partilha' : 'Sharing Tip'}
                         </span>
                     </div>
-                    <p className="text-[11px] text-muted leading-relaxed mt-1.5">
+                    <p className="forum-right-card__text">
                         {language === 'pt'
                             ? 'Compartilhe seus times salvos anexando-os diretamente às suas respostas no fórum.'
                             : 'Share your saved teams with others by attaching them directly to your responses in the forum.'}

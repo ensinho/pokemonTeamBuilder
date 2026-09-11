@@ -1,37 +1,72 @@
 /* ==========================================================================
-   Pokemon Team Builder - Forum / Feed View CSS
+   Pokémon Team Builder — Forum / Feed
+   --------------------------------------------------------------------------
+   One vocabulary for the whole community surface, rebuilt 2026-09-11 against
+   the notification-feed reference Enzo asked for: rows separated by hairlines
+   rather than by boxes, a fixed leading column so every row shares one left
+   edge, one card shell for everything a message can carry, and exactly one
+   scroller per pane.
+
+   Three rules this file now keeps, and the report that produced each:
+   - "rolagem própria dentro das mensagens" — a message never scrolls. The old
+     `overflow-x: hidden` on the bubble computed `overflow-y` to `auto`, which
+     is what put a scrollbar inside a post. Text wraps; it does not scroll.
+   - "componentes desalinhados" — the row is a grid (avatar | content), so the
+     byline, the text, any attachment and the action row all start on the same
+     pixel. Nothing is spaced by hand.
+   - "quebrado" — every surface is one border deep. A card owns the border; its
+     head, body and slots separate themselves with fill.
    ========================================================================== */
 
+/* --------------------------------------------------------------------------
+   Shell — the feed fills the app frame through the layout at every width.
+   `height: calc(100vh - 8rem)` used to do this on desktop; a viewport unit is
+   a guess about the chrome above and below it, and it goes stale the moment
+   either moves (see docs/wounds.md, 2026-09-10).
+   -------------------------------------------------------------------------- */
+.app-shell__content:has(.forum-view) .app-shell__body,
+.app-shell__content:has(.forum-view) .app-shell__page-frame {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+}
+
 .forum-view {
+    /* The row rhythm, declared once. Every gutter below resolves to one of
+       these, so the panes cannot drift apart. */
+    --forum-avatar: 2.25rem;
+    --forum-gutter: var(--space-3);
+    /* Reserved on every band of a pane — header, list, composer — so all three
+       share one right edge and the scroller draws inside the gutter instead of
+       shifting its own content 12px left of the header above it. */
+    --forum-rail: var(--space-3);
+
     width: 100%;
-    margin: 0 auto;
-    max-width: min(100%, 92vw);
     display: grid;
-    gap: var(--space-4);
-    animation: fade-in-up var(--duration-entrance) var(--ease-out-expo) both;
+    gap: var(--space-5);
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    animation: fade-in var(--duration-slow) var(--ease-smooth) both;
 }
 
-@media (min-width: 1024px) {
-    .forum-view {
-        grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.25fr);
-        height: calc(100vh - 8rem);
-        align-items: stretch;
-    }
-}
-
-/* Sidebar Styling */
+/* --------------------------------------------------------------------------
+   Left pane — the topic list
+   -------------------------------------------------------------------------- */
 .forum-sidebar {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    height: 100%;
+    gap: var(--space-3);
+    min-height: 0;
     overflow: hidden;
 }
 
 .forum-sidebar__header {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1_5);
+    gap: var(--space-2);
+    flex-shrink: 0;
 }
 
 .forum-sidebar__title-row {
@@ -39,148 +74,144 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    width: 100%;
 }
 
 .forum-sidebar__title {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
-    letter-spacing: 0;
-    color: var(--color-muted);
+    color: var(--color-fg);
 }
 
-.btn-github-new {
+/* The one filled control in the pane: a filled button needs no border. */
+.forum-new-btn {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-1);
-    font-size: 0.7rem;
+    gap: var(--space-1_5);
+    min-height: 1.75rem;
+    padding: 0 var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font-size: 0.75rem;
     font-weight: 600;
-    color: var(--color-on-primary) !important;
-    background-color: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    border-radius: var(--radius-sm);
-    padding: var(--space-1) var(--space-2_5);
     cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+    transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 
-.btn-github-new:hover {
+.forum-new-btn:hover {
     opacity: 0.9;
-}
-
-.forum-sidebar__search-wrap {
-    width: 100%;
 }
 
 .forum-sidebar-search {
     width: 100%;
-    font-size: 0.75rem;
-    background-color: var(--color-surface);
+    min-height: 2rem;
+    font-size: 0.8125rem;
+    background: var(--color-surface);
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    padding: var(--space-1_5) var(--space-3);
     color: var(--color-fg);
     outline: none;
     transition: border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-sidebar-search::placeholder {
+    color: var(--color-muted);
 }
 
 .forum-sidebar-search:focus {
     border-color: var(--color-primary);
 }
 
+/* Filter chips: pills, like the reference's Inbox / Focused / Unread row. */
 .forum-categories {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-1);
-    padding: var(--space-0_5) 0;
+    gap: var(--space-1_5);
 }
 
 .forum-category-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0 var(--space-3);
     font-size: 0.75rem;
-    padding: var(--space-1) var(--space-2_5);
-    border-radius: var(--radius-sm);
+    font-weight: 500;
+    border-radius: var(--radius-full);
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-muted);
     cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
 }
 
 .forum-category-btn:hover {
-    border-color: var(--color-border-hover);
     color: var(--color-fg);
+    border-color: var(--color-border-hover);
 }
 
 .forum-category-btn.is-active {
     background: var(--color-primary-soft);
-    border-color: var(--color-primary);
+    border-color: transparent;
     color: var(--color-primary);
     font-weight: 600;
+}
+
+.forum-sidebar__header,
+.forum-topics-list {
+    padding-inline-end: var(--forum-rail);
 }
 
 .forum-topics-list {
-    flex: 1;
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    padding-right: var(--space-1);
 }
 
+/* Full-bleed rows with a hairline between them — no card chrome per topic.
+   The divider sits on the following sibling, so the last row can never leave a
+   dangling line whatever else the list renders after it. */
 .forum-topic-card {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    padding: var(--space-1_5) var(--space-2);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    border: 1px solid transparent;
-    cursor: pointer;
-    text-align: left;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+    gap: var(--space-2_5);
     width: 100%;
+    min-height: 2.5rem;
+    padding: var(--space-2) var(--space-2);
+    border: none;
+    background: transparent;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-topic-card + .forum-topic-card {
+    border-top: 1px solid var(--color-border);
 }
 
 .forum-topic-card:hover {
-    background: var(--color-surface-raised);
-    border-color: transparent;
+    background: var(--color-surface-hover);
 }
 
 .forum-topic-card.is-active {
-    /* A UI surface, so it has to follow the theme — a white wash is invisible
-       on the light themes. */
     background: var(--color-surface-active);
-    border-color: transparent;
 }
 
 .forum-topic-card.is-active .forum-topic-card__title {
-    font-weight: 600;
     color: var(--color-primary);
+    font-weight: 600;
 }
 
-.forum-category-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    display: inline-block;
-    flex-shrink: 0;
-}
-
-.forum-category-dot--general {
-    background-color: var(--color-info);
-}
-
-.forum-category-dot--teams {
-    background-color: var(--color-success);
-}
-
-.forum-category-dot--strategy {
-    background-color: var(--color-warning);
-}
-
-.forum-category-dot--announcements {
-    background-color: var(--color-danger);
+.forum-topic-card__main {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    min-width: 0;
 }
 
 .forum-topic-card__title {
@@ -193,23 +224,76 @@
     white-space: nowrap;
 }
 
-/* Main Conversation Thread */
-.forum-main {
+.forum-topic-card__count {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex-shrink: 0;
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+}
+
+.forum-category-dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: var(--radius-full);
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.forum-category-dot--general { background-color: var(--color-info); }
+.forum-category-dot--teams { background-color: var(--color-success); }
+.forum-category-dot--strategy { background-color: var(--color-warning); }
+.forum-category-dot--announcements { background-color: var(--color-danger); }
+
+/* The category as a pill, for the thread header. It used to be written in the
+   markup with no rule behind it at all, so it rendered as loose text in the
+   middle of the byline. */
+.forum-topic-badge {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+}
+
+.forum-topic-badge--general { color: var(--color-info); }
+.forum-topic-badge--teams { color: var(--color-success); }
+.forum-topic-badge--strategy { color: var(--color-warning); }
+.forum-topic-badge--announcements { color: var(--color-danger); }
+
+/* --------------------------------------------------------------------------
+   Centre pane — the thread
+   -------------------------------------------------------------------------- */
+.forum-main,
+.forum-thread {
     display: flex;
     flex-direction: column;
-    background: transparent;
-    border: none;
+    min-height: 0;
     overflow: hidden;
-    height: 100%;
+}
+
+.forum-thread {
+    flex: 1 1 0;
+}
+
+.forum-main__header,
+.forum-message-list,
+.forum-editor {
+    padding-inline-end: var(--forum-rail);
 }
 
 .forum-main__header {
-    padding: var(--space-2) 0 var(--space-3) 0;
-    border-bottom: 1px solid var(--color-border);
-    background: transparent;
     display: flex;
     align-items: center;
     gap: var(--space-3);
+    flex-shrink: 0;
+    padding-block: 0 var(--space-3);
+    border-bottom: 1px solid var(--color-border);
 }
 
 /* Back to the topic list. Only a phone needs it — from 640px up the list is
@@ -223,7 +307,7 @@
     height: 2.25rem;
     flex-shrink: 0;
     border: none;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     color: var(--color-fg);
     cursor: pointer;
@@ -234,9 +318,15 @@
     background: var(--color-surface-hover);
 }
 
+.forum-main__copy {
+    min-width: 0;
+    flex: 1;
+}
+
 .forum-main__title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
     color: var(--color-fg);
     margin: 0;
     overflow: hidden;
@@ -251,53 +341,80 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-1) var(--space-2);
+    margin-top: var(--space-1);
     font-size: 0.75rem;
     color: var(--color-muted);
-    margin-top: var(--space-1);
 }
 
-.forum-message-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: var(--space-4) var(--space-4) var(--space-4) 0;
+/* Loading / empty copy, one shape for every pane. */
+.forum-state {
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+}
+
+.forum-state--fill {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    height: 100%;
+}
+
+.forum-state__title {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-fg);
+}
+
+.forum-state__text {
+    max-width: 22rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   The message row. A grid, not a flex row with hand-tuned gaps: the content
+   column starts at the same offset in every post, so the byline, the body, an
+   attachment card and the action row all share one left edge.
+   -------------------------------------------------------------------------- */
+.forum-message-list {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .forum-message-item {
-    display: flex;
-    gap: var(--space-3);
-    padding-bottom: var(--space-3_5);
-    border-bottom: 1px solid var(--color-border);
-    animation: fade-in-up var(--duration-fast) var(--ease-smooth);
+    display: grid;
+    grid-template-columns: var(--forum-avatar) minmax(0, 1fr);
+    gap: var(--forum-gutter);
+    padding-block: var(--space-4);
 }
 
-.forum-message-item:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
-}
-
-.forum-message-avatar-wrap {
-    flex-shrink: 0;
+/* Hairline between posts, carried by the later sibling so the list can end on
+   anything — a sentinel node, a notice — without leaving a rule under it. */
+.forum-message-item + .forum-message-item {
+    border-top: 1px solid var(--color-border);
 }
 
 .forum-message-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: var(--color-primary-soft);
-    border: 1px solid var(--color-border);
+    width: var(--forum-avatar);
+    height: var(--forum-avatar);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     position: relative;
+    cursor: pointer;
 }
 
 .forum-message-avatar img {
-    width: 44px;
-    height: 36px;
+    width: 2.75rem;
+    height: var(--forum-avatar);
     object-fit: contain;
     margin-top: var(--space-0_5);
 }
@@ -311,19 +428,16 @@
     image-rendering: pixelated;
 }
 
+/* The content column. `min-width: 0` is the whole trick: it lets long words and
+   wide attachments shrink instead of forcing the row wider. It must never gain
+   an `overflow` — one axis set to `hidden` computes the other to `auto`, which
+   is exactly how a post ended up with its own scrollbar. */
 .forum-message-bubble {
-    flex: 1;
     min-width: 0;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 0;
-    position: relative;
-}
-
-.forum-message-bubble::after,
-.forum-message-bubble::before {
-    display: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
 }
 
 .forum-message-header {
@@ -331,117 +445,126 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    margin-bottom: var(--space-1_5);
+    width: 100%;
+}
+
+.forum-message-identity {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
 }
 
 .forum-message-author {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-fg);
+    cursor: pointer;
+    min-width: 0;
+}
+
+.forum-message-author:hover {
+    text-decoration: underline;
 }
 
 .forum-message-author-badge {
-    font-size: 0.6rem;
-    font-weight: 700;
-    padding: var(--space-0_5) var(--space-1);
-    border-radius: var(--radius-sm);
-    margin-left: var(--space-1_5);
+    flex-shrink: 0;
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-full);
     background: var(--color-primary-soft);
     color: var(--color-primary);
 }
 
 .forum-message-time {
-    font-size: 0.7rem;
+    flex-shrink: 0;
+    font-size: 0.6875rem;
     color: var(--color-muted);
 }
 
 .forum-message-text {
+    width: 100%;
+    margin: 0;
     font-size: 0.875rem;
+    line-height: 1.55;
     color: var(--color-fg);
-    line-height: 1.5;
-    word-break: break-word;
     white-space: pre-wrap;
+    /* Wrap, never scroll: a pasted Showdown export or a 60-character team name
+       breaks inside the column instead of widening the row. */
+    overflow-wrap: anywhere;
 }
 
-/* Cute, self-dismissing heads-up about the Teams topic reset (sits in the
-   forum's left sidebar / top of the home timeline). */
-.teams-topic-notice {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-1_5);
-    margin: var(--space-2) 0;
-    padding: var(--space-3_5) var(--space-3) var(--space-3);
-    border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
-    border-radius: var(--radius-xl);
-    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-    box-shadow: 0 2px 10px color-mix(in srgb, var(--color-primary) 12%, transparent);
-    animation: teams-notice-pop var(--duration-fast, 150ms) var(--ease-smooth, ease-out);
-}
-.teams-topic-notice__emote {
-    font-size: 1.25rem;
-    font-weight: 700;
-    line-height: 1;
-    color: var(--color-primary);
-    letter-spacing: 0.02em;
-    animation: teams-notice-bob 2.4s ease-in-out infinite;
-}
-.teams-topic-notice__text {
-    font-size: 0.72rem;
-    line-height: 1.45;
-    color: var(--color-fg);
-}
-.teams-topic-notice__close {
-    position: absolute;
-    top: 0.35rem;
-    right: 0.35rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-muted);
-    transition: color var(--duration-fast) var(--ease-smooth);
-}
-.teams-topic-notice__close:hover { color: var(--color-fg); }
-
-@keyframes teams-notice-pop {
-    from { opacity: 0; transform: scale(0.94) translateY(4px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-}
-@keyframes teams-notice-bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-2px); }
+/* Brief highlight when jumping to a quoted message */
+.forum-message-item--flash {
+    animation: forum-quote-flash var(--duration-slow) var(--ease-smooth);
+    border-radius: var(--radius-md);
 }
 
-/* Quoted reply reference shown at the top of a message that replies to another */
-.forum-message-quote {
+@keyframes forum-quote-flash {
+    0% { background: var(--color-primary-soft); }
+    100% { background: transparent; }
+}
+
+/* --------------------------------------------------------------------------
+   Quote chip (a reply pointing at its original) and the composer's twin banner.
+   A fill and one accent edge; no box, because both sit inside a row that is
+   already separated by a rule.
+   -------------------------------------------------------------------------- */
+.forum-message-quote,
+.forum-replying-banner {
     display: flex;
     align-items: center;
     gap: var(--space-1_5);
     max-width: 100%;
-    margin: var(--space-0_5) 0 var(--space-1_5);
-    padding: var(--space-1) var(--space-2);
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-primary);
-    border-radius: var(--radius-sm, var(--radius-sm));
+    padding: var(--space-1_5) var(--space-2_5);
+    border: none;
+    border-left: 2px solid var(--color-primary);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
     background: var(--color-surface-raised);
     color: var(--color-muted);
     font-size: 0.75rem;
-    line-height: 1.2;
-    cursor: pointer;
-    transition: background var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+    line-height: 1.3;
+    text-align: left;
 }
-.forum-message-quote:hover { background: var(--color-primary-soft); color: var(--color-fg); }
-.forum-message-quote__author { font-weight: 700; color: var(--color-primary); flex-shrink: 0; }
-.forum-message-quote__text {
+
+.forum-message-quote {
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-message-quote:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.forum-message-quote__author,
+.forum-replying-banner__label b {
+    font-weight: 600;
+    color: var(--color-primary);
+    flex-shrink: 0;
+}
+
+.forum-message-quote__text,
+.forum-replying-banner__label {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0;
 }
 
-/* Mini team preview inside a quoted reply / composer banner */
+.forum-replying-banner__label {
+    flex: 1;
+}
+
+.forum-replying-banner__snippet {
+    color: var(--color-muted);
+}
+
 .forum-message-quote__team,
 .forum-replying-banner__team {
     display: inline-flex;
@@ -449,42 +572,14 @@
     gap: var(--space-0_5);
     flex-shrink: 0;
 }
+
 .forum-message-quote__sprite {
-    width: 1.15rem;
-    height: 1.15rem;
+    width: 1.125rem;
+    height: 1.125rem;
     object-fit: contain;
     image-rendering: pixelated;
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
 }
 
-/* Brief highlight when jumping to a quoted message */
-.forum-message-item--flash {
-    animation: forum-quote-flash 1.2s ease-out;
-    border-radius: var(--radius-md);
-}
-@keyframes forum-quote-flash {
-    0% { background: var(--color-primary-soft); }
-    100% { background: transparent; }
-}
-
-/* "Replying to …" banner above the composer */
-.forum-replying-banner {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    margin-bottom: var(--space-2);
-    padding: var(--space-1_5) var(--space-2_5);
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--color-primary);
-    border-radius: var(--radius-sm, var(--radius-sm));
-    background: var(--color-surface-raised);
-    font-size: 0.75rem;
-    color: var(--color-muted);
-}
-.forum-replying-banner__label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.forum-replying-banner__label b { color: var(--color-primary); }
-.forum-replying-banner__snippet { color: var(--color-muted); }
 .forum-replying-banner button {
     display: inline-flex;
     align-items: center;
@@ -493,160 +588,189 @@
     color: var(--color-muted);
     transition: color var(--duration-fast) var(--ease-smooth);
 }
-.forum-replying-banner button:hover { color: var(--color-fg); }
 
-/* Forum Team Share Card */
+.forum-replying-banner button:hover {
+    color: var(--color-fg);
+}
+
+/* --------------------------------------------------------------------------
+   Attachment card — ONE shell for everything a message can carry: a shared
+   team, a battle invite, a PokéPuzzle board. The card owns the only border in
+   the post; its head, body and slots separate themselves with fill. The old
+   version drew a border on the card, another under its head and six more
+   around the sprite slots — eight boxes for one attachment.
+   -------------------------------------------------------------------------- */
 .forum-team-share-card {
-    margin-top: var(--space-3);
+    width: 100%;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     background: var(--color-surface);
     overflow: hidden;
     display: flex;
     flex-direction: column;
 }
 
-.forum-team-share-header {
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-surface-raised);
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-}
-
-.forum-team-share-title {
-    font-size: 0.8125rem;
-    font-weight: 700;
-    color: var(--color-fg);
-    margin: 0;
-}
-
-.forum-team-share-slots {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: var(--space-1);
-    padding: var(--space-3);
-}
-
-.forum-team-share-slot {
-    aspect-ratio: 1;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-raised);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
-}
-
-.forum-team-share-slot:hover {
-    border-color: var(--color-primary);
-    background: var(--color-surface);
-}
-
-.forum-team-share-sprite {
-    width: 90%;
-    height: 90%;
-    object-fit: contain;
-    image-rendering: pixelated;
-}
-
-.forum-team-share-empty {
-    color: var(--color-muted);
-    opacity: 0.15;
-}
-
-/* --- Battle invite card ------------------------------------------------
-   An invite is the same kind of object in a thread as a shared team, so it
-   keeps that card's shell (border, radius, raised head). What it does NOT
-   share is the team card's single-row header: an invite's head carries a
-   title, a mode pill AND a live status + action, and forcing those four onto
-   one `space-between` row crushed them into four ragged columns on a phone.
-   Here the head wraps, and the action block drops to its own full-width line
-   as soon as it cannot sit beside the title.
-   ---------------------------------------------------------------------- */
+.forum-team-share-header,
 .forum-invite-card__head {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
+    padding: var(--space-2_5) var(--space-3);
     background: var(--color-surface-raised);
 }
 
+.forum-team-share-title,
 .forum-invite-card__title {
     display: flex;
     align-items: center;
-    gap: var(--space-1);
+    gap: var(--space-1_5);
     margin: 0;
+    min-width: 0;
     font-size: 0.8125rem;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--color-fg);
 }
 
-/* Filled, not outlined: the card already owns a border, and a second one
-   nested inside it is what makes a thread read as busy. */
 .forum-invite-card__mode {
+    flex-shrink: 0;
     border-color: transparent;
     background: var(--color-primary-soft);
     color: var(--color-primary);
 }
 
+/* The puzzle's score badge keeps its own meaning (won / not won) but loses its
+   outline: the card already owns the only border in the post. */
+.forum-team-share-header .badge {
+    flex-shrink: 0;
+    border-color: transparent;
+}
+
+.forum-team-share-header .badge-outline {
+    background: var(--color-surface);
+}
+
+/* The action block sits at the end of the head, and drops to its own full
+   line as soon as it cannot share one with the title. */
+.forum-team-share-action,
 .forum-invite-card__action {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
     margin-left: auto;
 }
 
 .forum-invite-card__status {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--color-muted);
 }
 
 .forum-invite-card__hint {
-    padding: var(--space-2) var(--space-3);
-    font-size: 0.68rem;
+    margin: 0;
+    padding: var(--space-2_5) var(--space-3);
+    font-size: 0.6875rem;
+    line-height: 1.4;
     color: var(--color-muted);
 }
 
-/* Phones, and the home rail at any width: the head has no room for a second
-   column, so the status + button own their own line. */
-@media (max-width: 639px) {
-    .forum-invite-card__action {
-        margin-left: 0;
-        width: 100%;
-        /* Status left, action right: on its own line the block owns the full
-           width, and leaving the button adjacent to the status text reads as
-           one run of prose rather than a control. */
-        justify-content: space-between;
-    }
+.forum-team-share-slots {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--space-2);
+    padding: var(--space-3);
 }
 
-.home-forum-chat-messages .forum-invite-card__action {
-    margin-left: 0;
-    width: 100%;
+.forum-team-share-slot {
+    aspect-ratio: 1;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-team-share-slot:hover {
+    background: var(--color-surface-hover);
+}
+
+.forum-team-share-sprite {
+    width: 88%;
+    height: 88%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.forum-team-share-empty {
+    display: inline-flex;
+    color: var(--color-muted);
+}
+
+/* --------------------------------------------------------------------------
+   Shared PokéPuzzle board — the same shell, hugging its board: a 7-tile row
+   stretched across a full-width surface reads as a stray progress bar rather
+   than a puzzle.
+   -------------------------------------------------------------------------- */
+.forum-team-share-card--puzzle {
+    width: fit-content;
+    max-width: 100%;
+}
+
+.puzzle-share-body {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    padding: var(--space-3);
 }
 
-/* --- Message actions -----------------------------------------------------
-   One vocabulary for the row under every message. These were four different
-   ad-hoc Tailwind pills before, two of which wrote raw `red-500` — a colour
-   that does not follow the theme — and all of which were 20px tall, half a tap
-   target. Like and Reply lead; Delete is pushed to the far end, because a
-   destructive control sitting one thumb-width from Reply is a mis-tap waiting
-   to happen.
-   ------------------------------------------------------------------------ */
+.puzzle-share-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+}
+
+.puzzle-share-grid__row {
+    display: flex;
+    gap: var(--space-0_5);
+}
+
+.puzzle-share-grid__cell {
+    width: 1rem;
+    height: 1rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-border);
+}
+
+.puzzle-share-grid__cell.is-correct { background: var(--color-success); }
+.puzzle-share-grid__cell.is-present { background: var(--color-warning); }
+.puzzle-share-grid__cell.is-pending { background: color-mix(in srgb, var(--color-border) 45%, transparent); }
+
+/* A fill and the accent colour, no border of its own inside the card's. Scoped
+   to the card so it outranks .btn-ghost without depending on load order. */
+.forum-team-share-card--puzzle .puzzle-share-play {
+    background: var(--color-surface-raised);
+    color: var(--color-primary);
+}
+
+.forum-team-share-card--puzzle .puzzle-share-play:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+}
+
+/* --------------------------------------------------------------------------
+   Message actions — the reaction row of the reference: filled pills, a count
+   inside the pill, no outline. Like and Reply lead; Delete is pushed to the
+   far end, because a destructive control one thumb-width from Reply is a
+   mis-tap waiting to happen.
+   -------------------------------------------------------------------------- */
 .forum-msg-actions {
     display: flex;
     align-items: center;
-    gap: var(--space-1_5);
-    margin-top: var(--space-2);
+    gap: var(--space-2);
+    width: 100%;
 }
 
 .forum-msg-actions__end,
@@ -657,25 +781,22 @@
 .forum-msg-actions__confirm {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-1_5);
+    gap: var(--space-2);
 }
 
-/* Fill, not outline: these sit inside a thread that already uses a rule per
-   message to separate one from the next, and a pill outline on top of that is
-   the second box the design system exists to prevent. */
 .forum-msg-action {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: var(--space-1);
+    gap: var(--space-1_5);
     min-height: 1.75rem;
-    padding: var(--space-0_5) var(--space-2);
+    padding: 0 var(--space-2_5);
     border: none;
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    font-size: 0.6875rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth),
                 color var(--duration-fast) var(--ease-smooth);
@@ -710,107 +831,449 @@
 }
 
 .forum-msg-action.is-danger:hover {
-    background: color-mix(in srgb, var(--color-danger) 20%, transparent);
-    color: var(--color-danger);
+    background: color-mix(in srgb, var(--color-danger) 20%, var(--color-surface));
 }
 
 .forum-msg-action--icon:hover {
     color: var(--color-danger);
 }
 
-/* Forum Chat Input Editor */
+/* --------------------------------------------------------------------------
+   Composer
+   -------------------------------------------------------------------------- */
 .forum-editor {
-    padding: var(--space-3) 0;
-    border-top: 1px solid var(--color-border);
-    background: transparent;
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    flex-shrink: 0;
+    padding-block: var(--space-3);
+    border-top: 1px solid var(--color-border);
+    background: transparent;
 }
 
-.forum-editor-input-row {
-    display: flex;
-    gap: var(--space-2);
-    align-items: flex-end;
-}
-
-.forum-editor-textarea {
-    flex: 1;
-    min-height: 40px;
-    max-height: 120px;
-    resize: none;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-fg);
-    padding: var(--space-2) var(--space-3);
-    font-size: 0.875rem;
-    line-height: 1.4;
-    transition: border-color var(--duration-fast) var(--ease-smooth);
-}
-
-.forum-editor-textarea:focus {
-    border-color: var(--color-primary);
-    outline: none;
-}
-
-.forum-editor-actions {
+.forum-chat-input-wrapper {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    flex-wrap: wrap;
+    gap: var(--space-1_5);
+    width: 100%;
+    padding: var(--space-1_5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface-raised);
+    transition: border-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
+.forum-chat-input-wrapper:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px var(--color-primary-soft);
+}
+
+.forum-chat-attach-btn,
+.forum-chat-send-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-chat-attach-btn {
+    background: transparent;
+    color: var(--color-muted);
+}
+
+.forum-chat-attach-btn:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.forum-chat-send-btn {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.forum-chat-send-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-fg) 10%, var(--color-primary));
+}
+
+.forum-chat-send-btn:disabled {
+    background: transparent;
+    color: var(--color-muted);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.forum-chat-input-field {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none !important;
+    outline: none !important;
+    color: var(--color-fg);
+    font-size: 0.875rem;
+    line-height: 1.4;
+    padding: var(--space-1_5) var(--space-2);
+}
+
+.forum-chat-input-field::placeholder {
+    color: var(--color-muted);
+}
+
+/* Opens one line tall and grows with the text up to a cap (FeedView measures
+   it on input). Without the explicit height a <textarea> claims its two-row
+   default, which left the + and send buttons hanging below the first line. */
+.forum-chat-textarea {
+    resize: none;
+    height: 2rem;
+    min-height: 2rem;
+    max-height: 7rem;
+    overflow-y: auto;
+}
+
+/* Attach / invite menu — a floating surface, so this is one of the few places
+   that genuinely earns a shadow. */
+.forum-attach-menu {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    z-index: var(--z-dropdown);
+    width: 16rem;
+    max-height: 15rem;
+    overflow-y: auto;
+    margin-bottom: var(--space-2);
+    padding: var(--space-1_5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--elevation-3);
+    animation: menu-surface-in var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-attach-menu__label {
+    margin: 0;
+    padding: var(--space-1_5) var(--space-2);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.forum-attach-menu__label + .forum-attach-menu__item {
+    margin-top: var(--space-0_5);
+}
+
+.forum-attach-menu__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: 2rem;
+    padding: var(--space-1_5) var(--space-2);
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-fg);
+    font-size: 0.8125rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-attach-menu__item:hover {
+    background: var(--color-surface-hover);
+}
+
+.forum-attach-menu__item span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forum-attach-menu__item--accent {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Attached-team chip above the composer. A fill, not an outline: it lives in a
+   stack that already reads as one block. */
 .forum-attached-team-preview {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    background: var(--color-success-soft, rgba(52, 211, 153, 0.1));
-    border: 1px solid var(--color-success);
+    padding: var(--space-1_5) var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-success) 12%, var(--color-surface));
     color: var(--color-success);
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 500;
+}
+
+.forum-attached-team-preview span {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .forum-attached-team-preview button {
+    display: inline-flex;
+    flex-shrink: 0;
     color: var(--color-muted);
     background: transparent;
     border: none;
     cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-smooth);
 }
 
 .forum-attached-team-preview button:hover {
     color: var(--color-danger);
 }
 
-/* Topic Creator Form Modal or Inline Card */
+/* --------------------------------------------------------------------------
+   New-topic form
+   -------------------------------------------------------------------------- */
 .forum-new-topic-card {
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
-    padding: var(--space-4);
+    padding: var(--space-5);
+    animation: fade-in var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-new-topic-head {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
     gap: var(--space-3);
-    animation: scale-in var(--duration-fast) var(--ease-smooth);
 }
 
 .forum-new-topic-title {
-    font-size: 1rem;
-    font-weight: 700;
     margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-fg);
+}
+
+.forum-new-topic-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-new-topic-close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
 }
 
 .forum-new-topic-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
 }
 
-/* General Chat Card styling (for HomeView) */
+.forum-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+/* Sentence case. A caps label is the loudest thing on a form it only meant to
+   organise. */
+.forum-field__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.forum-field select,
+.forum-editor-textarea {
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    padding: var(--space-2) var(--space-3);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    outline: none;
+    transition: border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-field select:focus,
+.forum-editor-textarea:focus {
+    border-color: var(--color-primary);
+}
+
+.forum-editor-textarea {
+    min-height: 7rem;
+    resize: vertical;
+}
+
+.forum-editor-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.forum-editor-actions__group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* --------------------------------------------------------------------------
+   Right rail
+   -------------------------------------------------------------------------- */
+.forum-right-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.forum-right-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    padding: var(--space-4);
+}
+
+.forum-right-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.forum-right-card__title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-fg);
+}
+
+.forum-right-card__desc {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forum-right-card__text {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.forum-right-team-slots {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--space-1_5);
+    width: 100%;
+}
+
+.forum-right-team-slot {
+    aspect-ratio: 1;
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.forum-right-team-sprite {
+    width: 88%;
+    height: 88%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* --------------------------------------------------------------------------
+   Teams-topic notice — a self-dismissing heads-up in the topic list.
+   -------------------------------------------------------------------------- */
+.teams-topic-notice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    padding: var(--space-4) var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-primary-soft);
+}
+
+.teams-topic-notice__emote {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-primary);
+}
+
+.teams-topic-notice__text {
+    margin: 0;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: var(--color-fg);
+}
+
+.teams-topic-notice__close {
+    position: absolute;
+    top: var(--space-1_5);
+    right: var(--space-1_5);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.teams-topic-notice__close:hover {
+    color: var(--color-fg);
+}
+
+/* --------------------------------------------------------------------------
+   Home timeline reuse. The Home rail renders its own row markup but shares this
+   file's quote chip, composer and invite card, so these classes stay.
+   -------------------------------------------------------------------------- */
 .home-forum-chat-card-wrapper {
     background: transparent !important;
     border: none !important;
@@ -820,145 +1283,16 @@
 .home-forum-chat-card {
     display: flex;
     flex-direction: column;
-    height: 480px;
+    height: 30rem;
 }
 
 .home-forum-chat-messages {
     flex: 1;
     overflow-y: auto;
-    padding: var(--space-3) var(--space-3) var(--space-3) 0;
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
-}
-
-.home-forum-chat-messages .forum-message-item {
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-2) var(--space-2_5);
-    margin-bottom: var(--space-1_5);
-    gap: var(--space-2);
-    box-shadow: var(--elevation-1);
-    transition: border-color var(--duration-fast) var(--ease-smooth);
-}
-
-.home-forum-chat-messages .forum-message-item:hover {
-    border-color: var(--color-border-hover);
-}
-
-.home-forum-chat-messages .forum-message-item:last-child {
-    margin-bottom: 0;
-}
-
-.home-forum-chat-messages .forum-message-avatar {
-    width: 24px;
-    height: 24px;
-}
-
-.home-forum-chat-messages .forum-message-avatar img {
-    width: 30px;
-    height: 24px;
-}
-
-.home-forum-chat-messages .forum-message-bubble {
-    background: transparent;
-    padding: var(--space-0_5) 0 0 0;
-    border-radius: 0;
-}
-
-.home-forum-chat-messages .forum-message-bubble::after,
-.home-forum-chat-messages .forum-message-bubble::before {
-    display: none;
-}
-
-.home-forum-chat-messages .forum-message-author {
-    font-size: 0.75rem;
-}
-
-.home-forum-chat-messages .forum-message-text {
-    font-size: 0.75rem;
-    line-height: 1.4;
-}
-
-.home-forum-chat-messages .forum-message-time {
-    font-size: 0.65rem;
-}
-
-/* Compact Shared Team Card on Home */
-.home-forum-chat-messages .forum-team-share-card.compact-row {
-    margin-top: var(--space-1_5);
-    max-width: 100%;
-    width: 100%;
-    border-radius: var(--radius-sm);
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: var(--space-1) var(--space-2);
-    gap: var(--space-2);
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-}
-
-.home-forum-chat-messages .forum-team-share-left {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    flex: 1;
-    min-width: 0;
-}
-
-.home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-title {
-    font-size: 0.7rem;
-    color: var(--color-fg);
-    margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 90px;
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    font-weight: 600;
-}
-
-.home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-slots {
-    display: flex;
-    flex-direction: row;
-    gap: var(--space-0_5);
-    padding: 0;
-}
-
-.home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-slot {
-    width: 22px;
-    height: 22px;
-    aspect-ratio: 1;
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-sprite {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    image-rendering: pixelated;
-}
-
-.home-forum-chat-messages .forum-team-share-card.compact-row .import-btn-compact {
-    padding: var(--space-0_5) var(--space-2);
-    height: 22px;
-    font-size: 0.65rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    border-radius: var(--radius-sm);
-    flex-shrink: 0;
+    padding: var(--space-3) var(--space-3) var(--space-3) 0;
 }
 
 .home-forum-chat-header {
@@ -971,89 +1305,43 @@
 }
 
 .home-forum-chat-title {
-    font-size: 0.875rem;
-    font-weight: 700;
-    color: var(--color-fg);
-    margin: 0;
     display: flex;
     align-items: center;
     gap: var(--space-1_5);
-}
-
-/* Right Sidebar styling */
-.forum-right-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    height: 100%;
-}
-
-.forum-right-card {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    padding: var(--space-3) var(--space-3_5);
-    display: flex;
-    flex-direction: column;
-    box-shadow: var(--elevation-1);
-}
-
-.forum-right-card__header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-1_5);
-}
-
-.forum-right-card__title {
-    font-size: 0.75rem;
+    margin: 0;
+    font-size: 0.875rem;
     font-weight: 600;
-    letter-spacing: 0;
     color: var(--color-fg);
 }
 
-.forum-right-card__desc {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--color-muted);
-}
-
-.forum-right-team-slots {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: var(--space-1);
+/* The rail is one column wide: an invite's status and action own their own
+   line there, whatever the viewport is doing. */
+.home-forum-chat-messages .forum-invite-card__action {
+    margin-left: 0;
     width: 100%;
-    margin-top: var(--space-2);
+    justify-content: flex-end;
 }
 
-.forum-right-team-slot {
-    aspect-ratio: 1;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface-raised);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+.home-forum-chat-messages .forum-invite-card__status {
+    margin-right: auto;
 }
 
-.forum-right-team-sprite {
-    width: 90%;
-    height: 90%;
-    object-fit: contain;
-    image-rendering: pixelated;
-}
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
 
-/* Responsive columns: Left (Top topics), Center (Thread), Right (Active team) */
-@media (min-width: 1200px) {
+/* Desktop: topics beside the thread. */
+@media (min-width: 1024px) {
     .forum-view {
-        grid-template-columns: minmax(240px, 0.65fr) minmax(0, 1.35fr) minmax(250px, 0.65fr);
-        height: calc(100vh - 8rem);
+        grid-template-columns: minmax(17rem, 0.75fr) minmax(0, 1.25fr);
         align-items: stretch;
     }
+}
 
-    .forum-right-sidebar {
-        display: flex;
+/* Wide desktop: the arsenal rail joins. */
+@media (min-width: 1200px) {
+    .forum-view {
+        grid-template-columns: minmax(15rem, 0.65fr) minmax(0, 1.35fr) minmax(16rem, 0.65fr);
     }
 }
 
@@ -1063,29 +1351,10 @@
     }
 }
 
-/* ==========================================================================
-   MOBILE & TABLET VIEWS (FIXED HEIGHT & INTERNAL SCROLLING)
-   ========================================================================== */
+/* Phone and tablet: the page itself never scrolls — the panes do. */
 @media (max-width: 1023px) {
-
-    /* Prevent the outer page wrapper from scrolling on feed page */
     .app-shell__content:has(.forum-view) {
         overflow-y: hidden;
-    }
-
-    /* The feed fills whatever the shell leaves it, through the layout, instead
-       of guessing its height. `calc(100dvh - 5.75rem)` guessed wrong twice: it
-       never subtracted the tab bar, so the composer sat 56px *under* it with no
-       way to scroll to it (measured at 390×844), and in an iOS home-screen app
-       `dvh` also counts the status bar. Here the scroller's own padding already
-       reserves the tab bar, the header takes its band, and body → page frame →
-       feed each take the rest with `flex: 1 1 0; min-height: 0`. */
-    .app-shell__content:has(.forum-view) .app-shell__body,
-    .app-shell__content:has(.forum-view) .app-shell__page-frame {
-        display: flex;
-        flex-direction: column;
-        flex: 1 1 0;
-        min-height: 0;
     }
 
     .app-shell__content:has(.forum-view) .app-shell__body {
@@ -1093,38 +1362,23 @@
     }
 
     .forum-view {
-        flex: 1 1 0;
-        min-height: 0;
-        overflow: hidden;
-        gap: var(--space-2);
+        gap: var(--space-3);
     }
 }
 
-/* Tablet: Side-by-side view (640px to 1023px) */
+/* Tablet: side by side, narrower list. */
 @media (min-width: 640px) and (max-width: 1023px) {
     .forum-view {
-        grid-template-columns: 220px 1fr;
+        grid-template-columns: 14rem minmax(0, 1fr);
         align-items: stretch;
-    }
-
-    .forum-sidebar {
-        height: 100%;
-    }
-
-    .forum-main {
-        height: 100%;
-        min-height: 0;
     }
 }
 
-/* True mobile (< 640px): two screens, not two bands of one screen.
-   A phone used to get a fixed 175px navigation block pinned above the
-   conversation — title row, search, category chips and an 85px topic list that
-   showed two rows and gave no sign it scrolled — leaving barely half the screen
-   for the thread it was there to reach. Below 640px the sidebar and the thread
-   are now separate panes and exactly one is on screen, which is what every
-   other forum on a phone does: a list you can actually read, and a thread that
-   owns the full height. `.forum-main__back` is the way between them. */
+/* True mobile (< 640px): two screens, not two bands of one screen. Stacking the
+   desktop columns spent ~23% of the screen on navigation *while reading a
+   thread* (docs/wounds.md, 2026-09-10). `.forum-main__back` is the way between
+   them; hiding a pane resets its scrollTop, which `useChatAutoScroll`'s pinKey
+   answers. */
 @media (max-width: 639px) {
     .forum-view {
         display: flex;
@@ -1138,34 +1392,27 @@
 
     .forum-sidebar,
     .forum-main {
-        flex: 1;
+        flex: 1 1 0;
         min-height: 0;
-        height: auto;
-        overflow: hidden;
     }
 
-    /* The list is the whole screen now, so its rows can be a comfortable size
-       rather than the 85px-band compression they were squeezed into. */
-    .forum-topics-list {
-        max-height: none;
-        gap: var(--space-0_5);
-    }
-
+    /* The list is the whole screen now, so its rows can be thumb-sized. */
     .forum-topic-card {
-        padding: var(--space-2_5) var(--space-2);
         min-height: 2.75rem;
+        padding-block: var(--space-2_5);
     }
 
     .forum-topic-card__title {
         font-size: 0.875rem;
     }
 
+    /* The chips scroll as one row rather than wrapping into a second band that
+       pushes the list down the screen. */
     .forum-categories {
         flex-wrap: nowrap;
         overflow-x: auto;
-        padding-bottom: var(--space-1);
-        -webkit-overflow-scrolling: touch;
         scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
     }
 
     .forum-categories::-webkit-scrollbar {
@@ -1175,37 +1422,30 @@
     .forum-category-btn {
         flex-shrink: 0;
         min-height: 2rem;
-        padding: var(--space-1) var(--space-3);
     }
 
-    /* The thread header is the only route back to the list, so the control is
-       real and thumb-sized rather than an edge gesture. */
     .forum-main__back {
         display: inline-flex;
-    }
-
-    .forum-main__header {
-        gap: var(--space-2);
-        padding-block: var(--space-1) var(--space-2_5);
     }
 
     .forum-main__title {
         font-size: 1rem;
     }
 
-    /* The message list runs to the pane edge on a phone — an inset gutter on a
-       390px screen is width the text needed. */
-    .forum-message-list {
-        padding: var(--space-3) 0;
-        gap: var(--space-3_5);
+    /* Every band runs to the pane edge on a phone — an inset gutter on a 390px
+       screen is width the text needed. */
+    .forum-view {
+        --forum-rail: 0px;
     }
 
-    /* Room for a thumb. These were 20px tall (0.5 × --space-0_5 padding on
-       11px text), which is half of what a tap target needs. */
+    .forum-message-item {
+        padding-block: var(--space-3_5);
+    }
+
+    /* Room for a thumb. */
     .forum-msg-action {
         min-height: 2rem;
-        padding: var(--space-1) var(--space-2_5);
-        font-size: 0.75rem;
+        padding: 0 var(--space-3);
     }
 
     .forum-msg-action--icon {
@@ -1213,153 +1453,24 @@
         padding: 0;
     }
 
-}
-
-/* Home general chat mobile layout adaptations */
-@media (max-width: 768px) {
-    .home-forum-chat-messages {
-        overflow-x: hidden !important;
+    /* An invite's status and action get their own line: the head has no room
+       for a second column at this width. The status keeps the left edge and the
+       control the right, so a lone Accept button lands where a control belongs
+       instead of drifting to the middle of an empty row. */
+    .forum-team-share-action,
+    .forum-invite-card__action {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-end;
     }
 
-    .forum-message-bubble {
-        min-width: 0 !important;
-        overflow-x: hidden !important;
+    .forum-invite-card__status {
+        margin-right: auto;
     }
 
-    /* Stack title and slots on compact shared team card to fit bubble */
-    .home-forum-chat-messages .forum-team-share-left {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: var(--space-1) !important;
-        width: 100% !important;
-    }
-
-    .home-forum-chat-messages .forum-team-share-card.compact-row {
-        align-items: center !important;
-        padding: var(--space-1_5) var(--space-2) !important;
-        gap: var(--space-1_5) !important;
-    }
-
-    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-title {
-        max-width: 100% !important;
-    }
-
-    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-slots {
-        gap: var(--space-0_5) !important;
-    }
-
-    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-slot {
-        width: 20px !important;
-        height: 20px !important;
-    }
-
-    .home-forum-chat-messages .forum-team-share-card.compact-row .forum-team-share-sprite {
-        width: 18px !important;
-        height: 18px !important;
-    }
-}
-
-/* ==========================================================================
-   MODERN UNIFIED MESSAGING INPUT BAR
-   ========================================================================== */
-.forum-chat-input-wrapper {
-    display: flex;
-    align-items: center;
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-full, 9999px);
-    padding: var(--space-1);
-    gap: var(--space-1);
-    width: 100%;
-    transition: border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
-}
-
-.forum-chat-input-wrapper:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
-}
-
-.forum-chat-attach-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.85rem;
-    height: 1.85rem;
-    border-radius: 50%;
-    background: transparent;
-    border: none;
-    color: var(--color-muted);
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
-}
-
-.forum-chat-attach-btn:hover {
-    background: var(--color-surface);
-    color: var(--color-primary);
-}
-
-.forum-chat-input-field {
-    flex: 1;
-    background: transparent;
-    border: none !important;
-    outline: none !important;
-    color: var(--color-fg);
-    font-size: 0.8125rem;
-    padding: var(--space-1_5) var(--space-2);
-    height: 1.85rem;
-    width: 100%;
-}
-
-.forum-chat-input-field::placeholder {
-    color: var(--color-muted);
-    opacity: 0.8;
-}
-
-.forum-chat-textarea {
-    resize: none;
-    height: auto;
-    min-height: 1.85rem;
-    max-height: 6rem;
-    padding: var(--space-1_5) var(--space-2);
-    line-height: 1.25;
-}
-
-.forum-chat-send-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.85rem;
-    height: 1.85rem;
-    border-radius: 50%;
-    background: var(--color-primary);
-    border: none;
-    color: var(--color-on-primary);
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
-}
-
-.forum-chat-send-btn:hover {
-    background: color-mix(in srgb, var(--color-primary) 85%, #ffffff);
-    transform: scale(1.04);
-}
-
-.forum-chat-send-btn:disabled {
-    background: transparent;
-    color: var(--color-muted);
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-}
-
-/* The composer is the one control on the thread screen that is always
-   reachable, so on a phone it gets full-size targets and room for the 16px
-   field the iOS zoom guard already forces — the 1.85rem box was cropping it.
-   This block lives at the end of the file deliberately: the base .forum-chat-*
-   rules below the mobile section would otherwise win at equal specificity. */
-@media (max-width: 639px) {
-    .forum-chat-input-wrapper {
-        padding: var(--space-1_5);
-        gap: var(--space-1_5);
+    .forum-new-topic-card {
+        padding: var(--space-4);
+        gap: var(--space-4);
     }
 
     .forum-chat-attach-btn,
@@ -1367,85 +1478,10 @@
         width: 2.25rem;
         height: 2.25rem;
     }
-
-    .forum-chat-input-field {
-        height: 2.25rem;
-    }
 }
 
-/* ==========================================================================
-   SHARED POKÉPUZZLE BOARD
-   A result posted into a thread: header, then the board with the play action
-   beside it. The card hugs its board instead of spanning the message, because
-   a 7-tile row stretched across a full-width surface reads as a stray progress
-   bar rather than a puzzle.
-
-   Three played states plus a fourth for an attempt never taken — played-but-
-   wrong sits darker than untouched, so the filled part of the board is what
-   the eye counts. The game's own tiles (.pokepuzzle-share-preview-tile) share
-   these tokens but not these sizes: that preview is a denser context, and
-   pokepuzzle-view.css is not loaded on the feed.
-   ========================================================================== */
-.forum-team-share-card--puzzle {
-    width: fit-content;
-    max-width: 100%;
-}
-
-.puzzle-share-body {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    /* Wraps so a long answer on a narrow phone drops the action below the board
-       instead of pushing it under the card's overflow: hidden. */
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    padding: var(--space-3);
-}
-
-.puzzle-share-grid {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-0_5);
-}
-
-.puzzle-share-grid__row {
-    display: flex;
-    gap: var(--space-0_5);
-}
-
-.puzzle-share-grid__cell {
-    width: 1rem;
-    height: 1rem;
-    border-radius: var(--radius-sm);
-    background: var(--color-border);
-}
-
-.puzzle-share-grid__cell.is-correct {
-    background: var(--color-success);
-}
-
-.puzzle-share-grid__cell.is-present {
-    background: var(--color-warning);
-}
-
-.puzzle-share-grid__cell.is-pending {
-    background: color-mix(in srgb, var(--color-border) 45%, transparent);
-}
-
-/* The play action: a fill and the accent colour, no border of its own inside the
-   card's. Scoped to the card so it outranks .btn-ghost's transparent background
-   without depending on which stylesheet loads last. */
-.forum-team-share-card--puzzle .puzzle-share-play {
-    background: var(--color-surface-raised);
-    color: var(--color-primary);
-}
-
-.forum-team-share-card--puzzle .puzzle-share-play:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-}
-
-/* Touch: message actions are 28px pills a --space-1_5 apart. On a coarse pointer
-   each gets an invisible hit area a full --space-2 taller and only --space-0_5
+/* Touch: message actions are pills a --space-2 apart. On a coarse pointer each
+   gets an invisible hit area taller than the control and only --space-0_5
    wider, so neighbours still meet rather than overlap. Visual size unchanged. */
 @media (pointer: coarse) {
     .forum-msg-action {
