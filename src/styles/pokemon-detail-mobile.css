@@ -345,34 +345,7 @@
     color: var(--color-muted);
 }
 
-/* ── Type pills (canon type colours) ───────────────────────── */
-
-.pdm-typepill {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    padding-block: var(--space-1);
-    padding-inline: var(--space-2_5);
-    border-radius: var(--radius-full);
-    background: var(--pdm-pill, var(--color-surface-raised));
-    /* White ink on a type colour is the canon pairing and correct in every
-       theme, like .type-badge--* in index.css. */
-    color: #fff;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: capitalize;
-    white-space: nowrap;
-}
-
-.pdm-typepill img {
-    width: 0.95rem;
-    height: 0.95rem;
-}
-
-.pdm-typepill--sm {
-    padding-inline: var(--space-2);
-    font-size: 0.6875rem;
-}
+/* ── Type chips ────────────────────────────────────────────── */
 
 .pdm-pills {
     display: flex;
@@ -535,9 +508,11 @@
     padding-block: var(--space-0_5);
     padding-inline: var(--space-1_5);
     border-radius: var(--radius-sm);
-    /* Version colours are canon game branding, like the type colours above. */
+    /* Version colours are canon game branding, like the type colours above, and
+       are mixed toward the foreground for the same reason: raw "Black 2" ink is
+       invisible on a dark theme. */
     background: color-mix(in srgb, var(--pdm-pill) 18%, transparent);
-    color: var(--pdm-pill);
+    color: color-mix(in srgb, var(--pdm-pill) 70%, var(--color-fg));
     font-size: 0.625rem;
     font-weight: 700;
 }

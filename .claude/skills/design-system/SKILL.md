@@ -136,6 +136,31 @@ The temptation is to add. Calm comes from subtracting.
 - **Don't stack de-emphasis.** `opacity: 0.5` on top of `--color-muted` pushes
   text to the edge of legibility. Muted color alone is the de-emphasis.
 
+## Canon colours (types, game versions)
+
+Pokémon type colours and game-version colours are the documented exception to "never
+write a raw colour" — they are canon and theme-independent. That exemption covers the
+*value*, not the *rule you build with it*: a canon colour arrives as a custom property
+and is **mixed into theme tokens**, never applied raw as ink.
+
+The standard is `.type-chip` (`index.css`, via the `TypeChip` component) — icon +
+label, outlined and tinted in the type's own colour:
+
+```css
+border:     1px solid color-mix(in srgb, var(--type-chip) 45%, transparent);
+background: color-mix(in srgb, var(--type-chip) 14%, transparent);
+color:      color-mix(in srgb, var(--type-chip) 45%, var(--color-fg));
+```
+
+Reuse those three mixes for any other canon-coloured chip. The label mix is the load-
+bearing one: mixing toward `--color-fg` darkens it on the light themes and lightens it
+on the dark ones, so one rule survives all six. It is measured — at 45% the worst of
+the 18 types clears 4.5:1 everywhere; at 70% `electric` scored 2.78:1 on `light` and
+raw `#705746` (dark) is illegible on any dark theme. **Never set a canon colour as
+`color:` directly.**
+
+Solid-fill `.type-badge--*` stays for dense grids where a type is counted, not read.
+
 ## Type
 
 **Do not change the typeface.** Inter for everything, JetBrains Mono for numbers

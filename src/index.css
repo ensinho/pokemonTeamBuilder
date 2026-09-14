@@ -746,6 +746,57 @@ input[type='checkbox']:checked + div + div {
 .type-badge--unknown  { background-color: #777777; color: #fff; }
 .type-badge--shadow   { background-color: #3D3D8F; color: #fff; }
 /* ============================================================
+   POKÉMON TYPE CHIP
+   The standard way to *name* a type (detail screens, matchup
+   lists, move rows): icon + label, outlined and tinted in the
+   type's own colour. Use via the TypeChip component; the badge
+   above stays for dense grids where the type is counted, not read.
+
+   The canonical colour arrives inline as --type-chip and is mixed
+   into theme tokens here rather than used raw, so the label keeps
+   its contrast on all six themes: mixing toward --color-fg darkens
+   it on the light themes and lightens it on the dark ones. 45% is
+   measured, not chosen: at 70% the pale types (electric 2.78:1, ice
+   2.91:1) failed on `light` and `solar`; at 45% the worst of all 18
+   types clears 4.5:1 in every theme. The hue identity is carried by
+   the icon and the tint — the label only has to be readable.
+   ============================================================ */
+
+.type-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    /* Tighter on the icon side — the icon is a filled circle and needs less
+       breathing room than the label's baseline does. */
+    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+    border: 1px solid color-mix(in srgb, var(--type-chip, var(--color-primary)) 45%, transparent);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--type-chip, var(--color-primary)) 14%, transparent);
+    color: color-mix(in srgb, var(--type-chip, var(--color-primary)) 45%, var(--color-fg));
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.type-chip__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+}
+
+.type-chip--sm {
+    padding-right: var(--space-2_5);
+    font-size: 0.6875rem;
+}
+
+.type-chip--sm .type-chip__icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* ============================================================
    TEXT SIZE CONTROL — interface scale stepper (A− 100% A+)
    Sized in em so it tracks whatever scale it is currently setting.
    ============================================================ */

@@ -6,10 +6,11 @@ import {
 } from 'lucide-react';
 
 import '../../styles/pokemon-detail-mobile.css';
-import { typeColors, typeIcons } from '../../constants/types';
+import { typeColors } from '../../constants/types';
 import { VERSION_CONFIG, formatTmName, formatVersionLabel } from '../../constants/pokemonVersions';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { Sprite } from '../Sprite';
+import { TypeChip } from '../TypeChip';
 import { StatBar } from '../StatBar';
 import { AbilityChip } from '../AbilityChip';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -67,16 +68,6 @@ function Row({ label, value }) {
     );
 }
 
-function TypePill({ type, size = 'md' }) {
-    const { t } = useTranslation();
-    return (
-        <span className={`pdm-typepill pdm-typepill--${size}`} style={{ '--pdm-pill': typeColors[type] }}>
-            {typeIcons[type] && <img src={typeIcons[type]} alt="" aria-hidden="true" />}
-            {t(`types.${type}`, { defaultValue: type })}
-        </span>
-    );
-}
-
 /**
  * The neighbour sliding in from the edge during a swipe. Everything it shows
  * comes from the light index entry (id, name, types) — no fetch, so the peek is
@@ -89,7 +80,7 @@ function PeekHero({ entry, side }) {
                 <p className="pdm__dex">#{String(entry.id).padStart(4, '0')}</p>
                 <h2 className="pdm__name">{cleanName(entry.name)}</h2>
                 <div className="pdm__types">
-                    {(entry.types || []).map((type) => <TypePill key={type} type={type} />)}
+                    {(entry.types || []).map((type) => <TypeChip key={type} type={type} />)}
                 </div>
                 <Sprite
                     className="pdm__art"
@@ -275,7 +266,7 @@ export function MobilePokemonDetailView({
                                         <span className="pdm-defense__mult">{MULTIPLIER_LABEL[group.multiplier]}</span>
                                     </p>
                                     <div className="pdm-pills">
-                                        {group.types.map((type) => <TypePill key={type} type={type} />)}
+                                        {group.types.map((type) => <TypeChip key={type} type={type} />)}
                                     </div>
                                 </div>
                             ))}
@@ -476,7 +467,7 @@ export function MobilePokemonDetailView({
                                                 {move.pp ? ` · ${t('pokedex.movesHeaderPp')} ${move.pp}` : ''}
                                             </span>
                                         </span>
-                                        <TypePill type={move.type} size="sm" />
+                                        <TypeChip type={move.type} size="sm" />
                                     </button>
                                 ))}
                             </div>
@@ -570,7 +561,7 @@ export function MobilePokemonDetailView({
                     <h1 className="pdm__name">{cleanName(identity.name)}</h1>
                     {pokemonGenus && <p className="pdm__genus">{pokemonGenus}</p>}
                     <div className="pdm__types">
-                        {types.map((type) => <TypePill key={type} type={type} />)}
+                        {types.map((type) => <TypeChip key={type} type={type} />)}
                     </div>
 
                     <div className="pdm__stage">
