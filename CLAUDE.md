@@ -92,7 +92,8 @@ Two unauthenticated probes, in order, when battles misbehave in production:
 
 - All client config is via `VITE_*` env vars read in `src/constants/firebase.js` (Firebase config, `VITE_APP_ID`, `VITE_POKEAPI_BASE_URL`, `VITE_ADMIN_EMAILS`, `VITE_ADMIN_EMAIL_ENDPOINT`). `.env` lists the required keys.
 - Admin gating is purely client-side via `ADMIN_EMAILS`; the `/admin` route and serverless function both check it.
-- PWA via `vite-plugin-pwa` (auto-update service worker, runtime caching for sprites + Google Fonts). Sprites load from `raw.githubusercontent.com` (`src/utils/pokemonSprites.js`).
+- PWA via `vite-plugin-pwa` (`registerType: 'prompt'` — the user is *asked* before an update is applied; runtime caching for sprites + Google Fonts). Sprites load from `raw.githubusercontent.com` (`src/utils/pokemonSprites.js`).
+- **The update prompt lives in `src/hooks/useAppUpdate.js`, and nothing else may open it or reload for it.** The generated `sw.js` answers every navigation from its precached `index.html`, so `window.location.reload()` re-serves the build the user is already on — only a handover to the waiting worker (skipWaiting → controllerchange), or unregistering first, actually lands on a new deploy. Detection is the service worker's `registration.update()`, polled while the tab is visible; the `index.html` poll in the same hook is a fallback for pages with no service worker. Adding a second detector re-opens the 2026-09-14 wound (two prompts per release, the first click dead).
 - Styling: Tailwind (`tailwind.config.js`) plus per-view CSS files in `src/styles/`. Theming is multi-theme (`src/constants/theme.js` `THEME_META`) driven by `useThemeStore`; `PATCH_NOTES_VERSION` there gates the patch-notes modal.
 
 ## Agent knowledge base
