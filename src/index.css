@@ -271,10 +271,27 @@
     --card-shadow: 0 1px 2px rgba(0,0,0,0.03);
 }
 
-/* Typography — Inter (Ref 2: shadcn/ui standard) */
+/* Typography — two voices, not one.
+   Inter said nothing: every level of the hierarchy arrived in the same neutral
+   sans, so size and colour carried it alone. The pair below splits the work.
+
+   --font-display is the interface's *structure*: JetBrains Mono on headings,
+   panel titles, eyebrows, nav and tab labels, badges and every figure. Mono is
+   doing a real job there — its fixed advance keeps a column of counts, streaks
+   and percentages aligned, and it reads as chrome, which is what those strings
+   are. It is never set on running prose.
+
+   --font-body is the *content*: Space Grotesk, which has the character Inter
+   deliberately lacks and stays legible down to the 0.6875rem labels this app
+   uses. It is a 300..700 variable font, so a `font-weight: 800` written for
+   Inter clamps to 700 rather than synthesising a fake bold.
+
+   Mono is wide. Display type gets negative tracking back (see the heading rule
+   below) or a mono headline measures noticeably longer than the Inter one it
+   replaces — which is how a font swap silently turns into a layout change. */
 :root {
-    --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
+    --font-body: 'Space Grotesk', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', monospace;
 
     /* Semantic shadow aliases. These resolve against the active theme's
@@ -376,6 +393,40 @@ html,
 body {
     background-color: var(--color-bg);
     color: var(--color-fg);
+}
+
+/* Headings speak in the structural voice. Mono carries a wider advance than the
+   sans it replaced, so the tracking comes back off here — without it a headline
+   set at the same font-size measures ~8% longer and starts wrapping in cards
+   that used to hold it on one line. Scale the correction with the type: a
+   0.75rem eyebrow needs far less of it than a 2rem greeting. */
+h1, h2, h3, h4, h5, h6,
+.font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.045em;
+}
+
+h4, h5, h6 {
+    letter-spacing: -0.03em;
+}
+
+/* Interface chrome — the strings that label the app rather than say anything:
+   panel titles, eyebrows, nav and tab labels, badges, and any figure. These are
+   spans and <p>s in the markup, so the heading rule above cannot reach them.
+   Running prose is never listed here. */
+.hd-panel__title,
+.hd-quick-tile__label,
+.hd-team-row__meta,
+.hd-meta-team-badge,
+.home-panel__eyebrow,
+.home-panel__section-title,
+.home-panel__title,
+.home-profile-fullname,
+.app-shell__tab-label,
+.app-shell__nav-text,
+.app-shell__nav-group-label {
+    font-family: var(--font-display);
+    letter-spacing: -0.03em;
 }
 
 /* Global focus-visible ring (WCAG 2.4.7) */

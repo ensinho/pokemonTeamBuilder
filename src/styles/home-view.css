@@ -2510,9 +2510,13 @@
         flex-direction: column !important;
     }
 
+    /* Fill the column, never measure the screen: a 52vh cap here was a guess
+       about everything above and below it (see the layout scroll invariant in
+       the /design-system skill), and it went stale the moment the left column
+       got shorter — leaving the timeline ending in mid-air. */
     .home-sidebar .home-forum-chat-messages {
         flex: 1 1 0% !important;
-        max-height: 52vh !important;
+        min-height: 0 !important;
     }
 }
 
@@ -2536,38 +2540,55 @@
         display: contents !important;
     }
 
-    /* Mobile-Specific Custom Flex Ordering */
+    /* Mobile flow, top to bottom: who you are, where to go, what expires
+       today, what you were building, your teams, the meta, then everything
+       social. Each block below is a direct child of the flattened column
+       (the columns and .hd-stack are display:contents here), so a single
+       order scale sequences the whole page. */
     .home-readme-panel {
         order: 1 !important;
     }
 
-    .home-shortcuts-sidebar-card {
+    /* Shortcuts — one row of icons, directly under the greeting. */
+    .hd-quick-rail {
         order: 2 !important;
     }
 
-    .home-sidebar-section--daily {
+    /* Daily PokéPuzzle — the only thing on this page that expires today, so it
+       is reached before any competitive or social block. */
+    .hd-puzzle-slot {
         order: 3 !important;
-        /* PokePuzzle comes right below shortcuts */
     }
 
+    /* The team you were last editing. */
     .home-panel--pinned-repo {
         order: 4 !important;
     }
 
-    .home-profile-sidebar-card {
+    /* Your other recent teams. */
+    .hd-panel--continue {
         order: 5 !important;
     }
 
-    .home-sidebar-section-favorites {
+    /* Competitive meta. */
+    .hd-panel--meta {
         order: 6 !important;
     }
 
-    .github-tip-banner {
+    .home-profile-sidebar-card {
         order: 7 !important;
     }
 
-    .home-forum-chat-card-wrapper {
+    .home-sidebar-section-favorites {
         order: 8 !important;
+    }
+
+    .github-tip-banner {
+        order: 9 !important;
+    }
+
+    .home-forum-chat-card-wrapper {
+        order: 10 !important;
     }
 }
 
@@ -2716,5 +2737,62 @@
         content: "";
         position: absolute;
         inset: calc(-1 * var(--space-2));
+    }
+}
+
+/* ==========================================================================
+   DESKTOP: the whole home in one screen
+   ==========================================================================
+   Enzo, on PC: "evitar rolagem na tela de PC". At 1440×900 the column ran
+   265px past the viewport — a scroll whose only reward was the bottom edge of
+   the last panel. Every trim below comes out of an element that was oversized
+   for its job (a 192px partner card holding a 110px sprite, a hero that is
+   mostly wallpaper), never out of the space between panels: squeezing the
+   gaps is how a desktop layout starts reading like the compressed phone one
+   this pass just took apart. Mobile is untouched — these rules start at xl,
+   where the columns stop flattening. */
+@media (min-width: 1280px) {
+    /* --space-4 between four panels spent 51px on air in a budget that was
+       265px short. --space-3 still separates them cleanly. */
+    .home-github-layout,
+    .home-main-col,
+    .home-sidebar {
+        gap: var(--space-3) !important;
+    }
+
+    /* `main.home-view`, not `.home-view`: the element+class beats Tailwind's
+       `pb-6` utility on the same node, which was still adding 25px of gutter
+       under the last panel — bottom padding the app-shell footer band already
+       provides twice over. */
+    /* `main.home-view`, not `.home-view`: the element+class beats Tailwind's
+       `pb-6` utility on the same node, which was still adding 25px of gutter
+       under the last panel — bottom padding the app-shell footer band already
+       provides twice over.
+
+       The page now ends above the fold, leaving background between the last
+       panel and the footer. Left as is on purpose: stretching the columns to
+       eat it needs `.app-shell__body` to become a definite-height flex column,
+       which is shell chrome every other view sits in, and a `height: 100%`
+       against the auto-height parent it has today silently does nothing. */
+    main.home-view {
+        padding-bottom: var(--space-2);
+    }
+
+    /* rem, not px: the old 168×192 opted out of the interface-scale control
+       (--ui-scale works by scaling the root font-size), so the card kept its
+       pixel size while everything around it grew. */
+    .home-partner-card {
+        width: 9rem;
+        height: 7.5rem;
+        padding: var(--space-2);
+    }
+
+    .home-partner-card__sprite-container {
+        height: 4rem;
+    }
+
+    .home-partner-card__sprite {
+        width: 4rem;
+        height: 4rem;
     }
 }

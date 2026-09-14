@@ -3,8 +3,10 @@ import '../styles/home-dashboard.css';
 import { useTournamentData } from '../hooks/useTournamentData';
 import { useMetaUsage } from '../hooks/useMetaUsage';
 import { useTranslation } from '../hooks/useTranslation';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import { maxWidthBelow } from '../constants/breakpoints';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
-import { Flame, Puzzle } from 'lucide-react';
+import { Flame, Folder, Puzzle } from 'lucide-react';
 import { SavedTeamsIcon, SwordsIcon, PokeballIcon } from './icons';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
 import { getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
@@ -13,48 +15,76 @@ import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 const QUICK_LINKS = [
     { key: 'builder',    path: '/builder',    labelKey: 'nav.builder',     icon: <SwordsIcon /> },
     { key: 'pokedex',    path: '/pokedex',    labelKey: 'nav.pokemonList', icon: <PokeballIcon /> },
+    { key: 'teams',      path: '/teams',      labelKey: 'nav.favorites',   icon: <Folder className="w-5 h-5 shrink-0" /> },
     { key: 'pokepuzzle', path: '/pokepuzzle', labelKey: 'nav.pokepuzzle',  icon: <Puzzle className="w-5 h-5 shrink-0" /> },
 ];
 
 export function HomeDashboard({ navigate, puzzleCard }) {
     const { t, language } = useTranslation();
-    const { popular, recent, status } = useTournamentData();
+    const { popular, status } = useTournamentData();
     // Rank the popular row by real Smogon ladder usage for the current regulation
     // (same source as the Meta page), falling back to tournament counts while it loads.
     const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
-    const [activePokemonId, setActivePokemonId] = React.useState(null);
+
+    // Below xl the home columns flatten and HomeView's pinned card — the team
+    // you were last editing — sits directly above this panel. Listing that same
+    // team again here is the page repeating itself, so it drops out of the list
+    // at those widths (at xl the pinned card is hidden and the list carries it).
+    const isFlattened = useMediaQuery(maxWidthBelow('xl'));
 
     // savedTeams already arrives ordered by updatedAt desc from the store's
     // Firestore query, so "recent" is just the head of that list.
-    const { savedTeams } = useFirestoreTeams();
-    const recentTeams = React.useMemo(() => (savedTeams || []).slice(0, 3), [savedTeams]);
+    const { savedTeams, activeTeamId } = useFirestoreTeams();
+    const recentTeams = React.useMemo(() => {
+        const list = savedTeams || [];
+        // Same fallback HomeView uses to resolve the pinned team: the stored id
+        // when it still exists, otherwise the most recent team.
+        const pinnedId = list.some((team) => team.id === activeTeamId) ? activeTeamId : list[0]?.id;
+        const pool = isFlattened ? list.filter((team) => team.id !== pinnedId) : list;
+        return pool.slice(0, 3);
+    }, [savedTeams, activeTeamId, isFlattened]);
+
+    // With no teams at all, HomeView's "Build your first team" card is already
+    // on screen below xl — two stacked empty states both saying "make a team"
+    // is the clutter this pass exists to remove. At xl that card is hidden, so
+    // the empty state here is the only prompt and has to stay.
+    const showContinuePanel = recentTeams.length > 0 || !isFlattened;
 
     const usingMeta = metaRanked.length > 0;
     const topPopular = (usingMeta ? metaRanked : popular).slice(0, 15);
     const isLoading = status === 'loading';
 
-    const handleMouseEnterMon = (id) => {
-        setActivePokemonId(id);
-    };
-
-    const handleMouseLeaveGrid = () => {
-        setActivePokemonId(null);
-    };
-
-    const filteredTeams = React.useMemo(() => {
-        if (!activePokemonId) return recent.slice(0, 2);
-        const matched = recent.filter(team => (team.pokemons || []).some(mon => mon.id === activePokemonId));
-        return matched.length > 0 ? matched.slice(0, 2) : recent.slice(0, 2);
-    }, [recent, activePokemonId]);
-
     return (
         <div className="hd-stack">
-            {/* Continue where you left off. This slot used to hold a 10-tile
-                launcher, but 9 of those 10 pointed at routes the sidebar already
-                lists permanently — a second copy of the nav, a few inches to the
-                right of the first. What belongs on a home screen is the user's
-                own work, so this shows their most recently touched teams. */}
-            <section className="hd-panel">
+            {/* Shortcuts. One row of icons, never a stacked list: three link-rows
+                filling a column was the "broken shelf" — a nav pretending to be
+                content. As a single rail it costs one row of height and reads as
+                a launcher, which is what it is. */}
+            <nav className="hd-quick-rail" aria-label={t('home.shortcuts')}>
+                {QUICK_LINKS.map((l) => (
+                    <button
+                        key={l.key}
+                        type="button"
+                        className="hd-quick-tile"
+                        onClick={() => navigate(l.path)}
+                    >
+                        <span className="hd-quick-tile__icon" aria-hidden="true">{l.icon}</span>
+                        <span className="hd-quick-tile__label">{t(l.labelKey)}</span>
+                    </button>
+                ))}
+            </nav>
+
+            {/* Daily PokéPuzzle — the one thing on this page that expires today,
+                so it sits directly under the shortcuts on mobile. On desktop it
+                renders in the sidebar instead (the wrapper hides it here). */}
+            {puzzleCard && <div className="hd-puzzle-slot xl:hidden">{puzzleCard}</div>}
+
+            {/* Continue where you left off — the user's own work, as compact
+                rows: the roster cluster is the icon, the name is the label. The
+                tall three-across cards this replaces were the right shape for a
+                desktop column and three screenfuls on a phone. */}
+            {showContinuePanel && (
+            <section className="hd-panel hd-panel--continue">
                 <div className="hd-panel__head">
                     <span className="hd-panel__title"><SavedTeamsIcon className="w-4 h-4" /> {t('home.continueTitle')}</span>
                     {recentTeams.length > 0 && (
@@ -63,260 +93,120 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                         </button>
                     )}
                 </div>
-                {/* Two shapes, because the panel has two jobs. With saved teams
-                    the work leads and the shortcuts sit beside it as a quiet
-                    aside. With none, there is nothing to continue — so the
-                    shortcuts become the content and the panel's job is simply
-                    to send you somewhere. */}
                 {recentTeams.length === 0 ? (
                     <div className="hd-panel__body hd-continue-start">
                         <p className="hd-continue-start__title">{t('home.continueEmptyTitle')}</p>
                         <p className="hd-continue-start__body">{t('home.continueEmptyBody')}</p>
-                        <div className="hd-continue-start__links">
-                            {QUICK_LINKS.map((l) => (
-                                <button
-                                    key={l.key}
-                                    type="button"
-                                    className="hd-quick-link hd-quick-link--lead"
-                                    onClick={() => navigate(l.path)}
-                                >
-                                    <span className="hd-quick-link__icon" aria-hidden="true">{l.icon}</span>
-                                    <span className="hd-quick-link__label">{t(l.labelKey)}</span>
-                                </button>
-                            ))}
-                        </div>
+                        <button
+                            type="button"
+                            className="hd-continue-start__cta"
+                            onClick={() => navigate('/builder')}
+                        >
+                            <SwordsIcon />
+                            <span>{t('home.continueEmptyCta')}</span>
+                        </button>
                     </div>
                 ) : (
-                    <div className="hd-panel__body hd-continue-split">
-                        <div className="hd-continue-main">
-                            <div className="hd-continue-grid">
-                                {recentTeams.map((team) => {
-                                    const members = team.pokemons || [];
-                                    return (
-                                        <button
-                                            key={team.id}
-                                            type="button"
-                                            className="hd-continue-card"
-                                            onClick={() => navigate(`/teams/${team.id}`)}
-                                        >
-                                            <span className="hd-continue-card__name">{team.name}</span>
-                                            <span className="hd-continue-card__meta">
-                                                {members.length} {members.length === 1 ? t('home.continueMember') : t('home.continueMembers')}
-                                            </span>
-                                            <span className="hd-continue-card__roster">
-                                                {members.slice(0, 6).map((mon, i) => (
-                                                    <img
-                                                        key={mon.instanceId || `${team.id}-${mon.id}-${i}`}
-                                                        src={getTeamPokemonDisplaySprite(mon)}
-                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                        alt=""
-                                                        aria-hidden="true"
-                                                    />
-                                                ))}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className="hd-continue-aside">
-                            <p className="hd-continue-aside__label">{t('home.continueJumpTo')}</p>
-                            <div className="hd-continue-links">
-                                {QUICK_LINKS.map((l) => (
+                    <ul className="hd-continue-list">
+                        {recentTeams.map((team) => {
+                            const members = (team.pokemons || []).filter(Boolean);
+                            const memberLabel = `${members.length} ${members.length === 1 ? t('home.continueMember') : t('home.continueMembers')}`;
+                            return (
+                                <li key={team.id}>
                                     <button
-                                        key={l.key}
                                         type="button"
-                                        className="hd-quick-link"
-                                        onClick={() => navigate(l.path)}
+                                        className="hd-team-row"
+                                        onClick={() => navigate(`/teams/${team.id}`)}
+                                        aria-label={`${team.name} — ${memberLabel}`}
                                     >
-                                        <span className="hd-quick-link__icon" aria-hidden="true">{l.icon}</span>
-                                        <span className="hd-quick-link__label">{t(l.labelKey)}</span>
+                                        <span className="hd-team-row__roster" aria-hidden="true">
+                                            {members.slice(0, 6).map((mon, i) => (
+                                                <img
+                                                    key={mon.instanceId || `${team.id}-${mon.id}-${i}`}
+                                                    src={getTeamPokemonDisplaySprite(mon)}
+                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    alt=""
+                                                    loading="lazy"
+                                                />
+                                            ))}
+                                        </span>
+                                        <span className="hd-team-row__name">{team.name}</span>
+                                        {/* The count rides the right edge as a
+                                            figure, not a sentence — the row is
+                                            one line and the word is in the
+                                            button's label for screen readers. */}
+                                        <span className="hd-team-row__meta" aria-hidden="true">{members.length}/6</span>
                                     </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
                 )}
             </section>
+            )}
 
-            {/* Daily PokéPuzzle teaser — featured right below the shortcuts on
-                mobile only; on desktop it renders in the sidebar instead. */}
-            {puzzleCard && <div className="xl:hidden">{puzzleCard}</div>}
-
-            {/* Loading skeletons while the tournament + Pokémon dataset loads */}
+            {/* Loading skeleton while the tournament + Pokémon dataset loads */}
             {isLoading && (
-                <section className="hd-panel">
+                <section className="hd-panel hd-panel--meta">
                     <div className="hd-panel__head">
-                        <span className="hd-panel__title"><Flame className="w-4 h-4" /> {language === 'pt' ? 'VGC Meta & Equipes' : 'VGC Meta & Teams'}</span>
+                        <span className="hd-panel__title"><Flame className="w-4 h-4" /> VGC Meta</span>
                     </div>
-                    <div className="hd-panel__body space-y-4">
-                        <div>
-                            <div className="hd-meta-mons-grid">
-                                {Array.from({ length: 10 }).map((_, i) => (
-                                    <div key={i} className="hd-skel-mon-btn" aria-hidden="true">
-                                        <span className="hd-skel hd-skel-mon-icon" />
-                                        <span className="hd-skel hd-skel-mon-name" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        <div className="border-t border-border pt-4">
-                            <div className="hd-meta-teams-list">
-                                {Array.from({ length: 2 }).map((_, i) => (
-                                    <div key={i} className="hd-skel-team-row" aria-hidden="true">
-                                        <div className="hd-skel-team-info">
-                                            <span className="hd-skel hd-skel-team-player" />
-                                            <span className="hd-skel hd-skel-team-meta" />
-                                        </div>
-                                        <div className="hd-skel-team-roster">
-                                            {Array.from({ length: 6 }).map((__, j) => (
-                                                <span key={j} className="hd-skel hd-skel-roster-icon" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    <div className="hd-panel__body">
+                        <div className="hd-meta-mons-grid">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="hd-skel-mon-btn" aria-hidden="true">
+                                    <span className="hd-skel hd-skel-mon-icon" />
+                                    <span className="hd-skel hd-skel-mon-name" />
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </section>
             )}
 
-            {/* Fused VGC Meta & Teams Panel */}
-            {status === 'ready' && (topPopular.length > 0 || recent.length > 0) && (
-                <section className="hd-panel" onMouseLeave={handleMouseLeaveGrid}>
+            {/* VGC meta — a pulse, not a page. One rail of the Pokémon the
+                ladder is actually playing, and a tap goes to that Pokémon's
+                usage. The tournament-team list that used to sit under it was
+                the single tallest thing on Home: it pushed the desktop layout
+                past the viewport, and its hover-to-filter was never reachable
+                on a touch screen at all. The teams live on /tournaments, one
+                click away under "View all". */}
+            {status === 'ready' && topPopular.length > 0 && (
+                <section className="hd-panel hd-panel--meta">
                     <div className="hd-panel__head">
                         <span className="hd-panel__title">
-                            <Flame className="w-4 h-4 text-warning" /> {language === 'pt' ? 'VGC Meta & Equipes de Torneio' : 'VGC Meta & Tournament Teams'}
+                            <Flame className="w-4 h-4 text-warning" /> VGC Meta
                         </span>
                         <button type="button" className="hd-panel__link" onClick={() => navigate('/tournaments')}>
                             {t('home.viewAll')}
                         </button>
                     </div>
-                    <div className="hd-panel__body space-y-4">
-                        {/* Popular Mons Icon Row - Grid style, no scroll */}
-                        <div>
-                            <p className="text-[13px] text-muted font-medium mb-2.5">
-                                {language === 'pt' ? 'Pokémon Populares ' : 'Popular Pokémon '}
-                                <span className="hidden sm:inline">{language === 'pt' ? '(Passe o mouse para filtrar)' : '(Hover to filter)'}</span>
-                                <span className="sm:hidden">{language === 'pt' ? '(Toque para filtrar)' : '(Tap to filter)'}</span>
-                                {usingMeta && metaFormat?.label && <span className="ml-1 normal-case text-primary">· {metaFormat.label}</span>}
-                            </p>
-                            <div className="hd-meta-mons-grid">
-                                {topPopular.slice(0, 10).map((mon) => (
-                                    <button 
-                                        key={mon.id} 
-                                        type="button" 
-                                        className={`hd-meta-mon-btn ${activePokemonId === mon.id ? 'is-active' : ''}`}
-                                        onMouseEnter={() => handleMouseEnterMon(mon.id)}
-                                        onClick={() => setActivePokemonId(activePokemonId === mon.id ? null : mon.id)}
-                                        title={(mon.name || '').replace(/-/g, ' ')}
-                                    >
-                                        <div className="hd-meta-mon-icon-wrap">
-                                            <img src={getPokemonFrontSpriteUrl(mon.id)} alt="" aria-hidden="true" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                                            <span className="hd-meta-mon-badge" title={usingMeta ? (language === 'pt' ? 'uso no ladder' : 'ladder usage') : (language === 'pt' ? 'aparições' : 'appearances')}>{usingMeta ? `${mon.count}%` : mon.count}</span>
-                                        </div>
-                                        <span className="hd-meta-mon-name">{(mon.name || '').replace(/-/g, ' ')}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Filtered Team List */}
-                        <div className="border-t border-border pt-4">
-                            <div className="flex justify-between items-center mb-3">
-                                <p className="text-[13px] text-muted font-medium">
-                                    {activePokemonId ? (
-                                        <span>
-                                            {language === 'pt' 
-                                                ? `Equipes com ${formatPokemonDisplayName((topPopular.find(p => p.id === activePokemonId) || popular.find(p => p.id === activePokemonId))?.name)}` 
-                                                : `Teams with ${formatPokemonDisplayName((topPopular.find(p => p.id === activePokemonId) || popular.find(p => p.id === activePokemonId))?.name)}`
-                                            }
-                                        </span>
-                                    ) : (
-                                        <span>{language === 'pt' ? 'Equipes Recentes VGC' : 'Recent VGC Teams'}</span>
-                                    )}
-                                </p>
-                                {activePokemonId && (
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setActivePokemonId(null)}
-                                        className="text-[9px] text-primary hover:underline font-bold uppercase tracking-wider"
-                                    >
-                                        {language === 'pt' ? 'Limpar Filtro' : 'Clear Filter'}
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="hd-meta-teams-list">
-                                {filteredTeams.length === 0 ? (
-                                    <div className="hd-meta-teams-empty text-center py-6 text-muted text-xs font-mono">
-                                        {language === 'pt' ? 'Nenhuma equipe encontrada com este Pokémon.' : 'No teams found with this Pokémon.'}
+                    <div className="hd-panel__body">
+                        <p className="hd-meta-caption">
+                            {language === 'pt' ? 'Pokémon populares' : 'Popular Pokémon'}
+                            {usingMeta && metaFormat?.label && <span className="hd-meta-caption__format"> · {metaFormat.label}</span>}
+                        </p>
+                        <div className="hd-meta-mons-grid">
+                            {topPopular.slice(0, 10).map((mon) => (
+                                <button
+                                    key={mon.id}
+                                    type="button"
+                                    className="hd-meta-mon-btn"
+                                    onClick={() => navigate(`/meta/${mon.name || mon.id}`)}
+                                    title={(mon.name || '').replace(/-/g, ' ')}
+                                >
+                                    <div className="hd-meta-mon-icon-wrap">
+                                        <img src={getPokemonFrontSpriteUrl(mon.id)} alt="" aria-hidden="true" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                                        <span className="hd-meta-mon-badge" title={usingMeta ? (language === 'pt' ? 'uso no ladder' : 'ladder usage') : (language === 'pt' ? 'aparições' : 'appearances')}>{usingMeta ? `${mon.count}%` : mon.count}</span>
                                     </div>
-                                ) : (
-                                    filteredTeams.map((tm, i) => (
-                                        <div 
-                                            key={tm.id || i} 
-                                            className="hd-meta-team-row" 
-                                            onClick={() => navigate('/tournaments')} 
-                                            role="button" 
-                                            tabIndex={0}
-                                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/tournaments'); } }}
-                                        >
-                                            <div className="hd-meta-team-info">
-                                                <span className="hd-meta-team-player">{tm.title || tm.player}</span>
-                                                <span className="hd-meta-team-details">
-                                                    {tm.format && <span className="hd-meta-team-badge">{tm.format}</span>}
-                                                    <span className="truncate">{[tm.tournament, tm.placement].filter(Boolean).join(' · ')}</span>
-                                                </span>
-                                            </div>
-                                            <div className="hd-meta-team-roster">
-                                                {Array.from({ length: 6 }).map((_, j) => {
-                                                    const mon = (tm.pokemons || [])[j];
-                                                    if (!mon) {
-                                                        return <div key={`empty-${j}`} className="hd-meta-team-roster-sprite-wrap is-empty" aria-hidden="true" />;
-                                                    }
-                                                    const isHighlighted = activePokemonId === mon.id;
-                                                    return (
-                                                        <div
-                                                            key={`${mon.id}-${j}`}
-                                                            className={`hd-meta-team-roster-sprite-wrap ${isHighlighted ? 'is-highlighted' : ''}`}
-                                                            title={(mon.name || '').replace(/-/g, ' ')}
-                                                        >
-                                                            <img src={getPokemonFrontSpriteUrl(mon.id)} alt="" aria-hidden="true" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
+                                    <span className="hd-meta-mon-name">{(mon.name || '').replace(/-/g, ' ')}</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </section>
             )}
+
         </div>
     );
 }
-
-// Helper to format Pokémon name nicely for display (copied from HomeView for scope)
-const formatPokemonDisplayName = (name = '') => {
-    const overrides = {
-        farfetchd: "Farfetch'd",
-        sirfetchd: "Sirfetch'd",
-        'mr-mime': 'Mr. Mime',
-        'mime-jr': 'Mime Jr.',
-        'mr-rime': 'Mr. Rime',
-        'type-null': 'Type: Null',
-        'porygon-z': 'Porygon-Z',
-        'ho-oh': 'Ho-Oh',
-        flabebe: 'Flabebe',
-    };
-    if (overrides[name]) return overrides[name];
-    return name
-        .split('-')
-        .filter(Boolean)
-        .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join(' ');
-};

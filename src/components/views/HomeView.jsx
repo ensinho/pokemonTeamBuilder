@@ -964,9 +964,15 @@ export function HomeView({
                         </section>
                     ) : (
                         <section className="home-panel home-panel--pinned-repo p-0 xl:hidden">
-                            <div className="pinned-repo-header flex items-center gap-2 px-4 py-2 bg-surface-raised text-xs font-bold text-fg">
-                                <Folder className="w-4 h-4 text-primary shrink-0" />
-                                <span>team</span>
+                            {/* One group, not two: .pinned-repo-header is
+                                space-between (it normally carries actions on
+                                the right), which threw this lone label to the
+                                far edge of the card. */}
+                            <div className="pinned-repo-header px-4 py-2 bg-surface-raised text-xs font-bold text-fg">
+                                <div className="flex items-center gap-2">
+                                    <Folder className="w-4 h-4 text-primary shrink-0" />
+                                    <span>team</span>
+                                </div>
                             </div>
                             <div className="p-4 flex flex-col justify-between min-h-[140px]">
                                 <div className="space-y-2">

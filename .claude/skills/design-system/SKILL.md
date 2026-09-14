@@ -163,10 +163,28 @@ Solid-fill `.type-badge--*` stays for dense grids where a type is counted, not r
 
 ## Type
 
-**Do not change the typeface.** Inter for everything, JetBrains Mono for numbers
-(with `tabular-nums`). This is a settled decision — calm comes from layout,
-density and restraint, not from a new font. `--font-display` and `--font-body`
-both resolve to Inter by design; do not point `--font-display` at a serif.
+**Two voices, and they do not swap jobs** (changed 2026-09-14 at Enzo's call;
+before this it was Inter for everything, and the pairing below is what replaced
+it — a single neutral sans made every level of the hierarchy arrive in the same
+register).
+
+| Token | Face | Carries |
+|---|---|---|
+| `--font-display` | JetBrains Mono | headings `h1`–`h6`, panel titles, eyebrows, nav and tab labels, badges, **every figure** |
+| `--font-body` | Space Grotesk | running prose, descriptions, team and Pokémon names, inputs, long labels |
+| `--font-mono` | JetBrains Mono | code, ids, anything with `tabular-nums` |
+
+Structure is mono because the fixed advance genuinely aligns a column of counts,
+streaks and percentages — not for the look. **Never set `--font-display` on
+running prose**: a paragraph of mono is slower to read and there is no third
+face to fall back to. Never introduce a fourth family, and never a serif.
+
+Two mechanical consequences of the swap, both already applied in `index.css`:
+mono is wide, so display type carries negative tracking (`-0.045em` on `h1`–`h3`,
+`-0.03em` below) or a headline measures ~8% longer than its Inter original and
+starts wrapping in cards that used to hold it; and Space Grotesk is a `300..700`
+variable font, so a `font-weight: 800` written for Inter clamps to 700 — do not
+"fix" that by synthesising bolder weight, use 700.
 
 ## Alignment
 
