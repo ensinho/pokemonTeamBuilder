@@ -2536,38 +2536,55 @@
         display: contents !important;
     }
 
-    /* Mobile-Specific Custom Flex Ordering */
+    /* Mobile flow, top to bottom: who you are, where to go, what expires
+       today, what you were building, your teams, the meta, then everything
+       social. Each block below is a direct child of the flattened column
+       (the columns and .hd-stack are display:contents here), so a single
+       order scale sequences the whole page. */
     .home-readme-panel {
         order: 1 !important;
     }
 
-    .home-shortcuts-sidebar-card {
+    /* Shortcuts — one row of icons, directly under the greeting. */
+    .hd-quick-rail {
         order: 2 !important;
     }
 
-    .home-sidebar-section--daily {
+    /* Daily PokéPuzzle — the only thing on this page that expires today, so it
+       is reached before any competitive or social block. */
+    .hd-puzzle-slot {
         order: 3 !important;
-        /* PokePuzzle comes right below shortcuts */
     }
 
+    /* The team you were last editing. */
     .home-panel--pinned-repo {
         order: 4 !important;
     }
 
-    .home-profile-sidebar-card {
+    /* Your other recent teams. */
+    .hd-panel--continue {
         order: 5 !important;
     }
 
-    .home-sidebar-section-favorites {
+    /* Competitive meta. */
+    .hd-panel--meta {
         order: 6 !important;
     }
 
-    .github-tip-banner {
+    .home-profile-sidebar-card {
         order: 7 !important;
     }
 
-    .home-forum-chat-card-wrapper {
+    .home-sidebar-section-favorites {
         order: 8 !important;
+    }
+
+    .github-tip-banner {
+        order: 9 !important;
+    }
+
+    .home-forum-chat-card-wrapper {
+        order: 10 !important;
     }
 }
 
