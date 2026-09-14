@@ -187,6 +187,11 @@ State: `useForumStore` (topics, messages, real-time `onSnapshot`).
 - **Two scrollers, one per pane** — `.forum-topics-list` and `.forum-message-list`.
   A message body never gets an `overflow` of any kind; `min-width: 0` plus
   `overflow-wrap: anywhere` is what contains wide content.
+- **Each scroller declares both axes** (`overflow-x: hidden; overflow-y: auto`)
+  plus `touch-action: pan-y`. Setting only `overflow-y` makes `overflow-x`
+  compute to `auto`, and the thread becomes draggable sideways. The one
+  deliberate horizontal scroller is the mobile chip row, `.forum-categories`,
+  which sits in `.forum-sidebar__header` — outside both lists.
 - A post is a **grid** (`--forum-avatar` | content), and `--forum-rail` is reserved
   on the header, list and composer alike so all three share one right edge.
 - Below 640px the sidebar and the thread are **two screens**, toggled by

@@ -168,7 +168,9 @@
 .forum-topics-list {
     flex: 1 1 0;
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
+    touch-action: pan-y;
 }
 
 /* Full-bleed rows with a hairline between them — no card chrome per topic.
@@ -380,10 +382,18 @@
    column starts at the same offset in every post, so the byline, the body, an
    attachment card and the action row all share one left edge.
    -------------------------------------------------------------------------- */
+/* A thread scrolls on one axis. Both are declared: `overflow-y: auto` on its
+   own leaves `overflow-x` computing to `auto`, so a single child wider than the
+   pane makes the whole conversation draggable sideways — reported from an
+   iPhone on 2026-09-14, where the engine sized a grid track we had left to
+   `auto`. `touch-action: pan-y` refuses the gesture as well as the layout, so a
+   future overflow can misdraw but can never pan. */
 .forum-message-list {
     flex: 1 1 0;
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
+    touch-action: pan-y;
 }
 
 .forum-message-item {
@@ -675,13 +685,16 @@
 
 .forum-team-share-slots {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--space-2);
     padding: var(--space-3);
 }
 
 .forum-team-share-slot {
     aspect-ratio: 1;
+    /* A grid item's own `min-width: auto` is the second half of the same floor;
+       the track sizing above is only half the fix without it. */
+    min-width: 0;
     border: none;
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
@@ -768,6 +781,7 @@
    -------------------------------------------------------------------------- */
 .forum-msg-actions {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
     width: 100%;
@@ -1159,7 +1173,9 @@
     flex-direction: column;
     gap: var(--space-3);
     min-height: 0;
+    overflow-x: hidden;
     overflow-y: auto;
+    touch-action: pan-y;
 }
 
 .forum-right-card {
@@ -1202,13 +1218,14 @@
 
 .forum-right-team-slots {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
     gap: var(--space-1_5);
     width: 100%;
 }
 
 .forum-right-team-slot {
     aspect-ratio: 1;
+    min-width: 0;
     border: none;
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
