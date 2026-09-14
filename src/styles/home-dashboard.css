@@ -474,7 +474,7 @@
         justify-content: flex-start;
         gap: var(--space-2);
         min-height: 0;
-        padding: var(--space-2) var(--space-2_5);
+        padding: var(--space-1_5) var(--space-2_5);
     }
 
     .hd-quick-tile__label {
@@ -489,14 +489,37 @@
         padding: var(--space-2) var(--space-4);
     }
 
+    /* Three teams on one line. Stacked, they cost three rows of a column that
+       has to hold the whole page at once; side by side they cost one, and a
+       desktop reads three short names in parallel as easily as in sequence.
+       They need a fill to separate now that position no longer does it. */
     .hd-continue-list {
-        padding: var(--space-1_5);
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-2);
+        padding: var(--space-2);
+    }
+
+    .hd-continue-list > li {
+        display: flex;
     }
 
     .hd-team-row {
+        flex: 1;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "roster roster"
+            "name   meta";
+        align-items: end;
+        gap: var(--space-1_5) var(--space-2);
         min-height: 0;
-        padding: var(--space-1) var(--space-2);
+        padding: var(--space-2) var(--space-2_5);
+        background: var(--color-surface-raised);
     }
+
+    .hd-team-row__roster { grid-area: roster; }
+    .hd-team-row__name   { grid-area: name; }
+    .hd-team-row__meta   { grid-area: meta; }
 
     .hd-panel__body {
         padding: var(--space-3);
@@ -510,5 +533,11 @@
 
     .hd-meta-caption {
         margin-bottom: var(--space-2);
+    }
+
+    /* The mon rail is the panel's only content now, and it carries its own
+       internal padding in every tile. */
+    .hd-panel--meta .hd-panel__body {
+        padding-block: var(--space-2_5);
     }
 }

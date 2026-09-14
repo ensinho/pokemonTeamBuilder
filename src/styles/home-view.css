@@ -2760,7 +2760,21 @@
         gap: var(--space-3) !important;
     }
 
-    .home-view {
+    /* `main.home-view`, not `.home-view`: the element+class beats Tailwind's
+       `pb-6` utility on the same node, which was still adding 25px of gutter
+       under the last panel — bottom padding the app-shell footer band already
+       provides twice over. */
+    /* `main.home-view`, not `.home-view`: the element+class beats Tailwind's
+       `pb-6` utility on the same node, which was still adding 25px of gutter
+       under the last panel — bottom padding the app-shell footer band already
+       provides twice over.
+
+       The page now ends above the fold, leaving background between the last
+       panel and the footer. Left as is on purpose: stretching the columns to
+       eat it needs `.app-shell__body` to become a definite-height flex column,
+       which is shell chrome every other view sits in, and a `height: 100%`
+       against the auto-height parent it has today silently does nothing. */
+    main.home-view {
         padding-bottom: var(--space-2);
     }
 
@@ -2768,17 +2782,17 @@
        (--ui-scale works by scaling the root font-size), so the card kept its
        pixel size while everything around it grew. */
     .home-partner-card {
-        width: 9.5rem;
-        height: 8.75rem;
-        padding: var(--space-2_5);
+        width: 9rem;
+        height: 7.5rem;
+        padding: var(--space-2);
     }
 
     .home-partner-card__sprite-container {
-        height: 4.5rem;
+        height: 4rem;
     }
 
     .home-partner-card__sprite {
-        width: 4.5rem;
-        height: 4.5rem;
+        width: 4rem;
+        height: 4rem;
     }
 }
