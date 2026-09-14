@@ -21,19 +21,10 @@ const QUICK_LINKS = [
 
 export function HomeDashboard({ navigate, puzzleCard }) {
     const { t, language } = useTranslation();
-    const { popular, recent, status } = useTournamentData();
+    const { popular, status } = useTournamentData();
     // Rank the popular row by real Smogon ladder usage for the current regulation
     // (same source as the Meta page), falling back to tournament counts while it loads.
     const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
-    const [activePokemonId, setActivePokemonId] = React.useState(null);
-
-    // A phone gets one competitive block, not two. The tournament-teams list is
-    // six sprites and two lines of metadata per row — on a 390px screen that is
-    // most of a viewport spent on other people's teams, before the user has
-    // reached their own. Below md the popular row stands alone and a tap goes
-    // straight to that Pokémon's usage page; the full list lives one tap away
-    // under "View all".
-    const isCompact = useMediaQuery(maxWidthBelow('md'));
 
     // Below xl the home columns flatten and HomeView's pinned card — the team
     // you were last editing — sits directly above this panel. Listing that same
@@ -62,29 +53,6 @@ export function HomeDashboard({ navigate, puzzleCard }) {
     const usingMeta = metaRanked.length > 0;
     const topPopular = (usingMeta ? metaRanked : popular).slice(0, 15);
     const isLoading = status === 'loading';
-
-    const handleMouseEnterMon = (id) => {
-        if (isCompact) return;
-        setActivePokemonId(id);
-    };
-
-    const handleMouseLeaveGrid = () => {
-        setActivePokemonId(null);
-    };
-
-    const handleMonClick = (mon) => {
-        if (isCompact) {
-            navigate(`/meta/${mon.name || mon.id}`);
-            return;
-        }
-        setActivePokemonId(activePokemonId === mon.id ? null : mon.id);
-    };
-
-    const filteredTeams = React.useMemo(() => {
-        if (!activePokemonId) return recent.slice(0, 2);
-        const matched = recent.filter(team => (team.pokemons || []).some(mon => mon.id === activePokemonId));
-        return matched.length > 0 ? matched.slice(0, 2) : recent.slice(0, 2);
-    }, [recent, activePokemonId]);
 
     return (
         <div className="hd-stack">
@@ -177,184 +145,68 @@ export function HomeDashboard({ navigate, puzzleCard }) {
             </section>
             )}
 
-            {/* Loading skeletons while the tournament + Pokémon dataset loads */}
+            {/* Loading skeleton while the tournament + Pokémon dataset loads */}
             {isLoading && (
                 <section className="hd-panel hd-panel--meta">
                     <div className="hd-panel__head">
-                        <span className="hd-panel__title"><Flame className="w-4 h-4" /> {language === 'pt' ? 'VGC Meta & Equipes' : 'VGC Meta & Teams'}</span>
+                        <span className="hd-panel__title"><Flame className="w-4 h-4" /> VGC Meta</span>
                     </div>
-                    <div className="hd-panel__body space-y-4">
-                        <div>
-                            <div className="hd-meta-mons-grid">
-                                {Array.from({ length: 10 }).map((_, i) => (
-                                    <div key={i} className="hd-skel-mon-btn" aria-hidden="true">
-                                        <span className="hd-skel hd-skel-mon-icon" />
-                                        <span className="hd-skel hd-skel-mon-name" />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        {!isCompact && (
-                            <div className="border-t border-border pt-4">
-                                <div className="hd-meta-teams-list">
-                                    {Array.from({ length: 2 }).map((_, i) => (
-                                        <div key={i} className="hd-skel-team-row" aria-hidden="true">
-                                            <div className="hd-skel-team-info">
-                                                <span className="hd-skel hd-skel-team-player" />
-                                                <span className="hd-skel hd-skel-team-meta" />
-                                            </div>
-                                            <div className="hd-skel-team-roster">
-                                                {Array.from({ length: 6 }).map((__, j) => (
-                                                    <span key={j} className="hd-skel hd-skel-roster-icon" />
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ))}
+                    <div className="hd-panel__body">
+                        <div className="hd-meta-mons-grid">
+                            {Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="hd-skel-mon-btn" aria-hidden="true">
+                                    <span className="hd-skel hd-skel-mon-icon" />
+                                    <span className="hd-skel hd-skel-mon-name" />
                                 </div>
-                            </div>
-                        )}
+                            ))}
+                        </div>
                     </div>
                 </section>
             )}
 
-            {/* Fused VGC Meta & Teams Panel */}
-            {status === 'ready' && (topPopular.length > 0 || recent.length > 0) && (
-                <section className="hd-panel hd-panel--meta" onMouseLeave={handleMouseLeaveGrid}>
+            {/* VGC meta — a pulse, not a page. One rail of the Pokémon the
+                ladder is actually playing, and a tap goes to that Pokémon's
+                usage. The tournament-team list that used to sit under it was
+                the single tallest thing on Home: it pushed the desktop layout
+                past the viewport, and its hover-to-filter was never reachable
+                on a touch screen at all. The teams live on /tournaments, one
+                click away under "View all". */}
+            {status === 'ready' && topPopular.length > 0 && (
+                <section className="hd-panel hd-panel--meta">
                     <div className="hd-panel__head">
                         <span className="hd-panel__title">
-                            <Flame className="w-4 h-4 text-warning" /> {language === 'pt' ? 'VGC Meta' : 'VGC Meta'}
+                            <Flame className="w-4 h-4 text-warning" /> VGC Meta
                         </span>
                         <button type="button" className="hd-panel__link" onClick={() => navigate('/tournaments')}>
                             {t('home.viewAll')}
                         </button>
                     </div>
-                    <div className="hd-panel__body space-y-4">
-                        {/* Popular Mons Icon Row - Grid style, no scroll */}
-                        <div>
-                            <p className="hd-meta-caption">
-                                {language === 'pt' ? 'Pokémon Populares' : 'Popular Pokémon'}
-                                {!isCompact && (
-                                    <span className="hidden sm:inline"> {language === 'pt' ? '(Passe o mouse para filtrar)' : '(Hover to filter)'}</span>
-                                )}
-                                {usingMeta && metaFormat?.label && <span className="hd-meta-caption__format"> · {metaFormat.label}</span>}
-                            </p>
-                            <div className="hd-meta-mons-grid">
-                                {topPopular.slice(0, 10).map((mon) => (
-                                    <button 
-                                        key={mon.id} 
-                                        type="button" 
-                                        className={`hd-meta-mon-btn ${activePokemonId === mon.id ? 'is-active' : ''}`}
-                                        onMouseEnter={() => handleMouseEnterMon(mon.id)}
-                                        onClick={() => handleMonClick(mon)}
-                                        title={(mon.name || '').replace(/-/g, ' ')}
-                                    >
-                                        <div className="hd-meta-mon-icon-wrap">
-                                            <img src={getPokemonFrontSpriteUrl(mon.id)} alt="" aria-hidden="true" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                                            <span className="hd-meta-mon-badge" title={usingMeta ? (language === 'pt' ? 'uso no ladder' : 'ladder usage') : (language === 'pt' ? 'aparições' : 'appearances')}>{usingMeta ? `${mon.count}%` : mon.count}</span>
-                                        </div>
-                                        <span className="hd-meta-mon-name">{(mon.name || '').replace(/-/g, ' ')}</span>
-                                    </button>
-                                ))}
-                            </div>
+                    <div className="hd-panel__body">
+                        <p className="hd-meta-caption">
+                            {language === 'pt' ? 'Pokémon populares' : 'Popular Pokémon'}
+                            {usingMeta && metaFormat?.label && <span className="hd-meta-caption__format"> · {metaFormat.label}</span>}
+                        </p>
+                        <div className="hd-meta-mons-grid">
+                            {topPopular.slice(0, 10).map((mon) => (
+                                <button
+                                    key={mon.id}
+                                    type="button"
+                                    className="hd-meta-mon-btn"
+                                    onClick={() => navigate(`/meta/${mon.name || mon.id}`)}
+                                    title={(mon.name || '').replace(/-/g, ' ')}
+                                >
+                                    <div className="hd-meta-mon-icon-wrap">
+                                        <img src={getPokemonFrontSpriteUrl(mon.id)} alt="" aria-hidden="true" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                                        <span className="hd-meta-mon-badge" title={usingMeta ? (language === 'pt' ? 'uso no ladder' : 'ladder usage') : (language === 'pt' ? 'aparições' : 'appearances')}>{usingMeta ? `${mon.count}%` : mon.count}</span>
+                                    </div>
+                                    <span className="hd-meta-mon-name">{(mon.name || '').replace(/-/g, ' ')}</span>
+                                </button>
+                            ))}
                         </div>
-
-                        {/* Filtered Team List — desktop/tablet only (see isCompact above) */}
-                        {!isCompact && (
-                            <div className="border-t border-border pt-4">
-                                <div className="flex justify-between items-center mb-3">
-                                    <p className="hd-meta-caption hd-meta-caption--inline">
-                                        {activePokemonId ? (
-                                            <span>
-                                                {language === 'pt' 
-                                                    ? `Equipes com ${formatPokemonDisplayName((topPopular.find(p => p.id === activePokemonId) || popular.find(p => p.id === activePokemonId))?.name)}` 
-                                                    : `Teams with ${formatPokemonDisplayName((topPopular.find(p => p.id === activePokemonId) || popular.find(p => p.id === activePokemonId))?.name)}`
-                                                }
-                                            </span>
-                                        ) : (
-                                            <span>{language === 'pt' ? 'Equipes Recentes VGC' : 'Recent VGC Teams'}</span>
-                                        )}
-                                    </p>
-                                    {activePokemonId && (
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setActivePokemonId(null)}
-                                            className="hd-panel__link"
-                                        >
-                                            {language === 'pt' ? 'Limpar filtro' : 'Clear filter'}
-                                        </button>
-                                    )}
-                                </div>
-
-                                <div className="hd-meta-teams-list">
-                                    {filteredTeams.length === 0 ? (
-                                        <div className="hd-meta-teams-empty text-center py-6 text-muted text-xs font-mono">
-                                            {language === 'pt' ? 'Nenhuma equipe encontrada com este Pokémon.' : 'No teams found with this Pokémon.'}
-                                        </div>
-                                    ) : (
-                                        filteredTeams.map((tm, i) => (
-                                            <div 
-                                                key={tm.id || i} 
-                                                className="hd-meta-team-row" 
-                                                onClick={() => navigate('/tournaments')} 
-                                                role="button" 
-                                                tabIndex={0}
-                                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/tournaments'); } }}
-                                            >
-                                                <div className="hd-meta-team-info">
-                                                    <span className="hd-meta-team-player">{tm.title || tm.player}</span>
-                                                    <span className="hd-meta-team-details">
-                                                        {tm.format && <span className="hd-meta-team-badge">{tm.format}</span>}
-                                                        <span className="truncate">{[tm.tournament, tm.placement].filter(Boolean).join(' · ')}</span>
-                                                    </span>
-                                                </div>
-                                                <div className="hd-meta-team-roster">
-                                                    {Array.from({ length: 6 }).map((_, j) => {
-                                                        const mon = (tm.pokemons || [])[j];
-                                                        if (!mon) {
-                                                            return <div key={`empty-${j}`} className="hd-meta-team-roster-sprite-wrap is-empty" aria-hidden="true" />;
-                                                        }
-                                                        const isHighlighted = activePokemonId === mon.id;
-                                                        return (
-                                                            <div
-                                                                key={`${mon.id}-${j}`}
-                                                                className={`hd-meta-team-roster-sprite-wrap ${isHighlighted ? 'is-highlighted' : ''}`}
-                                                                title={(mon.name || '').replace(/-/g, ' ')}
-                                                            >
-                                                                <img src={getPokemonFrontSpriteUrl(mon.id)} alt="" aria-hidden="true" loading="lazy" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </section>
             )}
+
         </div>
     );
 }
-
-// Helper to format Pokémon name nicely for display (copied from HomeView for scope)
-const formatPokemonDisplayName = (name = '') => {
-    const overrides = {
-        farfetchd: "Farfetch'd",
-        sirfetchd: "Sirfetch'd",
-        'mr-mime': 'Mr. Mime',
-        'mime-jr': 'Mime Jr.',
-        'mr-rime': 'Mr. Rime',
-        'type-null': 'Type: Null',
-        'porygon-z': 'Porygon-Z',
-        'ho-oh': 'Ho-Oh',
-        flabebe: 'Flabebe',
-    };
-    if (overrides[name]) return overrides[name];
-    return name
-        .split('-')
-        .filter(Boolean)
-        .map(segment => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join(' ');
-};

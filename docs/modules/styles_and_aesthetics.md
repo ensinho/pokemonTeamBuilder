@@ -201,10 +201,14 @@ Use the `.skeleton` class. It is a shimmer animation that uses `var(--color-surf
 
 ### Typography Conventions
 
-**The typeface is settled: Inter everywhere**, JetBrains Mono for numbers. Both
-`--font-display` and `--font-body` resolve to Inter deliberately. Do not
-introduce a display/serif face — this was tried on 2026-08-28 and rejected. Calm
-comes from layout, density and restraint, not from a new font.
+**Two faces with separate jobs** (2026-09-14). `--font-display` is JetBrains
+Mono and carries the interface's *structure* — headings, panel titles, eyebrows,
+nav and tab labels, badges and every figure. `--font-body` is Space Grotesk and
+carries the *content* — prose, descriptions, names, inputs. `--font-mono` stays
+JetBrains Mono for code and `tabular-nums`. Never set the display face on
+running prose, never add a fourth family, and never a serif (tried 2026-08-28,
+rejected). See the `/design-system` skill for the tracking and font-weight
+consequences of the mono swap.
 
 - Section labels / metadata: `text-xs uppercase tracking-[0.12em] font-semibold text-[var(--color-muted)]`
 - Card titles: `font-semibold text-sm` or `font-medium text-sm`

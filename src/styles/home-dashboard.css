@@ -71,12 +71,8 @@
 .hd-panel__link:hover { text-decoration: underline; }
 .hd-panel__body { padding: var(--space-3_5); }
 
-/* Popular Pokémon row */
-.hd-popular { display: flex; gap: var(--space-2); overflow-x: auto; padding-bottom: var(--space-1); }
-/* Tournament mini-cards */
-.hd-trn { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--space-2_5); }
-/* Loading skeletons — shown while tournament + Pokémon data load. Mirror the
-   real layouts (popular row + tournament cards) so there's no shift on ready. */
+/* Loading skeleton — shown while the tournament + Pokémon data load. Mirrors
+   the real popular row so there is no shift when it arrives. */
 @keyframes hd-skel-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.85; } }
 
 .hd-skel { background: var(--color-border); border-radius: var(--radius-md); animation: hd-skel-pulse 1.2s ease-in-out infinite; }
@@ -178,156 +174,24 @@
     font-weight: 600;
 }
 
-/* Responsive two-column team cards */
-.hd-meta-teams-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-2);
-}
 
-.hd-meta-teams-empty {
-    grid-column: 1 / -1;
-}
 
-/* Same shape as every other clickable card on this page: filled, borderless,
-   --radius-lg, hover on the fill. It was the last one still drawing a border
-   inside an already-bordered panel and lifting on hover. */
-.hd-meta-team-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2_5);
-    padding: var(--space-2_5) var(--space-3_5);
-    background: var(--color-surface-raised);
-    border: none;
-    border-radius: var(--radius-lg);
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth);
-}
 
-.hd-meta-team-row:hover {
-    background: var(--color-surface-hover);
-}
 
-.hd-meta-team-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-0_5);
-    min-width: 0;
-    text-align: left;
-}
 
-.hd-meta-team-player {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--color-fg);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
 
-.hd-meta-team-details {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    font-size: 0.65rem;
-    color: var(--color-muted);
-}
 
-.hd-meta-team-badge {
-    font-size: 0.55rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    padding: var(--space-0_5) var(--space-1_5);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-    border-radius: var(--radius-sm);
-}
 
-.hd-meta-team-roster {
-    display: flex;
-    gap: var(--space-1);
-    flex-shrink: 0;
-}
 
-/* Twelve of these sit two borders deep — inside a team card inside a panel.
-   Fill only; the circle is legible from its own shape. */
-.hd-meta-team-roster-sprite-wrap {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-    border: none;
-    background: var(--color-surface-raised);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth),
-                transform var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth);
-}
 
-.hd-meta-team-roster-sprite-wrap img {
-    width: 1.85rem;
-    height: 1.85rem;
-    object-fit: contain;
-    image-rendering: pixelated;
-}
 
-/* The one place a border comes back: dashed means "absent", and an empty roster
-   slot is exactly that. Re-declared in full because the base rule no longer has
-   a border for a border-style to modify. */
-.hd-meta-team-roster-sprite-wrap.is-empty {
-    border: 1px dashed color-mix(in srgb, var(--color-border) 60%, transparent);
-    background: transparent;
-}
 
-.hd-meta-team-roster-sprite-wrap.is-highlighted {
-    box-shadow: var(--ring-primary);
-    background: color-mix(in srgb, var(--color-primary) 15%, transparent) !important;
-    transform: scale(1.15) translateY(-1px);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--color-primary) 40%, transparent);
-}
 
-.hd-skel-team-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2_5);
-    padding: var(--space-2_5) var(--space-3_5);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-}
 
-.hd-skel-team-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    width: 40%;
-}
 
-.hd-skel-team-player {
-    width: 80%;
-    height: 0.78rem;
-}
 
-.hd-skel-team-meta {
-    width: 50%;
-    height: 0.65rem;
-}
 
-.hd-skel-team-roster {
-    display: flex;
-    gap: var(--space-1);
-    flex-shrink: 0;
-}
 
-.hd-skel-roster-icon {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 50%;
-}
 
 /* Responsiveness Media Queries. Max-width values are canonical breakpoint − 1
    (lg 1024 → 1023, md 768 → 767) so they don't overlap the min-width desktop
@@ -380,60 +244,6 @@
     }
     .hd-meta-mon-name {
         font-size: 0.6875rem;
-    }
-
-    .hd-meta-teams-list {
-        grid-template-columns: 1fr;
-        gap: var(--space-2_5);
-    }
-
-    /* Mobile: stack the team meta above a full-width roster so every one of
-       the six sprites is visible and evenly spread — never clipped. */
-    .hd-meta-team-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-2_5);
-        padding: var(--space-3) var(--space-3);
-    }
-    .hd-meta-team-roster {
-        width: 100%;
-        gap: var(--space-1);
-        justify-content: space-between;
-    }
-    .hd-meta-team-roster-sprite-wrap {
-        flex: 1 1 0;
-        width: auto;
-        height: auto;
-        aspect-ratio: 1 / 1;
-        max-width: 3rem;
-        border-radius: var(--radius-md);
-    }
-    .hd-meta-team-roster-sprite-wrap img {
-        width: 78%;
-        height: 78%;
-    }
-
-    /* Keep the loading skeleton matching the stacked layout (no shift) */
-    .hd-skel-team-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-2_5);
-    }
-    .hd-skel-team-info {
-        width: 100%;
-    }
-    .hd-skel-team-roster {
-        width: 100%;
-        gap: var(--space-1);
-        justify-content: space-between;
-    }
-    .hd-skel-roster-icon {
-        flex: 1 1 0;
-        width: auto;
-        height: auto;
-        aspect-ratio: 1 / 1;
-        max-width: 3rem;
-        border-radius: var(--radius-md);
     }
 }
 
@@ -645,3 +455,60 @@
 
 .hd-meta-caption--inline { margin: 0; }
 .hd-meta-caption__format { color: var(--color-primary); }
+
+/* ── Desktop: pay for the one-screen home ──────────────────────────────
+   The counterpart to the block at the end of home-view.css. A phone reads
+   these panels one at a time and can afford their full size; a desktop shows
+   all four at once, and the sum was what pushed the page past the viewport.
+   Each rule takes back space from something oversized rather than from the
+   rhythm between elements. */
+@media (min-width: 1280px) {
+    /* A pointer does not need a 44px stacked tile. Icon and label share a row,
+       which is the conventional desktop shape for a launcher anyway. */
+    .hd-quick-rail {
+        grid-template-columns: repeat(4, minmax(0, 10rem));
+    }
+
+    .hd-quick-tile {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: var(--space-2);
+        min-height: 0;
+        padding: var(--space-2) var(--space-2_5);
+    }
+
+    .hd-quick-tile__label {
+        -webkit-line-clamp: 1;
+        line-clamp: 1;
+        text-align: left;
+        font-size: 0.75rem;
+    }
+
+    /* Panel heads carry a title and a link, nothing that needs 48px. */
+    .hd-panel__head {
+        padding: var(--space-2) var(--space-4);
+    }
+
+    .hd-continue-list {
+        padding: var(--space-1_5);
+    }
+
+    .hd-team-row {
+        min-height: 0;
+        padding: var(--space-1) var(--space-2);
+    }
+
+    .hd-panel__body {
+        padding: var(--space-3);
+    }
+
+    /* 2.75rem tiles around a 2.5rem sprite, ten across a 730px column: the
+       sprites keep their size, the padding around them does not. */
+    .hd-meta-mon-btn {
+        padding: var(--space-1_5) var(--space-1);
+    }
+
+    .hd-meta-caption {
+        margin-bottom: var(--space-2);
+    }
+}

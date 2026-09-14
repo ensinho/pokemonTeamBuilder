@@ -2510,9 +2510,13 @@
         flex-direction: column !important;
     }
 
+    /* Fill the column, never measure the screen: a 52vh cap here was a guess
+       about everything above and below it (see the layout scroll invariant in
+       the /design-system skill), and it went stale the moment the left column
+       got shorter — leaving the timeline ending in mid-air. */
     .home-sidebar .home-forum-chat-messages {
         flex: 1 1 0% !important;
-        max-height: 52vh !important;
+        min-height: 0 !important;
     }
 }
 
@@ -2733,5 +2737,48 @@
         content: "";
         position: absolute;
         inset: calc(-1 * var(--space-2));
+    }
+}
+
+/* ==========================================================================
+   DESKTOP: the whole home in one screen
+   ==========================================================================
+   Enzo, on PC: "evitar rolagem na tela de PC". At 1440×900 the column ran
+   265px past the viewport — a scroll whose only reward was the bottom edge of
+   the last panel. Every trim below comes out of an element that was oversized
+   for its job (a 192px partner card holding a 110px sprite, a hero that is
+   mostly wallpaper), never out of the space between panels: squeezing the
+   gaps is how a desktop layout starts reading like the compressed phone one
+   this pass just took apart. Mobile is untouched — these rules start at xl,
+   where the columns stop flattening. */
+@media (min-width: 1280px) {
+    /* --space-4 between four panels spent 51px on air in a budget that was
+       265px short. --space-3 still separates them cleanly. */
+    .home-github-layout,
+    .home-main-col,
+    .home-sidebar {
+        gap: var(--space-3) !important;
+    }
+
+    .home-view {
+        padding-bottom: var(--space-2);
+    }
+
+    /* rem, not px: the old 168×192 opted out of the interface-scale control
+       (--ui-scale works by scaling the root font-size), so the card kept its
+       pixel size while everything around it grew. */
+    .home-partner-card {
+        width: 9.5rem;
+        height: 8.75rem;
+        padding: var(--space-2_5);
+    }
+
+    .home-partner-card__sprite-container {
+        height: 4.5rem;
+    }
+
+    .home-partner-card__sprite {
+        width: 4.5rem;
+        height: 4.5rem;
     }
 }
