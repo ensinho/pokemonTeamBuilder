@@ -21,7 +21,7 @@ const QUICK_LINKS = [
 
 export function HomeDashboard({ navigate, puzzleCard }) {
     const { t, language } = useTranslation();
-    const { popular, status } = useTournamentData();
+    const { popular, recent, status } = useTournamentData();
     // Rank the popular row by real Smogon ladder usage for the current regulation
     // (same source as the Meta page), falling back to tournament counts while it loads.
     const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
@@ -164,13 +164,12 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                 </section>
             )}
 
-            {/* VGC meta — a pulse, not a page. One rail of the Pokémon the
-                ladder is actually playing, and a tap goes to that Pokémon's
-                usage. The tournament-team list that used to sit under it was
-                the single tallest thing on Home: it pushed the desktop layout
-                past the viewport, and its hover-to-filter was never reachable
-                on a touch screen at all. The teams live on /tournaments, one
-                click away under "View all". */}
+            {/* VGC meta. The rail of Pokémon the ladder is actually playing is
+                the part every screen gets, and a tap goes to that Pokémon's
+                usage page — the old hover-to-filter was never reachable on a
+                touch screen. Under it, where there is room, the latest
+                tournament teams: see .hd-meta-teams in the stylesheet for why
+                that is a question about the window's height, not its width. */}
             {status === 'ready' && topPopular.length > 0 && (
                 <section className="hd-panel hd-panel--meta">
                     <div className="hd-panel__head">
@@ -203,6 +202,46 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                                 </button>
                             ))}
                         </div>
+
+                        {!isFlattened && recent.length > 0 && (
+                            <div className="hd-meta-teams">
+                                <ul className="hd-tourney-list">
+                                    {recent.slice(0, 2).map((tm, i) => (
+                                        <li key={tm.id || i}>
+                                            <button
+                                                type="button"
+                                                className="hd-tourney-row"
+                                                onClick={() => navigate(tm.id ? `/tournaments/team/${tm.id}` : '/tournaments')}
+                                            >
+                                                <span className="hd-tourney-row__roster" aria-hidden="true">
+                                                    {(tm.pokemons || []).slice(0, 6).map((mon, j) => (
+                                                        <img
+                                                            key={`${mon.id}-${j}`}
+                                                            src={getPokemonFrontSpriteUrl(mon.id)}
+                                                            alt=""
+                                                            loading="lazy"
+                                                            onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
+                                                        />
+                                                    ))}
+                                                </span>
+                                                <span className="hd-tourney-row__text">
+                                                    <span className="hd-tourney-row__title">{tm.title || tm.player}</span>
+                                                    {/* The regulation badge rides the second line rather than a
+                                                        third column: as a column it took ~55px off a title that
+                                                        was already truncating at half a panel wide. */}
+                                                    <span className="hd-tourney-row__meta">
+                                                        {tm.format && <span className="hd-tourney-row__badge">{tm.format}</span>}
+                                                        <span className="hd-tourney-row__event">
+                                                            {[tm.tournament, tm.placement].filter(Boolean).join(' · ')}
+                                                        </span>
+                                                    </span>
+                                                </span>
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </section>
             )}
