@@ -14,6 +14,7 @@ import { coreIconFor } from '../coreIcons';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { detectTeamCores } from '../../utils/metaCores';
 import { buildGameSections } from '../../utils/gameDex';
+import { matchesTypeFilter } from '../../utils/typeFilter';
 import { TeamThreats } from '../TeamThreats';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
@@ -390,6 +391,7 @@ export const MobileTeamBuilderView = ({
     isFetchingMore,
     selectedTypes,
     handleTypeSelection,
+    typeMatchMode,
     suggestedPokemonIds,
     colors,
     onEditTeamPokemon,
@@ -451,11 +453,11 @@ export const MobileTeamBuilderView = ({
             const entry = s.id ? displayedPokemons.find((p) => p.id === s.id) : null;
             if (showOnlyFavorites && entry && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry && entry.generation !== selectedGeneration) return false;
-            if (typeList.length && entry && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
+            if (entry && !matchesTypeFilter(entry.types, typeList, typeMatchMode)) return false;
             if (search && !matchesPokemonSearch(entry || s, search)) return false;
             return true;
         });
-    }, [synergySuggestions, displayedPokemons, selectedTypes, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
+    }, [synergySuggestions, displayedPokemons, selectedTypes, typeMatchMode, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
 
     const synergyReasonById = React.useMemo(
         () => new Map(activeFilteredSuggestions.map((s) => [s.id, s.primary])),
@@ -527,12 +529,12 @@ export const MobileTeamBuilderView = ({
             if (!entry) return false;
             if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
-            if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
+            if (!matchesTypeFilter(entry.types, typeList, typeMatchMode)) return false;
             if (search && !matchesPokemonSearch(entry, search)) return false;
             return true;
         };
         return buildGameSections({ fullIndex, gameDexes, game: selectedGameObj, matches });
-    }, [isGameFilterActive, gameDexes, selectedGameObj, fullIndex, searchInput, selectedTypes, showOnlyFavorites, selectedGeneration, favoritePokemons]);
+    }, [isGameFilterActive, gameDexes, selectedGameObj, fullIndex, searchInput, selectedTypes, typeMatchMode, showOnlyFavorites, selectedGeneration, favoritePokemons]);
     const gameVisibleCount = React.useMemo(
         () => (gameSections ? gameSections.reduce((n, s) => n + s.mons.length, 0) : 0),
         [gameSections]
