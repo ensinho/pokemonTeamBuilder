@@ -11,6 +11,25 @@ import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/team
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
     let favoritesUnsubscribe = null;
+
+    // Reference-counted, like useFriendsStore/useBattlesStore. Three components
+    // hold this hook (the shell, the home dashboard, the battle detail view) and
+    // they share one pair of listeners — so the first of them to unmount used to
+    // unsubscribe both for the whole app, with nobody left to re-attach them.
+    // Leaving the home page killed live favourites and saved teams for the rest
+    // of the session: the Pokédex star wrote to Firestore and nothing came back
+    // (2026-09-14 wound).
+    let subscriberCount = 0;
+    let boundUserId = null;
+
+    const unbind = () => {
+        if (teamsUnsubscribe) teamsUnsubscribe();
+        if (favoritesUnsubscribe) favoritesUnsubscribe();
+        teamsUnsubscribe = null;
+        favoritesUnsubscribe = null;
+        boundUserId = null;
+    };
+
     // Names claimed by a duplication that is still in flight. `savedTeams` only
     // catches up when the snapshot lands, so without this a double-click would
     // hand both copies the same name — and the user's first save on either one
@@ -47,8 +66,11 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const userId = useAuthStore.getState().userId;
             if (!db || !userId) return;
 
-            // Clean up existing listeners
-            get().cleanupListeners();
+            subscriberCount += 1;
+            // Already listening for this account — another consumer just joined.
+            if (boundUserId === userId && teamsUnsubscribe) return;
+            unbind();
+            boundUserId = userId;
 
             // 1. Listen to saved teams
             const teamsCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/teams`);
@@ -82,15 +104,12 @@ export const useFirestoreTeamsStore = create((set, get) => {
             favoritesUnsubscribe = unsubFavorites;
         },
 
+        // Releases *this* consumer's hold. The listeners only come down once the
+        // last holder is gone.
         cleanupListeners: () => {
-            if (teamsUnsubscribe) {
-                teamsUnsubscribe();
-                teamsUnsubscribe = null;
-            }
-            if (favoritesUnsubscribe) {
-                favoritesUnsubscribe();
-                favoritesUnsubscribe = null;
-            }
+            subscriberCount = Math.max(0, subscriberCount - 1);
+            if (subscriberCount > 0) return;
+            unbind();
         },
 
         handleDeleteTeam: async (teamId) => {
