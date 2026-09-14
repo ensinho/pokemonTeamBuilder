@@ -11,6 +11,7 @@ import { PokemonCard } from '../PokemonCard';
 import { Sprite } from '../Sprite';
 import { StarIcon } from '../icons';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
+import { TypeMatchToggle } from '../TypeMatchToggle';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
@@ -105,6 +106,8 @@ export function PokedexView({
     setSearchInput,
     selectedTypes,
     handleTypeSelection,
+    typeMatchMode,
+    setTypeMatchMode,
     selectedGeneration,
     setSelectedGeneration,
     generations,
@@ -279,7 +282,16 @@ export function PokedexView({
                             </div>
 
                             <div>
-                                <p className="pokedex-sheet-label">{language === 'pt' ? 'Tipos' : 'Types'}</p>
+                                {/* The switch belongs on the heading, not below the
+                                    badges: it changes what picking two of them means. */}
+                                <div className="pokedex-sheet-heading-row">
+                                    <p className="pokedex-sheet-label">{language === 'pt' ? 'Tipos' : 'Types'}</p>
+                                    <TypeMatchToggle
+                                        value={typeMatchMode}
+                                        onChange={setTypeMatchMode}
+                                        className="type-match-toggle--sheet"
+                                    />
+                                </div>
                                 <div className="pokedex-sheet-types">
                                     {Object.keys(typeColors).map((type) => {
                                         const isActive = selectedTypes.has(type);
@@ -399,6 +411,7 @@ export function PokedexView({
                                 ))}
                             </div>
                         </div>
+                        <TypeMatchToggle value={typeMatchMode} onChange={setTypeMatchMode} />
                         <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
                     </div>
 

@@ -1569,6 +1569,8 @@ export default function AppLayout() {
                                             isFetchingMore={pokedex.isFetchingMore}
                                             selectedTypes={pokedex.selectedTypes}
                                             handleTypeSelection={pokedex.handleTypeSelection}
+                                            typeMatchMode={pokedex.typeMatchMode}
+                                            setTypeMatchMode={pokedex.setTypeMatchMode}
                                             showDetails={showDetails}
                                             suggestedPokemonIds={suggestedPokemonIds}
                                             colors={colors}
@@ -1592,6 +1594,8 @@ export default function AppLayout() {
                                             setSearchInput={pokedex.setPokedexSearchInput}
                                             selectedTypes={pokedex.pokedexSelectedTypes}
                                             handleTypeSelection={pokedex.handlePokedexTypeSelection}
+                                            typeMatchMode={pokedex.pokedexTypeMatchMode}
+                                            setTypeMatchMode={pokedex.setPokedexTypeMatchMode}
                                             selectedGeneration={pokedex.pokedexSelectedGeneration}
                                             setSelectedGeneration={pokedex.setPokedexSelectedGeneration}
                                             generations={generations}

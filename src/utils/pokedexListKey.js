@@ -13,6 +13,7 @@ export function buildListSignature({
     generation = 'all',
     game = 'all',
     types,
+    typeMatchMode = 'any',
     search = '',
     favoritesOnly = false,
 } = {}) {
@@ -21,6 +22,9 @@ export function buildListSignature({
         generation || 'all',
         game || 'all',
         normalizeTypes(types),
+        // Same types, different reading — Fire+Water as AND is not the list
+        // Fire+Water as OR, so it must not inherit its page count or scroll.
+        typeMatchMode === 'all' ? 'and' : 'or',
         (search || '').trim().toLowerCase(),
         favoritesOnly ? 'fav' : 'all',
     ].join('|');

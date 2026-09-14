@@ -26,11 +26,13 @@ export function usePokedex() {
     const selectedGeneration = usePokedexStore(state => state.selectedGeneration);
     const selectedGame = usePokedexStore(state => state.selectedGame);
     const selectedTypes = usePokedexStore(state => state.selectedTypes);
+    const typeMatchMode = usePokedexStore(state => state.typeMatchMode);
     const showOnlyFavorites = usePokedexStore(state => state.showOnlyFavorites);
 
     const pokedexSelectedGeneration = usePokedexStore(state => state.pokedexSelectedGeneration);
     const pokedexSelectedGame = usePokedexStore(state => state.pokedexSelectedGame);
     const pokedexSelectedTypes = usePokedexStore(state => state.pokedexSelectedTypes);
+    const pokedexTypeMatchMode = usePokedexStore(state => state.pokedexTypeMatchMode);
     const pokedexShowOnlyFavorites = usePokedexStore(state => state.pokedexShowOnlyFavorites);
 
     const favoritePokemons = useFirestoreTeamsStore(state => state.favoritePokemons);
@@ -58,6 +60,7 @@ export function usePokedex() {
     const gen = isPokedex ? pokedexSelectedGeneration : selectedGeneration;
     const game = isPokedex ? pokedexSelectedGame : selectedGame;
     const types = isPokedex ? pokedexSelectedTypes : selectedTypes;
+    const typeMode = isPokedex ? pokedexTypeMatchMode : typeMatchMode;
     const activeSearch = isPokedex ? debouncedPokedexSearchTermInStore : debouncedSearchTermInStore;
     const activeShowOnlyFavorites = isPokedex ? pokedexShowOnlyFavorites : showOnlyFavorites;
 
@@ -69,7 +72,7 @@ export function usePokedex() {
     useEffect(() => {
         if (!isAuthReady) return;
         fetchInitial(isPokedex);
-    }, [isAuthReady, isPokedex, gen, game, types, activeSearch, activeShowOnlyFavorites, favoritePokemons, fetchInitial]);
+    }, [isAuthReady, isPokedex, gen, game, types, typeMode, activeSearch, activeShowOnlyFavorites, favoritePokemons, fetchInitial]);
 
     // Infinite scroll observer setup
     const observer = useRef(null);
@@ -117,12 +120,14 @@ export function usePokedex() {
     const handleSetSearchInput = useCallback((val) => setFilter('searchInput', val), [setFilter]);
     const handleSetShowOnlyFavorites = useCallback((val) => setFilter('showOnlyFavorites', val), [setFilter]);
     const handleTypeSelectionCall = useCallback((type) => toggleTypeSelection(type, false), [toggleTypeSelection]);
+    const handleSetTypeMatchMode = useCallback((mode) => setFilter('typeMatchMode', mode), [setFilter]);
 
     const handleSetPokedexSelectedGeneration = useCallback((val) => setFilter('pokedexSelectedGeneration', val), [setFilter]);
     const handleSetPokedexSelectedGame = useCallback((val) => setFilter('pokedexSelectedGame', val), [setFilter]);
     const handleSetPokedexSearchInput = useCallback((val) => setFilter('pokedexSearchInput', val), [setFilter]);
     const handleSetPokedexShowOnlyFavorites = useCallback((val) => setFilter('pokedexShowOnlyFavorites', val), [setFilter]);
     const handlePokedexTypeSelectionCall = useCallback((type) => toggleTypeSelection(type, true), [toggleTypeSelection]);
+    const handleSetPokedexTypeMatchMode = useCallback((mode) => setFilter('pokedexTypeMatchMode', mode), [setFilter]);
 
     return {
         pokemons,
@@ -138,6 +143,7 @@ export function usePokedex() {
         selectedGeneration,
         selectedGame,
         selectedTypes,
+        typeMatchMode,
         searchInput,
         showOnlyFavorites,
         setSelectedGeneration: handleSetSelectedGeneration,
@@ -145,11 +151,13 @@ export function usePokedex() {
         setSearchInput: handleSetSearchInput,
         setShowOnlyFavorites: handleSetShowOnlyFavorites,
         handleTypeSelection: handleTypeSelectionCall,
+        setTypeMatchMode: handleSetTypeMatchMode,
 
         // Pokedex filters & actions
         pokedexSelectedGeneration,
         pokedexSelectedGame,
         pokedexSelectedTypes,
+        pokedexTypeMatchMode,
         pokedexSearchInput,
         pokedexShowOnlyFavorites,
         setPokedexSelectedGeneration: handleSetPokedexSelectedGeneration,
@@ -157,5 +165,6 @@ export function usePokedex() {
         setPokedexSearchInput: handleSetPokedexSearchInput,
         setPokedexShowOnlyFavorites: handleSetPokedexShowOnlyFavorites,
         handlePokedexTypeSelection: handlePokedexTypeSelectionCall,
+        setPokedexTypeMatchMode: handleSetPokedexTypeMatchMode,
     };
 }

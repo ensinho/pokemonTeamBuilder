@@ -117,6 +117,11 @@ export function PokemonDetailPanel({
     const handleSelectPokemon = (pokemon) => { if (pokemon?.id != null) onNavigate?.(pokemon.id); };
 
     const isOnTeam = selectedPokemonDetails && currentTeam.some((m) => m.id === selectedPokemonDetails.id);
+    // The favourites Set is numeric (the store normalises it), so the id has to
+    // be too — a detail loaded from a route param or a Firestore doc can arrive
+    // as a string, and `Set.has('6')` is quietly false for `6`.
+    const favoriteId = selectedPokemonDetails ? Number(selectedPokemonDetails.id) : null;
+    const isFavorite = Boolean(favoritePokemons?.has?.(favoriteId));
 
     // ── Tab content (copied from PokedexView's renderDetailsContent) ───────────
     const renderDetailsContent = () => {
@@ -147,11 +152,12 @@ export function PokemonDetailPanel({
                                     {onToggleFavoritePokemon && (
                                         <button
                                             type="button"
-                                            onClick={() => onToggleFavoritePokemon(selectedPokemonDetails.id)}
-                                            className={`absolute -bottom-2 -left-4 rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 border ${favoritePokemons?.has(selectedPokemonDetails.id) ? 'bg-accent-soft text-accent border-accent-soft' : 'bg-surface-raised text-muted border-border'}`}
-                                            title={favoritePokemons?.has(selectedPokemonDetails.id) ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
+                                            onClick={() => onToggleFavoritePokemon(favoriteId)}
+                                            aria-pressed={isFavorite}
+                                            className={`absolute -bottom-2 -left-4 rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 border ${isFavorite ? 'bg-accent-soft text-accent border-accent-soft' : 'bg-surface-raised text-muted border-border'}`}
+                                            title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
                                         >
-                                            <Star className={`w-4 h-4 ${favoritePokemons?.has(selectedPokemonDetails.id) ? 'fill-[#FBBF24] text-[#FBBF24]' : 'text-muted'}`} />
+                                            <Star className={`w-4 h-4 ${isFavorite ? 'fill-[#FBBF24] text-[#FBBF24]' : 'text-muted'}`} />
                                         </button>
                                     )}
                                 </div>

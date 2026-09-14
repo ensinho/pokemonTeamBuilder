@@ -5,6 +5,7 @@ import { t } from '../utils/translate';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 import { matchesPokemonSearch } from '../utils/pokemonSprites';
 import { buildListSignature } from '../utils/pokedexListKey';
+import { matchesTypeFilter, TYPE_MATCH_ANY } from '../utils/typeFilter';
 
 const PAGE_SIZE = 50;
 
@@ -50,13 +51,13 @@ const getGameSets = () => {
 };
 
 // Pure client-side filtering — mirrors what the old Firestore `where` clauses did.
-const filterPokemons = (all, { generation, types, search, gameIds, gameGen, restrict, showOnlyFavorites, favoritePokemons }) => {
+const filterPokemons = (all, { generation, types, typeMatchMode, search, gameIds, gameGen, restrict, showOnlyFavorites, favoritePokemons }) => {
     const searchTerm = (search || '').toLowerCase().trim();
     const typeList = Array.from(types || []);
 
     let filtered = all.filter((p) => {
         if (generation && generation !== 'all' && p.generation !== generation) return false;
-        if (typeList.length > 0 && !typeList.some((t) => (p.types || []).includes(t))) return false;
+        if (!matchesTypeFilter(p.types, typeList, typeMatchMode)) return false;
         if (searchTerm && !matchesPokemonSearch(p, searchTerm)) return false;
         if (showOnlyFavorites && !favoritePokemons?.has(p.id)) return false;
         return true;
@@ -109,6 +110,8 @@ export const usePokedexStore = create((set, get) => ({
     selectedGeneration: 'all',
     selectedGame: 'all',
     selectedTypes: new Set(),
+    // 'any' (OR) or 'all' (AND) across `selectedTypes` — see utils/typeFilter.js.
+    typeMatchMode: TYPE_MATCH_ANY,
     searchInput: '',
     debouncedSearchTerm: '',
     showOnlyFavorites: false,
@@ -117,6 +120,7 @@ export const usePokedexStore = create((set, get) => ({
     pokedexSelectedGeneration: 'all',
     pokedexSelectedGame: 'all',
     pokedexSelectedTypes: new Set(),
+    pokedexTypeMatchMode: TYPE_MATCH_ANY,
     pokedexSearchInput: '',
     debouncedPokedexSearchTerm: '',
     pokedexShowOnlyFavorites: false,
@@ -175,6 +179,7 @@ export const usePokedexStore = create((set, get) => ({
             const filtered = filterPokemons(all, {
                 generation: isPokedex ? state.pokedexSelectedGeneration : state.selectedGeneration,
                 types: isPokedex ? state.pokedexSelectedTypes : state.selectedTypes,
+                typeMatchMode: isPokedex ? state.pokedexTypeMatchMode : state.typeMatchMode,
                 search: isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm,
                 gameIds,
                 gameGen,
@@ -188,6 +193,7 @@ export const usePokedexStore = create((set, get) => ({
                 generation: isPokedex ? state.pokedexSelectedGeneration : state.selectedGeneration,
                 game: gameKey,
                 types: isPokedex ? state.pokedexSelectedTypes : state.selectedTypes,
+                typeMatchMode: isPokedex ? state.pokedexTypeMatchMode : state.typeMatchMode,
                 search: isPokedex ? state.debouncedPokedexSearchTerm : state.debouncedSearchTerm,
                 favoritesOnly: isPokedex ? state.pokedexShowOnlyFavorites : state.showOnlyFavorites,
             });

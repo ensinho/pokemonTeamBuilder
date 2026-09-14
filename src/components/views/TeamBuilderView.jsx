@@ -23,6 +23,8 @@ import { buildSynergySuggestions } from '../../utils/synergySuggestions';
 import { buildTeamThreats } from '../../utils/teamThreats';
 import { TeamThreats } from '../TeamThreats';
 import { buildGameSections } from '../../utils/gameDex';
+import { matchesTypeFilter } from '../../utils/typeFilter';
+import { TypeMatchToggle } from '../TypeMatchToggle';
 import { isPlaythroughMode } from '../../constants/regulations';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { useSmogonData } from '../../hooks/useSmogonData';
@@ -106,6 +108,8 @@ export function TeamBuilderView({
     isFetchingMore,
     selectedTypes,
     handleTypeSelection,
+    typeMatchMode,
+    setTypeMatchMode,
     suggestedPokemonIds,
     colors,
     onEditTeamPokemon,
@@ -286,11 +290,11 @@ export function TeamBuilderView({
             if (!entry) return false;
             if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
-            if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
+            if (!matchesTypeFilter(entry.types, typeList, typeMatchMode)) return false;
             if (search && !matchesPokemonSearch(entry, search)) return false;
             return true;
         });
-    }, [synergySuggestions, suggestionIndexById, selectedTypes, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
+    }, [synergySuggestions, suggestionIndexById, selectedTypes, typeMatchMode, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
 
     // Map synergy id → primary reason for in-grid border/icon rendering.
     const synergyReasonById = React.useMemo(
@@ -330,12 +334,12 @@ export function TeamBuilderView({
             if (!entry) return false;
             if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
             if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
-            if (typeList.length && !typeList.some((tp) => (entry.types || []).includes(tp))) return false;
+            if (!matchesTypeFilter(entry.types, typeList, typeMatchMode)) return false;
             if (search && !matchesPokemonSearch(entry, search)) return false;
             return true;
         };
         return buildGameSections({ fullIndex: pokemonIndex, gameDexes, game: selectedGameObj, matches });
-    }, [isGameFilterActive, gameDexes, selectedGameObj, pokemonIndex, searchInput, selectedTypes, showOnlyFavorites, selectedGeneration, favoritePokemons]);
+    }, [isGameFilterActive, gameDexes, selectedGameObj, pokemonIndex, searchInput, selectedTypes, typeMatchMode, showOnlyFavorites, selectedGeneration, favoritePokemons]);
 
     const gameVisibleCount = React.useMemo(
         () => (gameSections ? gameSections.reduce((n, s) => n + s.mons.length, 0) : 0),
@@ -403,6 +407,7 @@ export function TeamBuilderView({
                     selectedTypes={selectedTypes}
                     onToggleFavoritePokemon={onToggleFavoritePokemon}
                     handleTypeSelection={handleTypeSelection}
+                    typeMatchMode={typeMatchMode}
                     showDetails={openDetailModal}
                     suggestedPokemonIds={suggestedPokemonIds}
                     colors={colors}
@@ -747,6 +752,7 @@ export function TeamBuilderView({
 
                         {filtersExpanded && (
                             <div className="team-builder-unified-toolbar mt-3">
+                                <TypeMatchToggle value={typeMatchMode} onChange={setTypeMatchMode} />
                                 <span className="team-builder-picker-summary">{selectedTypeCount === 0 ? t('pokedex.allTypes') : t('pokedex.selectedTypes', { count: selectedTypeCount })}</span>
 
                                 <div className="team-builder-select-wrap">

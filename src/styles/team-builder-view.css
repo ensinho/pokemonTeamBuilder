@@ -1593,6 +1593,83 @@
 }
 
 /* Filter bottom-sheet sections */
+/* Segmented OR/AND switch for the type filter. Sized to sit on the same row as
+   .team-builder-picker-summary, which it stands beside — same height, same
+   radius, same raised fill, so the row keeps one baseline. The selected option
+   is an inset ring rather than a border: a real border would resize the option
+   and shove its neighbour sideways every time the choice moves. */
+.type-match-toggle {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    gap: var(--space-0_5);
+    height: 2.15rem;
+    padding: var(--space-0_5);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    flex-shrink: 0;
+}
+
+.type-match-toggle__option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 100%;
+    padding: 0 var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.type-match-toggle__option:hover:not([aria-pressed='true']) {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.type-match-toggle__option[aria-pressed='true'] {
+    background: var(--color-surface-active);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+    color: var(--color-primary);
+}
+
+.type-match-toggle__option:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* In the filters sheet the switch shares the "Types" heading row, where the
+   surrounding labels are already small — a full-height control would out-weigh
+   the heading it qualifies. */
+.type-match-toggle--sheet {
+    height: 1.85rem;
+}
+
+/* The sheet's heading row: label left, the switch that qualifies it right. */
+.pokedex-sheet-heading-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+}
+
+.pokedex-sheet-heading-row .pokedex-sheet-label {
+    margin-bottom: 0;
+}
+
 .pokedex-sheet-label {
     margin: 0 0 var(--space-2);
     font-size: 0.7rem;

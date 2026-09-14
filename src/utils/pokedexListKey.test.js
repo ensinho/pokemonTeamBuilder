@@ -27,10 +27,17 @@ describe('buildListSignature', () => {
         expect(buildListSignature({ mode: 'pokedex', types: new Set(['fire']) })).not.toBe(base);
         expect(buildListSignature({ mode: 'pokedex', search: 'pika' })).not.toBe(base);
         expect(buildListSignature({ mode: 'pokedex', favoritesOnly: true })).not.toBe(base);
+        expect(buildListSignature({ mode: 'pokedex', typeMatchMode: 'all' })).not.toBe(base);
+    });
+
+    it('separates an AND type filter from the same types read as OR', () => {
+        const types = new Set(['fire', 'water']);
+        expect(buildListSignature({ types, typeMatchMode: 'all' }))
+            .not.toBe(buildListSignature({ types, typeMatchMode: 'any' }));
     });
 
     it('treats missing filters as the defaults', () => {
         expect(buildListSignature({ mode: 'pokedex' }))
-            .toBe(buildListSignature({ mode: 'pokedex', generation: null, game: undefined, types: null, search: null }));
+            .toBe(buildListSignature({ mode: 'pokedex', generation: null, game: undefined, types: null, typeMatchMode: undefined, search: null }));
     });
 });
