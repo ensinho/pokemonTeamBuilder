@@ -141,6 +141,20 @@ All `.btn` variants include: `active:scale(0.98)`, disabled opacity/pointer-even
 .badge-outline    Muted/bordered — metadata labels
 ```
 
+### Type chips
+
+```css
+.type-chip        Standard Pokémon type chip — icon + label, outlined and
+                  tinted in the type's canonical colour. Use via <TypeChip>.
+.type-chip--sm    Dense rows (move lists)
+.type-badge--*    The older solid-fill badge — dense grids only
+```
+
+A canon colour (type, game version) is **never written raw into a rule**. It arrives as
+a custom property and is mixed into theme tokens — border 45%, fill 14%, label 45%
+mixed toward `--color-fg` — so one chip is legible on all six themes. See
+`components.md → TypeChip` for the measured contrast behind those numbers.
+
 ### Inputs
 
 ```css

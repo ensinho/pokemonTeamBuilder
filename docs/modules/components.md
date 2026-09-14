@@ -16,12 +16,44 @@ Card size adapts via a `size` prop: `sm`, `md` (default), `lg`.
 
 ---
 
+### TypeChip — the standard type chip
+**File:** `src/components/TypeChip.jsx` · **Style:** `.type-chip` in `src/index.css`
+
+**This is how a Pokémon type is shown when it is read rather than counted** — detail
+screens, matchup lists, move rows, anywhere the type has a label. Icon + label in a
+pill **outlined and tinted in that type's own canonical colour**:
+
+```jsx
+<TypeChip type="ground" />            {/* md — the default */}
+<TypeChip type="electric" size="sm" /> {/* dense rows, e.g. a move list */}
+```
+
+The colour is passed down as the `--type-chip` custom property and **mixed into theme
+tokens** in `index.css` — never used raw:
+
+| Part | Value |
+|---|---|
+| border | `color-mix(… var(--type-chip) 45%, transparent)` |
+| background | `color-mix(… var(--type-chip) 14%, transparent)` |
+| label | `color-mix(… var(--type-chip) 45%, var(--color-fg))` |
+
+The label mix is **measured, not chosen**: mixing toward `--color-fg` darkens the label
+on the light themes and lightens it on the dark ones, and at 45% the worst of the 18
+types clears 4.5:1 in all six themes (at 70% `electric` scored 2.78:1 on `light`). Hue
+identity is carried by the icon and the tint, so the label only has to be readable.
+Reuse the same three mixes for any other canon-coloured chip (the game-version pills in
+`pokemon-detail-mobile.css` do).
+
 ### TypeBadge
 **File:** `src/components/TypeBadge.jsx`
 
-Pill badge for a Pokémon type. Takes `type` (string) and optional `size`. Colors come from `typeColors` in `src/constants/types.js`. Type icons (imported PNGs from `src/assets/typeIcons/`) are optionally shown with the `showIcon` prop.
+The older **solid-fill** badge: type colour as background, white/dark text, ALL CAPS,
+no icon. It is still the right thing in dense grids where the type is a marker to be
+counted at a glance (Pokémon cards, team slots), and it is what most of the app still
+uses — see the backlog entry in `docs/wounds.md` for the conversion.
 
-Do not hardcode type colors in JSX — always use `TypeBadge` or the `typeColors` map.
+**New work uses `TypeChip`.** Either way, do not hardcode type colours in JSX — they
+come from `typeColors` in `src/constants/types.js`.
 
 ---
 

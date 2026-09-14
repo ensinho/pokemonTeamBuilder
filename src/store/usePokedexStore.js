@@ -91,6 +91,13 @@ const filterPokemons = (all, { generation, types, search, gameIds, gameGen, rest
 export const usePokedexStore = create((set, get) => ({
     pokemons: [],          // currently visible (paged) slice
     filteredPokemons: [],  // full filtered result set (client-side)
+    // The ordered list the user was browsing when they opened a Pokémon — what
+    // the mobile detail screen swipes through. It is a *snapshot*, not a live
+    // read of `filteredPokemons`: opening /pokemon/:id flips `usePokedex()` to
+    // Builder mode and refetches this store (see the 2026-08-26 wound), so by
+    // the time the detail screen mounts, `filteredPokemons` is the Builder's
+    // list, not the Pokédex results the user actually saw.
+    browseSequence: [],
     visibleCount: PAGE_SIZE,
     listSignature: '',   // identity of the list currently in `filteredPokemons`
     hasMore: true,
@@ -116,6 +123,13 @@ export const usePokedexStore = create((set, get) => ({
 
     setFilter: (key, value) => {
         set({ [key]: value });
+    },
+
+    // Called as a Pokémon is opened from a list, with that list's full filtered
+    // order (light index entries). Session-scoped by nature: it describes this
+    // visit's browsing, so it never outlives the store.
+    setBrowseSequence: (sequence) => {
+        set({ browseSequence: Array.isArray(sequence) ? sequence : [] });
     },
 
     toggleTypeSelection: (type, isPokedex) => {
