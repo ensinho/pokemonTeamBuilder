@@ -16,7 +16,8 @@ All `<Route>` definitions are **centralized in `src/components/AppLayout.jsx`**.
 |------|-----------|-------------|
 | `/` | `HomeView` | Dashboard — active team, pinned Pokémon, daily puzzle teaser, timeline |
 | `/builder` | `TeamBuilderView` / `MobileTeamBuilderView` | Core team editor — desktop and mobile variants |
-| `/pokedex` | `PokedexView` | Full Pokédex browser with detail panel |
+| `/pokedex` | `PokedexView` | Full Pokédex browser (desktop: list + detail panel; mobile: card grid) |
+| `/pokemon/:idOrName` | `PokemonDetailView` | One Pokémon — `PokemonDetailPanel` on desktop, `MobilePokemonDetailView` below 1024px |
 | `/favorites` | `FavoritePokemonsView` | Saved favorite Pokémon grid |
 | `/teams` | `AllTeamsView` | Saved teams dashboard — grid and list view |
 | `/generator` | `RandomGeneratorView` | Random team generator with filter controls |
@@ -107,6 +108,41 @@ Detail panel tabs:
 - **Forms** — alternate forms, regional variants, mega evolutions
 
 State: `usePokedexStore` (list, search, filters, pagination), `pokemonDataCache` (detail fetch).
+
+---
+
+### PokemonDetailView
+**Path:** `/pokemon/:idOrName`
+**File:** `src/components/views/PokemonDetailView.jsx` (a resolver, ~125 lines)
+**Style:** `src/styles/pokemon-detail-view.css` (desktop) · `src/styles/pokemon-detail-mobile.css` (phone)
+
+Resolves the route param to a numeric id via `useReferenceStore`'s index, owns the
+document meta, and then picks a **surface**:
+
+| Breakpoint | Component | Shape |
+|---|---|---|
+| ≥ 1024px | `PokemonDetailPanel` | The tabbed panel inside the normal page shell |
+| < 1024px | `MobilePokemonDetailView` | A dedicated full-screen Pokédex entry |
+
+Both read the same data through **`usePokemonDetailData(...)`** (`src/hooks/`) — the
+detail cascade, species, encounters, evolution chain, forms, resolved moves and every
+derived display value. They differ in layout only; never fork the cascade to add a
+field to one of them (`docs/wounds.md` lists duplicated cascades as a dispattern).
+
+**The mobile screen is a takeover.** `AppLayout` sets `isMobileDetailsOpen` for
+`currentPage === 'pokemonDetail'`, which hides the app header and the tab bar and
+zeroes the page gutter (`.app-shell__body.is-mobile-detail`,
+`.app-shell__content.is-mobile-detail`). The screen owns its own back button,
+identity and safe-area padding. Nothing inside it is drawn as a box: sections are
+full-bleed `--color-surface` bands separated by gaps.
+
+**It is also a carousel.** `useSwipeDeck` (`src/hooks/`) drags the screen sideways and
+peeks the neighbour in from the edge; releasing past a quarter of the width commits.
+The neighbours come from `getPokemonNeighbors` (`src/utils/pokemonNeighbors.js`), which
+walks **the list the user was browsing** — `usePokedexStore.browseSequence`, a snapshot
+PokedexView takes when a card is opened — and falls back to national order for deep
+links. A swipe navigates with `replace: true`, so ten Pokémon sideways still leaves one
+"back" to the Pokédex.
 
 ---
 

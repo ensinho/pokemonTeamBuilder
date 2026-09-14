@@ -14,6 +14,7 @@ import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
+import { usePokedexStore } from '../../store/usePokedexStore';
 
 const MobilePokedexPokemonCard = ({
     pokemon,
@@ -127,6 +128,7 @@ export function PokedexView({
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const pokemonQueryParam = searchParams.get('pokemon');
+    const setBrowseSequence = usePokedexStore((s) => s.setBrowseSequence);
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
@@ -173,9 +175,13 @@ export function PokedexView({
         }
     }, [pokemonQueryParam, navigate]);
 
-    // Clicking a Pokémon opens its dedicated detail page (researchable, shareable URL).
+    // Clicking a Pokémon opens its dedicated detail page (researchable, shareable
+    // URL). The *filtered* order goes with it: on a phone the detail screen is a
+    // carousel, and "next" has to mean the next card in the list the user is
+    // looking at — not the next national id.
     const handleSelectPokemon = (pokemon) => {
         if (!pokemon?.id) return;
+        setBrowseSequence(usePokedexStore.getState().filteredPokemons);
         navigate(`/pokemon/${pokemon.id}`, { state: { from: '/pokedex' } });
     };
 

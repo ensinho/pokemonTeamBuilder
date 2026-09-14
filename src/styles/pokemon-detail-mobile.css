@@ -1,0 +1,674 @@
+/* ============================================================
+   Pokémon detail — phone screen (/pokemon/:id below 1024px)
+   Loaded only by MobilePokemonDetailView, which is only rendered
+   below the lg breakpoint. Desktop keeps pokemon-detail-view.css.
+
+   Two ideas carry this file:
+   1. Nothing is drawn as a box. The screen is edge to edge; sections
+      separate by fill and gap, never by a border inside a border.
+   2. The screen is a deck. `--pdm-dx` is written by useSwipeDeck on
+      every touchmove and read by the current screen and both peeks,
+      so one DOM write moves all three.
+   ============================================================ */
+
+.pdm {
+    position: relative;
+    /* The browser keeps vertical panning; sideways belongs to the deck, so the
+       gesture never has to fight (or preventDefault) the page scroll. */
+    touch-action: pan-y;
+    background: var(--color-bg);
+}
+
+.pdm__screen {
+    transform: translate3d(var(--pdm-dx, 0px), 0, 0);
+}
+
+/* Follow the finger with no easing while dragging; ease on release and on the
+   commit slide-out. --duration-fast is the same 150ms everything else uses. */
+.pdm:not([data-phase='dragging']) .pdm__screen,
+.pdm:not([data-phase='dragging']) .pdm__peek {
+    transition: transform var(--duration-fast) var(--ease-smooth);
+}
+
+.pdm[data-phase='dragging'] .pdm__screen {
+    will-change: transform;
+}
+
+/* The neighbour waiting off-screen. Fixed to the viewport rather than absolute
+   in the page, so it lands in front of the reader wherever they had scrolled
+   to; it only exists while a gesture is running. */
+.pdm__peek {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-content);
+    background: var(--color-bg);
+    pointer-events: none;
+}
+
+.pdm__peek--prev { transform: translate3d(calc(-100% + var(--pdm-dx, 0px)), 0, 0); }
+.pdm__peek--next { transform: translate3d(calc(100% + var(--pdm-dx, 0px)), 0, 0); }
+
+/* Arriving from a committed swipe: the new screen continues the motion instead
+   of appearing. Direction is stamped on the route state by the swipe. */
+@keyframes pdm-enter-from-next {
+    from { transform: translate3d(22%, 0, 0); opacity: 0.5; }
+    to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+@keyframes pdm-enter-from-prev {
+    from { transform: translate3d(-22%, 0, 0); opacity: 0.5; }
+    to   { transform: translate3d(0, 0, 0); opacity: 1; }
+}
+.pdm__screen--from-next { animation: pdm-enter-from-next var(--duration-slow) var(--ease-smooth); }
+.pdm__screen--from-prev { animation: pdm-enter-from-prev var(--duration-slow) var(--ease-smooth); }
+
+@media (prefers-reduced-motion: reduce) {
+    .pdm__screen--from-next,
+    .pdm__screen--from-prev { animation: none; }
+}
+
+/* ── Hero ──────────────────────────────────────────────────── */
+
+.pdm__hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    /* The status bar is this screen's to clear: the app header, which normally
+       owns the top band, is hidden on this route. */
+    padding-block: calc(env(safe-area-inset-top, 0px) + var(--space-3)) var(--space-4);
+    padding-inline: var(--space-4);
+    /* --pdm-type-a / --pdm-type-b are the Pokémon's own types, set inline.
+       Type colours are canon and theme-independent (the documented exception to
+       "never write a raw colour"); everything they are mixed into is a token,
+       so the band lands correctly in all six themes. */
+    background:
+        radial-gradient(125% 85% at 50% 0%, color-mix(in srgb, var(--pdm-type-a) 42%, transparent), transparent 72%),
+        linear-gradient(165deg,
+            color-mix(in srgb, var(--pdm-type-a) 22%, var(--color-bg)),
+            color-mix(in srgb, var(--pdm-type-b) 10%, var(--color-bg)));
+}
+
+.pdm__hero--peek {
+    min-height: 60%;
+}
+
+.pdm__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+}
+
+.pdm__bar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+.pdm__iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* 44px — a thumb target, not a cursor one. */
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border: none;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--color-fg) 8%, transparent);
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
+}
+
+.pdm__iconbtn:active { background: color-mix(in srgb, var(--color-fg) 14%, transparent); }
+.pdm__iconbtn.is-active { color: var(--color-accent); }
+
+.pdm__dex {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.pdm__name {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-transform: capitalize;
+    color: var(--color-fg);
+}
+
+.pdm__genus {
+    margin: var(--space-0_5) 0 0;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.pdm__types {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+    margin-top: var(--space-2_5);
+}
+
+.pdm__stage {
+    display: grid;
+    grid-template-columns: 2.75rem minmax(0, 1fr) 2.75rem;
+    align-items: center;
+    justify-items: center;
+    margin-top: var(--space-2);
+}
+
+.pdm__art {
+    /* <Sprite> renders a span wrapper with the image inside at 100%; the size
+       lives here so the pokéball placeholder occupies the same box while the
+       real sprite loads and the hero never reflows. */
+    width: 11rem;
+    height: 11rem;
+    max-width: 100%;
+}
+
+.pdm__art .sprite-img {
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.pdm__step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+}
+
+.pdm__step:active { color: var(--color-fg); }
+
+/* No neighbour in that direction: the control leaves rather than sitting there
+   greyed out — the swipe already rubber-bands to say the same thing. */
+.pdm__step:disabled {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* ── Tabs ──────────────────────────────────────────────────── */
+
+.pdm__tabs {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    display: flex;
+    align-items: stretch;
+    gap: var(--space-1);
+    padding-inline: var(--space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+    backdrop-filter: blur(12px) saturate(1.15);
+    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+}
+
+.pdm__tabs::-webkit-scrollbar { display: none; }
+
+.pdm__tab {
+    position: relative;
+    flex: 1 0 auto;
+    padding-block: var(--space-3);
+    padding-inline: var(--space-2_5);
+    border: none;
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.pdm__tab.is-active { color: var(--color-fg); }
+
+.pdm__tab.is-active::after {
+    content: '';
+    position: absolute;
+    inset-inline: var(--space-2_5);
+    bottom: 0;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary);
+}
+
+/* ── Body ──────────────────────────────────────────────────── */
+
+.pdm__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    /* The tab bar is hidden on this screen, so the home-indicator inset is this
+       page's to clear (max(), not an addition — most screens have no inset). */
+    padding-block: var(--space-2) max(var(--space-6), env(safe-area-inset-bottom, 0px));
+}
+
+.pdm-section {
+    padding: var(--space-4);
+    background: var(--color-surface);
+}
+
+.pdm-section__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-3);
+}
+
+.pdm-section__title {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.pdm-section__meta {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-fg);
+}
+
+.pdm-prose {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-fg);
+}
+
+.pdm-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.pdm-capitalize { text-transform: capitalize; }
+
+.pdm-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+/* Spec tables: one hairline between rows, no box around them. */
+.pdm-table { margin: 0; }
+
+.pdm-kv {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding-block: var(--space-2_5);
+}
+
+.pdm-kv + .pdm-kv { border-top: 1px solid var(--color-border); }
+
+.pdm-kv__label {
+    flex: 0 0 auto;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+}
+
+.pdm-kv__value {
+    margin: 0;
+    min-width: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-fg);
+    text-align: right;
+}
+
+.pdm-abilities {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+}
+
+.pdm-ability {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.pdm-ability em {
+    font-size: 0.6875rem;
+    font-style: normal;
+    color: var(--color-muted);
+}
+
+/* ── Type pills (canon type colours) ───────────────────────── */
+
+.pdm-typepill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding-block: var(--space-1);
+    padding-inline: var(--space-2_5);
+    border-radius: var(--radius-full);
+    background: var(--pdm-pill, var(--color-surface-raised));
+    /* White ink on a type colour is the canon pairing and correct in every
+       theme, like .type-badge--* in index.css. */
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.pdm-typepill img {
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.pdm-typepill--sm {
+    padding-inline: var(--space-2);
+    font-size: 0.6875rem;
+}
+
+.pdm-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+}
+
+.pdm-defenses {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.pdm-defense__label {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-2);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-fg);
+}
+
+.pdm-defense__mult {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+/* ── Horizontal rails (evolution, forms) ───────────────────── */
+
+.pdm-rail {
+    display: flex;
+    gap: var(--space-2);
+    /* Full-bleed scroll: the rail runs to both screen edges so nothing looks
+       cropped inside a margin. */
+    margin-inline: calc(var(--space-4) * -1);
+    padding-inline: var(--space-4);
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    overscroll-behavior-x: contain;
+}
+
+.pdm-rail::-webkit-scrollbar { display: none; }
+
+.pdm-rail__item {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    width: 5.5rem;
+    padding: var(--space-2);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.pdm-rail__item.is-current { box-shadow: var(--ring-primary); }
+.pdm-rail__item:active { background: var(--color-surface-active); }
+
+.pdm-rail__item img {
+    width: 3.25rem;
+    height: 3.25rem;
+    object-fit: contain;
+}
+
+.pdm-rail__item span {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+/* ── Moves ─────────────────────────────────────────────────── */
+
+.pdm-moves {
+    display: flex;
+    flex-direction: column;
+}
+
+.pdm-move {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding-block: var(--space-2_5);
+    border: none;
+    background: transparent;
+    color: var(--color-fg);
+    text-align: left;
+    cursor: pointer;
+}
+
+.pdm-move + .pdm-move { border-top: 1px solid var(--color-border); }
+.pdm-move:active { background: var(--color-surface-hover); }
+
+.pdm-move__slot {
+    flex: 0 0 2.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--color-muted);
+    text-transform: capitalize;
+}
+
+.pdm-move__body {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.pdm-move__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.pdm-move__stats {
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+}
+
+/* ── Locations ─────────────────────────────────────────────── */
+
+.pdm-locations {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.pdm-location__name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    margin: 0 0 var(--space-2);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-fg);
+}
+
+.pdm-encounter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-block: var(--space-1_5);
+    font-size: 0.75rem;
+    color: var(--color-muted);
+}
+
+.pdm-encounter__version {
+    flex: 0 0 auto;
+    padding-block: var(--space-0_5);
+    padding-inline: var(--space-1_5);
+    border-radius: var(--radius-sm);
+    /* Version colours are canon game branding, like the type colours above. */
+    background: color-mix(in srgb, var(--pdm-pill) 18%, transparent);
+    color: var(--pdm-pill);
+    font-size: 0.625rem;
+    font-weight: 700;
+}
+
+.pdm-encounter__method {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pdm-encounter__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+
+.pdm-encounter__meta b { color: var(--color-primary); }
+
+/* ── Sprites ───────────────────────────────────────────────── */
+
+.pdm-sprites {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.pdm-sprite {
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.pdm-sprite__label {
+    margin: 0 0 var(--space-1_5);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.pdm-sprite__row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+}
+
+.pdm-sprite__pick {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-0_5);
+    padding: var(--space-1);
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-muted);
+    font-size: 0.625rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pdm-sprite__pick.is-active { box-shadow: var(--ring-primary); color: var(--color-fg); }
+
+.pdm-sprite__pick img {
+    width: 2.75rem;
+    height: 2.75rem;
+    object-fit: contain;
+}
+
+/* ── States ────────────────────────────────────────────────── */
+
+.pdm-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-block: var(--space-16);
+}
+
+.pdm-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-10) var(--space-6);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    text-align: center;
+}
+
+.pdm-empty__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-fg);
+}
+
+.pdm-empty__message {
+    margin: 0;
+    font-size: 0.8125rem;
+    max-width: 28rem;
+}
+
+.pdm-select {
+    width: 100%;
+    padding-block: var(--space-2_5);
+    padding-inline: var(--space-3_5);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+/* The competitive panel is a desktop component: its bordered cards inside these
+   flush sections would be boxes in a box. Strip the outlines only — the fills
+   they carry already do the grouping. */
+.pdm-competitive {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+}
+
+.pdm-competitive section,
+.pdm-competitive .rounded-xl {
+    border-width: 0;
+}

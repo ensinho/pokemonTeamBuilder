@@ -1871,6 +1871,12 @@
     .app-shell__body.is-mobile-detail {
         padding-bottom: 0;
     }
+
+    /* A takeover hides the tab bar, so the clearance reserved for it above
+       becomes a band of dead space at the end of the page. */
+    .app-shell__content.is-mobile-detail {
+        padding-bottom: 0;
+    }
 }
 
 .app-shell__tab {

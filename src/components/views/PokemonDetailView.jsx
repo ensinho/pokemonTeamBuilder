@@ -8,9 +8,11 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { PokeballIcon } from '../icons';
 import { PokemonDetailPanel } from './PokemonDetailPanel';
+import { MobilePokemonDetailView } from './MobilePokemonDetailView';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { useSmartBack } from '../../hooks/useEntityNavigate';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
 
 export function PokemonDetailView({
     colors,
@@ -27,6 +29,9 @@ export function PokemonDetailView({
     const location = useLocation();
     const { t, language } = useTranslation();
     const pt = language === 'pt';
+    // Below lg the Pokédex entry is its own screen, not a panel in a page —
+    // see MobilePokemonDetailView.
+    const isMobile = useMediaQuery('(max-width: 1023px)');
 
     const allPokemons = useReferenceStore((s) => s.pokemonIndex);
     const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
@@ -77,6 +82,23 @@ export function PokemonDetailView({
                 title={t('pdetail.notFound')}
                 message={t('pdetail.notFoundDesc')}
                 action={{ label: pt ? 'Voltar' : 'Back', onClick: handleBack }}
+            />
+        );
+    }
+
+    if (isMobile) {
+        return (
+            <MobilePokemonDetailView
+                key={resolvedId}
+                pokemonId={resolvedId}
+                indexEntry={indexEntry}
+                favoritePokemons={favoritePokemons}
+                onToggleFavoritePokemon={onToggleFavoritePokemon}
+                onNavigate={handleNavigate}
+                onBack={handleBack}
+                db={db}
+                pokemonDetailsCache={pokemonDetailsCache}
+                setPokemonDetailsCache={setPokemonDetailsCache}
             />
         );
     }

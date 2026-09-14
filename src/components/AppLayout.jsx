@@ -520,8 +520,16 @@ export default function AppLayout() {
     const isRailCollapsed = isSidebarCollapsed && !isMobile;
 
     const [searchParams] = useSearchParams();
+    // Full-screen takeover: no app header, no tab bar, no page gutter. The phone
+    // Pokémon screen (MobilePokemonDetailView) is a dedicated screen — it owns
+    // its own back button and title, so the app header would be a second title
+    // bar over it, and its sideways swipe wants the whole width.
     const isMobileDetailsOpen = useMemo(() => {
-        return isMobile && currentPage === 'pokedex' && searchParams.has('pokemon');
+        if (!isMobile) return false;
+        if (currentPage === 'pokemonDetail') return true;
+        // Legacy /pokedex?pokemon=<id> links (they redirect, but the redirect
+        // renders one frame first).
+        return currentPage === 'pokedex' && searchParams.has('pokemon');
     }, [isMobile, currentPage, searchParams]);
 
     // Lock body scroll when mobile details takeover is active
@@ -1381,7 +1389,7 @@ export default function AppLayout() {
                     </aside>
                 )}
 
-                <div className="app-shell__content custom-scrollbar">
+                <div className={`app-shell__content custom-scrollbar ${isMobileDetailsOpen ? 'is-mobile-detail' : ''}`}>
                     {!isMobileDetailsOpen && (
                         <header className="app-shell__header">
                             <div className="app-shell__header-main">
