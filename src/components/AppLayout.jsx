@@ -35,7 +35,7 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useEdgeSwipe } from '../hooks/useEdgeSwipe';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/useLanguageStore';
-import { useRegisterSW } from 'virtual:pwa-register/react';
+import { useAppUpdate } from '../hooks/useAppUpdate';
 
 import {
     AuthModal,
@@ -181,17 +181,16 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0 }) 
 };
 
 // Two module-scope latches for the patch-notes effect, both there because React's
-// StrictMode runs it twice in development while it mutates localStorage and then
-// reloads the page.
+// StrictMode runs it twice in development while it mutates localStorage.
 //
-// `versionBumpHandled`: the first run detects the bump, flags the notes, clears
-// the caches and schedules a reload. The second run then re-reads the version it
-// just wrote, sees a match, takes the "show" branch and consumes the flag — on a
-// page that is about to be thrown away, so the reloaded page had nothing left and
-// the notes never appeared in dev (production, mounting once, was unaffected).
+// `versionBumpHandled`: the first run detects the bump, clears the caches, writes
+// the new version and shows the notes. Without the latch the second run re-reads
+// the version *it just wrote*, sees a match and takes the other branch — which is
+// how the notes used to vanish in dev while working in production.
 //
-// `patchNotesOwed`: same double mount on the reloaded page, where the first run
-// legitimately consumes the flag; this keeps the second run from rendering nothing.
+// `patchNotesOwed`: same double mount, where the first run legitimately consumes
+// the `showPatchNotesAfterReload` handoff flag; this keeps the second run from
+// rendering nothing.
 let versionBumpHandled = false;
 let patchNotesOwed = false;
 
@@ -364,7 +363,6 @@ export default function AppLayout() {
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
     const [showTrainerSpriteSelector, setShowTrainerSpriteSelector] = useState(false);
-    const [showVersionModal, setShowVersionModal] = useState(false);
 
     // Bound here (not only in FriendsView) so the sidebar badge stays live on every
     // route. The store reference-counts, so FriendsView holding it too is fine.
@@ -413,81 +411,15 @@ export default function AppLayout() {
         catch { /* ignore */ }
     }, []);
 
-    // PWA SW registration & update prompt
+    // Service worker registration + the "a new version is live" prompt. Detection
+    // and reload both live in the hook, because both used to be wrong here: two
+    // detectors raced for the same modal and the loser's reload was answered by
+    // the old worker's precache, which is why every release prompted twice.
     const {
-        needRefresh: [needRefresh, setNeedRefresh],
-        updateServiceWorker,
-    } = useRegisterSW();
-
-    useEffect(() => {
-        if (needRefresh) {
-            setShowVersionModal(true);
-        }
-    }, [needRefresh]);
-
-    const handleVersionRefresh = useCallback(() => {
-        if (needRefresh) {
-            updateServiceWorker(true);
-        } else {
-            window.location.reload();
-        }
-        setShowVersionModal(false);
-    }, [needRefresh, updateServiceWorker]);
-
-    // Periodic and focus check for new index.html / hashed assets
-    useEffect(() => {
-        let isCancelled = false;
-
-        const checkNewVersion = async () => {
-            try {
-                const response = await fetch(`${window.location.origin}${import.meta.env.BASE_URL || '/'}index.html?t=${Date.now()}`, { cache: 'no-store' });
-                if (!response.ok) return;
-                const html = await response.text();
-
-                // Find all script tags in the fetched HTML
-                const scriptRegex = /<script\b[^>]*src="([^"]+)"/g;
-                let match;
-                const fetchedScripts = [];
-                while ((match = scriptRegex.exec(html)) !== null) {
-                    fetchedScripts.push(match[1]);
-                }
-
-                // Compare with scripts in current document
-                const currentScripts = Array.from(document.querySelectorAll('script')).map(s => s.getAttribute('src')).filter(Boolean);
-
-                // Check if any fetched asset is new
-                const isNewVersion = fetchedScripts.some(src => {
-                    if (src.includes('/assets/') && src.endsWith('.js')) {
-                        return !currentScripts.includes(src);
-                    }
-                    return false;
-                });
-
-                if (isNewVersion && !isCancelled) {
-                    setShowVersionModal(true);
-                }
-            } catch (e) {
-                console.error('Error checking version:', e);
-            }
-        };
-
-        const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
-                checkNewVersion();
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        const intervalId = setInterval(checkNewVersion, 5 * 60 * 1000);
-        const initialTimeout = setTimeout(checkNewVersion, 10 * 1000);
-
-        return () => {
-            isCancelled = true;
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            clearInterval(intervalId);
-            clearTimeout(initialTimeout);
-        };
-    }, []);
+        updateAvailable,
+        applyUpdate: handleVersionRefresh,
+        dismissUpdate: handleVersionDismiss,
+    } = useAppUpdate();
 
     // Track viewport tier, and auto-collapse the sidebar on the small-laptop band
     // (1024–1279) — but only while the user hasn't set an explicit preference.
@@ -618,7 +550,13 @@ export default function AppLayout() {
         return () => clearTimeout(timerId);
     }, [showInitialAuthSplash, splashMessages]);
 
-    // Check patch notes version & clear caches + force a single reload on version bump
+    // Drop stale cached data when the app version changes, then show the notes.
+    //
+    // This used to also unregister every service worker and reload the page. Both
+    // were wrong (docs/wounds.md, 2026-09-14): reaching this code at all means the
+    // new bundle is *already running*, so the reload was a second visible reload
+    // for no gain, and unregistering the worker threw away a 13 MB precache and
+    // left the next release with no worker to detect it with.
     useEffect(() => {
         const seenVersion = localStorage.getItem('patchNotesVersion');
         const showAfterReload = localStorage.getItem('showPatchNotesAfterReload') === '1';
@@ -629,22 +567,10 @@ export default function AppLayout() {
             // Version has been bumped!
             versionBumpHandled = true;
 
-            // Set flag to show patch notes after the reload
-            localStorage.setItem('showPatchNotesAfterReload', '1');
-
-            // 1. Unregister all active service workers to clear PWA cache
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then((registrations) => {
-                    for (const registration of registrations) {
-                        registration.unregister();
-                    }
-                }).catch(() => { });
-            }
-
-            // 2. Clear session storage completely
+            // 1. Clear session storage completely
             try { sessionStorage.clear(); } catch (e) { }
 
-            // 3. Clear non-essential localStorage keys
+            // 2. Clear non-essential localStorage keys
             try {
                 // The sweep exists to drop stale CACHED DATA after a format
                 // change — never the user's settings. Anything a person chose
@@ -694,15 +620,15 @@ export default function AppLayout() {
                 }
             } catch (e) { }
 
-            // 4. Update version in localStorage to match the new one BEFORE reloading
+            // 3. Record the version we are now on, and show what changed.
             localStorage.setItem('patchNotesVersion', PATCH_NOTES_VERSION);
-
-            // 5. Force a single clean reload of the page
-            setTimeout(() => {
-                window.location.reload();
-            }, 100);
+            localStorage.removeItem('showPatchNotesAfterReload');
+            patchNotesOwed = true;
+            setShowPatchNotes(true);
         } else {
-            // Same version, or first load. Show patch notes if flagged from a recent reload
+            // Same version, or first load. `showPatchNotesAfterReload` is the old
+            // reload-based handoff: still honoured so anyone who took the update
+            // on the previous build still gets their notes.
             if (showAfterReload || patchNotesOwed) {
                 patchNotesOwed = true;
                 setShowPatchNotes(true);
@@ -1138,10 +1064,10 @@ export default function AppLayout() {
                     onInstall={handleInstall}
                 />
             )}
-            {showVersionModal && (
+            {updateAvailable && (
                 <VersionUpdateModal
                     onRefresh={handleVersionRefresh}
-                    onDismiss={() => setShowVersionModal(false)}
+                    onDismiss={handleVersionDismiss}
                 />
             )}
             {showGreetingPokemonSelector && (
