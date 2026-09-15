@@ -53,7 +53,10 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     const navigate = useNavigate();
     const { linkState } = useEntityNavigate();
     const { smogonFor } = useSmogonData();
-    const { formats, defaultFormatId } = useUsageIndex();
+    // Regulations only: this is the team editor, so the usage tab answers "what
+    // does this Pokémon run in the reg I'm building for". Browsing every Smogon
+    // tier is the Meta page's job (the link below opens it).
+    const { regulations: formats, defaultFormatId } = useUsageIndex();
     const [searchParams, setSearchParams] = useSearchParams();
     const fmtId = searchParams.get('fmt') || defaultFormatId || '';
     const { usageFor, format, status: fmtStatus } = useUsageFormat(fmtId);

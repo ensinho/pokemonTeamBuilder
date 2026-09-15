@@ -16,7 +16,11 @@ import { NO_REGULATION } from '../constants/regulations';
 // has to render), but no format is fetched and every ranking comes back empty, so
 // consumers stop showing meta signals without each having to special-case it.
 export function useMetaUsage(formatId) {
-    const { formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
+    // `regulations`, not `formats`: the catalog now also carries the ~35 Smogon
+    // tiers the Meta pages browse, and this hook feeds the builder's regulation
+    // picker — which renders one card per entry and means "which ruleset am I
+    // building for", not "which ladder am I reading".
+    const { regulations: formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
     const playthrough = formatId === NO_REGULATION;
     // Only honour a requested regulation once we know it's real; otherwise default.
     const activeId = playthrough

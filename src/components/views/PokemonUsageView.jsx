@@ -21,7 +21,8 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { EmptyState } from '../EmptyState';
-import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, formatUsageSpread, SourceCredit, RegulationSelect, useSmartBack } from './metaShared';
+import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, formatUsageSpread, SourceCredit, useSmartBack } from './metaShared';
+import { FormatPicker } from './metaControls';
 
 const slugify = toApiSlug;
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
@@ -58,7 +59,7 @@ export function PokemonUsageView() {
 
     const { formats, defaultFormatId } = useUsageIndex();
     const fmtId = params.get('fmt') || defaultFormatId || '';
-    const { byId, usageFor, format, status: fmtStatus } = useUsageFormat(fmtId);
+    const { byId, usageFor, format, detailCutoff, status: fmtStatus } = useUsageFormat(fmtId);
     const { teams } = useTournamentData();
     const { smogonFor } = useSmogonData();
     const { typeForMove } = useMoveTypes();
@@ -149,7 +150,7 @@ export function PokemonUsageView() {
                     <span className="sm:hidden">{pt ? 'Voltar' : 'Back'}</span>
                 </button>
                 {formats.length > 0 && (
-                    <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} className="py-1.5 text-[13px]" />
+                    <FormatPicker formats={formats} value={fmtId} onChange={setFmt} pt={pt} compact />
                 )}
             </div>
 
@@ -187,7 +188,20 @@ export function PokemonUsageView() {
                             <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all active:scale-95">
                                 <BookOpen className="h-3.5 w-3.5" /> {pt ? 'Ficha completa' : 'Full Pokédex entry'}
                             </Link>
-                            {format && <span className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-[11px] font-semibold text-muted">{format.label}{format.cutoff ? ` · ${format.cutoff}+` : ''}</span>}
+                            {format && (
+                                // The band is part of the claim, not decoration: only
+                                // one cutoff's full breakdown is baked, so the page
+                                // names the one it is showing even when the Meta list
+                                // that linked here was ranked at another.
+                                <span
+                                    className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-[11px] font-semibold text-muted"
+                                    title={detailCutoff > 0
+                                        ? (pt ? `Partidas entre jogadores com rating ${detailCutoff} ou mais` : `Games between players rated ${detailCutoff} and above`)
+                                        : undefined}
+                                >
+                                    {format.label}{detailCutoff > 0 ? ` · ${detailCutoff}+` : ''}
+                                </span>
+                            )}
                         </div>
                     </div>
                     <div className="grid shrink-0 grid-cols-3 gap-2 sm:w-64">
@@ -204,8 +218,8 @@ export function PokemonUsageView() {
             {!usageLoading && !hasUsage && (
                 <div className="mb-4 rounded-xl border border-border bg-surface px-4 py-3 text-sm text-muted">
                     {pt
-                        ? `Sem dados de uso para ${entry.name} em ${format?.label || 'este regulamento'}. Tente outro regulamento acima.`
-                        : `No ${format?.label || 'this regulation'} usage data for ${pretty(entry.name)}. Try another regulation above.`}
+                        ? `Sem dados de uso para ${entry.name} em ${format?.label || 'este formato'}. Tente outro formato acima.`
+                        : `No ${format?.label || 'this format'} usage data for ${pretty(entry.name)}. Try another format above.`}
                 </div>
             )}
 

@@ -249,6 +249,44 @@ const PuzzleShareVisual = ({ language }) => {
     );
 };
 
+// Every Smogon tier in Meta & Usage — the tier list the picker now carries, over
+// the rating bands each of them can be read at. Both halves are the feature, so
+// both are drawn rather than described.
+const SmogonTiersVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2 bg-bg p-3" aria-hidden="true">
+            <div className="flex max-w-[15rem] flex-wrap justify-center gap-1">
+                {['OU', 'Ubers', 'UU', 'RU', 'NU', 'PU', 'ZU', 'LC', 'Doubles', 'Monotype'].map((tier, i) => (
+                    <span
+                        key={tier}
+                        className={`rounded-full px-2 py-0.5 text-[0.55rem] font-bold ${
+                            i === 0 ? 'bg-primary text-white' : 'bg-surface-raised text-muted'
+                        }`}
+                    >
+                        {tier}
+                    </span>
+                ))}
+            </div>
+            <div className="flex items-center gap-0.5 overflow-hidden rounded-md bg-surface-raised p-0.5">
+                {['0', '1500', '1695', '1825'].map((band, i) => (
+                    <span
+                        key={band}
+                        className={`rounded px-1.5 py-0.5 font-mono text-[0.55rem] font-bold tabular-nums ${
+                            i === 2 ? 'bg-primary text-white' : 'text-muted'
+                        }`}
+                    >
+                        {band === '0' ? (pt ? 'Todos' : 'All') : `${band}+`}
+                    </span>
+                ))}
+            </div>
+            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+                {pt ? 'dados reais, atualizados todo dia' : 'real data, refreshed daily'}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -269,6 +307,7 @@ const NOTE_VISUALS = {
     invites: InvitesVisual,
     latest: LatestVisual,
     puzzleShare: PuzzleShareVisual,
+    smogonTiers: SmogonTiersVisual,
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {

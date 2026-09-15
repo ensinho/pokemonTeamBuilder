@@ -31,6 +31,13 @@ export default {
                 bg: 'var(--color-bg)',
                 surface: 'var(--color-surface)',
                 'surface-raised': 'var(--color-surface-raised)',
+                // Interaction fills. Defined in index.css and already used by the
+                // hand-written CSS; exposed here so Tailwind-only components
+                // (the meta views) separate rows with a fill instead of
+                // hand-rolling a tint — the drift the design system forbids.
+                'surface-hover': 'var(--color-surface-hover)',
+                'surface-active': 'var(--color-surface-active)',
+                'on-primary': 'var(--color-on-primary)',
                 fg: 'var(--color-fg)',
                 muted: 'var(--color-muted)',
                 border: 'var(--color-border)',
