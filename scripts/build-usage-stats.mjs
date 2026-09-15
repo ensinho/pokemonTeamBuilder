@@ -573,8 +573,17 @@ async function main() {
     const available = await discoverAvailable(month);
     console.log(`  · listing: ${available.size} formats published`);
 
+    // `--formats=gen9ou,gen9uu` builds just those, for a 30-second smoke test
+    // before committing to the full catalog (~40 chaos dumps, a few hundred MB).
+    // A partial run writes a partial index, so it is for checking the pipeline
+    // works — not for producing the data the site ships.
+    const only = (process.argv.find((a) => a.startsWith('--formats=')) || '')
+        .slice('--formats='.length).split(',').map((s) => s.trim()).filter(Boolean);
+    const wanted = only.length ? FORMATS.filter((f) => only.includes(f.id)) : FORMATS;
+    if (only.length) console.warn(`  · --formats: building ${wanted.length} of ${FORMATS.length} (PARTIAL index — do not ship)`);
+
     const built = [];
-    for (const fmt of FORMATS) {
+    for (const fmt of wanted) {
         const preference = DETAIL_CUTOFFS[fmt.kind] || DETAIL_CUTOFFS.tier;
         const published = available.get(fmt.id);
         if (available.size && !published) continue; // not run this month — skip silently
