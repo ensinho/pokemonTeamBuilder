@@ -1,35 +1,504 @@
 {
-  "generatedAt": "2026-07-29T17:26:06.805Z",
-  "month": "2026-06",
-  "source": "https://www.smogon.com/stats/2026-06/",
+  "generatedAt": "2026-09-15T13:06:24.113Z",
+  "month": "2026-08",
+  "source": "https://www.smogon.com/stats/2026-08/",
   "default": "gen9championsvgc2026regmb",
   "formats": [
     {
       "id": "gen9championsvgc2026regmb",
       "label": "VGC Reg M-B",
       "group": "Pokémon Champions",
+      "kind": "vgc",
       "cutoff": 1630,
-      "totalBattles": 1163315,
-      "species": 122,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 1269250,
+      "species": 125,
       "file": "usage/gen9championsvgc2026regmb.json"
     },
     {
-      "id": "gen9championsvgc2026regma",
-      "label": "VGC Reg M-A",
-      "group": "Pokémon Champions",
-      "cutoff": 1630,
-      "totalBattles": 1479658,
-      "species": 126,
-      "file": "usage/gen9championsvgc2026regma.json"
+      "id": "gen9ou",
+      "label": "OU",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1695,
+      "cutoffs": [
+        0,
+        1500,
+        1695,
+        1825
+      ],
+      "totalBattles": 730502,
+      "species": 143,
+      "file": "usage/gen9ou.json"
     },
     {
-      "id": "gen9vgc2026regi",
-      "label": "VGC 2026 Reg I",
-      "group": "Scarlet & Violet",
+      "id": "gen9ubers",
+      "label": "Ubers",
+      "group": "SV Singles",
+      "kind": "tier",
       "cutoff": 1630,
-      "totalBattles": 77135,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 78012,
+      "species": 124,
+      "file": "usage/gen9ubers.json"
+    },
+    {
+      "id": "gen9ubersuu",
+      "label": "Ubers UU",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 24,
+      "species": 16,
+      "file": "usage/gen9ubersuu.json"
+    },
+    {
+      "id": "gen9uu",
+      "label": "UU",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 41550,
+      "species": 145,
+      "file": "usage/gen9uu.json"
+    },
+    {
+      "id": "gen9ru",
+      "label": "RU",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 21932,
+      "species": 143,
+      "file": "usage/gen9ru.json"
+    },
+    {
+      "id": "gen9nu",
+      "label": "NU",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 7821,
       "species": 140,
-      "file": "usage/gen9vgc2026regi.json"
+      "file": "usage/gen9nu.json"
+    },
+    {
+      "id": "gen9pu",
+      "label": "PU",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 13302,
+      "species": 139,
+      "file": "usage/gen9pu.json"
+    },
+    {
+      "id": "gen9zu",
+      "label": "ZU",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 4877,
+      "species": 142,
+      "file": "usage/gen9zu.json"
+    },
+    {
+      "id": "gen9lc",
+      "label": "LC",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 9289,
+      "species": 142,
+      "file": "usage/gen9lc.json"
+    },
+    {
+      "id": "gen9monotype",
+      "label": "Monotype",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 69666,
+      "species": 143,
+      "file": "usage/gen9monotype.json"
+    },
+    {
+      "id": "gen9anythinggoes",
+      "label": "Anything Goes",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 134990,
+      "species": 133,
+      "file": "usage/gen9anythinggoes.json"
+    },
+    {
+      "id": "gen91v1",
+      "label": "1v1",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 19261,
+      "species": 140,
+      "file": "usage/gen91v1.json"
+    },
+    {
+      "id": "gen9cap",
+      "label": "CAP",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 1042,
+      "species": 89,
+      "file": "usage/gen9cap.json"
+    },
+    {
+      "id": "gen9doublesou",
+      "label": "Doubles OU",
+      "group": "SV Doubles",
+      "kind": "tier",
+      "cutoff": 1695,
+      "cutoffs": [
+        0,
+        1500,
+        1695,
+        1825
+      ],
+      "totalBattles": 203650,
+      "species": 143,
+      "file": "usage/gen9doublesou.json"
+    },
+    {
+      "id": "gen9doublesuu",
+      "label": "Doubles UU",
+      "group": "SV Doubles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 14145,
+      "species": 145,
+      "file": "usage/gen9doublesuu.json"
+    },
+    {
+      "id": "gen9nationaldex",
+      "label": "National Dex OU",
+      "group": "National Dex",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 445542,
+      "species": 139,
+      "file": "usage/gen9nationaldex.json"
+    },
+    {
+      "id": "gen9nationaldexubers",
+      "label": "National Dex Ubers",
+      "group": "National Dex",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 117671,
+      "species": 128,
+      "file": "usage/gen9nationaldexubers.json"
+    },
+    {
+      "id": "gen9nationaldexuu",
+      "label": "National Dex UU",
+      "group": "National Dex",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 4044,
+      "species": 143,
+      "file": "usage/gen9nationaldexuu.json"
+    },
+    {
+      "id": "gen9nationaldexmonotype",
+      "label": "National Dex Monotype",
+      "group": "National Dex",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 18150,
+      "species": 140,
+      "file": "usage/gen9nationaldexmonotype.json"
+    },
+    {
+      "id": "gen9nationaldexdoubles",
+      "label": "National Dex Doubles",
+      "group": "National Dex",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 115173,
+      "species": 139,
+      "file": "usage/gen9nationaldexdoubles.json"
+    },
+    {
+      "id": "gen8ou",
+      "label": "Gen 8 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 8876,
+      "species": 144,
+      "file": "usage/gen8ou.json"
+    },
+    {
+      "id": "gen8ubers",
+      "label": "Gen 8 Ubers",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 39,
+      "species": 25,
+      "file": "usage/gen8ubers.json"
+    },
+    {
+      "id": "gen8doublesou",
+      "label": "Gen 8 Doubles OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 513,
+      "species": 146,
+      "file": "usage/gen8doublesou.json"
+    },
+    {
+      "id": "gen7ou",
+      "label": "Gen 7 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 63174,
+      "species": 134,
+      "file": "usage/gen7ou.json"
+    },
+    {
+      "id": "gen6ou",
+      "label": "Gen 6 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 21976,
+      "species": 133,
+      "file": "usage/gen6ou.json"
+    },
+    {
+      "id": "gen5ou",
+      "label": "Gen 5 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 28215,
+      "species": 146,
+      "file": "usage/gen5ou.json"
+    },
+    {
+      "id": "gen4ou",
+      "label": "Gen 4 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 61518,
+      "species": 138,
+      "file": "usage/gen4ou.json"
+    },
+    {
+      "id": "gen3ou",
+      "label": "Gen 3 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 217140,
+      "species": 133,
+      "file": "usage/gen3ou.json"
+    },
+    {
+      "id": "gen2ou",
+      "label": "Gen 2 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 4560,
+      "species": 107,
+      "file": "usage/gen2ou.json"
+    },
+    {
+      "id": "gen1ou",
+      "label": "Gen 1 OU",
+      "group": "Past generations",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 14136,
+      "species": 75,
+      "file": "usage/gen1ou.json"
     }
   ]
 }
