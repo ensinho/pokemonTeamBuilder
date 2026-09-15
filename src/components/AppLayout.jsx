@@ -30,6 +30,7 @@ import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { BREAKPOINTS } from '../constants/breakpoints';
 import { setNavigator, setSignInPrompt } from '../utils/navigation';
+import { splashHoldMs, splashProgress } from '../utils/bootSplash';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useEdgeSwipe } from '../hooks/useEdgeSwipe';
@@ -306,7 +307,7 @@ export default function AppLayout() {
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
         trainerSprite, setTrainerSprite, avatarPreference, setAvatarPreference,
         handleResetSyncPrompt, showSyncPrompt, handleDismissSyncPrompt,
-        handleSignIn, handleSignUp, handleSignOut, isAuthReady
+        handleSignIn, handleSignUp, handleSignOut, isAuthReady, isAuthReconciled
     } = useAuthStore();
 
     const {
@@ -491,6 +492,11 @@ export default function AppLayout() {
     const [authSplashMessage, setAuthSplashMessage] = useState(() => t('splash.msg1'));
     const initialBootTimeRef = useRef(Date.now());
 
+    // "Boot settled" = the identity on screen is the real one (not the boot
+    // snapshot) and the reference data every view reads is in the store. Only
+    // the mobile splash waits on this; see src/utils/bootSplash.js.
+    const isBootSettled = isAuthReady && isAuthReconciled && generations.length > 0;
+
     const splashMessages = useMemo(() => [
         t('splash.msg1'),
         t('splash.msg2'),
@@ -505,23 +511,30 @@ export default function AppLayout() {
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
     const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
 
-    // Initial Splash timer
+    // Initial Splash timer. On desktop this is the original 900 ms beat; on
+    // mobile it stretches until boot settles (capped), so the app doesn't paint
+    // mid-request and then visibly re-render into the reconciled user.
     useEffect(() => {
         if (!isAuthReady || !showInitialAuthSplash) return;
-        const elapsedMs = Date.now() - initialBootTimeRef.current;
-        const remainingMs = Math.max(0, 900 - elapsedMs);
+        const remainingMs = splashHoldMs({
+            isMobile,
+            elapsedMs: Date.now() - initialBootTimeRef.current,
+            isBootSettled,
+        });
         const timer = setTimeout(() => {
             setShowInitialAuthSplash(false);
         }, remainingMs);
         return () => clearTimeout(timer);
-    }, [isAuthReady, showInitialAuthSplash]);
+    }, [isAuthReady, showInitialAuthSplash, isMobile, isBootSettled]);
 
+    // Keep the bar honest about the wait: on mobile it creeps to 90% over the
+    // floor and only closes the last 10% once boot has actually settled.
+    const splashBar = splashProgress({ isMobile, isBootSettled });
     useEffect(() => {
         if (!showInitialAuthSplash) return;
-        setAuthSplashProgress(0);
-        const timer = setTimeout(() => setAuthSplashProgress(100), 30);
+        const timer = setTimeout(() => setAuthSplashProgress(splashBar.width), 30);
         return () => clearTimeout(timer);
-    }, [showInitialAuthSplash]);
+    }, [showInitialAuthSplash, splashBar.width]);
 
     useEffect(() => {
         if (!showInitialAuthSplash) return;
@@ -1028,7 +1041,7 @@ export default function AppLayout() {
                             style={{
                                 width: `${authSplashProgress}%`,
                                 backgroundColor: colors.primary,
-                                transition: 'width 0.9s ease-out',
+                                transition: `width ${splashBar.durationMs}ms ease-out`,
                             }}
                         />
                     </div>

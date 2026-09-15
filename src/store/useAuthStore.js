@@ -196,6 +196,11 @@ export const useAuthStore = create((set, get) => {
         // Optimistically ready when we trust a fresh snapshot — this is what
         // dismisses the splash without waiting for auth/Firestore.
         isAuthReady: bootSnapshot ? true : false,
+        // Unlike isAuthReady, NEVER seeded from the snapshot: true only once
+        // onAuthStateChanged has actually answered. The mobile splash waits on
+        // this so the app can't paint with the cached identity and then
+        // re-render into the reconciled one.
+        isAuthReconciled: false,
         // Never seeded from cache — a privileged flag must come from the token.
         isAdmin: false,
         displayName: '',
@@ -351,7 +356,7 @@ export const useAuthStore = create((set, get) => {
                         get().syncPublicProfile();
 
                         // Set isAuthReady: true now that hydration is complete!
-                        set({ isAuthReady: true });
+                        set({ isAuthReady: true, isAuthReconciled: true });
 
                         // Refresh the boot snapshot with the reconciled identity
                         // so the next cold start can skip the network wait.
@@ -375,7 +380,10 @@ export const useAuthStore = create((set, get) => {
                             description: t('toast.authFailedDesc'),
                             actions: [{ label: t('toast.retry'), onClick: () => window.location.reload() }],
                         });
-                        set({ isAuthReady: true });
+                        // Sign-in failed outright: there is nothing left to
+                        // reconcile, so release the splash rather than holding
+                        // it until the ceiling.
+                        set({ isAuthReady: true, isAuthReconciled: true });
                     }
                 }
             });
