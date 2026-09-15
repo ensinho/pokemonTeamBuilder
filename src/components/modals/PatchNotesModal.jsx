@@ -287,6 +287,46 @@ const SmogonTiersVisual = ({ language }) => {
     );
 };
 
+// The builder's tier filter — the roster narrowing is the whole point, so the
+// visual is the list shrinking: a tier chip picked, and a dex that answers.
+const TierFilterVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex items-center gap-1">
+                {['OU', 'UU', 'LC'].map((tier, i) => (
+                    <span
+                        key={tier}
+                        className={`rounded-full px-2.5 py-0.5 text-[0.58rem] font-bold ${
+                            i === 0 ? 'bg-primary text-white' : 'bg-surface-raised text-muted'
+                        }`}
+                    >
+                        {tier}
+                    </span>
+                ))}
+            </div>
+            <div className="flex items-center gap-2">
+                {[984, 1000, 1006].map((id) => (
+                    <span key={id} className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-raised">
+                        <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-9 w-9 object-contain" style={{ imageRendering: 'pixelated' }} />
+                    </span>
+                ))}
+                {/* The ones the tier rules out, greyed rather than gone — the
+                    filter is a restriction, and showing what it removes is
+                    what makes it read as one. */}
+                {[1007, 890].map((id) => (
+                    <span key={id} className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-raised opacity-25">
+                        <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-9 w-9 object-contain grayscale" style={{ imageRendering: 'pixelated' }} />
+                    </span>
+                ))}
+            </div>
+            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+                {pt ? 'só o que é legal na tier' : 'only what the tier allows'}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -308,6 +348,7 @@ const NOTE_VISUALS = {
     latest: LatestVisual,
     puzzleShare: PuzzleShareVisual,
     smogonTiers: SmogonTiersVisual,
+    tierFilter: TierFilterVisual,
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {

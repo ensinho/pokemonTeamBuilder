@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useUsageIndex, useUsageFormat } from './useUsageStats';
 import { NO_REGULATION } from '../constants/regulations';
+import { TIER_KIND } from '../utils/metaFormats';
 
 // The current-meta usage ranking exposed in a `popular`-compatible shape so the
 // Team Builder suggestions and the Home VGC card can rank by REAL Smogon ladder
@@ -16,16 +17,21 @@ import { NO_REGULATION } from '../constants/regulations';
 // has to render), but no format is fetched and every ranking comes back empty, so
 // consumers stop showing meta signals without each having to special-case it.
 export function useMetaUsage(formatId) {
-    // `regulations`, not `formats`: the catalog now also carries the ~35 Smogon
-    // tiers the Meta pages browse, and this hook feeds the builder's regulation
-    // picker — which renders one card per entry and means "which ruleset am I
-    // building for", not "which ladder am I reading".
-    const { regulations: formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
+    // Two lists, because the builder's picker shows them differently: the VGC
+    // `regulations` are cover cards (three of them), the Smogon `tiers` are
+    // chips (thirty-odd). Either can be the active choice, so validation below
+    // runs against the whole catalog.
+    const { formats: allFormats, regulations, defaultFormatId, month, status: idxStatus } = useUsageIndex();
+    const tiers = useMemo(() => allFormats.filter((f) => f.kind === TIER_KIND), [allFormats]);
     const playthrough = formatId === NO_REGULATION;
-    // Only honour a requested regulation once we know it's real; otherwise default.
+    // Only honour a requested format once we know it's real; otherwise default.
     const activeId = playthrough
         ? null
-        : ((formatId && formats.some((f) => f.id === formatId)) ? formatId : defaultFormatId);
+        : ((formatId && allFormats.some((f) => f.id === formatId)) ? formatId : defaultFormatId);
+    const activeFormat = useMemo(
+        () => allFormats.find((f) => f.id === activeId) || null,
+        [allFormats, activeId],
+    );
     // `null` short-circuits the fetch in useUsageFormat — playthrough mode costs
     // nothing to enter and saves the ~250KB usage file.
     const { byId, format, status: fmtStatus } = useUsageFormat(activeId);
@@ -56,7 +62,13 @@ export function useMetaUsage(formatId) {
         byId: byId || {},
         usageMap,
         winRateMap,
-        formats,
+        // The VGC regulations only — the builder's card grid is built for three
+        // covers, not the whole ladder. `tiers` carries the rest.
+        formats: regulations,
+        tiers,
+        // Whether the active choice is a Smogon tier, which is what turns the
+        // builder's roster filter on.
+        isTier: activeFormat?.kind === TIER_KIND,
         // Report the sentinel back, not the null we fetched with, so callers can
         // reflect the choice in the UI (and highlight it in the selector).
         formatId: playthrough ? NO_REGULATION : activeId,

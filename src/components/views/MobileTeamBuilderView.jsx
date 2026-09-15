@@ -374,6 +374,8 @@ export const MobileTeamBuilderView = ({
     setSelectedGame,
     games = [],
     regulations = [],
+    tiers = [],
+    tierCounts = null,
     selectedRegulation,
     isPlaythrough = false,
     onSelectRegulation,
@@ -1068,6 +1070,8 @@ export const MobileTeamBuilderView = ({
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}
                 regulations={regulations}
+                tiers={tiers}
+                tierCounts={tierCounts}
                 selectedRegulation={selectedRegulation}
                 onSelectRegulation={onSelectRegulation}
             />
