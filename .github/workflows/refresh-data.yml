@@ -1,13 +1,22 @@
 name: Refresh competitive data
 
-# The site is a static GitHub Pages build, so the baked datasets
-# (public/data/*.json — Smogon usage, VGCPastes tournament teams, move types,
-# Smogon sets) only change when the site is rebuilt & redeployed. This workflow
-# does that on a schedule so the live meta stays current without a manual deploy.
+# The baked datasets (public/data/*.json — Smogon usage, VGCPastes tournament
+# teams, move types, Smogon sets) are static files, so they only change when
+# something rebuilds them. This workflow does that on a schedule so the live meta
+# stays current without a manual deploy.
 #
 # Cadence: daily. Smogon usage stats refresh roughly monthly (the build auto-picks
 # the latest available month), but VGCPastes tournament teams change more often, so
 # a daily rebuild keeps both fresh. Also runnable on demand from the Actions tab.
+#
+# THE APP HAS TWO DEPLOY TARGETS AND THIS JOB ONLY REACHES ONE OF THEM DIRECTLY.
+# Publishing `dist/` covers GitHub Pages. The live domain is Vercel, which builds
+# from `main` itself with `npm run build` and no SCRAPE_DATA — so it bundles
+# whatever `public/data` is *committed* and never scrapes. That is why the commit
+# step below exists: pushing the refreshed data to `main` is the only thing that
+# makes the live site pick it up (the push is what triggers Vercel's deploy).
+# Dropping that step silently freezes pokemonbuilder.app's data again, while this
+# workflow keeps reporting green.
 
 on:
   schedule:
@@ -29,6 +38,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # Full history: the commit step rebases onto whatever landed while the
+          # scrape was running, and a rebase on checkout's default shallow clone
+          # is not reliable.
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -57,6 +71,31 @@ jobs:
         run: npm run build
         env:
           SCRAPE_DATA: 'true'
+
+      # What actually reaches the live domain. Vercel deploys on a push to main,
+      # so committing the refreshed datasets is both how the data gets there and
+      # how the deploy is triggered. Nothing is pushed when the scrape produced
+      # no change — Smogon's usage months turn over monthly, so most days this is
+      # a no-op and should not manufacture an empty commit or a pointless deploy.
+      - name: Commit refreshed datasets to main
+        run: |
+          set -euo pipefail
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/data
+          if git diff --cached --quiet; then
+            echo 'No dataset changes — nothing to commit.'
+            exit 0
+          fi
+          git diff --cached --stat
+          # No [skip ci] here, deliberately: Vercel honours it and would skip the
+          # very deploy this commit exists to trigger. There is no loop to guard
+          # against — this workflow runs only on a schedule or a manual dispatch.
+          git commit -m 'chore(data): refresh competitive datasets'
+          # Rebase onto anything pushed while the scrape was running, rather than
+          # failing the job and losing a whole day of data.
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
