@@ -74,7 +74,18 @@ Species names are resolved to national-dex ids from the committed `pokemon-index
 
 The scraped text parsers — the directory listing and the fixed-width usage table — live in `scripts/lib/smogonStats.mjs` and are pinned by `smogonStats.test.mjs` against real fixtures. They are the most likely thing to break silently when Smogon's output shifts, so change them test-first.
 
-**This data is only as fresh as the last build with `SCRAPE_DATA=true`.** `prebuild` skips every scraper without it (it rebuilds only move-types + the sitemap), which is why `.github/workflows/refresh-data.yml` sets it explicitly on the daily job.
+### How the refresh actually reaches users
+
+Two things have to be true, and each was broken on its own once (2026-09-15):
+
+1. **`SCRAPE_DATA=true` must be set.** `prebuild` skips every scraper without it and rebuilds only move-types + the sitemap. `.github/workflows/refresh-data.yml` sets it explicitly.
+2. **The refreshed data must be committed to `main`.** The live domain is Vercel, which builds from `main` with `npm run build` and no `SCRAPE_DATA` — so it ships whatever `public/data` is *committed* and never scrapes. The workflow publishing `dist/` only covers GitHub Pages. Its commit step is therefore not bookkeeping: pushing to `main` is both how the live site gets the data and what triggers the Vercel deploy.
+
+So the committed `public/data/*.json` is the source of truth for the live site, and the daily job's job is to keep it current. Remove either half and the Meta pages silently freeze at whatever month was last committed, while the workflow keeps reporting green.
+
+Two traps in that commit step, both load-bearing:
+- **No `[skip ci]` in the commit message.** Vercel honours it and would skip the deploy the commit exists to trigger.
+- **`fetch-depth: 0` on checkout**, because the step rebases onto anything pushed during the scrape and checkout's default shallow clone cannot rebase reliably.
 
 ---
 
