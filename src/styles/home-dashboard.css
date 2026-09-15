@@ -456,6 +456,136 @@
 .hd-meta-caption--inline { margin: 0; }
 .hd-meta-caption__format { color: var(--color-primary); }
 
+/* ── Tournament teams: the block that only exists when it fits ─────────
+   This is the second competitive card. It was cut to get the desktop home
+   into one screen, and it is back because cutting it left the page ending
+   halfway up a 1080p monitor — but it costs ~80px, and at 1280×800 there
+   were only ~45px of slack between the last panel and the footer band.
+   Width cannot tell those two cases apart: the same 1440-wide window is
+   roomy at 900 tall and full at 768. So the gate is the window's HEIGHT,
+   which is the quantity actually in question.
+
+   This is a media query, not an element sized in `vh` — the layout
+   invariant forbids the latter (an element that measures the screen goes
+   stale the moment anything above it changes); a breakpoint that asks
+   "is there a screenful to spare" is just a breakpoint. 880px is where
+   this block measurably clears the fold: a 900-tall window keeps it with
+   room to spare, 864 and below do not get it and so do not scroll for it.
+   The teams are always one click away under "View all". */
+.hd-meta-teams {
+    display: none;
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+}
+
+@media (min-width: 1280px) and (min-height: 880px) {
+    .hd-meta-teams {
+        display: block;
+    }
+}
+
+.hd-tourney-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.hd-tourney-list > li {
+    display: flex;
+}
+
+/* Same object as .hd-team-row one panel up — roster as the icon, a name,
+   a figure on the right — so "my teams" and "teams from tournaments" read
+   as the same kind of thing at a glance. Borderless fill inside a panel
+   that already owns its outline. */
+.hd-tourney-row {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--space-2_5);
+    min-width: 0;
+    padding: var(--space-1_5) var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.hd-tourney-row:hover {
+    background: var(--color-surface-hover);
+}
+
+.hd-tourney-row__roster {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.hd-tourney-row__roster img {
+    width: 1.35rem;
+    height: 1.35rem;
+    flex-shrink: 0;
+    margin-left: calc(var(--space-2) * -1);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    box-shadow: 0 0 0 2px var(--color-surface-raised);
+    image-rendering: pixelated;
+}
+
+.hd-tourney-row__roster img:first-child {
+    margin-left: 0;
+}
+
+.hd-tourney-row__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+    flex: 1;
+}
+
+.hd-tourney-row__title,
+.hd-tourney-row__event {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.hd-tourney-row__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.hd-tourney-row__title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-fg);
+}
+
+.hd-tourney-row__event {
+    font-size: 0.6875rem;
+    color: var(--color-muted);
+}
+
+.hd-tourney-row__badge {
+    flex-shrink: 0;
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-sm);
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
 /* ── Desktop: pay for the one-screen home ──────────────────────────────
    The counterpart to the block at the end of home-view.css. A phone reads
    these panels one at a time and can afford their full size; a desktop shows
