@@ -18,15 +18,20 @@ export const RELEASES = [
         month: '2026-09',
         notes: [
             {
-                key: 'puzzle-forum-share',
-                icon: 'message',
-                visual: 'puzzleShare',
-                title: 'patchNotes.puzzleShareTitle',
-                description: 'patchNotes.puzzleShareDesc',
-                cta: 'patchNotes.puzzleShareCta',
-                path: '/pokepuzzle',
+                key: 'smogon-tiers',
+                icon: 'sparkles',
+                visual: 'smogonTiers',
+                title: 'patchNotes.tiersTitle',
+                description: 'patchNotes.tiersDesc',
+                cta: 'patchNotes.tiersCta',
+                path: '/meta',
             },
         ],
+    },
+    {
+        version: '1.11.0',
+        month: '2026-09',
+        notes: [{ key: 'puzzle-forum-share', title: 'patchNotes.puzzleShareTitle' }],
     },
     {
         version: '1.10.0',

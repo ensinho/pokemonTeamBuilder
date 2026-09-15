@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Search, Layers, X, Users, ArrowUpRight } from 'lucide-react';
 
@@ -9,15 +9,20 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { PokeballIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
-import { MonSprite, pretty, SourceCredit, RegulationSelect } from './metaShared';
+import { filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
+import { MonSprite, pretty, SourceCredit } from './metaShared';
+import { CutoffSelect, FormatPicker, TypeFilter } from './metaControls';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
+import { useReferenceStore } from '../../store/useReferenceStore';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { ShowMoreButton } from '../ShowMoreButton';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
-function CoreRow({ core, rank, onOpenMon }) {
+// `unit` names what `count` counts — tournament teams, or weighted ladder games
+// for a Smogon tier's teammate data. They are not the same quantity.
+function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
     return (
         <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
             <span className="w-5 shrink-0 text-center text-[11px] font-bold text-muted">#{rank}</span>
@@ -39,7 +44,7 @@ function CoreRow({ core, rank, onOpenMon }) {
             </span>
             <div className="shrink-0 text-right">
                 <span className="block text-sm font-extrabold tabular-nums text-primary">{core.pct}%</span>
-                <span className="block text-[10px] tabular-nums text-muted">{core.count} teams</span>
+                <span className="block text-[10px] tabular-nums text-muted">{core.count.toLocaleString()} {unit}</span>
             </div>
         </div>
     );
@@ -47,16 +52,18 @@ function CoreRow({ core, rank, onOpenMon }) {
 
 /**
  * Meta & Usage — the competitive command centre. Ranks Pokémon by real Smogon
- * ladder usage for the selected regulation (VGC / Pokémon Champions), and shows
- * the most common tournament-team cores. Clicking a Pokémon opens its focused
- * usage page (exactly what it runs) carrying the current regulation.
+ * ladder usage for the selected format — every current tier (OU → ZU, LC,
+ * Monotype, Doubles, National Dex, past-gen OU) as well as the VGC and Pokémon
+ * Champions regulations — at whichever ladder rating band the user picks. Also
+ * shows the most common tournament-team cores. Clicking a Pokémon opens its
+ * focused usage page (exactly what it runs) carrying the current format.
  */
 export function MetaUsageView() {
     const { t, language } = useTranslation();
     const pt = language === 'pt';
     useDocumentMeta({
         title: 'Meta & Usage',
-        description: 'Competitive VGC usage stats by regulation: top Pokémon, items, moves, spreads, and Tera types from real ladder data.',
+        description: 'Competitive usage stats for every Smogon tier and VGC regulation: top Pokémon, items, moves, spreads, and Tera types from real ladder data.',
         path: '/meta',
     });
     const navigate = useNavigate();
@@ -65,12 +72,29 @@ export function MetaUsageView() {
 
     const { formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
     const fmtId = params.get('fmt') || defaultFormatId || '';
-    const { byId, format, totalBattles, status: fmtStatus } = useUsageFormat(fmtId);
+    const {
+        data: usageData, format, totalBattles,
+        cutoffs, detailCutoff, activeCutoff, status: fmtStatus,
+    } = useUsageFormat(fmtId, params.get('cut'));
     const { teams } = useTournamentData();
+
+    // Types come from the Pokédex index (the app's canonical source) rather than
+    // being duplicated into every baked usage file.
+    const pokemonIndex = useReferenceStore((s) => s.pokemonIndex);
+    const fetchPokemonIndex = useReferenceStore((s) => s.fetchPokemonIndex);
+    useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
+    const typesById = useMemo(() => {
+        const map = new Map();
+        for (const p of pokemonIndex) if (!map.has(p.id) && p.types?.length) map.set(p.id, p.types);
+        return map;
+    }, [pokemonIndex]);
 
     const [search, setSearch] = useState('');
     // Active tab lives in the URL (?tab=teams) so it's shareable and survives back-nav.
-    const tab = params.get('tab') === 'teams' ? 'teams' : 'usage';
+    // `tab` is resolved again below once we know whether the format is a tier:
+    // the tournament-team dataset is VGC-only, so "Common teams" is not a view a
+    // Smogon tier has.
+    const wantsTeams = params.get('tab') === 'teams';
     const setTab = (id) => setParams((prev) => {
         const p = new URLSearchParams(prev);
         if (id === 'usage') p.delete('tab'); else p.set('tab', id);
@@ -88,38 +112,74 @@ export function MetaUsageView() {
     }, [teams, regToken]);
     const teamCompositions = useMemo(() => commonTeams(teamsForReg, 24), [teamsForReg]);
 
-    // Sort mode for the usage list: by raw usage (default) or by tournament
-    // win-rate. Lives in the URL (?sort=wr) so it's shareable + survives back-nav.
-    const sortMode = params.get('sort') === 'wr' ? 'wr' : 'usage';
+    // Sort mode for the usage list: by raw usage (default), by tournament
+    // win-rate, or alphabetically — the last one matters now that a tier can
+    // list 200 Pokémon and "is X in this tier?" is a real question. Lives in the
+    // URL (?sort=wr) so it's shareable + survives back-nav.
+    const SORTS = ['usage', 'wr', 'name'];
+    const sortMode = SORTS.includes(params.get('sort')) ? params.get('sort') : 'usage';
     const setSortMode = (id) => setParams((prev) => {
         const p = new URLSearchParams(prev);
         if (id === 'usage') p.delete('sort'); else p.set('sort', id);
         return p;
     }, { replace: true });
 
-    // Usage ranking for the selected regulation (falls back to tournament
-    // appearance counts if the usage dataset isn't available). Carries win-rate
-    // when the dataset has it (Limitless-mined formats).
-    const smogonRanked = useMemo(() => {
-        if (!byId) return [];
-        const rows = Object.entries(byId)
-            .map(([id, e]) => ({ id: Number(id), name: e.name, pct: e.usage, count: e.rawCount ?? e.teams, winRate: Number.isFinite(e.winRate) ? e.winRate : null }));
-        return rows.sort((a, b) => (sortMode === 'wr'
-            ? (b.winRate ?? -1) - (a.winRate ?? -1) || b.pct - a.pct
-            : b.pct - a.pct));
-    }, [byId, sortMode]);
+    // Type filter (?type=fire,water) — also in the URL, so a filtered tier is a
+    // link you can send someone.
+    const typeFilter = useMemo(
+        () => (params.get('type') || '').split(',').map((s) => s.trim()).filter(Boolean),
+        [params],
+    );
+    const setTypeFilter = (types) => setParams((prev) => {
+        const p = new URLSearchParams(prev);
+        if (types.length) p.set('type', types.join(',')); else p.delete('type');
+        return p;
+    }, { replace: true });
+
+    // Usage ranking for the selected format at the selected rating band (falls
+    // back to tournament appearance counts if the usage dataset isn't
+    // available). Carries win-rate when the dataset has it (Limitless-mined).
+    const smogonRanked = useMemo(
+        () => sortRows(usageRows(usageData, activeCutoff), sortMode)
+            .map((r) => ({ ...r, pct: r.usage, count: r.rawCount })),
+        [usageData, activeCutoff, sortMode],
+    );
+    // The "#N" badge is the Pokémon's standing on the ladder, so it is computed
+    // once in usage order and looked up — not taken from its position in the
+    // list, which under A–Z sort or a type filter would say something false.
+    const rankById = useMemo(() => {
+        const rows = usageData ? usageRows(usageData, activeCutoff) : [];
+        return new Map(rows.map((r, i) => [r.id, i + 1]));
+    }, [usageData, activeCutoff]);
     const usingSmogon = smogonRanked.length > 0;
     const hasWinRates = useMemo(() => smogonRanked.some((r) => Number.isFinite(r.winRate)), [smogonRanked]);
     const tournamentRanked = useMemo(() => rankUsage(teams), [teams]);
-    const ranked = usingSmogon ? smogonRanked : tournamentRanked;
+    // The tournament-team ranking is a VGC sample, so it can only stand in for a
+    // VGC regulation. Falling back to it for, say, Gen 8 Ubers would print VGC
+    // Pokémon under a tier that has never seen them — an empty state is honest
+    // and a wrong list is not.
+    const selectedFormat = useMemo(() => formats.find((f) => f.id === fmtId) || null, [formats, fmtId]);
+    const isTier = selectedFormat?.kind === 'tier';
+    const tab = wantsTeams && !isTier ? 'teams' : 'usage';
+    const ranked = useMemo(
+        () => (usingSmogon ? smogonRanked : (isTier ? [] : tournamentRanked)),
+        [usingSmogon, smogonRanked, isTier, tournamentRanked],
+    );
 
-    const cores2 = useMemo(() => commonCores(teams, 2, 6), [teams]);
-    const cores3 = useMemo(() => commonCores(teams, 3, 6), [teams]);
+    // Pairs and trios come from the baked tournament teams — a VGC sample, so it
+    // can sit beside a VGC regulation but not beside Gen 8 Ubers. A tier gets the
+    // partnerships from its own ladder instead (the `teammates` counts in its
+    // usage file), which is both correct for it and better data.
+    const cores2 = useMemo(
+        () => (isTier ? ladderPairs(usageData, 6) : commonCores(teams, 2, 6)),
+        [isTier, usageData, teams],
+    );
+    const cores3 = useMemo(() => (isTier ? [] : commonCores(teams, 3, 6)), [isTier, teams]);
 
     const query = search.trim().toLowerCase();
     const visible = useMemo(
-        () => (query ? ranked.filter((r) => pretty(r.name).toLowerCase().includes(query)) : ranked),
-        [ranked, query],
+        () => filterRows(ranked, { query, types: typeFilter, typesById }),
+        [ranked, query, typeFilter, typesById],
     );
 
     // On a phone the ranking is one two-column grid of every Pokémon in the
@@ -131,11 +191,29 @@ export function MetaUsageView() {
         initial: 12,
         step: 24,
         enabled: isMobile,
-        resetKey: `${fmtId}|${sortMode}|${query}`,
+        resetKey: `${fmtId}|${activeCutoff}|${sortMode}|${query}|${typeFilter.join(',')}`,
     });
 
-    const setFmt = (id) => setParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', id); return p; }, { replace: true });
-    const openMon = (id) => navigate(fmtId ? `/meta/${id}?fmt=${fmtId}` : `/meta/${id}`, { state: linkState });
+    // Changing the format drops the rating band: the bands a format publishes
+    // differ (VGC runs 1630, OU runs 1695/1825), so carrying ?cut across would
+    // ask for one the new ladder never had. Everything else is kept.
+    const setFmt = (id) => setParams((prev) => {
+        const p = new URLSearchParams(prev);
+        p.set('fmt', id);
+        p.delete('cut');
+        return p;
+    }, { replace: true });
+    const setCutoff = (c) => setParams((prev) => {
+        const p = new URLSearchParams(prev);
+        if (c === detailCutoff) p.delete('cut'); else p.set('cut', String(c));
+        return p;
+    }, { replace: true });
+
+    const monQuery = new URLSearchParams();
+    if (fmtId) monQuery.set('fmt', fmtId);
+    if (params.get('cut')) monQuery.set('cut', params.get('cut'));
+    const monSuffix = monQuery.toString() ? `?${monQuery}` : '';
+    const openMon = (id) => navigate(`/meta/${id}${monSuffix}`, { state: linkState });
     const openTeam = (teamId) => navigate(`/tournaments/team/${teamId}`, { state: linkState });
 
     const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
@@ -147,10 +225,9 @@ export function MetaUsageView() {
         );
     }
 
-    if (!ranked.length) {
-        return <EmptyState title={pt ? 'Sem dados de meta' : 'No meta data'} message={pt ? 'Os dados de uso ainda não carregaram.' : 'Usage data has not loaded yet.'} />;
-    }
-
+    // A tier with no baked file is a ladder that did not run (or publish) last
+    // month — say that, and leave the picker reachable above the message.
+    const noData = !ranked.length;
     const battlesLabel = totalBattles ? totalBattles.toLocaleString(pt ? 'pt-BR' : 'en-US') : '';
 
     return (
@@ -169,6 +246,9 @@ export function MetaUsageView() {
                             {pt
                                 ? `Uso real de ${format.label} no ladder competitivo${battlesLabel ? ` (${battlesLabel} partidas${month ? `, ${month}` : ''})` : ''}`
                                 : `Real ${format.label} ladder usage${battlesLabel ? ` (${battlesLabel} games${month ? `, ${month}` : ''})` : ''}`}
+                            {cutoffs.length > 1 && activeCutoff > 0 && (
+                                <span className="whitespace-nowrap">{pt ? `, rating ${activeCutoff}+` : `, rated ${activeCutoff}+`}</span>
+                            )}
                             <span className="sm:hidden">.</span>
                             <span className="hidden sm:inline">
                                 {pt
@@ -183,8 +263,10 @@ export function MetaUsageView() {
                 <SourceCredit pt={pt} sources={['smogon', 'vgcpastes', 'pikalytics']} className="mt-2.5" />
             </header>
 
-            {/* Tabs */}
-            <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className="mb-4 flex gap-1 border-b border-border">
+            {/* Tabs. Only two views exist for a VGC regulation; a Smogon tier has
+                one, because the tournament-team dataset behind "Common teams" is
+                a VGC sample and would list VGC teams under, say, Gen 8 Ubers. */}
+            <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className={`mb-4 flex gap-1 border-b border-border ${isTier ? 'hidden' : ''}`}>
                 {[
                     { id: 'usage', label: pt ? 'Uso' : 'Usage' },
                     { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
@@ -202,56 +284,79 @@ export function MetaUsageView() {
                 ))}
             </div>
 
-            {/* Toolbar. On a phone the regulation select takes its own full-width
-                row first — it is the context everything below depends on — and
-                search + sort share the row under it. Left to wrap on its own,
-                the select landed alone on a second row, right-aligned against
-                a left-aligned page. The sort group stretches to the field's
-                height so the row shares one top and bottom edge. */}
+            {/* Toolbar, in two rows on a phone. Row one is the context
+                everything below depends on — which ladder, at which rating —
+                and takes the full width so it reads as the heading it is. Row
+                two is what you do to the list: search, type, order. Left to
+                wrap freely these landed in a ragged block; pinning the rows
+                keeps one top and bottom edge per row. */}
+            {tab === 'usage' && (
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <FormatPicker
+                        formats={formats}
+                        value={fmtId}
+                        onChange={setFmt}
+                        pt={pt}
+                        className="min-w-0 flex-1 sm:flex-none sm:min-w-[13rem]"
+                    />
+                    <CutoffSelect cutoffs={cutoffs} value={activeCutoff} onChange={setCutoff} pt={pt} />
+                </div>
+            )}
             <div className="mb-5 flex flex-wrap items-center gap-2">
                 {tab === 'usage' && (
-                    <div className="relative min-w-0 flex-1">
+                    <div className="relative min-w-0 flex-1 basis-full sm:basis-auto">
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             placeholder={pt ? 'Buscar Pokémon…' : 'Search Pokémon…'}
-                            className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-9 text-sm text-fg focus:border-primary focus:outline-none"
+                            className="min-h-11 w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-9 text-sm text-fg focus:border-primary focus:outline-none"
                         />
                         {search && (
-                            <button type="button" onClick={() => setSearch('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-fg" aria-label={t('common.clear')}>
+                            <button type="button" onClick={() => setSearch('')} className="touch-target absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-fg" aria-label={t('common.clear')}>
                                 <X className="h-4 w-4" />
                             </button>
                         )}
                     </div>
                 )}
-                {tab === 'usage' && hasWinRates && (
+                {tab === 'usage' && (
                     <div className="inline-flex self-stretch overflow-hidden rounded-xl border border-border" role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
                         {[
                             { id: 'usage', label: pt ? 'Uso' : 'Usage' },
-                            { id: 'wr', label: pt ? 'Vitórias' : 'Win rate' },
+                            ...(hasWinRates ? [{ id: 'wr', label: pt ? 'Vitórias' : 'Win rate' }] : []),
+                            { id: 'name', label: 'A–Z' },
                         ].map((s) => (
                             <button
                                 key={s.id}
                                 type="button"
                                 onClick={() => setSortMode(s.id)}
                                 aria-pressed={sortMode === s.id}
-                                className={`px-3 py-2 text-xs font-bold transition-colors focus:outline-none ${sortMode === s.id ? 'bg-primary text-white' : 'bg-surface text-muted hover:text-fg'}`}
+                                className={`min-h-11 px-3 py-2 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${sortMode === s.id ? 'bg-primary text-on-primary' : 'bg-surface text-muted hover:bg-surface-hover hover:text-fg'}`}
                             >
                                 {s.label}
                             </button>
                         ))}
                     </div>
                 )}
-                {formats.length > 0 && (
-                    <div className="order-first w-full sm:order-none sm:ml-auto sm:w-auto">
-                        <RegulationSelect formats={formats} value={fmtId} onChange={setFmt} pt={pt} className="w-full sm:w-auto" />
+                {tab === 'usage' && <TypeFilter selected={typeFilter} onChange={setTypeFilter} pt={pt} />}
+                {tab === 'teams' && formats.length > 0 && (
+                    <div className="w-full sm:ml-auto sm:w-auto">
+                        <FormatPicker formats={formats} value={fmtId} onChange={setFmt} pt={pt} className="w-full sm:w-auto" />
                     </div>
                 )}
             </div>
 
-            {tab === 'teams' ? (
+            {noData ? (
+                <EmptyState
+                    title={pt ? 'Sem dados deste formato' : 'No data for this format'}
+                    message={isTier
+                        ? (pt
+                            ? 'Esta ladder não publicou estatísticas no mês mais recente do Smogon. Escolha outro formato acima.'
+                            : 'This ladder published no stats for Smogon’s latest month. Pick another format above.')
+                        : (pt ? 'Os dados de uso ainda não carregaram.' : 'Usage data has not loaded yet.')}
+                />
+            ) : tab === 'teams' ? (
                 <section>
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                         <h2 className="flex items-center gap-1.5 text-base font-semibold text-fg">
@@ -303,11 +408,14 @@ export function MetaUsageView() {
                         {pt ? 'Pokémon mais usados' : 'Top Pokémon'}
                     </h2>
                     {visible.length === 0 ? (
-                        <EmptyState compact title={pt ? 'Nenhum resultado' : 'No matches'} message={pt ? 'Tente outra busca.' : 'Try another search.'} />
+                        <EmptyState compact title={pt ? 'Nenhum resultado' : 'No matches'} message={pt ? 'Tente outra busca ou limpe os filtros.' : 'Try another search, or clear the filters.'} />
                     ) : (
                         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 motion-stagger">
-                            {visible.slice(0, reveal.limit).map((mon, i) => {
-                                const rank = query ? ranked.indexOf(mon) + 1 : i + 1;
+                            {visible.slice(0, reveal.limit).map((mon) => {
+                                // The mon's standing on the ladder, never its
+                                // position in this list — a filtered or A–Z list
+                                // renumbered 1..n would claim Pikachu is #1 in OU.
+                                const rank = rankById.get(mon.id) ?? (ranked.indexOf(mon) + 1);
                                 return (
                                     <button
                                         key={mon.id}
@@ -339,15 +447,31 @@ export function MetaUsageView() {
                     )}
                 </section>
 
-                {/* Common team cores (from real tournament teams) */}
+                {/* Pairs — from this ladder's own teammate counts on a tier, from
+                    the tournament teams on a VGC regulation. The source is named
+                    under the heading, because "28%" means a different thing in
+                    each and the panel should not pretend otherwise. */}
                 <section className="space-y-5">
                     <div>
-                        <h2 className="mb-3 flex items-center gap-1.5 text-base font-semibold text-fg">
+                        <h2 className="mb-1 flex items-center gap-1.5 text-base font-semibold text-fg">
                             <Layers className="h-4 w-4" /> {pt ? 'Duplas comuns' : 'Common pairs'}
                         </h2>
+                        <p className="mb-3 text-[0.6875rem] text-muted">
+                            {isTier
+                                ? (pt ? 'Parceiros mais frequentes no ladder' : 'Most frequent partners on the ladder')
+                                : (pt ? 'De times recentes de torneios' : 'From recent tournament teams')}
+                        </p>
                         <div className="space-y-2">
                             {cores2.length
-                                ? cores2.map((c, i) => <CoreRow key={c.ids.join('-')} core={c} rank={i + 1} onOpenMon={openMon} />)
+                                ? cores2.map((c, i) => (
+                                    <CoreRow
+                                        key={c.ids.join('-')}
+                                        core={c}
+                                        rank={i + 1}
+                                        onOpenMon={openMon}
+                                        unit={isTier ? (pt ? 'jogos' : 'games') : (pt ? 'times' : 'teams')}
+                                    />
+                                ))
                                 : <p className="text-xs text-muted">{pt ? 'Dados insuficientes.' : 'Not enough data.'}</p>}
                         </div>
                     </div>
@@ -357,7 +481,9 @@ export function MetaUsageView() {
                                 <Layers className="h-4 w-4" /> {pt ? 'Trios comuns' : 'Common trios'}
                             </h2>
                             <div className="space-y-2">
-                                {cores3.map((c, i) => <CoreRow key={c.ids.join('-')} core={c} rank={i + 1} onOpenMon={openMon} />)}
+                                {cores3.map((c, i) => (
+                                    <CoreRow key={c.ids.join('-')} core={c} rank={i + 1} onOpenMon={openMon} unit={pt ? 'times' : 'teams'} />
+                                ))}
                             </div>
                         </div>
                     )}

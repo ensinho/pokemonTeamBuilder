@@ -1,14 +1,23 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-// Builds precise, per-regulation competitive usage from Smogon's monthly stats
+import { orderCutoffs, parseStatsListing, parseUsageTable } from './lib/smogonStats.mjs';
+
+// Builds precise, per-format competitive usage from Smogon's monthly stats
 // ("chaos" JSON): real usage %, held items, moves, abilities, EV spreads, Tera
-// types and teammates — the same data Pikalytics surfaces. Focused on the current
-// VGC + Pokémon Champions ladders (older reg sets are retired from the ladder, so
-// only the 2026 formats have current data).
+// types and teammates — the same data Pikalytics surfaces. Covers the whole
+// Smogon ladder: every current SV tier (OU → ZU, LC, Monotype, Doubles…), the
+// National Dex family, the VGC / Pokémon Champions regulations, and past-gen OU.
+//
+// Two kinds of data per format, because they cost wildly different amounts:
+//   · the DETAIL (chaos JSON, 5–30 MB a piece) is fetched once, at the format's
+//     preferred rating cutoff — that's what the per-Pokémon page renders.
+//   · the RANKING (the plain `<format>-<cutoff>.txt` table, a few hundred KB) is
+//     fetched for EVERY cutoff the month published, so the Meta list can be
+//     re-ranked at any ladder rating without a 30 MB download per cutoff.
 //
 // Output:
-//   public/data/usage/<formatId>.json   — one compact file per regulation
+//   public/data/usage/<formatId>.json   — one compact file per format
 //   public/data/usage-index.json        — the catalog + default the UI loads first
 //
 // Run: node scripts/build-usage-stats.mjs   (also runs in `prebuild`)
@@ -18,19 +27,80 @@ const DATA_DIR = path.join(process.cwd(), 'public', 'data');
 const USAGE_DIR = path.join(DATA_DIR, 'usage');
 const STATS_BASE = 'https://www.smogon.com/stats';
 
-// The regulation ladders to surface, newest first (the first is the default).
-// Grouped for the UI's <optgroup>s. Smogon format id ↔ human label.
+// The ladders to surface, in the order the picker lists them. `group` is the
+// picker's section; `kind` separates the VGC *regulations* (which the Team
+// Builder's game/regulation picker offers, and which must stay a short list)
+// from the Smogon *tiers* (which only the Meta pages browse).
+//
+// Listing an id that the month did not publish costs nothing: the discovery step
+// below drops every format with no files, so speculative ids (a BSS series that
+// may or may not be running, a tier that was folded away) are safe to keep here.
 const FORMATS = [
-    { id: 'gen9championsvgc2026regmb', label: 'VGC Reg M-B', group: 'Pokémon Champions' },
-    { id: 'gen9championsvgc2026regma', label: 'VGC Reg M-A', group: 'Pokémon Champions' },
-    { id: 'gen9vgc2026regi', label: 'VGC 2026 Reg I', group: 'Scarlet & Violet' },
+    // VGC regulations — `kind: 'vgc'`, and the default the app opens on.
+    { id: 'gen9championsvgc2026regmb', label: 'VGC Reg M-B', group: 'Pokémon Champions', kind: 'vgc' },
+    { id: 'gen9championsvgc2026regma', label: 'VGC Reg M-A', group: 'Pokémon Champions', kind: 'vgc' },
+    { id: 'gen9vgc2026regi', label: 'VGC 2026 Reg I', group: 'Scarlet & Violet', kind: 'vgc' },
+
+    // Scarlet & Violet singles ladder.
+    { id: 'gen9ou', label: 'OU', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9ubers', label: 'Ubers', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9ubersuu', label: 'Ubers UU', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9uu', label: 'UU', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9ru', label: 'RU', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9nu', label: 'NU', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9pu', label: 'PU', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9zu', label: 'ZU', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9lc', label: 'LC', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9nfe', label: 'NFE', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9monotype', label: 'Monotype', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9anythinggoes', label: 'Anything Goes', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen91v1', label: '1v1', group: 'SV Singles', kind: 'tier' },
+    { id: 'gen9cap', label: 'CAP', group: 'SV Singles', kind: 'tier' },
+
+    // Scarlet & Violet doubles ladder.
+    { id: 'gen9doublesou', label: 'Doubles OU', group: 'SV Doubles', kind: 'tier' },
+    { id: 'gen9doublesuu', label: 'Doubles UU', group: 'SV Doubles', kind: 'tier' },
+
+    // National Dex family.
+    { id: 'gen9nationaldex', label: 'National Dex OU', group: 'National Dex', kind: 'tier' },
+    { id: 'gen9nationaldexubers', label: 'National Dex Ubers', group: 'National Dex', kind: 'tier' },
+    { id: 'gen9nationaldexuu', label: 'National Dex UU', group: 'National Dex', kind: 'tier' },
+    { id: 'gen9nationaldexru', label: 'National Dex RU', group: 'National Dex', kind: 'tier' },
+    { id: 'gen9nationaldexmonotype', label: 'National Dex Monotype', group: 'National Dex', kind: 'tier' },
+    { id: 'gen9nationaldexdoubles', label: 'National Dex Doubles', group: 'National Dex', kind: 'tier' },
+    { id: 'gen9nationaldexag', label: 'National Dex AG', group: 'National Dex', kind: 'tier' },
+
+    // Cartridge singles (Battle Stadium). The series suffix rotates, so a few
+    // candidates are listed and whichever exists this month wins.
+    { id: 'gen9bssregi', label: 'Battle Stadium Reg I', group: 'Battle Stadium', kind: 'tier' },
+    { id: 'gen9bssregh', label: 'Battle Stadium Reg H', group: 'Battle Stadium', kind: 'tier' },
+
+    // Past generations — OU (plus the two biggest side ladders) per gen.
+    { id: 'gen8ou', label: 'Gen 8 OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen8ubers', label: 'Gen 8 Ubers', group: 'Past generations', kind: 'tier' },
+    { id: 'gen8doublesou', label: 'Gen 8 Doubles OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen7ou', label: 'Gen 7 OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen7ubers', label: 'Gen 7 Ubers', group: 'Past generations', kind: 'tier' },
+    { id: 'gen6ou', label: 'Gen 6 OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen5ou', label: 'Gen 5 OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen4ou', label: 'Gen 4 OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen3ou', label: 'Gen 3 OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen2ou', label: 'Gen 2 OU', group: 'Past generations', kind: 'tier' },
+    { id: 'gen1ou', label: 'Gen 1 OU', group: 'Past generations', kind: 'tier' },
 ];
 
-// Rating cutoff preference (falls back down if a format lacks the top file).
-// 1630 is the strong-ladder tier whose ordering matches the public usage sites
-// (e.g. Pikalytics) — a big enough sample to be stable without diluting with
-// low-rated games.
-const CUTOFFS = [1630, 1760, 1500, 0];
+// Which rating cutoff the *detail* (chaos) download uses, most-preferred first.
+// VGC keeps 1630 — the strong-ladder band whose ordering matches the public usage
+// sites (e.g. Pikalytics). Smogon's own tiers publish 1695 as the headline band
+// for OU-likes and 1630 elsewhere, so the tier list leads with those two.
+const DETAIL_CUTOFFS = {
+    vgc: [1630, 1760, 1500, 0],
+    tier: [1695, 1630, 1760, 1825, 1500, 0],
+};
+
+// Cap on the per-cutoff ranking tables (the detail set is capped by MAX_SPECIES).
+// 200 is past the point where a tier's usage numbers stop being meaningful.
+const MAX_RANKED = 200;
 
 // Smogon's chaos JSON keys everything by Showdown ID (lowercase, no separators:
 // "sitrusberry", "fakeout"). These bulk dicts map ID → proper display name so we
@@ -95,16 +165,74 @@ const fetchJsonRetry = async (url, attempts = 3) => {
     return { error: true };
 };
 
+// The committed Pokédex index already maps every slug (and every alternate form,
+// via `baseId`) to a national-dex id. Consulting it first turns what used to be
+// one PokéAPI round-trip per species into a local Map hit — which is what makes
+// ~40 formats affordable: the whole catalog references well over a thousand
+// distinct Showdown names, and PokéAPI is only asked about the leftovers.
+const localSpecies = new Map();
+const loadLocalSpeciesIndex = async () => {
+    try {
+        const raw = await fs.readFile(path.join(DATA_DIR, 'pokemon-index.json'), 'utf8');
+        // Prefixes are collected separately and merged only where they are
+        // unambiguous. The index keys Landorus by its default variant,
+        // `landorus-incarnate`, so neither "Landorus-Therian" nor the bare
+        // "landorus" the candidate list trims to would hit an exact-match map —
+        // every therian, altered and origin form in every tier would fall
+        // through to PokéAPI. Mapping `landorus` → 645 fixes that, but only
+        // because exactly one index entry starts that way: `iron` and `urshifu`
+        // cover several species each, so they are left out and resolved the slow,
+        // certain way rather than guessed at.
+        const prefixTargets = new Map();
+        const addPrefixes = (slug, target) => {
+            const parts = slug.split('-');
+            while (parts.length > 1) {
+                parts.pop();
+                const prefix = parts.join('-');
+                if (!prefixTargets.has(prefix)) prefixTargets.set(prefix, new Set());
+                prefixTargets.get(prefix).add(target);
+            }
+        };
+
+        for (const p of JSON.parse(raw).pokemons || []) {
+            const target = p.baseId || p.id;
+            if (!Number.isInteger(target)) continue;
+            for (const key of [p.name, p.apiName]) {
+                const slug = key ? slugCandidates(key)[0] : '';
+                if (!slug) continue;
+                if (!localSpecies.has(slug)) localSpecies.set(slug, target);
+                addPrefixes(slug, target);
+            }
+        }
+
+        let added = 0;
+        for (const [prefix, targets] of prefixTargets) {
+            if (targets.size !== 1 || localSpecies.has(prefix)) continue;
+            localSpecies.set(prefix, [...targets][0]);
+            added += 1;
+        }
+        console.log(`  · species index: ${localSpecies.size} local slugs (${added} via unique prefixes)`);
+        return;
+    } catch (_) { /* optional — PokéAPI still resolves everything, just slower */ }
+    console.log('  · species index: unavailable, resolving via PokéAPI');
+};
+
 const speciesCache = new Map();
-// Resolve a Showdown name → base national-dex id. Tries `/pokemon/{slug}` (which
-// carries the species url), then `/pokemon-species/{slug}` — the latter resolves
-// form-only defaults like "Basculegion" whose /pokemon/basculegion 404s (its
-// default variant is basculegion-male). Only a genuine not-found is cached, so a
-// transient PokéAPI hiccup never permanently drops a species.
+// Resolve a Showdown name → base national-dex id. Tries the local index first,
+// then `/pokemon/{slug}` (which carries the species url), then
+// `/pokemon-species/{slug}` — the latter resolves form-only defaults like
+// "Basculegion" whose /pokemon/basculegion 404s (its default variant is
+// basculegion-male). Only a genuine not-found is cached, so a transient PokéAPI
+// hiccup never permanently drops a species.
 const resolveSpeciesId = async (name) => {
     if (speciesCache.has(name)) return speciesCache.get(name);
     const candidates = slugCandidates(name);
     let sawError = false;
+
+    for (const slug of candidates) {
+        const local = localSpecies.get(slug);
+        if (local) { speciesCache.set(name, local); return local; }
+    }
 
     for (const slug of candidates) {
         const r = await fetchJsonRetry(`${POKEAPI}/pokemon/${slug}`);
@@ -188,9 +316,24 @@ const discoverLatestMonth = async () => {
     return null;
 };
 
+/**
+ * Which formats (and which rating cutoffs of each) the month actually published,
+ * read once from the stats directory listing: every file there is
+ * `<formatId>-<cutoff>.txt`. Doing this instead of probing means the FORMATS
+ * catalog above can name ladders speculatively — anything absent simply never
+ * comes back. Returns Map(formatId → ascending cutoffs).
+ */
+const discoverAvailable = async (month) => {
+    try {
+        const res = await fetch(`${STATS_BASE}/${month}/`);
+        if (res.ok) return parseStatsListing(await res.text());
+    } catch (_) { /* caller treats an empty map as "listing unavailable" */ }
+    return new Map();
+};
+
 // Fetch a format's chaos JSON at the best available cutoff.
-const fetchChaos = async (month, id) => {
-    for (const cutoff of CUTOFFS) {
+const fetchChaos = async (month, id, cutoffs) => {
+    for (const cutoff of cutoffs) {
         try {
             const res = await fetch(`${STATS_BASE}/${month}/chaos/${id}-${cutoff}.json`);
             if (res.ok) {
@@ -200,6 +343,25 @@ const fetchChaos = async (month, id) => {
         } catch (_) { /* try next cutoff */ }
     }
     return null;
+};
+
+/**
+ * One rating cutoff's plain usage table — the cheap counterpart to the chaos
+ * download. `<format>-<cutoff>.txt` is a fixed-width ASCII table:
+ *
+ *   | Rank | Pokemon    | Usage %  | Raw    | %      | Real  | %      |
+ *   | 1    | Great Tusk | 35.123%  | 123456 | 12.34% | 98765 | 11.11% |
+ *
+ * Returns { totalBattles, rows: [{ name, usage, raw }] } — usage as a percentage
+ * so it needs no conversion, unlike the chaos JSON's 0–1 fraction.
+ */
+const fetchUsageTable = async (month, id, cutoff) => {
+    try {
+        const res = await fetch(`${STATS_BASE}/${month}/${id}-${cutoff}.txt`);
+        if (!res.ok) return null;
+        const parsed = parseUsageTable(await res.text(), MAX_RANKED);
+        return parsed.rows.length ? parsed : null;
+    } catch (_) { return null; }
 };
 
 // ── Battle-relevant items + mega-stone map (derived from Showdown data) ──────
@@ -248,9 +410,35 @@ const bakeMegaStones = async () => {
     console.log(`  ✓ mega-stones.json: ${Object.keys(byStone).length} stones`);
 };
 
+/**
+ * Every published rating cutoff of one format, as compact rankings the Meta list
+ * can switch between instantly. Keyed by cutoff → { totalBattles, byId }, where
+ * byId is `{ [speciesId]: { name, usage, rawCount } }`.
+ *
+ * Species that collapse onto one national-dex id (Urshifu's two strikes, the
+ * Rotom appliances) keep the most-used form, matching how the detail set above
+ * resolves them — the table is already sorted by usage, so first-wins does it.
+ */
+const buildCutoffRankings = async (month, fmt, cutoffs) => {
+    const out = {};
+    for (const cutoff of cutoffs) {
+        const table = await fetchUsageTable(month, fmt.id, cutoff);
+        if (!table) continue;
+        const ids = await mapPool(table.rows, 8, (r) => resolveSpeciesId(r.name));
+        const byId = {};
+        table.rows.forEach((row, i) => {
+            const id = ids[i];
+            if (!id || byId[id]) return;
+            byId[id] = { name: row.name, usage: Math.round(row.usage * 10) / 10, rawCount: row.raw };
+        });
+        if (Object.keys(byId).length) out[cutoff] = { totalBattles: table.totalBattles, byId };
+    }
+    return out;
+};
+
 // ── Build one format ─────────────────────────────────────────────────────────
-const buildFormat = async (month, fmt) => {
-    const chaos = await fetchChaos(month, fmt.id);
+const buildFormat = async (month, fmt, cutoffs) => {
+    const chaos = await fetchChaos(month, fmt.id, cutoffs);
     if (!chaos) { console.warn(`  · ${fmt.id}: no chaos data`); return null; }
     const { json, cutoff } = chaos;
     const totalBattles = json.info?.['number of battles'] || 0;
@@ -329,18 +517,36 @@ const buildFormat = async (month, fmt) => {
     const speciesCount = Object.keys(byId).length;
     if (!speciesCount) { console.warn(`  · ${fmt.id}: 0 species resolved`); return null; }
 
+    // The other rating bands. The detail cutoff is included too, so the ranking
+    // the UI reads is always the same shape whichever cutoff is selected.
+    const rankings = await buildCutoffRankings(month, fmt, cutoffs);
+    const cutoffList = [...new Set([...Object.keys(rankings).map(Number), cutoff])].sort((a, b) => a - b);
+
     const payload = {
         generatedAt: new Date().toISOString(),
         month,
-        format: { ...fmt, cutoff },
+        format: { ...fmt, cutoff, cutoffs: cutoffList },
         totalBattles,
         species: speciesCount,
+        // Which band the per-Pokémon breakdown (items / moves / spreads / Tera /
+        // teammates) was sampled at. Only the *rankings* vary by cutoff — the
+        // detail is one download, and the UI says so rather than implying the
+        // breakdown re-samples.
+        detailCutoff: cutoff,
         byId,
+        cutoffs: rankings,
     };
     await fs.mkdir(USAGE_DIR, { recursive: true });
     await fs.writeFile(path.join(USAGE_DIR, `${fmt.id}.json`), `${JSON.stringify(payload)}\n`);
-    console.log(`  ✓ ${fmt.id} (${cutoff}+): ${speciesCount} species, ${totalBattles} battles`);
-    return { ...fmt, cutoff, totalBattles, species: speciesCount, file: `usage/${fmt.id}.json` };
+    console.log(`  ✓ ${fmt.id} (detail ${cutoff}+, bands ${cutoffList.join('/')}): ${speciesCount} species, ${totalBattles} battles`);
+    return {
+        ...fmt,
+        cutoff,
+        cutoffs: cutoffList,
+        totalBattles,
+        species: speciesCount,
+        file: `usage/${fmt.id}.json`,
+    };
 };
 
 async function main() {
@@ -355,14 +561,28 @@ async function main() {
         fetchShowdownJs(SHOWDOWN_ABILITIES, 'BattleAbilities'),
     ]);
 
+    await loadLocalSpeciesIndex();
+
     // Bake the item picker list + mega-stone map (independent of the usage build).
     await bakeBattleItems();
     await bakeMegaStones();
 
+    // What this month actually published. An empty listing (Smogon reachable but
+    // the index page unreadable) falls back to probing the preferred cutoffs, so
+    // the build degrades to its previous behaviour rather than producing nothing.
+    const available = await discoverAvailable(month);
+    console.log(`  · listing: ${available.size} formats published`);
+
     const built = [];
     for (const fmt of FORMATS) {
+        const preference = DETAIL_CUTOFFS[fmt.kind] || DETAIL_CUTOFFS.tier;
+        const published = available.get(fmt.id);
+        if (available.size && !published) continue; // not run this month — skip silently
+        // The preferred bands the month has, in preference order, then any other
+        // published band (highest first) so an unusual cutoff still works.
+        const cutoffs = orderCutoffs(published, preference);
         try {
-            const meta = await buildFormat(month, fmt);
+            const meta = await buildFormat(month, fmt, cutoffs);
             if (meta) built.push(meta);
         } catch (err) {
             console.warn(`  · ${fmt.id}: ${err.message}`);
@@ -372,11 +592,15 @@ async function main() {
     // Never clobber a good catalog with an empty run (e.g. Smogon briefly down).
     if (!built.length) { console.warn('build-usage-stats: no formats built; keeping existing data.'); return; }
 
+    // The app opens on a VGC regulation (the audience the builder is aimed at),
+    // falling back to whatever built first if no VGC ladder ran this month.
+    const defaultFormat = built.find((f) => f.kind === 'vgc') || built[0];
+
     const index = {
         generatedAt: new Date().toISOString(),
         month,
         source: `${STATS_BASE}/${month}/`,
-        default: built[0].id,
+        default: defaultFormat.id,
         formats: built,
     };
     await fs.writeFile(path.join(DATA_DIR, 'usage-index.json'), `${JSON.stringify(index, null, 2)}\n`);

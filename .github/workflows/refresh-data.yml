@@ -43,7 +43,20 @@ jobs:
         # `prebuild` regenerates public/data/*.json from Smogon, VGCPastes,
         # PokéAPI and Pokémon Showdown; then Vite builds dist/. The data scripts
         # are build-safe (they keep the previous data if a source is briefly down).
+        #
+        # SCRAPE_DATA is what actually turns the scrape on — without it `prebuild`
+        # takes its other branch and rebuilds only move-types + the sitemap, which
+        # is what this job was doing: redeploying the committed JSON unchanged,
+        # daily, under the name "Refresh competitive data". Everything downstream
+        # (the usage tiers, the tournament teams) was therefore only as fresh as
+        # the last hand-run of `npm run data:refresh-all`.
+        #
+        # With it on, the usage build pulls one chaos dump per format (~40 of
+        # them, a few hundred MB in total) plus the small per-cutoff tables, so
+        # this step takes minutes rather than seconds.
         run: npm run build
+        env:
+          SCRAPE_DATA: 'true'
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

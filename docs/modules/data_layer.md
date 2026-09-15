@@ -51,6 +51,33 @@ After adding new static files, always regenerate `cache-manifest.json` via one o
 
 ---
 
+## Competitive Usage (`usage-index.json` + `usage/`)
+
+Built separately by **`node scripts/build-usage-stats.mjs`** (`npm run data:usage`) from Smogon's monthly stats. The build auto-discovers the latest published month and, from that month's directory listing, which ladders ran and at which rating bands — so `FORMATS` in the script may name ladders speculatively (a BSS series that rotates, a tier that was folded away) and anything absent is skipped silently.
+
+**Two kinds of data per format, because they cost very different amounts:**
+
+| | Source | Size | What it drives |
+|---|---|---|---|
+| **Detail** | `chaos/<format>-<cutoff>.json` | 5–30 MB each | The per-Pokémon page: items, moves, abilities, EV spreads, Tera, teammates. Fetched **once**, at the format's preferred cutoff (`DETAIL_CUTOFFS`). |
+| **Rankings** | `<format>-<cutoff>.txt` | a few hundred KB | The Meta list. Fetched for **every** published cutoff, so the ranking re-ranks by ladder rating with no extra download. |
+
+So only rankings vary by cutoff. `detailCutoff` records which band the breakdown was sampled at, and the UI says so rather than implying it re-samples — do not "fix" that by presenting the breakdown as belonging to whichever band is selected.
+
+**Output shape:**
+- `usage-index.json` — `{ month, default, formats: [{ id, label, group, kind, cutoff, cutoffs[], totalBattles, species, file }] }`.
+- `usage/<formatId>.json` — `{ format, detailCutoff, totalBattles, byId, cutoffs: { [cutoff]: { totalBattles, byId } } }`.
+
+**`kind` is load-bearing.** `'vgc'` marks the VGC / Pokémon Champions *regulations*; `'tier'` marks the Smogon ladders (OU → ZU, LC, Monotype, Doubles, National Dex, past-gen OU). `useUsageIndex()` returns both `formats` (everything, for the Meta pages) and `regulations` (VGC only). The Team Builder's game picker renders one **card** per entry and means "which ruleset am I building for" — it takes `regulations`, and handing it the full catalog turns a ruleset choice into a directory. An entry with no `kind` counts as a regulation, so files baked before tiers existed keep working.
+
+Species names are resolved to national-dex ids from the committed `pokemon-index.json` first (including unambiguous slug prefixes, so `Landorus-Therian` → `landorus` → 645), with PokéAPI only as the fallback. That is what makes ~40 formats affordable; without it the catalog's thousand-plus distinct Showdown names would each cost a round-trip.
+
+The scraped text parsers — the directory listing and the fixed-width usage table — live in `scripts/lib/smogonStats.mjs` and are pinned by `smogonStats.test.mjs` against real fixtures. They are the most likely thing to break silently when Smogon's output shifts, so change them test-first.
+
+**This data is only as fresh as the last build with `SCRAPE_DATA=true`.** `prebuild` skips every scraper without it (it rebuilds only move-types + the sitemap), which is why `.github/workflows/refresh-data.yml` sets it explicitly on the daily job.
+
+---
+
 ## Selectable Games (`games.json`)
 
 Built separately by **`node scripts/build-games.mjs`** (not by `data:cache`), from a
