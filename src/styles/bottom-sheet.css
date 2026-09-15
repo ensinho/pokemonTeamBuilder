@@ -13,9 +13,11 @@
 .bottom-sheet__backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    /* The shared scrim tokens, not a hand-rolled rgba(): a literal here is a
+       raw colour that drifts from every other dialog in the app. */
+    background: var(--scrim);
+    backdrop-filter: blur(var(--scrim-blur));
+    -webkit-backdrop-filter: blur(var(--scrim-blur));
     animation: bs-fade 160ms var(--ease-smooth);
 }
 
@@ -23,7 +25,16 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    max-height: 85vh;
+    /* Measured against the scrim, which is `position: fixed; inset: 0` and so
+       is already exactly the visible viewport — not against `vh`, which mobile
+       Safari resolves to the *large* viewport (the height the page would have
+       with the URL bar collapsed). 85vh therefore ran past the bottom of the
+       screen while the bar was showing, and the sheet's "Ver resultados"
+       button — its whole point — was the part that went under it. Same fix as
+       .modal-panel in index.css; `dvh` is the fallback for the one case a
+       percentage cannot resolve. */
+    max-height: 85dvh;
+    max-height: 85%;
     background: var(--color-surface);
     border-top: 1px solid var(--color-border);
     border-top-left-radius: var(--radius-xl);
@@ -73,14 +84,29 @@
                 background-color var(--duration-fast) var(--ease-smooth);
 }
 
-.bottom-sheet__close:hover {
+/* Gated: a sheet is a phone control, and on touch the first tap leaves :hover
+   applied until the user taps elsewhere — so an ungated hover here reads as a
+   button stuck in a highlighted state after it was pressed. */
+@media (hover: hover) and (pointer: fine) {
+    .bottom-sheet__close:hover {
+        color: var(--color-fg);
+        background: var(--color-surface);
+    }
+}
+
+/* Which leaves :active as the feedback that works on every input type. */
+.bottom-sheet__close:active {
     color: var(--color-fg);
-    background: var(--color-surface);
+    background: var(--color-surface-active);
 }
 
 .bottom-sheet__body {
     padding: var(--space-4);
     overflow-y: auto;
+    /* Reaching the end of the filter list must not hand the momentum to the
+       page behind the sheet (.custom-scrollbar carries this too; stated here so
+       the sheet keeps it if that class ever comes off). */
+    overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
 }
 

@@ -117,6 +117,10 @@ export const THEME_META = [
     { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04', mode: 'light' },
 ];
 
+// Whether each theme reads as dark or light, for `color-scheme`. Derived from
+// THEME_META so the picker's grouping and the browser's stay one decision.
+const THEME_MODE = Object.fromEntries(THEME_META.map((m) => [m.id, m.mode]));
+
 // Apply a theme to the document.
 export function applyTheme(theme) {
     const t = THEMES[theme];
@@ -136,6 +140,24 @@ export function applyTheme(theme) {
     root.style.setProperty('--color-danger', t.danger);
     root.style.setProperty('--color-warning', t.warning);
     root.style.setProperty('--color-info', t.info);
+
+    // Two things the CSS variables above cannot reach, both of which give the
+    // app away on a phone when they disagree with the theme:
+    //
+    // `color-scheme` is what the *browser* paints: the native <select> pickers
+    // in the Pokédex and Team Builder filter sheets, form controls, and the
+    // scroll bars. Unset, they render light on every theme, so choosing a
+    // generation on a dark theme popped a white wheel.
+    //
+    // `theme-color` is the status bar and the browser chrome above it. The
+    // mobile Pokémon screen paints its hero edge to edge under the notch
+    // (viewport-fit=cover), so a stale bar colour draws a seam right across the
+    // top of the one screen most likely to be mistaken for an installed app.
+    // The app's theme is a user choice, not the OS's, which is why this is set
+    // here on every switch rather than with a prefers-color-scheme media pair.
+    root.style.colorScheme = THEME_MODE[theme] || 'dark';
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) themeColorMeta.setAttribute('content', t.background);
 }
 
 // Interface scale. Lives here next to applyTheme because both are the same kind

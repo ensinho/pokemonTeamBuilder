@@ -8,7 +8,20 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <!-- interactive-widget=resizes-content makes the Android software keyboard shrink
+         the layout viewport the way iOS already does, so the sticky team composer and
+         any bottom-pinned control react to it instead of hiding behind it. Zoom is
+         never disabled (user-scalable/maximum-scale are an accessibility failure) —
+         the 16px input guard in index.css is what stops iOS zooming on focus. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
+    <!-- The status bar and browser chrome take their colour from here. The app picks
+         its theme itself rather than following the OS, so applyTheme() owns this tag
+         from boot onward (constants/theme.js); this value is only what paints in the
+         few frames before the module runs, and matches the default theme's page
+         colour. One media-less tag on purpose — a per-scheme pair would win over the
+         JS one by document order and pin the bar to the OS setting. -->
+    <meta name="theme-color" content="#09090b" />
+    <meta name="color-scheme" content="dark light" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&family=JetBrains+Mono:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">

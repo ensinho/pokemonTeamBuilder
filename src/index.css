@@ -594,8 +594,19 @@ input[type='checkbox']:checked + div + div {
 .bg-accent { background-color: var(--color-accent); }
 .bg-accent-soft { background-color: var(--color-accent-soft); }
 
-/* iOS Safari zoom fix */
-@media (max-width: 768px) {
+/* iOS Safari zoom fix — focus an input under 16px and Safari zooms the page in,
+   then never zooms back out on blur, leaving a cropped and drifted layout.
+   Raising the font size is the fix; `user-scalable=no` / `maximum-scale=1` is
+   not, because it takes pinch-zoom away from everyone to paper over this.
+
+   Keyed on a coarse pointer rather than only a width: this app's mobile views
+   run below *1024px*, not 768, so a tablet in portrait rendered the phone
+   layout with 13px fields and zoomed on every search. `(pointer: coarse)` is
+   the capability that actually decides whether the zoom happens; the width
+   query stays for coarse-pointer laptops' narrow windows. This is the one
+   documented place the app is allowed to size type in px (see the design-system
+   skill) — a rem here would scale with --ui-scale and drop back under 16. */
+@media (pointer: coarse), (max-width: 1023px) {
     input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']),
     select,
     textarea {
@@ -1378,6 +1389,24 @@ input,
 select,
 label {
     touch-action: manipulation;
+}
+
+/* Text that is a *control* is not text to be copied. Hold a finger on a web
+   button and iOS selects its label and pops the copy/define callout — on a
+   link or an image, the share sheet. No native control does that, and it fires
+   constantly here because the phone layouts are grids of tappable cards whose
+   labels are Pokémon names.
+
+   Scoped to controls on purpose. Never put this on `body`: the Pokédex entries,
+   stat lines, ability names and team names in these views are content, and
+   people copy them. Anything that opts in below has to be a thing you press. */
+button,
+[role="button"],
+label,
+summary {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
 }
 
 /* "Show more (N left)" under a list revealed in pages (ShowMoreButton). Sits on

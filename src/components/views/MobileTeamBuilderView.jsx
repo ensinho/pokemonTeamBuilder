@@ -546,8 +546,14 @@ export const MobileTeamBuilderView = ({
                 <section className={`team-builder-panel team-builder-mobile__composer p-3.5 ${isComposerCondensed ? 'is-condensed' : ''}`}>
                     {/* Row 1: team name + (count ⇄ compact Save) */}
                     <div className="team-builder-mobile__composer-top">
+                        {/* A team name is a title, so it capitalises; "done"
+                            dismisses the keyboard rather than offering a
+                            newline this single-line field cannot take. */}
                         <input
                             type="text"
+                            enterKeyHint="done"
+                            autoCapitalize="words"
+                            autoCorrect="off"
                             value={teamName}
                             onChange={(event) => setTeamName(event.target.value)}
                             placeholder={t('builder.teamNamePlaceholder')}
@@ -690,8 +696,15 @@ export const MobileTeamBuilderView = ({
                 <div className="team-builder-mobile__filter-bar">
                     <div className="team-builder-mobile__search">
                         <Search className="team-builder-mobile__search-icon" aria-hidden="true" />
+                        {/* Search keyboard, search return key, and no
+                            autocorrect mangling Pokémon names. */}
                         <input
                             type="text"
+                            inputMode="search"
+                            enterKeyHint="search"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            spellCheck={false}
                             placeholder={t('pokedex.searchPlaceholder')}
                             value={searchInput}
                             onChange={(event) => setSearchInput(event.target.value)}

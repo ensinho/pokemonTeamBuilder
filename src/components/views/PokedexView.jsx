@@ -198,8 +198,19 @@ export function PokedexView({
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none flex items-center">
                                 <Search className="w-4 h-4" />
                             </span>
+                            {/* Tell the software keyboard what this field is: a
+                                search return key instead of a newline, and no
+                                autocapitalise/autocorrect — "pikachu" was being
+                                corrected to "Pikachi" mid-search. Kept as
+                                type="text" because type="search" would add the
+                                browser's own clear button next to ours. */}
                             <input
                                 type="text"
+                                inputMode="search"
+                                enterKeyHint="search"
+                                autoCapitalize="none"
+                                autoCorrect="off"
+                                spellCheck={false}
                                 placeholder={t('pokedex.searchPlaceholderShort')}
                                 value={searchInput}
                                 onChange={(e) => setSearchInput(e.target.value)}

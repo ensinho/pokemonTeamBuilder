@@ -227,20 +227,49 @@
 /* Hover states */
 .team-builder-type-button:hover,
 .team-builder-button:hover,
-.team-builder-icon-button:hover,
-.team-builder-mobile-slot:hover {
+.team-builder-icon-button:hover {
     border-color: var(--color-border-hover);
 }
 
-.team-builder-recent-card:hover,
-.team-builder-mobile__recent-card:hover {
+.team-builder-recent-card:hover {
     border-color: var(--color-border-hover);
 }
 
-/* This one is borderless (see .team-builder-mobile-card), so hover has to land
-   on the fill rather than a border that is no longer there. */
-.team-builder-mobile-card:hover {
-    background: var(--color-surface-hover);
+/* The .team-builder-mobile-* surfaces below only ever render under 1024px, which
+   is to say under a thumb. Touch has no hover, so the browser fakes one: the
+   first tap applies :hover and *leaves it there* until the user taps something
+   else — a tapped team slot stays lit while they scroll away from it, which is
+   the loudest "this is a website" tell a grid of cards can give. Gate the hover
+   on the capability rather than sniffing the device; :active below is the
+   feedback that works on every input type. */
+@media (hover: hover) and (pointer: fine) {
+    .team-builder-mobile-slot:hover {
+        border-color: var(--color-border-hover);
+    }
+
+    .team-builder-mobile__recent-card:hover {
+        border-color: var(--color-border-hover);
+    }
+
+    /* This one is borderless (see .team-builder-mobile-card), so hover has to
+       land on the fill rather than a border that is no longer there. */
+    .team-builder-mobile-card:hover {
+        background: var(--color-surface-hover);
+    }
+}
+
+/* Native buttons answer the instant a finger lands; a web control that only
+   changes on click answers when the finger *leaves*, which reads as lag even at
+   0ms. Fill only, no scale — these sit in a 3- and 6-up grid, and a tile that
+   shrinks under the thumb reads as the whole grid wobbling. */
+.team-builder-mobile-slot:active,
+.team-builder-mobile__recent-card:active {
+    border-color: var(--color-border-hover);
+    background: var(--color-surface-active);
+}
+
+.team-builder-mobile-card:active {
+    background: var(--color-surface-active);
 }
 
 .team-builder-recent-card:hover .team-builder-icon-button:not(.team-builder-icon-button--danger):not(.team-builder-icon-button--accent) {
@@ -825,6 +854,11 @@
     color: var(--color-primary);
 }
 
+.team-builder-mobile__filter-toggle:active {
+    background: var(--color-surface-active);
+    border-color: var(--color-border-hover);
+}
+
 .team-builder-mobile__filter-chevron {
     transition: transform var(--duration-fast) var(--ease-smooth);
 }
@@ -1321,6 +1355,10 @@
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
+    /* Flinging to either end of the strip must not pass the leftover momentum
+       to the page behind it — that hand-off is what makes a row feel like it
+       "slips" and drags the whole screen with it. */
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
     /* Firefox */
     padding: var(--space-1_5) var(--space-1);
@@ -1487,8 +1525,10 @@
     background: var(--color-surface);
 }
 
-.pokedex-mobile-grid .team-builder-mobile-card:hover {
-    background: var(--color-surface-hover);
+@media (hover: hover) and (pointer: fine) {
+    .pokedex-mobile-grid .team-builder-mobile-card:hover {
+        background: var(--color-surface-hover);
+    }
 }
 
 /* Touch has no hover, and a phone is where this grid lives — the press itself
@@ -1556,8 +1596,18 @@
                 background-color var(--duration-fast) var(--ease-smooth);
 }
 
-.pokedex-mobile-iconbtn:hover {
+/* This bar is phone-only chrome, so its hover is gated for the same reason the
+   cards' is — and replaced by a press state, which is what a thumb can see. */
+@media (hover: hover) and (pointer: fine) {
+    .pokedex-mobile-iconbtn:hover {
+        color: var(--color-fg);
+        border-color: var(--color-border-hover);
+    }
+}
+
+.pokedex-mobile-iconbtn:active {
     color: var(--color-fg);
+    background: var(--color-surface-active);
     border-color: var(--color-border-hover);
 }
 

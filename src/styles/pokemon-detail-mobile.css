@@ -72,6 +72,17 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    /* Everything in this band is chrome — dex number, name, genus, type chips,
+       artwork — and a sideways drag across it is a deck swipe, not a reach for
+       the text. Without this, dragging the hero starts an iOS text selection
+       that fights the gesture and leaves the name highlighted on the screen
+       that slides in. The callout rule stops a long-press on the artwork
+       offering "Save Image", which no native Pokédex does.
+       Deliberately NOT on .pdm: the body below carries Pokédex entries, stats
+       and ability names, and those are content people copy. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
     /* The status bar is this screen's to clear: the app header, which normally
        owns the top band, is hidden on this route. */
     padding-block: calc(env(safe-area-inset-top, 0px) + var(--space-3)) var(--space-4);
@@ -210,6 +221,14 @@
     padding-inline: var(--space-2);
     overflow-x: auto;
     scrollbar-width: none;
+    /* Five tabs overflow a 320px screen, so this strip scrolls sideways. It
+       needs no `touch-action` of its own, and must not be given one: the
+       browser intersects touch-action from the touched element only as far as
+       the first containing scroll container, which for a sideways drag is this
+       strip — so .pdm's `pan-y` never reaches it and horizontal panning works.
+       Writing `pan-x` here would instead take *vertical* scrolling away from a
+       sticky bar that sits under the thumb for the whole page. */
+    overscroll-behavior-x: contain;
     background: color-mix(in srgb, var(--color-bg) 90%, transparent);
     backdrop-filter: blur(12px) saturate(1.15);
     -webkit-backdrop-filter: blur(12px) saturate(1.15);
@@ -233,6 +252,11 @@
 }
 
 .pdm__tab.is-active { color: var(--color-fg); }
+
+/* A tab that only changes colour once the finger lifts reads as a slow tab.
+   The underline still animates in on the active one; this is the acknowledgement
+   that the press landed. */
+.pdm__tab:active { color: var(--color-fg); background: var(--color-surface-hover); }
 
 .pdm__tab.is-active::after {
     content: '';
@@ -581,6 +605,7 @@
 }
 
 .pdm-sprite__pick.is-active { box-shadow: var(--ring-primary); color: var(--color-fg); }
+.pdm-sprite__pick:active { background: var(--color-surface-active); }
 
 .pdm-sprite__pick img {
     width: 2.75rem;
