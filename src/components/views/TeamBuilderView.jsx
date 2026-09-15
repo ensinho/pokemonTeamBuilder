@@ -34,6 +34,7 @@ import { useTournamentData } from '../../hooks/useTournamentData';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
 import { useMetaUsage } from '../../hooks/useMetaUsage';
+import { useTierLegality } from '../../hooks/useTierLegality';
 import {
     ClearIcon,
     EditIcon,
@@ -190,7 +191,8 @@ export function TeamBuilderView({
 
     // Favorites filtering already happened upstream (usePokedexStore, over the
     // full index before pagination) — availablePokemons only trims teamed mons.
-    const displayedPokemons = availablePokemons;
+    // This is the default list; a Smogon tier replaces it with `tierRoster` below.
+    const displayedPokemonsSource = availablePokemons;
     const selectedTypeCount = selectedTypes.size;
     const hasActiveFilters = (selectedGeneration && selectedGeneration !== 'all')
         || (selectedGame && selectedGame !== 'all')
@@ -230,8 +232,61 @@ export function TeamBuilderView({
         usageMap: metaUsageMap,
         byId: metaById,
         formats: regulations,
+        tiers: smogonTiers,
+        isTier: isSmogonTier,
+        format: activeFormat,
         formatId: activeRegulationId,
     } = useMetaUsage(selectedRegulation);
+
+    // Tier legality. A Smogon tier is the one meta choice that also narrows WHO
+    // may be on the team, so it is a real filter and not just a ranking — but
+    // only where a tier ladder exists: VGC, Monotype and 1v1 are rule sets this
+    // dataset cannot express, and `legalIdsFor` returns null for them, meaning
+    // "allow everything" rather than "allow nothing".
+    const { legalIdsFor } = useTierLegality();
+    const tierLegalIds = React.useMemo(
+        () => (isSmogonTier && !isPlaythrough ? legalIdsFor(activeRegulationId) : null),
+        [isSmogonTier, isPlaythrough, legalIdsFor, activeRegulationId],
+    );
+    const isTierFilterActive = Boolean(tierLegalIds);
+
+    // How many Pokémon each tier allows, for the chip labels. Only the tiers
+    // with a ladder get a number; the rest (Monotype, 1v1, CAP) do not filter,
+    // and a count beside them would promise one.
+    const tierCounts = React.useMemo(() => {
+        const counts = {};
+        for (const tier of smogonTiers) {
+            const ids = legalIdsFor(tier.id);
+            if (ids) counts[tier.id] = ids.size;
+        }
+        return counts;
+    }, [smogonTiers, legalIdsFor]);
+
+    // The roster a Smogon tier allows. Built from the FULL index rather than by
+    // filtering `availablePokemons`, for the same reason the game filter is:
+    // that list is paginated, so filtering it would hide every legal Pokémon
+    // past the current page until the user scrolled for them. Ordered by real
+    // usage in the tier, then by dex number — the tier's staples first, the
+    // legal-but-rare picks still present below them.
+    const tierRoster = React.useMemo(() => {
+        if (!isTierFilterActive || !pokemonIndex.length) return null;
+        const search = (searchInput || '').toLowerCase().trim();
+        const typeList = [...selectedTypes];
+        return pokemonIndex
+            .filter((entry) => {
+                if (entry.isForm) return false;
+                if (!tierLegalIds.has(entry.id)) return false;
+                if (showOnlyFavorites && !favoritePokemons.has(entry.id)) return false;
+                if (selectedGeneration && selectedGeneration !== 'all' && entry.generation !== selectedGeneration) return false;
+                if (!matchesTypeFilter(entry.types, typeList, typeMatchMode)) return false;
+                if (search && !matchesPokemonSearch(entry, search)) return false;
+                return true;
+            })
+            .sort((a, b) => (metaUsageMap.get(b.id) || 0) - (metaUsageMap.get(a.id) || 0) || a.id - b.id);
+    }, [isTierFilterActive, tierLegalIds, pokemonIndex, metaUsageMap, searchInput, selectedTypes, typeMatchMode, showOnlyFavorites, selectedGeneration, favoritePokemons]);
+
+    const displayedPokemons = tierRoster || displayedPokemonsSource;
+
 
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
 
@@ -248,7 +303,17 @@ export function TeamBuilderView({
         if (currentTeam.length >= 6) return [];
         // When a game filter is active, keep suggestions to that game's obtainable
         // Pokémon so they respect in-game availability (types/weather cores still rank).
-        const allowedIds = (selectedGame && selectedGame !== 'all' && gamePokemonIds) ? gamePokemonIds : null;
+        // A suggestion the tier forbids is worse than no suggestion — it is a
+        // recommendation the user cannot act on. Tier legality and the game's
+        // obtainable set are both restrictions, so when both are on the
+        // suggestion has to satisfy each.
+        const gameIds = (selectedGame && selectedGame !== 'all' && gamePokemonIds) ? gamePokemonIds : null;
+        let allowedIds = gameIds;
+        if (tierLegalIds) {
+            allowedIds = gameIds
+                ? new Set([...gameIds].filter((id) => tierLegalIds.has(id)))
+                : tierLegalIds;
+        }
         return buildSynergySuggestions({
             team: currentTeam,
             pokemonIndex,
@@ -260,7 +325,7 @@ export function TeamBuilderView({
             limit: 30,
             allowedIds,
         });
-    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds, isPlaythrough]);
+    }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds, tierLegalIds, isPlaythrough]);
 
     const suggestionIndexById = React.useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
     const addSuggestion = React.useCallback(
@@ -389,6 +454,8 @@ export function TeamBuilderView({
                     setSelectedGame={setSelectedGame}
                     games={games}
                     regulations={regulations}
+                    tiers={smogonTiers}
+                    tierCounts={tierCounts}
                     selectedRegulation={activeRegulationId}
                     onSelectRegulation={setSelectedRegulation}
                     isPlaythrough={isPlaythrough}
@@ -685,7 +752,13 @@ export function TeamBuilderView({
                             <GameCoverBanner
                                 games={games}
                                 selectedGame={selectedGame}
-                                note={isPlaythrough ? t('builder.playthroughBadge') : null}
+                                // A tier is a real restriction on the roster, not
+                                // just a ranking, so the banner says which one is
+                                // narrowing the list — otherwise a short list
+                                // reads as missing data.
+                                note={isPlaythrough
+                                    ? t('builder.playthroughBadge')
+                                    : (isTierFilterActive ? activeFormat?.label || null : null)}
                                 onOpen={() => setIsGamePickerOpen(true)}
                                 className="game-cover--compact"
                             />
@@ -843,7 +916,7 @@ export function TeamBuilderView({
                                                         details={pokemon}
                                                         onCardClick={openDetailModal}
                                                         onAddToTeam={handleAddPokemonWithClear}
-                                                        lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
+                                                        lastRef={!isTierFilterActive && index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
                                                         synergyReason={synergyReasonById.get(pokemon.id)}
                                                         isSuggested={synergyReasonById.has(pokemon.id)}
                                                         colors={colors}
@@ -854,7 +927,7 @@ export function TeamBuilderView({
                                             </>
                                         )}
                                     </div>
-                                    {!isGameFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div></div>}
+                                    {!isGameFilterActive && !isTierFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div></div>}
                                     {((isGameFilterActive && gameVisibleCount === 0 && pokemonIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && !isInitialLoading && (
                                         <div className="px-2 pb-4">
                                             <EmptyState
@@ -934,6 +1007,8 @@ export function TeamBuilderView({
                 selectedGame={selectedGame}
                 onSelectGame={setSelectedGame}
                 regulations={regulations}
+                tiers={smogonTiers}
+                tierCounts={tierCounts}
                 selectedRegulation={activeRegulationId}
                 onSelectRegulation={setSelectedRegulation}
             />

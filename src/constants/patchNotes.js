@@ -26,6 +26,15 @@ export const RELEASES = [
                 cta: 'patchNotes.tiersCta',
                 path: '/meta',
             },
+            {
+                key: 'builder-tier-filter',
+                icon: 'swords',
+                visual: 'tierFilter',
+                title: 'patchNotes.tierFilterTitle',
+                description: 'patchNotes.tierFilterDesc',
+                cta: 'patchNotes.tierFilterCta',
+                path: '/builder',
+            },
         ],
     },
     {

@@ -74,6 +74,20 @@ Species names are resolved to national-dex ids from the committed `pokemon-index
 
 The scraped text parsers — the directory listing and the fixed-width usage table — live in `scripts/lib/smogonStats.mjs` and are pinned by `smogonStats.test.mjs` against real fixtures. They are the most likely thing to break silently when Smogon's output shifts, so change them test-first.
 
+### Tier legality (`tier-legality.json`)
+
+Baked by the same script from Showdown's `formats-data.js` — one small file for the whole national dex. `{ byId: { "984": { tier, doubles?, natdex? } } }`, where `doubles`/`natdex` appear only when they differ from `tier`.
+
+**This answers a different question from the usage files, and the two are easy to confuse.** Usage says who is POPULAR in a tier, and only for the ~150 species a chaos dump reaches. Legality says who is ALLOWED. The Team Builder's tier filter needs the second: a list labelled "OU" holding only the 150 most-used Pokémon would hide every legal-but-niche pick, which is exactly the team a builder is for. (Measured: OU allows ~1000 species, has usage data for ~143.)
+
+The logic lives in `src/utils/tierLegality.js` (tested):
+- Tiers are cumulative — a UU Pokémon is legal in OU, an OU Pokémon is not legal in UU — with the `BL` rungs sitting between the tier they are banned from and the one above it.
+- `LC`/`NFE` are membership tests, not ranks, so they are matched exactly.
+- **`tierRuleForFormat` returns `null` for formats whose legality this dataset cannot express** — VGC, Battle Stadium, Monotype, 1v1, CAP. Callers must read `null` as "allow everything", never "allow nothing". Claiming to filter Monotype from a tier ladder would produce a roster that is simply wrong.
+- An unknown tier string keeps the species. The dataset lags new releases, and hiding a Pokémon the app cannot classify is worse than showing one it should not have.
+
+Showdown keys formats-data by its own compact id (`greattusk`, `landorustherian`), which the hyphenated slug candidates never match — so resolution goes through `resolveShowdownId`, exact-match first and then the longest known species that prefixes the id. Without it the tierlist resolves only single-word species and comes back full of holes.
+
 ### How the refresh actually reaches users
 
 Two things have to be true, and each was broken on its own once (2026-09-15):

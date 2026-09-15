@@ -119,6 +119,15 @@ export function GamePickerModal({
     // suggestions + usage data to a chosen meta. Optional — the section only
     // renders when regulations are supplied.
     regulations = [],
+    // The Smogon ladder (`kind: 'tier'`), rendered as chips below the regulation
+    // cards. Optional and separate from `regulations` so the card grid stays the
+    // three VGC covers it was designed for.
+    tiers = [],
+    // `{ [tierId]: number }` — how many Pokémon the tier actually ALLOWS. The
+    // catalog's own `species` count is how many have usage data (~140), which is
+    // a different and much smaller number than the roster the chip hands you, so
+    // showing that one here would misdescribe the filter. Omitted → no count.
+    tierCounts = null,
     selectedRegulation,
     onSelectRegulation,
 }) {
@@ -136,7 +145,17 @@ export function GamePickerModal({
     // Regulation picks tune the competitive data only — they don't filter the
     // Pokédex, so keep the modal open so the user can also pick a game.
     const chooseRegulation = (id) => onSelectRegulation?.(id);
-    const hasRegulations = regulations.length > 0 && typeof onSelectRegulation === 'function';
+    const hasRegulations = (regulations.length > 0 || tiers.length > 0) && typeof onSelectRegulation === 'function';
+    // Tiers bucketed by their catalog group, in first-seen order.
+    const tierGroups = [];
+    if (typeof onSelectRegulation === 'function') {
+        for (const tier of tiers) {
+            const name = tier.group || '';
+            let group = tierGroups.find((g) => g.name === name);
+            if (!group) { group = { name, items: [] }; tierGroups.push(group); }
+            group.items.push(tier);
+        }
+    }
     // A regulation belongs to a game family ("Pokémon Champions", "Scarlet &
     // Violet"): show that family's cover rather than one logo for all of them.
     const regulationLogo = (group) => getGameLogo(REGULATION_GAME_KEYS[group] || 'champions');
@@ -206,6 +225,48 @@ export function GamePickerModal({
                                     />
                                 ))}
                             </div>
+
+                            {/* The Smogon ladder. Same section as the regulations —
+                                it answers the same question, "which meta am I
+                                building for" — but as chips, because thirty-odd
+                                two-letter tiers as cover cards would be thirty
+                                identical plates. Grouped in catalog order so
+                                SV Singles stays above the past generations. */}
+                            {tierGroups.length > 0 && (
+                                <div className="tier-groups" style={{ marginTop: 'var(--space-4)' }}>
+                                    <div className="game-picker__section-head">
+                                        <h3 className="game-picker__section-title">
+                                            {pt ? 'Tiers do Smogon' : 'Smogon tiers'}
+                                        </h3>
+                                        <p className="game-picker__section-sub">
+                                            {pt
+                                                ? 'Filtra a lista pelos Pokémon legais na tier e ranqueia por uso real'
+                                                : 'Filters the list to the Pokémon legal in the tier and ranks them by real usage'}
+                                        </p>
+                                    </div>
+                                    {tierGroups.map((group) => (
+                                        <div key={group.name}>
+                                            <span className="tier-group__label">{group.name}</span>
+                                            <div className="tier-chips">
+                                                {group.items.map((tier) => (
+                                                    <button
+                                                        key={tier.id}
+                                                        type="button"
+                                                        onClick={() => chooseRegulation(tier.id)}
+                                                        aria-pressed={selectedRegulation === tier.id}
+                                                        className={`tier-chip ${selectedRegulation === tier.id ? 'is-active' : ''}`}
+                                                    >
+                                                        {tier.label}
+                                                        {Number.isFinite(tierCounts?.[tier.id]) && (
+                                                            <span className="tier-chip__count">{tierCounts[tier.id]}</span>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </section>
                     )}
 

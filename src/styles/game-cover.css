@@ -382,6 +382,79 @@
     cursor: progress;
 }
 
+/* --- Smogon tier chips -------------------------------------------------- */
+/* The VGC regulations are three cards with real cover art; the Smogon ladder is
+   thirty-odd entries whose only distinguishing mark is a two-letter name. Cards
+   would be thirty identical plates, so the tiers are chips instead — dense,
+   grouped, scannable — inside the same section the regulations live in. */
+
+.tier-groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.tier-group__label {
+    display: block;
+    margin-bottom: var(--space-1_5);
+    font-family: var(--font-display);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--color-muted);
+}
+
+.tier-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+}
+
+/* No border: these sit inside the bordered picker panel, so they separate
+   themselves with fill. Selected is an inset ring, which does not resize the
+   chip and so never nudges its neighbours as the selection moves. */
+.tier-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    padding: var(--space-1_5) var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-family: var(--font-display);
+    font-size: 0.74rem;
+    font-weight: 700;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.tier-chip:hover,
+.tier-chip:focus-visible {
+    background: var(--color-surface-hover);
+    outline: none;
+}
+
+.tier-chip.is-active {
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-raised));
+    box-shadow: var(--ring-primary);
+    color: var(--color-primary);
+}
+
+/* Species count — the one number that tells you how big a tier is before you
+   commit to it. Muted so the tier name stays the thing being read. */
+.tier-chip__count {
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.tier-chip.is-active .tier-chip__count {
+    color: inherit;
+    opacity: 0.75;
+}
+
 @media (max-width: 1023px) {
     .game-cover__art {
         width: 7rem;
@@ -389,5 +462,9 @@
     }
     .game-cover__label {
         font-size: 0.85rem;
+    }
+    /* Thumb targets: the chip keeps its calm size and grows its hit area. */
+    .tier-chip {
+        padding: var(--space-2) var(--space-3);
     }
 }

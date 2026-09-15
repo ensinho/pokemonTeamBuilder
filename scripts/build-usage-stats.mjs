@@ -111,7 +111,8 @@ const MAX_RANKED = 200;
 const SHOWDOWN_MOVES = 'https://play.pokemonshowdown.com/data/moves.json';
 const SHOWDOWN_ITEMS = 'https://play.pokemonshowdown.com/data/items.js';
 const SHOWDOWN_ABILITIES = 'https://play.pokemonshowdown.com/data/abilities.js';
-const DICTS = { items: {}, moves: {}, abilities: {} };
+const SHOWDOWN_FORMATS = 'https://play.pokemonshowdown.com/data/formats-data.js';
+const DICTS = { items: {}, moves: {}, abilities: {}, formats: {} };
 
 const fetchDict = async (url) => {
     try { const r = await fetch(url, { redirect: 'follow' }); if (r.ok) return await r.json(); } catch (_) { /* optional */ }
@@ -211,10 +212,46 @@ const loadLocalSpeciesIndex = async () => {
             localSpecies.set(prefix, [...targets][0]);
             added += 1;
         }
-        console.log(`  · species index: ${localSpecies.size} local slugs (${added} via unique prefixes)`);
+        buildCompactIndex();
+        console.log(`  · species index: ${localSpecies.size} local slugs (${added} via unique prefixes), ${compactKeys.length} compact`);
         return;
     } catch (_) { /* optional — PokéAPI still resolves everything, just slower */ }
     console.log('  · species index: unavailable, resolving via PokéAPI');
+};
+
+// Showdown's formats-data keys species by its own id — lowercase, separators
+// stripped: `greattusk`, `landorustherian`. The slug candidates above never
+// match those, so the tierlist would resolve only single-word species and come
+// back full of holes, which in the builder reads as "this legal Pokémon is not
+// in the tier". This index answers the compact form.
+const compactSpecies = new Map();
+let compactKeys = [];
+const compactOf = (s = '') => String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
+
+const buildCompactIndex = () => {
+    for (const [slug, id] of localSpecies) {
+        const key = compactOf(slug);
+        if (key && !compactSpecies.has(key)) compactSpecies.set(key, id);
+    }
+    // Longest first, so `mrmime` wins over `mr` and `hooh` matches whole.
+    compactKeys = [...compactSpecies.keys()].sort((a, b) => b.length - a.length);
+};
+
+/**
+ * A Showdown species id → national-dex id. Exact match first; failing that, the
+ * longest known species whose compact slug PREFIXES the id, which is how a form
+ * resolves to its base (`landorustherian` → `landorus` → 645). The 4-character
+ * floor keeps a two-letter stem from swallowing an unrelated species.
+ */
+const resolveShowdownId = (showdownId) => {
+    const key = compactOf(showdownId);
+    if (!key) return null;
+    const exact = compactSpecies.get(key);
+    if (exact) return exact;
+    for (const candidate of compactKeys) {
+        if (candidate.length >= 4 && key.startsWith(candidate)) return compactSpecies.get(candidate);
+    }
+    return null;
 };
 
 const speciesCache = new Map();
@@ -380,6 +417,50 @@ const bakeBattleItems = async () => {
         `${JSON.stringify({ generatedAt: new Date().toISOString(), count: items.length, items })}\n`,
     );
     console.log(`  ✓ battle-items.json: ${items.length} items`);
+};
+
+// Species id → the tier it is ASSIGNED, which is a different question from the
+// tier it is *used* in. The usage files only cover the ~150 species a chaos dump
+// reaches, so they cannot answer "may I put this in an OU team" for a legal but
+// niche pick — this can, and it is what the Team Builder's tier filter runs on.
+//
+// One small file (Showdown's formats-data) for the whole national dex, so it is
+// baked here alongside the other Showdown-derived maps rather than earning its
+// own script. `tier` is singles; `doublesTier` and `natDexTier` are recorded
+// only when they differ, and the consumer falls back to `tier`.
+const bakeTierLegality = async () => {
+    const entries = Object.entries(DICTS.formats || {});
+    if (!entries.length) { console.warn('  · tier-legality: none (keeping existing)'); return; }
+
+    const byId = {};
+    let unresolved = 0;
+
+    entries.forEach(([slug, data]) => {
+        const id = resolveShowdownId(slug);
+        if (!id) { unresolved += 1; return; }
+        if (!data) return;
+        const tier = data.tier || null;
+        const doubles = data.doublesTier || null;
+        const natdex = data.natDexTier || null;
+        if (!tier && !doubles && !natdex) return;
+        // Several Showdown slugs collapse onto one national-dex id (the Rotom
+        // appliances, Urshifu's two strikes). Keep the first — formats-data is
+        // ordered by dex number, so that is the base form, whose tier is the one
+        // a builder filtering by species means.
+        if (byId[id]) return;
+        byId[id] = { tier, ...(doubles ? { doubles } : {}), ...(natdex ? { natdex } : {}) };
+    });
+
+    const count = Object.keys(byId).length;
+    if (!count) { console.warn('  · tier-legality: 0 resolved (keeping existing)'); return; }
+    await fs.writeFile(
+        path.join(DATA_DIR, 'tier-legality.json'),
+        `${JSON.stringify({ generatedAt: new Date().toISOString(), count, byId })}\n`,
+    );
+    // Unresolved entries are a silent correctness hole: a species missing here
+    // is simply absent from every tier filter that uses it, so the count is
+    // reported rather than swallowed.
+    console.log(`  ✓ tier-legality.json: ${count} species${unresolved ? ` (${unresolved} unresolved)` : ''}`);
 };
 
 const formSlugFromName = (name = '') => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
@@ -555,10 +636,11 @@ async function main() {
     console.log(`build-usage-stats: using ${STATS_BASE}/${month}/`);
 
     // Load the ID → display-name dictionaries once (readable labels + sprite slugs).
-    [DICTS.items, DICTS.moves, DICTS.abilities] = await Promise.all([
+    [DICTS.items, DICTS.moves, DICTS.abilities, DICTS.formats] = await Promise.all([
         fetchShowdownJs(SHOWDOWN_ITEMS, 'BattleItems'),
         fetchDict(SHOWDOWN_MOVES),
         fetchShowdownJs(SHOWDOWN_ABILITIES, 'BattleAbilities'),
+        fetchShowdownJs(SHOWDOWN_FORMATS, 'BattleFormatsData'),
     ]);
 
     await loadLocalSpeciesIndex();
@@ -566,6 +648,7 @@ async function main() {
     // Bake the item picker list + mega-stone map (independent of the usage build).
     await bakeBattleItems();
     await bakeMegaStones();
+    await bakeTierLegality();
 
     // What this month actually published. An empty listing (Smogon reachable but
     // the index page unreadable) falls back to probing the preferred cutoffs, so
