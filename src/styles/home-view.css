@@ -2764,18 +2764,47 @@
        `pb-6` utility on the same node, which was still adding 25px of gutter
        under the last panel — bottom padding the app-shell footer band already
        provides twice over. */
-    /* `main.home-view`, not `.home-view`: the element+class beats Tailwind's
-       `pb-6` utility on the same node, which was still adding 25px of gutter
-       under the last panel — bottom padding the app-shell footer band already
-       provides twice over.
-
-       The page now ends above the fold, leaving background between the last
-       panel and the footer. Left as is on purpose: stretching the columns to
-       eat it needs `.app-shell__body` to become a definite-height flex column,
-       which is shell chrome every other view sits in, and a `height: 100%`
-       against the auto-height parent it has today silently does nothing. */
     main.home-view {
         padding-bottom: var(--space-2);
+    }
+
+    /* ── The column fills the frame ─────────────────────────────────────
+       The trims above ended the page above the fold, which left ~170px of
+       background between the last panel and the footer — the page looking
+       like it had stopped early rather than finished. The space was always
+       inside `.app-shell__body` (already `flex: 1 0 auto`, so already full
+       height); what was missing is that `.app-shell__page-frame` is an
+       auto-height block and never claimed it.
+
+       So the chain below hands that height down to the layout instead of
+       measuring the viewport: no vh/dvh anywhere, and `flex: 1 0 auto` at
+       every link — grow into free space, never shrink below content, so a
+       home that *is* taller than the window still scrolls exactly as it
+       did. Scoped with `:has(.home-view)`, the same way forum-view.css
+       claims the frame, so no other route inherits shell chrome it did not
+       ask for. Mobile is untouched: this whole block starts at xl. */
+    .app-shell__content:has(.home-view) .app-shell__body,
+    .app-shell__content:has(.home-view) .app-shell__page-frame {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .app-shell__content:has(.home-view) .app-shell__page-frame {
+        flex: 1 0 auto;
+    }
+
+    main.home-view {
+        display: flex;
+        flex-direction: column;
+        flex: 1 0 auto;
+    }
+
+    /* One row, auto-sized: `stretch` is what turns the frame's spare height
+       into column height rather than leaving it under the grid. The sidebar
+       opts out — it is `align-self: start` because it is sticky. */
+    .home-github-layout {
+        flex: 1 0 auto;
+        align-content: stretch;
     }
 
     /* rem, not px: the old 168×192 opted out of the interface-scale control

@@ -593,18 +593,23 @@
    Each rule takes back space from something oversized rather than from the
    rhythm between elements. */
 @media (min-width: 1280px) {
-    /* A pointer does not need a 44px stacked tile. Icon and label share a row,
-       which is the conventional desktop shape for a launcher anyway. */
+    /* Four equal quarters of the rail, not four 10rem tiles left-aligned in a
+       full-width bordered box: that shape ended the launcher a third of the
+       way short of its own right edge, and the empty third was the loudest
+       asymmetry on the page. Icon and label still share a row — a pointer
+       does not need a stacked tile — but the pair is centred in its quarter,
+       so the four tiles read as one evenly divided rail. */
     .hd-quick-rail {
-        grid-template-columns: repeat(4, minmax(0, 10rem));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--space-1_5);
     }
 
     .hd-quick-tile {
         flex-direction: row;
-        justify-content: flex-start;
-        gap: var(--space-2);
+        justify-content: center;
+        gap: var(--space-2_5);
         min-height: 0;
-        padding: var(--space-1_5) var(--space-2_5);
+        padding: var(--space-2) var(--space-2_5);
     }
 
     .hd-quick-tile__label {
@@ -634,17 +639,69 @@
         display: flex;
     }
 
+    /* A banner, not a row with a picture in it: the roster takes the card's
+       whole body (`1fr`) and the name and count read as its caption. The
+       sprites centre in that body, so the artwork is what fills the card. */
     .hd-team-row {
         flex: 1;
         grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: minmax(0, 1fr) auto;
         grid-template-areas:
             "roster roster"
             "name   meta";
         align-items: end;
-        gap: var(--space-1_5) var(--space-2);
+        gap: var(--space-2_5) var(--space-2);
         min-height: 0;
-        padding: var(--space-2) var(--space-2_5);
+        padding: var(--space-2_5);
         background: var(--color-surface-raised);
+    }
+
+    /* The banner band: the roster owns the card's whole body and its mons sit
+       centred in it, so the artwork is the card's header and the name reads
+       as its caption. Centred rather than left-aligned because a three-mon
+       team then composes as a smaller banner instead of a row that ran out
+       halfway. */
+    .hd-team-row__roster {
+        align-self: stretch;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* No coin at banner size. The disc is a circle and a sprite is a square,
+       so the circle can only show the art that fits inside it — about 70% of
+       the box, cutting exactly the corners the art uses (Charizard's wings,
+       Blastoise's cannons). At 24px that clipping was invisible and the coin
+       bought a tidy rhythm; at 44px it is the first thing you see, and it
+       makes a bigger sprite mostly bigger background. So the mons are drawn
+       whole, and what separates two overlapping ones is a halo of the card's
+       own fill around the silhouette — the shape of the Pokémon, not a disc
+       around it. Tokenised, so it is the card's colour in all six themes. */
+    .hd-team-row__roster img {
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+        object-fit: contain;
+        filter: drop-shadow(0 0 2px var(--color-surface-raised))
+                drop-shadow(0 0 2px var(--color-surface-raised));
+    }
+
+    /* As big as the card can hold, worked out by the browser rather than by
+       me. Six sprites overlapped by --space-2 measure `6 × size − 5 × 0.5rem`,
+       so the size that exactly fills the card is `(100% + 2.5rem) / 6` — the
+       percentage resolves against the card's own content box, so this is
+       correct at every window width, at every panel width, and at every
+       setting of the interface-scale control. Fixed sizes behind container
+       breakpoints could not be: the breakpoints are in rem and --ui-scale
+       moves the rem, so the step that fit at 100% overflowed at 110% — and
+       .hd-panel hides overflow, which means a clipped sixth Pokémon.
+
+       The cap is the only judgement call in it: past 3.5rem the mons stop
+       reading as a team and start reading as six pictures. `aspect-ratio`
+       keeps them square without a second formula for the height. */
+    .hd-team-row__roster img {
+        width: min(3.5rem, calc((100% + 2.5rem) / 6));
+        height: auto;
+        aspect-ratio: 1;
     }
 
     .hd-team-row__roster { grid-area: roster; }
@@ -669,5 +726,88 @@
        internal padding in every tile. */
     .hd-panel--meta .hd-panel__body {
         padding-block: var(--space-2_5);
+    }
+}
+
+/* ── Desktop: the stack fills the column it was given ──────────────────
+   Counterpart to the fill chain at the end of home-view.css. That chain
+   hands the frame's spare height down to the two columns; this block
+   decides what the left one does with it. Doing nothing was the bug — the
+   panels kept their compressed height and the slack pooled under the last
+   one, so a 1080p window showed a page that looked like it had been cut
+   off rather than composed.
+
+   Who grows, and why those weights: the launcher takes the smallest share
+   (one row of content — past a point a taller tile is just a bigger
+   target), the teams and the meta panel split the rest evenly, because
+   each holds a row of objects that reads better with air around it. Every
+   share is `flex-grow` on a panel plus a rule that lets the panel's own
+   content use the extra — a panel that grows around content pinned to its
+   top would trade the void under the column for a void inside a card.
+
+   The caps are what keep this honest on a 1440-tall monitor: past them the
+   growth stops and the leftover stays as background, which is the right
+   answer — a 200px shortcut tile is not a better use of a big screen.
+   Nothing here shrinks below content (`flex-shrink: 0` throughout), so a
+   window too short for the stack scrolls exactly as it did before. */
+@media (min-width: 1280px) {
+    .hd-stack {
+        flex: 1 0 auto;
+        /* Matches the gap .home-main-col uses between the hero and this
+           stack, so the whole column runs on one rhythm instead of two. */
+        gap: var(--space-3);
+    }
+
+    .hd-quick-rail {
+        flex: 1 0 auto;
+        max-height: 5.5rem;
+    }
+
+    .hd-panel--continue,
+    .hd-panel--meta {
+        display: flex;
+        flex-direction: column;
+        flex: 2 0 auto;
+    }
+
+    .hd-panel--continue { max-height: 14rem; }
+    .hd-panel--meta { max-height: 22rem; }
+
+    /* The head keeps its height; everything below it takes the growth. */
+    .hd-panel--continue .hd-continue-list,
+    .hd-panel--continue .hd-panel__body,
+    .hd-panel--meta .hd-panel__body {
+        flex: 1 0 auto;
+    }
+
+    /* Three cards of equal height, each filling its share of the panel —
+       `1fr` rows rather than auto, or the row would size to the tallest
+       card and leave the rest of the panel empty underneath. */
+    .hd-continue-list {
+        grid-auto-rows: minmax(0, 1fr);
+    }
+
+    /* Nothing to continue: the prompt centres in the taller panel instead
+       of sitting at the top of a mostly empty card. */
+    .hd-continue-start {
+        justify-content: center;
+    }
+
+    .hd-panel--meta .hd-panel__body {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* The mon rail is the meta panel's main object, so it takes the panel's
+       growth; the tiles stretch with it and keep their sprites centred. The
+       tournament rows below stay the size they are — they are a footnote to
+       the rail, and a 2-up row of them scaled up reads as two banners. */
+    .hd-panel--meta .hd-meta-mons-grid {
+        flex: 1 0 auto;
+        max-height: 7rem;
+    }
+
+    .hd-meta-mon-btn {
+        justify-content: center;
     }
 }

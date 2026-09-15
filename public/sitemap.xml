@@ -6151,11 +6151,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/pidgeot</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/raichu</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -6181,7 +6176,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/alakazam</loc>
+    <loc>https://pokemonbuilder.app/meta/victreebel</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6221,11 +6216,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/jolteon</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/aerodactyl</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -6252,16 +6242,6 @@
   </url>
   <url>
     <loc>https://pokemonbuilder.app/meta/feraligatr</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/ariados</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/ampharos</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6297,11 +6277,6 @@
   </url>
   <url>
     <loc>https://pokemonbuilder.app/meta/skarmory</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/houndoom</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6351,16 +6326,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/medicham</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/manectric</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/camerupt</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -6381,17 +6346,12 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/meta/banette</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/meta/metagross</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/infernape</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/empoleon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6431,6 +6391,11 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/meta/glaceon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/meta/gliscor</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -6456,22 +6421,17 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/serperior</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/samurott</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/liepard</loc>
+    <loc>https://pokemonbuilder.app/meta/excadrill</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/excadrill</loc>
+    <loc>https://pokemonbuilder.app/meta/audino</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6491,11 +6451,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/krookodile</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/scrafty</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
@@ -6507,11 +6462,6 @@
   </url>
   <url>
     <loc>https://pokemonbuilder.app/meta/zoroark</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/reuniclus</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6571,7 +6521,22 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/meta/pyroar-male</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/meta/floette</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/meowstic-male</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/aegislash-shield</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6581,17 +6546,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/barbaracle</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/dragalge</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/clawitzer</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6611,17 +6566,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/goodra</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/klefki</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/noivern</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6666,17 +6611,17 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/salazzle</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/tsareena</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pokemonbuilder.app/meta/oranguru</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mimikyu-disguised</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6706,22 +6651,17 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/mr-rime</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/falinks</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/dragapult</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://pokemonbuilder.app/meta/kleavor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/basculegion-male</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6741,12 +6681,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/skeledirge</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/quaquaval</loc>
+    <loc>https://pokemonbuilder.app/meta/maushold-family-of-four</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6777,6 +6712,11 @@
   </url>
   <url>
     <loc>https://pokemonbuilder.app/meta/tinkaton</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/palafin-zero</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6821,57 +6761,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/hydrapple</loc>
+    <loc>https://pokemonbuilder.app/meta/tentacruel</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/pikachu</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/machamp</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/heracross</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/sharpedo</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/chimecho</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/rhyperior</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/glaceon</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/orthworm</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/clefairy</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/muk</loc>
+    <loc>https://pokemonbuilder.app/meta/cloyster</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6881,32 +6776,37 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/rhydon</loc>
+    <loc>https://pokemonbuilder.app/meta/jolteon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/electabuzz</loc>
+    <loc>https://pokemonbuilder.app/meta/zapdos</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/magmar</loc>
+    <loc>https://pokemonbuilder.app/meta/moltres</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/articuno</loc>
+    <loc>https://pokemonbuilder.app/meta/mew</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/jumpluff</loc>
+    <loc>https://pokemonbuilder.app/meta/quagsire</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/murkrow</loc>
+    <loc>https://pokemonbuilder.app/meta/espeon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/kingdra</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6916,72 +6816,57 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/smeargle</loc>
+    <loc>https://pokemonbuilder.app/meta/blissey</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/hitmontop</loc>
+    <loc>https://pokemonbuilder.app/meta/breloom</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/entei</loc>
+    <loc>https://pokemonbuilder.app/meta/salamence</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/lugia</loc>
+    <loc>https://pokemonbuilder.app/meta/latias</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/ho-oh</loc>
+    <loc>https://pokemonbuilder.app/meta/latios</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/slaking</loc>
+    <loc>https://pokemonbuilder.app/meta/jirachi</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/kyogre</loc>
+    <loc>https://pokemonbuilder.app/meta/deoxys-normal</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/groudon</loc>
+    <loc>https://pokemonbuilder.app/meta/empoleon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/rayquaza</loc>
+    <loc>https://pokemonbuilder.app/meta/bronzong</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/gastrodon</loc>
+    <loc>https://pokemonbuilder.app/meta/toxicroak</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/drifblim</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/yanmega</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/dialga</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/palkia</loc>
+    <loc>https://pokemonbuilder.app/meta/magnezone</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -6991,17 +6876,22 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/regigigas</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/giratina-altered</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/cresselia</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/manaphy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/darkrai</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/serperior</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7011,12 +6901,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/scraggy</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/gothitelle</loc>
+    <loc>https://pokemonbuilder.app/meta/reuniclus</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7026,12 +6911,22 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/mienshao</loc>
+    <loc>https://pokemonbuilder.app/meta/alomomola</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/reshiram</loc>
+    <loc>https://pokemonbuilder.app/meta/mandibuzz</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tornadus-incarnate</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/thundurus-incarnate</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7046,17 +6941,42 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/meta/keldeo-ordinary</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/meloetta-aria</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/goodra</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/diancie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hoopa</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/volcanion</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ribombee</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/meta/comfey</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/solgaleo</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/lunala</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7066,22 +6986,32 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/magearna</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/rillaboom</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/toxtricity-amped</loc>
+    <loc>https://pokemonbuilder.app/meta/cinderace</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/alcremie</loc>
+    <loc>https://pokemonbuilder.app/meta/cramorant</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/barraskewda</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/polteageist</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pincurchin</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7091,7 +7021,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/zacian</loc>
+    <loc>https://pokemonbuilder.app/meta/indeedee-male</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7101,12 +7031,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/eternatus</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/urshifu-single-strike</loc>
+    <loc>https://pokemonbuilder.app/meta/zarude</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7116,17 +7041,27 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/regidrago</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/calyrex</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/ursaluna</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/enamorus-incarnate</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/skeledirge</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/quaquaval</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lokix</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7136,7 +7071,17 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/flamigo</loc>
+    <loc>https://pokemonbuilder.app/meta/garganacl</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/brambleghast</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cetitan</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7146,7 +7091,7 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/tatsugiri-curly</loc>
+    <loc>https://pokemonbuilder.app/meta/clodsire</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7156,37 +7101,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/scream-tail</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/brute-bonnet</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/flutter-mane</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/slither-wing</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/sandy-shocks</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/iron-treads</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/iron-bundle</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7211,37 +7131,12 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/chien-pao</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/ting-lu</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/chi-yu</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/roaring-moon</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
     <loc>https://pokemonbuilder.app/meta/iron-valiant</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/koraidon</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://pokemonbuilder.app/meta/miraidon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7256,12 +7151,17 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/meta/fezandipiti</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/meta/ogerpon</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/meta/gouging-fire</loc>
+    <loc>https://pokemonbuilder.app/meta/hydrapple</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -7281,607 +7181,3097 @@
     <priority>0.6</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/meta/pecharunt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sandslash</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/muk</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/chansey</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lapras</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mewtwo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/forretress</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/smeargle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lugia</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ho-oh</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/kyogre</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/groudon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/rayquaza</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gastrodon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dialga</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/palkia</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/giratina-altered</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/shaymin-land</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/arceus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/galvantula</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/reshiram</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/zekrom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/avalugg</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lunala</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/magearna</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/zacian</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/eternatus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/urshifu-single-strike</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/spectrier</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/calyrex</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dachsbun</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/grafaiai</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cyclizar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/orthworm</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/flutter-mane</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/iron-bundle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/baxcalibur</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/chien-pao</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/chi-yu</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/roaring-moon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/koraidon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gouging-fire</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/meta/terapagos</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/9680849fd76160ac</loc>
+    <loc>https://pokemonbuilder.app/meta/magneton</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hitmonlee</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/vaporeon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/articuno</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/donphan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/raikou</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/entei</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/crawdaunt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/torterra</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/infernape</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ambipom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/rhyperior</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/yanmega</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/azelf</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/krookodile</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/haxorus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mienshao</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bisharp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/braviary</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cobalion</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/terrakion</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/noivern</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/oricorio-baile</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/salazzle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/palossand</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/thwackey</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/toxtricity-amped</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hattrem</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/regidrago</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/kilowattrel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/revavroom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/scream-tail</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sandy-shocks</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/iron-thorns</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/iron-leaves</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/munkidori</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/persian</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/scyther</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lanturn</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/misdreavus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gligar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/heracross</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/suicune</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/shiftry</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/flygon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/registeel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mismagius</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/porygon-z</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/probopass</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cinccino</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/florges</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/vikavolt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/inteleon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/drednaw</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/coalossal</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/duraludon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/klawf</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/flamigo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dudunsparce-two-segment</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dipplin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/poliwrath</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/electrode</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/rhydon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/furret</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wooper</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/qwilfish</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sneasel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/houndoom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hitmontop</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ludicolo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hariyama</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/nosepass</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/medicham</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cacturne</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/drifblim</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/honchkrow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dusknoir</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/uxie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mesprit</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gurdurr</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/virizion</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/clawitzer</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/carbink</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lurantis</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/passimian</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/minior-red-meteor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bruxish</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cosmoem</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/appletun</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sandaconda</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sinistea</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/perrserker</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/morpeko-full-belly</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/copperajah</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/arboliva</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mabosstiff</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/toedscruel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bombirdier</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tatsugiri-curly</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/brute-bonnet</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/arbok</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/venomoth</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dugtrio</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/primeape</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/golem</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/haunter</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/exeggutor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hitmonchan</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/noctowl</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bellossom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/granbull</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ursaring</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/volbeat</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/whiscash</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/regirock</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/rampardos</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bastiodon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/floatzel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/skuntank</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/spiritomb</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/regigigas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/emboar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/basculin-red-striped</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/beartic</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cryogonal</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/fletchinder</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/trevenant</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/komala</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hakamo-o</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/alcremie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/glastrier</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/crocalor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/spidops</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/squawkabilly-green-plumage</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/naclstack</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/veluza</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/clefairy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wigglytuff</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dodrio</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ariados</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ampharos</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/marill</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/jumpluff</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dunsparce</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/magcargo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/piloswine</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/combusken</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/masquerain</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/slaking</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/illumise</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/swalot</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/grumpig</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/zangoose</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dusclops</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/regice</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/luxray</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/vespiquen</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/shellos</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gabite</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hippopotas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/electivire</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/magmortar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/leafeon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/servine</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/zebstrika</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/leavanny</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gothitelle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/duosion</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/swanna</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pawniard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/toucannon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/greedent</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/flapple</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/falinks</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/quaxwell</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/rabsca</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tinkatuff</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bulbasaur</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/charmander</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/squirtle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ekans</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sandshrew</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/oddish</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/venonat</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/diglett</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/meowth</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/psyduck</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mankey</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/growlithe</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/poliwag</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bellsprout</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tentacool</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/geodude</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/slowpoke</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/magnemite</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/doduo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/grimer</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/voltorb</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/koffing</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/rhyhorn</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/horsea</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/eevee</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dratini</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cyndaquil</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/totodile</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/spinarak</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/chinchou</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/aipom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/snubbull</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/teddiursa</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/slugma</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/swinub</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/houndour</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/phanpy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/elekid</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/larvitar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/treecko</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/seedot</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wingull</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/surskit</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/azurill</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gulpin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/numel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/spoink</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/trapinch</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cacnea</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/barboach</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/corphish</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bagon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/beldum</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/turtwig</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/starly</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cranidos</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/shieldon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/buizel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/drifloon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/chingling</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/stunky</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bronzor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bonsly</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gible</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/munchlax</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/riolu</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/croagunk</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/snover</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/drilbur</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/timburr</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cottonee</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sandile</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/zorua</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/minccino</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gothita</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/solosis</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/deerling</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/foongus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/joltik</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/axew</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cubchoo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mienfoo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/golett</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/vullaby</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/larvesta</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/chespin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/fennekin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/froakie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/fletchling</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/litleo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/flabebe</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/espurr</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/inkay</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/skrelp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/clauncher</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/phantump</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bergmite</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/noibat</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/litten</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pikipek</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/crabrawler</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mareanie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mudbray</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dewpider</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/fomantis</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/salandit</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sandygast</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/jangmo-o</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/grookey</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/scorbunny</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/chewtle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/silicobra</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/arrokuda</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hatenna</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/impidimp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cufant</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dreepy</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sprigatito</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/fuecoco</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/quaxly</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tarountula</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/nymble</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/fidough</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wattrel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/maschiff</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/shroodle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bramblin</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/toedscool</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tinkatink</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wiglett</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/finizen</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/varoom</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/glimmet</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/greavard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cetoddle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gimmighoul</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/poltchageist</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/murkrow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/delibird</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/miraidon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sudowoodo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sawsbuck</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sliggoo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/raboot</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/eiscue-ice</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/flareon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/stantler</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/torracat</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wyrdeer</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/beedrill</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/nidoking</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/marowak</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pinsir</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/shedinja</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sharpedo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tangrowth</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/togekiss</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/victini</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ferrothorn</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tapu-koko</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tapu-lele</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tapu-bulu</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tapu-fini</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/buzzwole</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/xurkitree</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/celesteela</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/kartana</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/blacephalon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/zeraora</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/melmetal</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dracozolt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/arctozolt</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/shuckle</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/corsola</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/darmanitan-standard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/genesect</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/slurpuff</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/yveltal</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/zygarde-50</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/solgaleo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pheromosa</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/marshadow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/naganadel</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/stakataka</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dracovish</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pidgeot</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/alakazam</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/xatu</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mantine</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/manectric</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/claydol</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cradily</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/absol</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/roserade</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/stunfisk</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/druddigon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bouffalant</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/golisopod</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/nihilego</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/runerigus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/diggersby</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pangoro</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/bewear</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/aurorus</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/linoone</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/seismitoad</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/jellicent-male</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tyrantrum</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/turtonator</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/obstagoon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/xerneas</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pikachu</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/farfetchd</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/kingler</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/armaldo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/relicanth</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/liepard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gigalith</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/archeops</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/klinklang</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/durant</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wishiwashi-solo</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dhelmise</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/grapploct</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/cursola</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sirfetchd</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pyukumuku</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/machamp</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/kabutops</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/crobat</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/girafarig</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/celebi</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/glalie</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/doublade</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/omastar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/huntail</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gorebyss</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sigilyph</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/escavalier</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/accelgor</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/nidoqueen</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/golduck</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/machoke</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/hypno</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/jynx</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ninjask</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/walrein</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/clamperl</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/drapion</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lickilicky</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/raticate</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/electabuzz</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sunkern</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/miltank</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/pupitar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/swellow</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/roselia</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/wailord</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lunatone</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/solrock</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/duskull</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/parasect</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/rapidash</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dewgong</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/gastly</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/tangela</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/dragonair</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/ledian</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/sunflora</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/unown</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/butterfree</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/poliwhirl</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/kadabra</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/weepinbell</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/onix</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/lickitung</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/mr-mime</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/magmar</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/meta/porygon</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://pokemonbuilder.app/tournaments/team/ff06554b6742a197</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/8431751f4ed530cd</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/65d3faffe8fdf6a3</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/1606db471a50f566</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/6cc4b40272adf67a</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/8b95a27cf80a4af6</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/2b23605cdcee8fb2</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/9b78c2f0937a8ce0</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/1b37249d9ac7dbe4</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/800d2c250476f330</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/9e3702044f976001</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/df8ff4680afad019</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/14ebec817237ba8a</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/77016528444a20a9</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/bcbcfdf55cb17952</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/7755d0606d5b81a3</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/8a893a62701569dd</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/54a3379126747f6c</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/b1b6a3465a890006</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/bb19143bd2b40417</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/8d54c2379391e5e3</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/0d2858207078a94f</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/c92fa94a73a0331e</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/ebc241d887e16a29</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/7bbccdabd2b3830f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/a4d90bc1387e99fc</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/42d53375663aa736</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/8631596549d4d8f3</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0b9319821685fedb</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/1f26f08811be2d24</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/475096058f578d37</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/77b5d41e12cfe28c</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/dc7b05506a44c661</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/fb9920aa6842398b</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/69b4ad02228606b9</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/54619a22821f294f</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/922a6e8f797e0022</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/de95a03e10a5e80d</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/a9fdf048105d5960</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/b683d04264dfe8c5</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/60727d4b5abeb091</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/ceda90b975f33b8f</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/e036b69f24be2220</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/062ba26e30b09342</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/52aa36ebc27b5827</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/460ce7877ff3669a</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/90236d8fc05b50d0</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/6cbe5ab29f1da2ad</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/08e8066b6c8b231f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/b622c86faf9129fa</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/7ffe45f77067e940</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/c4cf401c7f093ce2</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/cb0e5b3fe29df43f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/8c31511bcb534ee2</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0a8c6fbb56b2120c</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/f4efd3395f3afe35</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/4956e8a2e5cf2cd6</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/2de67fe20b3bcfdc</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/5e71890de4573f5a</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/db8571f6a73593d5</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/8644c91e2c5a3fff</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/25d088679af3b47d</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/16dfa42bf0ba2e6c</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/74337bf9bd81c3d6</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/3318b818bcf3e240</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/65cd786b87527e67</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/4ac5c4c526cfd750</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/1b415d637eb7fad3</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/8b693a907565d645</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/90159766947b173c</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/f16bc70ee77a292e</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/e8d86296cdb5a451</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/29da703220c1990f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/bafda91db6a9f6df</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/2bbc13690db7555b</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/69dcb3672f175bcc</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/e0bb3a4e60b52f42</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/dc43d16bba9a4dac</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/3a653f8692294a23</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/09a60c7af9da90a4</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0a36793b5d73aaad</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/89b4b80479fda7cc</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0f8c9ecdb17c1ee7</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/293c35b1cce99977</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/48fbd9ba1a6398c5</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/f84b9918ea9a6ea8</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/94829c225748e1e8</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/216e411490512a06</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/f6926fa954566157</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/9ac0cafd2bbaebdf</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/93e7fcc85c55a782</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/149ddb8c6df36f81</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/68eb24cb26723caf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/93860f32a7025dfa</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/2e7a5537be5d014a</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/40b628c5d1a10e72</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/cd801e7c7f787cbf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/3cd83f8fec1a2f38</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/213542ca8e9a0a60</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/3c5d545aa6bf8d8b</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/3a7374767f9b256f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/b58d9136416c01ca</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/b8f8e845e4091711</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/465a003d36a77d6a</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/4aed91e85c93e97c</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/7d917eb831219415</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/102e046831526921</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/c12f688c33b0241f</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/cb10ec3b474a12a3</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/790fefef0e615072</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/e8b65d60623fb742</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/d5abbcf65584da67</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/9a2b7eea87785038</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/ab5f22b0bc72b9ee</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/f85ccd540a7353d7</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/30d465a381197f58</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/1861250158e8fc3a</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/3e9e6f899f54a0df</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/f41dbaf280a75a4d</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/8eaa6c943c31955a</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/b3232e0fd0389de8</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/10813e1e2f3a11d8</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0bf0dbd43a21af08</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/b3a4c9bf727fac0b</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/223d7331be48087f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/463768738188197a</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/439d2b34fc07bf9c</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/3981c840ecf3c1ea</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/be3ade1783992d23</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/13845f1b966630e0</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0f7b23b539b70c71</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/4ffd852f16400a5c</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/f8869a1604b8aebf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/cf96601b598cf9dc</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/824d80c0ca31b3c1</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/18296ccd2e5e15dc</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0dad174ede250807</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/48dd1bb49c1e65d9</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/1f789194015e22c6</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/52b7c915b7ea1aab</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/55111a380b726ae6</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/fc2acbd1494a3b8e</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/476e79292ceab11a</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/307be1728b24f5f7</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/4af5b2aa73228d01</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/6f4b24415afcb1c7</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/700aaaeef97e5fda</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/48f55616062752e0</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/c823b14fb4d84698</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/76a3d87869cf7fd7</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/9e171b2464b26e6c</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/b0c3f6e49933b276</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/6c1f93c580d8c484</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/0771fbe649990ffd</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/06b3d2088acc8964</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/b853818f23f44afa</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/d12b5b1443607c9f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/078fe85a1c137c24</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/87bec6ae2af44894</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/a359ccdf7d53e5c1</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/d75e93e2c5122e44</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/4df40e818abd90e2</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/e57ef78f7db0f109</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/526060c8e33f1ea1</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/6e2b201fb7f31fd1</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/21524442c868f970</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/a9a91f89ea80b0fa</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/e475bf46b1880293</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/9c12b1c5172cd2fb</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/e8e8c94abcd9c821</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/c0199dd46b9a4362</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/96aad3f0fd32999a</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/9fae1c1657f89d13</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/caef1bb145b86b9b</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/b39f636d2bca3854</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/eb30a196bec16a0a</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/1c34327179acd1a4</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/d4d57eb7d2cc08be</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/e9d1cbb36f03d559</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/f7b454940d1794c3</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/7baeaa7a04b7bc04</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/180c9919cae71f22</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/a13d9d38201cdcdf</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/c60720b67c5e5266</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/9904a36ce8b7a659</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/80db1a9d56777994</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/6380045d0ef66a0f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/d4e2f2167bd00f63</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/5b37157ba2378dc8</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/878deb3373b7497f</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/f3fe5c118bfffece</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/711c62a5f1970266</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/347c42391de04441</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/27a98e4c07e1b25f</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/d415854daa8fac88</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/c252488fdd44c277</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/85095f2a871bc77e</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/ec43f2aa919c3909</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/5ba162415764dbd5</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/9a08df9d69cc892f</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/0b6204a01a06be02</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/3b4dc0c1bad2bff4</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/ac5e76363d678284</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/d7a41e1b2dc484d5</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/598d67d4300424e2</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/892a4b8172418a85</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/bdb542f03cd0ffa8</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/868616f74e2373bb</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/1cd8dc30c3f65d52</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/0a136a5de6376a04</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/c778cc8f5684df8d</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/4d77186dcc0146e4</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/4330d4432f808d14</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/5d52aaf2a42f26e8</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/8be5fd8b80ed230d</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/7d544ca4586ae118</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/7046fd8f0ccf591f</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/8569c194faf3fb8e</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/f95d7b657135a34e</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/9b4fdfbeb7d7f0b0</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/6f7575cc2a32527e</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/cf72f1171971b484</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/a0f9889aed74c18b</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/1a8b272fb8685a21</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/3ab034b96c4dc483</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/e63f3cbd94b85986</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/3b96f4976f5e3760</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/8027d57ca28fd5b7</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/ff654ac630acbba7</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/f6c0b377d2ac4717</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/ea7a930f565b548a</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/2884260edfe02d17</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/8b210ae613c2d6d4</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/48ca91ab5c767b46</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/97b8c8255bdc272e</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/6b9eceeb14a873a4</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/39bca1228efb61e2</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://pokemonbuilder.app/tournaments/team/126c2dd2034d9908</loc>
+    <loc>https://pokemonbuilder.app/tournaments/team/7162daf50fbbd097</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
