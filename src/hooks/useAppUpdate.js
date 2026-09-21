@@ -19,14 +19,17 @@ import { buildSignature, documentAssetUrls, findNewAssetUrls } from '../utils/ap
 //     still in charge.
 
 // Polling only runs while the tab is visible, and a visible tab also checks the
-// moment it regains focus — so a minute is cheap (sw.js is a few KB) and means a
-// release reaches an open tab promptly instead of whenever the browser feels like
-// re-checking the worker.
-const SW_UPDATE_INTERVAL_MS = 60 * 1000;
+// moment it regains focus. It used to run every minute, reasoning that sw.js is
+// only a few KB — but bytes are not what the host bills. Every check is an edge
+// request, so an open tab cost 60/hour on its own and tab-switching added one
+// more each time; that poll was a large share of the month the request quota
+// blew (2026-09-21). Half an hour still reaches an open tab within one sitting,
+// and `throttleMs` keeps focus changes from turning into a check apiece.
+const SW_UPDATE_INTERVAL_MS = 30 * 60 * 1000;
 const SW_FIRST_CHECK_DELAY_MS = 8 * 1000;
 // The no-service-worker fallback refetches a whole HTML document, and it is the
 // rare path, so it goes easy.
-const HTML_POLL_INTERVAL_MS = 5 * 60 * 1000;
+const HTML_POLL_INTERVAL_MS = 15 * 60 * 1000;
 const HTML_FIRST_CHECK_DELAY_MS = 30 * 1000;
 // If skipWaiting never produces a controllerchange, the user is left looking at
 // the old build with the prompt already dismissed. Escape hatch, not happy path.
@@ -104,11 +107,17 @@ export function useAppUpdate() {
     useEffect(() => {
         if (!supportsServiceWorker()) return undefined;
         let cancelled = false;
+        let lastCheckAt = 0;
 
-        const pullServiceWorker = async () => {
+        // `throttleMs` is what stops the event-driven checks (regaining focus,
+        // coming back online) from firing one request each: they only get to
+        // pull if the scheduled poll has not already covered that window.
+        const pullServiceWorker = async ({ throttleMs = 0 } = {}) => {
             if (cancelled || document.visibilityState !== 'visible') return;
+            if (throttleMs && Date.now() - lastCheckAt < throttleMs) return;
             const registration = registrationRef.current;
             if (!registration) return;
+            lastCheckAt = Date.now();
             try {
                 await registration.update();
             } catch {
@@ -116,21 +125,23 @@ export function useAppUpdate() {
             }
         };
 
+        const pullThrottled = () => pullServiceWorker({ throttleMs: SW_UPDATE_INTERVAL_MS });
+
         const handleVisibility = () => {
-            if (document.visibilityState === 'visible') pullServiceWorker();
+            if (document.visibilityState === 'visible') pullThrottled();
         };
 
         const firstCheck = setTimeout(pullServiceWorker, SW_FIRST_CHECK_DELAY_MS);
         const interval = setInterval(pullServiceWorker, SW_UPDATE_INTERVAL_MS);
         document.addEventListener('visibilitychange', handleVisibility);
-        window.addEventListener('online', pullServiceWorker);
+        window.addEventListener('online', pullThrottled);
 
         return () => {
             cancelled = true;
             clearTimeout(firstCheck);
             clearInterval(interval);
             document.removeEventListener('visibilitychange', handleVisibility);
-            window.removeEventListener('online', pullServiceWorker);
+            window.removeEventListener('online', pullThrottled);
         };
     }, []);
 
