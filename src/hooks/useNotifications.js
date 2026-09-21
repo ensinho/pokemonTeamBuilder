@@ -9,11 +9,51 @@ import { useSecretRoomStore } from '../store/useSecretRoomStore';
 
 let notifUnsub = null;
 
+/**
+ * Route a tap on a system notification.
+ *
+ * `public/push-sw.js` focuses an already-open tab and posts it the target
+ * instead of navigating it, because a hard navigation would tear down every
+ * live Firestore listener the session holds. This is the other end of that
+ * message. It also replaces the old in-page handler, which set
+ * `window.location.hash` — meaningless since the router moved to real paths
+ * (CLAUDE.md, 2026-07-01), so tapping a battle notification did nothing at all.
+ */
+function useNotificationClickRouting() {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return undefined;
+
+        const onMessage = (event) => {
+            if (event.data?.type !== 'ptb:navigate' || !event.data.url) return;
+            try {
+                const target = new URL(event.data.url, window.location.origin);
+                if (target.origin !== window.location.origin) return;
+                // The router's basename is already part of BASE_URL, so the
+                // path is trimmed back to what `navigate` expects.
+                const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+                const path = target.pathname.startsWith(base)
+                    ? target.pathname.slice(base.length) || '/'
+                    : target.pathname;
+                navigate(`${path}${target.search}`);
+            } catch (_) {
+                // A malformed url is not worth a crash — the tap simply focuses.
+            }
+        };
+
+        navigator.serviceWorker.addEventListener('message', onMessage);
+        return () => navigator.serviceWorker.removeEventListener('message', onMessage);
+    }, [navigate]);
+}
+
 export function useNotifications() {
     const userId = useAuthStore((state) => state.userId);
     const showToast = useToastStore((state) => state.showToast);
     const joinRoom = useSecretRoomStore((state) => state.joinRoom);
     const navigate = useNavigate();
+
+    useNotificationClickRouting();
 
     useEffect(() => {
         if (!db || !userId) {

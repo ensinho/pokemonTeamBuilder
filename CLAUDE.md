@@ -88,6 +88,28 @@ Two unauthenticated probes, in order, when battles misbehave in production:
 - `GET /api/battle-turn?ping=1` — answers before loading anything. JSON means the function starts at all; another `FUNCTION_INVOCATION_FAILED` means the fault is the deployment or platform config, not this code.
 - `GET /api/battle-turn` — full self-check: dependency load, credentials (shape only, never contents), a Firestore round-trip, and a real two-Pokémon sim run.
 
+### Notifications (`src/services/pushNotifications.js`, `api/lib/webPush.js`)
+
+Four channels, one switch (`useNotificationSettings`): a **toast** for a visible
+tab, an **OS notification** for a backgrounded one, **Web Push** for an app that
+is closed, and the "your turn" **email**. `public/push-sw.js` is pulled into the
+generated worker via `workbox.importScripts` — never register a second service
+worker. Subscriptions live at `artifacts/{appId}/users/{uid}/pushSubscriptions`
+with `lang`/`topics` denormalised so the daily cron is one collection-group
+query. Needs `VITE_VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (`npm run push:keys`);
+without them the in-app half still works.
+
+Three rules, all of them bugs that happened (`docs/wounds.md`, 2026-09-21) —
+`docs/modules/notifications.md` has the rest:
+- **Never diff a Firestore listener's output before it has answered.**
+  `battles: []` also means "not asked yet"; `hasLoadedBattles` is the difference,
+  and ignoring it fired one banner per waiting battle on every app open.
+- **Several events of one kind collapse into one tray entry** via a shared tag
+  (`ptb-battles`, `ptb-daily`), counted in the worker.
+- **Request permission only from a click, and show through the worker.** iOS
+  rejects a prompt with no user gesture, has no `Notification` constructor, and
+  has no push at all until the PWA is installed (`needsIosInstall()`).
+
 ## Config & environment
 
 - All client config is via `VITE_*` env vars read in `src/constants/firebase.js` (Firebase config, `VITE_APP_ID`, `VITE_POKEAPI_BASE_URL`, `VITE_ADMIN_EMAILS`, `VITE_ADMIN_EMAIL_ENDPOINT`). `.env` lists the required keys.

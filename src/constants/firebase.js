@@ -22,3 +22,14 @@ export const BATTLE_TURN_ENDPOINT = import.meta.env.VITE_BATTLE_TURN_ENDPOINT ||
 
 // Deals both trainers a random team. Same Vercel-only caveat as above.
 export const BATTLE_RANDOM_ENDPOINT = import.meta.env.VITE_BATTLE_RANDOM_ENDPOINT || '/api/battle-random';
+
+// Tells the *other* player that a challenge arrived or that a team is owed —
+// the two transitions the browser writes to Firestore directly, so there is no
+// other request they could ride. Vercel-only, same as the two above.
+export const BATTLE_NOTIFY_ENDPOINT = import.meta.env.VITE_BATTLE_NOTIFY_ENDPOINT || '/api/battle-notify';
+
+// Public half of the VAPID key pair used to subscribe this browser to Web Push
+// (`npm run push:keys` generates the pair; the private half stays server-side,
+// in the Vercel env). Absent, the app still shows in-app notifications — only
+// the "app is closed" half goes quiet.
+export const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';

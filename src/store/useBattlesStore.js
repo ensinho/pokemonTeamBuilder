@@ -14,7 +14,9 @@ import {
     writeBatch,
 } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
-import { appId, BATTLE_TURN_ENDPOINT, BATTLE_RANDOM_ENDPOINT } from '../constants/firebase';
+import {
+    appId, BATTLE_TURN_ENDPOINT, BATTLE_RANDOM_ENDPOINT, BATTLE_NOTIFY_ENDPOINT,
+} from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
@@ -76,9 +78,28 @@ const callBattleApi = async (endpoint, body, { serverErrorMessage = 'Server erro
     return { ok: true, payload, error: null };
 };
 
+/**
+ * Ask the server to push the opponent about a change this client just wrote.
+ *
+ * Fire-and-forget on purpose: the battle transition is already committed, the
+ * endpoint re-derives everything from the stored document, and a trainer whose
+ * notification failed to send must never see an error about it. It is also a
+ * no-op on GitHub Pages, which has no `/api/*` at all.
+ */
+const pingBattleNotify = (battleId) => {
+    if (!battleId) return;
+    callBattleApi(BATTLE_NOTIFY_ENDPOINT, { battleId }).catch(() => {});
+};
+
 export const useBattlesStore = create((set, get) => ({
     battles: [],
     isLoadingBattles: false,
+    // True once the listener has delivered a snapshot for the current account.
+    // `battles: []` means "none" only after that — before it, it means "not
+    // asked yet", and treating the two the same is what made every pending
+    // battle look brand new the moment the first snapshot landed (see
+    // docs/wounds.md, 2026-09-21).
+    hasLoadedBattles: false,
     // The battle currently open, plus its chat. Kept separate from `battles` so
     // the detail view keeps working while the list re-sorts under it.
     chatMessages: [],
@@ -108,7 +129,7 @@ export const useBattlesStore = create((set, get) => ({
         if (battlesUnsub) unbindBattles();
         boundUserId = userId;
 
-        set({ isLoadingBattles: true });
+        set({ isLoadingBattles: true, hasLoadedBattles: false });
 
         battlesUnsub = onSnapshot(
             query(collection(db, battlesPath()), where('players', 'array-contains', userId)),
@@ -116,7 +137,7 @@ export const useBattlesStore = create((set, get) => ({
                 const rows = snapshot.docs
                     .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
                     .sort((a, b) => String(b.lastActivityAt || '').localeCompare(String(a.lastActivityAt || '')));
-                set({ battles: rows, isLoadingBattles: false });
+                set({ battles: rows, isLoadingBattles: false, hasLoadedBattles: true });
             },
             (error) => {
                 console.error('Error loading battles:', error);
@@ -129,7 +150,7 @@ export const useBattlesStore = create((set, get) => ({
         subscriberCount = Math.max(0, subscriberCount - 1);
         if (subscriberCount > 0) return;
         unbindBattles();
-        set({ battles: [] });
+        set({ battles: [], hasLoadedBattles: false });
     },
 
     /**
@@ -196,6 +217,7 @@ export const useBattlesStore = create((set, get) => ({
                 createdAt: now,
                 lastActivityAt: now,
             });
+            pingBattleNotify(battleRef.id);
             toast.success(t('toast.challengeSent'), {
                 description: t('toast.challengeSentDesc'),
                 actions: [{ label: t('toast.openBattle'), onClick: () => navigateTo(`/battles/${battleRef.id}`) }],
@@ -345,6 +367,8 @@ export const useBattlesStore = create((set, get) => ({
             isRandom ? null : 'Challenge accepted — pick your team!',
         );
         if (ok && isRandom) await get().rollRandomTeams(battleId);
+        // The challenger now owes a team, and is the one who isn't here.
+        if (ok && !isRandom) pingBattleNotify(battleId);
         return ok;
     },
     declineChallenge: async (battleId) => get().setStatus(battleId, 'declined', null),
@@ -419,6 +443,8 @@ export const useBattlesStore = create((set, get) => ({
             });
             await batch.commit();
 
+            // No-op unless the opponent is the one still owing a team.
+            pingBattleNotify(battleId);
             toast.success(t('toast.teamLockedIn'), { description: t('toast.teamLockedInDesc') });
             return true;
         } catch (err) {

@@ -9,6 +9,10 @@
     {
       "path": "/api/refresh-tournaments",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/daily-puzzle",
+      "schedule": "0 12 * * *"
     }
   ],
   "functions": {
@@ -23,6 +27,14 @@
     "api/battle-random.js": {
       "memory": 2048,
       "maxDuration": 30,
+      "excludeFiles": "api/**/*.test.js"
+    },
+    "api/battle-notify.js": {
+      "maxDuration": 15,
+      "excludeFiles": "api/**/*.test.js"
+    },
+    "api/daily-puzzle.js": {
+      "maxDuration": 60,
       "excludeFiles": "api/**/*.test.js"
     }
   },

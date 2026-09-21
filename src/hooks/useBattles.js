@@ -18,6 +18,9 @@ export function useBattles() {
     const cleanupListeners = useBattlesStore((state) => state.cleanupListeners);
     const battles = useBattlesStore((state) => state.battles);
     const isLoadingBattles = useBattlesStore((state) => state.isLoadingBattles);
+    // "The listener has answered at least once" — distinct from "not loading".
+    // Notifications depend on the difference (see useBattleNotifications).
+    const hasLoadedBattles = useBattlesStore((state) => state.hasLoadedBattles);
 
     useEffect(() => {
         if (userId && !isAnonymous) {
@@ -47,5 +50,5 @@ export function useBattles() {
         [described],
     );
 
-    return { battles: described, isLoadingBattles, awaitingMeCount };
+    return { battles: described, isLoadingBattles, hasLoadedBattles, awaitingMeCount };
 }

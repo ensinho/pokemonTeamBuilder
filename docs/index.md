@@ -15,6 +15,7 @@
 | [Firebase Security](./modules/firebase_security.md) | Adding a new Firestore path, admin logic, auth rules |
 | [State & Stores](./modules/state_and_stores.md) | Adding/modifying Zustand stores or hooks |
 | [Data Layer](./modules/data_layer.md) | Pokémon data, cache strategy, PokéAPI integration |
+| [Notifications](./modules/notifications.md) | Toasts, OS banners, Web Push, the daily nudge |
 | [Wounds Log](./wounds.md) | Before any non-trivial work — anti-pattern registry |
 | [Agent Directives](./agent_directives.md) | Failure recovery protocol and learned constraints |
 | [Handoff: Friends & battles](./plans/HANDOFF-friends-and-battles.md) | **Start here** for this feature — status, blockers, traps, next steps |
