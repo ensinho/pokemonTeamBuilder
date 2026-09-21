@@ -13,6 +13,7 @@ import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useBattleItems } from '../../hooks/useBattleItems';
 import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
+import { EV_MAX_PER_STAT, EV_TOTAL_BUDGET, applyEvChange, maxEvFor, remainingEvs } from '../../utils/evBudget';
 import { natureLabel, ALL_NATURES } from '../../constants/natures';
 import { UsageBar, pctOf, pretty, RegulationSelect } from '../views/metaShared';
 import { SpriteSelect } from '../SpriteSelect';
@@ -74,7 +75,6 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         [battleItems, items],
     );
     const [customization, setCustomization] = useState(pokemon.customization);
-    const [remainingEVs, setRemainingEVs] = useState(510);
     const [moveSearch, setMoveSearch] = useState('');
     const [activeTab, setActiveTab] = useState('build');
     const dialogRef = useModalA11y(onClose);
@@ -101,24 +101,17 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         setActiveTab('build');
     }, [pokemon]);
 
-    useEffect(() => {
-        const totalEVs = Object.values(customization.evs).reduce((sum, ev) => sum + ev, 0);
-        setRemainingEVs(510 - totalEVs);
-    }, [customization.evs]);
+    // Derived, not stored: a `useState` + `useEffect` pair lagged one render
+    // behind a drag, so mid-gesture events were validated against a stale
+    // budget and bounced at random.
+    const remainingEVs = useMemo(() => remainingEvs(customization.evs), [customization.evs]);
 
+    // Clamp, never reject. The old handler bailed out entirely when a value
+    // broke the 510 budget, which froze the slider under the user's finger and
+    // made the leftover EVs unspendable. Now the thumb travels as far as the
+    // budget allows and stops on the real cap. (See docs/wounds.md 2026-09-21.)
     const handleEvChange = (stat, value) => {
-        const numericValue = Number(value);
-        const currentEvs = { ...customization.evs };
-        const oldVal = currentEvs[stat];
-        const diff = numericValue - oldVal;
-
-        if (numericValue > 252) return;
-        if (remainingEVs - diff < 0) return;
-
-        setCustomization((prev) => ({
-            ...prev,
-            evs: { ...prev.evs, [stat]: numericValue },
-        }));
+        setCustomization((prev) => ({ ...prev, evs: applyEvChange(prev.evs, stat, value) }));
     };
 
     const handleCustomizationChange = (field, value) => {
@@ -454,38 +447,66 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             <div className="flex items-baseline justify-between">
                                 <h3 className="text-lg font-bold text-fg">{t('modals.editorModalEffortValues')}</h3>
                                 <p className="text-sm text-muted">
-                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}>{remainingEVs}</span> / 510
+                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}>{remainingEVs}</span> / {EV_TOTAL_BUDGET}
                                 </p>
                             </div>
                             <div className="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
-                                <div className="h-full bg-primary transition-all duration-200" style={{ width: `${((510 - remainingEVs) / 510) * 100}%` }} />
+                                <div className="h-full bg-primary transition-all duration-200" style={{ width: `${((EV_TOTAL_BUDGET - remainingEVs) / EV_TOTAL_BUDGET) * 100}%` }} />
+                            </div>
+
+                            {/* The EV column is typable, so it gets a header — otherwise two
+                                bare number columns sit side by side with nothing naming them. */}
+                            <div className="flex items-center gap-3 text-[11px] font-semibold text-muted">
+                                <span className="w-10 shrink-0" />
+                                <span className="min-w-0 flex-1" />
+                                <span className="w-14 shrink-0 text-center">EV</span>
+                                <span className="w-9 shrink-0 text-right">{pt ? 'Total' : 'Stat'}</span>
                             </div>
 
                             <div className="space-y-4">
                                 {statNames.map((statName, index) => {
                                     const baseStat = pokemon.stats?.[index]?.base_stat ?? 0;
-                                    const ev = customization.evs[statName];
+                                    const ev = Number(customization.evs?.[statName]) || 0;
                                     const totalStat = calculateStat(baseStat, ev, statName);
                                     const colorVar = STAT_COLOR_VAR[statName] ?? '--stat-hp';
-                                    const fillPct = (ev / 252) * 100;
+                                    const fillPct = Math.min(100, (ev / EV_MAX_PER_STAT) * 100);
                                     const statColor = `var(${colorVar})`;
+                                    const statLabel = statName.replace(/-/g, ' ');
+                                    const affordable = maxEvFor(customization.evs, statName);
 
-                                    // One clean row: stat · slider · EV · final stat.
+                                    // One clean row: stat · slider · typed EV · final stat.
+                                    // step=1 on purpose: at step=4 the last 1-3 EVs of a spread
+                                    // were unreachable and every drag snapped to a fixed set of
+                                    // spots, which is exactly what users reported as "it won't
+                                    // let me set precise numbers".
                                     return (
                                         <div key={statName} className="flex items-center gap-3">
                                             <span className="w-10 shrink-0 text-xs font-bold uppercase tracking-wide" style={{ color: statColor }}>{STAT_ABBR[statName]}</span>
                                             <input
                                                 type="range"
                                                 min="0"
-                                                max="252"
+                                                max={EV_MAX_PER_STAT}
                                                 value={ev}
-                                                step="4"
+                                                step="1"
                                                 onChange={(event) => handleEvChange(statName, event.target.value)}
                                                 className="ev-slider min-w-0 flex-1"
                                                 style={{ background: `linear-gradient(to right, ${statColor} 0%, ${statColor} ${fillPct}%, var(--color-surface-raised) ${fillPct}%, var(--color-surface-raised) 100%)` }}
-                                                aria-label={`${statName.replace(/-/g, ' ')} EV`}
+                                                aria-label={`${statLabel} EV`}
+                                                aria-valuetext={`${ev} EV`}
                                             />
-                                            <span className="w-14 shrink-0 text-right text-[11px] tabular-nums text-muted">{ev} EV</span>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max={affordable}
+                                                step="1"
+                                                inputMode="numeric"
+                                                value={ev}
+                                                onChange={(event) => handleEvChange(statName, event.target.value)}
+                                                onFocus={(event) => event.target.select()}
+                                                className="w-14 shrink-0 rounded-md border border-border bg-surface-raised px-1 py-1 text-center font-mono text-xs tabular-nums text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary"
+                                                aria-label={`${statLabel} EV value`}
+                                                title={pt ? `Máximo disponível agora: ${affordable}` : `Most you can spend here right now: ${affordable}`}
+                                            />
                                             <span className="w-9 shrink-0 text-right font-mono text-sm font-bold tabular-nums text-fg" title={pt ? 'Total' : 'Total stat'}>{totalStat}</span>
                                         </div>
                                     );
