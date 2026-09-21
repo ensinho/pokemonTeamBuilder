@@ -7,7 +7,7 @@
  *
  *   VITE_VAPID_PUBLIC_KEY   client + server (it is public by design)
  *   VAPID_PRIVATE_KEY       server only
- *   VAPID_SUBJECT           mailto: address the push services can complain to
+ *   VAPID_SUBJECT           optional — mailto: the push services complain to
  *
  * Rotating the pair invalidates every existing subscription — each one is
  * bound to the public key it was created with — so trainers would have to
@@ -19,7 +19,6 @@ const { publicKey, privateKey } = webPush.generateVAPIDKeys();
 
 console.log('\nAdd these to your Vercel project environment (and your local .env):\n');
 console.log(`VITE_VAPID_PUBLIC_KEY=${publicKey}`);
-console.log(`VAPID_PUBLIC_KEY=${publicKey}`);
-console.log(`VAPID_PRIVATE_KEY=${privateKey}`);
-console.log('VAPID_SUBJECT=mailto:you@example.com\n');
+console.log(`VAPID_PRIVATE_KEY=${privateKey}\n`);
+console.log('Optional: VAPID_SUBJECT=mailto:you@example.com (defaults to the admin address).\n');
 console.log('Keep the private key secret; the public one ships in the bundle.\n');

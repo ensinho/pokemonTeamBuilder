@@ -26,8 +26,21 @@ const loadWebPush = () => {
     return webPushPromise;
 };
 
+/**
+ * The public half, from either name it may be stored under.
+ *
+ * `VITE_VAPID_PUBLIC_KEY` is the one the client build needs; Vercel hands every
+ * variable to the functions too, so reading it here means a deployment sets
+ * *two* secrets instead of three copies of the same string — and can never end
+ * up with a server key that disagrees with the one the browsers subscribed
+ * against, which would fail every send with a 403 that looks like nothing.
+ */
+export const getVapidPublicKey = () => (
+    process.env.VAPID_PUBLIC_KEY || process.env.VITE_VAPID_PUBLIC_KEY || ''
+);
+
 export const isPushConfigured = () => Boolean(
-    process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY,
+    getVapidPublicKey() && process.env.VAPID_PRIVATE_KEY,
 );
 
 const APP_URL = process.env.PUBLIC_APP_URL || 'https://pokemonbuilder.app';
@@ -143,7 +156,7 @@ export const sendToSubscriptionDocs = async ({ docs, payload, topic = null }) =>
     const webPush = await loadWebPush();
     webPush.setVapidDetails(
         process.env.VAPID_SUBJECT || 'mailto:enzopo625@gmail.com',
-        process.env.VAPID_PUBLIC_KEY,
+        getVapidPublicKey(),
         process.env.VAPID_PRIVATE_KEY,
     );
 

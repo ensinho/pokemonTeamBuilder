@@ -78,12 +78,17 @@ the spot rather than retrying it forever.
 Generate the key pair once with `npm run push:keys`, then set in Vercel:
 
 ```
-VITE_VAPID_PUBLIC_KEY=…   # client + server; public by design
-VAPID_PUBLIC_KEY=…        # same value, server side
+VITE_VAPID_PUBLIC_KEY=…   # client *and* server; public by design
 VAPID_PRIVATE_KEY=…       # secret
-VAPID_SUBJECT=mailto:…    # where push services report problems
+VAPID_SUBJECT=mailto:…    # optional; defaults to the admin address
+VAPID_PUBLIC_KEY=…        # optional override of the public half
 CRON_SECRET=…             # optional; guards /api/daily-puzzle
 ```
+
+`VITE_VAPID_PUBLIC_KEY` is build-time for the client, so **adding it changes
+nothing until the next deploy** — set it, then redeploy. The server reads the
+same variable (`getVapidPublicKey`), so the two halves cannot drift apart into
+403s that look like nothing.
 
 **Rotating the pair invalidates every existing subscription** — each one is
 bound to the public key it was created with, and every trainer would have to
