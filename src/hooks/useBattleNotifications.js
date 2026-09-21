@@ -15,7 +15,7 @@ import {
 /**
  * Battle alerts for a tab that is *open* — the live half of the notification
  * story. The other half, the one that reaches a closed app, is Web Push
- * (`src/services/pushNotifications.js` + `api/lib/webPush.js`); this hook and
+ * (`src/services/pushNotifications.js` + `api/_lib/webPush.js`); this hook and
  * that pipeline deliberately share the `ptb-battles` tag so a push that lands
  * while the app is in the background replaces this one instead of stacking.
  *

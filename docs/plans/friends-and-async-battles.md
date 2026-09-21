@@ -523,9 +523,9 @@ module transforms in the dev server.
 Status: **code complete on `main` (uncommitted). Never run against real Firestore —
 that needs the service account (§ handoff).**
 
-1. ✅ `api/lib/battleResolver.js` — stateless replay from `seed + choices`, returning each
+1. ✅ `api/_lib/battleResolver.js` — stateless replay from `seed + choices`, returning each
    side's filtered protocol view. 20 Vitest cases.
-2. ✅ `api/lib/serverAuth.js` — `jose`/JWKS token verification, admin-SDK Firestore, CORS.
+2. ✅ `api/_lib/serverAuth.js` — `jose`/JWKS token verification, admin-SDK Firestore, CORS.
 3. ✅ `api/battle-turn.js` — records a choice write-once, resolves only when both players
    have answered the round, writes per-player logs, advances the round, and on a win
    increments both `battleRecord`s.

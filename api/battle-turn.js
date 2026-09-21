@@ -1,7 +1,7 @@
 import { randomInt } from 'node:crypto';
 
-import { setCorsHeaders, HttpError } from './lib/httpBasics.js';
-import { installRuntimeGuards, getLastRuntimeError, withTimeout } from './lib/runtimeGuards.js';
+import { setCorsHeaders, HttpError } from './_lib/httpBasics.js';
+import { installRuntimeGuards, getLastRuntimeError, withTimeout } from './_lib/runtimeGuards.js';
 
 // An unhandled rejection anywhere in this process returns FUNCTION_INVOCATION_FAILED
 // with no stack and no log line pointing at the cause.
@@ -48,9 +48,9 @@ const loadDeps = () => {
         depsPromise = (async () => {
             const [firestore, serverAuth, resolver, notify] = await Promise.all([
                 import('firebase-admin/firestore'),
-                import('./lib/serverAuth.js'),
-                import('./lib/battleResolver.js'),
-                import('./lib/battleNotify.js'),
+                import('./_lib/serverAuth.js'),
+                import('./_lib/battleResolver.js'),
+                import('./_lib/battleNotify.js'),
             ]);
             deps = {
                 FieldValue: firestore.FieldValue,
@@ -101,7 +101,7 @@ const loadDeps = () => {
  * ## "Your turn" notifications
  *
  * Whenever `publishLog` produces a fresh `awaitingUids`, `notifyAwaitingPlayer`
- * (`./lib/battleNotify.js`) emails whichever of them is *not* the caller — the
+ * (`./_lib/battleNotify.js`) emails whichever of them is *not* the caller — the
  * caller is, by definition, in the app right now. No cron job, no queue: the
  * nudge rides the same request that changed the state.
  */

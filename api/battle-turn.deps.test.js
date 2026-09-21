@@ -16,7 +16,7 @@ import { describe, it, expect, vi } from 'vitest';
  * end-to-end suite next door.
  */
 
-vi.mock('./lib/battleResolver.js', () => {
+vi.mock('./_lib/battleResolver.js', () => {
     throw new Error('Cannot find module @pkmn/sim');
 });
 

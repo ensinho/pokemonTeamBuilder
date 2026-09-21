@@ -245,7 +245,7 @@ invocation won the race and we return the fresh state instead of writing twice.
 ### "Your turn" notifications — the same request, no cron job
 
 Every time `publishLog` computes a fresh `awaitingUids`, `notifyAwaitingPlayer`
-([api/lib/battleNotify.js](../../api/lib/battleNotify.js)) emails whichever of them is
+([api/_lib/battleNotify.js](../../api/_lib/battleNotify.js)) emails whichever of them is
 **not the caller**. That single check — `pickAwaitingTarget` — is the entire throttle: the
 caller just posted this very request, so they're necessarily in the app right now and
 never need the nudge, while whoever *isn't* calling gets exactly one email per round that
@@ -258,11 +258,11 @@ profile/preferences` doc (`language: 'pt' | 'en'`) — read with the admin SDK, 
 battler's private prefs are otherwise owner-read-only. Their **address** comes from Admin
 Auth (`getAdminAuth().getUser(uid).email`), not from Firestore — `publicProfiles` deliberately
 never stores one. Sending itself
-([api/lib/mailer.js](../../api/lib/mailer.js)) reuses the exact env vars
+([api/_lib/mailer.js](../../api/_lib/mailer.js)) reuses the exact env vars
 `api/send-admin-reply.js` already needs (`ADMIN_EMAIL_FROM`, `ADMIN_EMAIL_APP_PASSWORD`,
 `SMTP_*`) — a deploy where admin replies already work needs no new secret for this.
 Both the target-picking and the template-building are pure and tested
-(`api/lib/battleNotify.test.js`); only the Firestore/Auth/SMTP calls around them are not,
+(`api/_lib/battleNotify.test.js`); only the Firestore/Auth/SMTP calls around them are not,
 matching how the resolver itself is split.
 
 ---
@@ -336,10 +336,10 @@ bundle, costing every visitor ~40 KB for a feature most never open.
 | Battlefield snapshot (pure) | [`src/utils/battleState.js`](../../src/utils/battleState.js) |
 | Sprite URLs | [`src/utils/battleSprites.js`](../../src/utils/battleSprites.js) |
 | Views | [`src/components/views/battle/`](../../src/components/views/battle/), [`FriendsView.jsx`](../../src/components/views/FriendsView.jsx) |
-| **The engine** | [`api/lib/battleResolver.js`](../../api/lib/battleResolver.js) |
+| **The engine** | [`api/_lib/battleResolver.js`](../../api/_lib/battleResolver.js) |
 | The endpoint | [`api/battle-turn.js`](../../api/battle-turn.js) |
-| Server auth + admin Firestore + admin Auth | [`api/lib/serverAuth.js`](../../api/lib/serverAuth.js) |
-| "Your turn" email — who to notify, what it says (pure) + sending | [`api/lib/battleNotify.js`](../../api/lib/battleNotify.js), [`api/lib/mailer.js`](../../api/lib/mailer.js) |
+| Server auth + admin Firestore + admin Auth | [`api/_lib/serverAuth.js`](../../api/_lib/serverAuth.js) |
+| "Your turn" email — who to notify, what it says (pure) + sending | [`api/_lib/battleNotify.js`](../../api/_lib/battleNotify.js), [`api/_lib/mailer.js`](../../api/_lib/mailer.js) |
 | Permissions | [`firestore.rules`](../../firestore.rules) |
 
 The heavy logic is pure and outside the stores on purpose — that's what makes 77 tests
@@ -393,7 +393,7 @@ Vercel env vars (handoff §4):
 
 | Item | Notes |
 |---|---|
-| **"Your turn" notification** | ✅ **Done.** `api/lib/battleNotify.js` emails whichever side of a fresh `awaitingUids` isn't the caller, on every bootstrap and resolution. Untested in production — needs a real two-account battle to confirm delivery (see §11 "drive one real battle"), and `ADMIN_EMAIL_APP_PASSWORD`/`ADMIN_EMAIL_FROM` must already be set in Vercel (same vars `send-admin-reply.js` needs — no new secret if admin replies already work). |
+| **"Your turn" notification** | ✅ **Done.** `api/_lib/battleNotify.js` emails whichever side of a fresh `awaitingUids` isn't the caller, on every bootstrap and resolution. Untested in production — needs a real two-account battle to confirm delivery (see §11 "drive one real battle"), and `ADMIN_EMAIL_APP_PASSWORD`/`ADMIN_EMAIL_FROM` must already be set in Vercel (same vars `send-admin-reply.js` needs — no new secret if admin replies already work). |
 | **Abandoned-battle timeout** | Same `awaitingChoiceFrom` field plus `lastActivityAt`. Decide the policy — auto-forfeit, or just mark it stale. |
 | **Public replays** | Nearly free: regenerate the omniscient stream from the seed and choices. Needs a read-only route and a rule for finished battles. |
 | **Spectating** | The same regeneration, live. Decide whether friends-only. |
