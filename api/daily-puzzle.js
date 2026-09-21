@@ -1,5 +1,5 @@
-import { HttpError } from './lib/httpBasics.js';
-import { installRuntimeGuards } from './lib/runtimeGuards.js';
+import { HttpError } from './_lib/httpBasics.js';
+import { installRuntimeGuards } from './_lib/runtimeGuards.js';
 
 installRuntimeGuards();
 
@@ -30,8 +30,8 @@ const loadDeps = () => {
     if (!depsPromise) {
         depsPromise = (async () => {
             const [serverAuth, webPush] = await Promise.all([
-                import('./lib/serverAuth.js'),
-                import('./lib/webPush.js'),
+                import('./_lib/serverAuth.js'),
+                import('./_lib/webPush.js'),
             ]);
             return {
                 getAdminFirestore: serverAuth.getAdminFirestore,

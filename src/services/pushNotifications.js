@@ -10,7 +10,7 @@ import { appId, VAPID_PUBLIC_KEY } from '../constants/firebase';
  * The in-app popups in `useBattleNotifications` only ever reach a tab that is
  * already open. Everything here is about the other case: the phone in a pocket,
  * the PWA not running at all. The browser holds the subscription; the server
- * (`api/lib/webPush.js`) sends to it; this module is only the bookkeeping
+ * (`api/_lib/webPush.js`) sends to it; this module is only the bookkeeping
  * between them — subscribe on an explicit opt-in, mirror the subscription into
  * Firestore so the server can find it, and drop it again on opt-out.
  *

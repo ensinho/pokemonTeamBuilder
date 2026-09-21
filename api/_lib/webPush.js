@@ -12,7 +12,7 @@
  *  - **`web-push` is loaded lazily.** Same rule as everything else under
  *    `api/`: a static import runs during the platform's init phase where a
  *    failure is an opaque FUNCTION_INVOCATION_FAILED. It is also CJS all the
- *    way down, which `api/lib/dependencies.test.js` pins.
+ *    way down, which `api/_lib/dependencies.test.js` pins.
  *  - **Subscriptions carry their own `lang` and `topics`.** Denormalised by the
  *    client on purpose, so sending never costs a profile read per trainer.
  */

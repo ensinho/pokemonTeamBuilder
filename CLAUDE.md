@@ -75,20 +75,26 @@ Custom, no library. All copy lives in `src/constants/translations.js`; `useLangu
 Vercel function that lets admins reply to feedback. Verifies the caller's Firebase ID token via `jose` against Google's JWKS, checks the email against the admin allowlist, then sends mail with `nodemailer`. Has its own CORS allowlist and Firebase project-id resolution independent of the client config.
 
 ### Serverless battle resolver (`api/battle-turn.js`)
-The authority on async battles — `@pkmn/sim` runs here and never ships to the browser. Every call replays the battle from its stored seed + choice history, so only those two things are persisted. Shared helpers live in `api/lib/`: `serverAuth.js` (token verification, admin Firestore), `battleResolver.js` (the sim), `battleNotify.js`/`mailer.js` (turn nudges), `runtimeGuards.js`.
+The authority on async battles — `@pkmn/sim` runs here and never ships to the browser. Every call replays the battle from its stored seed + choice history, so only those two things are persisted. Shared helpers live in `api/_lib/`: `serverAuth.js` (token verification, admin Firestore), `battleResolver.js` (the sim), `battleNotify.js`/`mailer.js` (turn nudges), `runtimeGuards.js`.
 
 Three rules this code exists to enforce, all learned the hard way (`docs/wounds.md`, 2026-07-27):
 - **Never assume a round needs both players.** The sim prompts one side alone after a faint; who owes a move comes from `awaitingChoiceFrom` on the battle doc, via `sidesOwingChoice()`.
 - **Never leave a promise unawaited in `api/`.** An unhandled rejection kills the function process, and Vercel reports that as an opaque `FUNCTION_INVOCATION_FAILED` 500 that no `catch` in this code can turn into a useful message. `runtimeGuards.js` is the net; awaiting properly is the fix.
 - **Keep `battle-turn.js`'s static imports to builtins and dependency-free local modules.** A top-level import runs during the platform's init phase, where nothing can catch it. `firebase-admin`, `@pkmn/sim` and friends load via the memoised `loadDeps()` inside the handler, so a failure returns JSON naming the module instead of killing the process. `api/battle-turn.deps.test.js` fails if that's undone.
 
-**Dependency trap:** Vercel's function loader does **not** support `require(esm)`, but local Node ≥22.12 does — so a CommonJS package requiring an ESM-only one loads fine here and kills the function there (`ERR_REQUIRE_ESM`, exit 1, no stack). This is why `package.json` has an `overrides` entry pinning `jwks-rsa`'s `jose` to v5. Before adding or upgrading anything under `api/`, check it with `node --no-experimental-require-module -e "require('<pkg>')"`; `api/lib/dependencies.test.js` automates that for the known-fragile paths.
+**Function-count trap:** Vercel makes a serverless function out of **every** file
+under `api/`, and the Hobby plan allows **12 per deployment**. The shared helpers
+therefore live in `api/_lib/` — a leading underscore is what keeps a file from
+becoming an endpoint. Never rename that directory back, and count the endpoints
+before adding one (`find api -name '*.js' ! -name '*.test.js' ! -path 'api/_lib/*'`).
+
+**Dependency trap:** Vercel's function loader does **not** support `require(esm)`, but local Node ≥22.12 does — so a CommonJS package requiring an ESM-only one loads fine here and kills the function there (`ERR_REQUIRE_ESM`, exit 1, no stack). This is why `package.json` has an `overrides` entry pinning `jwks-rsa`'s `jose` to v5. Before adding or upgrading anything under `api/`, check it with `node --no-experimental-require-module -e "require('<pkg>')"`; `api/_lib/dependencies.test.js` automates that for the known-fragile paths.
 
 Two unauthenticated probes, in order, when battles misbehave in production:
 - `GET /api/battle-turn?ping=1` — answers before loading anything. JSON means the function starts at all; another `FUNCTION_INVOCATION_FAILED` means the fault is the deployment or platform config, not this code.
 - `GET /api/battle-turn` — full self-check: dependency load, credentials (shape only, never contents), a Firestore round-trip, and a real two-Pokémon sim run.
 
-### Notifications (`src/services/pushNotifications.js`, `api/lib/webPush.js`)
+### Notifications (`src/services/pushNotifications.js`, `api/_lib/webPush.js`)
 
 Four channels, one switch (`useNotificationSettings`): a **toast** for a visible
 tab, an **OS notification** for a backgrounded one, **Web Push** for an app that

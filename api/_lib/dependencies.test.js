@@ -34,7 +34,7 @@ const requiresCleanlyWithoutRequireEsm = (specifier) => {
 
 describe.runIf(canSimulate)('CommonJS dependencies on a runtime without require(esm)', () => {
     // The exact path that failed: firebase-admin/auth -> utils/jwt -> jwks-rsa -> jose.
-    // `web-push` (the Web Push sender, api/lib/webPush.js) is CJS all the way
+    // `web-push` (the Web Push sender, api/_lib/webPush.js) is CJS all the way
     // down today — this is what keeps it that way through an upgrade.
     for (const specifier of ['jwks-rsa', 'firebase-admin/auth', 'firebase-admin/firestore', 'web-push']) {
         it(`loads ${specifier}`, () => {

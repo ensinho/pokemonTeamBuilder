@@ -9,8 +9,8 @@ Three channels, deliberately separate, all reachable from one switch:
 |---|---|---|
 | Toast | a tab that is **open and visible** | `useBattleNotifications` → `useToastStore` |
 | OS notification | a tab that is **open but in the background** | `useBattleNotifications` → `registration.showNotification` |
-| **Web Push** | the app **closed**, phone locked | `src/services/pushNotifications.js` + `api/lib/webPush.js` |
-| Email | a trainer not on the device at all | `api/lib/battleNotify.js` |
+| **Web Push** | the app **closed**, phone locked | `src/services/pushNotifications.js` + `api/_lib/webPush.js` |
+| Email | a trainer not on the device at all | `api/_lib/battleNotify.js` |
 
 ---
 
@@ -46,7 +46,7 @@ Three channels, deliberately separate, all reachable from one switch:
 
 | Moment | Sender | Written by |
 |---|---|---|
-| Your turn / battle opened | `api/lib/battleNotify.js` (push + email) | the turn resolver, `api/battle-turn.js` |
+| Your turn / battle opened | `api/_lib/battleNotify.js` (push + email) | the turn resolver, `api/battle-turn.js` |
 | Challenge sent, team owed | `api/battle-notify.js` | the browser — `useBattlesStore` pings it |
 | New daily PokéPuzzle | `api/daily-puzzle.js` | Vercel cron, `0 12 * * *` (09:00 BRT) |
 

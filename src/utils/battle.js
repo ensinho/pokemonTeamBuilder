@@ -20,7 +20,7 @@ export const BATTLE_LEVEL = 50;
  * are balanced for: Species Clause, Sleep Clause Mod, HP shown as a percentage,
  * and no team preview. Levels are per-Pokémon (a Magikarp lands near 95, an
  * Eternatus near 69), so there is no single `level` to display — see
- * api/lib/randomTeams.js.
+ * api/_lib/randomTeams.js.
  */
 export const RANDOM_BATTLE_FORMAT = 'gen9randombattle';
 

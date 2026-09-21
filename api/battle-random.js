@@ -1,7 +1,7 @@
 import { randomInt } from 'node:crypto';
 
-import { setCorsHeaders, HttpError } from './lib/httpBasics.js';
-import { installRuntimeGuards, getLastRuntimeError } from './lib/runtimeGuards.js';
+import { setCorsHeaders, HttpError } from './_lib/httpBasics.js';
+import { installRuntimeGuards, getLastRuntimeError } from './_lib/runtimeGuards.js';
 
 // Same reasoning as api/battle-turn.js: an unhandled rejection anywhere in this
 // process returns FUNCTION_INVOCATION_FAILED with no stack and no log line.
@@ -14,7 +14,7 @@ installRuntimeGuards();
  *
  * A random battle skips team building entirely: instead of each player locking in
  * something they made, the server rolls six Pokémon per side out of Showdown's
- * own random-battle generator (see ./lib/randomTeams.js, which explains where the
+ * own random-battle generator (see ./_lib/randomTeams.js, which explains where the
  * level balance comes from) and starts the battle immediately.
  *
  * ## Why this is a server endpoint and not a client roll
@@ -46,9 +46,9 @@ const loadDeps = () => {
     if (!depsPromise) {
         depsPromise = (async () => {
             const [serverAuth, resolver, randomTeams] = await Promise.all([
-                import('./lib/serverAuth.js'),
-                import('./lib/battleResolver.js'),
-                import('./lib/randomTeams.js'),
+                import('./_lib/serverAuth.js'),
+                import('./_lib/battleResolver.js'),
+                import('./_lib/randomTeams.js'),
             ]);
             deps = {
                 verifyCaller: serverAuth.verifyCaller,
