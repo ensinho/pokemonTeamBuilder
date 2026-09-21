@@ -34,7 +34,7 @@
       "excludeFiles": "api/**/*.test.js"
     },
     "api/daily-puzzle.js": {
-      "maxDuration": 60,
+      "maxDuration": 30,
       "excludeFiles": "api/**/*.test.js"
     }
   },

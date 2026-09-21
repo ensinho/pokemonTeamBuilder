@@ -50,6 +50,11 @@ Three channels, deliberately separate, all reachable from one switch:
 | Challenge sent, team owed | `api/battle-notify.js` | the browser — `useBattlesStore` pings it |
 | New daily PokéPuzzle | `api/daily-puzzle.js` | Vercel cron, `0 12 * * *` (09:00 BRT) |
 
+On the Hobby plan a cron may run **once a day at most**, and fires within the
+scheduled hour rather than on the minute. This project now has two — the
+tournament refresh and this one — which is the Hobby cap; a third would need
+folding into one of them, or a paid plan.
+
 `api/battle-notify.js` exists because those two transitions are written to
 Firestore straight from the client, so there is no server request they could
 ride. It takes only a `battleId` and re-derives everything from the stored

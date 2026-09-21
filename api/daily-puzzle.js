@@ -16,7 +16,10 @@ installRuntimeGuards();
  *
  * It is idempotent in the way that matters — the payload carries the `ptb-daily`
  * tag, so a double firing replaces the tray entry instead of stacking a second
- * one.
+ * one. That matters more than it sounds: on Vercel's Hobby plan a cron is
+ * *daily at most* and fires somewhere inside the scheduled hour rather than on
+ * the minute, so this must tolerate a fuzzy, occasionally repeated trigger —
+ * and must never depend on having run at a precise time.
  */
 
 const MAX_SUBSCRIPTIONS = 2000;
