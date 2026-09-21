@@ -47,7 +47,15 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          # Must match `engines` in package.json (>=22) — and, more to the
+          # point, the npm generation that wrote package-lock.json. Node 20
+          # ships npm 10.8, which computes a different ideal tree for the
+          # platform-conditional optional packages under vitest's Vite 8
+          # (`@emnapi/runtime`, the optional esbuild peer) and therefore fails
+          # `npm ci` with "Missing … from lock file" — every run, in 16s, since
+          # the day that dependency landed. firebase-admin also requires >=22
+          # and warned about it on every run.
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
