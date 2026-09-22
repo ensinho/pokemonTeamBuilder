@@ -741,10 +741,8 @@
 }
 
 .home-stat-card__label {
-    font-size: 0.6rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     color: var(--color-muted);
 }
 
@@ -879,10 +877,8 @@
 
 .home-inline-meta dt {
     margin: 0;
-    font-size: 0.6rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     color: var(--color-muted);
 }
 
