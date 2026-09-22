@@ -372,13 +372,13 @@ export function PokemonDetailPanel({
                                             ))}
                                             {neutralTypes.length > 0 && (
                                                 <details className="group">
-                                                    <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-muted/60 hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
+                                                    <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-muted hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
                                                         <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
                                                         {neutralTypes.length} {language === 'pt' ? 'tipos neutros' : 'neutral types'} (1×)
                                                     </summary>
                                                     <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                                         {neutralTypes.map((tName) => (
-                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted/70">
+                                                            <span key={tName} className="inline-flex items-center gap-1.5 rounded-full bg-surface-raised/40 px-2 py-1 text-xs font-semibold capitalize text-muted">
                                                                 <img src={typeIcons[tName]} alt={tName} className="h-4 w-4 shrink-0 opacity-60" />{tName}
                                                             </span>
                                                         ))}

@@ -190,7 +190,7 @@ const ToggleSwitch = ({ checked, onChange, label, activeColor = 'bg-primary' }) 
                     style={{ width: '0.9rem', height: '0.9rem' }}
                 />
             </span>
-            {label && <span className="text-xs text-fg/90 font-semibold select-none leading-none">{label}</span>}
+            {label && <span className="text-xs text-fg font-semibold select-none leading-none">{label}</span>}
         </button>
     );
 };
@@ -603,7 +603,7 @@ export function DamageCalculatorView() {
         return (
             <div key={key} className="flex items-center gap-1.5">
                 <span className="w-7 shrink-0 text-[11px] font-bold uppercase" style={{ color: statColor }}>{STAT_LABELS[key]}</span>
-                <span className="w-6 shrink-0 text-center text-[11px] font-medium text-fg/55" title="Base">{pState.baseStats?.[key] || 0}</span>
+                <span className="w-6 shrink-0 text-center text-[11px] font-medium text-muted" title="Base">{pState.baseStats?.[key] || 0}</span>
                 <input
                     type="number" min="0" max="31"
                     value={iv}
@@ -660,7 +660,7 @@ export function DamageCalculatorView() {
                                 onError={(e) => { e.target.src = getPokemonDisplaySprite(pState.pokemon); }}
                             />
                         ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted/30"><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted"><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>
                         )}
                     </div>
                     <div className="flex-1 min-w-0 space-y-2">
@@ -853,7 +853,7 @@ export function DamageCalculatorView() {
                         </button>
                     );
                 }) : (
-                    <p className="text-xs text-muted/70 italic py-1">No moves loaded.</p>
+                    <p className="text-xs text-muted italic py-1">No moves loaded.</p>
                 )}
             </div>
         );
@@ -1038,7 +1038,7 @@ export function DamageCalculatorView() {
                                 {renderMatchupColumn(p1, p2, matrix12, '#F08030', field)}
                                 <div className="border-t border-dashed border-border" />
                                 {renderMatchupColumn(p2, p1, matrix21, '#6890F0', reverseField)}
-                                <p className="text-[10px] text-muted/70 leading-tight pt-1">
+                                <p className="text-[10px] text-muted leading-tight pt-1">
                                     Tap any move to copy its calc. The Pokémon 2 → 1 side uses weather / terrain / format only.
                                 </p>
                             </>
