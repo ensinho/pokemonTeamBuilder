@@ -44,3 +44,6 @@ dist-ssr
 !.claude/skills/**/*.md
 
 /design-references
+
+# Browser-automation snapshots (Playwright MCP) — tool output, not source
+.playwright-mcp/
