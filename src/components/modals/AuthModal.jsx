@@ -56,68 +56,71 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                 tabIndex={-1}
                 className="modal-panel modal-panel--sm"
             >
-                <header className="flex items-center justify-between border-b border-surface-raised px-5 py-4">
-                    <h2 id="auth-modal-title" className="text-lg font-bold text-primary">
-                        {isSignUp ? t('modals.authCreateAccountTitle') : t('modals.authWelcomeBackTitle')}
-                    </h2>
+                <header className="modal-header">
+                    <div className="min-w-0 flex-1">
+                        <h2 id="auth-modal-title" className="modal-title">
+                            {isSignUp ? t('modals.authCreateAccountTitle') : t('modals.authWelcomeBackTitle')}
+                        </h2>
+                        <p className="modal-subtitle">
+                            {isSignUp
+                                ? (canLink
+                                    ? t('modals.authDescLinkGuest')
+                                    : t('modals.authDescSyncAcross'))
+                                : t('modals.authDescLoadExisting')}
+                        </p>
+                    </div>
                     <button
                         type="button"
                         onClick={onClose}
                         aria-label={t('common.close')}
-                        className="rounded-md p-1 text-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="modal-close"
                     >
                         <CloseIcon />
                     </button>
                 </header>
 
-                <form onSubmit={handleSubmit} className="px-5 py-4 space-y-3">
-                    <p className="text-xs text-muted">
-                        {isSignUp
-                            ? (canLink
-                                ? t('modals.authDescLinkGuest')
-                                : t('modals.authDescSyncAcross'))
-                            : t('modals.authDescLoadExisting')}
-                    </p>
-
-                    <div className="flex flex-col items-center rounded-lg border border-border bg-bg p-3">
+                <form onSubmit={handleSubmit} className="modal-body flex flex-col gap-4">
+                    {/* A fill, not a box: the panel already owns the one line. */}
+                    <div className="flex flex-col items-center rounded-lg bg-surface-raised px-3 py-4">
                         <img
                             src={AUTH_GIF_URL}
-                            alt="Animated Pokemon"
+                            alt=""
                             loading="lazy"
-                            className="w-24 h-24 image-pixelated"
+                            className="w-20 h-20 image-pixelated"
                         />
-                        <p className="mt-2 text-center text-[11px] text-muted">
+                        <p className="mt-2 text-center text-xs text-muted">
                             {isSignUp ? t('modals.authSubStartJourney') : t('modals.authSubTeamWaiting')}
                         </p>
                     </div>
 
-                    <label className="block">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-                            {t('modals.authEmailLabel')}
-                        </span>
+                    <label className="field">
+                        <span className="field-label">{t('modals.authEmailLabel')}</span>
                         <input
                             type="email"
                             autoComplete="email"
+                            autoCapitalize="none"
+                            autoCorrect="off"
+                            inputMode="email"
+                            enterKeyHint="next"
                             required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="mt-1 input-clean"
+                            className="input-clean"
                             placeholder="trainer@pokemail.com"
                         />
                     </label>
 
-                    <label className="block">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-muted">
-                            {t('modals.authPasswordLabel')}
-                        </span>
+                    <label className="field">
+                        <span className="field-label">{t('modals.authPasswordLabel')}</span>
                         <input
                             type="password"
                             autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                            enterKeyHint="go"
                             required
                             minLength={6}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 input-clean"
+                            className="input-clean"
                             placeholder="••••••••"
                         />
                     </label>
@@ -128,19 +131,19 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                         </p>
                     )}
 
-                    <button
-                        type="submit"
-                        disabled={busy}
-                        className="btn btn-primary w-full"
-                    >
-                        {busy ? t('modals.authPleaseWait') : isSignUp ? t('modals.authSignUpBtn') : t('modals.authSignInBtn')}
-                    </button>
+                    <div className="flex flex-col gap-2">
+                        <button
+                            type="submit"
+                            disabled={busy}
+                            className="btn btn-primary btn-lg btn-block"
+                        >
+                            {busy ? t('modals.authPleaseWait') : isSignUp ? t('modals.authSignUpBtn') : t('modals.authSignInBtn')}
+                        </button>
 
-                    <div className="text-center pt-1">
                         <button
                             type="button"
                             onClick={() => { setError(''); setMode(isSignUp ? 'signIn' : 'signUp'); }}
-                            className="text-xs text-muted underline hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="btn btn-ghost btn-block"
                         >
                             {isSignUp ? t('modals.authAlreadyHaveAccount') : t('modals.authDontHaveAccount')}
                         </button>

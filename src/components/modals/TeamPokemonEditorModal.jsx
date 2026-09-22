@@ -206,7 +206,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                 className="modal-panel modal-panel--2xl"
                 onClick={(event) => event.stopPropagation()}
             >
-                <header className="border-b border-surface-raised px-4 pb-3 pt-4 sm:px-6 sm:pt-5">
+                <header className="px-4 pt-4 sm:px-6 sm:pt-5">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0">
                             <img
@@ -220,7 +220,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     {(pokemon.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
                                 </div>
                                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                    <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+                                    <span className="text-xs text-muted">
                                         {t('modals.editorModalWeakVs')}
                                     </span>
                                     {pokemonWeaknesses.length > 0 ? pokemonWeaknesses.slice(0, 4).map(({ type, multiplier }) => (
@@ -239,14 +239,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                         <button
                             onClick={onClose}
                             type="button"
-                            className="p-2 rounded-lg text-muted hover:text-fg hover:bg-surface-raised transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="modal-close"
                             aria-label={t('modals.editorModalCloseAria')}
                         >
                             <CloseIcon />
                         </button>
                     </div>
 
-                    <div role="tablist" aria-label="Editor sections" className="-mb-3 mt-4 flex gap-1 border-b border-transparent">
+                    <div role="tablist" aria-label="Editor sections" className="tabs mt-3">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
@@ -256,7 +256,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 aria-selected={activeTab === tab.id}
                                 aria-controls={`panel-${tab.id}`}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`rounded-t-lg border-b-2 px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:px-4 sm:py-2 sm:text-sm ${activeTab === tab.id ? 'border-primary text-primary' : 'border-transparent text-muted opacity-70 hover:opacity-100'}`}
+                                className="tabs__item"
                             >
                                 {tab.label}
                             </button>
@@ -599,7 +599,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                             count={mv.count}
                                                             color={mt ? (typeColors[mt] || 'var(--color-success)') : 'var(--color-success)'}
                                                             active={active}
-                                                            trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className={`h-3.5 w-3.5 ${full ? 'text-muted/40' : 'text-muted'}`} />}
+                                                            trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className={`h-3.5 w-3.5 ${full ? 'text-muted' : 'text-muted'}`} />}
                                                             onClick={() => applyMoveName(mv.name)}
                                                             title={active ? (pt ? 'Remover golpe' : 'Remove move') : (pt ? 'Adicionar golpe' : 'Add move')}
                                                         />
@@ -670,11 +670,13 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                     )}
                 </div>
 
-                <footer className="flex items-center justify-end gap-2 border-t border-surface-raised px-6 py-4">
+                {/* The one line kept: it separates content that scrolls from actions
+                    that do not. */}
+                <footer className="modal-footer modal-footer--ruled">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="rounded-lg bg-surface-raised px-4 py-2 font-semibold text-fg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                        className="btn btn-ghost"
                     >
                         {t('common.cancel')}
                     </button>
@@ -684,7 +686,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             onSave(pokemon.instanceId, customization);
                             onClose();
                         }}
-                        className="bg-primary hover:opacity-90 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2 transition-opacity focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
+                        className="btn btn-primary"
                     >
                         <SaveIcon /> {t('modals.editorModalSave')}
                     </button>
