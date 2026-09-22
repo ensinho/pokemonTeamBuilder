@@ -84,10 +84,8 @@
 
 .profile-avatar-choice__label {
     margin: 0 0 var(--space-2);
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: var(--text-xs);
+    font-weight: 600;
     color: var(--color-muted);
 }
 
@@ -241,7 +239,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
+    border: none;
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
     padding: var(--space-1) var(--space-2);
@@ -253,10 +251,11 @@
     white-space: nowrap;
 }
 
+/* The section's current value ("Light", "Português"). It repeats what the
+   control below already shows, so it stays quiet: foreground ink on the same
+   fill, never the view's accent. */
 .profile-pill--accent {
-    border-color: var(--color-primary);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+    color: var(--color-fg);
 }
 
 .profile-hero__side {
@@ -448,7 +447,9 @@
 
 .profile-theme-card {
     text-align: left;
-    border: 1px solid var(--color-border);
+    /* Fill only: the section card around the grid owns the one line. The
+       transparent border keeps the box model steady for the selected ring. */
+    border: 1px solid transparent;
     border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
     padding: var(--space-3);
@@ -463,10 +464,11 @@
 .profile-theme-card:nth-child(5) { animation-delay: 120ms; }
 .profile-theme-card:nth-child(6) { animation-delay: 150ms; }
 
+/* A ring, not a dashed border — dashed means "empty / locked" in this app,
+   and the chosen theme is the opposite of empty. */
 .profile-theme-card.is-selected {
-    border-style: dashed;
-    border-color: var(--color-primary);
     background: var(--color-primary-soft);
+    box-shadow: var(--ring-primary);
 }
 
 .profile-theme-card__header {

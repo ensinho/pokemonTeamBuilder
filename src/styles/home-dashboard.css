@@ -35,13 +35,16 @@
        viewport. */
     container-type: inline-size;
 }
+/* No band. A tinted header strip is the card-header of every admin template;
+   the claude.ai sections are a title and a "Show all →" on the surface itself,
+   with the type carrying the hierarchy. The head sits a step closer to its
+   body than to the panel edge, so the two read as one group. */
 .hd-panel__head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-surface-raised);
+    padding: var(--space-4) var(--space-4) var(--space-1);
 }
 /* Section title. Sentence case, not 800-weight caps at 0.08em — a panel heading
    is a title, not a label, and it was the loudest element on a page it was only
@@ -56,10 +59,12 @@
     color: var(--color-fg);
 }
 .hd-panel__title svg { width: 0.95rem; height: 0.95rem; color: var(--color-primary); }
+/* Ink, not the accent: a "see all" is navigation, and the panel's one accent
+   belongs to its action (Build a team). The arrow in the copy is the cue. */
 .hd-panel__link {
     font-size: 0.8125rem;
     font-weight: 500;
-    color: var(--color-primary);
+    color: var(--color-fg);
     letter-spacing: 0;
     cursor: pointer;
     background: none;
@@ -68,7 +73,7 @@
        long title and breaks between the label and its arrow. */
     white-space: nowrap;
 }
-.hd-panel__link:hover { text-decoration: underline; }
+.hd-panel__link:hover { color: var(--color-muted); }
 .hd-panel__body { padding: var(--space-3_5); }
 
 /* Loading skeleton — shown while the tournament + Pokémon data load. Mirrors
@@ -621,7 +626,7 @@
 
     /* Panel heads carry a title and a link, nothing that needs 48px. */
     .hd-panel__head {
-        padding: var(--space-2) var(--space-4);
+        padding: var(--space-3) var(--space-4) 0;
     }
 
     /* Three teams on one line. Stacked, they cost three rows of a column that

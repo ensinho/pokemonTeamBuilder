@@ -160,7 +160,7 @@ export function FriendsView() {
 
     return (
         <div className="friends-view">
-            <div className="friends-tabs" role="tablist">
+            <div className="tabs" role="tablist">
                 {TABS.map((tab) => (
                     <button
                         key={tab}
@@ -168,14 +168,14 @@ export function FriendsView() {
                         role="tab"
                         aria-selected={activeTab === tab}
                         onClick={() => setTab(tab)}
-                        className={`friends-tab ${activeTab === tab ? 'is-active' : ''}`}
+                        className="tabs__item"
                     >
                         {t(`friends.tab_${tab}`)}
                         {tab === 'friends' && friends.length > 0 && (
-                            <span className="friends-tab__count">{friends.length}</span>
+                            <span className="count-badge">{friends.length}</span>
                         )}
                         {tab === 'requests' && pendingCount > 0 && (
-                            <span className="friends-tab__count friends-tab__count--alert">{pendingCount}</span>
+                            <span className="count-badge friends-count--alert">{pendingCount}</span>
                         )}
                     </button>
                 ))}

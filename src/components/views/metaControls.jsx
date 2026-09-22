@@ -179,7 +179,7 @@ export function CutoffSelect({ cutoffs = [], value, onChange, pt = false, classN
     if (cutoffs.length < 2) return null;
     return (
         <div
-            className={`inline-flex overflow-hidden rounded-xl border border-border ${className}`}
+            className={`segmented ${className}`}
             role="group"
             aria-label={pt ? 'Rating mínimo do ladder' : 'Ladder rating floor'}
         >
@@ -192,9 +192,7 @@ export function CutoffSelect({ cutoffs = [], value, onChange, pt = false, classN
                     title={pt
                         ? (c > 0 ? `Partidas entre jogadores com rating ${c} ou mais` : 'Todas as partidas do ladder')
                         : (c > 0 ? `Games between players rated ${c} and above` : 'Every game on the ladder')}
-                    className={`min-h-11 px-2.5 text-[0.6875rem] font-bold tabular-nums transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${
-                        c === value ? 'bg-primary text-on-primary' : 'bg-surface text-muted hover:bg-surface-hover hover:text-fg'
-                    }`}
+                    className="segmented__item touch-target touch-target--y tabular-nums"
                 >
                     {cutoffLabel(c, pt)}
                 </button>

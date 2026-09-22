@@ -155,10 +155,8 @@
 }
 
 .generation-quiz__last-find-eyebrow {
-    font-size: 0.66rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
     color: var(--color-muted);
 }
 
@@ -216,10 +214,8 @@
 }
 
 .generation-quiz__console-stat span {
-    font-size: 0.6rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--color-muted);
 }
 
@@ -808,6 +804,7 @@
 
     .generation-quiz--running .generation-quiz__grid-panel {
         max-height: calc(100vh - var(--app-shell-top-band-height) - 2.25rem);
+        max-height: calc(100dvh - var(--app-shell-top-band-height) - 2.25rem);
         overflow-y: auto;
     }
 
