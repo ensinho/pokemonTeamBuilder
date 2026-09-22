@@ -205,9 +205,23 @@ and break the layout at non-100% scale. The one exception is the iOS zoom guard
 ## Motion
 
 One curve, one duration, unless there is a reason. `var(--ease-smooth)` with
-`var(--duration-fast)` covers essentially everything; `--duration-slow` for
-entrances. `--ease-spring` / `--ease-bounce` / `--ease-out-expo` exist for
-deliberate moments, not for variety.
+`var(--duration-fast)` covers essentially every state change (hover, colour,
+fill); `--duration-slow` for entrances. Three more have a job each (2026-09-22):
+
+| Token | Job |
+|---|---|
+| `--ease-out` + `--duration-press` (100ms) | a press, and anything answering one — starts fast, settles long |
+| `--ease-drawer` + `--duration-entrance` (350ms) | anything that slides in from an edge: sheets, the drawer. The iOS sheet curve; nothing else uses it |
+| `--press-scale` (0.97) | how far a pressed control sinks — one value for every button |
+
+Press with the **`scale` property**, not `transform: scale()`: it composes with a
+control's own translate, so a centred icon button doesn't jump when pressed. And
+list `scale` in the transition, or the press snaps. Buttons, icon buttons and
+small in-card controls give; cards, rows and nav items never do (a grid that
+shrinks under the finger reads as the page wobbling) — their press is a fill.
+
+`--ease-spring` / `--ease-bounce` / `--ease-out-expo` exist for deliberate
+moments, not for variety.
 
 **Never write a bare `ease`.** It is `cubic-bezier(0.25, 0.1, 0.25, 1)` — a
 visibly different deceleration from `--ease-smooth`, so elements animating side
@@ -241,6 +255,13 @@ ones:
 | `--color-surface-active` | selected/current fill (nav item, active tab) |
 | `--color-on-primary` | text/icons on a filled `--color-primary` or `--color-danger` |
 | `--ring-primary` | selection ring: `box-shadow: var(--ring-primary)` |
+| `--color-border-strong` | the visible edge of a **control** — input, outline button, dashed empty slot. `--color-border` stays for regions; on the light themes it is `#f7f7f7` on white, which gave the search field no edge at all |
+| `--color-surface-elevated` | a thumb lifted onto a raised track (active segment). Lighter than raised on dark themes, white on light ones |
+
+Tailwind exposes all of these (`bg-surface-hover`, `border-border-strong`, …), and
+since 2026-09-22 opacity modifiers on theme colours work (`bg-primary/15` is a
+`color-mix()`); before that they silently compiled to nothing. Still never on
+text: `text-muted/60` is opacity stacked on the de-emphasis.
 
 A hover tint written inline at each call site drifts, and drift is the whole
 reason this document exists.
@@ -264,6 +285,32 @@ is part of the interface. Brand colours written as raw triples (`rgba(124, 58,
 was wrong in all six themes. The exceptions are Pokémon type/stat colours (canon,
 theme-independent) and scrims over photography, where white/black is correct
 regardless of theme.
+
+## Component vocabulary
+
+The controls the claude.ai reference is built from exist once, in `index.css`.
+Reach for them before writing a control; the app had twelve button systems and
+eight segmented controls before this list existed (2026-09-22).
+
+| Need | Use |
+|---|---|
+| a button | `.btn` + a voice (`btn-primary` / `-secondary` / `-outline` / `-ghost` / `-danger`) + optional `btn-sm` / `btn-lg`, `btn-icon` (square, needs `aria-label`), `btn-block` |
+| 2–5 exclusive options, all visible | `.segmented` > `.segmented__item[aria-pressed]` (`--sm` / `--lg` / `--block`) |
+| sections of one object | `.tabs` > `.tabs__item[aria-selected]` |
+| a count in a tab or segment | `.count-badge` |
+| a dialog | `.modal-scrim` > `.modal-panel` with `ref={useModalA11y(onClose)}`; `.modal-header` / `.modal-title` / `.modal-subtitle` / `.modal-close` / `.modal-body` / `.modal-footer` (`--ruled` when the body scrolls under it). Phones get a draggable sheet and every dialog an exit animation for free |
+| a form row | `.field` > `.field-label` + `.input-clean` / `.select-clean` / `.textarea-clean` |
+| a menu | `.menu-surface` > `.menu-item` |
+
+Control heights are `--control-h-sm/md/lg` (1.75 / 2.25 / 2.75rem): a button, an
+input and a segmented control in one toolbar share a height.
+
+**These rules come after `@tailwind utilities`, so they beat a utility on the
+same element.** Size a `.btn` with its modifier, not `h-8 px-2` (the utility
+loses). Never hide a `.btn` / `.tabs` / `.segmented` with `hidden` — their
+`display` wins; render them conditionally. Where a call site genuinely needs to
+override (a dialog's `z-[60]`), the primitive declares that property in
+`:where()` so the utility can win.
 
 ## Drift detection
 
@@ -346,7 +393,10 @@ Below 1024px this app is used with a thumb. Three rules, from the 2026-09-10 wou
   `future.hoverOnlyWhenSupported`, so `hover:` never fires on a phone —
   `opacity-0 group-hover:opacity-100` is *permanently hidden* there. Give it a
   `[@media(hover:none)]:` state, or don't hide it. Hand-written `:hover` in CSS is
-  not gated; keep it to fills and colours so a stuck state is harmless.
+  gated **by the build** (`scripts/lib/postcssHoverGate.mjs`): it moves into
+  `(hover: hover) and (pointer: fine)` and its fill/colour declarations are
+  re-emitted on `:active` for touch. So write hover as fills and colours — that
+  copy is the phone's press feedback — and never gate it again by hand.
 - **Grow the hit area, not the control.** A small secondary control keeps its
   calm size and gets `.touch-target` (index.css — an invisible `::after` under
   `(pointer: coarse)`), or `.touch-target touch-target--y` when its neighbour
