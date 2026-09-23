@@ -1155,14 +1155,15 @@ export default function AppLayout() {
 
             {/* Sidebar Shell Layout */}
             <div className="app-shell">
-                {isSidebarOpen && (
-                    <div
-                        className="app-shell__overlay lg:hidden"
-                        onClick={() => setIsSidebarOpen(false)}
-                        role="presentation"
-                        aria-label={t('layout.closeSidebar')}
-                    />
-                )}
+                {/* Always mounted, so it can fade out on the drawer's own curve
+                    instead of vanishing while the drawer is still sliding. */}
+                <div
+                    className={`app-shell__overlay lg:hidden ${isSidebarOpen ? 'is-open' : ''}`}
+                    onClick={() => setIsSidebarOpen(false)}
+                    role="presentation"
+                    aria-hidden={!isSidebarOpen}
+                    aria-label={t('layout.closeSidebar')}
+                />
                 {!isMobileDetailsOpen && (
                     <aside className={`app-shell__sidebar ${isRailCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}>
                         <div className="app-shell__sidebar-inner">

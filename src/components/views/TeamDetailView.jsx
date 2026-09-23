@@ -237,19 +237,19 @@ export function TeamDetailView({
                         >
                             {isActive ? `★ ${t('common.active')}` : (pt ? 'Ativar' : 'Set Active')}
                         </button>
-                        <button type="button" onClick={() => onDuplicate?.(team)} className="btn btn-outline !p-2" title={t('savedTeams.duplicateTitle')} aria-label={t('savedTeams.duplicateTitle')}>
+                        <button type="button" onClick={() => onDuplicate?.(team)} className="btn btn-ghost btn-icon btn-sm touch-target" title={t('savedTeams.duplicateTitle')} aria-label={t('savedTeams.duplicateTitle')}>
                             <Copy className="w-4 h-4" />
                         </button>
-                        <button type="button" onClick={() => onToggleFavorite?.(team)} className={`btn btn-outline !p-2 ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`} title={pt ? 'Favoritar' : 'Favorite'}>
+                        <button type="button" onClick={() => onToggleFavorite?.(team)} className={`btn btn-ghost btn-icon btn-sm touch-target ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`} title={pt ? 'Favoritar' : 'Favorite'}>
                             <Star className="w-4 h-4" fill={team.isFavorite ? 'currentColor' : 'none'} />
                         </button>
-                        <button type="button" onClick={() => onShare?.(team)} className="btn btn-outline !p-2" title={pt ? 'Compartilhar' : 'Share'}>
+                        <button type="button" onClick={() => onShare?.(team)} className="btn btn-ghost btn-icon btn-sm touch-target" title={pt ? 'Compartilhar' : 'Share'}>
                             <Share2 className="w-4 h-4" />
                         </button>
-                        <button type="button" onClick={() => onExport?.(team)} className="btn btn-outline !p-2" title={pt ? 'Exportar Showdown' : 'Export Showdown'}>
+                        <button type="button" onClick={() => onExport?.(team)} className="btn btn-ghost btn-icon btn-sm touch-target" title={pt ? 'Exportar Showdown' : 'Export Showdown'}>
                             <ShowdownIcon className="w-4 h-4" />
                         </button>
-                        <button type="button" onClick={() => requestDelete?.(team.id, team.name)} className="btn btn-outline !p-2 team-builder-icon-button--danger" title={pt ? 'Deletar' : 'Delete'}>
+                        <button type="button" onClick={() => requestDelete?.(team.id, team.name)} className="btn btn-ghost btn-icon btn-sm touch-target team-builder-icon-button--danger" title={pt ? 'Deletar' : 'Delete'}>
                             <Trash2 className="w-4 h-4" />
                         </button>
                     </div>

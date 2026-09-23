@@ -1,7 +1,62 @@
-// Icon library — all SVGs centralized here.
-// Most icons accept a `color` prop for backward compatibility,
-// but new code should rely on `currentColor` + Tailwind text utilities
-// (e.g. text-fg, text-muted, text-primary).
+// Icon library — every glyph the app draws that is not a Pokémon asset.
+//
+// One family: Lucide, at its native 24-box and 2px stroke. This file used to mix
+// four — Heroicons v1 outline, Heroicons v1 *solid* 20px (trash, clear, plus,
+// info, edit), Tabler, and Lucide — so a solid trash can sat beside an outlined
+// pencil in the same toolbar, and the set never read as one hand. The exported
+// names and props are unchanged, so no call site had to move; the wrappers only
+// pin each icon's historical default size.
+//
+// Brand marks (GitHub, LinkedIn, Showdown) and the app's own glyphs Lucide has
+// no equivalent for (Poké Ball, three stars, flower) stay hand-drawn below, on
+// the same 24-box and stroke so they sit in the family.
+//
+// Size with a className (`w-4 h-4`), colour with `text-*` — every icon strokes
+// in currentColor. The `color` prop survives for older call sites only.
+import {
+    ArrowUpDown,
+    BadgeCheck,
+    Calculator,
+    ChartColumn,
+    ChevronDown,
+    ChevronLeft,
+    ChevronsLeft,
+    ChevronsRight,
+    CircleCheck,
+    CircleUserRound,
+    CircleX,
+    Database,
+    Dice4,
+    Download,
+    Gauge,
+    Globe,
+    Heart,
+    House,
+    Info,
+    Layers,
+    MapPin,
+    Menu,
+    MessageCircleMore,
+    Moon,
+    Paperclip,
+    Plus,
+    RefreshCw,
+    Reply,
+    Save,
+    Scroll,
+    Settings,
+    Share2,
+    ShoppingBag,
+    Sparkles,
+    SquarePen,
+    Star,
+    Sun,
+    Swords,
+    Trash2,
+    TriangleAlert,
+    Trophy,
+    X,
+} from 'lucide-react';
 
 export const GithubIcon = ({ color }) => (
     <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style={color ? { color } : undefined}>
@@ -24,69 +79,6 @@ export const StarsIcon = ({ className = 'w-6 h-6' }) => (
     </svg>
 );
 
-export const StarIcon = ({ className = 'w-6 h-6', isFavorite, color }) => (
-    <svg
-        className={className}
-        fill={isFavorite ? 'currentColor' : 'none'}
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-        style={{ color: isFavorite ? '#FBBF24' : color }}
-    >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.95-.69l1.519-4.674z" />
-    </svg>
-);
-
-export const TrashIcon = ({ className = 'h-5 w-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" />
-    </svg>
-);
-
-export const ClearIcon = ({ className = 'h-5 w-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" clipRule="evenodd" d="M10 8.586l3.95-3.95a1 1 0 111.414 1.414L11.414 10l3.95 3.95a1 1 0 01-1.414 1.414L10 11.414l-3.95 3.95a1 1 0 01-1.414-1.414L8.586 10l-3.95-3.95a1 1 0 011.414-1.414L10 8.586z" />
-    </svg>
-);
-
-export const SaveIcon = ({ className = 'h-5 w-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-    </svg>
-);
-
-export const DownloadIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-        <polyline points="7 10 12 15 17 10" />
-        <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-);
-
-export const PlusIcon = ({ className = 'h-5 w-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-    </svg>
-);
-
-export const MenuIcon = ({ className = 'w-6 h-6' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-);
-
-export const CloseIcon = ({ className = 'w-6 h-6' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-);
-
-export const InfoIcon = ({ className = 'h-5 w-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 20 20" fill="currentColor">
-        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-    </svg>
-);
-
 export const PokeballIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -94,125 +86,6 @@ export const PokeballIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
         <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
         <path d="M3 12h6" />
         <path d="M15 12h6" />
-    </svg>
-);
-
-export const SavedTeamsIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-    </svg>
-);
-
-export const AccountIcon = ({ color = 'currentColor', className = 'w-6 h-6 shrink-0' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke={color}>
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A11.96 11.96 0 0 1 12 15c2.485 0 4.79.755 6.879 2.047M15 10a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
-        <circle cx="12" cy="12" r="9" strokeWidth={2} />
-    </svg>
-);
-
-export const CollapseLeftIcon = () => (
-    <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-    </svg>
-);
-
-export const CollapseRightIcon = () => (
-    <svg className="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-    </svg>
-);
-
-export const ShareIcon = ({ className = 'h-5 w-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12s-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.35a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-    </svg>
-);
-
-export const HeartIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-    </svg>
-);
-
-export const SuccessToastIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M5 7.2a2.2 2.2 0 0 1 2.2 -2.2h1a2.2 2.2 0 0 0 1.55 -.64l.7 -.7a2.2 2.2 0 0 1 3.12 0l.7 .7c.412 .41 .97 .64 1.55 .64h1a2.2 2.2 0 0 1 2.2 2.2v1c0 .58 .23 1.138 .64 1.55l.7 .7a2.2 2.2 0 0 1 0 3.12l-.7 .7a2.2 2.2 0 0 0 -.64 1.55v1a2.2 2.2 0 0 1 -2.2 2.2h-1a2.2 2.2 0 0 0 -1.55 .64l-.7 .7a2.2 2.2 0 0 1 -3.12 0l-.7 -.7a2.2 2.2 0 0 0 -1.55 -.64h-1a2.2 2.2 0 0 1 -2.2 -2.2v-1a2.2 2.2 0 0 0 -.64 -1.55l-.7 -.7a2.2 2.2 0 0 1 0 -3.12l.7 -.7a2.2 2.2 0 0 0 .64 -1.55v-1" />
-        <path d="M9 12l2 2l4 -4" />
-    </svg>
-);
-
-/* Toast severity marks. One family, one stroke weight, one 24-box — the old
-   trio was drawn from three different sets (a badge-check, a *heart*, and an
-   info circle) at fixed 24px with no className, so they could not be sized and
-   never read as a set. */
-export const CheckCircleIcon = ({ className = 'w-5 h-5' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M9 12l2 2l4 -4" />
-    </svg>
-);
-
-export const XCircleIcon = ({ className = 'w-5 h-5' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M9.5 9.5l5 5" />
-        <path d="M14.5 9.5l-5 5" />
-    </svg>
-);
-
-export const AlertTriangleIcon = ({ className = 'w-5 h-5' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10.24 4.5l-8.02 13a2 2 0 0 0 1.76 3h16.04a2 2 0 0 0 1.76 -3l-8.02 -13a2 2 0 0 0 -3.52 0z" />
-        <path d="M12 9v4" />
-        <path d="M12 17h.01" />
-    </svg>
-);
-
-export const InfoCircleIcon = ({ className = 'w-5 h-5' }) => (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 8h.01" />
-        <path d="M11 12h1v4h1" />
-    </svg>
-);
-
-export const SunIcon = ({ color }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={color ? { color } : undefined}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
-        <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
-    </svg>
-);
-
-export const MoonIcon = ({ color }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={color ? { color } : undefined}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
-    </svg>
-);
-
-export const SwordsIcon = ({ className = 'w-4 h-4' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M21 3v5l-11 9l-4 4l-3 -3l4 -4l9 -11z" />
-        <path d="M5 13l6 6" />
-        <path d="M14.32 17.32l3.68 3.68l3 -3l-3.365 -3.365" />
-        <path d="M10 5.5l-2 -2.5h-5v5l3 2.5" />
-    </svg>
-);
-
-export const EditIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-        <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
-    </svg>
-);
-
-export const SparklesIcon = ({ className = 'w-6 h-6' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2zm-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6z" />
     </svg>
 );
 
@@ -229,17 +102,6 @@ export const ShowdownIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
     </svg>
 );
 
-export const DiceIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <rect x="4" y="4" width="16" height="16" rx="2" />
-        <circle cx="8.5" cy="8.5" r=".5" fill="currentColor" />
-        <circle cx="15.5" cy="8.5" r=".5" fill="currentColor" />
-        <circle cx="15.5" cy="15.5" r=".5" fill="currentColor" />
-        <circle cx="8.5" cy="15.5" r=".5" fill="currentColor" />
-    </svg>
-);
-
 export const FlowerIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -247,148 +109,189 @@ export const FlowerIcon = () => (
     </svg>
 );
 
-export const HomeIcon = () => (
-    <svg className="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-    </svg>
+// Favourite star. Filled + warning-coloured when on; the colour is the theme's
+// token, not a literal amber, so it holds contrast on the light themes too.
+export const StarIcon = ({ className = 'w-6 h-6', isFavorite, color }) => (
+    <Star
+        className={className}
+        fill={isFavorite ? 'currentColor' : 'none'}
+        style={{ color: isFavorite ? 'var(--color-warning)' : color }}
+        aria-hidden="true"
+    />
 );
 
-export const RefreshIcon = ({ className = 'w-5 h-5' }) => (
-    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-    </svg>
+export const TrashIcon = ({ className = 'h-5 w-5', color }) => (
+    <Trash2 className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const ArrowUpDownIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="m21 16-4 4-4-4" />
-        <path d="M17 20V4" />
-        <path d="m3 8 4-4 4 4" />
-        <path d="M7 4v16" />
-    </svg>
+export const ClearIcon = ({ className = 'h-5 w-5', color }) => (
+    <X className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const ChartColumnIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M3 3v18h18" />
-        <path d="M18 17V9" />
-        <path d="M13 17V5" />
-        <path d="M8 17v-3" />
-    </svg>
+export const SaveIcon = ({ className = 'h-5 w-5', color }) => (
+    <Save className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const HouseIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M15 21v-6a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v6" />
-        <path d="M3 10a2 2 0 0 1 .71-1.53l7-6a2 2 0 0 1 2.58 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    </svg>
+export const DownloadIcon = ({ className = 'w-5 h-5', color }) => (
+    <Download className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const MapPinIcon = ({ className = 'w-5 h-5 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-        <circle cx="12" cy="10" r="3" />
-    </svg>
+export const PlusIcon = ({ className = 'h-5 w-5', color }) => (
+    <Plus className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const SettingsIcon = ({ className = 'w-5 h-5', color = 'currentColor' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-        <circle cx="12" cy="12" r="3" />
-    </svg>
+export const MenuIcon = ({ className = 'w-6 h-6', color }) => (
+    <Menu className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const GlobeIcon = ({ className = 'w-5 h-5', color = 'currentColor' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-    </svg>
+export const CloseIcon = ({ className = 'w-6 h-6', color }) => (
+    <X className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const MessageIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-    </svg>
+export const InfoIcon = ({ className = 'h-5 w-5', color }) => (
+    <Info className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const ReplyIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polyline points="9 17 4 12 9 7" />
-        <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-    </svg>
+export const SavedTeamsIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Layers className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const ClipIcon = ({ className = 'w-5 h-5', color = 'currentColor' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-    </svg>
+export const AccountIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <CircleUserRound className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const DatabaseIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <ellipse cx="12" cy="5" rx="9" ry="3" />
-        <path d="M3 5v14a9 3 0 0 0 18 0V5" />
-        <path d="M3 12a9 3 0 0 0 18 0" />
-    </svg>
+export const CollapseLeftIcon = ({ className = 'w-6 h-6', color }) => (
+    <ChevronsLeft className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const ScrollIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M19 17V5a2 2 0 0 0-2-2H4" />
-        <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" />
-    </svg>
+export const CollapseRightIcon = ({ className = 'w-6 h-6', color }) => (
+    <ChevronsRight className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const BagIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" />
-        <path d="M3 6h18" />
-        <path d="M16 10a4 4 0 0 1-8 0" />
-    </svg>
+export const ShareIcon = ({ className = 'h-5 w-5', color }) => (
+    <Share2 className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const TrophyIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-        <path d="M4 22h16" />
-        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
-        <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
-        <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-    </svg>
+export const HeartIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Heart className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const CalculatorIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect width="16" height="20" x="4" y="2" rx="2" />
-        <line x1="8" x2="16" y1="6" y2="6" />
-        <line x1="8" x2="8" y1="14" y2="14" />
-        <line x1="12" x2="12" y1="14" y2="14" />
-        <line x1="16" x2="16" y1="14" y2="14" />
-        <line x1="8" x2="8" y1="18" y2="18" />
-        <line x1="12" x2="12" y1="18" y2="18" />
-        <line x1="16" x2="16" y1="18" y2="18" />
-    </svg>
+export const SuccessToastIcon = ({ className = 'w-6 h-6', color }) => (
+    <BadgeCheck className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const GaugeIcon = ({ className = 'w-6 h-6 shrink-0' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="m12 14 4-4" />
-        <path d="M3.34 19a10 10 0 1 1 17.32 0" />
-    </svg>
+export const CheckCircleIcon = ({ className = 'w-5 h-5', color }) => (
+    <CircleCheck className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const ChevronDownIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="m6 9 6 6 6-6" />
-    </svg>
+export const XCircleIcon = ({ className = 'w-5 h-5', color }) => (
+    <CircleX className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
-export const ChevronLeftIcon = ({ className = 'w-5 h-5' }) => (
-    <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="m15 18-6-6 6-6" />
-    </svg>
+export const AlertTriangleIcon = ({ className = 'w-5 h-5', color }) => (
+    <TriangleAlert className={className} color={color || 'currentColor'} aria-hidden="true" />
 );
 
+export const InfoCircleIcon = ({ className = 'w-5 h-5', color }) => (
+    <Info className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
 
+export const SunIcon = ({ className = 'w-6 h-6', color }) => (
+    <Sun className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const MoonIcon = ({ className = 'w-6 h-6', color }) => (
+    <Moon className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const SwordsIcon = ({ className = 'w-4 h-4', color }) => (
+    <Swords className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const EditIcon = ({ className = 'h-5 w-5', color }) => (
+    <SquarePen className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const SparklesIcon = ({ className = 'w-6 h-6', color }) => (
+    <Sparkles className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const DiceIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Dice4 className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const HomeIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <House className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const RefreshIcon = ({ className = 'w-5 h-5', color }) => (
+    <RefreshCw className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ArrowUpDownIcon = ({ className = 'w-5 h-5', color }) => (
+    <ArrowUpDown className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ChartColumnIcon = ({ className = 'w-5 h-5', color }) => (
+    <ChartColumn className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const HouseIcon = ({ className = 'w-5 h-5', color }) => (
+    <House className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const MapPinIcon = ({ className = 'w-5 h-5 shrink-0', color }) => (
+    <MapPin className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const SettingsIcon = ({ className = 'w-5 h-5', color }) => (
+    <Settings className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const GlobeIcon = ({ className = 'w-5 h-5', color }) => (
+    <Globe className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const MessageIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <MessageCircleMore className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ReplyIcon = ({ className = 'w-5 h-5', color }) => (
+    <Reply className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ClipIcon = ({ className = 'w-5 h-5', color }) => (
+    <Paperclip className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const DatabaseIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Database className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ScrollIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Scroll className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const BagIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <ShoppingBag className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const TrophyIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Trophy className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const CalculatorIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Calculator className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const GaugeIcon = ({ className = 'w-6 h-6 shrink-0', color }) => (
+    <Gauge className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ChevronDownIcon = ({ className = 'w-5 h-5', color }) => (
+    <ChevronDown className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ChevronLeftIcon = ({ className = 'w-5 h-5', color }) => (
+    <ChevronLeft className={className} color={color || 'currentColor'} aria-hidden="true" />
+);

@@ -376,13 +376,13 @@ export function PokemonDetailModal({
                                 ))}
                                 {neutralTypes.length > 0 && (
                                     <details className="group">
-                                        <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-muted/60 hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
+                                        <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-muted hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
                                             <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
                                             {neutralTypes.length} {language === 'pt' ? 'tipos neutros' : 'neutral types'} (1×)
                                         </summary>
                                         <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                             {neutralTypes.map((tName) => (
-                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full bg-surface-raised/40 px-2 py-0.5 text-[11px] font-semibold capitalize text-muted/70">
+                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full bg-surface-raised/40 px-2 py-0.5 text-[11px] font-semibold capitalize text-muted">
                                                     <img src={typeIcons[tName]} alt={tName} className="h-3.5 w-3.5 shrink-0 opacity-60" />
                                                     {tName}
                                                 </span>

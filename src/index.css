@@ -9,19 +9,39 @@
    ============================================================ */
 
 :root {
-    /* Easing curves */
-    --ease-default: ease;
+    /* Easing curves.
+       --ease-smooth is the default for state changes (hover, colour, fill).
+       --ease-out is for anything that *arrives* or answers a press: it starts
+       fast and settles long, which is what reads as responsive rather than
+       floaty. --ease-drawer is the iOS sheet curve — the one every native
+       drawer and bottom sheet moves on — so anything that slides in from an
+       edge uses it and nothing else does. */
+    --ease-default: var(--ease-smooth);
     --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
     --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
     --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
     /* Duration tokens */
+    --duration-press: 100ms;       /* press feedback — must beat the finger lifting */
     --duration-fast: 150ms;
     --duration-normal: 150ms;
     --duration-slow: 250ms;
-    --duration-entrance: 350ms;
+    --duration-entrance: 350ms;    /* sheets and drawers; nothing else is this slow */
     --duration-blur-reveal: 1.2s;  /* intentional slow sprite blur reveal */
+
+    /* How far a pressed control sinks. One value, so a button, a tile and a
+       card all give under the finger by the same amount. */
+    --press-scale: 0.97;
+
+    /* Control heights. A button, an input and a select that share a row share
+       a height — that is what makes a toolbar read as one solid strip rather
+       than parts that nearly line up. */
+    --control-h-sm: 1.75rem;
+    --control-h-md: 2.25rem;
+    --control-h-lg: 2.75rem;
 
     /* ---- Spacing scale — the strict grid --------------------------------
        Two tiers, both landing on a 2px grid: fine control below 16px where
@@ -314,6 +334,23 @@
     --color-surface-hover:  color-mix(in srgb, var(--color-fg)  7%, var(--color-surface-raised));
     --color-surface-active: color-mix(in srgb, var(--color-fg) 12%, var(--color-surface-raised));
 
+    /* The edge of a *control* — an input, an outline button, a segmented
+       track. --color-border is tuned to whisper so regions are defined by fill
+       (see the 2026-09-09 wound), and on the light themes it is #f7f7f7 on a
+       white surface: a search field drawn with it has no visible edge at all.
+       Controls need one — you have to be able to see where to tap — so they
+       take this instead. Mixed from the foreground, so it is a hairline on
+       every theme, darker on light and lighter on dark. Regions keep
+       --color-border. */
+    --color-border-strong: color-mix(in srgb, var(--color-fg) 14%, var(--color-surface));
+
+    /* A surface sitting *on top of* a raised track: the active segment of a
+       segmented control, a switch thumb. On the dark themes that must be
+       lighter than --color-surface-raised; on the light ones it is plain
+       white with a shadow. One formula cannot point both ways, so the light
+       themes override it below. */
+    --color-surface-elevated: color-mix(in srgb, var(--color-fg) 10%, var(--color-surface-raised));
+
     /* Foreground for text/icons sitting on a filled --color-primary or
        --color-danger. Every theme's primary is dark enough for white; this
        exists so the value is named rather than 56 loose #fff literals. */
@@ -352,6 +389,14 @@
        light, not a surface. */
     --scrim: rgba(0, 0, 0, 0.62);
     --scrim-blur: 6px;
+}
+
+/* Light-mode direction for the elevated surface (see above). These three are
+   the light entries of THEME_MODE in constants/theme.js. */
+:root[data-theme='light'],
+:root[data-theme='daybreak'],
+:root[data-theme='solar'] {
+    --color-surface-elevated: var(--color-surface);
 }
 
 /* Interface scale (see applyUiScale in constants/theme.js). Percent, not rem:
@@ -618,17 +663,31 @@ input[type='checkbox']:checked + div + div {
    GLOBAL COMPONENT UTILITIES (Ref 2 — shadcn/ui inspired)
    ============================================================ */
 
-/* Base Button */
+/* ---- Buttons -------------------------------------------------------------
+   One button, five voices, three sizes. Modelled on the claude.ai controls: a
+   solid fill or a hairline, never both; hover is a quiet change of fill, not a
+   glow; and a press *gives* — the button sinks by --press-scale the instant
+   the pointer lands, on the fast curve, so it answers before the finger lifts.
+   The old press scaled with no transition at all, so it snapped in one frame
+   and snapped back, which is most of why buttons felt hard rather than solid.
+
+   Height comes from --btn-h so a size modifier changes one number and the
+   icon-only variant can stay square. These rules sit after
+   `@tailwind utilities`, so they win over a utility on the same element —
+   size a button with a modifier here, not with `h-8 px-2`. */
 .btn {
+    --btn-h: var(--control-h-md);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-2);
-    height: 2.25rem;
-    padding: 0 var(--space-4);
+    height: var(--btn-h);
+    padding: 0 var(--space-3_5);
     border-radius: var(--radius-md);
-    font-size: 0.875rem;
+    font-family: inherit;
+    font-size: var(--text-base);
     font-weight: 500;
+    line-height: 1;
     cursor: pointer;
     text-align: center;
     white-space: nowrap;
@@ -640,78 +699,315 @@ input[type='checkbox']:checked + div + div {
                 border-color var(--duration-fast) var(--ease-smooth),
                 color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth),
-                opacity var(--duration-fast) var(--ease-smooth);
+                opacity var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
 }
 
-.btn:disabled {
+.btn:disabled,
+.btn[aria-disabled='true'] {
     cursor: not-allowed;
     opacity: 0.5;
     pointer-events: none;
 }
 
+/* `scale`, the independent property, not `transform: scale()`: a button
+   positioned with a translate keeps it, instead of jumping when pressed. */
 .btn:active:not(:disabled) {
-    transform: scale(0.98);
+    scale: var(--press-scale);
 }
 
 .btn svg {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 1rem;
+    height: 1rem;
     flex-shrink: 0;
 }
 
-/* Button Variants */
+/* Sizes */
+.btn-sm {
+    --btn-h: var(--control-h-sm);
+    gap: var(--space-1_5);
+    padding: 0 var(--space-2_5);
+    font-size: var(--text-sm);
+}
+
+.btn-sm svg { width: 0.875rem; height: 0.875rem; }
+
+.btn-lg {
+    --btn-h: var(--control-h-lg);
+    padding: 0 var(--space-5);
+    font-size: var(--text-md);
+}
+
+/* Icon-only: square at whatever size it is. Pair with an aria-label. */
+.btn-icon {
+    width: var(--btn-h);
+    padding: 0;
+}
+
+.btn-block { width: 100%; }
+
+/* Voices.
+   primary — the one affirmative action in a view. Hover mixes toward the
+   foreground, so it lightens on the dark themes and deepens on the light ones
+   instead of fading (the old opacity hover read as disabled for a moment). */
 .btn-primary {
     background: var(--color-primary);
-    color: #ffffff;
-    border-color: var(--color-primary);
+    color: var(--color-on-primary);
 }
 
 .btn-primary:hover:not(:disabled) {
-    opacity: 0.9;
-    box-shadow: 0 2px 8px -2px var(--color-primary-soft);
+    background: color-mix(in srgb, var(--color-primary) 88%, var(--color-fg));
 }
 
+.btn-primary:active:not(:disabled) {
+    background: color-mix(in srgb, var(--color-primary) 80%, var(--color-fg));
+}
+
+/* secondary — a filled neutral. A fill already reads as a button, so no line. */
 .btn-secondary {
     background: var(--color-surface-raised);
     color: var(--color-fg);
-    border-color: var(--color-border);
 }
 
-.btn-secondary:hover:not(:disabled) {
-    background: var(--color-surface);
-    border-color: var(--color-border-hover);
-}
+.btn-secondary:hover:not(:disabled) { background: var(--color-surface-hover); }
+.btn-secondary:active:not(:disabled) { background: var(--color-surface-active); }
 
+/* outline — a hairline on the surface it sits on; the claude.ai default. */
 .btn-outline {
     background: transparent;
     color: var(--color-fg);
-    border-color: var(--color-border);
+    border-color: var(--color-border-strong);
 }
 
-.btn-outline:hover:not(:disabled) {
-    background: var(--color-surface-raised);
-    border-color: var(--color-border-hover);
-}
+.btn-outline:hover:not(:disabled) { background: var(--color-surface-hover); }
+.btn-outline:active:not(:disabled) { background: var(--color-surface-active); }
 
+/* ghost — no chrome until touched. Toolbars, close buttons, row actions. */
 .btn-ghost {
     background: transparent;
     color: var(--color-fg);
-    border-color: transparent;
 }
 
-.btn-ghost:hover:not(:disabled) {
-    background: var(--color-surface-raised);
-}
+.btn-ghost:hover:not(:disabled) { background: var(--color-surface-hover); }
+.btn-ghost:active:not(:disabled) { background: var(--color-surface-active); }
 
 .btn-danger {
     background: var(--color-danger);
-    color: #ffffff;
-    border-color: var(--color-danger);
+    color: var(--color-on-primary);
 }
 
 .btn-danger:hover:not(:disabled) {
-    opacity: 0.9;
-    box-shadow: 0 2px 8px -2px color-mix(in srgb, var(--color-danger) 40%, transparent);
+    background: color-mix(in srgb, var(--color-danger) 88%, var(--color-fg));
+}
+
+.btn-danger:active:not(:disabled) {
+    background: color-mix(in srgb, var(--color-danger) 80%, var(--color-fg));
+}
+
+/* Press physics for the button systems that predate .btn. Each view file
+   still owns its own look; what they share is how they answer a finger, so
+   that lives here once rather than drifting per file. `scale` (the property)
+   composes with any transform the control already carries. Rows, cards and
+   nav items are deliberately absent: a full-width row that shrinks reads as
+   the page wobbling — their press is the fill the hover gate gives them. */
+:is(
+    .team-builder-button,
+    .team-builder-icon-button,
+    .team-builder-type-button,
+    .profile-button,
+    .home-button,
+    .app-shell__icon-button,
+    .pdm__iconbtn,
+    .pokedex-mobile-iconbtn,
+    .modal-close,
+    .bottom-sheet__close,
+    .show-more-button
+):not(:disabled) {
+    /* `:not(:disabled)` is here for its specificity: each view file declares its
+       own `transition` shorthand on the same single class and loads after this
+       one, which would silently drop `scale` from the list. */
+    transition-property: background-color, border-color, color, box-shadow, opacity, transform, scale;
+    transition-duration: var(--duration-fast), var(--duration-fast), var(--duration-fast), var(--duration-fast), var(--duration-fast), var(--duration-fast), var(--duration-press);
+    transition-timing-function: var(--ease-smooth), var(--ease-smooth), var(--ease-smooth), var(--ease-smooth), var(--ease-smooth), var(--ease-smooth), var(--ease-out);
+}
+
+:is(
+    .team-builder-button,
+    .team-builder-icon-button,
+    .team-builder-type-button,
+    .profile-button,
+    .home-button,
+    .app-shell__icon-button,
+    .pdm__iconbtn,
+    .pokedex-mobile-iconbtn,
+    .modal-close,
+    .bottom-sheet__close
+):active:not(:disabled) {
+    scale: var(--press-scale);
+}
+
+/* ---- Segmented control ----------------------------------------------------
+   Two to five mutually exclusive options that are all worth seeing at once
+   (claude.ai's "Mine | Discover"). A raised track; the chosen option is a
+   surface lifted onto it with the smallest shadow — not a primary fill, which
+   would spend the view's one accent on a filter, and not a border, which
+   would draw a box inside the track's box. The app had eight of these, each
+   hand-rolled differently; this is the one.
+
+   The track is exactly --control-h-md tall (or -sm), so a segmented control
+   sits flush in a toolbar beside an input or a .btn. Mark the chosen item with
+   aria-pressed (a toggle group) or aria-selected (a tablist). */
+.segmented {
+    --seg-h: var(--control-h-md);
+    display: inline-flex;
+    align-items: stretch;
+    gap: var(--space-0_5);
+    height: var(--seg-h);
+    padding: var(--space-0_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    /* A hairline drawn as an inset shadow, so it costs no layout and the
+       track still reads when it sits on a raised panel. */
+    box-shadow: inset 0 0 0 1px var(--color-border);
+    max-width: 100%;
+}
+
+.segmented--sm { --seg-h: var(--control-h-sm); }
+/* Thumb height, for a toolbar whose fields are already 44px on touch. */
+.segmented--lg { --seg-h: var(--control-h-lg); }
+
+.segmented--block { display: flex; width: 100%; }
+.segmented--block > .segmented__item { flex: 1 1 0; }
+
+.segmented__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    padding: 0 var(--space-3);
+    border: none;
+    /* Parent is --radius-md (8px); one step in, per the nesting rule. */
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.segmented--sm .segmented__item {
+    padding: 0 var(--space-2_5);
+    font-size: var(--text-xs);
+}
+
+.segmented__item svg { width: 0.875rem; height: 0.875rem; flex-shrink: 0; }
+
+.segmented__item:hover { color: var(--color-fg); }
+
+.segmented__item[aria-pressed='true'],
+.segmented__item[aria-selected='true'],
+.segmented__item.is-active {
+    background: var(--color-surface-elevated);
+    color: var(--color-fg);
+    box-shadow: var(--shadow-sm);
+}
+
+.segmented__item:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* A count riding inside a segment or a tab ("Mine 11"). Figures are
+   structure, so mono and tabular. */
+.count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.125rem;
+    height: 1.125rem;
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-fg) 8%, transparent);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+/* ---- Underlined tabs ------------------------------------------------------
+   Sections of one object ("Overview | Content"). The rule under the strip is
+   an inset shadow and the indicator is drawn inside each tab, so an
+   `overflow-x: auto` strip never clips its own underline. The indicator is
+   the foreground, not the primary: a tab strip is navigation, and the view's
+   one accent belongs to its action. It grows from the centre on the entrance
+   curve, so switching tabs has a direction without a sliding bar that needs
+   JavaScript to measure. */
+.tabs {
+    display: flex;
+    align-items: stretch;
+    gap: var(--space-5);
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    box-shadow: inset 0 -1px 0 var(--color-border);
+}
+
+.tabs::-webkit-scrollbar { display: none; }
+
+.tabs__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    flex-shrink: 0;
+    height: 2.5rem;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-muted);
+    font-family: inherit;
+    font-size: var(--text-base);
+    font-weight: 500;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.tabs__item svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+
+.tabs__item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: var(--radius-full);
+    background: var(--color-fg);
+    transform: scaleX(0);
+    transition: transform var(--duration-slow) var(--ease-out);
+}
+
+.tabs__item:hover { color: var(--color-fg); }
+
+.tabs__item[aria-selected='true'],
+.tabs__item.is-active {
+    color: var(--color-fg);
+}
+
+.tabs__item[aria-selected='true']::after,
+.tabs__item.is-active::after {
+    transform: scaleX(1);
 }
 
 /* Badge Base & Variants */
@@ -745,30 +1041,6 @@ input[type='checkbox']:checked + div + div {
     border-color: var(--color-border);
     background: transparent;
     color: var(--color-muted);
-}
-
-/* Clean Inputs (Ref 2 style) */
-.input-clean {
-    width: 100%;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface);
-    color: var(--color-fg);
-    padding: var(--space-2) var(--space-3);
-    font-size: 0.875rem;
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth);
-}
-
-.input-clean::placeholder {
-    color: var(--color-muted);
-}
-
-.input-clean:focus-visible,
-.input-clean:focus {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
-    outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -967,10 +1239,17 @@ input[type='checkbox']:checked + div + div {
    set its width and its content, nothing else.
    ============================================================ */
 
+/* z-index at zero specificity, so a dialog that must stack above another
+   (ShareSnippetModal's z-[60], BadgeUnlockModal's z-[100]) can say so with a
+   utility. As a plain `.modal-scrim` rule it sat after `@tailwind utilities`
+   and silently beat them — both overrides had never taken effect. */
+:where(.modal-scrim) {
+    z-index: var(--z-modal);
+}
+
 .modal-scrim {
     position: fixed;
     inset: 0;
-    z-index: var(--z-modal);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -991,10 +1270,11 @@ input[type='checkbox']:checked + div + div {
     padding-block: var(--space-8);
 }
 
-/* Under lg the fixed mobile tab bar owns the bottom band of the screen. Reserve
-   it here so a panel's footer — the row carrying its primary action — can never
-   land underneath the bar. Mirrors the reservation .app-shell__content makes. */
-@media (max-width: 1023px) {
+/* Between the phone sheet and desktop, the fixed tab bar owns the bottom band
+   of the screen. Reserve it so a centred panel's footer never *looks* as if it
+   sits on the bar. (Below sm the dialog is a sheet that covers the bar, as a
+   native sheet does — the scrim already paints above it, z 50 over 25.) */
+@media (min-width: 640px) and (max-width: 1023px) {
     .modal-scrim {
         padding-bottom: calc(
             var(--app-shell-tab-height) + var(--space-4)
@@ -1031,8 +1311,21 @@ input[type='checkbox']:checked + div + div {
     animation: modal-panel-in var(--duration-slow) var(--ease-out-expo);
 }
 
+/* The panel takes focus when it opens (useModalA11y), and the global
+   :focus-visible rule would swap its elevation for the focus ring — a purple
+   outline round every dialog that opened on its own. The panel is a
+   container, not a control; keep its shadow. */
 .modal-panel:focus,
-.modal-panel:focus-visible { outline: none; }
+.modal-panel:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-xl);
+}
+
+.bottom-sheet__panel:focus,
+.bottom-sheet__panel:focus-visible {
+    outline: none;
+    box-shadow: var(--shadow-lg);
+}
 
 /* The scrollable scrim exists precisely so a panel may exceed the viewport —
    capping it against the scrim would defeat that. */
@@ -1108,15 +1401,23 @@ input[type='checkbox']:checked + div + div {
     padding: 0 var(--space-5) var(--space-5);
 }
 
-/* A fill, not a border — the panel already owns the only line in this box. */
+/* No band. The claude.ai dialogs end in their buttons, right-aligned, with the
+   body's whitespace above them — a tinted footer strip is the Bootstrap tell.
+   The panel owns the only line in this box, and nothing else draws one. */
 .modal-footer {
     display: flex;
     align-items: center;
     justify-content: flex-end;
     gap: var(--space-2);
     flex-shrink: 0;
-    padding: var(--space-4) var(--space-5);
-    background: var(--color-surface-raised);
+    padding: var(--space-2) var(--space-5) var(--space-5);
+}
+
+/* For a dialog whose body scrolls under its actions: the one line that earns
+   its place, separating content that moves from buttons that do not. */
+.modal-footer--ruled {
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
 }
 
 @media (max-width: 640px) {
@@ -1134,9 +1435,9 @@ input[type='checkbox']:checked + div + div {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 1.875rem;
-    height: 1.875rem;
-    margin: calc(var(--space-0_5) * -1) calc(var(--space-1) * -1) 0 0;
+    width: 2rem;
+    height: 2rem;
+    margin: calc(var(--space-1) * -1) calc(var(--space-1_5) * -1) 0 0;
     border: none;
     border-radius: var(--radius-md);
     background: transparent;
@@ -1152,6 +1453,107 @@ input[type='checkbox']:checked + div + div {
 }
 
 .modal-close svg { width: 1rem; height: 1rem; }
+
+/* ---- Leaving ---------------------------------------------------------------
+   useModalA11y puts an inert copy of a closing dialog back in the document with
+   `.is-exiting`, so every dialog leaves on an animation instead of blinking out
+   (see leaveOnExitAnimation). The scrim fades its *background*, not its
+   opacity — the panel is its child, and opacity would drag the panel's own
+   exit along with it. Exits run faster than entrances: arriving needs to be
+   seen, leaving only needs to not jump. */
+.modal-scrim.is-exiting,
+.bottom-sheet.is-exiting {
+    pointer-events: none;
+    animation: scrim-out var(--duration-fast) var(--ease-smooth) forwards;
+}
+
+.modal-scrim.is-exiting > .modal-panel {
+    animation: modal-panel-out var(--duration-fast) var(--ease-smooth) forwards;
+}
+
+/* A dialog that brings its own panel (GameCover) still leaves as one piece. */
+.modal-scrim.is-exiting > :not(.modal-panel) {
+    animation: fade-out var(--duration-fast) var(--ease-smooth) forwards;
+}
+
+.bottom-sheet.is-exiting { animation: none; }
+.bottom-sheet.is-exiting > .bottom-sheet__backdrop {
+    animation: fade-out var(--duration-slow) var(--ease-smooth) forwards;
+}
+.bottom-sheet.is-exiting > .bottom-sheet__panel {
+    animation: sheet-out var(--duration-slow) var(--ease-drawer) forwards;
+}
+
+@keyframes scrim-out {
+    to { background-color: transparent; backdrop-filter: blur(0); -webkit-backdrop-filter: blur(0); }
+}
+
+@keyframes modal-panel-out {
+    to { opacity: 0; transform: translateY(4px) scale(0.985); }
+}
+
+@keyframes fade-out {
+    to { opacity: 0; }
+}
+
+@keyframes sheet-in {
+    from { transform: translateY(100%); }
+    to   { transform: translateY(0); }
+}
+
+@keyframes sheet-out {
+    to { transform: translateY(100%); }
+}
+
+/* ---- Phones: every dialog is a sheet ---------------------------------------
+   Below sm a centred card with a gutter on all sides is a desktop dialog
+   shrunk onto a phone. The native shape is a sheet: full width, anchored to
+   the bottom edge where the thumb already is, rising on the drawer curve, with
+   a grabber that says it can be pulled down — and it can (useModalA11y drags
+   it by the top strip). The safe-area inset is padding inside the sheet, so
+   the last button clears the home indicator and the fill still runs to the
+   screen edge. */
+@media (max-width: 639px) {
+    .modal-scrim,
+    .modal-scrim.is-scrollable {
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: calc(env(safe-area-inset-top, 0px) + var(--space-8)) 0 0;
+    }
+
+    .modal-panel {
+        /* Pushed to the bottom when short; when taller than the screen the
+           margin collapses to 0 and the scrollable scrim scrolls it, so the top
+           is never clipped out of reach (the failure a flex-end would cause). */
+        margin-top: auto;
+        max-width: none;
+        border-width: 1px 0 0;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+        animation: sheet-in var(--duration-entrance) var(--ease-drawer);
+    }
+
+    /* The grabber. A flex item at the top of the column, so it reserves its own
+       strip instead of sitting on top of whatever the dialog's header is. */
+    .modal-panel::before {
+        content: '';
+        flex-shrink: 0;
+        align-self: center;
+        width: 2.25rem;
+        height: var(--space-1);
+        margin: var(--space-2) 0 var(--space-1);
+        border-radius: var(--radius-full);
+        background: var(--color-border-strong);
+    }
+
+    /* Named width steps are a desktop idea; a sheet is always the screen. */
+    .modal-panel[class*='modal-panel--'] { max-width: none; }
+
+    .modal-scrim.is-exiting > .modal-panel {
+        animation: sheet-out var(--duration-slow) var(--ease-drawer) forwards;
+    }
+}
 
 /* ============================================================
    MENU / POPOVER SURFACE
@@ -1245,7 +1647,7 @@ input[type='checkbox']:checked + div + div {
 .dmg-select {
     width: 100%;
     min-width: 0;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-md);
     background: var(--color-surface);
     color: var(--color-fg);
@@ -1261,7 +1663,7 @@ input[type='checkbox']:checked + div + div {
 .select-clean,
 .team-builder-select,
 .dmg-select {
-    height: 2.25rem;
+    height: var(--control-h-md);
     padding: 0 var(--space-3);
 }
 
@@ -1278,7 +1680,9 @@ input[type='checkbox']:checked + div + div {
 .select-clean:hover:not(:disabled),
 .textarea-clean:hover:not(:disabled),
 .team-builder-select:hover:not(:disabled),
-.dmg-select:hover:not(:disabled) { border-color: var(--color-border-hover); }
+.dmg-select:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-fg) 26%, var(--color-surface));
+}
 
 .input-clean:focus,
 .input-clean:focus-visible,

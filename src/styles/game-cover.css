@@ -75,10 +75,8 @@
 }
 
 .game-cover__eyebrow {
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    font-size: var(--text-xs);
+    font-weight: 600;
     color: var(--color-muted);
 }
 

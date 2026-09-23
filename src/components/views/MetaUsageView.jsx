@@ -266,23 +266,25 @@ export function MetaUsageView() {
             {/* Tabs. Only two views exist for a VGC regulation; a Smogon tier has
                 one, because the tournament-team dataset behind "Common teams" is
                 a VGC sample and would list VGC teams under, say, Gen 8 Ubers. */}
-            <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className={`mb-4 flex gap-1 border-b border-border ${isTier ? 'hidden' : ''}`}>
-                {[
-                    { id: 'usage', label: pt ? 'Uso' : 'Usage' },
-                    { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
-                ].map((tb) => (
-                    <button
-                        key={tb.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={tab === tb.id}
-                        onClick={() => setTab(tb.id)}
-                        className={`rounded-t-lg border-b-2 px-4 py-2 text-sm font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${tab === tb.id ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-fg'}`}
-                    >
-                        {tb.label}
-                    </button>
-                ))}
-            </div>
+            {!isTier && (
+                <div role="tablist" aria-label={pt ? 'Visões do meta' : 'Meta views'} className="tabs mb-4">
+                    {[
+                        { id: 'usage', label: pt ? 'Uso' : 'Usage' },
+                        { id: 'teams', label: pt ? 'Times comuns' : 'Common teams' },
+                    ].map((tb) => (
+                        <button
+                            key={tb.id}
+                            type="button"
+                            role="tab"
+                            aria-selected={tab === tb.id}
+                            onClick={() => setTab(tb.id)}
+                            className="tabs__item"
+                        >
+                            {tb.label}
+                        </button>
+                    ))}
+                </div>
+            )}
 
             {/* Toolbar, in two rows on a phone. Row one is the context
                 everything below depends on — which ladder, at which rating —
@@ -321,7 +323,7 @@ export function MetaUsageView() {
                     </div>
                 )}
                 {tab === 'usage' && (
-                    <div className="inline-flex self-stretch overflow-hidden rounded-xl border border-border" role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
+                    <div className="segmented segmented--lg" role="group" aria-label={pt ? 'Ordenar por' : 'Sort by'}>
                         {[
                             { id: 'usage', label: pt ? 'Uso' : 'Usage' },
                             ...(hasWinRates ? [{ id: 'wr', label: pt ? 'Vitórias' : 'Win rate' }] : []),
@@ -332,7 +334,7 @@ export function MetaUsageView() {
                                 type="button"
                                 onClick={() => setSortMode(s.id)}
                                 aria-pressed={sortMode === s.id}
-                                className={`min-h-11 px-3 py-2 text-xs font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${sortMode === s.id ? 'bg-primary text-on-primary' : 'bg-surface text-muted hover:bg-surface-hover hover:text-fg'}`}
+                                className="segmented__item"
                             >
                                 {s.label}
                             </button>
@@ -433,7 +435,7 @@ export function MetaUsageView() {
                                             {mon.pct}% {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
                                         </span>
                                         {Number.isFinite(mon.winRate) && (
-                                            <span className="text-[10px] font-semibold tabular-nums text-muted/80">
+                                            <span className="text-[10px] font-semibold tabular-nums text-muted">
                                                 {mon.winRate}% {pt ? 'vit' : 'WR'}
                                             </span>
                                         )}

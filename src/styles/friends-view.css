@@ -9,55 +9,10 @@
 }
 
 /* ── Tabs ─────────────────────────────────────────────────────────── */
-
-.friends-tabs {
-    display: flex;
-    gap: var(--space-2);
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--space-2);
-    overflow-x: auto;
-}
-
-.friends-tab {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3_5);
-    border-radius: var(--radius-md);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-muted);
-    white-space: nowrap;
-    transition: color var(--duration-fast) var(--ease-smooth),
-        background-color var(--duration-fast) var(--ease-smooth);
-}
-
-.friends-tab:hover {
-    color: var(--color-fg);
-    background: var(--color-surface-raised);
-}
-
-.friends-tab.is-active {
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-}
-
-.friends-tab__count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    padding: 0 var(--space-1);
-    border-radius: var(--radius-full);
-    background: var(--color-surface-raised);
-    font-size: 0.625rem;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-    color: var(--color-muted);
-}
-
-.friends-tab__count--alert {
+/* The strip and its counters are the shared .tabs / .count-badge (index.css).
+   A pending request is the one count that asks for action, so it alone is
+   filled. */
+.friends-count--alert {
     background: var(--color-primary);
     color: var(--color-on-primary);
 }
@@ -78,10 +33,8 @@
 
 .friends-section-title {
     margin: 0;
-    font-size: 0.688rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: var(--text-xs);
+    font-weight: 600;
     color: var(--color-muted);
 }
 

@@ -85,14 +85,14 @@ export function SpeedTiersView({ generations = [] }) {
     return (
         <div className="ref-view">
             <div className="spd-controls">
-                <div className="spd-seg" role="tablist" aria-label={t('tools.speedStat')}>
+                <div className="segmented" role="tablist" aria-label={t('tools.speedStat')}>
                     {Object.values(SPREADS).map((s) => (
                         <button
                             key={s.key}
                             type="button"
                             role="tab"
                             aria-selected={spreadKey === s.key}
-                            className={`spd-seg__btn ${spreadKey === s.key ? 'is-active' : ''}`}
+                            className="segmented__item"
                             onClick={() => setSpreadKey(s.key)}
                         >
                             {t(`tools.${s.key}`)}

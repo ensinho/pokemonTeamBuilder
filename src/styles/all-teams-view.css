@@ -393,12 +393,6 @@
     margin-left: auto;
 }
 
-/* Layout toggle */
-.all-teams-view__layout-toggle button {
-    border: 1px solid transparent;
-    cursor: pointer;
-}
-
 @media (max-width: 1023px) {
     .all-teams-view__list-item-main {
         flex-direction: column;

@@ -126,7 +126,7 @@
     background: var(--color-bg);
     border: 1px solid var(--color-border);
 }
-.pdv__fact-label { font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-muted); }
+.pdv__fact-label { font-size: var(--text-xs); color: var(--color-muted); }
 .pdv__fact-value { font-weight: 700; font-size: 0.875rem; color: var(--color-fg); text-transform: capitalize; }
 
 .pdv__cta {
@@ -175,7 +175,7 @@
 
 .pdv__matchups { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
 @media (max-width: 520px) { .pdv__matchups { grid-template-columns: 1fr; } }
-.pdv__matchup-label { font-size: 0.6875rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: var(--space-2); }
+.pdv__matchup-label { font-size: var(--text-xs); font-weight: 600; margin-bottom: var(--space-2); }
 .pdv__matchup-label--weak { color: var(--color-danger); }
 .pdv__matchup-label--resist { color: var(--color-success); }
 .pdv__badges { display: flex; flex-wrap: wrap; gap: var(--space-1_5); }

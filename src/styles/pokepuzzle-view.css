@@ -134,10 +134,8 @@
 }
 
 .pokepuzzle-tip-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-size: var(--text-xs);
+    font-weight: 600;
     color: var(--color-muted);
 }
 
@@ -652,10 +650,8 @@
 }
 
 .pokepuzzle-header-countdown-label {
-    font-size: 0.6rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: var(--text-xs);
+    font-weight: 600;
     color: var(--color-muted);
 }
 

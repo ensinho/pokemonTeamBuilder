@@ -33,24 +33,30 @@
     overflow: hidden;
 }
 
+/* The drawer's scrim: the shared one (index.css --scrim), not a sixth shade of
+   black. Always in the DOM so it can fade *out* with the drawer; hidden by
+   visibility once transparent, so it never swallows a tap. Moves on the drawer
+   curve and duration — the two are one gesture. */
 .app-shell__overlay {
     position: fixed;
     inset: 0;
     z-index: var(--z-overlay);
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    animation: app-shell-fade-in var(--duration-fast) var(--ease-smooth) forwards;
+    background: var(--scrim);
+    backdrop-filter: blur(var(--scrim-blur));
+    -webkit-backdrop-filter: blur(var(--scrim-blur));
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity var(--duration-entrance) var(--ease-drawer),
+                visibility 0s linear var(--duration-entrance);
 }
 
-@keyframes app-shell-fade-in {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+.app-shell__overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity var(--duration-entrance) var(--ease-drawer),
+                visibility 0s linear 0s;
 }
 
 .app-shell__sidebar {
@@ -64,7 +70,10 @@
     overflow: hidden;
     border-right: 1px solid var(--color-border);
     background: var(--color-surface);
-    transition: width var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+    /* A drawer slides on the drawer curve at entrance speed, as a native one
+       does; 150ms on the hover curve made it snap in like a dropdown. Width
+       (the desktop collapse) stays a quick state change. */
+    transition: width var(--duration-fast) var(--ease-smooth), transform var(--duration-entrance) var(--ease-drawer);
 }
 
 .app-shell__sidebar.is-open {
@@ -912,10 +921,8 @@
 
 .app-shell__account-popover-label {
     margin: 0 0 var(--space-2);
-    font-size: 0.625rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
     color: var(--color-muted);
 }
 
@@ -1123,10 +1130,8 @@
 
 .app-shell__account-subline {
     margin: var(--space-0_5) 0 0;
-    font-size: 0.65rem;
+    font-size: var(--text-xs);
     font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
     color: var(--color-muted);
 }
 
@@ -1188,8 +1193,7 @@
 }
 
 .app-shell__account-popover.is-header .app-shell__account-lang-btn {
-    padding: var(--space-1);
-    font-size: 0.72rem;
+    padding: 0 var(--space-1);
 }
 
 /* One-line rationale under a settings row — used where the setting's name isn't
@@ -1202,10 +1206,19 @@
     color: var(--color-muted);
 }
 
+/* Language and Tera rows are two-option choices inside a bordered popover —
+   so they are the shared segmented track (index.css .segmented), restated for
+   this markup: a raised track, the chosen option lifted onto it. They used to
+   be bordered buttons with a primary-bordered active one: a box in a box, with
+   the popover's one accent spent on a setting. */
 .app-shell__account-language-row {
     display: flex;
-    gap: var(--space-1_5);
+    gap: var(--space-0_5);
     width: 100%;
+    padding: var(--space-0_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    box-shadow: inset 0 0 0 1px var(--color-border);
 }
 
 .app-shell__account-lang-btn {
@@ -1213,33 +1226,32 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-1_5);
-    font-size: 0.75rem;
-    font-weight: 600;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    color: var(--color-fg);
+    min-height: var(--control-h-sm);
+    padding: 0 var(--space-2);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-muted);
     cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
 .app-shell__account-lang-btn:hover {
-    border-color: var(--color-border-hover);
+    color: var(--color-fg);
 }
 
 .app-shell__account-lang-btn.is-active {
-    border-color: var(--color-primary);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+    background: var(--color-surface-elevated);
+    color: var(--color-fg);
+    box-shadow: var(--shadow-sm);
 }
 
 .app-shell__account-signout {
     padding: var(--space-1_5) var(--space-2_5);
-    font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: var(--text-sm);
+    font-weight: 500;
 }
 
 .app-shell__icon-button {
@@ -1919,7 +1931,7 @@
     justify-content: center;
     height: 1.5rem;
     width: 1.5rem;
-    transition: transform var(--duration-fast) var(--ease-smooth);
+    transition: transform var(--duration-press) var(--ease-out);
 }
 
 /* 24px glyphs over a light 10px label: the proportions of a native tab bar. */

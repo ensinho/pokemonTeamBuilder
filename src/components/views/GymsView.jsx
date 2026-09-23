@@ -716,7 +716,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                     <div className="border-b border-border pb-2">
                                         <h2 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
                                             <span>{pt ? 'Líderes de Ginásio' : 'Gym Leaders'}</span>
-                                            <span className="text-xs font-normal text-muted/60">({gymLeaders.length})</span>
+                                            <span className="text-xs font-normal text-muted">({gymLeaders.length})</span>
                                         </h2>
                                     </div>
                                     <div className="space-y-4">
@@ -732,7 +732,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                         <h2 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
                                             <Trophy className="h-4 w-4 text-primary" />
                                             <span>{pt ? 'Elite dos Quatro & Campeão' : 'Elite Four & Champion'}</span>
-                                            <span className="text-xs font-normal text-primary/60">({eliteFourAndChamp.length})</span>
+                                            <span className="text-xs font-normal text-primary">({eliteFourAndChamp.length})</span>
                                         </h2>
                                     </div>
                                     <div className="space-y-4">

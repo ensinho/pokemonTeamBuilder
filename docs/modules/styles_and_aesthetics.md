@@ -102,16 +102,27 @@ Utility classes `.elevation-1`, `.elevation-2`, `.elevation-3` are available glo
 ### Motion Tokens
 
 ```
---ease-smooth:    cubic-bezier(0.4, 0, 0.2, 1)    Default transitions
+--ease-smooth:    cubic-bezier(0.4, 0, 0.2, 1)    Default — state changes (hover, colour, fill)
+--ease-out:       cubic-bezier(0.23, 1, 0.32, 1)  Presses and anything answering one
+--ease-drawer:    cubic-bezier(0.32, 0.72, 0, 1)  Sheets and the drawer (the iOS sheet curve)
 --ease-bounce:    cubic-bezier(0.34, 1.56, 0.64, 1) Spring/bounce entrances
 --ease-spring:    cubic-bezier(0.175, 0.885, 0.32, 1.275)
---ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1)   Fast exits, sprite reveals
+--ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1)   Sprite reveals
 
---duration-fast:     150ms   Hover states, micro-interactions
+--duration-press:    100ms   Press feedback
+--duration-fast:     150ms   Hover states, micro-interactions, dialog exits
 --duration-normal:   150ms   Standard transitions
 --duration-slow:     250ms   Sprite reveals, card entrances
---duration-entrance: 350ms   Page transitions, modal opens
+--duration-entrance: 350ms   Sheets and the drawer sliding in
+
+--press-scale:       0.97    How far a pressed button sinks (via the `scale` property)
+--control-h-sm/md/lg 1.75 / 2.25 / 2.75rem — shared by buttons, inputs, segmented controls
 ```
+
+**Hover is gated by the build.** `scripts/lib/postcssHoverGate.mjs` (wired in
+`postcss.config.js`) moves every hand-written `:hover` into
+`@media (hover: hover) and (pointer: fine)` and re-emits its fill/colour
+declarations on `:active` for touch devices. See `docs/wounds.md`, 2026-09-22.
 
 ---
 
@@ -122,15 +133,37 @@ These utility classes are defined in `src/index.css` and available everywhere.
 ### Buttons
 
 ```css
-.btn              Base — use with a variant modifier
-.btn-primary      Solid primary color, white text
-.btn-secondary    Surface-raised background, bordered
-.btn-outline      Transparent background, bordered
-.btn-ghost        No background, no border — icon buttons
-.btn-danger       Red background — destructive actions
+.btn              Base — use with a voice
+.btn-primary      Solid primary fill — the view's one affirmative action
+.btn-secondary    Raised fill, no line
+.btn-outline      Hairline (--color-border-strong) on the surface it sits on
+.btn-ghost        No chrome until touched — toolbars, row actions, close
+.btn-danger       Solid danger fill — destructive actions
+.btn-sm / .btn-lg Size (height from --control-h-*)
+.btn-icon         Square, icon only (give it an aria-label)
+.btn-block        Full width
 ```
 
-All `.btn` variants include: `active:scale(0.98)`, disabled opacity/pointer-events, smooth transitions.
+Hover mixes the fill toward `--color-fg` (lighter on dark themes, deeper on light).
+Press sinks by `--press-scale` on `--ease-out`. `.btn` rules sit after
+`@tailwind utilities`, so a utility on the same element loses — use the modifiers.
+
+### Segmented control, tabs, counts
+
+```css
+.segmented             Raised track; chosen item lifted onto it (aria-pressed / aria-selected)
+.segmented--sm/--lg/--block
+.tabs > .tabs__item    Underlined tabs, indicator in --color-fg (aria-selected)
+.count-badge           Mono tabular count inside a tab or segment
+```
+
+### Dialogs
+
+`.modal-scrim` > `.modal-panel` (`--sm` … `--full`), with `.modal-header`,
+`.modal-title`, `.modal-subtitle`, `.modal-close`, `.modal-body`, `.modal-footer`
+(`--ruled` when the body scrolls under it). Put `ref={useModalA11y(onClose)}` on the
+panel: it handles Escape, focus in and out, drag-to-dismiss on phones and an exit
+animation. Below 640px every panel is a bottom sheet with a grabber.
 
 ### Badges
 
@@ -158,7 +191,10 @@ mixed toward `--color-fg` — so one chip is legible on all six themes. See
 ### Inputs
 
 ```css
-.input-clean      Full-width, themed border, primary focus ring with soft glow
+.field > .field-label       Label above a control
+.input-clean / .select-clean / .textarea-clean
+                            One height (--control-h-md), --color-border-strong edge,
+                            inset primary ring on focus (never nudges the row)
 ```
 
 ---

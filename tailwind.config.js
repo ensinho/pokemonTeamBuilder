@@ -1,3 +1,22 @@
+/**
+ * A theme colour that also answers Tailwind's opacity modifier.
+ *
+ * The colours are CSS variables holding hex values, which Tailwind 3 cannot
+ * split into channels — so `bg-primary/15`, `hover:bg-surface-raised/60` or
+ * `border-primary/40` compiled to *nothing at all*. 88 of them sat in the
+ * components doing nothing: tinted badges with no tint, hover states with no
+ * hover. Returning a function lets Tailwind hand us the opacity, and
+ * `color-mix()` applies it to the variable at runtime, so it still follows the
+ * theme. A plain `bg-primary` (no modifier) stays the bare variable.
+ */
+const themeColor = (name) => ({ opacityValue }) => {
+    if (opacityValue === undefined || String(opacityValue).startsWith('var(')) {
+        return `var(${name})`;
+    }
+    const pct = Math.round(parseFloat(opacityValue) * 1000) / 10;
+    return `color-mix(in srgb, var(${name}) ${pct}%, transparent)`;
+};
+
 /** @type {import('tailwindcss').Config} */
 export default {
     content: [
@@ -24,27 +43,31 @@ export default {
             // is then a single attribute flip — no JS-driven inline styles
             // required for new code.
             colors: {
-                primary: 'var(--color-primary)',
-                'primary-soft': 'var(--color-primary-soft)',
-                accent: 'var(--color-accent)',
-                'accent-soft': 'var(--color-accent-soft)',
-                bg: 'var(--color-bg)',
-                surface: 'var(--color-surface)',
-                'surface-raised': 'var(--color-surface-raised)',
+                primary: themeColor('--color-primary'),
+                'primary-soft': themeColor('--color-primary-soft'),
+                accent: themeColor('--color-accent'),
+                'accent-soft': themeColor('--color-accent-soft'),
+                bg: themeColor('--color-bg'),
+                surface: themeColor('--color-surface'),
+                'surface-raised': themeColor('--color-surface-raised'),
                 // Interaction fills. Defined in index.css and already used by the
                 // hand-written CSS; exposed here so Tailwind-only components
                 // (the meta views) separate rows with a fill instead of
                 // hand-rolling a tint — the drift the design system forbids.
-                'surface-hover': 'var(--color-surface-hover)',
-                'surface-active': 'var(--color-surface-active)',
-                'on-primary': 'var(--color-on-primary)',
-                fg: 'var(--color-fg)',
-                muted: 'var(--color-muted)',
-                border: 'var(--color-border)',
-                success: 'var(--color-success)',
-                danger: 'var(--color-danger)',
-                warning: 'var(--color-warning)',
-                info: 'var(--color-info)',
+                'surface-hover': themeColor('--color-surface-hover'),
+                'surface-active': themeColor('--color-surface-active'),
+                'on-primary': themeColor('--color-on-primary'),
+                fg: themeColor('--color-fg'),
+                muted: themeColor('--color-muted'),
+                border: themeColor('--color-border'),
+                // The visible edge of a control, and the lifted segment of a
+                // track — see the tokens' notes in src/index.css.
+                'border-strong': themeColor('--color-border-strong'),
+                'surface-elevated': themeColor('--color-surface-elevated'),
+                success: themeColor('--color-success'),
+                danger: themeColor('--color-danger'),
+                warning: themeColor('--color-warning'),
+                info: themeColor('--color-info'),
             },
             fontFamily: {
                 // Main fonts

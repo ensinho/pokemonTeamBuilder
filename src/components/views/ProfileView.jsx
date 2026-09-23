@@ -429,18 +429,20 @@ export function ProfileView({
                         subtitle={t('profile.sectionLanguageDesc')}
                         icon={<GlobeIcon className="w-5 h-5" />}
                     >
-                        <div className="profile-button-row">
+                        <div className="segmented segmented--block" role="group" aria-label={t('profile.sectionLanguage')}>
                             <button
                                 type="button"
                                 onClick={() => onChangeLanguage('en')}
-                                className={`profile-button ${language === 'en' ? 'profile-button--primary' : ''}`}
+                                aria-pressed={language === 'en'}
+                                className="segmented__item"
                             >
                                 English
                             </button>
                             <button
                                 type="button"
                                 onClick={() => onChangeLanguage('pt')}
-                                className={`profile-button ${language === 'pt' ? 'profile-button--primary' : ''}`}
+                                aria-pressed={language === 'pt'}
+                                className="segmented__item"
                             >
                                 Português (pt-BR)
                             </button>
@@ -454,12 +456,12 @@ export function ProfileView({
                         subtitle={t('profile.sectionTeraDesc')}
                         icon={<SparklesIcon className="w-5 h-5" />}
                     >
-                        <div className="profile-button-row">
+                        <div className="segmented segmented--block" role="group" aria-label={t('profile.sectionTeraTitle')}>
                             <button
                                 type="button"
                                 onClick={() => onChangeShowTeraType(true)}
                                 aria-pressed={showTeraType}
-                                className={`profile-button ${showTeraType ? 'profile-button--primary' : ''}`}
+                                className="segmented__item"
                             >
                                 {t('accountMenu.teraTypeShow')}
                             </button>
@@ -467,7 +469,7 @@ export function ProfileView({
                                 type="button"
                                 onClick={() => onChangeShowTeraType(false)}
                                 aria-pressed={!showTeraType}
-                                className={`profile-button ${!showTeraType ? 'profile-button--primary' : ''}`}
+                                className="segmented__item"
                             >
                                 {t('accountMenu.teraTypeHide')}
                             </button>

@@ -20,7 +20,7 @@ export function TypeMatchToggle({ value, onChange, className = '' }) {
 
     return (
         <div
-            className={`type-match-toggle ${className}`.trim()}
+            className={`segmented type-match-toggle ${className}`.trim()}
             role="group"
             aria-label={t('pokedex.typeMatchLabel')}
         >
@@ -29,7 +29,7 @@ export function TypeMatchToggle({ value, onChange, className = '' }) {
                     key={mode}
                     type="button"
                     onClick={() => onChange?.(mode)}
-                    className="type-match-toggle__option"
+                    className="segmented__item"
                     aria-pressed={active === mode}
                     title={hint}
                 >

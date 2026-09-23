@@ -672,7 +672,7 @@ export function TeamBuilderView({
                     </section>
 
                     <section className="team-builder-panel p-4">
-                        <div role="tablist" aria-label={t('builder.analysisTitle')} className="flex gap-1 border-b border-border">
+                        <div role="tablist" aria-label={t('builder.analysisTitle')} className="tabs">
                             {[
                                 { id: 'analysis', label: t('builder.analysisTitle') },
                                 // Meta threats are ranked by competitive usage — no tab in playthrough mode.
@@ -684,7 +684,7 @@ export function TeamBuilderView({
                                     role="tab"
                                     aria-selected={analysisTab === tb.id}
                                     onClick={() => setAnalysisTab(tb.id)}
-                                    className={`-mb-px border-b-2 px-3 py-1.5 text-[13px] font-bold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${analysisTab === tb.id ? 'border-primary text-primary' : 'border-transparent text-muted hover:text-fg'}`}
+                                    className="tabs__item"
                                 >
                                     {tb.label}
                                 </button>

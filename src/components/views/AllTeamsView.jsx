@@ -74,7 +74,7 @@ const TeamRowActions = ({ team, onEdit, onToggleFavorite, onExport, onShare, req
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className={`btn btn-outline !p-2 ${isOpen ? 'is-active' : ''}`}
+                className={`btn btn-outline btn-icon ${isOpen ? 'is-active' : ''}`}
                 aria-label={language === 'pt' ? 'Mais ações' : 'More actions'}
                 aria-expanded={isOpen}
                 title={language === 'pt' ? 'Ações' : 'Actions'}
@@ -206,15 +206,11 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                             </button>
                         ) : null}
 
-                        <div className="all-teams-view__layout-toggle flex items-center gap-1 bg-surface-raised p-1 rounded-md border border-border">
+                        <div className="all-teams-view__layout-toggle segmented" role="group" aria-label={language === 'pt' ? 'Visualização' : 'Layout'}>
                             <button
                                 type="button"
                                 onClick={() => setLayoutMode('grid')}
-                                className={`touch-target touch-target--y px-2 py-1 rounded text-xs font-semibold transition-all ${
-                                    layoutMode === 'grid'
-                                        ? 'bg-surface text-primary border border-border shadow-sm'
-                                        : 'text-muted hover:text-fg'
-                                }`}
+                                className="segmented__item touch-target touch-target--y"
                                 aria-pressed={layoutMode === 'grid'}
                             >
                                 {language === 'pt' ? 'Grade' : 'Grid'}
@@ -222,11 +218,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                             <button
                                 type="button"
                                 onClick={() => setLayoutMode('list')}
-                                className={`touch-target touch-target--y px-2 py-1 rounded text-xs font-semibold transition-all ${
-                                    layoutMode === 'list'
-                                        ? 'bg-surface text-primary border border-border shadow-sm'
-                                        : 'text-muted hover:text-fg'
-                                }`}
+                                className="segmented__item touch-target touch-target--y"
                                 aria-pressed={layoutMode === 'list'}
                             >
                                 {language === 'pt' ? 'Lista' : 'List'}
@@ -289,7 +281,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                              <button
                                                  type="button"
                                                  onClick={() => viewTeam(team)}
-                                                 className="btn btn-outline !p-2"
+                                                 className="btn btn-ghost btn-icon btn-sm touch-target"
                                                  title={language === 'pt' ? 'Visualizar time' : 'View team'}
                                              >
                                                  <Eye className="w-4 h-4" />
@@ -297,7 +289,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                              <button
                                                  type="button"
                                                  onClick={() => onEdit(team)}
-                                                 className="btn btn-outline !p-2"
+                                                 className="btn btn-ghost btn-icon btn-sm touch-target"
                                                  title={t('common.edit')}
                                              >
                                                  <Pencil className="w-4 h-4" />
@@ -306,7 +298,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  type="button"
                                                  onClick={() => onDuplicate?.(team)}
                                                  aria-label={t('savedTeams.duplicateTitle')}
-                                                 className="btn btn-outline !p-2"
+                                                 className="btn btn-ghost btn-icon btn-sm touch-target"
                                                  title={t('savedTeams.duplicateTitle')}
                                              >
                                                  <Copy className="w-4 h-4" />
@@ -317,7 +309,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                      <button
                                                          type="button"
                                                          onClick={() => setActiveTeamId(isActive ? null : team.id)}
-                                                         className={`btn !p-2 ${isActive ? 'btn-primary' : 'btn-outline'}`}
+                                                         className={`btn btn-icon btn-sm touch-target ${isActive ? 'btn-primary' : 'btn-ghost'}`}
                                                          style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
                                                          title={isActive ? (language === 'pt' ? 'Ativo' : 'Active') : (language === 'pt' ? 'Ativar' : 'Set Active')}
                                                      >
@@ -332,7 +324,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  onClick={() => onExport(team)}
                                                  aria-label={language === 'pt' ? `Exportar ${team.name} para o Pokémon Showdown` : `Export ${team.name} to Pokémon Showdown`}
                                                  title={language === 'pt' ? 'Exportar para o Showdown' : 'Export to Showdown'}
-                                                 className="btn btn-outline !p-2"
+                                                 className="btn btn-ghost btn-icon btn-sm touch-target"
                                              >
                                                  <ShowdownIcon className="w-4 h-4" />
                                              </button>
@@ -341,7 +333,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  onClick={() => onShare(team)}
                                                  aria-label={language === 'pt' ? `Compartilhar ${team.name}` : `Share ${team.name}`}
                                                  title={language === 'pt' ? 'Compartilhar time' : 'Share team'}
-                                                 className="btn btn-outline !p-2"
+                                                 className="btn btn-ghost btn-icon btn-sm touch-target"
                                              >
                                                  <ShareIcon className="w-4 h-4" />
                                              </button>
@@ -350,7 +342,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  onClick={() => requestDelete(team.id, team.name)}
                                                  aria-label={language === 'pt' ? `Deletar ${team.name}` : `Delete ${team.name}`}
                                                  title={language === 'pt' ? 'Deletar time' : 'Delete team'}
-                                                 className="btn btn-outline !p-2 team-builder-icon-button--danger"
+                                                 className="btn btn-ghost btn-icon btn-sm touch-target team-builder-icon-button--danger"
                                              >
                                                  <TrashIcon className="w-4 h-4" />
                                              </button>
@@ -415,7 +407,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  <button
                                                      type="button"
                                                      onClick={() => viewTeam(team)}
-                                                     className="btn btn-outline !p-2"
+                                                     className="btn btn-ghost btn-icon btn-sm touch-target"
                                                      title={language === 'pt' ? 'Visualizar time' : 'View team'}
                                                  >
                                                      <Eye className="w-4 h-4" />
@@ -423,7 +415,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  <button
                                                      type="button"
                                                      onClick={() => onEdit(team)}
-                                                     className="btn btn-outline !p-2"
+                                                     className="btn btn-ghost btn-icon btn-sm touch-target"
                                                      title={t('common.edit')}
                                                  >
                                                      <Pencil className="w-4 h-4" />
@@ -432,7 +424,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                      type="button"
                                                      onClick={() => onDuplicate?.(team)}
                                                      aria-label={t('savedTeams.duplicateTitle')}
-                                                     className="btn btn-outline !p-2"
+                                                     className="btn btn-ghost btn-icon btn-sm touch-target"
                                                      title={t('savedTeams.duplicateTitle')}
                                                  >
                                                      <Copy className="w-4 h-4" />
@@ -443,7 +435,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                          <button
                                                              type="button"
                                                              onClick={() => setActiveTeamId(isActive ? null : team.id)}
-                                                             className={`btn !p-2 ${isActive ? 'btn-primary' : 'btn-outline'}`}
+                                                             className={`btn btn-icon btn-sm touch-target ${isActive ? 'btn-primary' : 'btn-ghost'}`}
                                                              style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
                                                              title={isActive ? (language === 'pt' ? 'Ativo' : 'Active') : (language === 'pt' ? 'Ativar' : 'Set Active')}
                                                          >
@@ -456,7 +448,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  <button
                                                      type="button"
                                                      onClick={() => onToggleFavorite(team)}
-                                                     className={`btn btn-outline !p-2 ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
+                                                     className={`btn btn-ghost btn-icon btn-sm touch-target ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
                                                      title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
                                                  >
                                                      <StarIcon className="h-4 w-4" isFavorite={team.isFavorite} color="currentColor" />
@@ -464,7 +456,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  <button
                                                      type="button"
                                                      onClick={() => onExport(team)}
-                                                     className="btn btn-outline !p-2"
+                                                     className="btn btn-ghost btn-icon btn-sm touch-target"
                                                      title={language === 'pt' ? 'Exportar para o Showdown' : 'Export to Showdown'}
                                                  >
                                                      <ShowdownIcon className="w-4 h-4" />
@@ -472,7 +464,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  <button
                                                      type="button"
                                                      onClick={() => onShare(team)}
-                                                     className="btn btn-outline !p-2"
+                                                     className="btn btn-ghost btn-icon btn-sm touch-target"
                                                      title={language === 'pt' ? 'Compartilhar time' : 'Share team'}
                                                  >
                                                      <ShareIcon className="w-4 h-4" />
@@ -480,7 +472,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                  <button
                                                      type="button"
                                                      onClick={() => requestDelete(team.id, team.name)}
-                                                     className="btn btn-outline !p-2 team-builder-icon-button--danger"
+                                                     className="btn btn-ghost btn-icon btn-sm touch-target team-builder-icon-button--danger"
                                                      title={language === 'pt' ? 'Deletar time' : 'Delete team'}
                                                  >
                                                      <TrashIcon className="w-4 h-4" />

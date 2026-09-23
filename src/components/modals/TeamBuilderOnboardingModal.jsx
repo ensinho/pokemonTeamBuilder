@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Zap, Check, Plus, RefreshCw, Star, Info, Package, X } from 'lucide-react';
+import { Sparkles, Zap, Check, Plus, RefreshCw, Info, Package, X } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
@@ -132,300 +132,230 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="onboarding-modal-title"
+                aria-describedby="onboarding-modal-subtitle"
                 tabIndex={-1}
                 className="modal-panel modal-panel--2xl"
                 onClick={(e) => e.stopPropagation()}
             >
-                {/* Header */}
-                <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-3 sm:px-5 sm:py-3.5 bg-surface-raised">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary sm:flex">
-                            <Sparkles className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-primary">
-                                    {pt ? 'Simulador Interativo' : 'Interactive Simulator'}
-                                </span>
-                                <span className="rounded-full bg-success/20 px-2 py-0.5 text-[9px] font-bold text-success border border-border">
-                                    {pt ? 'Teste clicando no Grid abaixo' : 'Click Grid below to Test'}
-                                </span>
-                            </div>
-                            <h2 id="onboarding-modal-title" className="text-sm sm:text-base font-extrabold text-fg line-clamp-2 sm:truncate">
-                                {pt ? 'Como funciona a adição automática de Pokémon & Megas' : 'How automatic Pokémon & Mega additions work'}
-                            </h2>
-                        </div>
+                <header className="modal-header">
+                    <div className="min-w-0 flex-1">
+                        <h2 id="onboarding-modal-title" className="modal-title">
+                            {pt ? 'Como funciona a adição automática de Pokémon & Megas' : 'How automatic Pokémon & Mega additions work'}
+                        </h2>
+                        <p id="onboarding-modal-subtitle" className="modal-subtitle">
+                            {pt ? 'Um simulador ao vivo — adicione Pokémon abaixo e veja o time se montar.' : 'A live simulator — add Pokémon below and watch the team assemble.'}
+                        </p>
                     </div>
                     <button
                         type="button"
                         onClick={handleDismiss}
-                        className="rounded-xl p-2 text-muted hover:bg-surface-raised hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors"
+                        className="modal-close"
                         aria-label={pt ? 'Fechar' : 'Close'}
                     >
-                        <X className="h-5 w-5" />
+                        <X />
                     </button>
                 </header>
 
-                {/* Body Content - Simulated Interface Split View */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-5 space-y-4">
+                <div className="modal-body custom-scrollbar">
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
 
-                    {/* Simulated Interface Container */}
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-
-                        {/* LEFT COLUMN: Simulated Team Roster */}
-                        <div className="lg:col-span-5 flex flex-col gap-3">
-                            <div className="rounded-2xl border border-border bg-surface-raised p-3.5 shadow-md">
-                                <div className="flex items-center justify-between gap-2 mb-3">
-                                    <div className="flex items-center gap-2">
-                                        <h3 className="text-xs font-extrabold uppercase tracking-wider text-fg">
-                                            {pt ? 'Meu Time Atual' : 'Current Team'}
-                                        </h3>
-                                        <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-extrabold text-primary">
-                                            {simulatedTeam.length}/6
-                                        </span>
-                                    </div>
+                        {/* Left: the simulated roster. A fill region inside the panel, so
+                            nothing in it draws a second outline. */}
+                        <section className="flex flex-col gap-3 lg:col-span-5">
+                            <div className="rounded-lg bg-surface-raised p-3">
+                                <div className="mb-3 flex items-center justify-between gap-2">
+                                    <h3 className="flex items-center gap-2 text-sm font-semibold text-fg">
+                                        {pt ? 'Meu time atual' : 'Current team'}
+                                        <span className="count-badge">{simulatedTeam.length}/6</span>
+                                    </h3>
                                     {simulatedTeam.length > 0 && (
                                         <button
                                             type="button"
                                             onClick={handleResetDemo}
-                                            className="inline-flex items-center gap-1 text-[10px] font-bold text-muted hover:text-danger transition-colors"
+                                            className="btn btn-ghost btn-sm touch-target"
                                             title={pt ? 'Limpar time' : 'Clear team'}
                                         >
-                                            <RefreshCw className="h-3 w-3" />
+                                            <RefreshCw />
                                             {pt ? 'Limpar' : 'Clear'}
                                         </button>
                                     )}
                                 </div>
 
-                                {/* 6 Slots Grid */}
                                 <div className="grid grid-cols-3 gap-2">
                                     {Array.from({ length: 6 }).map((_, idx) => {
                                         const p = simulatedTeam[idx];
                                         if (p) {
-                                            // When added to slot: if it has Mega, morph into Mega Form!
+                                            // A Mega-capable Pokémon enters the slot already in its Mega form.
                                             const isMegaMorph = p.hasMega;
                                             const spriteUrl = isMegaMorph
                                                 ? getPokemonArtworkSpriteUrl(p.megaId)
                                                 : getPokemonArtworkSpriteUrl(p.id);
                                             const displayName = isMegaMorph ? p.megaName : p.name;
                                             return (
-                                                <div
+                                                <button
+                                                    type="button"
                                                     key={`${p.id}-${idx}`}
                                                     onClick={() => handleRemoveDemoPokemon(idx)}
-                                                    className="group relative flex flex-col items-center justify-center rounded-xl border border-border bg-surface p-2 text-center transition-all hover:border-danger cursor-pointer shadow-sm animate-scale-in"
+                                                    className="group relative flex min-w-0 flex-col items-center justify-center rounded-md bg-surface p-2 text-center transition-colors hover:bg-surface-hover animate-scale-in"
                                                     title={pt ? 'Clique para remover' : 'Click to remove'}
+                                                    aria-label={pt ? `Remover ${displayName}` : `Remove ${displayName}`}
                                                 >
-                                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-[9px] font-bold text-white opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition-opacity">
+                                                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-surface-raised text-muted opacity-0 transition-opacity group-hover:opacity-100 [@media(hover:none)]:opacity-100">
                                                         <X className="h-2.5 w-2.5" />
                                                     </span>
-                                                    <div className="relative h-10 w-10 flex items-center justify-center">
-                                                        <img
-                                                            src={spriteUrl}
-                                                            onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(p.id); }}
-                                                            alt={displayName}
-                                                            className="h-10 w-10 object-contain image-pixelated"
-                                                        />
-                                                    </div>
-                                                    <span className="mt-1 w-full truncate text-[10px] font-extrabold text-fg">
+                                                    <img
+                                                        src={spriteUrl}
+                                                        onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(p.id); }}
+                                                        alt=""
+                                                        className="h-10 w-10 object-contain image-pixelated"
+                                                    />
+                                                    <span className="mt-1 w-full truncate text-[0.6875rem] font-semibold text-fg">
                                                         {displayName}
                                                     </span>
-                                                    <span className="w-full truncate text-[8px] font-bold text-primary">
+                                                    <span className="w-full truncate text-[0.625rem] text-muted">
                                                         {p.item}
                                                     </span>
-                                                </div>
+                                                </button>
                                             );
                                         }
 
+                                        // Dashed = empty, the one thing a dashed line is allowed to mean.
                                         return (
                                             <div
                                                 key={`empty-${idx}`}
-                                                className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-surface/40 p-2 text-center"
+                                                className="flex flex-col items-center justify-center rounded-md border border-dashed border-border-strong p-2 text-center"
                                             >
                                                 <img src={POKEBALL_PLACEHOLDER_URL} alt="" className="h-6 w-6 opacity-25" />
-                                                <span className="mt-1 text-[9px] font-semibold text-muted/60">{pt ? 'Vazio' : 'Empty'}</span>
+                                                <span className="mt-1 text-[0.625rem] text-muted">{pt ? 'Vazio' : 'Empty'}</span>
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
 
-                            {/* Active Auto-Equip Details Box */}
-                            {activeLastAdded && (
-                                <div className="rounded-2xl border border-border bg-surface-raised p-3.5 text-xs animate-scale-in">
-                                    <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-border">
-                                        <span className="flex items-center gap-1.5 font-extrabold text-primary">
+                            {activeLastAdded ? (
+                                <div className="rounded-lg bg-surface-raised p-3 text-xs animate-scale-in">
+                                    <div className="mb-2 flex items-center justify-between gap-2">
+                                        <span className="flex min-w-0 items-center gap-1.5 font-semibold text-fg">
                                             {activeLastAdded.hasMega ? (
                                                 <>
-                                                    <Sparkles className="h-3.5 w-3.5 text-primary" />
-                                                    {pt ? `Mega Stone Auto-Equipada (${activeLastAdded.name} ➔ ${activeLastAdded.megaName}):` : `Auto-Equipped Mega Stone (${activeLastAdded.name} ➔ ${activeLastAdded.megaName}):`}
+                                                    <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
+                                                    <span className="truncate">{pt ? `Mega Stone equipada: ${activeLastAdded.name} → ${activeLastAdded.megaName}` : `Mega Stone equipped: ${activeLastAdded.name} → ${activeLastAdded.megaName}`}</span>
                                                 </>
                                             ) : (
                                                 <>
-                                                    <Zap className="h-3.5 w-3.5 text-warning" />
-                                                    {pt ? 'Build Competitiva Auto-Carregada:' : 'Auto-Loaded Meta Build:'}
+                                                    <Zap className="h-3.5 w-3.5 shrink-0 text-warning" />
+                                                    <span className="truncate">{pt ? 'Build competitiva carregada' : 'Meta build loaded'}</span>
                                                 </>
                                             )}
                                         </span>
-                                        <span className="inline-flex items-center gap-1 rounded bg-primary/15 px-2 py-0.5 text-[9px] font-bold text-primary">
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-surface px-1.5 py-0.5 text-[0.625rem] font-medium text-muted">
                                             <Package className="h-3 w-3" />
                                             {activeLastAdded.item}
                                         </span>
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-1.5 text-[11px]">
-                                        <div><span className="text-muted">{pt ? 'Habilidade:' : 'Ability:'}</span> <strong className="text-fg">{activeLastAdded.ability}</strong></div>
-                                        <div><span className="text-muted">{pt ? 'Nature:' : 'Nature:'}</span> <strong className="text-fg">{activeLastAdded.nature}</strong></div>
-                                        <div className="col-span-2"><span className="text-muted">EVs:</span> <strong className="text-success">{activeLastAdded.evs}</strong></div>
-                                    </div>
-
-                                    <div className="mt-2 text-[10px] font-medium text-fg/80">
-                                        <span className="text-muted">{pt ? 'Golpes do Meta:' : 'Meta Moves:'}</span> {activeLastAdded.moves.join(', ')}
-                                    </div>
+                                    <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[0.6875rem]">
+                                        <div className="flex gap-1"><dt className="text-muted">{pt ? 'Habilidade' : 'Ability'}</dt><dd className="font-medium text-fg">{activeLastAdded.ability}</dd></div>
+                                        <div className="flex gap-1"><dt className="text-muted">Nature</dt><dd className="font-medium text-fg">{activeLastAdded.nature}</dd></div>
+                                        <div className="col-span-2 flex gap-1"><dt className="text-muted">EVs</dt><dd className="font-medium text-fg tabular-nums">{activeLastAdded.evs}</dd></div>
+                                        <div className="col-span-2 flex gap-1"><dt className="shrink-0 text-muted">{pt ? 'Golpes' : 'Moves'}</dt><dd className="text-fg">{activeLastAdded.moves.join(', ')}</dd></div>
+                                    </dl>
                                 </div>
+                            ) : (
+                                <p className="rounded-lg bg-surface-raised p-3 text-center text-xs text-muted">
+                                    {pt ? 'Adicione qualquer Pokémon ao lado para testar.' : 'Add any Pokémon on the right to try it.'}
+                                </p>
                             )}
+                        </section>
 
-                            {!activeLastAdded && (
-                                <div className="rounded-2xl border border-border bg-surface-raised p-3.5 text-center text-xs text-muted">
-                                    {pt ? 'Clique em qualquer Pokémon do Grid ao lado para testar a adição!' : 'Click any Pokémon in the Grid on the right to test adding!'}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* RIGHT COLUMN: Simulated Pokédex Grid (Pokemons shown in BASE FORM) */}
-                        <div className="lg:col-span-7 flex flex-col gap-2.5">
-                            <div className="flex items-center justify-between gap-2 px-1">
-                                <div className="flex items-center gap-1.5">
-                                    <span className="text-xs font-extrabold text-fg">{pt ? 'Pokédex' : 'Pokédex Grid'}</span>
-                                    <span className="text-[11px] font-semibold text-muted">({pt ? 'Clique em + Add para testar a adição' : 'Click + Add to test addition'})</span>
-                                </div>
-                                <span className="text-[10px] font-bold text-primary flex items-center gap-1">
-                                    <Info className="h-3 w-3" />
-                                    {pt ? 'Simulação ao vivo' : 'Live Simulation'}
-                                </span>
+                        {/* Right: the Pokédex, as claude.ai lists installable things —
+                            a tile, a name, one meta line, and a square action that turns
+                            into a check once it is in. */}
+                        <section className="flex flex-col gap-3 lg:col-span-7">
+                            <div className="flex items-baseline justify-between gap-2">
+                                <h3 className="text-sm font-semibold text-fg">Pokédex</h3>
+                                <span className="text-xs text-muted">{pt ? 'Formas base, como na grade real' : 'Base forms, as in the real grid'}</span>
                             </div>
 
-                            {/* Simulated Cards Grid - Base forms shown in Pokédex */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                 {DEMO_POKEMON.map((mon) => {
                                     const isAdded = simulatedTeam.some((t) => t.id === mon.id);
+                                    const isFull = simulatedTeam.length >= 6;
                                     return (
-                                        <div
+                                        <li
                                             key={mon.id}
-                                            className={`relative flex flex-col justify-between rounded-2xl border p-3 transition-all ${
-                                                isAdded
-                                                    ? 'border-primary bg-primary-soft/10 ring-1 ring-primary'
-                                                    : 'border-border bg-surface hover:border-primary hover:-translate-y-0.5'
-                                            }`}
+                                            className="flex items-center gap-3 rounded-lg bg-surface-raised p-2.5"
                                         >
-                                            {/* Topbar: Types & Star */}
-                                            <div className="flex items-center justify-between gap-1 mb-1">
-                                                <div className="flex items-center gap-1">
-                                                    {(mon.types || []).map((tp) => (
-                                                        <img
-                                                            key={tp}
-                                                            src={typeIcons[tp]}
-                                                            alt={tp}
-                                                            className="h-3.5 w-3.5 object-contain"
-                                                        />
-                                                    ))}
-                                                </div>
-                                                <Star className="h-3.5 w-3.5 text-muted/40" />
-                                            </div>
-
-                                            {/* Base Artwork Sprite in Pokédex Grid */}
-                                            <div className="my-1 flex h-14 w-full items-center justify-center">
+                                            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface">
                                                 <img
                                                     src={getPokemonArtworkSpriteUrl(mon.id)}
                                                     onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(mon.id); }}
-                                                    alt={mon.name}
-                                                    className="h-12 w-12 object-contain"
+                                                    alt=""
+                                                    className="h-9 w-9 object-contain"
                                                 />
-                                            </div>
-
-                                            {/* Name & Badge */}
-                                            <div className="text-center my-1">
-                                                <p className="text-xs font-bold capitalize text-fg truncate">
-                                                    {mon.name}
-                                                </p>
-                                                <span className={`inline-flex items-center gap-1 text-[9px] font-extrabold px-1.5 py-0.5 rounded-full mt-0.5 border ${
-                                                    mon.hasMega ? 'bg-primary/20 text-primary border-border' : 'bg-warning/20 text-warning border-border'
-                                                }`}>
-                                                    {mon.hasMega ? (
-                                                        <>
-                                                            <Sparkles className="h-2.5 w-2.5" />
-                                                            {pt ? 'Possui Mega' : 'Has Mega'}
-                                                        </>
-                                                    ) : (
-                                                        <>
-                                                            <Zap className="h-2.5 w-2.5" />
-                                                            Top Meta Pick
-                                                        </>
-                                                    )}
+                                            </span>
+                                            <span className="min-w-0 flex-1">
+                                                <span className="flex items-center gap-1.5">
+                                                    <span className="truncate text-sm font-semibold capitalize text-fg">{mon.name}</span>
+                                                    {(mon.types || []).map((tp) => (
+                                                        <img key={tp} src={typeIcons[tp]} alt={tp} className="h-3.5 w-3.5 shrink-0 object-contain" />
+                                                    ))}
                                                 </span>
-                                            </div>
-
-                                            {/* Add Button */}
-                                            <button
-                                                type="button"
-                                                onClick={() => handleAddDemoPokemon(mon)}
-                                                disabled={isAdded || simulatedTeam.length >= 6}
-                                                className={`mt-2 flex w-full items-center justify-center gap-1 rounded-xl py-1.5 text-xs font-extrabold transition-all ${
-                                                    isAdded
-                                                        ? 'bg-success/20 text-success border border-border cursor-default'
-                                                        : 'bg-primary text-white hover:opacity-90 shadow-sm active:scale-95'
-                                                }`}
-                                            >
-                                                {isAdded ? (
-                                                    <>
-                                                        <Check className="h-3 w-3" />
-                                                        {pt ? 'Adicionado' : 'Added'}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Plus className="h-3 w-3" />
-                                                        + Add
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                                <span className="mt-0.5 flex items-center gap-1 text-xs text-muted">
+                                                    {mon.hasMega ? <Sparkles className="h-3 w-3 shrink-0" /> : <Zap className="h-3 w-3 shrink-0" />}
+                                                    <span className="truncate">{mon.hasMega ? (pt ? 'Possui Mega' : 'Has a Mega') : 'Top meta pick'}</span>
+                                                </span>
+                                            </span>
+                                            {isAdded ? (
+                                                <span
+                                                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-success/15 text-success"
+                                                    aria-label={pt ? `${mon.name} adicionado` : `${mon.name} added`}
+                                                    role="img"
+                                                >
+                                                    <Check className="h-4 w-4" />
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleAddDemoPokemon(mon)}
+                                                    disabled={isFull}
+                                                    className="btn btn-outline btn-icon btn-sm touch-target shrink-0"
+                                                    aria-label={pt ? `Adicionar ${mon.name}` : `Add ${mon.name}`}
+                                                >
+                                                    <Plus />
+                                                </button>
+                                            )}
+                                        </li>
                                     );
                                 })}
-                            </div>
-                        </div>
+                            </ul>
 
+                            <p className="flex items-start gap-2 text-xs leading-relaxed text-muted">
+                                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                                <span>
+                                    {pt
+                                        ? 'Na Pokédex os Pokémon aparecem na forma base. Ao adicionar, entram no time já com a Mega Stone equipada e se transformam na forma Mega no slot.'
+                                        : 'In the Pokédex, Pokémon appear in their base form. Once added, they join the team with their Mega Stone equipped and turn into their Mega form in the slot.'}
+                                </span>
+                            </p>
+                        </section>
                     </div>
-
-                    {/* Explanatory Banner Note */}
-                    <div className="rounded-2xl border border-border bg-surface-raised p-3.5 flex items-start gap-3">
-                        <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                        <div className="text-xs leading-relaxed text-fg/90">
-                            <strong>{pt ? 'Demonstração de Evolução Mega:' : 'Mega Evolution Demonstration:'}</strong> {pt
-                                ? 'Note que no Grid da Pokédex os Pokémon aparecem na sua forma base (ex: Lucario, Charizard). Ao clicar em "+ Add", ele entra no seu time já equipado com a Mega Stone (Lucarionite / Charizardite Y) e se transforma automaticamente na sua forma Mega no slot!'
-                                : 'Notice that in the Pokédex Grid, Pokémon appear in their base form (Lucario, Charizard). When clicking "+ Add", it enters your team equipped with its Mega Stone (Lucarionite / Charizardite Y) and morphs into its Mega form in the slot!'}
-                        </div>
-                    </div>
-
                 </div>
 
-                {/* Footer Controls */}
-                <footer className="flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border px-5 py-3 bg-surface-raised">
-                    <label className="flex items-center gap-2 text-xs text-muted cursor-pointer select-none">
+                <footer className="modal-footer sm:justify-between">
+                    <label className="order-1 flex items-center gap-2 text-sm text-muted cursor-pointer select-none sm:order-none">
                         <input
                             type="checkbox"
                             checked={dontShowAgain}
                             onChange={(e) => setDontShowAgain(e.target.checked)}
-                            className="rounded border-border text-primary focus:ring-primary h-4 w-4"
+                            className="h-4 w-4 rounded accent-[var(--color-primary)]"
                         />
-                        <span>{pt ? 'Não mostrar este guia novamente ao entrar' : "Don't show this guide again on entry"}</span>
+                        <span>{pt ? 'Não mostrar novamente' : "Don't show this again"}</span>
                     </label>
 
-                    <button
-                        type="button"
-                        onClick={handleDismiss}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-6 py-2.5 text-xs font-extrabold text-white hover:opacity-90 transition-opacity shadow-md w-full sm:w-auto justify-center"
-                    >
-                        <Check className="h-4 w-4" />
-                        {pt ? 'Entendi! Começar a montar' : "Got it! Let's build"}
+                    <button type="button" onClick={handleDismiss} className="btn btn-primary">
+                        {pt ? 'Começar a montar' : "Start building"}
                     </button>
                 </footer>
             </div>
