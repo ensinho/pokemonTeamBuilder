@@ -1,64 +1,132 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { useBattles } from './useBattles';
 import { useTranslation } from './useTranslation';
+import { useAuthStore } from '../store/useAuthStore';
+import { useLanguageStore } from '../store/useLanguageStore';
+import { useToastStore } from '../store/useToastStore';
 import { battleAttentionNotice } from '../utils/battle';
+import { digestAttention, digestUrl } from '../utils/notificationDigest';
+import {
+    getNotificationsEnabled, getPermission, hasPushSubscription, isPushSupported, syncSubscription,
+} from '../services/pushNotifications';
 
 /**
- * Native browser Notification popups for battles — deliberately scoped to
- * "while this tab is open": no service worker, no push subscription, no
- * server round-trip. `useBattles()` already holds a live Firestore listener
- * bound app-wide from `AppLayout`, so this just watches its output and fires
- * a popup the moment a battle *transitions* into needing the viewer's
- * attention (a fresh challenge, an unsubmitted team, or a move now owed).
+ * Battle alerts for a tab that is *open* — the live half of the notification
+ * story. The other half, the one that reaches a closed app, is Web Push
+ * (`src/services/pushNotifications.js` + `api/_lib/webPush.js`); this hook and
+ * that pipeline deliberately share the `ptb-battles` tag so a push that lands
+ * while the app is in the background replaces this one instead of stacking.
  *
- * This is a separate channel from the "your turn" email in
- * `api/lib/battleNotify.js` — that one reaches an opponent who isn't in the
- * app at all; this one is for whoever has it open right now but is looking at
- * something else.
+ * Three rules, each of them a bug that happened:
+ *
+ *  - **Nothing fires until the listener has actually answered.** The effect ran
+ *    once with the store's initial `battles: []`, marked itself seeded, and
+ *    then treated the first real snapshot as "all of these just arrived" — one
+ *    banner per pending battle, every single app open. The baseline is now
+ *    seeded from the first *loaded* snapshot (`hasLoadedBattles`).
+ *  - **A visible tab gets a toast, not an OS banner.** An OS notification for
+ *    something the user is looking at is pure interruption.
+ *  - **Several at once become one.** See `digestAttention`.
+ *
+ * Permission is never requested from here: it belongs to a user gesture
+ * (`NotificationToggle`), which is also the only thing iOS accepts.
  */
 
-const PREFERENCE_KEY = 'ptb:browserNotifications';
-const NOTIFICATION_ICON = `${import.meta.env.BASE_URL}apple-touch-icon.png`;
+const NOTIFICATION_TAG = 'ptb-battles';
+const ICON = `${import.meta.env.BASE_URL}apple-touch-icon.png`;
 
-export const isBrowserNotificationSupported = () => typeof window !== 'undefined' && 'Notification' in window;
-
-export const getBrowserNotificationPreference = () => {
+/** Show an OS-level notification, preferring the worker so clicks survive. */
+const showSystemNotification = async ({ title, body, url }) => {
+    const options = {
+        body,
+        icon: ICON,
+        badge: ICON,
+        tag: NOTIFICATION_TAG,
+        renotify: true,
+        data: { url, count: 1 },
+    };
     try {
-        const value = localStorage.getItem(PREFERENCE_KEY);
-        if (value === null) return true; // Default to Enabled (true)
-        return value === '1';
+        // Subscribed devices get this from the server instead — showing both
+        // means two buzzes for one event.
+        if (await hasPushSubscription()) return;
+
+        const registration = await navigator.serviceWorker?.getRegistration?.();
+        if (registration?.showNotification) {
+            // iOS only supports this path (the `Notification` constructor
+            // throws there), and it is also the only one whose click is handled
+            // by `public/push-sw.js` — so a tap still routes after the tab that
+            // created it is gone.
+            await registration.showNotification(title, options);
+            return;
+        }
+        // eslint-disable-next-line no-new
+        new Notification(title, options);
     } catch (_) {
-        return true;
+        // Never let a notification take the app down with it.
     }
-};
-
-export const setBrowserNotificationPreference = (enabled) => {
-    try {
-        localStorage.setItem(PREFERENCE_KEY, enabled ? '1' : '0');
-    } catch (_) { /* a preference is not worth throwing over, as everywhere else here */ }
 };
 
 export function useBattleNotifications() {
     const { t } = useTranslation();
-    const { battles } = useBattles();
+    const navigate = useNavigate();
+    const { battles, hasLoadedBattles } = useBattles();
+    const userId = useAuthStore((state) => state.userId);
+    const language = useLanguageStore((state) => state.language);
+    const showToast = useToastStore((state) => state.showToast);
 
-    // Auto-request browser notification permission on mount if preference is enabled and status is default.
+    // Endpoints rotate silently; re-mirroring what the browser already holds
+    // keeps the server able to reach this device. Never prompts.
     useEffect(() => {
-        if (!isBrowserNotificationSupported() || !getBrowserNotificationPreference()) return;
-        if (Notification.permission === 'default') {
-            Notification.requestPermission().catch(() => {});
-        }
-    }, []);
+        if (!userId) return;
+        syncSubscription({ userId, lang: language }).catch(() => {});
+    }, [userId, language]);
 
     // Which battles already needed attention as of the last snapshot. Only a
-    // battleId moving from absent to present here fires a popup — otherwise a
-    // battle that's been sitting unanswered would re-notify on every unrelated
-    // re-render, and the very first snapshot after login would burst-fire one
-    // per already-pending battle instead of only new ones.
+    // battleId moving from absent to present here is worth announcing.
     const previouslyWaiting = useRef(new Set());
-    const isFirstRun = useRef(true);
+    const seeded = useRef(false);
 
     useEffect(() => {
+        // A different trainer is a different baseline — never inherit one.
+        seeded.current = false;
+        previouslyWaiting.current = new Set();
+    }, [userId]);
+
+    const announce = useCallback((digest) => {
+        const url = digestUrl(digest);
+        const title = digest.kind === 'group'
+            ? t('battle.notifyGroupTitle', { count: digest.count })
+            : t(digest.notice.titleKey, {
+                ...digest.notice.params,
+                name: digest.notice.params.name || t('friends.unknownTrainer'),
+            });
+        const body = digest.kind === 'group'
+            ? t('battle.notifyGroupBody')
+            : t(digest.notice.bodyKey, {
+                ...digest.notice.params,
+                name: digest.notice.params.name || t('friends.unknownTrainer'),
+            });
+
+        // Looking at the app already? Then this is a toast, not an interruption.
+        if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+            showToast(title, 'info', {
+                description: body,
+                duration: 10000,
+                actions: [{ label: t('battle.notifyOpen'), onClick: () => navigate(url) }],
+            });
+            return;
+        }
+
+        if (!isPushSupported() || !getNotificationsEnabled()) return;
+        if (getPermission() !== 'granted') return;
+        showSystemNotification({ title, body, url });
+    }, [navigate, showToast, t]);
+
+    useEffect(() => {
+        if (!hasLoadedBattles) return;
+
         const nextWaiting = new Set();
         const fresh = [];
 
@@ -66,39 +134,19 @@ export function useBattleNotifications() {
             const notice = battleAttentionNotice(view);
             if (!notice) continue;
             nextWaiting.add(battle.id);
-            if (!isFirstRun.current && !previouslyWaiting.current.has(battle.id)) {
+            if (seeded.current && !previouslyWaiting.current.has(battle.id)) {
                 fresh.push({ battleId: battle.id, notice });
             }
         }
 
         previouslyWaiting.current = nextWaiting;
-        isFirstRun.current = false;
-
-        if (fresh.length === 0) return;
-        if (!isBrowserNotificationSupported() || !getBrowserNotificationPreference()) return;
-        if (Notification.permission !== 'granted') return;
-
-        for (const { battleId, notice } of fresh) {
-            try {
-                // `notice.params.name` is null for an opponent with no display
-                // name — never let that interpolate the literal word "null".
-                const params = { ...notice.params, name: notice.params.name || t('friends.unknownTrainer') };
-                const popup = new Notification(t(notice.titleKey, params), {
-                    body: t(notice.bodyKey, params),
-                    icon: NOTIFICATION_ICON,
-                    badge: NOTIFICATION_ICON,
-                    tag: `battle-${battleId}`,
-                });
-                popup.onclick = () => {
-                    window.focus();
-                    window.location.hash = `#/battles/${battleId}`;
-                    popup.close();
-                };
-            } catch (_) {
-                // A handful of browsers (notably iOS Safari outside a PWA) expose
-                // `Notification` but throw on construction — never let that take
-                // the app down with it.
-            }
+        if (!seeded.current) {
+            // First answered snapshot: everything in it is history, not news.
+            seeded.current = true;
+            return;
         }
-    }, [battles, t]);
+
+        const digest = digestAttention(fresh);
+        if (digest) announce(digest);
+    }, [battles, hasLoadedBattles, announce]);
 }

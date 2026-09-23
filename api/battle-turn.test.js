@@ -89,8 +89,8 @@ vi.mock('firebase-admin/firestore', () => ({
     FieldValue: { increment: (n) => ({ __increment: n }) },
 }));
 
-vi.mock('./lib/serverAuth.js', async () => {
-    const actual = await vi.importActual('./lib/serverAuth.js');
+vi.mock('./_lib/serverAuth.js', async () => {
+    const actual = await vi.importActual('./_lib/serverAuth.js');
     return {
         ...actual,
         verifyCaller: async (req) => ({ uid: req.headers['x-test-uid'], isAnonymous: false }),
@@ -101,7 +101,7 @@ vi.mock('./lib/serverAuth.js', async () => {
 });
 
 // The nudge email is I/O with its own tests; here it would only add latency.
-vi.mock('./lib/battleNotify.js', () => ({ notifyAwaitingPlayer: async () => {} }));
+vi.mock('./_lib/battleNotify.js', () => ({ notifyAwaitingPlayer: async () => {} }));
 
 const { default: handler } = await import('./battle-turn.js');
 

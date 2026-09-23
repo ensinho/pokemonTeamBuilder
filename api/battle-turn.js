@@ -1,7 +1,7 @@
 import { randomInt } from 'node:crypto';
 
-import { setCorsHeaders, HttpError } from './lib/httpBasics.js';
-import { installRuntimeGuards, getLastRuntimeError, withTimeout } from './lib/runtimeGuards.js';
+import { setCorsHeaders, HttpError } from './_lib/httpBasics.js';
+import { installRuntimeGuards, getLastRuntimeError, withTimeout } from './_lib/runtimeGuards.js';
 
 // An unhandled rejection anywhere in this process returns FUNCTION_INVOCATION_FAILED
 // with no stack and no log line pointing at the cause.
@@ -48,9 +48,9 @@ const loadDeps = () => {
         depsPromise = (async () => {
             const [firestore, serverAuth, resolver, notify] = await Promise.all([
                 import('firebase-admin/firestore'),
-                import('./lib/serverAuth.js'),
-                import('./lib/battleResolver.js'),
-                import('./lib/battleNotify.js'),
+                import('./_lib/serverAuth.js'),
+                import('./_lib/battleResolver.js'),
+                import('./_lib/battleNotify.js'),
             ]);
             deps = {
                 FieldValue: firestore.FieldValue,
@@ -101,12 +101,19 @@ const loadDeps = () => {
  * ## "Your turn" notifications
  *
  * Whenever `publishLog` produces a fresh `awaitingUids`, `notifyAwaitingPlayer`
- * (`./lib/battleNotify.js`) emails whichever of them is *not* the caller — the
+ * (`./_lib/battleNotify.js`) emails whichever of them is *not* the caller — the
  * caller is, by definition, in the app right now. No cron job, no queue: the
  * nudge rides the same request that changed the state.
  */
 
 const ENGINE_VERSION = '@pkmn/sim@0.10.11';
+
+// How long the response is willing to wait for the "it's your turn" nudge before
+// answering anyway. It covers two sends now, not one — a Web Push (fast, and the
+// only one that reaches a closed app) followed by the email — and anything still
+// in flight when the function is frozen is simply lost, so the budget has to be
+// the realistic cost of both rather than a round number.
+const NOTIFY_BUDGET_MS = 2500;
 
 const battleRef = (db, battleId) => db.doc(`artifacts/${deps.getAppId()}/battles/${battleId}`);
 
@@ -330,7 +337,7 @@ const handle = async (req, res) => {
             deps.notifyAwaitingPlayer({
                 db, battleId, awaitingUids: opened.awaitingUids, callerUid: uid, callerName: names[mySide],
             }).catch((err) => console.error('Failed to notify awaiting player:', err)),
-            1500,
+            NOTIFY_BUDGET_MS,
         );
     }
 
@@ -423,7 +430,7 @@ const handle = async (req, res) => {
         await withTimeout(
             deps.notifyAwaitingPlayer({ db, battleId, awaitingUids, callerUid: uid, callerName: names[mySide] })
                 .catch((err) => console.error('Failed to notify awaiting player:', err)),
-            1500,
+            NOTIFY_BUDGET_MS,
         );
     }
 

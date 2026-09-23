@@ -18,6 +18,7 @@
     "data:limitless": "node scripts/build-limitless-usage.mjs",
     "data:sitemap": "node scripts/build-sitemap.mjs",
     "data:trainers": "node scripts/build-trainer-sprites.mjs",
+    "push:keys": "node scripts/generate-vapid-keys.mjs",
     "data:refresh-all": "node scripts/build-tournaments.mjs && node scripts/build-smogon.mjs && node scripts/build-move-types.mjs && node scripts/build-usage-stats.mjs && node scripts/build-limitless-usage.mjs && node scripts/build-trainer-sprites.mjs && node scripts/build-sitemap.mjs",
     "prebuild": "node scripts/prebuild.mjs",
     "build": "vite build",
@@ -29,7 +30,7 @@
     "deploy": "gh-pages -d dist",
     "prepare": "husky"
   },
-  "//overrides": "jwks-rsa (via firebase-admin) is CommonJS but declares jose@^6, which is ESM-only — its require('jose') dies with ERR_REQUIRE_ESM on any runtime without require(esm), which is how Vercel loads functions. jose@5 ships a CJS build and has every API jwks-rsa uses. Do not remove without running api/lib/dependencies.test.js; see docs/wounds.md 2026-07-27.",
+  "//overrides": "jwks-rsa (via firebase-admin) is CommonJS but declares jose@^6, which is ESM-only — its require('jose') dies with ERR_REQUIRE_ESM on any runtime without require(esm), which is how Vercel loads functions. jose@5 ships a CJS build and has every API jwks-rsa uses. Do not remove without running api/_lib/dependencies.test.js; see docs/wounds.md 2026-07-27.",
   "overrides": {
     "jwks-rsa": {
       "jose": "^5.10.0"
@@ -49,6 +50,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.10.1",
+    "web-push": "^3.6.7",
     "zustand": "^5.0.13"
   },
   "devDependencies": {

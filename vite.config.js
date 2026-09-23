@@ -23,6 +23,11 @@ export default defineConfig({
       workbox: {
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Web Push lives in the *generated* worker rather than a second
+        // registration of its own — a second service worker is what caused the
+        // double update prompt (docs/wounds.md, 2026-09-14). The path is
+        // resolved relative to `sw.js`, so it follows `base` on both deploys.
+        importScripts: ['push-sw.js'],
         runtimeCaching: [
           {
             // Pokémon sprites. `raw.githubusercontent.com` is the legacy host —

@@ -5,54 +5,33 @@ import { useBattles } from '../../../hooks/useBattles';
 import { useFriends } from '../../../hooks/useFriends';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { useBattlesStore } from '../../../store/useBattlesStore';
-import { useToastStore } from '../../../store/useToastStore';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useDocumentMeta } from '../../../hooks/useDocumentMeta';
-import {
-    isBrowserNotificationSupported, getBrowserNotificationPreference, setBrowserNotificationPreference,
-} from '../../../hooks/useBattleNotifications';
+import { useNotificationSettings } from '../../../hooks/useNotificationSettings';
 import { AvatarSprite } from '../../AvatarSprite';
 import { EmptyState } from '../../EmptyState';
 import { PokeballIcon, SwordsIcon } from '../../icons';
 import { ChallengeModal } from '../../modals/ChallengeModal';
 import '../../../styles/battle-view.css';
 
-/** Enable/disable the native browser popup for "your turn" and challenges. */
+/**
+ * Enable/disable notifications for battles — in-app while the tab is open, and
+ * Web Push once the app is closed. All of the platform awkwardness (iOS wants
+ * the PWA installed, every browser wants the prompt to come from a click) lives
+ * in `useNotificationSettings`.
+ */
 function NotificationToggle() {
     const { t } = useTranslation();
-    const showToast = useToastStore((state) => state.showToast);
-    const [enabled, setEnabled] = useState(() => (
-        isBrowserNotificationSupported()
-        && getBrowserNotificationPreference()
-        && (typeof Notification !== 'undefined' && Notification.permission !== 'denied')
-    ));
-
-    const handleClick = async () => {
-        if (!isBrowserNotificationSupported()) {
-            showToast(t('battle.notifyUnsupported'), 'warning');
-            return;
-        }
-        if (enabled && Notification.permission === 'granted') {
-            setBrowserNotificationPreference(false);
-            setEnabled(false);
-            return;
-        }
-        if (Notification.permission === 'denied') {
-            showToast(t('battle.notifyBlocked'), 'warning');
-            return;
-        }
-        const permission = await Notification.requestPermission();
-        if (permission === 'granted') {
-            setBrowserNotificationPreference(true);
-            setEnabled(true);
-        } else {
-            showToast(t('battle.notifyBlocked'), 'warning');
-            setEnabled(false);
-        }
-    };
+    const { enabled, busy, toggle } = useNotificationSettings();
 
     return (
-        <button type="button" className="battle-sprite-toggle" aria-pressed={enabled} onClick={handleClick}>
+        <button
+            type="button"
+            className="battle-sprite-toggle"
+            aria-pressed={enabled}
+            disabled={busy}
+            onClick={toggle}
+        >
             {enabled ? t('battle.notifyStatusEnabled') : t('battle.notifyStatusDisabled')}
         </button>
     );

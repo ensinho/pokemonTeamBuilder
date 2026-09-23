@@ -1,4 +1,10 @@
-# Vercel turns every file under api/ into its own serverless function, so the
-# colocated unit tests would each be deployed as a route (/api/lib/*.test) that
-# imports vitest at runtime. They are not part of the build either way.
+# Vercel turns every file under api/ into its own serverless function — except
+# ones whose name or parent directory starts with an underscore, which is why
+# the shared helpers live in `api/_lib/`. The Hobby plan allows **12 functions
+# per deployment**; with the helpers counted this project sat at exactly 12 and
+# the next endpoint added broke the build (docs/wounds.md, 2026-09-21).
+#
+# The colocated unit tests at the api/ root still need excluding: without this
+# each would deploy as a route (/api/battle-turn.test) that imports vitest at
+# runtime, and each would count against that limit.
 api/**/*.test.js

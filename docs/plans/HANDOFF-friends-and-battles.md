@@ -67,11 +67,11 @@ Made with Enzo on 2026-07-24. Re-litigating these without a reason wastes work.
 | [`src/store/useBattlesStore.js`](../../src/store/useBattlesStore.js) | Battle lifecycle, team submission, battle chat |
 | [`src/hooks/useBattles.js`](../../src/hooks/useBattles.js) | Battles described + ordered from the viewer's perspective |
 | [`src/components/views/battle/`](../../src/components/views/battle/) | `BattleListView` + `BattleDetailView` |
-| [`api/lib/battleResolver.js`](../../api/lib/battleResolver.js) + `.test.js` | The engine: stateless replay from seed + choices — 20 tests |
-| [`api/lib/serverAuth.js`](../../api/lib/serverAuth.js) | Token verify + admin Firestore + admin Auth + CORS |
+| [`api/_lib/battleResolver.js`](../../api/_lib/battleResolver.js) + `.test.js` | The engine: stateless replay from seed + choices — 20 tests |
+| [`api/_lib/serverAuth.js`](../../api/_lib/serverAuth.js) | Token verify + admin Firestore + admin Auth + CORS |
 | [`api/battle-turn.js`](../../api/battle-turn.js) | The authoritative endpoint |
-| [`api/lib/battleNotify.js`](../../api/lib/battleNotify.js) + `.test.js` | "Your turn" email: who to notify (pure), what it says (pure, en/pt) — 8 tests |
-| [`api/lib/mailer.js`](../../api/lib/mailer.js) | Best-effort SMTP send, reusing the admin-reply endpoint's env vars |
+| [`api/_lib/battleNotify.js`](../../api/_lib/battleNotify.js) + `.test.js` | "Your turn" email: who to notify (pure), what it says (pure, en/pt) — 8 tests |
+| [`api/_lib/mailer.js`](../../api/_lib/mailer.js) | Best-effort SMTP send, reusing the admin-reply endpoint's env vars |
 | [`src/utils/battleProtocol.js`](../../src/utils/battleProtocol.js) + `.test.js` | Reads my prompt + renders the transcript — 13 tests |
 | [`src/utils/battleState.js`](../../src/utils/battleState.js) + `.test.js` | Protocol → battlefield snapshot — 16 tests |
 | [`src/utils/battleSprites.js`](../../src/utils/battleSprites.js) | Animated sprites via `@pkmn/img` |
@@ -286,7 +286,7 @@ fail. Only `/data/*.json` sends `*`.
 
 ### The "your turn" email must never target the caller
 
-`api/lib/battleNotify.js`'s `pickAwaitingTarget` is the *entire* anti-spam mechanism: it
+`api/_lib/battleNotify.js`'s `pickAwaitingTarget` is the *entire* anti-spam mechanism: it
 picks whichever uid in a fresh `awaitingUids` is not the one who just POSTed this request.
 Drop that check and a live back-and-forth (both players actually in the app) would email
 both sides after every single turn — the caller doesn't need telling they can now act, they
@@ -311,7 +311,7 @@ Phase 4 is built but **nothing has driven a full battle through the UI yet**. De
 
 ### Then — Phase 5: polish
 
-- ✅ **Done — "your turn" email.** `api/lib/battleNotify.js` + `api/lib/mailer.js`, wired
+- ✅ **Done — "your turn" email.** `api/_lib/battleNotify.js` + `api/_lib/mailer.js`, wired
   into `api/battle-turn.js`. Fires on the opening bootstrap and on every later resolution,
   emailing whichever side of the fresh `awaitingUids` isn't the caller (never both — the
   caller is in the app right now by construction). Language comes from the recipient's own
@@ -325,7 +325,7 @@ Phase 4 is built but **nothing has driven a full battle through the UI yet**. De
 
 ### Done — Phase 3: the authoritative engine
 
-`api/lib/battleResolver.js` replays a battle statelessly from `seed + choices` and returns
+`api/_lib/battleResolver.js` replays a battle statelessly from `seed + choices` and returns
 each side's filtered protocol view. `api/battle-turn.js` verifies the caller, records their
 choice write-once, and resolves only once both players have answered the round — then writes
 per-player logs, advances the round, and on a win increments both `battleRecord`s.

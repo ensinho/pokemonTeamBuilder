@@ -96,8 +96,8 @@ vi.mock('firebase-admin/firestore', () => ({
     FieldValue: { increment: (n) => ({ __increment: n }) },
 }));
 
-vi.mock('./lib/serverAuth.js', async () => {
-    const actual = await vi.importActual('./lib/serverAuth.js');
+vi.mock('./_lib/serverAuth.js', async () => {
+    const actual = await vi.importActual('./_lib/serverAuth.js');
     return {
         ...actual,
         verifyCaller: async (req) => ({ uid: req.headers['x-test-uid'], isAnonymous: false }),
@@ -107,7 +107,7 @@ vi.mock('./lib/serverAuth.js', async () => {
     };
 });
 
-vi.mock('./lib/battleNotify.js', () => ({ notifyAwaitingPlayer: async () => {} }));
+vi.mock('./_lib/battleNotify.js', () => ({ notifyAwaitingPlayer: async () => {} }));
 
 const { default: rollHandler } = await import('./battle-random.js');
 const { default: turnHandler } = await import('./battle-turn.js');

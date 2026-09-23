@@ -15,7 +15,8 @@ import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon, SparklesIcon,
 } from '../icons';
-import { Flame, Medal, Lock, Check, Sparkles } from 'lucide-react';
+import { Flame, Medal, Lock, Check, Sparkles, Bell } from 'lucide-react';
+import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 
 const EmailVerifyRow = () => {
     const showToast = useToastStore((state) => state.showToast);
@@ -92,6 +93,84 @@ const SectionCard = ({ title, subtitle, icon, meta, className = '', children }) 
         {children}
     </section>
 );
+
+/**
+ * Notifications live on the profile, not only on the battle list, because two
+ * of the three things they announce (the daily PokéPuzzle, and battles) are not
+ * on the same screen — and because the browser only prompts for permission from
+ * a real click, which needs a button somewhere the user goes deliberately.
+ */
+const NotificationsCard = () => {
+    const { t } = useTranslation();
+    const {
+        enabled, busy, dailyEnabled, iosInstallNeeded, supported, toggle, toggleDailyPuzzle,
+    } = useNotificationSettings();
+
+    const statusLabel = enabled ? t('profile.notifyOn') : t('profile.notifyOff');
+
+    return (
+        <SectionCard
+            className="profile-card--gameplay"
+            meta={<span className={`profile-pill ${enabled ? 'profile-pill--accent' : ''}`}>{statusLabel}</span>}
+            title={t('profile.sectionNotifications')}
+            subtitle={t('profile.sectionNotificationsDesc')}
+            icon={<Bell className="w-5 h-5" />}
+        >
+            <div className="profile-button-row">
+                <button
+                    type="button"
+                    onClick={toggle}
+                    aria-pressed={enabled}
+                    disabled={busy}
+                    className={`profile-button ${enabled ? 'profile-button--primary' : ''}`}
+                >
+                    <Bell className="w-3.5 h-3.5" />
+                    {enabled ? t('profile.notifyDisableBtn') : t('profile.notifyEnableBtn')}
+                </button>
+            </div>
+
+            {iosInstallNeeded || !supported ? (
+                <p className="profile-card__subtitle">
+                    {iosInstallNeeded ? t('battle.notifyIosInstall') : t('battle.notifyUnsupported')}
+                </p>
+            ) : null}
+
+            <div className="profile-sync-list">
+                <div className="profile-sync-row">
+                    <span className="profile-sync-row__label">{t('profile.notifyTopicBattles')}</span>
+                    <span className="profile-sync-row__value">{statusLabel}</span>
+                </div>
+                <div className="profile-sync-row">
+                    <span className="profile-sync-row__label">{t('profile.notifyTopicPuzzle')}</span>
+                    <span className="profile-sync-row__value">
+                        {enabled && dailyEnabled ? t('profile.notifyOn') : t('profile.notifyOff')}
+                    </span>
+                </div>
+            </div>
+
+            <div className="profile-button-row profile-button-row--tight">
+                <button
+                    type="button"
+                    onClick={() => toggleDailyPuzzle(true)}
+                    aria-pressed={dailyEnabled}
+                    disabled={!enabled}
+                    className={`profile-button ${dailyEnabled ? 'profile-button--primary' : ''}`}
+                >
+                    {t('profile.notifyPuzzleOn')}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => toggleDailyPuzzle(false)}
+                    aria-pressed={!dailyEnabled}
+                    disabled={!enabled}
+                    className={`profile-button ${!dailyEnabled ? 'profile-button--primary' : ''}`}
+                >
+                    {t('profile.notifyPuzzleOff')}
+                </button>
+            </div>
+        </SectionCard>
+    );
+};
 
 const OverviewStat = ({ icon, label, value, hint }) => (
     <div className="profile-overview-stat">
@@ -396,6 +475,8 @@ export function ProfileView({
                             </button>
                         </div>
                     </SectionCard>
+
+                    <NotificationsCard />
 
                     <SectionCard
                         className="profile-card--sync"
