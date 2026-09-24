@@ -17,7 +17,7 @@
 
 <br/>
 <br/>
-<img src="public/og-image.png" width="100%" alt="Pokémon Team Builder Banner">
+<img src=".github/assets/demo.gif" width="100%" alt="pokemonbuilder.app demo: building a team and seeing its weaknesses and resistances update live">
 
 </div>
 
