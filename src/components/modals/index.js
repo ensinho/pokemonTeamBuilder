@@ -1,6 +1,7 @@
 export { AuthModal } from './AuthModal';
 export { ChallengeModal } from './ChallengeModal';
 export { ConfirmDialog } from './ConfirmDialog';
+export { ConfirmHost } from './ConfirmHost';
 export { GreetingPokemonSelectorModal } from './GreetingPokemonSelectorModal';
 export { PatchNotesModal } from './PatchNotesModal';
 export { ShareSnippetModal } from './ShareSnippetModal';

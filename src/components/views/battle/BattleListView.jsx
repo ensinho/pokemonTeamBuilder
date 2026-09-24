@@ -13,6 +13,8 @@ import { EmptyState } from '../../EmptyState';
 import { PokeballIcon, SwordsIcon } from '../../icons';
 import { ChallengeModal } from '../../modals/ChallengeModal';
 import '../../../styles/battle-view.css';
+import { Loader } from '../../Loader';
+import { confirmAction } from '../../../store/useConfirmStore';
 
 /**
  * Enable/disable notifications for battles — in-app while the tab is open, and
@@ -86,9 +88,12 @@ export function BattleListView() {
 
     const handleDelete = async (battleId, event) => {
         event.stopPropagation();
-        if (window.confirm(t('battle.confirmDiscard'))) {
-            await deleteBattle(battleId);
-        }
+        const confirmed = await confirmAction({
+            title: t('dialogs.discardBattleTitle'),
+            message: t('dialogs.discardBattleMsg'),
+            confirmText: t('battle.discardBattle'),
+        });
+        if (confirmed) await deleteBattle(battleId);
     };
 
     return (
@@ -115,7 +120,7 @@ export function BattleListView() {
 
             {isLoadingBattles && battles.length === 0 ? (
                 <div className="battle-loading">
-                    <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+                    <Loader />
                 </div>
             ) : battles.length === 0 ? (
                 <EmptyState

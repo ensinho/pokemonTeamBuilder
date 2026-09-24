@@ -13,7 +13,7 @@ vi.mock('../services/pokemonDataCache', () => ({ resolvePokemonDetail: (id) => d
 vi.mock('../utils/loadCompetitivePreset', () => ({
     competitivePresetFor: () => Promise.resolve({ item: 'Leftovers', ability: 'pressure' }),
 }));
-vi.mock('./useToastStore', () => ({ toast: { error: vi.fn(), warning: vi.fn(), success: vi.fn() } }));
+vi.mock('./useToastStore', () => ({ toast: { error: vi.fn(), warning: vi.fn(), success: vi.fn(), info: vi.fn() } }));
 vi.mock('./useAuthStore', () => ({ useAuthStore: { getState: () => ({}) } }));
 vi.mock('./useFirestoreTeamsStore', () => ({ useFirestoreTeamsStore: { getState: () => ({}) } }));
 vi.mock('./usePokedexStore', () => ({ usePokedexStore: { getState: () => ({ pokemons: [] }) } }));
@@ -23,6 +23,9 @@ let toast;
 
 beforeEach(async () => {
     pendingDetails.clear();
+    // Mock factories outlive vi.resetModules, so their call history would leak
+    // from one test into the next.
+    vi.clearAllMocks();
     vi.resetModules();
     ({ useActiveTeamStore: store } = await import('./useActiveTeamStore'));
     ({ toast } = await import('./useToastStore'));
@@ -87,5 +90,29 @@ describe('handleAddPokemon', () => {
         await settle();
         expect(store.getState().currentTeam).toHaveLength(6);
         expect(toast.warning).toHaveBeenCalled();
+    });
+});
+
+describe('handleClearTeam', () => {
+    it('clears at once and offers an undo that brings the whole team back', async () => {
+        store.getState().handleAddPokemon(entry(7, 'squirtle'));
+        store.getState().handleAddPokemon(entry(8, 'wartortle'));
+        store.setState({ teamName: 'Rain', editingTeamId: 'team-1' });
+        const before = store.getState().currentTeam;
+
+        store.getState().handleClearTeam();
+        expect(store.getState().currentTeam).toEqual([]);
+        expect(store.getState().teamName).toBe('');
+
+        const [, options] = toast.info.mock.calls.at(-1);
+        options.actions[0].onClick();
+        expect(store.getState().currentTeam).toEqual(before);
+        expect(store.getState().teamName).toBe('Rain');
+        expect(store.getState().editingTeamId).toBe('team-1');
+    });
+
+    it('says nothing when there was nothing to clear', () => {
+        store.getState().handleClearTeam();
+        expect(toast.info).not.toHaveBeenCalled();
     });
 });

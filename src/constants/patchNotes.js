@@ -16,25 +16,45 @@ export const RELEASES = [
     {
         version: PATCH_NOTES_VERSION,
         month: '2026-09',
+        // Optional per-release opening line, in place of the standing thanks —
+        // this release came from us rather than from a suggestion, and says why.
+        thanks: 'patchNotes.visualThanks',
         notes: [
             {
-                key: 'smogon-tiers',
+                key: 'material-layer',
                 icon: 'sparkles',
-                visual: 'smogonTiers',
-                title: 'patchNotes.tiersTitle',
-                description: 'patchNotes.tiersDesc',
-                cta: 'patchNotes.tiersCta',
-                path: '/meta',
+                visual: 'material',
+                title: 'patchNotes.materialTitle',
+                description: 'patchNotes.materialDesc',
+                cta: 'patchNotes.materialCta',
+                path: '/profile',
             },
             {
-                key: 'builder-tier-filter',
-                icon: 'swords',
-                visual: 'tierFilter',
-                title: 'patchNotes.tierFilterTitle',
-                description: 'patchNotes.tierFilterDesc',
-                cta: 'patchNotes.tierFilterCta',
-                path: '/builder',
+                key: 'small-moments',
+                icon: 'heart',
+                visual: 'delight',
+                title: 'patchNotes.delightTitle',
+                description: 'patchNotes.delightDesc',
+                cta: 'patchNotes.delightCta',
+                path: '/pokedex',
             },
+            {
+                key: 'puzzle-tab',
+                icon: 'puzzle',
+                visual: 'dock',
+                title: 'patchNotes.dockTitle',
+                description: 'patchNotes.dockDesc',
+                cta: 'patchNotes.dockCta',
+                path: '/pokepuzzle',
+            },
+        ],
+    },
+    {
+        version: '1.12.0',
+        month: '2026-09',
+        notes: [
+            { key: 'smogon-tiers', title: 'patchNotes.tiersTitle' },
+            { key: 'builder-tier-filter', title: 'patchNotes.tierFilterTitle' },
         ],
     },
     {

@@ -29,6 +29,8 @@ import {
 import { ConfirmDialog, QuizCelebrationModal } from '../modals';
 import { useQuizRuns } from '../../hooks/useQuizRuns';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
+import { Loader } from '../Loader';
+import { confirmAction } from '../../store/useConfirmStore';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
@@ -692,7 +694,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
                     {isLoadingIndex ? (
                         <div className="generation-quiz__loading-state">
-                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                            <Loader />
                         </div>
                     ) : (
                         <div className="generation-quiz__start-card">
@@ -1074,10 +1076,13 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => {
-                                                        if (window.confirm(language === 'pt' ? 'Tem certeza que quer deletar o progresso desta partida?' : "Are you sure you want to delete this run's progress?")) {
-                                                            deleteRun(run.id);
-                                                        }
+                                                    onClick={async () => {
+                                                        const confirmed = await confirmAction({
+                                                            title: t('dialogs.deleteRunTitle'),
+                                                            message: t('dialogs.deleteRunMsg'),
+                                                            confirmText: t('common.delete'),
+                                                        });
+                                                        if (confirmed) deleteRun(run.id);
                                                     }}
                                                     className="generation-quiz-history__btn generation-quiz-history__btn--delete"
                                                     title={language === 'pt' ? 'Deletar Partida' : 'Delete Run'}
@@ -1091,7 +1096,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
 
                             {isHistoryLoadingMore && (
                                 <div className="generation-quiz__history-loading">
-                                    <div className="generation-quiz__history-loading-spinner" />
+                                    <Loader size="xs" />
                                     <span>{language === 'pt' ? 'Carregando partidas antigas...' : 'Loading older runs...'}</span>
                                 </div>
                             )}

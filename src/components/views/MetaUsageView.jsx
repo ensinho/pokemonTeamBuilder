@@ -6,7 +6,6 @@ import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { PokeballIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
 import { filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
@@ -19,6 +18,7 @@ import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { ShowMoreButton } from '../ShowMoreButton';
+import { Loader } from '../Loader';
 
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 // `unit` names what `count` counts — tournament teams, or weighted ladder games
@@ -220,9 +220,7 @@ export function MetaUsageView() {
     const loading = idxStatus === 'loading' || (usingSmogon ? false : fmtStatus === 'loading');
     if (loading && !ranked.length) {
         return (
-            <div className="flex items-center justify-center" style={{ minHeight: '40vh', color: 'var(--color-primary)' }} role="status" aria-label="Loading">
-                <PokeballIcon className="w-14 h-14 animate-spin opacity-70" />
-            </div>
+            <Loader size="lg" block />
         );
     }
 

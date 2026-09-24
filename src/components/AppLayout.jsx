@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
+import { chooseTheme } from '../store/themeChoice';
 import { useAuthStore, resolveAvatar } from '../store/useAuthStore';
 import { useFriends } from '../hooks/useFriends';
 import { useBattles } from '../hooks/useBattles';
@@ -21,6 +22,7 @@ import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { ShellNavGroup } from './ShellNavGroup';
 import ToastStack from './ToastStack';
 import { TextSizeControl } from './TextSizeControl';
+import { ThemeToggle } from './ThemeToggle';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
@@ -41,6 +43,7 @@ import { useDockCompact } from '../hooks/useDockCompact';
 import {
     AuthModal,
     ConfirmDialog,
+    ConfirmHost,
     GreetingPokemonSelectorModal,
     TrainerSpriteSelectorModal,
     PatchNotesModal,
@@ -54,7 +57,7 @@ import {
 import {
     GithubIcon, LinkedinIcon, CollapseLeftIcon, CollapseRightIcon,
     DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon,
-    HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
+    HomeIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
     MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
@@ -72,13 +75,14 @@ import { HomeView } from './views';
 const loadTeamBuilderView = () => import('./views/TeamBuilderView');
 const loadPokedexView = () => import('./views/PokedexView');
 const loadPokemonDetailView = () => import('./views/PokemonDetailView');
+const loadPokePuzzleView = () => import('./views/PokePuzzleView');
 const loadMetaUsageView = () => import('./views/MetaUsageView');
 // The Mais sheet only exists once its tab is tapped, so it stays out of the
 // boot bundle — and is warmed with the tab destinations, so that tap opens it
 // without waiting on a download.
 const loadMobileMoreSheet = () => import('./MobileMoreSheet');
 const MobileMoreSheet = lazy(() => loadMobileMoreSheet().then((m) => ({ default: m.MobileMoreSheet })));
-const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadMetaUsageView, loadMobileMoreSheet];
+const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet];
 
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
@@ -92,7 +96,7 @@ const BattleListView = lazy(() => import('./views/battle/BattleListView').then((
 const BattleDetailView = lazy(() => import('./views/battle/BattleDetailView').then((m) => ({ default: m.BattleDetailView })));
 const TeamBuilderView = lazy(() => loadTeamBuilderView().then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
-const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
+const PokePuzzleView = lazy(loadPokePuzzleView); // default export
 const MovesListView = lazy(() => import('./views/MovesListView').then((m) => ({ default: m.MovesListView })));
 const MoveDetailView = lazy(() => import('./views/MoveDetailView').then((m) => ({ default: m.MoveDetailView })));
 const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m) => ({ default: m.AbilitiesListView })));
@@ -316,7 +320,7 @@ export default function AppLayout() {
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
-    const { theme, colors, toggleTheme, changeTheme, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType } = useThemeStore();
+    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType } = useThemeStore();
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
@@ -837,7 +841,9 @@ export default function AppLayout() {
         { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
         { key: 'builder', label: t('nav.builder'), icon: <SwordsIcon />, path: '/builder' },
         { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
-        { key: 'meta', label: 'Meta', icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
+        // The daily puzzle is the one thing on a phone that is new every day, so it
+        // earns the thumb slot; Meta moved into the Mais sheet (2026-09-24, Enzo).
+        { key: 'pokepuzzle', label: 'Puzzle', icon: <Puzzle className="w-5 h-5 shrink-0" />, path: '/pokepuzzle' },
     ]), [t]);
 
     // What the Mais sheet lists: the rail's sections minus the tab bar's four,
@@ -1219,6 +1225,9 @@ export default function AppLayout() {
                 colors={colors}
             />
 
+            {/* Answers confirmAction() from anywhere in the app. */}
+            <ConfirmHost />
+
             <ToastStack />
 
             {/* Sidebar Shell Layout */}
@@ -1343,7 +1352,7 @@ export default function AppLayout() {
                                                 setIsSidebarOpen(false);
                                             }}
                                             onOpenPatchNotes={handleOpenPatchNotes}
-                                            onChangeTheme={changeTheme}
+                                            onChangeTheme={chooseTheme}
                                             onSignOut={handleSignOut}
                                         />
                                     )}
@@ -1430,9 +1439,7 @@ export default function AppLayout() {
                             <div className="app-shell__header-actions">
                                 {/* Desktop keeps the quick theme toggle; guests keep it on mobile too. */}
                                 {(!isMobile || isAnonymous) && (
-                                    <button onClick={toggleTheme} type="button" aria-label={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })} className="app-shell__icon-button">
-                                        {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                    </button>
+                                    <ThemeToggle className="app-shell__icon-button" />
                                 )}
                                 {/* Mobile: the top-right icon opens the account & preferences menu. */}
                                 {isMobile && !isAnonymous && (
@@ -1446,7 +1453,7 @@ export default function AppLayout() {
                                         themes={THEME_META}
                                         onOpenProfile={() => navigate('/profile')}
                                         onOpenPatchNotes={handleOpenPatchNotes}
-                                        onChangeTheme={changeTheme}
+                                        onChangeTheme={chooseTheme}
                                         onSignOut={handleSignOut}
                                     />
                                 )}
@@ -1680,7 +1687,7 @@ export default function AppLayout() {
                                             userId={userId}
                                             isAnonymous={isAnonymous}
                                             theme={theme}
-                                            onChangeTheme={changeTheme}
+                                            onChangeTheme={chooseTheme}
                                             language={language}
                                             onChangeLanguage={(lang) => {
                                                 useLanguageStore.getState().setLanguage(lang);
@@ -1826,7 +1833,7 @@ export default function AppLayout() {
                                                 navigate('/profile');
                                             }}
                                             onOpenPatchNotes={handleOpenPatchNotes}
-                                            onChangeTheme={changeTheme}
+                                            onChangeTheme={chooseTheme}
                                             onSignOut={handleSignOut}
                                         />
                                     )}

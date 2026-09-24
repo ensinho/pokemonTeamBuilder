@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 
 import {
     shouldDismissSheet,
+    shouldDismissSwipe,
     releaseVelocity,
     SHEET_DISMISS_FRACTION,
     SHEET_DISMISS_VELOCITY,
@@ -45,5 +46,26 @@ describe('releaseVelocity', () => {
 
     it('is negative for an upward release', () => {
         expect(releaseVelocity([{ y: 200, t: 0 }, { y: 100, t: 100 }])).toBe(-1);
+    });
+});
+
+describe('shouldDismissSwipe', () => {
+    it('dismisses past a fraction of the width, in either direction', () => {
+        expect(shouldDismissSwipe({ dx: 130, width: 358, velocity: 0 })).toBe(true);
+        expect(shouldDismissSwipe({ dx: -130, width: 358, velocity: 0 })).toBe(true);
+        expect(shouldDismissSwipe({ dx: 60, width: 358, velocity: 0 })).toBe(false);
+    });
+
+    it('dismisses a short flick in the direction of travel', () => {
+        expect(shouldDismissSwipe({ dx: 40, width: 358, velocity: 0.8 })).toBe(true);
+        expect(shouldDismissSwipe({ dx: -40, width: 358, velocity: -0.8 })).toBe(true);
+    });
+
+    it('springs back when the flick heads back toward the centre', () => {
+        expect(shouldDismissSwipe({ dx: 60, width: 358, velocity: -0.8 })).toBe(false);
+    });
+
+    it('never dismisses a toast that did not move', () => {
+        expect(shouldDismissSwipe({ dx: 0, width: 358, velocity: 2 })).toBe(false);
     });
 });

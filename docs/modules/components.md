@@ -214,6 +214,40 @@ Current icons: `GithubIcon`, `LinkedinIcon`, `CloseIcon`, `CollapseLeftIcon`, `C
 
 ---
 
+### Design system v2 primitives (2026-09-24)
+
+Built once so no view draws its own again (see `docs/wounds.md`, 2026-09-24). CSS in
+`src/styles/interactions.css`.
+
+- **`Switch`** (`src/components/Switch.jsx`) — the one on/off control:
+  `role="switch"` button, `aria-labelledby`/`aria-describedby` wired from `label` /
+  `description`. `variant="row"` is a settings line (words left, switch right,
+  hairline between stacked rows), `size="sm"` for dense rows, `tone` sets the "on"
+  colour (the damage calculator passes each side's colour). Used by Profile
+  (notifications, Tera), the account menu (Tera), the Pokémon editor (Shiny) and
+  the damage calculator.
+- **`Loader`** (`src/components/Loader.jsx`) — the Poké Ball capture wobble.
+  `size` xs/sm/md/lg (lg takes the primary colour), `label` (visible) or an
+  sr-only "Loading…", `block` to centre it in a padded block. `className="loader--inherit"`
+  inside a filled button. Replaced every CSS ring and spun Poké Ball.
+- **`RollingNumber`** (`src/components/RollingNumber.jsx`, logic in
+  `utils/rollingDigits.js`) — odometer digits keyed from the right; renders its
+  first value still. The editor's "EVs remaining".
+- **`useShinyBurst`** (`src/hooks/useShinyBurst.js` + `components/ShinyBurst.jsx`) —
+  `{ burst, isBursting, fire }`. Fire from the click; render `burst` inside a
+  positioned control; add `is-bursting` so its SVG pops. `--burst-scale` shortens
+  the flight inside a clipping card. No-op under reduced motion.
+- **`ThemeToggle`** (`src/components/ThemeToggle.jsx`) — the header's animated
+  sun ⇄ moon (toggles.dev "Classic", MIT); flips to the theme's pair
+  (`THEME_PAIRS`) through `store/themeChoice.js`.
+- **`confirmAction()` + `ConfirmHost`** (`src/store/useConfirmStore.js`,
+  `components/modals/ConfirmHost.jsx`, mounted once in AppLayout) —
+  `if (await confirmAction({ title, message, confirmText }))`. Replaced every
+  `window.confirm`.
+- **Toast swipe** — `ToastStack`'s `useSwipeToDismiss`: touch/pen drags a toast
+  sideways; `shouldDismissSwipe` (`utils/sheetDismiss.js`) decides, with the same
+  fraction/flick rule as the sheets.
+
 ## Quiz Components
 
 ### PokemonGenerationQuizCard

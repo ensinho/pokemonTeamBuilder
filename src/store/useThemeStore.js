@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { THEMES, applyTheme, applyUiScale } from '../constants/theme';
 import { getBackgroundById } from '../assets/backgrounds';
 import { normalizeUiScale, DEFAULT_UI_SCALE } from '../utils/uiScale';
+import { runThemeTransition } from '../utils/themeTransition';
 
 const UI_SCALE_KEY = 'ptbUiScale';
 const TERA_TYPE_KEY = 'ptbShowTeraType';
@@ -48,7 +49,7 @@ const getInitialWallpaper = () => {
     }
 };
 
-export const useThemeStore = create((set) => {
+export const useThemeStore = create((set, get) => {
     const initialTheme = getInitialTheme();
     const initialUiScale = getInitialUiScale();
     // Apply initial theme immediately to DOM
@@ -64,30 +65,23 @@ export const useThemeStore = create((set) => {
         showTeraType: getInitialShowTeraType(),
         homeWallpaperId: getInitialWallpaper(),
 
-        changeTheme: (nextTheme) => {
+        // `origin` ({ x, y } in viewport px) is where the new theme spreads from
+        // (utils/themeTransition.js). Without one the switch is instant — which
+        // is right for a theme restored from the profile at boot. A choice the
+        // user makes goes through store/themeChoice.js, which also saves it.
+        changeTheme: (nextTheme, origin) => {
             if (!THEMES[nextTheme]) return;
-            applyTheme(nextTheme);
+            const apply = () => {
+                applyTheme(nextTheme);
+                set({ theme: nextTheme, colors: THEMES[nextTheme] });
+            };
+            if (nextTheme === get().theme) apply();
+            else runThemeTransition(apply, origin);
             try {
                 localStorage.setItem('theme', nextTheme);
             } catch (_) {
                 /* ignore */
             }
-            set({ theme: nextTheme, colors: THEMES[nextTheme] });
-        },
-
-        toggleTheme: () => {
-            set((state) => {
-                const ids = Object.keys(THEMES);
-                const idx = ids.indexOf(state.theme);
-                const nextTheme = ids[(idx + 1) % ids.length] || 'dark';
-                applyTheme(nextTheme);
-                try {
-                    localStorage.setItem('theme', nextTheme);
-                } catch (_) {
-                    /* ignore */
-                }
-                return { theme: nextTheme, colors: THEMES[nextTheme] };
-            });
         },
 
         // Interface scale. Written to localStorage so it survives a reload before

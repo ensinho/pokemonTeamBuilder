@@ -10,6 +10,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
+import { Loader } from '../Loader';
 
 const loadDetail = (entry) => getAbilityDetails(entry);
 const prettify = (name = '') => name.replace(/-/g, ' ');
@@ -89,9 +90,7 @@ export function AbilitiesListView() {
             </div>
 
             {isLoadingIndex ? (
-                <div className="team-builder-spinner-wrap" style={{ minHeight: '40vh' }}>
-                    <div className="team-builder-spinner" aria-hidden="true"></div>
-                </div>
+                <Loader size="lg" block />
             ) : total === 0 ? (
                 <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
             ) : (

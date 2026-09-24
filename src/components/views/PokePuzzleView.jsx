@@ -20,6 +20,8 @@ import { typeColors } from '../../constants/types';
 import { getDailyPokemonIndex, checkLetters, getDaysSinceLaunch } from '../../utils/pokePuzzle';
 import { buildPuzzleShare } from '../../utils/pokePuzzleShare';
 import { useForumStore } from '../../store/useForumStore';
+import { Loader } from '../Loader';
+import { confirmAction } from '../../store/useConfirmStore';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -393,7 +395,12 @@ export default function PokePuzzleView() {
 
     // Delete history run progress
     const deleteHistoryRun = async (dateStr) => {
-        if (window.confirm(language === 'pt' ? `Tem certeza que quer deletar o progresso do dia ${dateStr}?` : `Are you sure you want to delete the progress for ${dateStr}?`)) {
+        const confirmed = await confirmAction({
+            title: t('dialogs.deletePuzzleDayTitle', { date: dateStr }),
+            message: t('dialogs.deletePuzzleDayMsg'),
+            confirmText: t('common.delete'),
+        });
+        if (confirmed) {
             localStorage.removeItem(ppKey(userId, `daily:${dateStr}`));
             if (db && userId) {
                 try {
@@ -1094,7 +1101,7 @@ export default function PokePuzzleView() {
                 {/* Load State Indicator */}
                 {isLoadingIndex && (
                     <div className="flex flex-col items-center justify-center py-12">
-                        <div className="team-builder-spinner" aria-hidden="true"></div>
+                        <Loader />
                         <p className="text-xs text-muted mt-3">{t('common.loading')}</p>
                     </div>
                 )}
@@ -1598,7 +1605,7 @@ export default function PokePuzzleView() {
                 >
                     {allowedPool.length === 0 ? (
                         <div className="pokepuzzle-history-loading">
-                            <div className="pokepuzzle-history-loading-spinner" />
+                            <Loader size="xs" />
                             <span>{language === 'pt' ? 'Carregando dados...' : 'Loading data...'}</span>
                         </div>
                     ) : (
@@ -1716,7 +1723,7 @@ export default function PokePuzzleView() {
 
                             {isHistoryLoadingMore && (
                                 <div className="pokepuzzle-history-loading">
-                                    <div className="pokepuzzle-history-loading-spinner" />
+                                    <Loader size="xs" />
                                     <span>{language === 'pt' ? 'Carregando mais dias...' : 'Loading older days...'}</span>
                                 </div>
                             )}

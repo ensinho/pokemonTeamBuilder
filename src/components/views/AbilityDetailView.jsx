@@ -13,7 +13,7 @@ import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
-import { PokeballIcon } from '../icons';
+import { Loader } from '../Loader';
 
 /**
  * Bulbapedia-style reference page for a single ability (/abilities/:name):
@@ -48,9 +48,7 @@ export function AbilityDetailView() {
 
     if (status === 'loading') {
         return (
-            <div className="flex items-center justify-center" style={{ minHeight: '50vh', color: 'var(--color-primary)' }} role="status" aria-label="Loading">
-                <PokeballIcon className="w-14 h-14 animate-spin opacity-70" />
-            </div>
+            <Loader size="lg" block />
         );
     }
 

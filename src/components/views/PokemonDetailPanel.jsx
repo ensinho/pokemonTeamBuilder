@@ -16,6 +16,8 @@ import { usePokemonDetailData } from '../../hooks/usePokemonDetailData';
 import { VERSION_CONFIG, formatTmName } from '../../constants/pokemonVersions';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
+import { useShinyBurst } from '../../hooks/useShinyBurst';
+import { Loader } from '../Loader';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -64,6 +66,9 @@ export function PokemonDetailPanel({
 
     const [activeTab, setActiveTab] = useState('data'); // 'data' | 'competitive' | 'locations' | 'moves' | 'sprites'
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024);
+    // The sparkle a shiny makes, fired by the two buttons that earn it.
+    const shinyBurst = useShinyBurst();
+    const favoriteBurst = useShinyBurst();
 
     const {
         selectedPokemon,
@@ -143,21 +148,30 @@ export function PokemonDetailPanel({
                                     <img src={spriteToShow} alt={selectedPokemonDetails.name} className="mx-auto h-24 w-24 sm:h-36 sm:w-36 image-pixelated hover:scale-105 transition-transform duration-300" />
                                     <button
                                         type="button"
-                                        onClick={() => setShowShiny((value) => !value)}
-                                        className={`absolute -bottom-2 -right-4 rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 border ${showShiny ? 'bg-accent text-bg border-accent' : 'bg-surface-raised text-fg border-border'}`}
+                                        onClick={() => {
+                                            if (!showShiny) shinyBurst.fire();
+                                            setShowShiny((value) => !value);
+                                        }}
+                                        aria-pressed={showShiny}
+                                        className={`absolute -bottom-2 -right-4 rounded-full p-1.5 transition-colors duration-150 active:scale-95 border ${showShiny ? 'bg-accent text-bg border-accent' : 'bg-surface-raised text-fg border-border'} ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
                                         title={language === 'pt' ? 'Alternar Brilhante' : 'Toggle Shiny'}
                                     >
                                         <Sparkles className="w-4 h-4" />
+                                        {shinyBurst.burst}
                                     </button>
                                     {onToggleFavoritePokemon && (
                                         <button
                                             type="button"
-                                            onClick={() => onToggleFavoritePokemon(favoriteId)}
+                                            onClick={() => {
+                                                if (!isFavorite) favoriteBurst.fire();
+                                                onToggleFavoritePokemon(favoriteId);
+                                            }}
                                             aria-pressed={isFavorite}
-                                            className={`absolute -bottom-2 -left-4 rounded-full p-1.5 transition-all duration-200 hover:scale-110 active:scale-95 border ${isFavorite ? 'bg-accent-soft text-accent border-accent-soft' : 'bg-surface-raised text-muted border-border'}`}
+                                            className={`absolute -bottom-2 -left-4 rounded-full p-1.5 transition-colors duration-150 active:scale-95 border ${isFavorite ? 'bg-accent-soft text-accent border-accent-soft' : 'bg-surface-raised text-muted border-border'} ${favoriteBurst.isBursting ? 'is-bursting' : ''}`}
                                             title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
                                         >
-                                            <Star className={`w-4 h-4 ${isFavorite ? 'fill-[#FBBF24] text-[#FBBF24]' : 'text-muted'}`} />
+                                            <Star className={`w-4 h-4 ${isFavorite ? 'fill-current text-warning' : 'text-muted'}`} />
+                                            {favoriteBurst.burst}
                                         </button>
                                     )}
                                 </div>
@@ -433,7 +447,7 @@ export function PokemonDetailPanel({
                     )}
 
                     {isEncountersLoading ? (
-                        <div className="flex-1 flex items-center justify-center py-16"><div className="team-builder-spinner" aria-hidden="true"></div></div>
+                        <div className="flex-1 flex items-center justify-center py-16"><Loader /></div>
                     ) : filteredGroupedEncounters.length > 0 ? (
                         <div className="custom-scrollbar overflow-y-auto pr-1 flex-1 space-y-3">
                             {filteredGroupedEncounters.map((group) => (
@@ -507,7 +521,7 @@ export function PokemonDetailPanel({
                     </div>
 
                     {isMovesLoading ? (
-                        <div className="flex-1 flex items-center justify-center py-20"><div className="team-builder-spinner" aria-hidden="true"></div></div>
+                        <div className="flex-1 flex items-center justify-center py-20"><Loader /></div>
                     ) : (resolvedMoves.levelUp.length > 0 || resolvedMoves.machine.length > 0 || (resolvedMoves.other?.length > 0)) ? (
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
                             {[{ key: 'levelUp', title: t('pokedex.movesLevelUp'), col: t('pokedex.movesHeaderLevel'), rows: resolvedMoves.levelUp },

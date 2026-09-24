@@ -13,6 +13,7 @@ import { EmptyState } from '../EmptyState';
 import { PokeballIcon, CloseIcon, SwordsIcon } from '../icons';
 import { ChallengeModal } from '../modals/ChallengeModal';
 import '../../styles/friends-view.css';
+import { Loader } from '../Loader';
 
 const TABS = ['friends', 'requests', 'find'];
 
@@ -183,7 +184,7 @@ export function FriendsView() {
 
             {activeTab === 'friends' && (
                 isLoadingFriends && friends.length === 0 ? (
-                    <div className="friends-loading"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" /></div>
+                    <div className="friends-loading"><Loader /></div>
                 ) : friends.length === 0 ? (
                     <EmptyState
                         compact
@@ -341,7 +342,7 @@ export function FriendsView() {
                         )}
 
                         {isSearching ? (
-                            <div className="friends-loading"><div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" /></div>
+                            <div className="friends-loading"><Loader /></div>
                         ) : searchTerm.trim().length >= 2 && searchResults.length === 0 ? (
                             <p className="friends-section-empty">{t('friends.noResults')}</p>
                         ) : (

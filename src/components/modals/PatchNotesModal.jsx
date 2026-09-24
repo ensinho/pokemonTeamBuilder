@@ -1,10 +1,12 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Puzzle, Star } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
 import { useModalA11y } from '../../hooks/useModalA11y';
-import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, MessageIcon, PokeballIcon, SparklesIcon, SwordsIcon } from '../icons';
+import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, HomeIcon, MenuIcon, MessageIcon, PokeballIcon, SparklesIcon, SwordsIcon } from '../icons';
+import { ShinyBurst } from '../ShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
 
@@ -327,6 +329,101 @@ const TierFilterVisual = ({ language }) => {
     );
 };
 
+// The 1.13 visuals are drawn with the shipped primitives themselves (the real
+// .segmented thumb, .switch knob, .loader and shiny burst), so the note shows
+// the feel it announces rather than a picture of it. A note is one big button,
+// so these are decorative spans (never nested controls) that step on a timer —
+// and hold still for anyone who prefers reduced motion.
+function useDemoStep(count, ms = 1100) {
+    const [step, setStep] = useState(0);
+    useEffect(() => {
+        if (typeof window === 'undefined' || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return undefined;
+        const id = window.setInterval(() => setStep((value) => (value + 1) % count), ms);
+        return () => window.clearInterval(id);
+    }, [count, ms]);
+    return step;
+}
+
+const MaterialVisual = ({ language }) => {
+    const pt = language === 'pt';
+    const step = useDemoStep(6);
+    const options = pt ? ['Uso', 'A–Z', 'Tipos'] : ['Usage', 'A–Z', 'Types'];
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-3 bg-bg p-3" aria-hidden="true">
+            <span className="segmented segmented--sm">
+                {options.map((option, index) => (
+                    <span key={option} className={`segmented__item ${index === step % 3 ? 'is-active' : ''}`}>{option}</span>
+                ))}
+            </span>
+            <span className="flex items-center gap-5">
+                <span className="switch" aria-checked={step % 2 === 1}>
+                    <span className="switch__track"><span className="switch__knob" /></span>
+                </span>
+                <span className="loader loader--sm"><PokeballIcon className="loader__ball" /></span>
+                <span className={`relative inline-flex text-warning ${step % 3 === 0 ? 'is-bursting' : ''}`}>
+                    <Star className="h-5 w-5" fill="currentColor" />
+                    {step % 3 === 0 && <ShinyBurst key={step} />}
+                </span>
+            </span>
+            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+                {pt ? 'tudo em mola de verdade' : 'every move on a real spring'}
+            </span>
+        </div>
+    );
+};
+
+const DelightVisual = ({ language }) => {
+    const pt = language === 'pt';
+    const step = useDemoStep(2, 1400);
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-3 overflow-hidden bg-bg p-3" aria-hidden="true">
+            {/* A toast nudged sideways and back: the swipe it now answers to. */}
+            <span
+                className="flex w-[15rem] max-w-full items-center gap-2.5 rounded-lg bg-surface-raised p-2.5 shadow-sm transition-transform duration-500 ease-out"
+                style={{ transform: `translateX(${step ? '1.5rem' : '0'})` }}
+            >
+                <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
+                    <SwordsIcon className="h-3.5 w-3.5" />
+                </span>
+                <span className="flex-1 text-[0.7rem] font-semibold text-fg">{pt ? 'Equipe limpa' : 'Team cleared'}</span>
+                <span className="rounded-md bg-primary px-2 py-1 text-[0.62rem] font-bold text-on-primary">{pt ? 'Desfazer' : 'Undo'}</span>
+            </span>
+            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+                {pt ? 'desfazer · deslizar · brilho shiny' : 'undo · swipe · shiny sparkle'}
+            </span>
+        </div>
+    );
+};
+
+const DockVisual = ({ language }) => {
+    const pt = language === 'pt';
+    const tabs = [
+        { key: 'home', label: pt ? 'Início' : 'Home', icon: <HomeIcon className="h-4 w-4" /> },
+        { key: 'builder', label: pt ? 'Construtor' : 'Builder', icon: <SwordsIcon className="h-4 w-4" /> },
+        { key: 'dex', label: 'Pokédex', icon: <PokeballIcon className="h-4 w-4" /> },
+        { key: 'puzzle', label: 'Puzzle', icon: <Puzzle className="h-4 w-4" />, active: true },
+        { key: 'more', label: pt ? 'Mais' : 'More', icon: <MenuIcon className="h-4 w-4" /> },
+    ];
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <span className="flex items-center gap-0.5 rounded-full bg-surface-raised p-1 shadow-sm">
+                {tabs.map(({ key, label, icon, active }) => (
+                    <span
+                        key={key}
+                        className={`flex w-12 flex-col items-center gap-0.5 rounded-full py-1.5 ${active ? 'bg-primary-soft text-primary' : 'text-muted'}`}
+                    >
+                        {icon}
+                        <span className="max-w-full truncate px-0.5 font-mono text-[0.5rem] font-semibold">{label}</span>
+                    </span>
+                ))}
+            </span>
+            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+                {pt ? 'o desafio do dia ao alcance do polegar' : "today's challenge under your thumb"}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -336,6 +433,7 @@ const NOTE_ICONS = {
     flower: FlowerIcon,
     swords: SwordsIcon,
     message: MessageIcon,
+    puzzle: Puzzle,
 };
 
 const NOTE_VISUALS = {
@@ -349,6 +447,9 @@ const NOTE_VISUALS = {
     puzzleShare: PuzzleShareVisual,
     smogonTiers: SmogonTiersVisual,
     tierFilter: TierFilterVisual,
+    material: MaterialVisual,
+    delight: DelightVisual,
+    dock: DockVisual,
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {
@@ -407,7 +508,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                         <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
                             <HeartIcon className="w-4 h-4" />
                         </span>
-                        <p className="text-sm text-fg">{t('patchNotes.thanksBody')}</p>
+                        <p className="text-sm text-fg">{t(CURRENT_RELEASE.thanks || 'patchNotes.thanksBody')}</p>
                     </div>
                 </div>
 

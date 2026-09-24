@@ -1131,15 +1131,6 @@
     gap: var(--space-2);
 }
 
-.pokepuzzle-history-loading-spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid var(--color-border);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: team-builder-spin 0.6s linear infinite;
-}
-
 .pokepuzzle-history__item {
     padding: var(--space-4);
     background: var(--color-surface-raised);

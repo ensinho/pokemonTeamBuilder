@@ -651,20 +651,6 @@
     justify-content: center;
 }
 
-.team-builder-spinner {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    border: 2px solid var(--color-surface-raised);
-    border-top-color: var(--color-primary);
-    animation: team-builder-spin 0.9s linear infinite;
-}
-
-.team-builder-spinner--small {
-    width: 1.75rem;
-    height: 1.75rem;
-}
-
 .team-builder-type-grid {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -1095,12 +1081,6 @@
 
 .team-builder-mobile__recent-card {
     background: var(--color-bg);
-}
-
-@keyframes team-builder-spin {
-    to {
-        transform: rotate(360deg);
-    }
 }
 
 @media (min-width: 1024px) {

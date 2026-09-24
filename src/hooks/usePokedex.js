@@ -69,10 +69,17 @@ export function usePokedex() {
     // Ordered sub-dex sections for the selected game (Central/Coastal/Mountain…).
     const gameDexes = gameSets && game && game !== 'all' ? (gameSets.get(game)?.dexes || null) : null;
 
+    // Favourites only change *which* Pokémon come back while the favourites-only
+    // filter is on. Depending on them unconditionally re-ran the whole fetch on
+    // every star tap — `isLoading` swapped the grid for the loader and back, so
+    // every card in it remounted (and the shiny burst on the tapped star was
+    // torn down with it). Found 2026-09-24.
+    const favoritesInFilter = activeShowOnlyFavorites ? favoritePokemons : null;
+
     useEffect(() => {
         if (!isAuthReady) return;
         fetchInitial(isPokedex);
-    }, [isAuthReady, isPokedex, gen, game, types, typeMode, activeSearch, activeShowOnlyFavorites, favoritePokemons, fetchInitial]);
+    }, [isAuthReady, isPokedex, gen, game, types, typeMode, activeSearch, activeShowOnlyFavorites, favoritesInFilter, fetchInitial]);
 
     // Infinite scroll observer setup
     const observer = useRef(null);

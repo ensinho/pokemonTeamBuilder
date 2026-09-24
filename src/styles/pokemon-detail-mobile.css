@@ -117,6 +117,7 @@
 }
 
 .pdm__iconbtn {
+    position: relative;   /* anchors the shiny burst */
     display: inline-flex;
     align-items: center;
     justify-content: center;

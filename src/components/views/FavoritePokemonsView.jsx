@@ -13,6 +13,7 @@ import { maxWidthBelow } from '../../constants/breakpoints';
 import { useNavigate } from 'react-router-dom';
 import { getPokemonArtworkSpriteUrl, matchesPokemonSearch } from '../../utils/pokemonSprites';
 import { useReferenceStore } from '../../store/useReferenceStore';
+import { Loader } from '../Loader';
 
 const getGenerationLabelForRangeKey = (key) => {
     const romanMap = {
@@ -211,7 +212,7 @@ export function FavoritePokemonsView({
                 <div className="all-teams-view__results mt-4">
                     {activeLoading ? (
                         <div className="team-builder-spinner-wrap py-16">
-                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                            <Loader />
                         </div>
                     ) : (
                         <div>

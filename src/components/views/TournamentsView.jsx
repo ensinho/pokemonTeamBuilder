@@ -8,11 +8,12 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { SourceCredit } from './metaShared';
-import { PokeballIcon, TrophyIcon, ShowdownIcon, ShareIcon, ClearIcon } from '../icons';
+import { TrophyIcon, ShowdownIcon, ShareIcon, ClearIcon } from '../icons';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { ShowMoreButton } from '../ShowMoreButton';
+import { Loader } from '../Loader';
 
 // Match a team against the search term across its Pokémon, title/player,
 // tournament name, placement, format and date — so any of those finds it.
@@ -124,9 +125,7 @@ export function TournamentsView({ onOpenTeam }) {
 
     if (status === 'loading') {
         return (
-            <div className="flex items-center justify-center" style={{ minHeight: '40vh', color: 'var(--color-primary)' }} role="status" aria-label="Loading">
-                <PokeballIcon className="w-14 h-14 animate-spin opacity-70" />
-            </div>
+            <Loader size="lg" block />
         );
     }
 

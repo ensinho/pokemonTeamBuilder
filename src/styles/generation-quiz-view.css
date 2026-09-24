@@ -1412,15 +1412,6 @@
     gap: var(--space-2);
 }
 
-.generation-quiz__history-loading-spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid var(--color-border);
-    border-top-color: var(--color-primary);
-    border-radius: 50%;
-    animation: team-builder-spin 0.6s linear infinite;
-}
-
 /* Custom Quiz Start Card */
 .generation-quiz__start-card {
     display: flex;

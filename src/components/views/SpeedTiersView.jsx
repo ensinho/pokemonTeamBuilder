@@ -10,6 +10,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { TypeBadge } from '../TypeBadge';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
+import { Loader } from '../Loader';
 
 const LEVEL = 50;
 const PAGE = 60;
@@ -139,7 +140,7 @@ export function SpeedTiersView({ generations = [] }) {
 
             {isIndexLoading && pokemonIndex.length === 0 ? (
                 <div className="team-builder-spinner-wrap" style={{ minHeight: '40vh' }}>
-                    <div className="team-builder-spinner" aria-hidden="true"></div>
+                    <Loader />
                 </div>
             ) : ranked.length === 0 ? (
                 <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
