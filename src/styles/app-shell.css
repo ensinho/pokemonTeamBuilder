@@ -1757,39 +1757,58 @@
 }
 
 /* ============================================================
-   MOBILE BOTTOM TAB BAR — primary navigation on < lg (1024px).
-   Thumb-reach nav that replaces the hidden drawer as the primary
-   wayfinding on phones/tablets. "Mais" opens the full drawer for
+   MOBILE TAB DOCK — primary navigation on < lg (1024px).
+   A floating dock rather than a bar glued to the screen's edge:
+   one rounded surface lifted off the page, the way the iOS dock
+   sits over the wallpaper. While the page is scrolled down it
+   shrinks to a small icon-only capsule (`.is-compact`, driven by
+   `useDockCompact`) and returns on the way back up. "Mais" opens
    the long tail. Hidden on desktop.
    ============================================================ */
 .app-shell__tabbar {
+    /* The dock's inner breath, shared with every reservation below. */
+    --dock-pad: var(--space-1_5);
+    /* How far the capsule shrinks. Icons land at ~16px: small, still a glyph. */
+    --dock-compact-scale: 0.68;
+
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 50%;
+    /* Sits on the home indicator's band rather than above all of it: the full
+       34px inset left the dock looking marooned in the middle of the screen. */
+    bottom: max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)));
     z-index: var(--z-sticky);
     display: flex;
     align-items: stretch;
-    justify-content: space-around;
-    gap: var(--space-1);
-    /* Hugs the bottom edge like a native tab bar: the home-indicator inset *is*
-       the bottom padding, rather than a fixed breath added on top of it — that
-       extra 10px was the visible gap under the labels. `max()` keeps a floor for
-       screens with no inset. ~84px total on an iPhone; iOS's own is 83pt. */
-    padding-block: var(--space-1) max(var(--space-2), env(safe-area-inset-bottom, 0px));
-    padding-inline: max(var(--space-2), env(safe-area-inset-left, 0px)) max(var(--space-2), env(safe-area-inset-right, 0px));
+    gap: var(--space-0_5);
+    width: min(calc(100% - var(--space-8)), 26rem);
+    padding: var(--dock-pad);
+    border-radius: var(--radius-full);
+    /* Solid, never blurred (a blur over the one scroller is recomputed every
+       frame). What makes it read as floating is the lift: the elevation token
+       it genuinely earns, plus a hairline drawn inside so the edge survives on
+       the light themes where the shadow is faint. */
+    background: var(--color-surface-elevated);
+    box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--color-border);
+    /* Centre with `translate` and shrink with `scale`: both are their own
+       properties, so they compose instead of overwriting one `transform`, and
+       both run on the compositor — the dock resizes without a layout. */
+    translate: -50% 0;
+    scale: 1;
+    transform-origin: 50% 100%;
+    transition: scale var(--duration-slow) var(--ease-out),
+                translate var(--duration-slow) var(--ease-out);
     /* A long press on a tab must not select its label or raise the link
        callout — both are browser behaviour leaking through app chrome. */
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
-    /* Solid, on the page's own colour, with one hairline. It was a 92% surface
-       under a 12px backdrop blur, and a blur over a scroller is recomputed for
-       every frame the list moves under it — on the one element that is on
-       screen for every scroll of every page. The bar reads as the page's floor
-       rather than a separate slab laid over it. */
-    background: var(--color-bg);
-    border-top: 1px solid var(--color-border);
+}
+
+.app-shell__tabbar.is-compact {
+    scale: var(--dock-compact-scale);
+    /* Settles a step lower as it shrinks, so the capsule hugs the edge
+       instead of hovering where the full dock used to be. */
+    translate: -50% var(--space-2);
 }
 
 @media (min-width: 1024px) {
@@ -1798,14 +1817,15 @@
     }
 }
 
-/* Reserve space so scrolled content + footer clear the fixed bar. Derived from
-   the bar's own parts rather than restated as a magic 3.9rem, which was already
-   0.025rem out and would drift further the next time the bar's padding moved. */
+/* Reserve space so the last of a page scrolls clear of the dock at its full
+   size: the dock's row, its padding, its offset from the edge, and one step of
+   air so content never ends flush against it. */
 @media (max-width: 1023px) {
     .app-shell__content {
         padding-bottom: calc(
-            var(--app-shell-tab-height) + var(--space-1)
-            + max(var(--space-2), env(safe-area-inset-bottom, 0px))
+            var(--app-shell-tab-height) + var(--space-1_5) * 2
+            + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
+            + var(--space-4)
         );
     }
 
@@ -1813,7 +1833,7 @@
         padding-bottom: 0;
     }
 
-    /* A takeover hides the tab bar, so the clearance reserved for it above
+    /* A takeover hides the dock, so the clearance reserved for it above
        becomes a band of dead space at the end of the page. */
     .app-shell__content.is-mobile-detail {
         padding-bottom: 0;
@@ -1829,41 +1849,32 @@
     gap: var(--space-0_5);
     min-width: 0;
     min-height: var(--app-shell-tab-height);
-    /* Two, not four: the indicator pill is taller than the bare glyph it
-       replaced, and at --space-1 the cell outgrew --app-shell-tab-height —
-       which every bottom reservation in the app is computed from. */
     padding: var(--space-0_5) var(--space-1);
     border: none;
-    border-radius: var(--radius-md);
+    /* Concentric with the dock: a pill inside a pill. */
+    border-radius: var(--radius-full);
     background: transparent;
     color: var(--color-muted);
     cursor: pointer;
-    transition: color var(--duration-fast) var(--ease-smooth);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
 }
 
 .app-shell__tab:hover {
     color: var(--color-fg);
 }
 
-/* A tab bar press is felt in the icon, not painted as a rounded fill behind the
-   whole cell — the fill is a web button's pressed state and made the bar read
-   as a row of buttons. The pill behind the glyph takes a light fill and gives a
-   little: a small object answering the finger (the `scale` property, so it
-   composes with anything else the icon carries). */
+/* The press is felt in the glyph — a small object answering the finger — not
+   as a sinking cell (cells in a row never give, design-system). */
 .app-shell__tab:active .app-shell__tab-icon {
-    background: var(--color-surface-hover);
-    scale: 0.92;
+    scale: 0.9;
 }
 
+/* The indicator is the whole cell, a tinted lozenge under icon and label — the
+   current tab says where you are in shape as well as colour (WCAG 1.4.1). Tinted,
+   never filled: the dock's one accent stays quiet. */
 .app-shell__tab.is-active {
     color: var(--color-primary);
-}
-
-/* The indicator. Colour alone said which tab was current — a pill behind the
-   glyph says it in shape too, so "where am I" survives a glance, a bright
-   screen and colour-blindness (WCAG 1.4.1). Tinted, never filled: the bar's
-   one accent stays quiet. After :active so a pressed current tab keeps it. */
-.app-shell__tab.is-active .app-shell__tab-icon {
     background: var(--color-primary-soft);
 }
 
@@ -1871,11 +1882,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 1.75rem;
-    width: 3.25rem;
-    border-radius: var(--radius-full);
-    transition: background-color var(--duration-fast) var(--ease-smooth),
-                scale var(--duration-press) var(--ease-out);
+    transition: scale var(--duration-press) var(--ease-out),
+                translate var(--duration-slow) var(--ease-out);
 }
 
 /* 24px glyphs over a light 10px label: the proportions of a native tab bar. */
@@ -1893,6 +1901,25 @@
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+/* Compact: labels go, and each glyph drops by half the label's line so it sits
+   centred in its cell. Opacity and translate only — no reflow while shrinking. */
+.app-shell__tabbar.is-compact .app-shell__tab-label {
+    opacity: 0;
+}
+
+.app-shell__tabbar.is-compact .app-shell__tab-icon {
+    translate: 0 calc((0.625rem + var(--space-0_5)) / 2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .app-shell__tabbar,
+    .app-shell__tab-icon,
+    .app-shell__tab-label {
+        transition: none;
+    }
 }
 
 /* ============================================================

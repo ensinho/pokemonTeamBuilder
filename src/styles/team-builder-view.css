@@ -601,6 +601,26 @@
     overflow: hidden;
 }
 
+/* Desktop: no recessed well. Panel → dark well → card was three boxes deep for
+   one grid, the "card on a card on a card" that made the Pokédex read as a
+   form. The grid sits on the panel itself, and the cards separate from it by
+   fill — the panel owns the edge, everything inside owns a fill. Compound
+   selector: .pokemon-card is shared and must beat its own base rule. */
+@media (min-width: 1024px) {
+    .team-builder-results {
+        background: transparent;
+        border-radius: 0;
+    }
+
+    .team-builder-results .pokemon-card:not(.pokemon-card--selected) {
+        background: var(--color-surface-raised);
+    }
+
+    .team-builder-results .pokemon-card:not(.pokemon-card--selected):hover {
+        background: var(--color-surface-hover);
+    }
+}
+
 .team-builder-mobile__available {
     /* No nested scroller on mobile — the page itself is the single scroll
        surface, so the picker grid flows full-length instead of living in a

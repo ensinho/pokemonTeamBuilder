@@ -36,6 +36,7 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useAppUpdate } from '../hooks/useAppUpdate';
+import { useDockCompact } from '../hooks/useDockCompact';
 
 import {
     AuthModal,
@@ -484,6 +485,14 @@ export default function AppLayout() {
         // renders one frame first).
         return currentPage === 'pokedex' && searchParams.has('pokemon');
     }, [isMobile, currentPage, searchParams]);
+
+    // The floating tab dock shrinks while the page is scrolled down and comes
+    // back on the way up — `.app-shell__content` is the app's one scroller.
+    const [contentScrollEl, setContentScrollEl] = useState(null);
+    const isDockCompact = useDockCompact(contentScrollEl, {
+        enabled: isMobile && !isMobileDetailsOpen,
+        resetKey: location.pathname,
+    });
 
     // Lock body scroll when mobile details takeover is active
     useEffect(() => {
@@ -1344,7 +1353,7 @@ export default function AppLayout() {
                     </aside>
                 )}
 
-                <div className={`app-shell__content custom-scrollbar ${isMobileDetailsOpen ? 'is-mobile-detail' : ''}`}>
+                <div ref={setContentScrollEl} className={`app-shell__content custom-scrollbar ${isMobileDetailsOpen ? 'is-mobile-detail' : ''}`}>
                     {!isMobileDetailsOpen && (
                         <header className="app-shell__header">
                             <div className="app-shell__header-main">
@@ -1750,7 +1759,7 @@ export default function AppLayout() {
                 </div>
 
                 {isMobile && !isMobileDetailsOpen && (
-                    <nav className="app-shell__tabbar" aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
+                    <nav className={`app-shell__tabbar ${isDockCompact ? 'is-compact' : ''}`} aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
                         {(() => {
                             const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail');
                             // "Mais" answers "where am I" for every page it leads to: with
