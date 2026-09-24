@@ -12,6 +12,7 @@ import { Dices, HelpCircle } from 'lucide-react';
 import { PokemonDetailModal } from '../modals/PokemonDetailModal';
 import { TeamBuilderOnboardingModal } from '../modals/TeamBuilderOnboardingModal';
 import { PokemonCard } from '../PokemonCard';
+import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
 import { TypeBadge } from '../TypeBadge';
@@ -410,6 +411,20 @@ export function TeamBuilderView({
         () => (gameSections ? gameSections.reduce((n, s) => n + s.mons.length, 0) : 0),
         [gameSections]
     );
+
+    const grid = usePickerGridWindow({
+        list: displayedPokemons,
+        sections: isGameFilterActive ? gameSections : null,
+        filters: {
+            regulation: activeRegulationId,
+            generation: selectedGeneration,
+            game: selectedGame,
+            types: selectedTypes,
+            typeMatchMode,
+            search: searchInput,
+            favoritesOnly: showOnlyFavorites,
+        },
+    });
 
     // Picker cards open a detail MODAL (not the fullscreen page). Show immediately
     // with the list data, then enrich with full stats/abilities once they resolve.
@@ -875,7 +890,7 @@ export function TeamBuilderView({
                                 <div className="team-builder-results__scroll custom-scrollbar">
                                     <div className="team-builder-results__grid grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 p-1 py-2">
                                         {isGameFilterActive ? (
-                                            (gameSections || []).map((section) => (
+                                            (grid.visibleSections || []).map((section) => (
                                                 <React.Fragment key={section.key}>
                                                     <h4 className={`pokedex-section-title ${section.key === 'national' ? 'pokedex-section-title--national' : ''}`}>
                                                         {`${section.name} Pokédex`}
@@ -888,7 +903,6 @@ export function TeamBuilderView({
                                                             onAddToTeam={handleAddPokemonWithClear}
                                                             synergyReason={synergyReasonById.get(pokemon.id)}
                                                             isSuggested={synergyReasonById.has(pokemon.id)}
-                                                            colors={colors}
                                                             isFavorite={favoritePokemons.has(pokemon.id)}
                                                             onToggleFavorite={onToggleFavoritePokemon}
                                                         />
@@ -905,12 +919,11 @@ export function TeamBuilderView({
                                                         onCardClick={openDetailModal}
                                                         onAddToTeam={handleAddPokemonWithClear}
                                                         synergyReason={pokemon.primary}
-                                                        colors={colors}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
                                                         onToggleFavorite={onToggleFavoritePokemon}
                                                     />
                                                 ))}
-                                                {displayedPokemons.map((pokemon, index) => (
+                                                {grid.visibleList.map((pokemon, index) => (
                                                     <PokemonCard
                                                         key={pokemon.id}
                                                         details={pokemon}
@@ -919,7 +932,6 @@ export function TeamBuilderView({
                                                         lastRef={!isTierFilterActive && index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
                                                         synergyReason={synergyReasonById.get(pokemon.id)}
                                                         isSuggested={synergyReasonById.has(pokemon.id)}
-                                                        colors={colors}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
                                                         onToggleFavorite={onToggleFavoritePokemon}
                                                     />
@@ -927,6 +939,7 @@ export function TeamBuilderView({
                                             </>
                                         )}
                                     </div>
+                                    {grid.hasMore && <div ref={grid.sentinelRef} className="h-px" aria-hidden="true" />}
                                     {!isGameFilterActive && !isTierFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div></div>}
                                     {((isGameFilterActive && gameVisibleCount === 0 && pokemonIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && !isInitialLoading && (
                                         <div className="px-2 pb-4">

@@ -775,6 +775,15 @@
     backdrop-filter: blur(12px);
 }
 
+/* Condensed, the band leaves the height it gave up behind as flow space, so
+   the grid under it does not jump. `--composer-collapse` is measured by
+   MobileTeamBuilderView. The + --space-3 is the gap `space-y-3` puts above the
+   next section: the parent is a block, so this margin collapses into that one
+   instead of adding to it. */
+.team-builder-mobile__sticky.is-condensed {
+    margin-bottom: calc(var(--composer-collapse, 0px) + var(--space-3));
+}
+
 .team-builder-mobile__composer {
     box-shadow: var(--elevation-2);
     /* Tighter top so the name row sits closer to the card edge. */
@@ -1748,12 +1757,14 @@
     display: flex;
     align-items: stretch;
     gap: var(--space-2);
-    /* Collapsible: the whole actions row folds away when the header condenses. */
+    /* Collapsible: the whole actions row folds away when the header condenses.
+       The height change is instant on purpose — the view measures the band's
+       condensed height in a layout effect to hold its flow space (see
+       --composer-collapse below), and a height still mid-transition would be
+       measured wrong. Only the opacity animates. */
     max-height: 4rem;
     overflow: hidden;
-    transition: max-height var(--duration-normal) var(--ease-smooth),
-                opacity var(--duration-fast) var(--ease-smooth),
-                margin-top var(--duration-normal) var(--ease-smooth);
+    transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 
 .team-builder-mobile__save {
@@ -1820,8 +1831,7 @@
 .team-builder-mobile__composer-analysis {
     max-height: 6rem;
     overflow: hidden;
-    transition: max-height var(--duration-normal) var(--ease-smooth),
-                opacity var(--duration-fast) var(--ease-smooth);
+    transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 
 .team-builder-mobile__composer.is-condensed .team-builder-mobile__composer-analysis {

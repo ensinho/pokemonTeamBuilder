@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildGameSections } from './gameDex';
+import { buildGameSections, limitSections } from './gameDex';
 
 // Minimal index: three base species from different generations plus one Mega and
 // one hypothetical (project-added) Mega, which must never reach a real game's dex.
@@ -47,5 +47,32 @@ describe('buildGameSections', () => {
     it('returns nothing without a dex or an index', () => {
         expect(buildGameSections({ fullIndex: index, gameDexes: null, game: {} })).toEqual([]);
         expect(buildGameSections({ fullIndex: [], gameDexes: dexes, game: {} })).toEqual([]);
+    });
+});
+
+describe('limitSections', () => {
+    const mons = (...ids) => ids.map((id) => ({ id }));
+    const sections = [
+        { key: 'a', name: 'A', mons: mons(1, 2, 3) },
+        { key: 'b', name: 'B', mons: mons(4, 5) },
+        { key: 'national', name: 'National', mons: mons(6) },
+    ];
+
+    it('cuts inside the section the limit lands in and drops the rest', () => {
+        const out = limitSections(sections, 4);
+        expect(out.map((s) => s.key)).toEqual(['a', 'b']);
+        expect(out[1].mons.map((m) => m.id)).toEqual([4]);
+    });
+
+    it('returns the same section objects when nothing is cut', () => {
+        const out = limitSections(sections, 10);
+        expect(out).toEqual(sections);
+        expect(out[0]).toBe(sections[0]);
+    });
+
+    it('never emits a heading with no Pokémon under it', () => {
+        expect(limitSections(sections, 3).map((s) => s.key)).toEqual(['a']);
+        expect(limitSections(sections, 0)).toEqual([]);
+        expect(limitSections(null, 5)).toEqual([]);
     });
 });
