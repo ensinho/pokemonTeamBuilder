@@ -94,3 +94,22 @@ export function buildGameSections({ fullIndex = [], gameDexes, game, matches = (
 
     return sections;
 }
+
+/**
+ * The first `limit` Pokémon across `sections`, keeping each section's heading
+ * with whatever of its list made the cut. Sections past the limit are dropped
+ * whole, so a heading never renders above an empty grid row. Lets the game
+ * view reveal a dex a page at a time without flattening it.
+ */
+export function limitSections(sections, limit) {
+    if (!Array.isArray(sections)) return [];
+    let left = Math.max(0, Math.floor(Number(limit) || 0));
+    const out = [];
+    for (const section of sections) {
+        if (left <= 0) break;
+        const mons = section.mons.length > left ? section.mons.slice(0, left) : section.mons;
+        left -= mons.length;
+        if (mons.length) out.push(mons === section.mons ? section : { ...section, mons });
+    }
+    return out;
+}

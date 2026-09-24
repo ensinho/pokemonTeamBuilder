@@ -22,6 +22,7 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, matchesPokemonSearch } from '../../utils/pokemonSprites';
 import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
 import { useTranslation } from '../../hooks/useTranslation';
+import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import {
     ClearIcon,
     InfoIcon,
@@ -54,7 +55,10 @@ function reasonVisual(reason) {
     return fn ? fn(reason) : { Icon: Sparkles, color: 'var(--color-primary)' };
 }
 
-const MobilePokemonPickerCard = ({
+// Memoised: the grid holds up to a thousand of these, and the view re-renders on
+// every team change and every time the sticky composer condenses. Keep the
+// props stable (no inline callbacks, no per-render objects) or this does nothing.
+const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
     pokemon,
     onAddToTeam,
     isSuggested,
@@ -62,7 +66,7 @@ const MobilePokemonPickerCard = ({
     isFavorite,
     onToggleFavorite,
     lastRef,
-}) => {
+}) {
     const { t, language } = useTranslation();
     const handleCardClick = () => {
         onAddToTeam?.(pokemon);
@@ -146,7 +150,7 @@ const MobilePokemonPickerCard = ({
             ) : null}
         </article>
     );
-};
+});
 
 // Compact, borderless icon-only type mark for the analysis popover (saves space
 // vs the full type name). Type name kept as the tooltip / accessible label.
@@ -413,7 +417,15 @@ export const MobileTeamBuilderView = ({
     // the top, then re-expands near the top. Hysteresis (56/16) keeps it from
     // flickering right at the threshold. The scroll surface is the app shell's
     // content column (`.app-shell__content`), not the window.
+    //
+    // The band is in flow, so shrinking it used to pull the whole grid up by the
+    // height it lost — 35–100px under the user's thumb, right as they started
+    // to scroll or reached for a card — and push it back down on the way up.
+    // The height it gives up stays behind as flow space (`--composer-collapse`,
+    // a bottom margin), so the content never moves; only the header shrinks.
     const [isComposerCondensed, setIsComposerCondensed] = React.useState(false);
+    const stickyRef = useRef(null);
+    const expandedHeightRef = useRef(0);
     React.useEffect(() => {
         const scroller = document.querySelector('.app-shell__content') || window;
         const readY = () => (scroller === window ? window.scrollY : scroller.scrollTop);
@@ -424,7 +436,10 @@ export const MobileTeamBuilderView = ({
                 raf = 0;
                 const y = readY();
                 setIsComposerCondensed((prev) => {
-                    if (!prev && y > 56) return true;
+                    if (!prev && y > 56) {
+                        expandedHeightRef.current = stickyRef.current?.offsetHeight || 0;
+                        return true;
+                    }
                     if (prev && y < 16) return false;
                     return prev;
                 });
@@ -437,6 +452,16 @@ export const MobileTeamBuilderView = ({
             if (raf) cancelAnimationFrame(raf);
         };
     }, []);
+    React.useLayoutEffect(() => {
+        const el = stickyRef.current;
+        if (!el) return;
+        if (!isComposerCondensed) {
+            el.style.removeProperty('--composer-collapse');
+            return;
+        }
+        const lost = Math.max(0, expandedHeightRef.current - el.offsetHeight);
+        el.style.setProperty('--composer-collapse', `${lost}px`);
+    }, [isComposerCondensed]);
     const wantsMeta = { enabled: !isPlaythrough };
     const { byId: smogonById } = useSmogonData(wantsMeta);
     const { byId: usageById } = useCompetitiveUsage(wantsMeta);
@@ -541,9 +566,23 @@ export const MobileTeamBuilderView = ({
         [gameSections]
     );
 
+    const grid = usePickerGridWindow({
+        list: displayedPokemons,
+        sections: isGameFilterActive ? gameSections : null,
+        filters: {
+            regulation: selectedRegulation,
+            generation: selectedGeneration,
+            game: selectedGame,
+            types: selectedTypes,
+            typeMatchMode,
+            search: searchInput,
+            favoritesOnly: showOnlyFavorites,
+        },
+    });
+
     return (
         <div className="team-builder-mobile space-y-3">
-            <div className="team-builder-mobile__sticky">
+            <div ref={stickyRef} className={`team-builder-mobile__sticky ${isComposerCondensed ? 'is-condensed' : ''}`}>
                 <section className={`team-builder-panel team-builder-mobile__composer p-3.5 ${isComposerCondensed ? 'is-condensed' : ''}`}>
                     {/* Row 1: team name + (count ⇄ compact Save) */}
                     <div className="team-builder-mobile__composer-top">
@@ -861,7 +900,7 @@ export const MobileTeamBuilderView = ({
                             <div className="custom-scrollbar">
                                 <div className="team-builder-mobile__grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5">
                                     {isGameFilterActive ? (
-                                        (gameSections || []).map((section) => (
+                                        (grid.visibleSections || []).map((section) => (
                                             <React.Fragment key={section.key}>
                                                 <h4 className={`pokedex-section-title pokedex-section-title--mobile ${section.key === 'national' ? 'pokedex-section-title--national' : ''}`}>
                                                     {`${section.name} Pokédex`}
@@ -875,7 +914,6 @@ export const MobileTeamBuilderView = ({
                                                         isSuggested={synergyReasonById.has(pokemon.id)}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
                                                         onToggleFavorite={onToggleFavoritePokemon}
-                                                        colors={colors}
                                                     />
                                                 ))}
                                             </React.Fragment>
@@ -891,10 +929,9 @@ export const MobileTeamBuilderView = ({
                                                     synergyReason={pokemon.primary}
                                                     isFavorite={favoritePokemons.has(pokemon.id)}
                                                     onToggleFavorite={onToggleFavoritePokemon}
-                                                    colors={colors}
                                                 />
                                             ))}
-                                            {displayedPokemons.map((pokemon, index) => (
+                                            {grid.visibleList.map((pokemon, index) => (
                                                 <MobilePokemonPickerCard
                                                     key={pokemon.id}
                                                     pokemon={pokemon}
@@ -903,13 +940,13 @@ export const MobileTeamBuilderView = ({
                                                     isSuggested={synergyReasonById.has(pokemon.id)}
                                                     isFavorite={favoritePokemons.has(pokemon.id)}
                                                     onToggleFavorite={onToggleFavoritePokemon}
-                                                    colors={colors}
                                                     lastRef={index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
                                                 />
                                             ))}
                                         </>
                                     )}
                                 </div>
+                                {grid.hasMore && <div ref={grid.sentinelRef} className="h-px" aria-hidden="true" />}
 
                                 {!isGameFilterActive && isFetchingMore && (
                                     <div className="team-builder-spinner-wrap py-4">

@@ -54,6 +54,10 @@ const createTeamMember = (fullPokemon, preset = null) => {
     };
 };
 
+// Adds still resolving their full record (see handleAddPokemon). Saving waits
+// for them, so a team saved right after a tap is not stored half-built.
+const pendingAdds = new Set();
+
 let cachedMegaStones = null;
 const getMegaStones = async () => {
     if (cachedMegaStones) return cachedMegaStones;
@@ -123,8 +127,7 @@ export const useActiveTeamStore = create((set, get) => ({
     },
 
     handleAddPokemon: async (pokemon) => {
-        const { currentTeam } = get();
-        if (currentTeam.length >= 6) {
+        if (get().currentTeam.length >= 6) {
             toast.warning(t('toast.teamFull'), {
                 description: t('toast.teamFullDesc'),
                 actions: [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }],
@@ -136,25 +139,71 @@ export const useActiveTeamStore = create((set, get) => ({
         // so a freshly added member arrives pre-filled with the most-used build.
         const setPromise = competitivePresetFor(pokemon.id).catch(() => null);
 
-        // The Pokédex/Team Builder list now carries only lightweight index data
-        // (no abilities/moves/stats). Lazily resolve the full record on add so the
-        // member — and the editor modal — have everything they need.
-        let fullPokemon = pokemon;
-        if (!pokemon.abilities?.length || !pokemon.moves?.length) {
-            const resolved = await resolvePokemonDetail(pokemon.id);
-            if (!resolved) {
-                toast.error(t('toast.pokemonLoadError'), {
-                    actions: [{ label: t('toast.retry'), onClick: () => get().handleAddPokemon(pokemon) }],
-                });
-                return;
-            }
-            // Keep any list-provided fields (e.g. derived sprites) but layer the fat data on top.
-            fullPokemon = { ...pokemon, ...resolved };
-        }
-
-        const set_ = await setPromise;
-        set({ currentTeam: [...currentTeam, createTeamMember(fullPokemon, set_)] });
+        // Optimistic: the slot fills on the tap, from the list entry alone (it
+        // already has id, name, types and sprite — all the slot and the type
+        // analysis read). The full record and the preset land in place when they
+        // resolve. Waiting for them first put a Firestore round-trip, sometimes a
+        // PokéAPI one too, between the tap and any visible answer — a second or
+        // more on a phone, which read as the tap not registering. It also
+        // captured `currentTeam` before the await, so a second tap during that
+        // wait overwrote the first Pokémon instead of adding beside it.
+        const placeholder = createTeamMember(pokemon);
+        const { instanceId } = placeholder;
+        set((state) => ({ currentTeam: [...state.currentTeam, placeholder] }));
         get().recalculateAnalysis();
+
+        const completion = (async () => {
+            // The list carries only lightweight index data (no abilities/moves/
+            // stats). Resolve the full record so the member — and the editor
+            // modal — have everything they need.
+            let fullPokemon = pokemon;
+            if (!pokemon.abilities?.length || !pokemon.moves?.length) {
+                const resolved = await resolvePokemonDetail(pokemon.id);
+                if (!resolved) {
+                    set((state) => ({ currentTeam: state.currentTeam.filter((m) => m.instanceId !== instanceId) }));
+                    get().recalculateAnalysis();
+                    toast.error(t('toast.pokemonLoadError'), {
+                        actions: [{ label: t('toast.retry'), onClick: () => get().handleAddPokemon(pokemon) }],
+                    });
+                    return;
+                }
+                // Keep any list-provided fields (e.g. derived sprites) but layer the fat data on top.
+                fullPokemon = { ...pokemon, ...resolved };
+            }
+
+            const complete = createTeamMember(fullPokemon, await setPromise);
+            set((state) => {
+                const current = state.currentTeam.find((m) => m.instanceId === instanceId);
+                // Removed, cleared or replaced by the randomizer while we waited.
+                if (!current) return {};
+                // Customised already (the editor opened on the placeholder): the
+                // user's choices win over the preset.
+                const customization = current.customization === placeholder.customization
+                    ? complete.customization
+                    : current.customization;
+                const member = { ...complete, instanceId, customization };
+                const patch = {
+                    currentTeam: state.currentTeam.map((m) => (m.instanceId === instanceId ? member : m)),
+                };
+                if (state.editingTeamMember?.instanceId === instanceId) {
+                    patch.editingTeamMember = {
+                        ...state.editingTeamMember,
+                        ...fullPokemon,
+                        instanceId,
+                        customization: state.editingTeamMember.customization,
+                    };
+                }
+                return patch;
+            });
+            get().recalculateAnalysis();
+        })();
+
+        pendingAdds.add(completion);
+        try {
+            await completion;
+        } finally {
+            pendingAdds.delete(completion);
+        }
     },
 
     // Fill the team with up to `count` random distinct Pokémon drawn from `pool`
@@ -241,6 +290,7 @@ export const useActiveTeamStore = create((set, get) => ({
     },
 
     handleSaveTeam: async (savedTeams) => {
+        if (pendingAdds.size) await Promise.allSettled([...pendingAdds]);
         const { currentTeam, teamName, editingTeamId } = get();
         const userId = useAuthStore.getState().userId;
 
