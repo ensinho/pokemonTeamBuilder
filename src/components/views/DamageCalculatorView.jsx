@@ -639,9 +639,9 @@ export function DamageCalculatorView() {
         const accentBg = side === 'p1' ? 'bg-[#F08030]' : 'bg-[#6890F0]';
         const moveOpts = (pState.movesPool || []).map((mv) => ({ slug: mv.name, name: capitalize(mv.name) }));
         return (
-            <div className="bg-surface border border-border rounded-xl p-4 shadow-sm space-y-3">
+            <div className="dmg-panel bg-surface border border-border rounded-xl p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between border-b border-border pb-2">
-                    <span className="text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5" style={{ color: accent }}>
+                    <span className="dmg-caps dmg-caps--title text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5" style={{ color: accent }}>
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />
                         {side === 'p1' ? 'Pokémon 1' : 'Pokémon 2'}
                         {pState.isMega && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surface-raised text-muted">MEGA</span>}
@@ -689,7 +689,7 @@ export function DamageCalculatorView() {
                     only ever becomes true through this toggle, so the maths below
                     simply never sees it. */}
                 {showTeraType && (
-                    <div className="bg-bg/40 p-2.5 rounded-lg border border-border flex items-center justify-between gap-3">
+                    <div className="dmg-subpanel bg-bg/40 p-2.5 rounded-lg border border-border flex items-center justify-between gap-3">
                         <ToggleSwitch checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label="Terastallize" activeColor={accentBg} />
                         <select
                             className="dmg-select text-xs py-1 w-28"
@@ -703,14 +703,14 @@ export function DamageCalculatorView() {
                 )}
 
                 {/* Nature + stats */}
-                <div className="bg-bg/40 p-2.5 rounded-lg border border-border">
+                <div className="dmg-subpanel bg-bg/40 p-2.5 rounded-lg border border-border">
                     <div className="flex items-center justify-between gap-2 pb-2 mb-2 border-b border-border">
                         <label className="dmg-field__label mb-0 shrink-0">Nature</label>
                         <select className="dmg-select text-xs py-1 max-w-[13rem]" value={pState.nature} onChange={(e) => setP(prev => ({ ...prev, nature: e.target.value }))}>
                             {NATURE_OPTIONS.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                         </select>
                     </div>
-                    <div className="flex items-center gap-1.5 px-0.5 pb-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted">
+                    <div className="dmg-caps flex items-center gap-1.5 px-0.5 pb-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted">
                         <span className="w-7 shrink-0">Stat</span>
                         <span className="w-6 shrink-0 text-center">Base</span>
                         <span className="w-8 shrink-0 text-center">IV</span>
@@ -782,7 +782,7 @@ export function DamageCalculatorView() {
                 </div>
 
                 {/* Remaining HP (used as the target when the other Pokémon attacks it) */}
-                <div className="bg-bg/30 p-2.5 rounded-lg border border-border space-y-1.5">
+                <div className="dmg-subpanel bg-bg/30 p-2.5 rounded-lg border border-border space-y-1.5">
                     <div className="flex items-center justify-between text-[11px] font-semibold select-none">
                         <span className="text-muted">Remaining HP</span>
                         <span className="font-mono text-fg">{pState.currentHp}%</span>
@@ -864,7 +864,7 @@ export function DamageCalculatorView() {
     return (
         <div className="dmg-calc space-y-4">
             {/* ── FIELD BAR ─────────────────────────────────────────────── */}
-            <div className="bg-surface border border-border rounded-xl px-3 py-2.5 shadow-sm">
+            <div className="dmg-panel bg-surface border border-border rounded-xl px-3 py-2.5 shadow-sm">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     {/* Format */}
                     <div className="order-1 inline-flex h-8 items-stretch bg-bg border border-border rounded-lg p-0.5">
@@ -881,8 +881,8 @@ export function DamageCalculatorView() {
 
                     {/* Weather */}
                     <div className="order-3 flex items-center gap-1.5 w-full min-w-0 sm:order-2 sm:w-auto">
-                        <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Weather</span>
-                        <div className="flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
+                        <span className="dmg-caps w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Weather</span>
+                        <div className="dmg-rail flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
                             {WEATHERS.map((w) => (
                                 <button
                                     key={w.v}
@@ -897,8 +897,8 @@ export function DamageCalculatorView() {
 
                     {/* Terrain */}
                     <div className="order-4 flex items-center gap-1.5 w-full min-w-0 sm:order-3 sm:w-auto">
-                        <span className="w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Terrain</span>
-                        <div className="flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
+                        <span className="dmg-caps w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Terrain</span>
+                        <div className="dmg-rail flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
                             {TERRAINS.map((tr) => (
                                 <button
                                     key={tr.v}
@@ -937,7 +937,7 @@ export function DamageCalculatorView() {
                 {showField && (
                     <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <span className="text-[10px] font-bold text-[#F08030] uppercase tracking-wider">Pokémon 1 side (boosts)</span>
+                            <span className="dmg-caps text-[10px] font-bold text-[#F08030] uppercase tracking-wider">Pokémon 1 side (boosts)</span>
                             <div className="grid grid-cols-1 gap-1.5">
                                 {[
                                     { key: 'helpingHand', label: 'Helping Hand (×1.5)' },
@@ -956,7 +956,7 @@ export function DamageCalculatorView() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <span className="text-[10px] font-bold text-[#6890F0] uppercase tracking-wider">Pokémon 2 side (screens / hazards)</span>
+                            <span className="dmg-caps text-[10px] font-bold text-[#6890F0] uppercase tracking-wider">Pokémon 2 side (screens / hazards)</span>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                                 {[
                                     { key: 'reflect', label: 'Reflect' },
@@ -1018,9 +1018,9 @@ export function DamageCalculatorView() {
 
                 {/* Live damage (centerpiece) */}
                 <div className={`lg:col-span-4 ${activeTab === 'damage' ? 'block' : 'hidden'} lg:block`}>
-                    <div className="bg-surface border border-border rounded-xl p-4 shadow-sm space-y-4 lg:sticky lg:top-4">
+                    <div className="dmg-panel bg-surface border border-border rounded-xl p-4 shadow-sm space-y-4 lg:sticky lg:top-4">
                         <div className="flex items-center justify-between border-b border-border pb-2">
-                            <span className="text-xs font-extrabold tracking-wider uppercase text-fg flex items-center gap-1.5">
+                            <span className="dmg-caps dmg-caps--title text-xs font-extrabold tracking-wider uppercase text-fg flex items-center gap-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
                                 Live Damage
                             </span>

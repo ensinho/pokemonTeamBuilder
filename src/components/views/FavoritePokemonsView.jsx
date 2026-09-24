@@ -8,6 +8,8 @@ import { ClearIcon, StarIcon } from '../icons';
 import { ExternalLink } from 'lucide-react';
 import { EmptyState } from '../EmptyState';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { maxWidthBelow } from '../../constants/breakpoints';
 import { useNavigate } from 'react-router-dom';
 import { getPokemonArtworkSpriteUrl, matchesPokemonSearch } from '../../utils/pokemonSprites';
 import { useReferenceStore } from '../../store/useReferenceStore';
@@ -46,6 +48,7 @@ export function FavoritePokemonsView({
     isLoading,
 }) {
     const { t, language } = useTranslation();
+    const isMobile = useMediaQuery(maxWidthBelow('lg'));
     const navigate = useNavigate();
     const [searchInput, setSearchInput] = useState('');
     const [selectedType, setSelectedType] = useState('all');
@@ -193,7 +196,9 @@ export function FavoritePokemonsView({
                                 className="team-builder-field team-builder-field--compact team-builder-select appearance-none"
                                 aria-label={t('favorites.groupByLabel')}
                             >
-                                <option value="none">{t('favorites.groupNone')}</option>
+                                {/* Half a phone row cannot hold "Sem Agrupamento" at the 16px the
+                                    iOS zoom guard gives every select; the short label can. */}
+                                <option value="none">{isMobile ? t('favorites.groupNoneShort') : t('favorites.groupNone')}</option>
                                 <option value="generation">{t('favorites.groupGeneration')}</option>
                                 <option value="type">{t('favorites.groupType')}</option>
                             </select>
@@ -226,7 +231,7 @@ export function FavoritePokemonsView({
                             ) : groupBy === 'generation' ? (
                                 <div className="flex flex-col gap-2 py-4">
                                     {groupedByGen.map(([groupName, pokemonList]) => (
-                                        <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md">
+                                        <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm max-lg:backdrop-filter-none transition-all duration-300 hover:shadow-md">
                                             <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
                                                 <h3 className="text-base font-bold text-fg capitalize tracking-wide flex items-center gap-2">
                                                     <StarIcon className="w-4 h-4 text-warning shrink-0" />
@@ -257,7 +262,7 @@ export function FavoritePokemonsView({
                             ) : (
                                 <div className="flex flex-col gap-2 py-4">
                                     {groupedByType.map(([groupName, pokemonList]) => (
-                                        <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm transition-all duration-300 hover:shadow-md">
+                                        <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm max-lg:backdrop-filter-none transition-all duration-300 hover:shadow-md">
                                             <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
                                                 <h3 className="text-base font-bold text-fg capitalize tracking-wide flex items-center gap-2">
                                                     {typeIcons[groupName] && (

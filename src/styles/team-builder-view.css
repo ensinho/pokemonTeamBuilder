@@ -2006,3 +2006,112 @@
         inset: calc(-1 * var(--space-2));
     }
 }
+
+/* ==========================================================================
+   PHONE BUILDER — one surface per job (< lg)
+   MobileTeamBuilderView only renders below lg; the media query restates it.
+   ========================================================================== */
+@media (max-width: 1023px) {
+    /* The band behind the sticky composer is opaque, so its 12px backdrop blur
+       blurred nothing you could see — and was recomputed on every frame of the
+       results grid scrolling under it. */
+    .team-builder-mobile__sticky {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    /* A border or a shadow, never both. The band already lifts it off the grid. */
+    .team-builder-mobile__composer {
+        box-shadow: none;
+    }
+
+    /* Search, results and analysis were each a bordered panel with 14px of
+       padding inside the page gutter: ~30px of width a panel spent drawing a
+       box round one search field, and the grid's 75 cards drawn inside a box.
+       They are sections of the page now; what is in them carries the fill.
+       (The composer is inside __sticky, so it is not a direct child.) */
+    .team-builder-mobile > .team-builder-panel {
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        padding: 0;
+    }
+
+    /* Straight on the page, so surface, not raised — raised on the page is
+       #f6f6f7 on #f2f2f3 on the light themes, i.e. no edge at all. Controls
+       take the control edge (--color-border-strong). */
+    .team-builder-mobile .team-builder-mobile__search-field,
+    .team-builder-mobile .team-builder-mobile__filter-toggle,
+    .team-builder-mobile .team-builder-mobile__saved-icon {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface);
+    }
+
+    .team-builder-mobile .team-builder-mobile__filter-toggle.has-active,
+    .team-builder-mobile .team-builder-mobile__filter-toggle.is-open {
+        border-color: var(--color-primary);
+    }
+
+    .team-builder-mobile__result-head {
+        margin-top: var(--space-1);
+    }
+
+    /* Compound: this file loads before index.css, whose `gap-1.5` utility on
+       the same element would otherwise win. */
+    .team-builder-mobile .team-builder-mobile__grid {
+        gap: var(--space-2);
+    }
+
+    /* Cards: surface on the page, pressed by fill (never by scale — a card
+       that shrinks under the thumb reads as the grid wobbling). */
+    .team-builder-mobile .team-builder-mobile-card,
+    .team-builder-mobile .team-builder-mobile-card.is-suggested,
+    .team-builder-mobile .team-builder-mobile-card.is-synergy {
+        overflow: hidden;
+        background: var(--color-surface);
+        box-shadow: none;
+    }
+
+    .team-builder-mobile .team-builder-mobile-card:active {
+        background: var(--color-surface-active);
+    }
+
+    .team-builder-mobile .team-builder-mobile-card__media {
+        position: relative;
+    }
+
+    /* The suggestion, said once and legibly: 10px, the reason's own colour and
+       icon, where the 7px label used to hide. */
+    .team-builder-mobile-card__reason-label {
+        display: flex;
+        align-items: center;
+        gap: var(--space-1);
+        margin-top: var(--space-0_5);
+        font-size: 0.625rem;
+        font-weight: 600;
+        letter-spacing: 0;
+        color: var(--synergy-color, var(--color-primary));
+    }
+
+    .team-builder-mobile-card__reason-label svg {
+        flex-shrink: 0;
+        width: 0.75rem;
+        height: 0.75rem;
+    }
+
+    .team-builder-mobile-card__reason-label > span {
+        min-width: 0;
+    }
+
+    .team-builder-mobile-card__reason-label.is-suggested {
+        color: var(--color-success);
+    }
+
+    /* Analysis: cards on the page take the surface fill and lose the line; the
+       page fades in as a whole, so no staggered entrance per card. */
+    .team-builder-mobile .team-builder-analysis-card {
+        border: none;
+        background: var(--color-surface);
+        animation: none;
+    }
+}

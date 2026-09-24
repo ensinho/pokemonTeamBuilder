@@ -1602,3 +1602,82 @@
         transition-duration: 0.001ms !important;
     }
 }
+/* ============================================================
+   PHONES (< lg) — shared by the three quiz-style games
+   (Generation Quiz, PokéQuiz, PokéRoom import this file).
+   ============================================================ */
+@media (max-width: 1023px) {
+    /* The game panel is the page: its console and cards carry the surfaces.
+       It was a bordered box inset inside the gutter, holding a second card. */
+    .generation-quiz__grid-panel {
+        padding: 0;
+        border-color: transparent;
+        background: transparent;
+    }
+
+    /* The setup card: one surface — it wore a border, a radial gradient, a
+       large shadow and a 24px radius inside that panel. */
+    .generation-quiz__start-card {
+        padding: var(--space-6) var(--space-4);
+        border-color: transparent;
+        border-radius: var(--radius-lg);
+        background: var(--color-surface);
+        box-shadow: none;
+    }
+
+    /* The label is set in caps in the markup ("SELECIONAR GERAÇÃO"); read it
+       as the sentence it is. Block, because ::first-letter only applies to a
+       block box. */
+    /* A dashed rule means "empty / locked" in this app; this one only
+       separated the intro from the picker, which the spacing already does. */
+    .generation-quiz__start-selector {
+        border-top: none;
+    }
+
+    .generation-quiz__start-selector-label {
+        display: block;
+        letter-spacing: 0;
+        text-transform: lowercase;
+    }
+
+    .generation-quiz__start-selector-label::first-letter {
+        text-transform: uppercase;
+    }
+
+    /* Generation pills: filled; only the chosen ones carry an edge. */
+    .generation-quiz__selector-pill:not(.is-active) {
+        border-color: transparent;
+    }
+
+    .generation-quiz__selector-pill-count {
+        background: color-mix(in srgb, var(--color-fg) 8%, transparent);
+    }
+
+    /* The start button spans the card, so "Começar Quiz (151 Pokémon)" is one
+       line instead of two, and sits under the thumb. */
+    .generation-quiz__start-card-btn {
+        width: 100%;
+        padding-inline: var(--space-4);
+        box-shadow: none;
+    }
+
+    .generation-quiz__history-overlay {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: var(--scrim);
+    }
+
+    /* Answer cards (both quizzes): on the page now, so the surface fill and no
+       outline; no staggered entrance — a Gen I run is 151 of them arriving
+       one after another behind the page's own fade. */
+    .generation-quiz-card {
+        min-height: 0;
+        border-color: transparent;
+        background: var(--color-surface);
+        animation: none;
+    }
+
+    .generation-quiz-card__placeholder {
+        background: var(--color-surface-raised);
+    }
+}

@@ -13,6 +13,38 @@ import { ClearIcon } from '../icons';
 const prettify = (name = '') => name.replace(/-/g, ' ');
 const loadDetail = (entry) => getItemDetails(entry);
 
+// Memoised row: only the row whose detail just landed (or that was opened)
+// re-renders, not every revealed row once per arrival (see MoveRow).
+const ItemRow = React.memo(function ItemRow({ entry, d, isOpen, onToggle, t }) {
+    return (
+        <button
+            type="button"
+            onClick={() => onToggle(entry.name)}
+            aria-expanded={isOpen}
+            className={`ref-row ref-row--items ${isOpen ? 'is-open' : ''}`}
+        >
+            {d?.sprite
+                ? <img src={d.sprite} alt="" aria-hidden="true" className="ref-sprite" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
+                : <span className="ref-sprite" aria-hidden="true" />}
+
+            <span className="ref-row__name">
+                {prettify(entry.name)}
+                {d?.category && <span className="ref-row__sub">{prettify(d.category)}</span>}
+            </span>
+
+            <span className="ref-col-itemeffect">
+                <span className="ref-row__effect">{d ? d.effect : <span className="ref-skeleton ref-skeleton--wide" />}</span>
+            </span>
+
+            <span className="ref-num ref-num--muted">{d ? (d.cost || '—') : ''}</span>
+
+            {isOpen && (
+                <span className="ref-effect">{d ? d.effect : t('db.loadingDetails')}</span>
+            )}
+        </button>
+    );
+});
+
 export function ItemsListView() {
     const { t } = useTranslation();
     useDocumentMeta({
@@ -86,38 +118,16 @@ export function ItemsListView() {
                         <span className="ref-num">{t('db.colCost')}</span>
                     </div>
 
-                    {visible.map((entry) => {
-                        const d = details[entry.name];
-                        const isOpen = openName === entry.name;
-                        return (
-                            <button
-                                key={entry.name}
-                                type="button"
-                                onClick={() => toggle(entry.name)}
-                                aria-expanded={isOpen}
-                                className={`ref-row ref-row--items ${isOpen ? 'is-open' : ''}`}
-                            >
-                                {d?.sprite
-                                    ? <img src={d.sprite} alt="" aria-hidden="true" className="ref-sprite" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
-                                    : <span className="ref-sprite" aria-hidden="true" />}
-
-                                <span className="ref-row__name">
-                                    {prettify(entry.name)}
-                                    {d?.category && <span className="ref-row__sub">{prettify(d.category)}</span>}
-                                </span>
-
-                                <span className="ref-col-itemeffect">
-                                    <span className="ref-row__effect">{d ? d.effect : <span className="ref-skeleton ref-skeleton--wide" />}</span>
-                                </span>
-
-                                <span className="ref-num ref-num--muted">{d ? (d.cost || '—') : ''}</span>
-
-                                {isOpen && (
-                                    <span className="ref-effect">{d ? d.effect : t('db.loadingDetails')}</span>
-                                )}
-                            </button>
-                        );
-                    })}
+                    {visible.map((entry) => (
+                        <ItemRow
+                            key={entry.name}
+                            entry={entry}
+                            d={details[entry.name]}
+                            isOpen={openName === entry.name}
+                            onToggle={toggle}
+                            t={t}
+                        />
+                    ))}
 
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}
                 </div>

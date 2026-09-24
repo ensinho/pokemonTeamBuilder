@@ -142,7 +142,7 @@ export function PokemonUsageView() {
     const usageLoading = fmtStatus === 'loading' && !byId;
 
     return (
-        <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
+        <main className="edv-page usage-view mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <button type="button" onClick={goBack} className="edv-back">
                     <ChevronLeft className="h-4 w-4 shrink-0" />

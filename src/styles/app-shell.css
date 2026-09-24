@@ -33,32 +33,6 @@
     overflow: hidden;
 }
 
-/* The drawer's scrim: the shared one (index.css --scrim), not a sixth shade of
-   black. Always in the DOM so it can fade *out* with the drawer; hidden by
-   visibility once transparent, so it never swallows a tap. Moves on the drawer
-   curve and duration — the two are one gesture. */
-.app-shell__overlay {
-    position: fixed;
-    inset: 0;
-    z-index: var(--z-overlay);
-    background: var(--scrim);
-    backdrop-filter: blur(var(--scrim-blur));
-    -webkit-backdrop-filter: blur(var(--scrim-blur));
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity var(--duration-entrance) var(--ease-drawer),
-                visibility 0s linear var(--duration-entrance);
-}
-
-.app-shell__overlay.is-open {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transition: opacity var(--duration-entrance) var(--ease-drawer),
-                visibility 0s linear 0s;
-}
-
 .app-shell__sidebar {
     position: fixed;
     inset: 0 auto 0 0;
@@ -1624,78 +1598,15 @@
         display: none;
     }
 
-    /* ---- Mobile sidebar drawer ---------------------------------------
-       The sidebar is an off-canvas drawer you pull in from the left edge
-       (see useEdgeSwipe). Give it comfortable mobile sizing, larger tap
-       targets, a rounded leading edge and a depth shadow when open. */
+    /* The sidebar is not rendered below lg — the tab bar is the navigation and
+       "Mais" opens MobileMoreSheet (more-sheet.css), so the drawer sizing that
+       lived here went with it. */
     .app-shell {
-        --app-shell-sidebar-width: min(17rem, 82vw);
-        --app-shell-gutter: var(--space-3_5);
-        /* Thumb-sized rows want a wider inset; the section labels follow it. */
-        --app-shell-row-inset: var(--space-3);
         /* 52px, not 60. The band sits directly under the status bar on a phone,
            and the extra height read as a gap between the two (Enzo's iPhone):
            app headers hug the top edge. Everything keyed to the band — the
            Pokédex search that sticks under it — follows automatically. */
         --app-shell-top-band-height: 3.25rem;
-    }
-
-    .app-shell__sidebar {
-        border-right: none;
-        border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-        box-shadow: 0 0 0 1px var(--color-border);
-    }
-
-    .app-shell__sidebar.is-open {
-        box-shadow: var(--shadow-xl), 0 0 0 1px var(--color-border);
-    }
-
-    /* Thumb-sized, not roomy. At 44px rows with a 4px gap and a section gap of
-       16px, a 797px-tall drawer showed the pinned four, one section and half of
-       the next before the list was cut off (Enzo's iPhone). Full-width rows are
-       easy targets at 40px; the tail now scrolls in view instead of hiding. */
-    .app-shell__nav {
-        padding: var(--space-2) var(--app-shell-gutter);
-    }
-
-    .app-shell__nav-list,
-    .app-shell__nav-group-list {
-        gap: var(--space-0_5);
-    }
-
-    .app-shell__nav-list--primary {
-        margin-bottom: var(--space-3);
-    }
-
-    .app-shell__nav-group {
-        margin-top: var(--space-3);
-    }
-
-    .app-shell__nav-link,
-    .app-shell__account-button {
-        min-height: 2.5rem;
-        font-size: 0.95rem;
-    }
-
-    /* The nav scrolls behind a clipped bottom edge; without a breath above the
-       pinned block, a half-clipped row butted straight into the filled Install
-       button and read as the button sitting on top of the list. */
-    .app-shell__sidebar-bottom {
-        padding-top: var(--space-2);
-    }
-
-    .app-shell__nav-icon {
-        width: 1.35rem;
-        height: 1.35rem;
-    }
-
-    .app-shell__nav-icon>svg {
-        width: 1.2rem;
-        height: 1.2rem;
-    }
-
-    .app-shell__brand {
-        height: 4rem;
     }
 
     /* The site footer is a desktop object. On a phone it was 191px — 23% of an
@@ -1719,14 +1630,10 @@
     /* viewport-fit=cover (index.html) is what makes env(safe-area-inset-*) real
        at all; without it the tab bar's bottom inset was always 0 and sat under
        the home indicator. The price is that content may now reach under a notch
-       in landscape, so the scroller and the drawer take the side insets back. */
+       in landscape, so the scroller takes the side insets back. */
     .app-shell__content {
         padding-left: env(safe-area-inset-left, 0px);
         padding-right: env(safe-area-inset-right, 0px);
-    }
-
-    .app-shell__sidebar {
-        padding-left: env(safe-area-inset-left, 0px);
     }
 }
 
@@ -1830,6 +1737,25 @@
     transform: scale(0.98);
 }
 
+/* Phones: an empty state is usually the whole page (a guest's Friends, an
+   empty My Teams), and a dashed box round it was a box inside the page inside
+   the screen — with the view's own panel around that, often a third. Box-free
+   it reads as the page speaking: illustration, one line, one action. The CTA
+   takes the large control height so it is a thumb target, not a link. */
+@media (max-width: 1023px) {
+    .empty-state {
+        margin-top: var(--space-2);
+        padding: var(--space-8) var(--space-4);
+        border: none;
+        background: transparent;
+    }
+
+    .empty-state__action {
+        min-height: var(--control-h-lg);
+        padding-inline: var(--space-5);
+    }
+}
+
 /* ============================================================
    MOBILE BOTTOM TAB BAR — primary navigation on < lg (1024px).
    Thumb-reach nav that replaces the hidden drawer as the primary
@@ -1857,9 +1783,12 @@
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
-    background: color-mix(in srgb, var(--color-surface) 92%, transparent);
-    backdrop-filter: blur(12px) saturate(1.15);
-    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+    /* Solid, on the page's own colour, with one hairline. It was a 92% surface
+       under a 12px backdrop blur, and a blur over a scroller is recomputed for
+       every frame the list moves under it — on the one element that is on
+       screen for every scroll of every page. The bar reads as the page's floor
+       rather than a separate slab laid over it. */
+    background: var(--color-bg);
     border-top: 1px solid var(--color-border);
 }
 
@@ -1900,7 +1829,10 @@
     gap: var(--space-0_5);
     min-width: 0;
     min-height: var(--app-shell-tab-height);
-    padding: var(--space-1);
+    /* Two, not four: the indicator pill is taller than the bare glyph it
+       replaced, and at --space-1 the cell outgrew --app-shell-tab-height —
+       which every bottom reservation in the app is computed from. */
+    padding: var(--space-0_5) var(--space-1);
     border: none;
     border-radius: var(--radius-md);
     background: transparent;
@@ -1915,23 +1847,35 @@
 
 /* A tab bar press is felt in the icon, not painted as a rounded fill behind the
    whole cell — the fill is a web button's pressed state and made the bar read
-   as a row of buttons. A small, fast scale on a small object is the one place
-   the design system allows a transform. */
+   as a row of buttons. The pill behind the glyph takes a light fill and gives a
+   little: a small object answering the finger (the `scale` property, so it
+   composes with anything else the icon carries). */
 .app-shell__tab:active .app-shell__tab-icon {
-    transform: scale(0.88);
+    background: var(--color-surface-hover);
+    scale: 0.92;
 }
 
 .app-shell__tab.is-active {
     color: var(--color-primary);
 }
 
+/* The indicator. Colour alone said which tab was current — a pill behind the
+   glyph says it in shape too, so "where am I" survives a glance, a bright
+   screen and colour-blindness (WCAG 1.4.1). Tinted, never filled: the bar's
+   one accent stays quiet. After :active so a pressed current tab keeps it. */
+.app-shell__tab.is-active .app-shell__tab-icon {
+    background: var(--color-primary-soft);
+}
+
 .app-shell__tab-icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    height: 1.5rem;
-    width: 1.5rem;
-    transition: transform var(--duration-press) var(--ease-out);
+    height: 1.75rem;
+    width: 3.25rem;
+    border-radius: var(--radius-full);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
 }
 
 /* 24px glyphs over a light 10px label: the proportions of a native tab bar. */
@@ -1949,4 +1893,89 @@
     font-weight: 500;
     line-height: 1;
     letter-spacing: 0;
+}
+
+/* ============================================================
+   PHONE CHROME — the header band and how a page arrives (< lg).
+   ============================================================ */
+@media (max-width: 1023px) {
+    /* Solid, like the tab bar: the header is sticky over the app's one
+       scroller, so its 12px backdrop blur was recomputed on every frame of
+       every scroll. On the page's own colour there is nothing to blur. */
+    .app-shell__header {
+        background: var(--color-bg);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+
+    /* The edge appears once content has gone under the header, as a native
+       navigation bar's does; at rest the header and the page are one surface.
+       Opacity only, so the scroll-driven version below runs off the main thread.
+       Engines without scroll timelines keep the header edgeless, which is the
+       at-rest look — nothing to fall back from. */
+    .app-shell__header::after {
+        content: '';
+        position: absolute;
+        inset: auto 0 0;
+        height: 1px;
+        background: var(--color-border);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* The title is the band's one job now that the menu button is gone: the
+       navigation-bar size, on the page's left edge. */
+    .app-shell__header-title {
+        font-size: 1rem;
+    }
+
+    /* Glyphs, not bordered squares — a bordered surface tile in a title bar is a
+       web control. 40px circles; the pull-in puts the last glyph on the page's
+       right gutter instead of 12px inside it. */
+    .app-shell__header-actions {
+        margin-right: calc(var(--space-2) * -1);
+    }
+
+    .app-shell__header .app-shell__icon-button {
+        width: 2.5rem;
+        height: 2.5rem;
+        border: none;
+        border-radius: var(--radius-full);
+        background: transparent;
+        color: var(--color-fg);
+    }
+
+    .app-shell__header .app-shell__icon-button > svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    /* A page arrives instead of blinking in. Opacity only: a transform here
+       would make the view root the containing block for every `position:
+       fixed` child for the length of the animation (sheets, sticky composers
+       jumping), and `backwards` rather than `both` so nothing — no stacking
+       context, no layer — is left on the page once it has landed. The view
+       root is new DOM only when the route's component changes, so a param
+       change (/pokemon/25 → 26, the swipe deck) does not replay it. */
+    .app-shell__page-frame > * {
+        animation: app-shell-page-in var(--duration-slow) var(--ease-out) backwards;
+    }
+}
+
+@supports (animation-timeline: scroll()) {
+    @media (max-width: 1023px) {
+        .app-shell__header::after {
+            animation: app-shell-edge-in linear both;
+            animation-timeline: scroll(nearest block);
+            animation-range: 0 var(--space-4);
+        }
+    }
+}
+
+@keyframes app-shell-edge-in {
+    to { opacity: 1; }
+}
+
+@keyframes app-shell-page-in {
+    from { opacity: 0; }
 }

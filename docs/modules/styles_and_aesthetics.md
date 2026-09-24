@@ -299,6 +299,9 @@ The `custom-scrollbar` class in `index.css` reads `--scrollbar-track-color` and 
 | `src/styles/random-generator-view.css` | RandomGeneratorView — cards, evolution chain |
 | `src/styles/forum-view.css` | FeedView — topic list, messages, composer |
 | `src/styles/locations-view.css` | Currently unused (legacy) |
+| `src/styles/more-sheet.css` | MobileMoreSheet — the phone's "Mais" tile grid |
+| `src/styles/meta-view.css` | MetaUsageView — phone layout only (desktop is utilities) |
+| `src/styles/gyms-view.css` | GymsView — phone layout only (desktop is utilities) |
 
 **Convention:** When writing new CSS for a view, write it in that view's dedicated `.css` file. Never add view-specific rules to `index.css`.
 
@@ -310,6 +313,15 @@ The `custom-scrollbar` class in `index.css` reads `--scrollbar-track-color` and 
 - The team builder has two full variants: `TeamBuilderView` (desktop) and `MobileTeamBuilderView` (mobile). AppLayout selects between them based on a `isMobile` check.
 - iOS Safari input zoom: Inputs enforce `font-size: 16px` on mobile via the global rule in `index.css` to prevent auto-zoom.
 - Touch targets: Interactive elements should be at least 44×44px on mobile.
+
+### The phone layer (< 1024px) — 2026-09-24
+
+- **Chrome.** Solid header (page title on the left edge, glyph actions on the right, a hairline that fades in once content scrolls under it — a scroll-driven opacity animation, `app-shell.css`), solid tab bar with a tinted pill on the current tab, and no sidebar at all: the tab bar's "Mais" opens `MobileMoreSheet` (see components.md). Pages fade in on route change (opacity only, `backwards` fill).
+- **No blur on phones** — not on bars, sticky strips, scrims or glass cards. Blur over a scroller is recomputed every frame it moves; phones get opaque fills (and `--scrim` alone behind sheets).
+- **The page is the panel.** Views drop their top-level box on phones and their contents take `--color-surface`; controls on the page take `--color-surface` + `--color-border-strong`. Headings are sentence case in the display voice.
+- **Motion.** No per-item entrances (`.motion-enter` / `.motion-stagger` are off below lg); infinite animations animate opacity/transform only; skeletons breathe instead of shimmering.
+- **Lists.** `content-visibility: auto` on long lists of cheap rows (Speed Tiers); memoised rows where data streams into one map (the database lists).
+- **Cascade order.** View stylesheets load before `index.css`, so to override a Tailwind utility on the same element from a view stylesheet, use a compound selector. Details in the `/design-system` skill and `docs/wounds.md`.
 
 ---
 

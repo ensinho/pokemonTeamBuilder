@@ -3,6 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { AllTeamsView } from './AllTeamsView';
 import { FavoritePokemonsView } from './FavoritePokemonsView';
 import { useTranslation } from '../../hooks/useTranslation';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { maxWidthBelow } from '../../constants/breakpoints';
 import { SavedTeamsIcon, StarsIcon } from '../icons';
 
 /**
@@ -12,6 +14,7 @@ import { SavedTeamsIcon, StarsIcon } from '../icons';
  */
 export function FavoritesView({ teamsProps, pokemonProps }) {
     const { t } = useTranslation();
+    const isMobile = useMediaQuery(maxWidthBelow('lg'));
     const [params, setParams] = useSearchParams();
     // Teams are the default tab (most-used surface); Pokémon needs ?tab=pokemon.
     const tab = params.get('tab') === 'pokemon' ? 'pokemon' : 'teams';
@@ -41,8 +44,34 @@ export function FavoritesView({ teamsProps, pokemonProps }) {
         </button>
     );
 
+    // Phones: the shared segmented control, one line, counts as badges. The
+    // desktop pills wrapped to two lines each at 390px ("Times / Salvos 0"), and
+    // the chosen one spent the view's single accent as a solid primary fill on
+    // what is only a filter. Same state, same handler — only the control differs.
+    const mobileTabs = [
+        { id: 'teams', label: t('favorites.tabTeamsShort'), count: teamCount },
+        { id: 'pokemon', label: t('favorites.tabPokemonShort'), count: pokemonCount },
+    ];
+
     return (
         <div className="flex flex-col gap-3">
+            {isMobile ? (
+                <div className="segmented segmented--lg segmented--block" role="tablist" aria-label={t('favorites.title')}>
+                    {mobileTabs.map(({ id, label, count }) => (
+                        <button
+                            key={id}
+                            type="button"
+                            role="tab"
+                            aria-selected={tab === id}
+                            onClick={() => selectTab(id)}
+                            className="segmented__item"
+                        >
+                            {label}
+                            <span className="count-badge">{count}</span>
+                        </button>
+                    ))}
+                </div>
+            ) : (
             <div className="flex gap-2" role="tablist" aria-label={t('favorites.title')}>
                 <TabButton
                     id="teams"
@@ -57,6 +86,7 @@ export function FavoritesView({ teamsProps, pokemonProps }) {
                     count={pokemonCount}
                 />
             </div>
+            )}
 
             {tab === 'teams'
                 ? <AllTeamsView {...teamsProps} />

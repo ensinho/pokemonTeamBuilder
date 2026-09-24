@@ -9,10 +9,13 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { maxWidthBelow } from '../../constants/breakpoints';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getGameLogo, getGameAccent } from '../../assets/gameLogos';
 import '../../styles/game-cover.css';
+import '../../styles/gyms-view.css';
 
 const slugify = (name = '') => name.toLowerCase().trim().replace(/[.'’:]/g, '').replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 const pretty = (s = '') => s.replace(/-/g, ' ');
@@ -70,7 +73,7 @@ function GymGamePickerModal({ open, onClose, official, hacks, selectedKey, onSel
     ) : null);
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose} role="presentation">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm max-lg:backdrop-filter-none" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
@@ -105,7 +108,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
     if (!open || !leader) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" onClick={onClose} role="presentation">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm max-lg:backdrop-filter-none" onClick={onClose} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
@@ -304,11 +307,11 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
             onClick={handleMonClick}
             disabled={!id}
             title={pretty(mon.name)}
-            className="group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-raised/60 hover:border-border p-3 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
+            className="gyms-mon group flex flex-col items-center gap-2 rounded-2xl border border-border bg-surface-raised/20 hover:bg-surface-raised/60 hover:border-border p-3 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary w-full"
         >
             <div className="relative">
                 <div
-                    className="h-16 w-16 flex items-center justify-center tb-type-disc"
+                    className="gyms-mon__disc h-16 w-16 flex items-center justify-center tb-type-disc"
                     style={{
                         '--type-a': types[0] ? typeColors[types[0]] : accent,
                         '--type-b': types[1] ? typeColors[types[1]] : (types[0] ? typeColors[types[0]] : accent)
@@ -329,7 +332,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
 
             <div className="flex flex-col items-center min-w-0 w-full mt-1.5">
                 <span className="w-full truncate text-xs font-extrabold capitalize text-fg leading-tight">{pretty(mon.name)}</span>
-                <div className="flex flex-wrap justify-center gap-1 mt-1.5">
+                <div className="gyms-mon__types flex flex-wrap justify-center gap-1 mt-1.5">
                     {types.map((tp) => (
                         <span
                             key={tp}
@@ -358,6 +361,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
 export function GymsView({ showDetails, onAddToTeam }) {
     const { language } = useTranslation();
     const pt = language === 'pt';
+    const isMobile = useMediaQuery(maxWidthBelow('lg'));
     useDocumentMeta({
         title: 'Gym Leaders',
         description: 'Gym leaders and their teams across every Pokémon game, region by region.',
@@ -412,8 +416,13 @@ export function GymsView({ showDetails, onAddToTeam }) {
         }
     }, [selected]);
 
-    // Scrollspy effect
+    // Scrollspy effect. Desktop only: what it drives — the sticky jump nav and
+    // the active card's outline — does not exist below lg (the nav is
+    // `hidden lg:block`, and the phone card has no outline). On a phone each
+    // leader crossing the band re-rendered the whole view, 13 leaders and ~160
+    // sprites, mid-scroll: most of the page's dropped frames.
     React.useEffect(() => {
+        if (isMobile) return;
         if (status !== 'ready' || !selected || !selected.leaders || !selected.leaders.length) return;
 
         const observerOptions = {
@@ -439,7 +448,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
         });
 
         return () => observer.disconnect();
-    }, [selected, status]);
+    }, [selected, status, isMobile]);
 
     const scrollToLeader = (leader) => {
         const id = `leader-${leader.order}-${slugify(leader.name)}`;
@@ -471,7 +480,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                 key={`${leader.order}-${leader.name}`}
                 id={`leader-${leader.order}-${slugify(leader.name)}`}
                 onClick={() => setModalLeader(leader)}
-                className={`team-builder-panel p-4 flex flex-col gap-4 border border-border border-l-4 transition-all duration-200 cursor-pointer shadow-sm relative overflow-hidden group/card animate-fade-in-up ${isChamp
+                className={`gyms-leader team-builder-panel p-4 flex flex-col gap-4 border border-border border-l-4 transition-all duration-200 cursor-pointer shadow-sm relative overflow-hidden group/card animate-fade-in-up ${isChamp
                         ? active
                             ? 'border-yellow-500 shadow-yellow-500/10'
                             : 'hover:border-yellow-500/50'
@@ -487,13 +496,13 @@ export function GymsView({ showDetails, onAddToTeam }) {
                     scrollMarginTop: '1.5rem',
                 }}
             >
-                <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+                <div className="gyms-leader__head flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
                     <div className="flex items-center gap-3">
                         <TrainerAvatar sprite={leader.sprite} type={leader.type} order={isChamp ? '★' : leader.order} accent={isChamp ? '#eab308' : accent} />
                         <div className="min-w-0">
                             <h2 className="text-lg font-extrabold text-fg leading-none flex items-center gap-1.5">
                                 {leader.name}
-                                {isChamp && <Sparkles className="h-4 w-4 text-yellow-500 animate-pulse shrink-0" />}
+                                {isChamp && <Sparkles className="gyms-leader__sparkle h-4 w-4 text-yellow-500 animate-pulse shrink-0" />}
                             </h2>
                             <p className="text-xs text-muted mt-1.5">
                                 {[leader.gym, leader.city].filter(Boolean).join(' · ')}
@@ -540,7 +549,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-1">
+                <div className="gyms-leader__team grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 mt-1">
                     {leader.team.map((mon, i) => {
                         const entry = resolve(mon.name);
                         return (
@@ -560,7 +569,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
     };
 
     return (
-        <div className="mx-auto max-w-[1600px] px-3 py-4 sm:px-5 sm:py-5">
+        <div className="gyms-view mx-auto max-w-[1600px] px-3 py-4 sm:px-5 sm:py-5">
             <GymGamePickerModal
                 open={pickerOpen}
                 onClose={() => setPickerOpen(false)}
@@ -713,7 +722,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             {/* Gym Leaders Section */}
                             {gymLeaders.length > 0 && (
                                 <div className="space-y-4">
-                                    <div className="border-b border-border pb-2">
+                                    <div className="gyms-section-head border-b border-border pb-2">
                                         <h2 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
                                             <span>{pt ? 'Líderes de Ginásio' : 'Gym Leaders'}</span>
                                             <span className="text-xs font-normal text-muted">({gymLeaders.length})</span>
@@ -728,7 +737,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             {/* Pokémon League Section */}
                             {eliteFourAndChamp.length > 0 && (
                                 <div className="space-y-4 pt-4">
-                                    <div className="border-b border-border pb-2">
+                                    <div className="gyms-section-head border-b border-border pb-2">
                                         <h2 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
                                             <Trophy className="h-4 w-4 text-primary" />
                                             <span>{pt ? 'Elite dos Quatro & Campeão' : 'Elite Four & Champion'}</span>

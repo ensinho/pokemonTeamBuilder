@@ -33,7 +33,6 @@ import { setNavigator, setSignInPrompt } from '../utils/navigation';
 import { splashHoldMs, splashProgress } from '../utils/bootSplash';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { useEdgeSwipe } from '../hooks/useEdgeSwipe';
 import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useAppUpdate } from '../hooks/useAppUpdate';
@@ -52,7 +51,7 @@ import {
 } from './modals';
 
 import {
-    GithubIcon, LinkedinIcon, CloseIcon, CollapseLeftIcon, CollapseRightIcon,
+    GithubIcon, LinkedinIcon, CollapseLeftIcon, CollapseRightIcon,
     DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon,
     HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
     MapPinIcon, MessageIcon,
@@ -65,17 +64,32 @@ import { BoxIcon, Puzzle, Medal, TrendingUp, Users } from 'lucide-react';
 // the initial bundle — the heavy ones (Pokedex, PokePuzzle) dominate it.
 import { HomeView } from './views';
 
+// The phone's tab destinations, plus the screen the Pokédex opens. Named so the
+// idle prefetch below and React.lazy share one import: the module loader caches
+// the promise, so a prefetched chunk renders on the first tap instead of
+// suspending behind the route fallback for a network round trip.
+const loadTeamBuilderView = () => import('./views/TeamBuilderView');
+const loadPokedexView = () => import('./views/PokedexView');
+const loadPokemonDetailView = () => import('./views/PokemonDetailView');
+const loadMetaUsageView = () => import('./views/MetaUsageView');
+// The Mais sheet only exists once its tab is tapped, so it stays out of the
+// boot bundle — and is warmed with the tab destinations, so that tap opens it
+// without waiting on a download.
+const loadMobileMoreSheet = () => import('./MobileMoreSheet');
+const MobileMoreSheet = lazy(() => loadMobileMoreSheet().then((m) => ({ default: m.MobileMoreSheet })));
+const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadMetaUsageView, loadMobileMoreSheet];
+
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
 const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
 const CategoryGuesserView = lazy(() => import('./views/CategoryGuesserView').then((m) => ({ default: m.CategoryGuesserView })));
 const SecretRoomGuesserView = lazy(() => import('./views/SecretRoomGuesserView').then((m) => ({ default: m.SecretRoomGuesserView })));
-const PokedexView = lazy(() => import('./views/PokedexView').then((m) => ({ default: m.PokedexView })));
+const PokedexView = lazy(() => loadPokedexView().then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
 const BattleListView = lazy(() => import('./views/battle/BattleListView').then((m) => ({ default: m.BattleListView })));
 const BattleDetailView = lazy(() => import('./views/battle/BattleDetailView').then((m) => ({ default: m.BattleDetailView })));
-const TeamBuilderView = lazy(() => import('./views/TeamBuilderView').then((m) => ({ default: m.TeamBuilderView })));
+const TeamBuilderView = lazy(() => loadTeamBuilderView().then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
 const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
 const MovesListView = lazy(() => import('./views/MovesListView').then((m) => ({ default: m.MovesListView })));
@@ -84,13 +98,13 @@ const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m
 const AbilityDetailView = lazy(() => import('./views/AbilityDetailView').then((m) => ({ default: m.AbilityDetailView })));
 const ItemsListView = lazy(() => import('./views/ItemsListView').then((m) => ({ default: m.ItemsListView })));
 const ItemDetailView = lazy(() => import('./views/ItemDetailView').then((m) => ({ default: m.ItemDetailView })));
-const PokemonDetailView = lazy(() => import('./views/PokemonDetailView').then((m) => ({ default: m.PokemonDetailView })));
+const PokemonDetailView = lazy(() => loadPokemonDetailView().then((m) => ({ default: m.PokemonDetailView })));
 const DamageCalculatorView = lazy(() => import('./views/DamageCalculatorView').then((m) => ({ default: m.DamageCalculatorView })));
 const SpeedTiersView = lazy(() => import('./views/SpeedTiersView').then((m) => ({ default: m.SpeedTiersView })));
 const TournamentsView = lazy(() => import('./views/TournamentsView').then((m) => ({ default: m.TournamentsView })));
 const TournamentTeamView = lazy(() => import('./views/TournamentTeamView').then((m) => ({ default: m.TournamentTeamView })));
 const TeamDetailView = lazy(() => import('./views/TeamDetailView').then((m) => ({ default: m.TeamDetailView })));
-const MetaUsageView = lazy(() => import('./views/MetaUsageView').then((m) => ({ default: m.MetaUsageView })));
+const MetaUsageView = lazy(() => loadMetaUsageView().then((m) => ({ default: m.MetaUsageView })));
 const PokemonUsageView = lazy(() => import('./views/PokemonUsageView').then((m) => ({ default: m.PokemonUsageView })));
 const GymsView = lazy(() => import('./views/GymsView').then((m) => ({ default: m.GymsView })));
 const NotFoundView = lazy(() => import('./views/NotFoundView').then((m) => ({ default: m.NotFoundView })));
@@ -437,9 +451,15 @@ export default function AppLayout() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    // Ensure sidebar is always expanded when on mobile
+    // Ensure sidebar is always expanded when on mobile — and closed: on a phone
+    // `isSidebarOpen` means "the Mais sheet is up", and a desktop window resized
+    // (or a tablet rotated) below lg arrives with it true, which would open the
+    // sheet unasked.
     useEffect(() => {
-        if (isMobile) setIsSidebarCollapsed(false);
+        if (isMobile) {
+            setIsSidebarCollapsed(false);
+            setIsSidebarOpen(false);
+        }
     }, [isMobile]);
 
     // What the sidebar actually renders as. The icon rail is a *desktop*
@@ -477,13 +497,11 @@ export default function AppLayout() {
         };
     }, [isMobileDetailsOpen]);
 
-    // Mobile gesture: pull from the left edge to open the sidebar, swipe left to close.
-    useEdgeSwipe({
-        enabled: isMobile && !isMobileDetailsOpen,
-        isOpen: isSidebarOpen,
-        onOpen: () => setIsSidebarOpen(true),
-        onClose: () => setIsSidebarOpen(false),
-    });
+    // No edge-swipe gesture on phones any more. It pulled the sidebar in from the
+    // left edge, and the phone no longer has a left drawer: "Mais" opens a bottom
+    // sheet (MobileMoreSheet) that drags down to close like every other sheet. A
+    // left-edge swipe is also mobile Safari's own "back" gesture, which the old
+    // one raced in a browser tab.
 
 
     // Auth Splash Loader
@@ -496,6 +514,21 @@ export default function AppLayout() {
     // snapshot) and the reference data every view reads is in the store. Only
     // the mobile splash waits on this; see src/utils/bootSplash.js.
     const isBootSettled = isAuthReady && isAuthReconciled && generations.length > 0;
+
+    // Phones: once boot has settled and the main thread is idle, fetch the tab
+    // bar's destinations so the first tap on each is a render, not a download.
+    // Waiting for boot keeps these chunks out of the way of the requests the
+    // splash is holding for; a failed prefetch is harmless (lazy() retries).
+    useEffect(() => {
+        if (!isMobile || !isBootSettled) return undefined;
+        const warm = () => MOBILE_PREFETCH.forEach((load) => { load().catch(() => {}); });
+        if ('requestIdleCallback' in window) {
+            const handle = window.requestIdleCallback(warm, { timeout: 4000 });
+            return () => window.cancelIdleCallback(handle);
+        }
+        const handle = window.setTimeout(warm, 1500);
+        return () => window.clearTimeout(handle);
+    }, [isMobile, isBootSettled]);
 
     const splashMessages = useMemo(() => [
         t('splash.msg1'),
@@ -676,7 +709,9 @@ export default function AppLayout() {
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
-            'profile': { title: t('profile.title'), subtitle: t('profile.trainerProfile') },
+            // "Cartão de Treinador & Preferências" ellipsised at "Prefe…" in a phone
+            // header; the phone gets the tab-length name.
+            'profile': { title: t('profile.title'), shortTitle: t('nav.profile'), subtitle: t('profile.trainerProfile') },
             'pokemonDetail': { title: t('nav.pokemonList'), subtitle: t('home.shortcutPokedexDesc') },
             'moves': { title: t('nav.moves'), subtitle: t('db.movesSubtitle') },
             'abilities': { title: t('nav.abilities'), subtitle: t('db.abilitiesSubtitle') },
@@ -786,6 +821,30 @@ export default function AppLayout() {
 
         return groups;
     }, [isAdmin, t, language, pendingFriendRequests, battlesAwaitingMe]);
+
+    // The phone's bottom tab bar. One definition, read by the bar itself and by
+    // the Mais sheet, which leaves out whatever the bar already shows.
+    const mobileTabs = useMemo(() => ([
+        { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
+        { key: 'builder', label: t('nav.builder'), icon: <SwordsIcon />, path: '/builder' },
+        { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
+        { key: 'meta', label: 'Meta', icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
+    ]), [t]);
+
+    // What the Mais sheet lists: the rail's sections minus the tab bar's four,
+    // with the Feed — pinned on the desktop rail, absent from the bar — joining
+    // the social section beside Friends and Battles, where a phone looks for it.
+    const moreSheetSections = useMemo(() => {
+        const inTabBar = new Set(mobileTabs.map((tab) => tab.key));
+        const feed = primaryNavItems.find((item) => item.key === 'feed');
+        return navigationGroups
+            .map((group) => ({
+                ...group,
+                items: (group.key === 'dashboard' && feed ? [feed, ...group.items] : group.items)
+                    .filter((item) => !inTabBar.has(item.key)),
+            }))
+            .filter((group) => group.items.length > 0);
+    }, [mobileTabs, primaryNavItems, navigationGroups]);
 
     // Landing on a page that lives inside a folded section unfolds it, so "where
     // am I" is answered by the rail itself rather than only by a dot on a folded
@@ -1155,16 +1214,11 @@ export default function AppLayout() {
 
             {/* Sidebar Shell Layout */}
             <div className="app-shell">
-                {/* Always mounted, so it can fade out on the drawer's own curve
-                    instead of vanishing while the drawer is still sliding. */}
-                <div
-                    className={`app-shell__overlay lg:hidden ${isSidebarOpen ? 'is-open' : ''}`}
-                    onClick={() => setIsSidebarOpen(false)}
-                    role="presentation"
-                    aria-hidden={!isSidebarOpen}
-                    aria-label={t('layout.closeSidebar')}
-                />
-                {!isMobileDetailsOpen && (
+                {/* The rail is a desktop object. Below lg the tab bar is the
+                    navigation and its "Mais" tab opens MobileMoreSheet (after the
+                    content column), so the old off-canvas drawer, its scrim and
+                    its phone-only rows are gone from here. */}
+                {!isMobile && (
                     <aside className={`app-shell__sidebar ${isRailCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}>
                         <div className="app-shell__sidebar-inner">
                             {/* Top: Gengar Logo + Title */}
@@ -1198,14 +1252,6 @@ export default function AppLayout() {
                                     className="app-shell__icon-button app-shell__collapse-toggle hidden lg:inline-flex"
                                 >
                                     {isRailCollapsed ? <CollapseRightIcon /> : <CollapseLeftIcon />}
-                                </button>
-                                <button
-                                    onClick={() => setIsSidebarOpen(false)}
-                                    type="button"
-                                    aria-label="Close sidebar"
-                                    className="app-shell__icon-button lg:hidden"
-                                >
-                                    <CloseIcon />
                                 </button>
                             </div>
 
@@ -1258,41 +1304,11 @@ export default function AppLayout() {
                                             ))}
                                         </ShellNavGroup>
                                     ))}
-                                    {/* Phones only: the site footer is hidden below 1024px and
-                                        its contents live here, as one more section of the rail
-                                        (see DrawerAboutSection). */}
-                                    {isMobile && (
-                                        <DrawerAboutSection
-                                            onOpenPatchNotes={handleOpenPatchNotes}
-                                            db={db}
-                                            userId={userId}
-                                            userEmail={userEmail}
-                                            displayName={displayName}
-                                            showToast={showToast}
-                                        />
-                                    )}
                                 </ul>
                             </nav>
 
                             {/* Bottom: Theme button, collapse button, account menu */}
                             <div className="app-shell__sidebar-bottom">
-                                {/* Install App — pinned at bottom, mobile only */}
-                                {(isInstallable || isIOS) && (
-                                    <div className="px-3 lg:hidden">
-                                        <button
-                                            type="button"
-                                            onClick={isIOS
-                                                ? () => showToast(t('layout.developedBy').startsWith('Desenvolvido') ? 'Botão de Compartilhar -> "Adicionar à Tela Inicial"' : 'Share button -> "Add to Home Screen"', 'info')
-                                                : handleInstall
-                                            }
-                                            className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-sm font-bold text-white transition-opacity active:opacity-75"
-                                            style={{ backgroundColor: colors.primary }}
-                                        >
-                                            <DownloadIcon className="w-4 h-4 shrink-0" />
-                                            <span>{isIOS ? t('nav.addToHome') : t('nav.installApp')}</span>
-                                        </button>
-                                    </div>
-                                )}
                                 <div className={`app-shell__account ${isRailCollapsed ? 'is-collapsed' : ''}`}>
                                     {isAnonymous ? (
                                         <button
@@ -1308,7 +1324,6 @@ export default function AppLayout() {
                                     ) : (
                                         <SidebarAccountMenu
                                             collapsed={isRailCollapsed}
-                                            isMobile={isMobile}
                                             avatar={<TrainerAvatar pokemonId={ownAvatar.pokemonId} isShiny={ownAvatar.isShiny} trainerSprite={ownAvatar.trainerSprite} color={colors.primary} />}
                                             displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
                                             email={userEmail || ''}
@@ -1333,19 +1348,13 @@ export default function AppLayout() {
                     {!isMobileDetailsOpen && (
                         <header className="app-shell__header">
                             <div className="app-shell__header-main">
-                                <button
-                                    onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                                    type="button"
-                                    aria-label={isSidebarOpen ? t('layout.closeSidebar') : t('layout.expandSidebar')}
-                                    aria-expanded={isSidebarOpen}
-                                    className="app-shell__icon-button app-shell__mobile-menu lg:hidden"
-                                >
-                                    {isSidebarOpen ? <CloseIcon /> : <MenuIcon />}
-                                </button>
-
+                                {/* No menu button: on a phone the tab bar's "Mais" is
+                                    the way into the rest of the app, one thumb-reach
+                                    away, and the header keeps its left edge for the
+                                    title — the same edge as the page under it. */}
                                 <div className="app-shell__header-copy">
                                     <div className="app-shell__header-title-row">
-                                        <h1 className="app-shell__header-title">{pageInfo.title}</h1>
+                                        <h1 className="app-shell__header-title">{(isMobile && pageInfo.shortTitle) || pageInfo.title}</h1>
                                         {pageGuideTips[currentPage] && (
                                             <PageGuide
                                                 colors={colors}
@@ -1742,28 +1751,110 @@ export default function AppLayout() {
 
                 {isMobile && !isMobileDetailsOpen && (
                     <nav className="app-shell__tabbar" aria-label={language === 'pt' ? 'Navegação principal' : 'Primary'}>
-                        {[
-                            { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
-                            { key: 'builder', label: t('nav.builder'), icon: <SwordsIcon />, path: '/builder' },
-                            { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
-                            { key: 'meta', label: 'Meta', icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
-                            { key: 'more', label: language === 'pt' ? 'Mais' : 'More', icon: <MenuIcon />, action: () => setIsSidebarOpen(true) },
-                        ].map((tab) => {
-                            const active = tab.key !== 'more' && (currentPage === tab.key || (tab.key === 'pokedex' && currentPage === 'pokemonDetail'));
-                            return (
+                        {(() => {
+                            const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail');
+                            // "Mais" answers "where am I" for every page it leads to: with
+                            // no tab lit on /gyms, the bar said nothing about location.
+                            const moreActive = !mobileTabs.some((tab) => tabActive(tab.key));
+                            return [
+                                ...mobileTabs.map((tab) => ({ ...tab, active: tabActive(tab.key) })),
+                                { key: 'more', label: t('nav.more'), icon: <MenuIcon />, action: () => setIsSidebarOpen(true), active: moreActive },
+                            ].map((tab) => (
                                 <button
                                     key={tab.key}
                                     type="button"
                                     onClick={() => (tab.action ? tab.action() : navigate(tab.path))}
-                                    className={`app-shell__tab ${active ? 'is-active' : ''}`}
-                                    aria-current={active ? 'page' : undefined}
+                                    className={`app-shell__tab ${tab.active ? 'is-active' : ''}`}
+                                    aria-current={tab.active && !tab.action ? 'page' : undefined}
+                                    aria-haspopup={tab.action ? 'dialog' : undefined}
                                 >
                                     <span className="app-shell__tab-icon" aria-hidden="true">{tab.icon}</span>
                                     <span className="app-shell__tab-label">{tab.label}</span>
                                 </button>
-                            );
-                        })}
+                            ));
+                        })()}
                     </nav>
+                )}
+
+                {isMobile && isSidebarOpen && !isMobileDetailsOpen && (
+                    <Suspense fallback={null}>
+                    <MobileMoreSheet
+                        onClose={() => setIsSidebarOpen(false)}
+                        sections={moreSheetSections}
+                        currentPage={currentPage}
+                        onNavigate={(path) => {
+                            setIsSidebarOpen(false);
+                            navigate(path);
+                        }}
+                        header={
+                            <ul className="more-sheet__list more-sheet__account">
+                                <li>
+                                    {isAnonymous ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                // Close first: the auth dialog and this sheet share
+                                                // --z-modal, and a portal opened earlier paints under
+                                                // one opened later (docs/wounds.md, 2026-09-09).
+                                                setIsSidebarOpen(false);
+                                                setAuthModal({ open: true, mode: 'signIn' });
+                                            }}
+                                            className="app-shell__nav-link"
+                                        >
+                                            <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
+                                            <span className="app-shell__nav-text">{t('nav.signIn')}</span>
+                                        </button>
+                                    ) : (
+                                        <SidebarAccountMenu
+                                            isMobile
+                                            avatar={<TrainerAvatar pokemonId={ownAvatar.pokemonId} isShiny={ownAvatar.isShiny} trainerSprite={ownAvatar.trainerSprite} color={colors.primary} />}
+                                            displayName={displayName || userEmail?.split('@')[0] || 'Trainer'}
+                                            email={userEmail || ''}
+                                            currentTheme={theme}
+                                            themes={THEME_META}
+                                            onOpenProfile={() => {
+                                                setIsSidebarOpen(false);
+                                                navigate('/profile');
+                                            }}
+                                            onOpenPatchNotes={handleOpenPatchNotes}
+                                            onChangeTheme={changeTheme}
+                                            onSignOut={handleSignOut}
+                                        />
+                                    )}
+                                </li>
+                            </ul>
+                        }
+                    >
+                        {(isInstallable || isIOS) && (
+                            <button
+                                type="button"
+                                onClick={isIOS
+                                    ? () => showToast(t('layout.developedBy').startsWith('Desenvolvido') ? 'Botão de Compartilhar -> "Adicionar à Tela Inicial"' : 'Share button -> "Add to Home Screen"', 'info')
+                                    : handleInstall
+                                }
+                                className="btn btn-primary btn-lg btn-block"
+                            >
+                                <DownloadIcon className="w-4 h-4 shrink-0" />
+                                <span>{isIOS ? t('nav.addToHome') : t('nav.installApp')}</span>
+                            </button>
+                        )}
+                        {/* The site footer is hidden below 1024px; its contents live
+                            here, as one more section of rows (see DrawerAboutSection). */}
+                        <ul className="more-sheet__list">
+                            <DrawerAboutSection
+                                onOpenPatchNotes={() => {
+                                    setIsSidebarOpen(false);
+                                    handleOpenPatchNotes();
+                                }}
+                                db={db}
+                                userId={userId}
+                                userEmail={userEmail}
+                                displayName={displayName}
+                                showToast={showToast}
+                            />
+                        </ul>
+                    </MobileMoreSheet>
+                    </Suspense>
                 )}
             </div>
         </div>

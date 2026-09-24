@@ -1,0 +1,52 @@
+/* ============================================================
+   META & USAGE (MetaUsageView) — phone layout. Desktop is styled
+   entirely by the utilities in the view; nothing here applies at lg+.
+   ============================================================ */
+
+/* The <strong> wraps the figure so a phone can lift it; everywhere else it
+   must read as the surrounding span (a bare <strong> is `bolder`, which would
+   have changed the desktop card). Declared before the phone block so that
+   block wins below lg. */
+.meta-mon-card__value {
+    font-weight: inherit;
+}
+
+@media (max-width: 1023px) {
+    /* Which ladder, at which rating: the context everything below depends on.
+       The picker was `flex: 1; min-width: 0` beside a four-option segmented row
+       it could never share a 358px line with — and a `min-width: 0` item never
+       wraps, it shrinks, so the format read "P. / V". Two full rows, as the
+       toolbar comment in the view always intended. */
+    .meta-toolbar__context > * {
+        flex: 1 1 100%;
+    }
+
+    .meta-toolbar__context > .segmented {
+        display: flex;
+        width: 100%;
+    }
+
+    .meta-toolbar__context > .segmented > .segmented__item {
+        flex: 1 1 0;
+    }
+
+    /* A grid of 24 bordered cards on the page is 24 boxes; the fill already
+       separates each from the page (fill beats line in every theme). The edge
+       comes back as the press state rather than a resting outline. */
+    .meta-mon-card {
+        border-color: transparent;
+    }
+
+    .meta-mon-card:active {
+        background: var(--color-surface-active);
+    }
+
+    /* The value, then its label: "40.7%" is what the card is for, and it was
+       the same 10px muted weight as the word "uso" beside it. */
+    .meta-mon-card__value {
+        font-family: var(--font-display);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        color: var(--color-fg);
+    }
+}

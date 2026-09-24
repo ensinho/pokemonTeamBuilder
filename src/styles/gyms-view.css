@@ -1,0 +1,100 @@
+/* ============================================================
+   GYMS (GymsView) — phone layout. Desktop is styled by the utilities
+   in the view; nothing here applies at lg+.
+
+   The phone page ran 8,000px: every leader was a bordered card with a
+   type-coloured rail and a divider, holding a two-column grid of bordered
+   team cards, each with a 64px ringed disc and two 8px type pills — boxes
+   in boxes in boxes (206 bordered elements, 187 nested) — and all of them
+   faded in on arrival. Selectors are compound so they outrank the
+   utilities on the same elements regardless of stylesheet order.
+   ============================================================ */
+
+@media (max-width: 1023px) {
+    /* The shell owns the page gutter; the view added its own on top of it. */
+    div.gyms-view {
+        padding: 0;
+    }
+
+    /* The game card's column is the desktop sidebar: a bounded inner scroller
+       with a 4px scrollbar gutter, which left the card 4px short of the
+       leaders' right edge. On a phone it is just the top of the page. */
+    .gyms-view aside {
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
+    }
+
+    /* Section heading: sentence case, the page's heading voice, no rule. */
+    .gyms-view .gyms-section-head {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .gyms-view .gyms-section-head h2 {
+        font-family: var(--font-display);
+        font-size: var(--text-md);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        text-transform: none;
+        color: var(--color-fg);
+    }
+
+    /* A leader is one filled surface: no outline, no coloured rail, no divider
+       under its header — the avatar's tint and the type chip already carry the
+       type. Off-screen leaders skip layout and paint (content-visibility). */
+    .gyms-view .gyms-leader {
+        gap: var(--space-3);
+        padding: var(--space-3);
+        border: none;
+        border-radius: var(--radius-lg);
+        box-shadow: none;
+        animation: none;
+        content-visibility: auto;
+        contain-intrinsic-size: auto 17rem;
+    }
+
+    .gyms-view .gyms-leader__head {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .gyms-view .gyms-leader__sparkle {
+        animation: none;
+    }
+
+    /* The team: three across, each member a small raised tile inside the
+       leader's surface. The disc's own colours already say its types, so the
+       two 8px type pills under every name go. */
+    .gyms-view .gyms-leader__team {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-2);
+        margin-top: 0;
+    }
+
+    .gyms-view .gyms-mon {
+        gap: var(--space-1);
+        padding: var(--space-2) var(--space-1_5);
+        border: none;
+        border-radius: var(--radius-md);
+        background: var(--color-surface-raised);
+    }
+
+    .gyms-view .gyms-mon:active {
+        background: var(--color-surface-active);
+    }
+
+    .gyms-view .gyms-mon__disc {
+        width: 3rem;
+        height: 3rem;
+    }
+
+    .gyms-view .gyms-mon__disc img {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .gyms-view .gyms-mon__types {
+        display: none;
+    }
+}

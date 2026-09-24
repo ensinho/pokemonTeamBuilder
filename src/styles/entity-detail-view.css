@@ -176,3 +176,58 @@
     .edv-header, .edv-section { padding: var(--space-3_5) var(--space-4); }
     .edv-table__games { width: 9rem; min-width: 8rem; }
 }
+
+/* ============================================================
+   PHONES (< lg) — move, ability and item pages, plus the two
+   utility-built detail pages that share this file (Pokémon usage,
+   tournament team: `.edv-page`).
+   ============================================================ */
+@media (max-width: 1023px) {
+    /* Cards on the page are their fill; the border was a second edge on every
+       one of them. */
+    .edv-header,
+    .edv-stat,
+    .edv-section {
+        border-color: transparent;
+    }
+
+    .edv-stat__value {
+        font-family: var(--font-display);
+        font-weight: 600;
+    }
+
+    /* The utility-built pages: the shell owns the gutter (they added their own
+       on top), and their rounded bordered boxes are cards like the ones above —
+       the fill carries them. Controls keep their edge: the format picker
+       (aria-haspopup), inputs and selects. Compound selectors, because the
+       utilities in index.css load after this file. */
+    main.edv-page {
+        padding: 0;
+    }
+
+    .edv-page :is(.rounded-lg, .rounded-xl, .rounded-2xl).border-border:not([aria-haspopup]):not(input):not(select) {
+        border-color: transparent;
+    }
+
+    .edv-page :is(.shadow-sm, .shadow-md, .shadow-inner) {
+        box-shadow: none;
+    }
+
+    /* Section headings set in tracked caps become the page's heading voice. */
+    .edv-page h2.uppercase {
+        font-family: var(--font-display);
+        font-size: var(--text-md);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        text-transform: none;
+        color: var(--color-fg);
+    }
+
+    /* Stat labels ("USO", "RANKING", "PARTIDAS") and the offence / resistance /
+       weakness row labels: read as words, not signage. */
+    .edv-page span.tracking-wide.uppercase,
+    .edv-page span.tracking-wider.uppercase {
+        letter-spacing: 0;
+        text-transform: none;
+    }
+}

@@ -122,7 +122,7 @@ export function SpeedTiersView({ generations = [] }) {
                     </span>
                     <input
                         type="text"
-                        placeholder={t('favorites.searchPlaceholder', { defaultValue: 'Search…' })}
+                        placeholder={t('common.search')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="team-builder-field team-builder-field--compact team-builder-search-input"

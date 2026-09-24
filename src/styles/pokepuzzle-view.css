@@ -1403,3 +1403,67 @@
         transition-duration: 0.001ms !important;
     }
 }
+
+/* ============================================================
+   PHONES (< lg)
+   ============================================================ */
+@media (max-width: 1023px) {
+    /* The hints panel floated with a border *and* a shadow, and ruled itself
+       twice inside (under the header, under the tabs) around a bordered card:
+       lines four deep around one hint. Fill carries it now. */
+    .pokepuzzle-tips-container {
+        padding: var(--space-3);
+        border-color: transparent;
+        border-radius: var(--radius-lg);
+        box-shadow: none;
+    }
+
+    .pokepuzzle-tips-header {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    .pokepuzzle-tip-card {
+        min-height: 0;
+        padding: var(--space-3);
+    }
+
+    /* A hint that is available is a fill; a locked one keeps its dashed edge
+       — dashed is how this app says "locked" — but loses the fixed dark wash,
+       a raw colour that was a smudge on the light themes. */
+    .pokepuzzle-tip-card:not(.is-locked) {
+        border-color: transparent;
+    }
+
+    .pokepuzzle-tip-card.is-locked {
+        background: transparent;
+    }
+
+    /* The result badge is the game's one celebration: it keeps breathing, but
+       on the compositor — a scale, with the glow painted once — instead of an
+       infinite box-shadow and border-colour repaint. */
+    .pokepuzzle-badge-success-glow,
+    .pokepuzzle-badge-danger-glow {
+        animation: pokepuzzle-badge-breathe 1.6s var(--ease-smooth) infinite alternate;
+    }
+
+    .pokepuzzle-badge-success-glow {
+        box-shadow: 0 0 1.5rem color-mix(in srgb, var(--color-success) 35%, transparent);
+    }
+
+    .pokepuzzle-badge-danger-glow {
+        box-shadow: 0 0 1.5rem color-mix(in srgb, var(--color-danger) 35%, transparent);
+    }
+
+    /* History drawer: the shared scrim, no full-screen blur behind it. */
+    .pokepuzzle-history-overlay {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: var(--scrim);
+    }
+}
+
+@keyframes pokepuzzle-badge-breathe {
+    from { scale: 1; }
+    to   { scale: 1.05; }
+}

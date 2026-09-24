@@ -49,6 +49,18 @@
     border-color: var(--color-border-hover);
 }
 
+/* Phones: the page itself fades in on every route change (app-shell.css), so a
+   second entrance per item is motion on top of motion — on a 24-card grid, 24
+   animations competing with the first paint on a mid-range CPU. Their `both`
+   fill also left each item holding an identity transform afterwards (a stacking
+   context and a containing block for fixed children, per card). */
+@media (max-width: 1023px) {
+    .motion-enter,
+    .motion-stagger > * {
+        animation: none;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .motion-enter,
     .motion-stagger > * {

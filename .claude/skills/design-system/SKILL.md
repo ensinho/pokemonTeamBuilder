@@ -385,6 +385,43 @@ override needs the compound selector — and always read the computed value back
 social links — lives in the drawer tail (`.app-shell__drawer-meta`). A phone page
 ends where its content ends; do not add anything that re-creates a footer band.
 
+## Phones (below 1024px)
+
+The phone layer has its own rules (2026-09-24 pass — `docs/wounds.md`). Write them
+inside `@media (max-width: 1023px)`, or behind `useMediaQuery(maxWidthBelow('lg'))`
+in markup; desktop must not move.
+
+- **The page is the panel.** A view's top-level panel is never a box on a phone: no
+  border, no fill, no padding of its own — the shell's gutter is the gutter. What was
+  inside it carries `--color-surface`. A control or card placed straight on the page
+  takes `--color-surface`, **never `--color-surface-raised`** (on the light themes that
+  is `#f6f6f7` on `#f2f2f3` — nothing).
+- **Chrome is solid.** No `backdrop-filter` below 1024px on anything over the scroller
+  (bars, sticky strips) or behind a sheet (scrims dim, they don't blur): a blur is
+  recomputed for every frame the content under it moves. Make the background opaque.
+- **No entrance per item.** The page fades in on every route change (app-shell.css);
+  `.motion-enter`, `.motion-stagger` and per-card `fade-in-up` are off on phones. And
+  never leave an animation with `both` fill on a list item — its final identity
+  transform is a stacking context and a containing block for as long as it lives.
+- **Only transform and opacity loop.** An infinite animation on a phone animates
+  `opacity`/`transform`/`scale` only — never `box-shadow`, `filter`,
+  `background-position` or a size. Paint the glow once; breathe its opacity.
+- **`content-visibility: auto` for long lists of cheap rows** (Speed Tiers halved its
+  scroll cost), with `contain-intrinsic-size: auto <row height>`. Measure before
+  keeping it: on a short list of heavy cards it only moves first paint into the scroll.
+  Never on items whose children overflow them, on sticky elements, or on lists whose
+  scroll position is restored (`useScrollRestoration`).
+- **The tab bar is the navigation.** "Mais" opens `MobileMoreSheet`; nothing else does,
+  and the sheet never lists what the bar shows.
+
+**Cascade order — beating a utility from a view stylesheet.** The view stylesheets load
+*before* `index.css` (the views barrel pulls them in with `App`, ahead of
+`import './index.css'` in `main.jsx`), so a single-class rule in `src/styles/*.css`
+**loses** to a Tailwind utility on the same element. Override a utility-styled element
+with a compound selector (`.view-root .thing`), and read the computed value back.
+(Stylesheets of views that are *not* in the barrel — Meta, Gyms, battles — load after
+it.) See the dispattern in `docs/wounds.md`.
+
 ## Touch
 
 Below 1024px this app is used with a thumb. Three rules, from the 2026-09-10 wounds:

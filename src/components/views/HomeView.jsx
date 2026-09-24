@@ -802,7 +802,7 @@ export function HomeView({
                                         {streak?.count || 0} {language === 'pt' ? 'Dias Seguidos' : 'Days Streak'}
                                     </span>
                                     <span className="text-[10px] text-muted-more font-mono">
-                                        Longest: {streak?.longest || 0}d
+                                        {t('home.longestStreak', { count: streak?.longest || 0 })}
                                     </span>
                                 </div>
                             </div>

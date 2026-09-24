@@ -382,3 +382,220 @@ input[type="number"] {
 .trn-card__btn--primary { flex: 1; }
 .trn-card__btn--ghost { flex: 0 0 auto; color: var(--color-muted); }
 .trn-card__btn:hover { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+
+/* ============================================================
+   SPEED TIERS — phones (< lg)
+   The first page of 60 tiers ran 13,200px with 418 sprites: every Pokémon
+   tied at a speed was a bordered pill on its own line, because the chip
+   column was the ~180px left between the rank, the sprite and the figure.
+   ============================================================ */
+@media (max-width: 1023px) {
+    .spd-list {
+        border: none;
+    }
+
+    /* One row per tier; the tied Pokémon get the full width under it. The
+       body is dissolved into the row's grid (`display: contents`) so its two
+       children can take a column and a row of their own. */
+    .spd-tier {
+        grid-template-columns: 1.75rem 2rem minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: var(--space-2);
+        row-gap: var(--space-1_5);
+        padding: var(--space-2) var(--space-3);
+        /* Off-screen tiers skip layout and paint entirely; the estimate is a
+           one-line tier and is replaced by the real height once rendered. */
+        content-visibility: auto;
+        contain-intrinsic-size: auto 3.25rem;
+    }
+
+    .spd-tier__body {
+        display: contents;
+    }
+
+    .spd-tier .spd-row__rank {
+        grid-column: 1;
+        grid-row: 1;
+        padding-top: 0;
+    }
+
+    .spd-tier__main-btn {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .spd-tier__name {
+        grid-column: 3;
+        grid-row: 1;
+        min-width: 0;
+    }
+
+    .spd-tier .spd-row__speed {
+        grid-column: 4;
+        grid-row: 1;
+        padding-top: 0;
+        font-family: var(--font-display);
+        font-weight: 600;
+    }
+
+    .spd-chips {
+        grid-column: 2 / -1;
+        grid-row: 2;
+    }
+
+    /* A tied Pokémon is a filled chip, not an outlined one inside a list row. */
+    .spd-chip {
+        border-color: transparent;
+        background: var(--color-surface-raised);
+    }
+
+    /* Dense-list badges: a type counted, not read — so small. */
+    .spd-row__types {
+        margin-left: 0;
+    }
+
+    /* Compound selector on purpose: the view stylesheets load before index.css,
+       so the badge's own Tailwind utilities (px-2.5 py-1 text-xs mr-1 mb-1)
+       out-order a single-class rule here. */
+    .spd-tier .spd-row__types > * {
+        margin: 0;
+        padding: var(--space-0_5) var(--space-1_5);
+        font-size: 0.625rem;
+        box-shadow: none;
+    }
+
+    .spd-controls .segmented {
+        width: 100%;
+    }
+
+    .spd-controls .segmented > .segmented__item {
+        flex: 1 1 0;
+        padding-inline: var(--space-1_5);
+    }
+
+    /* Search and generation each take a full row: as two halves of 358px the
+       select read "Todas as" and the placeholder was cut mid-word. */
+    .spd-controls .team-builder-search-wrap,
+    .spd-controls .team-builder-select-wrap {
+        flex: 1 1 100%;
+        margin-left: 0 !important;
+    }
+}
+
+/* ============================================================
+   TOURNAMENTS — phones (< lg)
+   ============================================================ */
+@media (max-width: 1023px) {
+    .trn-toolbar {
+        margin-bottom: var(--space-4);
+    }
+
+    .trn-search-wrap {
+        max-width: none;
+    }
+
+    .trn-section__title {
+        font-family: var(--font-display);
+        font-size: var(--text-md);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        margin-bottom: var(--space-3);
+    }
+
+    .trn-grid {
+        gap: var(--space-3);
+    }
+
+    /* A card is its fill: no outline, card radius (not the panel's). */
+    .trn-card {
+        gap: var(--space-3);
+        padding: var(--space-3_5);
+        border-color: transparent;
+        border-radius: var(--radius-lg);
+    }
+
+    .trn-card:active {
+        background: var(--color-surface-hover);
+    }
+
+    /* Six sprites in one shared raised track, evenly spaced across the card,
+       instead of six separate boxes wrapping onto a second line. */
+    .trn-card__roster {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 0;
+        padding: var(--space-1);
+        border-radius: var(--radius-md);
+        background: var(--color-surface-raised);
+    }
+
+    .trn-card__mon-btn {
+        display: flex;
+        justify-content: center;
+    }
+
+    .trn-card__mon {
+        width: 100%;
+        max-width: 2.75rem;
+        height: auto;
+        aspect-ratio: 1 / 1;
+        background: transparent;
+    }
+
+    /* Thumb-height actions, separated by fill rather than a hairline. */
+    .trn-card__btn {
+        min-height: var(--control-h-lg);
+        border-color: transparent;
+        background: var(--color-surface-raised);
+    }
+}
+
+/* ============================================================
+   DAMAGE CALCULATOR — phones (< lg)
+   Every panel was bordered and shadowed, and every group inside it bordered
+   again (a box in a box in a box around each form row), under 10px tracked
+   caps labels. Panels keep their fill; the lines and caps go.
+   Compound selectors: the view is utility-styled, and index.css (the
+   utilities) loads after this file.
+   ============================================================ */
+@media (max-width: 1023px) {
+    .dmg-calc .dmg-panel {
+        border-color: transparent;
+        box-shadow: none;
+    }
+
+    .dmg-calc .dmg-subpanel {
+        border-color: transparent;
+    }
+
+    .dmg-calc .dmg-caps {
+        font-size: var(--text-xs);
+        letter-spacing: 0;
+        text-transform: none;
+    }
+
+    .dmg-calc .dmg-caps--title {
+        font-family: var(--font-display);
+        font-size: var(--text-sm);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+    }
+
+    /* Weather and terrain: sideways rails that scroll without a painted bar
+       (the `scrollbar-none` utility they carry does not exist here) and settle
+       on an option. */
+    .dmg-calc .dmg-rail {
+        overflow-y: hidden;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+    }
+
+    .dmg-calc .dmg-rail::-webkit-scrollbar {
+        display: none;
+    }
+
+    .dmg-calc .dmg-rail > * {
+        scroll-snap-align: start;
+    }
+}

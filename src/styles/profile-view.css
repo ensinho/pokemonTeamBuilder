@@ -1051,3 +1051,203 @@
         width: 100%;
     }
 }
+/* ============================================================
+   PHONES — who you are, three figures, then settings as sections (< lg)
+   The page was 4,900px of boxes: a bordered hero holding three bordered
+   stat tiles with icon bubbles, then eight bordered cards each opening
+   with an icon bubble and a pill restating the choice made inside it.
+   ============================================================ */
+@media (max-width: 1023px) {
+    /* The page fades in as a whole (app-shell.css); no entrance per card. */
+    .profile-hero,
+    .profile-card,
+    .profile-overview-stat,
+    .profile-theme-card {
+        animation: none;
+    }
+
+    /* The hero is the page's header, not a box on it. */
+    .profile-hero {
+        gap: var(--space-4);
+        overflow: visible;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    /* "Perfil de Treinador" over the name, under a header that says "Perfil". */
+    .profile-hero__eyebrow {
+        display: none;
+    }
+
+    /* Three figures: fill-only tiles, the label on top, the value at the
+       bottom — so a label that wraps ("Sequência atual") cannot knock its
+       number out of line with its neighbours'. No icon bubbles: three
+       coloured discs over three numbers were the loudest thing on the page. */
+    .profile-streak-card,
+    .profile-overview-stat {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1_5);
+        padding: var(--space-3);
+        border: none;
+        background: var(--color-surface);
+    }
+
+    .profile-overview-stat__icon {
+        display: none;
+    }
+
+    .profile-overview-stat__label {
+        font-size: var(--text-xs);
+        line-height: 1.3;
+        color: var(--color-muted);
+    }
+
+    .profile-streak-card__value,
+    .profile-overview-stat__value {
+        margin: auto 0 0;
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+        font-weight: 600;
+        letter-spacing: -0.04em;
+        line-height: 1;
+    }
+
+    /* Settings: a heading and its controls, one section after another. */
+    .profile-layout {
+        gap: var(--space-8);
+        margin-top: var(--space-8);
+    }
+
+    .profile-layout__column {
+        gap: var(--space-8);
+    }
+
+    .profile-card {
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .profile-card__icon,
+    .profile-card__meta {
+        display: none;
+    }
+
+    /* Except where the pill is information, not an echo: badge progress. */
+    .profile-card--badges .profile-card__meta {
+        display: flex;
+    }
+
+    .profile-card__title {
+        font-family: var(--font-display);
+        font-size: var(--text-md);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+    }
+
+    /* On the page now, so the controls inside take the surface fill — raised
+       on the page is #f6f6f7 on #f2f2f3 on the light themes, i.e. nothing. */
+    .profile-avatar-button,
+    .profile-avatar-choice__option,
+    .profile-avatar-preview,
+    .profile-sync-row,
+    .profile-button:not(.profile-button--primary):not(.profile-button--danger),
+    .profile-badge-card:not(.is-equipped) {
+        background: var(--color-surface);
+    }
+
+    .profile-badge-card.is-equipped {
+        background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+    }
+
+    /* Six themes as swatches, three across: a 3-line card each (six rows of
+       page) to choose one of six colours. The hint and mode glyph go; the
+       group label above already says dark or light. */
+    .profile-theme-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--space-2);
+    }
+
+    .profile-theme-card {
+        padding: var(--space-3) var(--space-2_5);
+        background: var(--color-surface);
+    }
+
+    .profile-theme-card.is-selected {
+        background: var(--color-primary-soft);
+    }
+
+    .profile-theme-card__icon,
+    .profile-theme-card__hint {
+        display: none;
+    }
+
+    .profile-theme-card__header {
+        gap: var(--space-2);
+    }
+
+    .profile-theme-card__label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Avatar choices: the preview and its action on one row, not an 80px "?"
+       stacked over a half-width button. Choosing an avatar is a secondary
+       action — two filled primaries here plus "Criar conta" below spent the
+       page's one accent three times. */
+    .profile-avatar-card {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .profile-avatar-preview {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-color: transparent;
+    }
+
+    .profile-avatar-actions {
+        flex: 1 1 auto;
+        width: auto;
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .profile-card--avatar .profile-button--primary {
+        border-color: var(--color-border-strong);
+        background: var(--color-surface);
+        color: var(--color-fg);
+    }
+
+    /* Badges: compact, and a locked one does not end in a disabled "Bloqueada"
+       pill — its muted icon and its 0/30 already say it. The pill stays where
+       it is a real control (equip / equipped). */
+    .profile-badges-grid {
+        gap: var(--space-2);
+    }
+
+    .profile-badge-card {
+        padding: var(--space-3);
+    }
+
+    .profile-badge-card__icon-wrap {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: var(--color-surface-raised);
+    }
+
+    .profile-badge-card.is-locked .profile-badge-card__action {
+        display: none;
+    }
+
+    /* The account pitch ran six lines deep in half the width beside its two
+       buttons. Copy first, full width; the buttons under it. */
+    .profile-account-block {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

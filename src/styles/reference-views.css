@@ -269,3 +269,62 @@
     }
     .ref-col-itemeffect { display: none; }
 }
+
+/* ============================================================
+   PHONES — the database lists (< lg)
+   Moves, abilities and items. Rows are memoised in the views; here the
+   list becomes a quiet surface with a header that actually sticks.
+   ============================================================ */
+@media (max-width: 1023px) {
+    /* Search on its own row; the filters share the next with the count. */
+    .ref-toolbar {
+        gap: var(--space-2);
+    }
+
+    .ref-toolbar .team-builder-search-wrap {
+        flex: 1 1 100%;
+    }
+
+    .ref-toolbar .team-builder-select-wrap {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .ref-toolbar .team-builder-select {
+        width: 100%;
+    }
+
+    /* A fill, not a box. `clip` rather than `auto`: an auto-overflow element is
+       a scroll container even when it never scrolls, and the sticky column
+       header only ever stuck to *that* — which never moves on a phone, where
+       the page scrolls. Clipped, the header sticks to the page's own scroller,
+       under the app header, as it was always meant to. */
+    .ref-list {
+        overflow: clip;
+        border: none;
+    }
+
+    .ref-head {
+        top: var(--app-shell-top-band-height);
+        padding-inline: var(--space-3);
+    }
+
+    .ref-row {
+        padding-inline: var(--space-3);
+        gap: var(--space-2_5);
+    }
+
+    .ref-row__name {
+        font-weight: 600;
+    }
+
+    /* Dense-list badges: a type counted, not read. Compound selector, because
+       this file loads before index.css and the badge's own utilities would
+       out-order a single-class rule. */
+    .ref-row .ref-type-cell > * {
+        margin: 0;
+        padding: var(--space-0_5) var(--space-1_5);
+        font-size: 0.625rem;
+        box-shadow: none;
+    }
+}

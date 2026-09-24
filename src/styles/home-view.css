@@ -2821,3 +2821,106 @@
         height: 4rem;
     }
 }
+
+/* ==========================================================================
+   PHONES — one scroller, one entrance, nothing repainting at rest (< lg)
+   ========================================================================== */
+@media (max-width: 1023px) {
+    /* The page fades in as a whole (app-shell.css). A second, staggered
+       fade-in-up per panel doubled the entrance — and its `both` fill left each
+       panel holding an identity transform for as long as Home was open: a
+       stacking context and a containing block for fixed children, per panel. */
+    .home-panel {
+        animation: none;
+    }
+
+    /* One scroller. The timeline was a 480px list scrolling inside the page's
+       own scroller with chaining switched off (.custom-scrollbar), so a thumb
+       resting on it moved the timeline and never the page — the classic phone
+       scroll trap. It only ever holds the latest five posts
+       (HOME_TIMELINE_LIMIT), so it can be exactly as tall as they are. The
+       auto-scroll effect only sets this element's own scrollTop, which is a
+       no-op once the element does not scroll. */
+    .home-forum-chat-messages {
+        flex: none !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    /* A section, not a box. The wrapper added its own 10px inset, which put the
+       timeline's title 11px right of the titles inside the panels above it —
+       the "nearly aligned" failure. Without it the header's own --space-4 lands
+       on their edge. It also clipped: with the list no longer a scroller, the
+       desktop `flex: 1 1 0%` above would size the list to nothing and the
+       wrapper's `overflow: hidden` would cut the last posts and the composer. */
+    .home-forum-chat-card-wrapper {
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    /* The card's desktop height (30rem, in the base rule) is what turned the
+       list into a scroller on phones in the first place; here it would clip. */
+    .home-view .home-forum-chat-card {
+        height: auto;
+    }
+
+    .home-forum-chat-title {
+        flex: 1 1 auto;
+        width: auto;
+        min-width: 0;
+    }
+
+    /* A link out of the section, so it reads as one: no outline, no 100px floor
+       stretching it across half the row. The coarse-pointer ::after in the touch
+       block above keeps it a thumb target. */
+    .home-forum-chat-header .home-button--inline {
+        flex: none;
+        width: auto !important;
+        min-width: 0;
+        border-color: transparent;
+        color: var(--color-primary);
+        font-size: var(--text-sm);
+    }
+
+    /* The pinned team's header was a raised band inside its bordered card: a
+       box in a box to hold one line of text. The type carries it. */
+    /* Compound: home-view.css loads before index.css, so the element's own
+       `bg-surface-raised` utility would out-order a single-class rule. */
+    .home-panel .pinned-repo-header {
+        background: transparent;
+    }
+
+    /* The unsolved daily teaser kept a ring pulsing forever by animating
+       box-shadow — a main-thread repaint on every frame for as long as Home was
+       open. Same invitation, composited: a static inset ring on a pseudo-element
+       whose opacity breathes. */
+    .home-sidebar-section--daily .home-daily__sprite-container.is-unsolved {
+        position: relative;
+        animation: none;
+    }
+
+    .home-sidebar-section--daily .home-daily__sprite-container.is-unsolved::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow: inset 0 0 0 1px var(--color-primary);
+        opacity: 0.3;
+        pointer-events: none;
+        animation: home-daily-breathe 1.6s var(--ease-smooth) infinite alternate;
+    }
+
+    /* The partner card sat on the wallpaper behind an 8px backdrop blur. A
+       deeper scrim over the photo keeps the name as legible without re-blurring
+       the hero every frame it is on screen. Photo scrim: black is correct in
+       every theme (design system — scrims over photography). */
+    .home-partner-card {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: rgba(20, 20, 28, 0.72) !important;
+    }
+}
+
+@keyframes home-daily-breathe {
+    to { opacity: 1; }
+}

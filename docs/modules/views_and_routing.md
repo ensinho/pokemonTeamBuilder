@@ -300,7 +300,6 @@ All modals are mounted in `AppLayout.jsx` and controlled by its local state. The
 | `useTranslation` | Resolves i18n keys from `translations.js` |
 | `useDebounce` | Input debounce (used in Pokédex search) |
 | `useModalA11y` | Focus trap + escape-key close for modals |
-| `useEdgeSwipe` | Left-edge swipe gesture to open sidebar on mobile |
 | `usePWAInstall` | Intercepts `beforeinstallprompt` for PWA install banner |
 | `usePokePuzzleHistory` | PokePuzzle session and history state |
 | `useSessionGame` | Session-scoped game state (quiz, generator guessing mode) |

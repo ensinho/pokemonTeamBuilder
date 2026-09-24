@@ -14,6 +14,28 @@ import { ClearIcon } from '../icons';
 const loadDetail = (entry) => getAbilityDetails(entry);
 const prettify = (name = '') => name.replace(/-/g, ' ');
 
+// Memoised row: only the row whose detail just landed re-renders, not every
+// revealed row once per arrival (see MoveRow in MovesListView).
+const AbilityRow = React.memo(function AbilityRow({ entry, d, onOpen }) {
+    return (
+        <div
+            role="link"
+            tabIndex={0}
+            onClick={() => onOpen(entry.name)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(entry.name); } }}
+            className="ref-row ref-row--abilities"
+        >
+            <span className="ref-row__name">{prettify(entry.name)}</span>
+
+            <span className="ref-row__effect">{d ? d.effect : <span className="ref-skeleton ref-skeleton--wide" />}</span>
+
+            <span className="ref-num ref-num--muted ref-col-holders">
+                {d ? d.pokemonCount : ''}
+            </span>
+        </div>
+    );
+});
+
 export function AbilitiesListView() {
     const { t } = useTranslation();
     useDocumentMeta({
@@ -80,27 +102,9 @@ export function AbilitiesListView() {
                         <span className="ref-num ref-col-holders">{t('db.colHolders')}</span>
                     </div>
 
-                    {visible.map((entry) => {
-                        const d = details[entry.name];
-                        return (
-                            <div
-                                key={entry.name}
-                                role="link"
-                                tabIndex={0}
-                                onClick={() => openDetail(entry.name)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(entry.name); } }}
-                                className="ref-row ref-row--abilities"
-                            >
-                                <span className="ref-row__name">{prettify(entry.name)}</span>
-
-                                <span className="ref-row__effect">{d ? d.effect : <span className="ref-skeleton ref-skeleton--wide" />}</span>
-
-                                <span className="ref-num ref-num--muted ref-col-holders">
-                                    {d ? d.pokemonCount : ''}
-                                </span>
-                            </div>
-                        );
-                    })}
+                    {visible.map((entry) => (
+                        <AbilityRow key={entry.name} entry={entry} d={details[entry.name]} onOpen={openDetail} />
+                    ))}
 
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}
                 </div>

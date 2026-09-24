@@ -83,6 +83,13 @@ const MobilePokemonPickerCard = ({
     const hasSynergy = !!synergyReason;
     const { Icon: ReasonIcon, color: reasonColor } = hasSynergy ? reasonVisual(synergyReason) : {};
 
+    // Same anatomy as the Pokédex card (MobilePokedexPokemonCard) — types on top,
+    // the star on the sprite's corner, name left and number right — so the two
+    // grids a phone user moves between read as one object. A suggestion says so
+    // once, as a line of text with its reason's icon: it used to be a tinted
+    // fill, an inset ring, a corner badge and a 7px label all at once, and with
+    // an empty team every card on the first page is a suggestion, so the ring
+    // was on everything and meant nothing.
     return (
         <article
             ref={lastRef}
@@ -94,57 +101,49 @@ const MobilePokemonPickerCard = ({
             className={`team-builder-mobile-card ${hasSynergy ? 'is-synergy' : isSuggested ? 'is-suggested' : ''}`}
             style={hasSynergy ? { '--synergy-color': reasonColor } : undefined}
         >
-            {hasSynergy && (
-                <span className="team-builder-mobile-card__reason-icon" title={synergyReason.label}>
-                    <ReasonIcon />
-                </span>
-            )}
-            <div className="flex items-center justify-between gap-1">
-                <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="font-mono text-[10px] font-semibold text-muted opacity-75 tracking-tight shrink-0 select-none">
-                        #{String(pokemon.id).padStart(4, '0')}
-                    </span>
-                    <div className="flex items-center gap-1 overflow-hidden">
-                        {(pokemon.types || []).map((type) => (
-                            <img
-                                key={type}
-                                src={typeIcons[type]}
-                                alt={type}
-                                className="h-4 w-4 rounded-full"
-                            />
-                        ))}
-                        {!hasSynergy && isSuggested && (
-                            <div className="team-builder-mobile-card__badge ml-1">
-                                {language === 'pt' ? 'Novo' : 'New'}
-                            </div>
-                        )}
-                    </div>
-                </div>
+            <div className="flex items-center gap-1">
+                {(pokemon.types || []).map((type) => (
+                    <img
+                        key={type}
+                        src={typeIcons[type]}
+                        alt={type}
+                        className="h-4 w-4 rounded-full"
+                    />
+                ))}
+            </div>
 
+            <div className="team-builder-mobile-card__media tb-type-tint" style={typeVars(pokemon)}>
                 <button
                     onClick={handleFavoriteClick}
-                    className={`team-builder-mobile-card__favorite ${isFavorite ? 'is-active' : ''}`}
+                    className={`team-builder-mobile-card__favorite team-builder-mobile-card__favorite--overlay ${isFavorite ? 'is-active' : ''}`}
                     aria-label={isFavorite ? `Remove ${pokemon.name} from favorites` : `Add ${pokemon.name} to favorites`}
                     title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
                 >
                     <StarIcon className="w-3.5 h-3.5" isFavorite={isFavorite} color="currentColor" />
                 </button>
-            </div>
-
-            <div className="team-builder-mobile-card__media tb-type-tint" style={typeVars(pokemon)}>
                 <div className="mx-auto aspect-square w-full max-w-[96px]">
                     <Sprite src={getPokemonDisplaySprite(pokemon)} artworkSrc={getPokemonArtworkSpriteUrl(pokemon.id)} alt={pokemon.name} className="h-full w-full" />
                 </div>
             </div>
 
-            <div className="mt-1.5">
-                <p className="team-builder-mobile-card__name font-bold capitalize">
+            <div className="flex items-baseline justify-between gap-1">
+                <p className="team-builder-mobile-card__name min-w-0 font-bold capitalize">
                     {pokemon.name}
                 </p>
-                {hasSynergy && synergyReason.label && (
-                    <span className="team-builder-mobile-card__reason-label" style={{ color: reasonColor }}>{synergyReason.label}</span>
-                )}
+                <span className="shrink-0 font-mono text-[10px] font-semibold tabular-nums text-muted select-none">
+                    #{pokemon.id}
+                </span>
             </div>
+            {hasSynergy && synergyReason.label ? (
+                <span className="team-builder-mobile-card__reason-label">
+                    <ReasonIcon aria-hidden="true" />
+                    <span className="truncate">{synergyReason.label}</span>
+                </span>
+            ) : !hasSynergy && isSuggested ? (
+                <span className="team-builder-mobile-card__reason-label is-suggested">
+                    {language === 'pt' ? 'Novo' : 'New'}
+                </span>
+            ) : null}
         </article>
     );
 };
@@ -707,7 +706,7 @@ export const MobileTeamBuilderView = ({
                             autoCapitalize="none"
                             autoCorrect="off"
                             spellCheck={false}
-                            placeholder={t('pokedex.searchPlaceholder')}
+                            placeholder={t('pokedex.searchPlaceholderShort')}
                             value={searchInput}
                             onChange={(event) => setSearchInput(event.target.value)}
                             className="team-builder-field team-builder-mobile__search-field"
@@ -859,8 +858,8 @@ export const MobileTeamBuilderView = ({
                         </div>
                     ) : (
                         <>
-                            <div className="p-1 custom-scrollbar">
-                                <div className="team-builder-mobile__grid grid grid-cols-3 gap-1.5">
+                            <div className="custom-scrollbar">
+                                <div className="team-builder-mobile__grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1.5">
                                     {isGameFilterActive ? (
                                         (gameSections || []).map((section) => (
                                             <React.Fragment key={section.key}>
@@ -935,19 +934,19 @@ export const MobileTeamBuilderView = ({
 
             {currentTeam.length > 0 && (
                 <section className="team-builder-panel p-3.5 animate-fade-in" aria-label="Team analysis">
-                    <div className="flex items-center justify-between gap-2 mb-3">
-                        <div>
-                            <p className="team-builder-panel__eyebrow">{language === 'pt' ? 'Análise' : 'Analysis'}</p>
-                            <h3 className="team-builder-panel__title team-builder-panel__title--small mt-2">{t('builder.analysisTitle')}</h3>
-                        </div>
-                        <span className="text-[10px] text-muted">
+                    {/* One heading, one hint under it. An "Análise" eyebrow over
+                        "Análise do Time" said it twice, and the hint was squeezed
+                        into 10px beside the title. */}
+                    <div className="mb-3">
+                        <h3 className="team-builder-panel__title team-builder-panel__title--small">{t('builder.analysisTitle')}</h3>
+                        <p className="mt-1 text-xs text-muted">
                             {language === 'pt' ? 'toque no botão acima para detalhes' : 'tap chip above for details'}
-                        </span>
+                        </p>
                     </div>
 
                     <div className="team-builder-analysis-grid">
                         <div className="team-builder-analysis-card">
-                            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-success">
+                            <p className="mb-1.5 text-xs font-semibold text-success">
                                 {language === 'pt' ? 'Vantagens' : 'Strengths'} · {teamAnalysis.strengths.size}
                             </p>
                             <div className="flex flex-wrap gap-1">
@@ -960,7 +959,7 @@ export const MobileTeamBuilderView = ({
                         </div>
 
                         <div className="team-builder-analysis-card">
-                            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-danger">
+                            <p className="mb-1.5 text-xs font-semibold text-danger">
                                 {language === 'pt' ? 'Fraquezas' : 'Weaknesses'} · {Object.keys(teamAnalysis.weaknesses).length}
                             </p>
                             <div className="flex flex-wrap items-center gap-1">

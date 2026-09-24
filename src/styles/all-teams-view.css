@@ -435,3 +435,95 @@
         transition-duration: 0.001ms !important;
     }
 }
+
+/* ============================================================
+   PHONES — the tab is the heading, the page is the panel (< lg)
+   Shared by both tabs of My Teams (AllTeamsView, FavoritePokemonsView).
+   ============================================================ */
+@media (max-width: 1023px) {
+    /* The panel was a bordered box whose padding sat inside the page gutter,
+       holding a dashed empty state — a box in a box. The page is the panel now. */
+    .all-teams-view__panel {
+        padding: 0 !important;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    /* "Trabalho salvo / Times Salvos 0" repeated the tab that was just chosen,
+       count included — the segmented control above says both. */
+    .all-teams-view__header {
+        display: none;
+    }
+
+    /* Search beside its actions when they fit, above them when they do not:
+       the Teams tab's small Grid | List toggle shares the search's row, the
+       Pokémon tab's two selects take a row of their own and split it. A fixed
+       two-column grid gave the selects their full width and crushed the search
+       to a sliver. */
+    .all-teams-view__toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--space-2);
+        margin: 0 0 var(--space-4);
+    }
+
+    /* Takes (nearly) all the free space when the actions share its row; the
+       actions still grow to the full line once they wrap onto one of their own. */
+    .all-teams-view__search-control {
+        flex: 999 1 10rem;
+    }
+
+    .all-teams-view__toolbar-actions {
+        flex: 1 1 auto;
+        flex-wrap: nowrap;
+        justify-content: flex-end;
+        gap: var(--space-2);
+    }
+
+    .all-teams-view__toolbar-actions > .team-builder-select-wrap {
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    .all-teams-view__toolbar-actions .team-builder-select {
+        width: 100%;
+    }
+
+    .all-teams-view__toolbar-actions .team-builder-picker-summary {
+        display: none;
+    }
+
+    /* The 640px pass hid the Grid | List toggle to save a row; beside the
+       search it costs none, so it comes back. */
+    .all-teams-view__layout-toggle {
+        display: inline-flex;
+    }
+
+    /* The field names itself with its placeholder; the label stays for screen
+       readers only. */
+    .all-teams-view__search-control .team-builder-control__label {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    /* On the page, a control takes the surface fill and the control edge —
+       raised-on-page vanishes on the light themes. */
+    .all-teams-view__search-control .team-builder-field,
+    .all-teams-view__toolbar .team-builder-select {
+        min-height: var(--control-h-md);
+        border-color: var(--color-border-strong);
+        background: var(--color-surface);
+    }
+
+    /* Team cards separate by fill; no staggered entrance (the page fades in). */
+    .all-teams-view__card {
+        border-color: transparent;
+        animation: none;
+    }
+}

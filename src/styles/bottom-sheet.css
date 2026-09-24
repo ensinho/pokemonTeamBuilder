@@ -21,6 +21,15 @@
     animation: fade-in var(--duration-fast) var(--ease-smooth);
 }
 
+/* Phones dim, they do not blur — see .modal-scrim in index.css. The blur is
+   recomputed for every frame the sheet rises or is dragged. */
+@media (max-width: 1023px) {
+    .bottom-sheet__backdrop {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
+}
+
 .bottom-sheet__panel {
     position: relative;
     display: flex;

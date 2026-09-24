@@ -109,7 +109,7 @@ export function TournamentTeamView({ onImport, colors }) {
     }
 
     return (
-        <main className="mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
+        <main className="edv-page trn-team-view mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
             <button type="button" onClick={goBack} className="edv-back mb-4">
                 <ChevronLeft className="h-4 w-4" /> {backLabel}
             </button>

@@ -229,9 +229,10 @@
        Writing `pan-x` here would instead take *vertical* scrolling away from a
        sticky bar that sits under the thumb for the whole page. */
     overscroll-behavior-x: contain;
-    background: color-mix(in srgb, var(--color-bg) 90%, transparent);
-    backdrop-filter: blur(12px) saturate(1.15);
-    -webkit-backdrop-filter: blur(12px) saturate(1.15);
+    /* Opaque, like the app header and tab bar: the strip is sticky over the
+       page's one scroller, and a 12px backdrop blur under it was recomputed for
+       every frame of every scroll on this screen. */
+    background: var(--color-bg);
 }
 
 .pdm__tabs::-webkit-scrollbar { display: none; }

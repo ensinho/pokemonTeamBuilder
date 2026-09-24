@@ -12,6 +12,7 @@ import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
 import { filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
 import { MonSprite, pretty, SourceCredit } from './metaShared';
 import { CutoffSelect, FormatPicker, TypeFilter } from './metaControls';
+import '../../styles/meta-view.css';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
@@ -293,7 +294,7 @@ export function MetaUsageView() {
                 wrap freely these landed in a ragged block; pinning the rows
                 keeps one top and bottom edge per row. */}
             {tab === 'usage' && (
-                <div className="mb-3 flex flex-wrap items-center gap-2">
+                <div className="meta-toolbar__context mb-3 flex flex-wrap items-center gap-2">
                     <FormatPicker
                         formats={formats}
                         value={fmtId}
@@ -423,7 +424,7 @@ export function MetaUsageView() {
                                         key={mon.id}
                                         type="button"
                                         onClick={() => openMon(mon.id)}
-                                        className="group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        className="meta-mon-card group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     >
                                         <span className="absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-[10px] font-bold text-muted">{rank}</span>
                                         <MonSprite id={mon.id} name={mon.name} className="h-16 w-16 image-pixelated" />
@@ -431,8 +432,8 @@ export function MetaUsageView() {
                                         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
                                             <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(mon.pct, 3)}%` }} />
                                         </div>
-                                        <span className="mt-1 text-[10px] font-semibold tabular-nums text-muted">
-                                            {mon.pct}% {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
+                                        <span className="meta-mon-card__pct mt-1 text-[10px] font-semibold tabular-nums text-muted">
+                                            <strong className="meta-mon-card__value">{mon.pct}%</strong> {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
                                         </span>
                                         {Number.isFinite(mon.winRate) && (
                                             <span className="text-[10px] font-semibold tabular-nums text-muted">

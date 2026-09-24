@@ -23,6 +23,39 @@ const CATEGORY_CLASS = {
     status: 'ref-cat--status',
 };
 
+// One row, memoised. Details resolve one request at a time and each arrival
+// replaces the `details` map, which re-rendered every revealed row — up to a few
+// hundred — once per arrival while the list was being scrolled. A row's props
+// are its entry, its own detail object (same reference until it changes), and
+// stable callbacks, so now only the row whose detail landed renders again.
+const MoveRow = React.memo(function MoveRow({ entry, d, onOpen, t }) {
+    return (
+        <div
+            role="link"
+            tabIndex={0}
+            onClick={() => onOpen(entry.name)}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpen(entry.name); } }}
+            className="ref-row ref-row--moves"
+        >
+            <span className="ref-row__name">{prettify(entry.name)}</span>
+
+            <span className="ref-type-cell">
+                {d?.type ? <TypeBadge type={d.type} /> : <span className="ref-skeleton" />}
+            </span>
+
+            <span>
+                {d?.damage_class
+                    ? <span className={`ref-cat ${CATEGORY_CLASS[d.damage_class] || ''}`}>{t(`db.${d.damage_class}`)}</span>
+                    : <span className="ref-skeleton" />}
+            </span>
+
+            <span className="ref-num">{d ? (d.power ?? '—') : <span className="ref-skeleton" />}</span>
+            <span className="ref-num ref-num--muted ref-col-acc">{d ? (d.accuracy ?? '—') : ''}</span>
+            <span className="ref-num ref-num--muted ref-col-pp">{d ? (d.pp ?? '—') : ''}</span>
+        </div>
+    );
+});
+
 export function MovesListView() {
     const { t } = useTranslation();
     useDocumentMeta({
@@ -136,35 +169,9 @@ export function MovesListView() {
                         <span className="ref-num ref-col-pp">{t('db.colPP')}</span>
                     </div>
 
-                    {rows.map((entry) => {
-                        const d = details[entry.name];
-                        return (
-                            <div
-                                key={entry.name}
-                                role="link"
-                                tabIndex={0}
-                                onClick={() => openDetail(entry.name)}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetail(entry.name); } }}
-                                className="ref-row ref-row--moves"
-                            >
-                                <span className="ref-row__name">{prettify(entry.name)}</span>
-
-                                <span className="ref-type-cell">
-                                    {d?.type ? <TypeBadge type={d.type} /> : <span className="ref-skeleton" />}
-                                </span>
-
-                                <span>
-                                    {d?.damage_class
-                                        ? <span className={`ref-cat ${CATEGORY_CLASS[d.damage_class] || ''}`}>{t(`db.${d.damage_class}`)}</span>
-                                        : <span className="ref-skeleton" />}
-                                </span>
-
-                                <span className="ref-num">{d ? (d.power ?? '—') : <span className="ref-skeleton" />}</span>
-                                <span className="ref-num ref-num--muted ref-col-acc">{d ? (d.accuracy ?? '—') : ''}</span>
-                                <span className="ref-num ref-num--muted ref-col-pp">{d ? (d.pp ?? '—') : ''}</span>
-                            </div>
-                        );
-                    })}
+                    {rows.map((entry) => (
+                        <MoveRow key={entry.name} entry={entry} d={details[entry.name]} onOpen={openDetail} t={t} />
+                    ))}
 
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}
                 </div>

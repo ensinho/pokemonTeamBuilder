@@ -231,7 +231,7 @@ const DisclaimerModal = ({ onClose }) => {
 
     return createPortal(
         <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm max-lg:backdrop-filter-none flex items-center justify-center z-50 p-4"
             onClick={onClose}
             role="presentation"
         >
@@ -367,7 +367,7 @@ const SuggestionModal = ({ onClose, db, userId, userEmail, displayName, showToas
     /* Portaled for the same reason as DisclaimerModal — see the note there. */
     return createPortal(
         <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm max-lg:backdrop-filter-none flex items-center justify-center z-50 p-4"
             onClick={onClose}
             role="presentation"
         >

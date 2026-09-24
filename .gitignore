@@ -47,3 +47,5 @@ dist-ssr
 
 # Browser-automation snapshots (Playwright MCP) — tool output, not source
 .playwright-mcp/
+
+/brag-output**
