@@ -298,16 +298,35 @@
     color: var(--color-fg);
 }
 
+/* Each shortcut is an app icon: the glyph sits in its own rounded square, the
+   launcher shape a phone's home screen and dock taught everyone to read as
+   "open this". A bare 20px glyph over a label was a toolbar button. Inside the
+   rail (a surface) the square is a raised fill; on a phone, where the rail
+   drops its box, it becomes a surface of its own (below). */
 .hd-quick-tile__icon {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
     flex-shrink: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-primary);
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
 }
 
-.hd-quick-tile__icon svg { width: 1.25rem; height: 1.25rem; }
+.hd-quick-tile:hover .hd-quick-tile__icon {
+    background: var(--color-primary-soft);
+}
+
+/* The icon gives under the finger, not the tile (small object answers). */
+.hd-quick-tile:active .hd-quick-tile__icon {
+    scale: var(--press-scale);
+}
+
+.hd-quick-tile__icon svg { width: 1.375rem; height: 1.375rem; }
 
 /* A phone divides the rail four ways and the tiles come out thumb-sized. In a
    wide column that same division makes four 180px slabs holding a 20px icon, so
@@ -630,6 +649,13 @@
         font-size: 0.75rem;
     }
 
+    .hd-quick-tile__icon {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .hd-quick-tile__icon svg { width: 1.125rem; height: 1.125rem; }
+
     /* Panel heads carry a title and a link, nothing that needs 48px. */
     .hd-panel__head {
         padding: var(--space-3) var(--space-4) 0;
@@ -821,4 +847,56 @@
     .hd-meta-mon-btn {
         justify-content: center;
     }
+}
+
+/* ── Phones: surfaces, not outlines ────────────────────────────────────
+   The phone home was five bordered boxes stacked on a near-black page — each
+   one the same flat rectangle, which is what read as a template. Here they are
+   surfaces: the fill separates them from the page (surface on bg is a clear
+   step on every theme), the rounder corner and the sheen give them a material,
+   and the outline goes. The shortcuts drop their box entirely and stand on the
+   page as four app icons. Loads after home-view.css, whose daily-teaser rule
+   is written with !important — hence the matching ones. */
+@media (max-width: 1023px) {
+    .hd-panel,
+    .home-panel.home-panel--pinned-repo,
+    .home-profile-sidebar-card {
+        border-color: transparent;
+        border-radius: var(--radius-xl);
+        box-shadow: var(--surface-sheen);
+    }
+
+    .hd-stack .home-sidebar-section--daily {
+        border-color: transparent !important;
+        border-radius: var(--radius-xl) !important;
+        background: var(--color-surface) !important;
+        box-shadow: var(--surface-sheen) !important;
+    }
+
+    .hd-quick-rail {
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    .hd-quick-tile {
+        padding-block: var(--space-1);
+        color: var(--color-fg);
+    }
+
+    /* Tiles on the page have nothing to fill on press — the icon carries it. */
+    .hd-quick-tile:hover {
+        background: transparent;
+    }
+
+    .hd-quick-tile__icon {
+        width: 3.5rem;
+        height: 3.5rem;
+        /* iOS's icon corner is ~22% of the side: 12–13px on 56px. */
+        border-radius: calc(var(--radius-lg) - var(--space-0_5) - var(--space-0_5));
+        background: var(--color-surface);
+        box-shadow: var(--surface-sheen);
+    }
+
+    .hd-quick-tile__icon svg { width: 1.5rem; height: 1.5rem; }
 }

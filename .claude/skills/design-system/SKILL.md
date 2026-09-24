@@ -53,9 +53,10 @@ and several editor tools.
 
 ## Radius
 
-`--radius-sm` 6px (badges/chips) · `--radius-md` 8px (buttons/inputs) ·
-`--radius-lg` 12px (cards) · `--radius-xl` 16px (modals/panels) ·
-`--radius-full` (pills/avatars).
+`--radius-sm` 6px (badges/chips) · `--radius-md` 10px (buttons/inputs) ·
+`--radius-lg` 16px (cards) · `--radius-xl` 22px (modals/panels) ·
+`--radius-full` (pills/avatars). (One step rounder since 2026-09-24 — the old
+8/12/16 read as a web dashboard, not a dedicated app.)
 
 Use `--radius-full` for pills — never `999px` or `9999px`. `50%` is acceptable
 only for true circles where the element is known square.
@@ -72,6 +73,12 @@ per-theme `--elevation-*`, so they resolve correctly in all six themes.
 **Never write a literal `rgba()` shadow.** It will be wrong in at least three of
 the six themes — a shadow tuned on `dark` is invisible on `solar` and muddy on
 `daybreak`.
+
+**`--surface-sheen`** is the material of a top-level region panel: a 1px top
+highlight on the dark themes, `--shadow-sm` on the light ones. It is applied in
+one zero-specificity `:where()` list in `index.css` (desktop), plus the phone
+home in `home-dashboard.css`. Add a new view's top-level panel to that list
+rather than writing the highlight inline.
 
 Prefer a border over a shadow. Most surfaces need `1px solid var(--color-border)`
 and nothing else. Reserve shadow for things that genuinely float: modals,
@@ -411,6 +418,11 @@ in markup; desktop must not move.
   keeping it: on a short list of heavy cards it only moves first paint into the scroll.
   Never on items whose children overflow them, on sticky elements, or on lists whose
   scroll position is restored (`useScrollRestoration`).
+- **The tab bar is a floating dock** (2026-09-24): a pill lifted off the bottom
+  edge, shrinking to an icon-only capsule while the page scrolls down
+  (`useDockCompact`, `.is-compact`). The shrink is `scale`/`translate`/`opacity`
+  only — never animate its size. Bottom reservations are computed from the dock's
+  row + padding + offset in `app-shell.css`; derive from those, don't restate.
 - **The tab bar is the navigation.** "Mais" opens `MobileMoreSheet`; nothing else does,
   and the sheet never lists what the bar shows.
 

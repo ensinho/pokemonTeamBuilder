@@ -73,9 +73,12 @@
 
     /* Border radius scale (Ref 2 — shadcn/ui) */
     --radius-sm: 0.375rem;  /* 6px  — badges, chips */
-    --radius-md: 0.5rem;    /* 8px  — buttons, inputs */
-    --radius-lg: 0.75rem;   /* 12px — cards */
-    --radius-xl: 1rem;      /* 16px — panels, modals */
+    /* One step rounder on 2026-09-24: at 8/12/16 the app's corners were a web
+       dashboard's; a dedicated app's panels sit nearer 16–22px. The steps keep
+       4–6px apart so the nesting rule (inner = parent − 4) still holds. */
+    --radius-md: 0.625rem;  /* 10px — buttons, inputs */
+    --radius-lg: 1rem;      /* 16px — cards */
+    --radius-xl: 1.375rem;  /* 22px — panels, modals */
     --radius-full: 9999px;  /* pills, avatars, circular controls */
 
     /* Typography scale — canonical font sizes. CSS files and inline styles
@@ -351,6 +354,14 @@
        themes override it below. */
     --color-surface-elevated: color-mix(in srgb, var(--color-fg) 10%, var(--color-surface-raised));
 
+    /* The lit edge of a top-level surface. On the dark themes a 1px highlight
+       along the top, as if lit from above — the difference between a panel
+       that is *made of* something and a rectangle drawn with a flat outline.
+       On the light themes a fill needs no highlight; it gets the faintest lift
+       instead (their --color-border is a whisper, so this is what defines the
+       edge there). Applied once, below, to the app's region panels. */
+    --surface-sheen: inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 7%, transparent);
+
     /* Foreground for text/icons sitting on a filled --color-primary or
        --color-danger. Every theme's primary is dark enough for white; this
        exists so the value is named rather than 56 loose #fff literals. */
@@ -397,6 +408,27 @@
 :root[data-theme='daybreak'],
 :root[data-theme='solar'] {
     --color-surface-elevated: var(--color-surface);
+    --surface-sheen: var(--shadow-sm);
+}
+
+/* Region panels take the sheen. `:where()` keeps this at zero specificity, so
+   any panel that sets its own box-shadow (a selection ring, a focus ring, a
+   floating menu) keeps it — this only fills the gap where there was none.
+   Desktop only for the general list: below 1024px most of these panels *are*
+   the page (no fill, no border), and a highlight on nothing is a stray line.
+   The phone home, whose panels stay surfaces, opts in in home-dashboard.css. */
+@media (min-width: 1024px) {
+    :where(
+        .hd-panel, .hd-quick-rail,
+        .home-panel, .home-readme-panel, .home-profile-sidebar-card, .home-shortcuts-sidebar-card,
+        .team-builder-panel, .all-teams-view__card,
+        .battle-panel, .battle-header, .edv-header, .edv-section,
+        .forum-right-card, .forum-new-topic-card, .friends-invite,
+        .pdv__identity, .pdv__panel, .profile-hero, .profile-card,
+        .dmg-card, .dmg-result, .trn-card, .pokeroom__panel
+    ) {
+        box-shadow: var(--surface-sheen);
+    }
 }
 
 /* Interface scale (see applyUiScale in constants/theme.js). Percent, not rem:
