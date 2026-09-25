@@ -15,7 +15,8 @@ import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon, SparklesIcon,
 } from '../icons';
-import { Flame, Medal, Lock, Check, Sparkles, Bell } from 'lucide-react';
+import { Flame, Medal, Lock, Check, Sparkles, Bell, Type } from 'lucide-react';
+import { TextSizeControl } from '../TextSizeControl';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
@@ -393,6 +394,16 @@ export function ProfileView({
                                 </div>
                             );
                         })}
+                            {/* Text size moved here from the phone's gear menu
+                                (2026-09-24): a setting chosen once belongs with
+                                the other appearance choices, not in a popover. */}
+                            <div className="profile-theme-group profile-text-size">
+                                <p className="profile-theme-group__label">
+                                    <span className="profile-theme-group__icon"><Type className="w-3.5 h-3.5" aria-hidden="true" /></span>
+                                    {t('accountMenu.textSizeLabel')}
+                                </p>
+                                <TextSizeControl variant="menu" />
+                            </div>
                         </div>
                     </SectionCard>
 

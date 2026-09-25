@@ -41,6 +41,11 @@
        share one right edge and the scroller draws inside the gutter instead of
        shifting its own content 12px left of the header above it. */
     --forum-rail: var(--space-3);
+    /* The thread's reading column. The pane can be far wider than a line of
+       chat should be; past this the header, the rows and the composer stay
+       one centred column and only the scroller spans the pane — the scroll
+       lives in the middle of the screen, where the eye already is. */
+    --forum-measure: 46rem;
 
     width: 100%;
     display: grid;
@@ -289,6 +294,14 @@
     padding-inline-end: var(--forum-rail);
 }
 
+.forum-main__header,
+.forum-editor,
+.forum-message-list > * {
+    width: 100%;
+    max-width: var(--forum-measure);
+    margin-inline: auto;
+}
+
 .forum-main__header {
     display: flex;
     align-items: center;
@@ -336,16 +349,24 @@
     white-space: nowrap;
 }
 
-/* The byline wraps rather than pushing the header wide; on a narrow pane
-   "Teams · Created by @Professor Oak · 64d ago" is three facts, not one line. */
+/* One line, always: the category and one quiet fact. It used to wrap —
+   "Conversa · Criado por @Professor Oak" over "há 101 dias" — so every thread
+   opened under three lines of byline. What does not fit truncates. */
 .forum-main__meta {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-1) var(--space-2);
-    margin-top: var(--space-1);
+    gap: var(--space-2);
+    min-width: 0;
+    margin: var(--space-1) 0 0;
     font-size: 0.75rem;
     color: var(--color-muted);
+}
+
+.forum-main__meta-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Loading / empty copy, one shape for every pane. */
@@ -394,24 +415,59 @@
     overflow-x: hidden;
     overflow-y: auto;
     touch-action: pan-y;
+    padding-block: var(--space-2);
+    /* Keyed by topic in FeedView, so this plays once per thread opened —
+       opacity only, `backwards` so nothing lingers once it has landed. */
+    animation: fade-in var(--duration-slow) var(--ease-smooth) backwards;
 }
 
+/* Rows are separated by space, not by rules. A hairline under every post
+   plus a filled pill row in every post was the noise of the old thread; with
+   quiet actions the rhythm alone carries the turns. */
 .forum-message-item {
     display: grid;
     grid-template-columns: var(--forum-avatar) minmax(0, 1fr);
     gap: var(--forum-gutter);
-    padding-block: var(--space-4);
+    padding-block: var(--space-3);
 }
 
-/* Hairline between posts, carried by the later sibling so the list can end on
-   anything — a sentinel node, a notice — without leaving a rule under it. */
-.forum-message-item + .forum-message-item {
-    border-top: 1px solid var(--color-border);
+/* A continuation (same trainer, moments later — utils/forumThread) tucks under
+   the line above: no avatar, no byline, and the gap between them closes. */
+.forum-message-item:has(+ .forum-message-item--continued) {
+    padding-bottom: var(--space-0_5);
+}
+
+.forum-message-item.forum-message-item--continued {
+    padding-top: 0;
+}
+
+/* A message that arrived while you were reading rises in, once, on mount —
+   it answers something (a post landing, often your own). Rows present when
+   the thread opened never animate. Transform and opacity only; `backwards`
+   so the finished row carries no animation state. */
+.forum-message-item--new {
+    animation: forum-message-in var(--duration-glide) var(--ease-glide) backwards;
+}
+
+@keyframes forum-message-in {
+    from {
+        opacity: 0;
+        translate: 0 var(--space-3);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .forum-message-list,
+    .forum-message-item--new {
+        animation: none;
+    }
 }
 
 .forum-message-avatar {
     width: var(--forum-avatar);
     height: var(--forum-avatar);
+    padding: 0;
+    border: none;
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
     display: flex;
@@ -420,6 +476,13 @@
     overflow: hidden;
     position: relative;
     cursor: pointer;
+}
+
+/* Holds the avatar column open on a continuation row. */
+.forum-message-avatar--spacer {
+    height: 0;
+    background: none;
+    cursor: default;
 }
 
 .forum-message-avatar img {
@@ -447,7 +510,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-2);
+    gap: var(--space-1_5);
 }
 
 .forum-message-header {
@@ -469,6 +532,9 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
+    padding: 0;
+    border: none;
+    background: none;
     font-size: 0.8125rem;
     font-weight: 600;
     color: var(--color-fg);
@@ -774,17 +840,21 @@
 }
 
 /* --------------------------------------------------------------------------
-   Message actions — the reaction row of the reference: filled pills, a count
-   inside the pill, no outline. Like and Reply lead; Delete is pushed to the
-   far end, because a destructive control one thumb-width from Reply is a
-   mis-tap waiting to happen.
+   Message actions — quiet until wanted. They were filled pills on every post:
+   forty posts, eighty grey capsules, and the thread read as a column of
+   buttons with some text between them. Now a ghost row in the muted colour
+   that fills on hover or press; a like you gave is the one thing that stays
+   coloured. The row pulls in by its own padding so the heart lines up with
+   the text above it. Delete sits at the far end — a destructive control one
+   thumb-width from Reply is a mis-tap waiting to happen.
    -------------------------------------------------------------------------- */
 .forum-msg-actions {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2);
-    width: 100%;
+    gap: var(--space-1);
+    width: calc(100% + var(--space-2));
+    margin-inline-start: calc(-1 * var(--space-2));
 }
 
 .forum-msg-actions__end,
@@ -804,10 +874,10 @@
     justify-content: center;
     gap: var(--space-1_5);
     min-height: 1.75rem;
-    padding: 0 var(--space-2_5);
+    padding: 0 var(--space-2);
     border: none;
     border-radius: var(--radius-full);
-    background: var(--color-surface-raised);
+    background: transparent;
     color: var(--color-muted);
     font-size: 0.75rem;
     font-weight: 500;
@@ -832,8 +902,11 @@
 }
 
 .forum-msg-action.is-liked {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    color: var(--color-primary);
+}
+
+.forum-msg-action.is-liked svg {
+    fill: currentColor;
 }
 
 /* There is no --color-danger-soft token, and inventing one here would be a
@@ -855,13 +928,16 @@
 /* --------------------------------------------------------------------------
    Composer
    -------------------------------------------------------------------------- */
+/* The composer is always on screen: it is the thread pane's last flex row,
+   and only the list above it scrolls. No rule above it — the pill is its own
+   edge. */
 .forum-editor {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
     flex-shrink: 0;
-    padding-block: var(--space-3);
-    border-top: 1px solid var(--color-border);
+    padding-bottom: 0 !important;
+    padding-block: var(--space-2) var(--space-3);
     background: transparent;
 }
 
@@ -878,9 +954,15 @@
                 box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
+/* Focus is the pill's to show, once: its edge turns primary. The textarea
+   inside used to draw the app's global focus ring as well — a second rounded
+   outline inside the first, the "input duplicado" of 2026-09-24. */
 .forum-chat-input-wrapper:focus-within {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
+}
+
+.forum-chat-input-wrapper .forum-chat-input-field:focus-visible {
+    box-shadow: none;
 }
 
 .forum-chat-attach-btn,
@@ -1453,10 +1535,6 @@
        screen is width the text needed. */
     .forum-view {
         --forum-rail: 0px;
-    }
-
-    .forum-message-item {
-        padding-block: var(--space-3_5);
     }
 
     /* Room for a thumb. */

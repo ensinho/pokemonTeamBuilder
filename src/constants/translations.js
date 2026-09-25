@@ -197,6 +197,7 @@ export const TRANSLATIONS = {
             savedTeams: 'Saved Teams',
             guessing: 'Games',
             quiz: 'Quiz',
+            meta: 'Meta',
             trainerProfile: 'Trainer Profile',
             profile: 'Profile',
             management: 'Admin',
@@ -355,6 +356,8 @@ export const TRANSLATIONS = {
         accountMenu: {
             profileLabel: 'Profile',
             profileNote: 'Open trainer settings and preferences',
+            profileAndSettings: 'Profile & settings',
+            themeShort: 'Theme',
             themeLabel: 'Theme preferences',
             textSizeLabel: 'Text size',
             languageLabel: 'Language',
@@ -603,7 +606,7 @@ export const TRANSLATIONS = {
             statsFavorites: 'Favorites',
             statsFavoritesPokemon: 'Pokemon',
             sectionAppearance: 'Appearance',
-            sectionAppearanceDesc: 'Pick the theme that follows you across devices.',
+            sectionAppearanceDesc: 'Theme and text size, following you across devices.',
             sectionNotifications: 'Notifications',
             sectionNotificationsDesc: 'Battle alerts and the daily PokéPuzzle, on this device — even when the app is closed.',
             notifyTopicBattles: 'Battles (your turn, challenges)',
@@ -1258,7 +1261,6 @@ export const TRANSLATIONS = {
             home: {
                 title: 'Home',
                 tips: [
-                    'Your journey starts here — every great team has a story. What\'s yours today?',
                     'The Pokémon of the Day is different every 24h. Some days it\'ll surprise you.',
                     'The little companion in the greeting? That can be yours. Make it personal.'
                 ]
@@ -1266,7 +1268,6 @@ export const TRANSLATIONS = {
             builder: {
                 title: 'Builder',
                 tips: [
-                    'A team isn\'t six random picks — it\'s a statement. Feel the synergy as you build.',
                     'Dig into each slot. Moves, item, nature — that\'s where good teams become great ones.',
                     'Watch the summary bar shift as you add Pokémon. A well-balanced team has its own rhythm.'
                 ]
@@ -1275,14 +1276,12 @@ export const TRANSLATIONS = {
                 title: 'Saved Teams',
                 tips: [
                     'Every team here was a moment of inspiration. Revisit them — past-you had good taste.',
-                    'Star the ones that feel special. Some teams deserve to be remembered.',
-                    '🎮 Rate your teams 1–6 in your head, then edit the worst one until it earns a higher spot.'
+                    'Star the ones that feel special. Some teams deserve to be remembered.'
                 ]
             },
             pokedex: {
                 title: 'Pokédex',
                 tips: [
-                    'Over a thousand Pokémon, and you only need six. The fun is in the choosing.',
                     'Open any card and let the stats tell a story — sometimes the underdog surprises you.',
                     'Star the ones that catch your eye. Your favourites say a lot about your style.'
                 ]
@@ -1291,7 +1290,6 @@ export const TRANSLATIONS = {
                 title: 'Favourite Pokémon',
                 tips: [
                     'This is your taste — unfiltered. Every star you gave meant something.',
-                    'Scroll through and notice a pattern. Your favourite type might be more obvious than you think.',
                     'See someone here you\'ve never actually used? Maybe it\'s time.'
                 ]
             },
@@ -1305,9 +1303,8 @@ export const TRANSLATIONS = {
             feed: {
                 title: 'Feed',
                 tips: [
-                    'Talk shop with other trainers — share teams, ask for help, show off a clutch build.',
-                    'Attach one of your saved teams to a message so others can import it with one tap.',
-                    'Like the messages that help you, and keep it friendly — this space is for everyone.'
+                    'Talk shop with other trainers — share teams, ask for help, and keep it friendly.',
+                    'Tap + beside the reply box to attach a saved team or post a battle invite — others import or accept it in one tap.'
                 ]
             },
             suggestionLabel: 'Have a suggestion about this page?',
@@ -1504,6 +1501,7 @@ export const TRANSLATIONS = {
             savedTeams: 'Times Salvos',
             guessing: 'Jogos',
             quiz: 'Quiz',
+            meta: 'Meta',
             trainerProfile: 'Perfil de Treinador',
             profile: 'Perfil',
             management: 'Admin',
@@ -1662,6 +1660,8 @@ export const TRANSLATIONS = {
         accountMenu: {
             profileLabel: 'Perfil',
             profileNote: 'Abrir configurações e preferências do treinador',
+            profileAndSettings: 'Perfil e preferências',
+            themeShort: 'Tema',
             themeLabel: 'Preferências de tema',
             textSizeLabel: 'Tamanho do texto',
             languageLabel: 'Idioma',
@@ -1910,7 +1910,7 @@ export const TRANSLATIONS = {
             statsFavorites: 'Favoritos',
             statsFavoritesPokemon: 'Pokémon',
             sectionAppearance: 'Aparência',
-            sectionAppearanceDesc: 'Escolha o tema que acompanha você nos dispositivos.',
+            sectionAppearanceDesc: 'Tema e tamanho do texto, acompanhando você nos dispositivos.',
             sectionNotifications: 'Notificações',
             sectionNotificationsDesc: 'Avisos de batalha e o PokéPuzzle do dia neste aparelho — mesmo com o app fechado.',
             notifyTopicBattles: 'Batalhas (sua vez, desafios)',
@@ -2563,7 +2563,6 @@ export const TRANSLATIONS = {
             home: {
                 title: 'Início',
                 tips: [
-                    'Sua jornada começa aqui — cada grande equipe tem uma história. Qual é a sua hoje?',
                     'O Pokémon do Dia muda a cada 24h. Algumas vezes ele vai te surpreender.',
                     'O pequeno companheiro na saudação? Pode ser seu. Torne-o pessoal.'
                 ]
@@ -2571,7 +2570,6 @@ export const TRANSLATIONS = {
             builder: {
                 title: 'Construtor',
                 tips: [
-                    'Um time não é apenas seis escolhas aleatórias — é uma afirmação. Sinta a sinergia ao construir.',
                     'Explore cada slot. Movimentos, item, natureza — é aí que bons times se tornam ótimos.',
                     'Acompanhe a barra de resumo mudar conforme adiciona Pokémon. Um time equilibrado tem seu próprio ritmo.'
                 ]
@@ -2580,14 +2578,12 @@ export const TRANSLATIONS = {
                 title: 'Times Salvos',
                 tips: [
                     'Cada time aqui foi um momento de inspiração. Reveja-os — o seu eu do passado tinha bom gosto.',
-                    'Marque com estrela os que parecem especiais. Alguns times merecem ser lembrados.',
-                    '🎮 Avalie seus times de 1 a 6 na sua cabeça, depois edite o pior até que ele mereça uma nota maior.'
+                    'Marque com estrela os que parecem especiais. Alguns times merecem ser lembrados.'
                 ]
             },
             pokedex: {
                 title: 'Pokédex',
                 tips: [
-                    'Mais de mil Pokémon, e você só precisa de seis. A diversão está na escolha.',
                     'Abra qualquer cartão e deixe as estatísticas contarem uma história — às vezes o menos favorito surpreende.',
                     'Favorite os que chamarem sua atenção. Seus favoritos dizem muito sobre seu estilo.'
                 ]
@@ -2596,7 +2592,6 @@ export const TRANSLATIONS = {
                 title: 'Favoritos',
                 tips: [
                     'Este é o seu gosto — sem filtros. Cada estrela que você deu significou algo.',
-                    'Navegue e note um padrão. Seu tipo favorito pode ser mais óbvio do que você imagina.',
                     'Viu alguém aqui que você nunca usou de verdade? Talvez seja a hora.'
                 ]
             },
@@ -2610,9 +2605,8 @@ export const TRANSLATIONS = {
             feed: {
                 title: 'Feed',
                 tips: [
-                    'Converse com outros treinadores — compartilhe times, peça ajuda, mostre uma build decisiva.',
-                    'Anexe um dos seus times salvos a uma mensagem para que outros possam importá-lo com um toque.',
-                    'Curta as mensagens que te ajudam e mantenha o clima amigável — este espaço é de todos.'
+                    'Converse com outros treinadores — compartilhe times, peça ajuda e mantenha o clima amigável.',
+                    'Toque no + ao lado da resposta para anexar um time salvo ou lançar um convite de batalha — os outros importam ou aceitam com um toque.'
                 ]
             },
             suggestionLabel: 'Tem uma sugestão sobre esta página?',

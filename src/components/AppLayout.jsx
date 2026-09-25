@@ -1440,6 +1440,30 @@ export default function AppLayout() {
                                 </div>
                             </div>
 
+                            {/* Desktop search: the header's centre, shaped like
+                                the field it opens with its shortcut on its face.
+                                Centred on the page column rather than parked in
+                                a corner — search is the one control that belongs
+                                to every page equally. Phones keep a glyph among
+                                the actions (below). */}
+                            {!isMobile && (
+                                <div className="app-shell__header-search">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSearchOpen(true)}
+                                        onPointerEnter={() => { loadCommandPalette().catch(() => {}); }}
+                                        onFocus={() => { loadCommandPalette().catch(() => {}); }}
+                                        aria-keyshortcuts="Meta+K Control+K"
+                                        className="app-shell__search-trigger"
+                                    >
+                                        <Search aria-hidden="true" />
+                                        <span className="app-shell__search-trigger-label">{t('search.placeholder')}</span>
+                                        <kbd>{IS_APPLE ? '⌘K' : 'Ctrl K'}</kbd>
+                                    </button>
+                                </div>
+                            )}
+
+                            <div className="app-shell__header-end">
                             {/* Horizontal Active Team Slots. Rendered only once the
                                 active team actually holds something: six dashed
                                 empty rings sat in the header of every page,
@@ -1488,9 +1512,8 @@ export default function AppLayout() {
                             </div>
 
                             <div className="app-shell__header-actions">
-                                {/* Search: a field-shaped pill with its shortcut on
-                                    desktop, a glyph among the glyphs on a phone. */}
-                                {isMobile ? (
+                                {/* Phone search: a glyph among the glyphs. */}
+                                {isMobile && (
                                     <button
                                         type="button"
                                         onClick={() => setIsSearchOpen(true)}
@@ -1498,18 +1521,6 @@ export default function AppLayout() {
                                         className="app-shell__icon-button"
                                     >
                                         <Search className="w-5 h-5" aria-hidden="true" />
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsSearchOpen(true)}
-                                        onPointerEnter={() => { loadCommandPalette().catch(() => {}); }}
-                                        aria-keyshortcuts="Meta+K Control+K"
-                                        className="app-shell__search-trigger"
-                                    >
-                                        <Search aria-hidden="true" />
-                                        <span className="app-shell__search-trigger-label">{t('search.trigger')}</span>
-                                        <kbd>{IS_APPLE ? '⌘K' : 'Ctrl K'}</kbd>
                                     </button>
                                 )}
                                 {/* Desktop keeps the quick theme toggle; guests keep it on mobile too. */}
@@ -1532,6 +1543,7 @@ export default function AppLayout() {
                                         onSignOut={handleSignOut}
                                     />
                                 )}
+                            </div>
                             </div>
                         </header>
                     )}

@@ -6,17 +6,22 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useMediaQuery } from '../hooks/useMediaQuery';
 import { maxWidthBelow } from '../constants/breakpoints';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
-import { Flame, Folder, Puzzle } from 'lucide-react';
-import { SavedTeamsIcon, SwordsIcon, PokeballIcon } from './icons';
+import { Flame, Folder, TrendingUp } from 'lucide-react';
+import { SavedTeamsIcon, SwordsIcon, SuccessToastIcon, TrophyIcon } from './icons';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
 import { getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 
+// Shortcuts to what the navigation does *not* already put one tap away. This
+// was Builder, Pokédex, Teams and PokéPuzzle — three of the phone dock's five
+// tabs, repeated a thumb's width above the dock itself, and on desktop two of
+// the sidebar's four pinned links. My Teams has no permanent tab anywhere; the
+// other three live in folded sections (desktop) or behind "More" (phone).
 const QUICK_LINKS = [
-    { key: 'builder',    path: '/builder',    labelKey: 'nav.builder',     icon: <SwordsIcon /> },
-    { key: 'pokedex',    path: '/pokedex',    labelKey: 'nav.pokemonList', icon: <PokeballIcon /> },
-    { key: 'teams',      path: '/teams',      labelKey: 'nav.favorites',   icon: <Folder className="w-5 h-5 shrink-0" /> },
-    { key: 'pokepuzzle', path: '/pokepuzzle', labelKey: 'nav.pokepuzzle',  icon: <Puzzle className="w-5 h-5 shrink-0" /> },
+    { key: 'teams',       path: '/teams',       labelKey: 'nav.favorites',   icon: <Folder className="w-5 h-5 shrink-0" /> },
+    { key: 'meta',        path: '/meta',        labelKey: 'nav.meta',        icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
+    { key: 'quiz',        path: '/quiz',        labelKey: 'nav.quiz',        icon: <SuccessToastIcon className="w-5 h-5 shrink-0" /> },
+    { key: 'tournaments', path: '/tournaments', labelKey: 'nav.tournaments', icon: <TrophyIcon className="w-5 h-5 shrink-0" /> },
 ];
 
 export function HomeDashboard({ navigate, puzzleCard }) {

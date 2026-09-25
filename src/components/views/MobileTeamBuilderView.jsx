@@ -419,14 +419,38 @@ export const MobileTeamBuilderView = ({
     // flickering right at the threshold. The scroll surface is the app shell's
     // content column (`.app-shell__content`), not the window.
     //
-    // The band is in flow, so shrinking it used to pull the whole grid up by the
-    // height it lost — 35–100px under the user's thumb, right as they started
-    // to scroll or reached for a card — and push it back down on the way up.
-    // The height it gives up stays behind as flow space (`--composer-collapse`,
-    // a bottom margin), so the content never moves; only the header shrinks.
+    // The band is in flow, so the height it gives up — the fold: actions row
+    // and analysis chip — stays behind as flow space (`--composer-collapse`, a
+    // bottom margin) and the grid never moves. **Both halves of that swap must
+    // land in the same layout.** Until 2026-09-24 the margin was measured in a
+    // layout effect *after* the band had shrunk; that measurement forced a
+    // layout with the band short and the margin missing, the browser's scroll
+    // anchoring compensated for the grid "moving up" by lowering scrollTop, and
+    // once the fold outgrew the 56px threshold (any team with a Pokémon: the
+    // analysis chip appears) scrollTop hit 0, the band re-expanded, and the
+    // page snapped back to the top every ~50px of scrolling. So the fold's
+    // height is kept in the variable at all times — measured from its natural
+    // size, which does not depend on whether it is folded — and flipping the
+    // state is layout-neutral by construction.
     const [isComposerCondensed, setIsComposerCondensed] = React.useState(false);
     const stickyRef = useRef(null);
-    const expandedHeightRef = useRef(0);
+    const foldRef = useRef(null);
+    const condensedRef = useRef(false);
+    React.useLayoutEffect(() => {
+        const band = stickyRef.current;
+        const fold = foldRef.current;
+        if (!band || !fold) return undefined;
+        // scrollHeight is the fold's natural height folded or not: folding caps
+        // its max-height at 0 but its rows still lay out at full size inside.
+        const sync = () => band.style.setProperty('--composer-collapse', `${fold.scrollHeight}px`);
+        sync();
+        if (typeof ResizeObserver !== 'function') return undefined;
+        // The rows, not the fold: while folded the fold is 0 tall whatever its
+        // rows do, and the analysis chip comes and goes with the team.
+        const observer = new ResizeObserver(sync);
+        Array.from(fold.children).forEach((row) => observer.observe(row));
+        return () => observer.disconnect();
+    }, []);
     React.useEffect(() => {
         const scroller = document.querySelector('.app-shell__content') || window;
         const readY = () => (scroller === window ? window.scrollY : scroller.scrollTop);
@@ -436,14 +460,10 @@ export const MobileTeamBuilderView = ({
             raf = requestAnimationFrame(() => {
                 raf = 0;
                 const y = readY();
-                setIsComposerCondensed((prev) => {
-                    if (!prev && y > 56) {
-                        expandedHeightRef.current = stickyRef.current?.offsetHeight || 0;
-                        return true;
-                    }
-                    if (prev && y < 16) return false;
-                    return prev;
-                });
+                const next = condensedRef.current ? y >= 16 : y > 56;
+                if (next === condensedRef.current) return;
+                condensedRef.current = next;
+                setIsComposerCondensed(next);
             });
         };
         scroller.addEventListener('scroll', onScroll, { passive: true });
@@ -453,16 +473,6 @@ export const MobileTeamBuilderView = ({
             if (raf) cancelAnimationFrame(raf);
         };
     }, []);
-    React.useLayoutEffect(() => {
-        const el = stickyRef.current;
-        if (!el) return;
-        if (!isComposerCondensed) {
-            el.style.removeProperty('--composer-collapse');
-            return;
-        }
-        const lost = Math.max(0, expandedHeightRef.current - el.offsetHeight);
-        el.style.setProperty('--composer-collapse', `${lost}px`);
-    }, [isComposerCondensed]);
     const wantsMeta = { enabled: !isPlaythrough };
     const { byId: smogonById } = useSmogonData(wantsMeta);
     const { byId: usageById } = useCompetitiveUsage(wantsMeta);
@@ -646,6 +656,11 @@ export const MobileTeamBuilderView = ({
                         ))}
                     </div>
 
+                    {/* The fold: everything that tucks away when the band
+                        condenses. One element, so its height is one number —
+                        see the --composer-collapse comment above. `inert`
+                        while folded: invisible controls must not take focus. */}
+                    <div ref={foldRef} className="team-builder-mobile__composer-fold" inert={isComposerCondensed}>
                     {/* Row 3: Salvar (primary) + actions filling the remaining width */}
                     <div className="team-builder-mobile__composer-actions mt-2.5">
                         <button
@@ -729,6 +744,7 @@ export const MobileTeamBuilderView = ({
                                 )}
                             </button>
                         )}
+                    </div>
                     </div>
                 </section>
             </div>
