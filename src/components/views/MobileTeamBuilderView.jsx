@@ -34,6 +34,7 @@ import {
     TrophyIcon,
 } from '../icons';
 import { Save, SaveAll } from 'lucide-react';
+import { Loader } from '../Loader';
 
 // Inline CSS custom properties for the per-type ring/tint behind a sprite.
 const typeVars = (pokemon) => {
@@ -893,7 +894,7 @@ export const MobileTeamBuilderView = ({
                 <div className="team-builder-mobile__available mt-2">
                     {isInitialLoading ? (
                         <div className="team-builder-spinner-wrap h-full">
-                            <div className="team-builder-spinner" aria-hidden="true" />
+                            <Loader />
                         </div>
                     ) : (
                         <>
@@ -950,7 +951,7 @@ export const MobileTeamBuilderView = ({
 
                                 {!isGameFilterActive && isFetchingMore && (
                                     <div className="team-builder-spinner-wrap py-4">
-                                        <div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true" />
+                                        <Loader size="sm" />
                                     </div>
                                 )}
 

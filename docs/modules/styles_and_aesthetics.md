@@ -115,6 +115,10 @@ Utility classes `.elevation-1`, `.elevation-2`, `.elevation-3` are available glo
 --duration-slow:     250ms   Sprite reveals, card entrances
 --duration-entrance: 350ms   Sheets and the drawer sliding in
 
+--ease-glide / --duration-glide: 520ms   v2 — real spring (ζ 0.72), anything that travels
+--ease-pop   / --duration-pop:   690ms   v2 — real spring (ζ 0.42), one-shot rewards
+--duration-reveal: 560ms                 v2 — the theme reveal, nothing else
+
 --press-scale:       0.97    How far a pressed button sinks (via the `scale` property)
 --control-h-sm/md/lg 1.75 / 2.25 / 2.75rem — shared by buttons, inputs, segmented controls
 ```
@@ -225,12 +229,24 @@ Six themes defined in `src/constants/theme.js` under `THEME_META`:
 ### Glassmorphism
 Cards and panels frequently use `backdrop-blur` with semi-transparent backgrounds. The border is `var(--color-border)` at 1px solid. Do not add a second solid background behind a blur panel — it defeats the effect.
 
-### Micro-Animations
-Interactive elements must feel alive:
-- Hover: `hover:-translate-y-0.5` or `hover:scale-[1.02]` on cards.
-- Press: `active:scale-[0.97]` or `active:scale-[0.98]` on buttons.
-- Entrance: `fade-in-up` keyframe (defined in `index.css`) for list items and cards.
-- Sprite reveal: `.sprite-fade` class triggers `sprite-fade-in` keyframe — opacity + scale + blur.
+### Micro-Animations — design system v2 (2026-09-24)
+Structure stays calm; controls behave like objects. The full rules, the spring
+generator and the taste gate are in the `/design-system` skill ("v2 — the material
+layer"); the short version:
+- **Hover** is a fill or colour change — never a lift on a card (v1, still true).
+- **Press:** buttons and small controls sink by `--press-scale` via the `scale`
+  property; a `<Switch>` knob stretches toward the side it is leaving.
+- **Continuity:** `.segmented` thumbs and `.tabs` underlines *travel* to the new
+  selection (CSS anchor positioning on the glide spring; `anchor-scope`-gated,
+  older engines keep the per-item fill).
+- **Reward:** `useShinyBurst` — the shiny sparkle, once, only from the click that
+  earned it (favouriting, flipping to shiny).
+- **Figures:** `<RollingNumber>` rolls digits that change while visible; never a
+  count-up on load.
+- **Theme:** a change spreads from the pressed control as a circular View
+  Transition (`chooseTheme(id, originFromEvent(e))`).
+- **Entrance:** the page fades in on route change; `.motion-enter` /
+  `.motion-stagger` on desktop only. Sprite reveal: `.sprite-fade`.
 
 ### Skeleton Loading
 Use the `.skeleton` class. It is a shimmer animation that uses `var(--color-surface-raised)` so it adapts to all themes automatically.
@@ -300,6 +316,8 @@ The `custom-scrollbar` class in `index.css` reads `--scrollbar-track-color` and 
 | `src/styles/forum-view.css` | FeedView — topic list, messages, composer |
 | `src/styles/locations-view.css` | Currently unused (legacy) |
 | `src/styles/more-sheet.css` | MobileMoreSheet — the phone's "Mais" tile grid |
+| `src/styles/interactions.css` | Design system v2 primitives: `.switch`, `.check`, `.loader`, `.rolling-number`, `.shiny-burst`, `.theme-toggle`, the theme reveal. Loaded after `index.css` (main.jsx) |
+| `src/styles/motion.css` | `.motion-enter`, `.motion-stagger`, `.interactive-lift` (desktop entrances) |
 | `src/styles/meta-view.css` | MetaUsageView — phone layout only (desktop is utilities) |
 | `src/styles/gyms-view.css` | GymsView — phone layout only (desktop is utilities) |
 

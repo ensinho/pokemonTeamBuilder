@@ -46,6 +46,7 @@ import {
     TrashIcon,
     TrophyIcon,
 } from '../icons';
+import { Loader } from '../Loader';
 
 // Inline CSS custom properties driving the per-type disc/ring behind a team
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
@@ -884,7 +885,7 @@ export function TeamBuilderView({
                         <div className="team-builder-results mt-4">
                             {isInitialLoading ? (
                                 <div className="team-builder-spinner-wrap">
-                                    <div className="team-builder-spinner" aria-hidden="true"></div>
+                                    <Loader />
                                 </div>
                             ) : (
                                 <div className="team-builder-results__scroll custom-scrollbar">
@@ -940,7 +941,7 @@ export function TeamBuilderView({
                                         )}
                                     </div>
                                     {grid.hasMore && <div ref={grid.sentinelRef} className="h-px" aria-hidden="true" />}
-                                    {!isGameFilterActive && !isTierFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div></div>}
+                                    {!isGameFilterActive && !isTierFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><Loader size="sm" /></div>}
                                     {((isGameFilterActive && gameVisibleCount === 0 && pokemonIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && !isInitialLoading && (
                                         <div className="px-2 pb-4">
                                             <EmptyState

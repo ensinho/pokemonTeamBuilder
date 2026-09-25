@@ -22,6 +22,8 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { getPokemonNeighbors } from '../../utils/pokemonNeighbors';
 import { getPokemonArtworkSpriteUrl, getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { SmogonCompetitivePanel } from './SmogonCompetitivePanel';
+import { useShinyBurst } from '../../hooks/useShinyBurst';
+import { Loader } from '../Loader';
 
 const METHOD_ICON_MAP = {
     walk: Footprints, surf: Waves, 'old-rod': Fish, 'good-rod': Fish, 'super-rod': Fish,
@@ -167,6 +169,8 @@ export function MobilePokemonDetailView({
     const identity = selectedPokemonDetails || indexEntry || { id: pokemonId, name: '', types: [] };
     const types = identity.types || [];
     const isFavorite = Boolean(favoritePokemons?.has?.(Number(identity.id)));
+    const shinyBurst = useShinyBurst();
+    const favoriteBurst = useShinyBurst();
 
     /* ── Carousel ─────────────────────────────────────────────────────────── */
     const browseSequence = usePokedexStore((s) => s.browseSequence);
@@ -536,22 +540,30 @@ export function MobilePokemonDetailView({
                         <div className="pdm__bar-actions">
                             <button
                                 type="button"
-                                onClick={() => setShowShiny((value) => !value)}
-                                className={`pdm__iconbtn ${showShiny ? 'is-active' : ''}`}
+                                onClick={() => {
+                                    if (!showShiny) shinyBurst.fire();
+                                    setShowShiny((value) => !value);
+                                }}
+                                className={`pdm__iconbtn ${showShiny ? 'is-active' : ''} ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
                                 aria-pressed={showShiny}
                                 aria-label={t('pokedex.toggleShiny')}
                             >
                                 <Sparkles className="w-5 h-5" />
+                                {shinyBurst.burst}
                             </button>
                             {onToggleFavoritePokemon && (
                                 <button
                                     type="button"
-                                    onClick={() => onToggleFavoritePokemon(Number(identity.id))}
-                                    className={`pdm__iconbtn ${isFavorite ? 'is-active' : ''}`}
+                                    onClick={() => {
+                                        if (!isFavorite) favoriteBurst.fire();
+                                        onToggleFavoritePokemon(Number(identity.id));
+                                    }}
+                                    className={`pdm__iconbtn ${isFavorite ? 'is-active' : ''} ${favoriteBurst.isBursting ? 'is-bursting' : ''}`}
                                     aria-pressed={isFavorite}
                                     aria-label={isFavorite ? t('common.remove') : t('pokedex.addFavorite')}
                                 >
                                     <Star className="w-5 h-5" fill={isFavorite ? 'currentColor' : 'none'} />
+                                    {favoriteBurst.burst}
                                 </button>
                             )}
                         </div>
@@ -580,6 +592,7 @@ export function MobilePokemonDetailView({
                             artworkSrc={getPokemonArtworkSpriteUrl(identity.id, { shiny: showShiny })}
                             alt={cleanName(identity.name)}
                             eager
+                            heroTarget
                         />
                         <button
                             type="button"
@@ -620,8 +633,8 @@ export function MobilePokemonDetailView({
 
 function Loading() {
     return (
-        <div className="pdm-loading" role="status">
-            <div className="team-builder-spinner" aria-hidden="true" />
+        <div className="pdm-loading">
+            <Loader />
         </div>
     );
 }

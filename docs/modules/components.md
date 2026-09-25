@@ -214,6 +214,84 @@ Current icons: `GithubIcon`, `LinkedinIcon`, `CloseIcon`, `CollapseLeftIcon`, `C
 
 ---
 
+### Design system v2 primitives (2026-09-24)
+
+Built once so no view draws its own again (see `docs/wounds.md`, 2026-09-24). CSS in
+`src/styles/interactions.css`.
+
+- **`Switch`** (`src/components/Switch.jsx`) — the one on/off control:
+  `role="switch"` button, `aria-labelledby`/`aria-describedby` wired from `label` /
+  `description`. `variant="row"` is a settings line (words left, switch right,
+  hairline between stacked rows), `size="sm"` for dense rows, `tone` sets the "on"
+  colour (the damage calculator passes each side's colour). Used by Profile
+  (notifications, Tera), the account menu (Tera), the Pokémon editor (Shiny) and
+  the damage calculator.
+- **`Loader`** (`src/components/Loader.jsx`) — the Poké Ball capture wobble.
+  `size` xs/sm/md/lg (lg takes the primary colour), `label` (visible) or an
+  sr-only "Loading…", `block` to centre it in a padded block. `className="loader--inherit"`
+  inside a filled button. Replaced every CSS ring and spun Poké Ball.
+- **`RollingNumber`** (`src/components/RollingNumber.jsx`, logic in
+  `utils/rollingDigits.js`) — odometer digits keyed from the right; renders its
+  first value still. The editor's "EVs remaining".
+- **`useShinyBurst`** (`src/hooks/useShinyBurst.js` + `components/ShinyBurst.jsx`) —
+  `{ burst, isBursting, fire }`. Fire from the click; render `burst` inside a
+  positioned control; add `is-bursting` so its SVG pops. `--burst-scale` shortens
+  the flight inside a clipping card. No-op under reduced motion.
+- **`ThemeToggle`** (`src/components/ThemeToggle.jsx`) — the header's animated
+  sun ⇄ moon (toggles.dev "Classic", MIT); flips to the theme's pair
+  (`THEME_PAIRS`) through `store/themeChoice.js`.
+- **`confirmAction()` + `ConfirmHost`** (`src/store/useConfirmStore.js`,
+  `components/modals/ConfirmHost.jsx`, mounted once in AppLayout) —
+  `if (await confirmAction({ title, message, confirmText }))`. Replaced every
+  `window.confirm`.
+- **Toast swipe** — `ToastStack`'s `useSwipeToDismiss`: touch/pen drags a toast
+  sideways; `shouldDismissSwipe` (`utils/sheetDismiss.js`) decides, with the same
+  fraction/flick rule as the sheets.
+
+### DecryptText — the PokéPuzzle reveal (2026-09-24)
+**Files:** `src/components/DecryptText.jsx`, `src/utils/decrypt.js` (+ test)
+
+A name that decrypts into place: random letters resolving left to right over
+450–900ms (scaled to the name), punctuation fixed from the first frame, unresolved
+letters muted (`.decrypt-text__noise`). `play` must come from the user's own act —
+`PokePuzzleView` sets `solvedNow` at its two winning-guess branches and clears it
+when the target changes, so reopening a solved day shows the name still. The display
+face is mono, so the scramble never changes the line's width; screen readers get the
+real text.
+
+### Hero transition — card → detail (2026-09-24)
+**Files:** `src/utils/heroTransition.js`, `src/components/Sprite.jsx` (`heroTarget`), `src/styles/interactions.css`
+
+`navigateWithHero(navigate, to, options, sourceElement)` opens a Pokémon with its
+sprite flying from the card into the detail hero: a same-document View Transition
+where the source (`[data-hero-source={id}]` on `PokemonCard` and the phone Pokédex
+card) is named `pokemon-hero` in the old snapshot and the destination
+(`<Sprite heroTarget>` on the phone screen, `data-vt-hero` on the desktop panel)
+in the new one, scoped by `html[data-hero-transition]`. The update waits up to
+450ms (timers — rAF does not run during a view transition's update) for the hero
+to exist; the phone hero paints from the index entry at once, the desktop panel's
+waits for the detail record, so a slow desktop load degrades to a cross-fade.
+Plain `navigate` with no View Transitions or under reduced motion.
+
+### CommandPalette — global search (2026-09-24)
+**Files:** `src/components/CommandPalette.jsx`, `src/styles/command-palette.css`, `src/utils/globalSearch.js` (+ test)
+
+Search anything from anywhere: Pokémon (name or dex number), moves, abilities,
+items and every rail destination, all from data already in memory. Opened by
+`⌘K` / `Ctrl+K` (toggles), `/` when not typing, the desktop header's field-shaped
+pill, or the phone header's glyph; `AppLayout` owns `isSearchOpen`, lazy-loads the
+chunk (warmed with the phone prefetch) and passes `destinations` (the rail's items,
+deduped). Built on `.modal-scrim` > `.modal-panel` + `useModalA11y`: a palette near
+the top on desktop, a **full-height sheet with the field at the top** below 640px
+(a bottom sheet would put the field under the keyboard). ARIA combobox + listbox;
+arrows walk across groups, Enter opens.
+
+Ranking lives in `utils/globalSearch.js` and is tested: exact > prefix (fewer extra
+words first, so forms rank under their species and a line keeps dex order) > word
+start > all-words-prefix > substring; groups are ordered by their best hit plus a
+`boost` (Pokémon 8, Pages 6), so "char" leads with Charmander but "charm" (an exact
+move) leads with the move, and "meta" finds the page through its route alias.
+
 ## Quiz Components
 
 ### PokemonGenerationQuizCard

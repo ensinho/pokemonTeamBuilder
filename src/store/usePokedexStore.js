@@ -18,6 +18,10 @@ const revealedBySignature = new Map();
 
 // The full static index is loaded once and cached here for the session.
 let fullIndexPromise = null;
+// Whether a list has been built from it yet. `isLoading` is what the Pokédex
+// and both builders render as `isInitialLoading` — it swaps the whole results
+// grid for the loader — so it may only rise before the first list exists.
+let hasBuiltList = false;
 const getFullIndex = () => {
     if (!fullIndexPromise) {
         fullIndexPromise = loadPokemonIndex().catch((error) => {
@@ -152,7 +156,11 @@ export const usePokedexStore = create((set, get) => ({
     // Load the full index once, apply the active filters, and reveal the pages the
     // user had already revealed for this exact list (first page for a new one).
     fetchInitial: async (isPokedex) => {
-        set({ isLoading: true });
+        // After the first load the index is cached and filtering is synchronous,
+        // so raising `isLoading` on a refilter only swapped the grid for the
+        // loader for one frame and remounted every card — on every debounced
+        // keystroke of a search (docs/wounds.md 2026-09-24, backlog 13).
+        if (!hasBuiltList) set({ isLoading: true });
 
         try {
             const all = await getFullIndex();
@@ -210,6 +218,7 @@ export const usePokedexStore = create((set, get) => ({
                 visibleCount,
                 hasMore: filtered.length > visibleCount,
             });
+            hasBuiltList = true;
         } catch (error) {
             console.error("Error loading Pokémon index:", error);
             toast.error(t('toast.pokedexLoadError'), {

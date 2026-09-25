@@ -17,6 +17,8 @@ import {
 } from '../icons';
 import { Flame, Medal, Lock, Check, Sparkles, Bell } from 'lucide-react';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
+import { originFromEvent } from '../../utils/themeTransition';
+import { Switch } from '../Switch';
 
 const EmailVerifyRow = () => {
     const showToast = useToastStore((state) => state.showToast);
@@ -106,27 +108,33 @@ const NotificationsCard = () => {
         enabled, busy, dailyEnabled, iosInstallNeeded, supported, toggle, toggleDailyPuzzle,
     } = useNotificationSettings();
 
-    const statusLabel = enabled ? t('profile.notifyOn') : t('profile.notifyOff');
-
+    // Two switches, one per question the user is actually answering. This was a
+    // status pill, an enable button, a list restating the pill, and a pair of
+    // "remind me" / "don't remind me" buttons — four controls for two booleans.
     return (
         <SectionCard
             className="profile-card--gameplay"
-            meta={<span className={`profile-pill ${enabled ? 'profile-pill--accent' : ''}`}>{statusLabel}</span>}
             title={t('profile.sectionNotifications')}
             subtitle={t('profile.sectionNotificationsDesc')}
             icon={<Bell className="w-5 h-5" />}
         >
-            <div className="profile-button-row">
-                <button
-                    type="button"
-                    onClick={toggle}
-                    aria-pressed={enabled}
+            <div>
+                <Switch
+                    variant="row"
+                    checked={enabled}
                     disabled={busy}
-                    className={`profile-button ${enabled ? 'profile-button--primary' : ''}`}
-                >
-                    <Bell className="w-3.5 h-3.5" />
-                    {enabled ? t('profile.notifyDisableBtn') : t('profile.notifyEnableBtn')}
-                </button>
+                    onChange={toggle}
+                    label={t('profile.notifyDeviceLabel')}
+                    description={t('profile.notifyTopicBattles')}
+                />
+                <Switch
+                    variant="row"
+                    checked={enabled && dailyEnabled}
+                    disabled={!enabled}
+                    onChange={(next) => toggleDailyPuzzle(next)}
+                    label={t('profile.notifyTopicPuzzle')}
+                    description={t('profile.notifyPuzzleDesc')}
+                />
             </div>
 
             {iosInstallNeeded || !supported ? (
@@ -134,40 +142,6 @@ const NotificationsCard = () => {
                     {iosInstallNeeded ? t('battle.notifyIosInstall') : t('battle.notifyUnsupported')}
                 </p>
             ) : null}
-
-            <div className="profile-sync-list">
-                <div className="profile-sync-row">
-                    <span className="profile-sync-row__label">{t('profile.notifyTopicBattles')}</span>
-                    <span className="profile-sync-row__value">{statusLabel}</span>
-                </div>
-                <div className="profile-sync-row">
-                    <span className="profile-sync-row__label">{t('profile.notifyTopicPuzzle')}</span>
-                    <span className="profile-sync-row__value">
-                        {enabled && dailyEnabled ? t('profile.notifyOn') : t('profile.notifyOff')}
-                    </span>
-                </div>
-            </div>
-
-            <div className="profile-button-row profile-button-row--tight">
-                <button
-                    type="button"
-                    onClick={() => toggleDailyPuzzle(true)}
-                    aria-pressed={dailyEnabled}
-                    disabled={!enabled}
-                    className={`profile-button ${dailyEnabled ? 'profile-button--primary' : ''}`}
-                >
-                    {t('profile.notifyPuzzleOn')}
-                </button>
-                <button
-                    type="button"
-                    onClick={() => toggleDailyPuzzle(false)}
-                    aria-pressed={!dailyEnabled}
-                    disabled={!enabled}
-                    className={`profile-button ${!dailyEnabled ? 'profile-button--primary' : ''}`}
-                >
-                    {t('profile.notifyPuzzleOff')}
-                </button>
-            </div>
         </SectionCard>
     );
 };
@@ -399,7 +373,7 @@ export function ProfileView({
                                                 <button
                                                     key={entry.id}
                                                     type="button"
-                                                    onClick={() => onChangeTheme(entry.id)}
+                                                    onClick={(event) => onChangeTheme(entry.id, originFromEvent(event))}
                                                     aria-pressed={selected}
                                                     className={`profile-theme-card ${selected ? 'is-selected' : ''}`}
                                                     style={{ '--profile-theme-swatch': entry.swatch }}
@@ -451,29 +425,19 @@ export function ProfileView({
 
                     <SectionCard
                         className="profile-card--gameplay"
-                        meta={<span className="profile-pill profile-pill--accent">{showTeraType ? t('accountMenu.teraTypeShow') : t('accountMenu.teraTypeHide')}</span>}
                         title={t('profile.sectionTeraTitle')}
                         subtitle={t('profile.sectionTeraDesc')}
                         icon={<SparklesIcon className="w-5 h-5" />}
                     >
-                        <div className="segmented segmented--block" role="group" aria-label={t('profile.sectionTeraTitle')}>
-                            <button
-                                type="button"
-                                onClick={() => onChangeShowTeraType(true)}
-                                aria-pressed={showTeraType}
-                                className="segmented__item"
-                            >
-                                {t('accountMenu.teraTypeShow')}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => onChangeShowTeraType(false)}
-                                aria-pressed={!showTeraType}
-                                className="segmented__item"
-                            >
-                                {t('accountMenu.teraTypeHide')}
-                            </button>
-                        </div>
+                        {/* A yes/no preference is a switch, not two buttons that
+                            each mean half of it — and the switch is the status,
+                            so the header pill that restated it is gone. */}
+                        <Switch
+                            variant="row"
+                            checked={showTeraType}
+                            onChange={onChangeShowTeraType}
+                            label={t('accountMenu.teraTypeSwitch')}
+                        />
                     </SectionCard>
 
                     <NotificationsCard />

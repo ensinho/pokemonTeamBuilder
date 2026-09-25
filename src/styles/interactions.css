@@ -1,0 +1,452 @@
+/* ============================================================
+   INTERACTIONS — design system v2 (2026-09-24)
+
+   v1 made the app calm: few values, fill over line, 150ms state
+   changes. v2 keeps every one of those rules for *structure* and
+   adds a material layer on top: controls that behave like objects.
+   A thumb travels instead of teleporting, a knob stretches under
+   the finger, a figure rolls to its new value, a favourite answers
+   with the shiny sparkle. Each piece has one job and one trigger —
+   the user's own action — so none of it is decoration.
+
+   Primitives here, all driven by index.css tokens:
+     .switch          on/off control (role="switch") — <Switch>
+     .check           checkbox with a spring tick
+     .loader          the Poké Ball capture wobble — <Loader>
+     .rolling-number  odometer digits — <RollingNumber>
+     .shiny-burst     the one-shot sparkle — useShinyBurst()
+     .theme-toggle    sun ⇄ moon glyph — <ThemeToggle>
+     theme reveal     the circular View Transition on a theme change
+
+   Loaded after index.css (main.jsx), so like the primitives there
+   these beat a Tailwind utility on the same element.
+   ============================================================ */
+
+/* ---- Switch ---------------------------------------------------------------
+   One switch. The app had three hand-rolled ones — inline pixel sizes, a raw
+   white knob, two different track colours — plus settings that were really
+   switches drawn as a pair of "on" / "off" buttons.
+
+   The knob travels on the glide spring and *stretches* while pressed
+   (SquishSwitch, React Bits): the finger lands, the knob widens toward the side
+   it is about to leave for, then springs across. That stretch is the whole
+   difference between a switch that feels like a checkbox in disguise and one
+   that feels like a thing you are pushing. Width, not scaleX — a scaled circle
+   is an ellipse, a stretched pill is still a pill. */
+.switch {
+    --switch-w: 2.25rem;
+    --switch-h: 1.25rem;
+    --switch-inset: var(--space-0_5);
+    --switch-knob: calc(var(--switch-h) - 2 * var(--switch-inset));
+    --switch-stretch: 0rem;
+    --switch-on: var(--color-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2_5);
+    min-width: 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: none;
+    color: var(--color-fg);
+    font: inherit;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    line-height: 1.3;
+    text-align: left;
+    cursor: pointer;
+}
+
+.switch--sm {
+    --switch-w: 2rem;
+    --switch-h: 1.125rem;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+}
+
+.switch__track {
+    position: relative;
+    flex: none;
+    width: var(--switch-w);
+    height: var(--switch-h);
+    border-radius: var(--radius-full);
+    /* Off is a neutral mixed from the foreground, so it reads on every surface
+       in all six themes — gray on white, gray on near-black. */
+    background: color-mix(in srgb, var(--color-fg) 18%, transparent);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.switch:hover:not(:disabled) .switch__track {
+    background: color-mix(in srgb, var(--color-fg) 26%, transparent);
+}
+
+.switch__knob {
+    position: absolute;
+    top: var(--switch-inset);
+    left: var(--switch-inset);
+    width: calc(var(--switch-knob) + var(--switch-stretch));
+    height: var(--switch-knob);
+    border-radius: var(--radius-full);
+    /* The knob is a physical white object in every theme, like the EV slider's
+       thumb — the named on-primary white, since the track it rests on when on
+       is the primary. */
+    background: var(--color-on-primary);
+    box-shadow: var(--shadow-sm);
+    transition: translate var(--duration-glide) var(--ease-glide),
+                width var(--duration-press) var(--ease-out);
+}
+
+.switch[aria-checked='true'] .switch__track,
+.switch[aria-checked='true']:hover:not(:disabled) .switch__track {
+    background: var(--switch-on);
+}
+
+.switch[aria-checked='true'] .switch__knob {
+    translate: calc(var(--switch-w) - var(--switch-knob) - 2 * var(--switch-inset) - var(--switch-stretch)) 0;
+}
+
+.switch:active:not(:disabled) {
+    --switch-stretch: calc(var(--switch-knob) * 0.3);
+}
+
+.switch:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.switch__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.switch__description {
+    font-size: var(--text-xs);
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--color-muted);
+}
+
+/* A settings line: the words own the row, the switch sits at its far edge —
+   the arrangement every native settings screen uses, so the eye finds the
+   control without reading. */
+.switch--row {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    gap: var(--space-4);
+    padding: var(--space-2_5) 0;
+}
+
+.switch--row .switch__track {
+    order: 2;
+}
+
+/* Rows stacked in a list separate with a hairline between them — never after
+   the last one (a `+` sibling rule cannot dangle, see the 2026-09-11 wound). */
+.switch--row + .switch--row {
+    box-shadow: inset 0 1px 0 var(--color-border);
+}
+
+/* ---- Check ----------------------------------------------------------------
+   The native checkbox, restyled rather than replaced, so a <label> still
+   toggles it and the form semantics stay the platform's. The tick pops in on
+   the pop spring (SpringCheck, React Bits) — a small overshoot that makes
+   "yes, that registered" legible at 18px. */
+.check {
+    -webkit-appearance: none;
+    appearance: none;
+    display: inline-grid;
+    place-content: center;
+    flex: none;
+    width: 1.125rem;
+    height: 1.125rem;
+    margin: 0;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.check::before {
+    content: '';
+    width: 0.3125rem;
+    height: 0.5625rem;
+    /* Optical centring: the rotated L sits low in its box. */
+    margin-top: calc(-1 * var(--space-0_5));
+    border: solid var(--color-on-primary);
+    border-width: 0 2px 2px 0;
+    rotate: 45deg;
+    scale: 0;
+    transition: scale var(--duration-glide) var(--ease-pop);
+}
+
+.check:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-fg) 32%, var(--color-surface));
+}
+
+.check:checked,
+.check:checked:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+}
+
+.check:checked::before {
+    scale: 1;
+}
+
+.check:active:not(:disabled) {
+    scale: var(--press-scale);
+}
+
+.check:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* ---- Loader ---------------------------------------------------------------
+   The Poké Ball rocking on the ground the way it does after a throw — pause,
+   rock, rock, settle, pause. It replaces the stock Tailwind spinner (the
+   border-b-2 ring every template ships) and seven Poké Balls spun like a
+   wheel, which is not a thing a Poké Ball does. One element, rotating about
+   the point it rests on: a transform loop, so it composites on a phone. */
+.loader {
+    --loader-size: 2rem;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-muted);
+}
+
+.loader--xs { --loader-size: 1rem; }
+.loader--sm { --loader-size: 1.25rem; }
+
+/* The full-view loader is the only thing on the page, so it may carry the
+   brand colour; the small ones sit beside content and stay muted. */
+.loader--lg {
+    --loader-size: 3.5rem;
+    color: var(--color-primary);
+}
+
+/* Inside a filled button: take the button's own ink. */
+.loader--inherit { color: inherit; }
+
+.loader__ball {
+    width: var(--loader-size);
+    height: var(--loader-size);
+    transform-origin: 50% 92%;
+    animation: capture-wobble 1.5s var(--ease-smooth) infinite;
+}
+
+.loader__label {
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+@keyframes capture-wobble {
+    0%, 20%  { rotate: 0deg; }
+    30%      { rotate: -20deg; }
+    42%      { rotate: 15deg; }
+    52%      { rotate: -7deg; }
+    60%      { rotate: 2deg; }
+    66%, 100% { rotate: 0deg; }
+}
+
+/* A centred block for a view that has nothing else to show yet. */
+.loader-block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: var(--space-12) var(--space-4);
+}
+
+/* ---- Rolling number -------------------------------------------------------
+   Figures that change while you watch them roll to their new value, one digit
+   column at a time, like an odometer (Counter, React Bits). Only on change:
+   a figure that counts up on page load is the tell of a template, not a
+   product. The display face is mono, so every digit shares one advance and
+   the columns never jitter sideways while they roll.
+
+   Each column carries an invisible copy of its digit, which gives it its width
+   and — because the strip is absolutely positioned — keeps the column on the
+   surrounding text's baseline. clip-path (not overflow) does the clipping for
+   the same reason: overflow on an inline-block moves its baseline. */
+.rolling-number {
+    display: inline-flex;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.rolling-number__digit {
+    position: relative;
+    display: inline-block;
+    clip-path: inset(0);
+}
+
+.rolling-number__sizer {
+    visibility: hidden;
+}
+
+.rolling-number__strip {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    translate: 0 calc(var(--digit, 0) * -1lh);
+    transition: translate var(--duration-glide) var(--ease-glide);
+}
+
+.rolling-number__strip > span {
+    height: 1lh;
+}
+
+/* ---- Shiny burst ----------------------------------------------------------
+   The sparkle a shiny Pokémon makes when it appears, fired once when the user
+   stars a Pokémon or flips a sprite to shiny (PulseHeart, React Bits, in the
+   game's own vocabulary). Six four-point stars fly out from the control and
+   fade; the glyph itself pops on the pop spring. Transform and opacity only,
+   ~0.6s, and never on load — useShinyBurst only fires from a click. */
+/* `--burst-scale` shortens the flight where the control sits inside a clipping
+   card (the Pokédex card's corner star). */
+.shiny-burst {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.shiny-burst > i {
+    --size: 0.4375rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--size);
+    height: var(--size);
+    margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
+    background: var(--burst-color, var(--color-warning));
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+    opacity: 0;
+    animation: shiny-spark 620ms var(--ease-out) var(--delay, 0ms) both;
+}
+
+/* Two of the six are white-hot, as in the games. */
+.shiny-burst > i:nth-child(3n) {
+    --burst-color: color-mix(in srgb, var(--color-warning) 35%, var(--color-fg));
+}
+
+@keyframes shiny-spark {
+    0%   { opacity: 0; transform: rotate(var(--angle)) translateY(0) scale(0.2) rotate(0deg); }
+    25%  { opacity: 1; }
+    100% { opacity: 0; transform: rotate(var(--angle)) translateY(calc(-1 * var(--reach) * var(--burst-scale, 1))) scale(1) rotate(90deg); }
+}
+
+.is-bursting > svg {
+    animation: shiny-pop var(--duration-pop) var(--ease-pop);
+}
+
+@keyframes shiny-pop {
+    from { scale: 0.55; }
+    to   { scale: 1; }
+}
+
+/* ---- Theme toggle ---------------------------------------------------------
+   Sun and moon are one drawing (toggles.dev "Classic", MIT — Alfie Jones):
+   a disc with eight rays. Going dark, the rays retract into the centre, the
+   disc swells, and a circular bite slides across it to carve the crescent.
+   Going light, the same in reverse, rays last. The bite is a clip-path moved
+   with `translate` — the library's fallback for engines without the CSS `d`
+   property, used here everywhere so every engine draws the same thing. */
+.theme-toggle__icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    overflow: visible;
+}
+
+.theme-toggle__disc {
+    transform-origin: center;
+    transition: scale var(--duration-glide) var(--ease-glide);
+}
+
+.theme-toggle__bite {
+    transition: translate var(--duration-glide) var(--ease-glide);
+}
+
+.theme-toggle__ray {
+    transform-box: view-box;
+    transform-origin: center;
+    transition: scale var(--duration-slow) var(--ease-out) 80ms,
+                opacity var(--duration-slow) var(--ease-out) 80ms;
+}
+
+.theme-toggle.is-dark .theme-toggle__disc {
+    scale: 1.7;
+}
+
+.theme-toggle.is-dark .theme-toggle__bite {
+    translate: -13px 2px;
+    transition-delay: 60ms;
+}
+
+.theme-toggle.is-dark .theme-toggle__ray {
+    scale: 0;
+    opacity: 0;
+    transition-delay: 0ms;
+}
+
+/* ---- Theme reveal ---------------------------------------------------------
+   Changing theme is an event, not a repaint: the new theme spreads from the
+   control that asked for it as a growing circle over the old one. A same-
+   document View Transition (utils/themeTransition.js) snapshots the page,
+   applies the theme, and animates the new snapshot's clip. The attribute
+   scopes it — any other view transition keeps the platform's cross-fade.
+   Engines without View Transitions, and anyone who prefers reduced motion,
+   get the instant switch they had before. */
+html[data-theme-transition]::view-transition-old(root),
+html[data-theme-transition]::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+html[data-theme-transition]::view-transition-new(root) {
+    animation: theme-reveal var(--duration-reveal) var(--ease-out) both;
+}
+
+@keyframes theme-reveal {
+    from { clip-path: circle(0 at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 0%)); }
+    to   { clip-path: circle(var(--theme-reveal-r, 150%) at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 0%)); }
+}
+
+/* ---- Hero transition ------------------------------------------------------
+   Opening a Pokémon from a list (utils/heroTransition.js): the card's sprite is
+   named in the old snapshot, the detail hero in the new one, and the group
+   morphs position and size on the sheet curve while the page cross-fades. The
+   attribute scopes the name to this one transition — the hero must not carry a
+   view-transition-name the rest of the time (a theme reveal would capture it). */
+html[data-hero-transition] [data-vt-hero] {
+    view-transition-name: pokemon-hero;
+}
+
+html[data-hero-transition]::view-transition-group(pokemon-hero) {
+    animation-duration: var(--duration-entrance);
+    animation-timing-function: var(--ease-drawer);
+}
+
+/* Both ends are square sprites of different sizes: fit, never stretch. */
+html[data-hero-transition]::view-transition-old(pokemon-hero),
+html[data-hero-transition]::view-transition-new(pokemon-hero) {
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ---- Decrypt ----------------------------------------------------------------
+   The letters still scrambling in a DecryptText reveal read as noise, not as
+   part of the name: muted until they resolve. */
+.decrypt-text__noise {
+    color: var(--color-muted);
+}

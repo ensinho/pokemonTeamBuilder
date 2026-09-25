@@ -6,6 +6,7 @@ import { useTrainerSprites, trainerSpriteUrl } from '../../hooks/useTrainerSprit
 import { EmptyState } from '../EmptyState';
 import { CloseIcon } from '../icons';
 import '../../styles/trainer-selector-modal.css';
+import { Switch } from '../Switch';
 
 /**
  * Picker for the trainer sprite shown as the user's public avatar.
@@ -89,14 +90,12 @@ export function TrainerSpriteSelectorModal({ onClose, onSelect, currentSpriteId,
                             {t('modals.trainerSelectorCount', { count: visibleTrainers.length })}
                         </p>
                         {retroCount > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => setShowRetro((previous) => !previous)}
-                                aria-pressed={showRetro}
-                                className={`trainer-selector__toggle ${showRetro ? 'is-active' : ''}`}
-                            >
-                                {t('modals.trainerSelectorShowRetro', { count: retroCount })}
-                            </button>
+                            <Switch
+                                size="sm"
+                                checked={showRetro}
+                                onChange={setShowRetro}
+                                label={t('modals.trainerSelectorShowRetro', { count: retroCount })}
+                            />
                         )}
                     </div>
                 </div>

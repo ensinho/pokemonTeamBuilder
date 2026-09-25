@@ -16,6 +16,8 @@ import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../../utils
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useScrollRestoration } from '../../hooks/useScrollRestoration';
 import { usePokedexStore } from '../../store/usePokedexStore';
+import { Loader } from '../Loader';
+import { navigateWithHero } from '../../utils/heroTransition';
 
 const MobilePokedexPokemonCard = ({
     pokemon,
@@ -67,7 +69,7 @@ const MobilePokedexPokemonCard = ({
                 ))}
             </div>
 
-            <div className="team-builder-mobile-card__media">
+            <div className="team-builder-mobile-card__media" data-hero-source={pokemon.id}>
                 <button
                     onClick={handleFavoriteClick}
                     className={`team-builder-mobile-card__favorite team-builder-mobile-card__favorite--overlay ${isFavorite ? 'is-active' : ''}`}
@@ -185,7 +187,9 @@ export function PokedexView({
     const handleSelectPokemon = (pokemon) => {
         if (!pokemon?.id) return;
         setBrowseSequence(usePokedexStore.getState().filteredPokemons);
-        navigate(`/pokemon/${pokemon.id}`, { state: { from: '/pokedex' } });
+        // The card's sprite travels into the detail hero (utils/heroTransition.js).
+        const source = document.querySelector(`[data-hero-source="${pokemon.id}"]`);
+        navigateWithHero(navigate, `/pokemon/${pokemon.id}`, { state: { from: '/pokedex' } }, source);
     };
 
     // --- MOBILE VIEW TEMPLATE ---
@@ -346,7 +350,7 @@ export function PokedexView({
                 <section>
                     {isInitialLoading ? (
                         <div className="flex items-center justify-center py-20">
-                            <div className="team-builder-spinner" aria-hidden="true"></div>
+                            <Loader />
                         </div>
                     ) : (
                         <>
@@ -365,7 +369,7 @@ export function PokedexView({
 
                             {isFetchingMore && (
                                 <div className="flex items-center justify-center py-4">
-                                    <div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div>
+                                    <Loader size="sm" />
                                 </div>
                             )}
 
@@ -486,7 +490,7 @@ export function PokedexView({
                     <div className="team-builder-results mt-4">
                         {isInitialLoading ? (
                             <div className="team-builder-spinner-wrap h-full">
-                                <div className="team-builder-spinner" aria-hidden="true"></div>
+                                <Loader />
                             </div>
                         ) : (
                             <div ref={desktopResultsRef} className="team-builder-results__scroll custom-scrollbar">
@@ -506,7 +510,7 @@ export function PokedexView({
 
                                 {isFetchingMore && (
                                     <div className="team-builder-spinner-wrap py-4">
-                                        <div className="team-builder-spinner team-builder-spinner--small" aria-hidden="true"></div>
+                                        <Loader size="sm" />
                                     </div>
                                 )}
 

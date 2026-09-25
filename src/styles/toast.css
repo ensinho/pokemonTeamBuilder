@@ -112,6 +112,18 @@
        the panel would bleed into the page. The border is what guarantees an
        edge in every theme. */
     box-shadow: var(--shadow-lg);
+    /* Swipe to dismiss (ToastStack's useSwipeToDismiss): the finger drives
+       --swipe-x directly while dragging; letting go either springs it home on
+       the glide curve or carries it off the edge. pan-y hands horizontal
+       drags to the gesture and leaves vertical ones to the page. */
+    translate: var(--swipe-x, 0) 0;
+    touch-action: pan-y;
+    transition: translate var(--duration-glide) var(--ease-glide),
+                opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.toast.is-dragging {
+    transition: none;
 }
 
 /* ---- Severity mark ------------------------------------------------------- */

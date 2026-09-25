@@ -6,13 +6,13 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
-import { PokeballIcon } from '../icons';
 import { PokemonDetailPanel } from './PokemonDetailPanel';
 import { MobilePokemonDetailView } from './MobilePokemonDetailView';
 import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { Loader } from '../Loader';
 
 export function PokemonDetailView({
     colors,
@@ -70,9 +70,7 @@ export function PokemonDetailView({
     const isNumericRoute = /^\d+$/.test(String(idOrName || ''));
     if (!validId && !isNumericRoute && allPokemons.length === 0) {
         return (
-            <div className="flex items-center justify-center" style={{ minHeight: '50vh', color: 'var(--color-primary)' }} role="status" aria-label="Loading">
-                <PokeballIcon className="w-14 h-14 animate-spin opacity-70" />
-            </div>
+            <Loader size="lg" block />
         );
     }
 

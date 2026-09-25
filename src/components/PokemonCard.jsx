@@ -6,6 +6,7 @@ import { SkeletonCard } from './SkeletonCard';
 import { Sprite } from './Sprite';
 import { StarIcon, PlusIcon } from './icons';
 import { coreIconFor } from './coreIcons';
+import { useShinyBurst } from '../hooks/useShinyBurst';
 import '../styles/pokemon-card.css';
 
 // Map reason kind → icon + default colour
@@ -31,6 +32,8 @@ export const PokemonCard = React.memo(function PokemonCard({
     onToggleFavorite,
     isSelected,
 }) {
+    const shiny = useShinyBurst();
+
     if (!details) return <SkeletonCard />;
 
     const handleCardClick = (e) => {
@@ -40,7 +43,10 @@ export const PokemonCard = React.memo(function PokemonCard({
 
     const handleFavoriteClick = (e) => {
         e.stopPropagation();
-        if (onToggleFavorite) onToggleFavorite(details.id);
+        if (!onToggleFavorite) return;
+        // Starring earns the sparkle; un-starring does not.
+        if (!isFavorite) shiny.fire();
+        onToggleFavorite(details.id);
     };
 
     const handleAddClick = (e) => {
@@ -102,17 +108,18 @@ export const PokemonCard = React.memo(function PokemonCard({
                             type="button"
                             className={`pokemon-card__favorite ${
                                 isFavorite ? 'is-active' : ''
-                            }`}
+                            } ${shiny.isBursting ? 'is-bursting' : ''}`}
                             aria-label={isFavorite ? `Remove ${details.name} from favorites` : `Add ${details.name} to favorites`}
                             title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                         >
                             <StarIcon className="w-4 h-4" isFavorite={isFavorite} color="currentColor" />
+                            {shiny.burst}
                         </button>
                     )}
                 </div>
             </div>
 
-            <div className="pokemon-card__media">
+            <div className="pokemon-card__media" data-hero-source={details.id}>
                 <Sprite src={getPokemonDisplaySprite(details)} artworkSrc={getPokemonArtworkSpriteUrl(details.id)} alt={details.name} className="w-full h-full" />
             </div>
             <p className="pokemon-card__name">{details.name}</p>

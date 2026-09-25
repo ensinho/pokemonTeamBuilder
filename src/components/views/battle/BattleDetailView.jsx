@@ -24,6 +24,7 @@ import { TooltipTrigger, MoveTooltipCard, MonTooltipCard } from './BattlePopover
 import { typeColors, typeIcons } from '../../../constants/types';
 import { POKEBALL_PLACEHOLDER_URL } from '../../../constants/theme';
 import '../../../styles/battle-view.css';
+import { confirmAction } from '../../../store/useConfirmStore';
 
 const ANIMATED_SPRITES_KEY = 'ptb:battleAnimatedSprites';
 const CHOICE_STORAGE_KEY = (battleId, round) => `ptb:battleChoice:${battleId}:${round}`;
@@ -534,10 +535,14 @@ export function BattleDetailView() {
                     type="button"
                     className="btn btn-ghost btn-sm battle-nav-bar__discard"
                     onClick={async () => {
-                        if (window.confirm(t('battle.confirmDiscard'))) {
-                            const ok = await deleteBattle(battleId);
-                            if (ok) navigate('/battles');
-                        }
+                        const confirmed = await confirmAction({
+                            title: t('dialogs.discardBattleTitle'),
+                            message: t('dialogs.discardBattleMsg'),
+                            confirmText: t('battle.discardBattle'),
+                        });
+                        if (!confirmed) return;
+                        const ok = await deleteBattle(battleId);
+                        if (ok) navigate('/battles');
                     }}
                     aria-label={t('battle.discardBattle')}
                     title={t('battle.discardBattle')}

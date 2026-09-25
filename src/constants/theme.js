@@ -8,7 +8,7 @@ import { normalizeUiScale } from '../utils/uiScale';
 // ============================================================
 
 // Bump this when the patch-notes screen has new content to surface.
-export const PATCH_NOTES_VERSION = '1.12.0';
+export const PATCH_NOTES_VERSION = '1.13.0';
 export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 
 // JS-side mirror of the CSS variables. Components that still
@@ -120,6 +120,29 @@ export const THEME_META = [
 // Whether each theme reads as dark or light, for `color-scheme`. Derived from
 // THEME_META so the picker's grouping and the browser's stay one decision.
 const THEME_MODE = Object.fromEntries(THEME_META.map((m) => [m.id, m.mode]));
+
+export function themeModeOf(themeId) {
+    return THEME_MODE[themeId] || 'dark';
+}
+
+// Each theme's counterpart in the other mode, for the header's sun ⇄ moon
+// toggle. Paired by hue family so a flip keeps the user's colour identity: the
+// violet defaults, the blues, and the two extremes (ultra-dark ↔ warm daylight).
+// The toggle used to *cycle* all six — a sun icon on `eclipse` took you to
+// `midnight`, another dark theme — so the glyph and the result disagreed on
+// three of six presses. The full palette stays one tap away in the account menu.
+export const THEME_PAIRS = {
+    dark: 'light',
+    light: 'dark',
+    midnight: 'daybreak',
+    daybreak: 'midnight',
+    eclipse: 'solar',
+    solar: 'eclipse',
+};
+
+export function pairedTheme(themeId) {
+    return THEME_PAIRS[themeId] || (themeModeOf(themeId) === 'dark' ? 'light' : 'dark');
+}
 
 // Apply a theme to the document.
 export function applyTheme(theme) {

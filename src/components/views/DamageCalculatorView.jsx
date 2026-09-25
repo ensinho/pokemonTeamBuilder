@@ -10,6 +10,7 @@ import { PokemonPicker } from '../PokemonPicker';
 import { SpriteSelect } from '../SpriteSelect';
 import { useToastStore } from '../../store/useToastStore';
 import { TypeBadge } from '../TypeBadge';
+import { Switch } from '../Switch';
 import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useBattleItems } from '../../hooks/useBattleItems';
@@ -168,31 +169,6 @@ const loadSessionState = () => {
     } catch {
         return null;
     }
-};
-
-const ToggleSwitch = ({ checked, onChange, label, activeColor = 'bg-primary' }) => {
-    return (
-        <button
-            type="button"
-            role="switch"
-            aria-checked={checked}
-            onClick={() => onChange(!checked)}
-            className="inline-flex items-center gap-2.5 group focus:outline-none cursor-pointer"
-        >
-            <span
-                className={`relative inline-block rounded-full transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-primary ${checked ? activeColor : 'bg-surface-raised border border-border'
-                    }`}
-                style={{ width: '2rem', height: '1.1rem' }}
-            >
-                <span
-                    className={`absolute top-[1px] left-[1px] inline-block rounded-full bg-white shadow-sm transition-transform duration-200 ${checked ? 'translate-x-[0.9rem]' : 'translate-x-0'
-                        }`}
-                    style={{ width: '0.9rem', height: '0.9rem' }}
-                />
-            </span>
-            {label && <span className="text-xs text-fg font-semibold select-none leading-none">{label}</span>}
-        </button>
-    );
 };
 
 const NumberCounter = ({ value, onChange, min, max, step = 1, className = '' }) => {
@@ -636,7 +612,6 @@ export function DamageCalculatorView() {
 
     // A full, editable Pokémon card — identical for both sides (symmetric layout).
     const renderPokemonCard = (side, pState, setP, accent) => {
-        const accentBg = side === 'p1' ? 'bg-[#F08030]' : 'bg-[#6890F0]';
         const moveOpts = (pState.movesPool || []).map((mv) => ({ slug: mv.name, name: capitalize(mv.name) }));
         return (
             <div className="dmg-panel bg-surface border border-border rounded-xl p-4 shadow-sm space-y-3">
@@ -690,7 +665,7 @@ export function DamageCalculatorView() {
                     simply never sees it. */}
                 {showTeraType && (
                     <div className="dmg-subpanel bg-bg/40 p-2.5 rounded-lg border border-border flex items-center justify-between gap-3">
-                        <ToggleSwitch checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label="Terastallize" activeColor={accentBg} />
+                        <Switch size="sm" checked={pState.isTerastallized} onChange={(v) => setP(prev => ({ ...prev, isTerastallized: v }))} label="Terastallize" tone={accent} />
                         <select
                             className="dmg-select text-xs py-1 w-28"
                             value={pState.teraType}
@@ -773,8 +748,8 @@ export function DamageCalculatorView() {
                             </div>
                             {m.name && (
                                 <div className="flex items-center gap-4 pl-1">
-                                    <ToggleSwitch checked={m.isCritical} onChange={(v) => patchMove(setP, idx, { isCritical: v })} label="Crit" activeColor={accentBg} />
-                                    <ToggleSwitch checked={m.isSpread} onChange={(v) => patchMove(setP, idx, { isSpread: v })} label="Spread" activeColor={accentBg} />
+                                    <Switch size="sm" checked={m.isCritical} onChange={(v) => patchMove(setP, idx, { isCritical: v })} label="Crit" tone={accent} />
+                                    <Switch size="sm" checked={m.isSpread} onChange={(v) => patchMove(setP, idx, { isSpread: v })} label="Spread" tone={accent} />
                                 </div>
                             )}
                         </div>
@@ -867,12 +842,17 @@ export function DamageCalculatorView() {
             <div className="dmg-panel bg-surface border border-border rounded-xl px-3 py-2.5 shadow-sm">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     {/* Format */}
-                    <div className="order-1 inline-flex h-8 items-stretch bg-bg border border-border rounded-lg p-0.5">
+                    {/* The shared segmented control: a filter never spends the view's
+                        one accent (it was a primary-filled pill), and the thumb
+                        glides between options (design system v2). */}
+                    <div className="order-1 segmented segmented--sm" role="group" aria-label="Format">
                         {['singles', 'doubles'].map((f) => (
                             <button
                                 key={f}
+                                type="button"
                                 onClick={() => setField(prev => ({ ...prev, format: f }))}
-                                className={`px-3 py-1 text-xs font-bold rounded-md capitalize transition-all ${field.format === f ? 'bg-primary text-white shadow-sm' : 'text-muted hover:text-fg'}`}
+                                aria-pressed={field.format === f}
+                                className="segmented__item capitalize"
                             >
                                 {f}
                             </button>
@@ -882,12 +862,14 @@ export function DamageCalculatorView() {
                     {/* Weather */}
                     <div className="order-3 flex items-center gap-1.5 w-full min-w-0 sm:order-2 sm:w-auto">
                         <span className="dmg-caps w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Weather</span>
-                        <div className="dmg-rail flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
+                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label="Weather">
                             {WEATHERS.map((w) => (
                                 <button
                                     key={w.v}
+                                    type="button"
                                     onClick={() => setField(prev => ({ ...prev, weather: w.v }))}
-                                    className={`shrink-0 px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${field.weather === w.v ? 'bg-primary/20 text-primary font-bold' : 'text-muted hover:text-fg'}`}
+                                    aria-pressed={field.weather === w.v}
+                                    className="segmented__item shrink-0"
                                 >
                                     {w.l}
                                 </button>
@@ -898,12 +880,14 @@ export function DamageCalculatorView() {
                     {/* Terrain */}
                     <div className="order-4 flex items-center gap-1.5 w-full min-w-0 sm:order-3 sm:w-auto">
                         <span className="dmg-caps w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Terrain</span>
-                        <div className="dmg-rail flex min-w-0 flex-1 overflow-x-auto scrollbar-none bg-bg border border-border rounded-lg p-0.5 gap-0.5 sm:flex-initial">
+                        <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label="Terrain">
                             {TERRAINS.map((tr) => (
                                 <button
                                     key={tr.v}
+                                    type="button"
                                     onClick={() => setField(prev => ({ ...prev, terrain: tr.v }))}
-                                    className={`shrink-0 px-2 py-1 text-[11px] font-semibold rounded-md transition-all ${field.terrain === tr.v ? 'bg-primary/20 text-primary font-bold' : 'text-muted hover:text-fg'}`}
+                                    aria-pressed={field.terrain === tr.v}
+                                    className="segmented__item shrink-0"
                                 >
                                     {tr.l}
                                 </button>
@@ -945,12 +929,13 @@ export function DamageCalculatorView() {
                                     { key: 'powerSpot', label: 'Power Spot (×1.3)' },
                                     { key: 'steelySpirit', label: 'Steely Spirit (Steel ×1.5)' },
                                 ].map((m) => (
-                                    <ToggleSwitch
+                                    <Switch
                                         key={m.key}
+                                        size="sm"
                                         checked={field.attackerSide[m.key]}
                                         onChange={(v) => setField(prev => ({ ...prev, attackerSide: { ...prev.attackerSide, [m.key]: v } }))}
                                         label={m.label}
-                                        activeColor="bg-[#F08030]"
+                                        tone="#F08030"
                                     />
                                 ))}
                             </div>
@@ -965,12 +950,13 @@ export function DamageCalculatorView() {
                                     { key: 'friendGuard', label: 'Friend Guard' },
                                     { key: 'stealthRock', label: 'Stealth Rock' },
                                 ].map((m) => (
-                                    <ToggleSwitch
+                                    <Switch
                                         key={m.key}
+                                        size="sm"
                                         checked={field.defenderSide[m.key]}
                                         onChange={(v) => setField(prev => ({ ...prev, defenderSide: { ...prev.defenderSide, [m.key]: v } }))}
                                         label={m.label}
-                                        activeColor="bg-[#6890F0]"
+                                        tone="#6890F0"
                                     />
                                 ))}
                             </div>

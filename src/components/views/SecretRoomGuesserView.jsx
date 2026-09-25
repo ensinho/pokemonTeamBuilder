@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import '../../styles/generation-quiz-view.css';
 import '../../styles/secret-room-guesser.css';
+import { Loader } from '../Loader';
 
 const MIN_AUTOCOMPLETE_CHARACTERS = 2;
 const MAX_SUGGESTIONS = 6;
@@ -657,7 +658,7 @@ export function SecretRoomGuesserView() {
             {roomId && !currentRoom && (
                 <div className="pokeroom__panel">
                     <div className="pokeroom__result">
-                        <span className="pokeroom__spinner" />
+                        <Loader />
                         <h2 className="pokeroom__result-title">Conectando à sala {roomId}…</h2>
                         <p className="pokeroom__hint">
                             Se a sala já foi encerrada, volte ao lobby e crie uma nova.

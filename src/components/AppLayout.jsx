@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useToastStore } from '../store/useToastStore';
 import { useThemeStore } from '../store/useThemeStore';
+import { chooseTheme } from '../store/themeChoice';
 import { useAuthStore, resolveAvatar } from '../store/useAuthStore';
 import { useFriends } from '../hooks/useFriends';
 import { useBattles } from '../hooks/useBattles';
@@ -21,6 +22,7 @@ import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { ShellNavGroup } from './ShellNavGroup';
 import ToastStack from './ToastStack';
 import { TextSizeControl } from './TextSizeControl';
+import { ThemeToggle } from './ThemeToggle';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
@@ -41,6 +43,7 @@ import { useDockCompact } from '../hooks/useDockCompact';
 import {
     AuthModal,
     ConfirmDialog,
+    ConfirmHost,
     GreetingPokemonSelectorModal,
     TrainerSpriteSelectorModal,
     PatchNotesModal,
@@ -54,16 +57,20 @@ import {
 import {
     GithubIcon, LinkedinIcon, CollapseLeftIcon, CollapseRightIcon,
     DownloadIcon, MenuIcon, PokeballIcon, StarsIcon, SwordsIcon,
-    HomeIcon, SunIcon, MoonIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
+    HomeIcon, AccountIcon, ChartColumnIcon, SuccessToastIcon,
     MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
-import { BoxIcon, Puzzle, Medal, TrendingUp, Users } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users } from 'lucide-react';
 
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
 // the initial bundle — the heavy ones (Pokedex, PokePuzzle) dominate it.
-import { HomeView } from './views';
+// Views' CSS first, in the barrel's old order (see the module); HomeView's JS
+// directly, so the views barrel — and every other view — stays out of the
+// entry bundle.
+import '../styles/eagerViewStyles';
+import { HomeView } from './views/HomeView';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
 // idle prefetch below and React.lazy share one import: the module loader caches
@@ -72,13 +79,26 @@ import { HomeView } from './views';
 const loadTeamBuilderView = () => import('./views/TeamBuilderView');
 const loadPokedexView = () => import('./views/PokedexView');
 const loadPokemonDetailView = () => import('./views/PokemonDetailView');
+const loadPokePuzzleView = () => import('./views/PokePuzzleView');
 const loadMetaUsageView = () => import('./views/MetaUsageView');
 // The Mais sheet only exists once its tab is tapped, so it stays out of the
 // boot bundle — and is warmed with the tab destinations, so that tap opens it
 // without waiting on a download.
 const loadMobileMoreSheet = () => import('./MobileMoreSheet');
 const MobileMoreSheet = lazy(() => loadMobileMoreSheet().then((m) => ({ default: m.MobileMoreSheet })));
-const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadMetaUsageView, loadMobileMoreSheet];
+// The global search is its own chunk too: it opens from the header or ⌘K, and is
+// warmed with the tab destinations on a phone, where the header glyph is its
+// only way in.
+const loadCommandPalette = () => import('./CommandPalette');
+const CommandPalette = lazy(() => loadCommandPalette().then((m) => ({ default: m.CommandPalette })));
+const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet, loadCommandPalette];
+
+const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
+
+// Typing "/" opens search only when the user is not already typing somewhere.
+const isTypingTarget = (target) => Boolean(
+    target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)),
+);
 
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
@@ -92,7 +112,7 @@ const BattleListView = lazy(() => import('./views/battle/BattleListView').then((
 const BattleDetailView = lazy(() => import('./views/battle/BattleDetailView').then((m) => ({ default: m.BattleDetailView })));
 const TeamBuilderView = lazy(() => loadTeamBuilderView().then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
-const PokePuzzleView = lazy(() => import('./views/PokePuzzleView')); // default export
+const PokePuzzleView = lazy(loadPokePuzzleView); // default export
 const MovesListView = lazy(() => import('./views/MovesListView').then((m) => ({ default: m.MovesListView })));
 const MoveDetailView = lazy(() => import('./views/MoveDetailView').then((m) => ({ default: m.MoveDetailView })));
 const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m) => ({ default: m.AbilitiesListView })));
@@ -316,7 +336,7 @@ export default function AppLayout() {
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
-    const { theme, colors, toggleTheme, changeTheme, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType } = useThemeStore();
+    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType } = useThemeStore();
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
@@ -354,6 +374,25 @@ export default function AppLayout() {
     const { isInstallable, isIOS, handleInstall } = usePWAInstall();
 
     // UI Local States
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    // ⌘K / Ctrl+K from anywhere, or "/" when not typing — the palette toggles on
+    // the chord so the same keys that opened it close it again.
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            const key = event.key?.toLowerCase();
+            if ((event.metaKey || event.ctrlKey) && key === 'k') {
+                event.preventDefault();
+                setIsSearchOpen((open) => !open);
+            } else if (key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target)) {
+                event.preventDefault();
+                setIsSearchOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window !== 'undefined') {
             return window.innerWidth >= BREAKPOINTS.lg;
@@ -837,7 +876,9 @@ export default function AppLayout() {
         { key: 'home', label: t('nav.home'), icon: <HomeIcon />, path: '/' },
         { key: 'builder', label: t('nav.builder'), icon: <SwordsIcon />, path: '/builder' },
         { key: 'pokedex', label: 'Pokédex', icon: <PokeballIcon />, path: '/pokedex' },
-        { key: 'meta', label: 'Meta', icon: <TrendingUp className="w-5 h-5 shrink-0" />, path: '/meta' },
+        // The daily puzzle is the one thing on a phone that is new every day, so it
+        // earns the thumb slot; Meta moved into the Mais sheet (2026-09-24, Enzo).
+        { key: 'pokepuzzle', label: 'Puzzle', icon: <Puzzle className="w-5 h-5 shrink-0" />, path: '/pokepuzzle' },
     ]), [t]);
 
     // What the Mais sheet lists: the rail's sections minus the tab bar's four,
@@ -854,6 +895,15 @@ export default function AppLayout() {
             }))
             .filter((group) => group.items.length > 0);
     }, [mobileTabs, primaryNavItems, navigationGroups]);
+
+    // Every destination the rail knows, once each — what the global search
+    // offers as "Pages" and, with an empty query, as its jump-to list.
+    const searchDestinations = useMemo(() => {
+        const seen = new Set();
+        return [...primaryNavItems, ...navigationGroups.flatMap((group) => group.items)]
+            .filter((item) => item.path && !seen.has(item.key) && seen.add(item.key))
+            .map(({ key, label, path, icon }) => ({ key, label, path, icon }));
+    }, [primaryNavItems, navigationGroups]);
 
     // Landing on a page that lives inside a folded section unfolds it, so "where
     // am I" is answered by the rail itself rather than only by a dot on a folded
@@ -1143,6 +1193,7 @@ export default function AppLayout() {
                     isInstallable={isInstallable}
                     isIOS={isIOS}
                     onInstall={handleInstall}
+                    onOpenSearch={() => setIsSearchOpen(true)}
                 />
             )}
             {updateAvailable && (
@@ -1218,6 +1269,15 @@ export default function AppLayout() {
                 confirmText={t('dialogs.deleteTeamConfirm')}
                 colors={colors}
             />
+
+            {isSearchOpen && (
+                <Suspense fallback={null}>
+                    <CommandPalette onClose={() => setIsSearchOpen(false)} destinations={searchDestinations} />
+                </Suspense>
+            )}
+
+            {/* Answers confirmAction() from anywhere in the app. */}
+            <ConfirmHost />
 
             <ToastStack />
 
@@ -1343,7 +1403,7 @@ export default function AppLayout() {
                                                 setIsSidebarOpen(false);
                                             }}
                                             onOpenPatchNotes={handleOpenPatchNotes}
-                                            onChangeTheme={changeTheme}
+                                            onChangeTheme={chooseTheme}
                                             onSignOut={handleSignOut}
                                         />
                                     )}
@@ -1428,11 +1488,33 @@ export default function AppLayout() {
                             </div>
 
                             <div className="app-shell__header-actions">
+                                {/* Search: a field-shaped pill with its shortcut on
+                                    desktop, a glyph among the glyphs on a phone. */}
+                                {isMobile ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSearchOpen(true)}
+                                        aria-label={t('search.trigger')}
+                                        className="app-shell__icon-button"
+                                    >
+                                        <Search className="w-5 h-5" aria-hidden="true" />
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSearchOpen(true)}
+                                        onPointerEnter={() => { loadCommandPalette().catch(() => {}); }}
+                                        aria-keyshortcuts="Meta+K Control+K"
+                                        className="app-shell__search-trigger"
+                                    >
+                                        <Search aria-hidden="true" />
+                                        <span className="app-shell__search-trigger-label">{t('search.trigger')}</span>
+                                        <kbd>{IS_APPLE ? '⌘K' : 'Ctrl K'}</kbd>
+                                    </button>
+                                )}
                                 {/* Desktop keeps the quick theme toggle; guests keep it on mobile too. */}
                                 {(!isMobile || isAnonymous) && (
-                                    <button onClick={toggleTheme} type="button" aria-label={t('layout.switchTheme', { theme: theme === 'dark' ? (t('layout.developedBy').startsWith('Desenvolvido') ? 'claro' : 'light') : (t('layout.developedBy').startsWith('Desenvolvido') ? 'escuro' : 'dark') })} className="app-shell__icon-button">
-                                        {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
-                                    </button>
+                                    <ThemeToggle className="app-shell__icon-button" />
                                 )}
                                 {/* Mobile: the top-right icon opens the account & preferences menu. */}
                                 {isMobile && !isAnonymous && (
@@ -1446,7 +1528,7 @@ export default function AppLayout() {
                                         themes={THEME_META}
                                         onOpenProfile={() => navigate('/profile')}
                                         onOpenPatchNotes={handleOpenPatchNotes}
-                                        onChangeTheme={changeTheme}
+                                        onChangeTheme={chooseTheme}
                                         onSignOut={handleSignOut}
                                     />
                                 )}
@@ -1680,7 +1762,7 @@ export default function AppLayout() {
                                             userId={userId}
                                             isAnonymous={isAnonymous}
                                             theme={theme}
-                                            onChangeTheme={changeTheme}
+                                            onChangeTheme={chooseTheme}
                                             language={language}
                                             onChangeLanguage={(lang) => {
                                                 useLanguageStore.getState().setLanguage(lang);
@@ -1826,7 +1908,7 @@ export default function AppLayout() {
                                                 navigate('/profile');
                                             }}
                                             onOpenPatchNotes={handleOpenPatchNotes}
-                                            onChangeTheme={changeTheme}
+                                            onChangeTheme={chooseTheme}
                                             onSignOut={handleSignOut}
                                         />
                                     )}

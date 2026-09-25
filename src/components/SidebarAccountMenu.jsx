@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { AnchoredPopover } from './AnchoredPopover';
 import { FlowerIcon, MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
+import { originFromEvent } from '../utils/themeTransition';
 import { TrainerBadge } from './TrainerBadge';
 import { useTranslation } from '../hooks/useTranslation';
 import { useAuthStore } from '../store/useAuthStore';
 import { useThemeStore } from '../store/useThemeStore';
 import { TextSizeControl } from './TextSizeControl';
+import { Switch } from './Switch';
 
 export function SidebarAccountMenu({
     collapsed = false,
@@ -73,10 +75,10 @@ export function SidebarAccountMenu({
         setIsOpen(false);
     };
 
-    const handleThemeChange = (themeId) => {
-        onChangeTheme?.(themeId);
-        // Also save preference to Firestore
-        useAuthStore.getState().savePreferences({ theme: themeId });
+    // onChangeTheme is store/themeChoice's chooseTheme: it applies the theme,
+    // spreads it from the swatch that was pressed, and saves it to the account.
+    const handleThemeChange = (themeId, event) => {
+        onChangeTheme?.(themeId, originFromEvent(event));
         setIsOpen(false);
     };
 
@@ -295,7 +297,7 @@ export function SidebarAccountMenu({
                                                 <button
                                                     key={theme.id}
                                                     type="button"
-                                                    onClick={() => handleThemeChange(theme.id)}
+                                                    onClick={(event) => handleThemeChange(theme.id, event)}
                                                     aria-pressed={isActive}
                                                     className={`app-shell__account-theme-dot ${isActive ? 'is-active' : ''}`}
                                                     style={{ backgroundColor: theme.swatch }}
@@ -316,18 +318,20 @@ export function SidebarAccountMenu({
 
                     <div className="app-shell__account-popover-section">
                         <p className="app-shell__account-popover-label">{t('accountMenu.languageLabel')}</p>
-                        <div className="app-shell__account-language-row">
+                        <div className="segmented segmented--sm segmented--block" role="group" aria-label={t('accountMenu.languageLabel')}>
                             <button
                                 type="button"
                                 onClick={() => handleLanguageChange('en')}
-                                className={`app-shell__account-lang-btn ${language === 'en' ? 'is-active' : ''}`}
+                                aria-pressed={language === 'en'}
+                                className="segmented__item"
                             >
                                 English
                             </button>
                             <button
                                 type="button"
                                 onClick={() => handleLanguageChange('pt')}
-                                className={`app-shell__account-lang-btn ${language === 'pt' ? 'is-active' : ''}`}
+                                aria-pressed={language === 'pt'}
+                                className="segmented__item"
                             >
                                 Português
                             </button>
@@ -335,25 +339,14 @@ export function SidebarAccountMenu({
                     </div>
 
                     <div className="app-shell__account-popover-section">
-                        <p className="app-shell__account-popover-label">{t('accountMenu.teraTypeLabel')}</p>
-                        <div className="app-shell__account-language-row">
-                            <button
-                                type="button"
-                                onClick={() => handleTeraTypeChange(true)}
-                                aria-pressed={showTeraType}
-                                className={`app-shell__account-lang-btn ${showTeraType ? 'is-active' : ''}`}
-                            >
-                                {t('accountMenu.teraTypeShow')}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleTeraTypeChange(false)}
-                                aria-pressed={!showTeraType}
-                                className={`app-shell__account-lang-btn ${!showTeraType ? 'is-active' : ''}`}
-                            >
-                                {t('accountMenu.teraTypeHide')}
-                            </button>
-                        </div>
+                        <Switch
+                            variant="row"
+                            size="sm"
+                            checked={showTeraType}
+                            onChange={handleTeraTypeChange}
+                            label={t('accountMenu.teraTypeSwitch')}
+                            className="app-shell__account-switch"
+                        />
                         <p className="app-shell__account-popover-note">{t('accountMenu.teraTypeNote')}</p>
                     </div>
 

@@ -1,14 +1,23 @@
 ---
 name: design-system
-description: Enforce the strict spacing grid, token vocabulary, and restraint rules that give this app its calm, aligned identity. Use before writing or editing ANY CSS in src/styles/ or src/index.css, before adding a new view, and when auditing drift ("the UI feels loose/soft/inconsistent"). Includes the drift-detection commands.
+description: Enforce the strict spacing grid, token vocabulary, restraint rules and the v2 interaction layer (spring motion, traveling indicators, Switch/Loader/RollingNumber/useShinyBurst/confirmAction) that give this app its calm, aligned, tactile identity. Use before writing or editing ANY CSS in src/styles/ or src/index.css, before adding a new view or control, before adding any animation, and when auditing drift ("the UI feels loose/soft/inconsistent/generic"). Includes the drift-detection commands and the taste gate.
 ---
 
-# Design System — the rules that make it feel calm
+# Design System — calm structure, living material
 
 The app's identity is **restraint**. Calm comes from repetition, not decoration:
 few values, used everywhere, landing on a grid. Every rule below exists because
 breaking it produced a UI that read as *mole, solto e desconexo* (soft, loose,
 disconnected) — see `docs/wounds.md`, 2026-08-28.
+
+**v2 (2026-09-24, at Enzo's call: "não quero ficar amarrado, e sim evoluir").**
+Restraint still governs *structure* — spacing, borders, colour, type. v2 adds a
+**material layer** on top: controls behave like objects. A selection travels
+instead of teleporting, a knob stretches under the finger, a figure rolls to its
+new value, a favourite answers with the shiny sparkle, a theme change spreads
+from the button that asked for it. Read **"v2 — the material layer"** below
+before adding any motion; it is where this skill says yes, and the taste gate is
+where it says no.
 
 ## The one rule that matters most
 
@@ -127,7 +136,8 @@ The temptation is to add. Calm comes from subtracting.
   page feel like it wobbles — that is literally the "mole" complaint. Hover
   belongs in `background-color` and `border-color`. Reserve transform for small,
   clearly-clickable objects.
-- **Motion is 150ms or it is wrong.** `--duration-fast` for hover,
+- **State changes are 150ms** (v2 adds three named exceptions — travel,
+  reward, theme reveal — see "v2 — the material layer"). `--duration-fast` for hover,
   `--duration-slow` (250ms) for entrances. Nothing above 350ms except the
   deliberate sprite blur reveal.
 - **Borders separate; whitespace groups.** Before adding a divider, try removing
@@ -249,6 +259,111 @@ highlight; the same glow on the fifty cards of a results grid is an alarm, and
 fifty forever-animating shadows to composite. If a whole list qualifies for an
 effect, the effect is not carrying information — make it static.
 
+## v2 — the material layer (2026-09-24)
+
+v1 stopped the UI wobbling. It also left it inert: a selection jumped between
+segments in one frame, a switch was a checkbox in a costume, a loader was the
+spinner every template ships. v2 keeps every v1 rule for structure and adds
+five rules for *behaviour*. The primitives live in `src/styles/interactions.css`
+(loaded after `index.css`) and `src/components/{Switch,Loader,RollingNumber,
+ShinyBurst,ThemeToggle}.jsx`, `src/hooks/useShinyBurst.js`,
+`src/store/{useConfirmStore,themeChoice}.js`.
+
+### The five rules
+
+1. **Continuity — a selection travels.** When the chosen option changes, the
+   thing marking it moves there; it never disappears here and reappears there.
+   The same holds for an object opened from a list: a Pokémon's sprite flies
+   from its card into the detail hero (`navigateWithHero`, `utils/heroTransition.js`;
+   mark the destination with `<Sprite heroTarget>` or `data-vt-hero`, the source
+   with `data-hero-source={id}`; wait with timers, never rAF — rendering is
+   suspended while a view transition's update is pending).
+   `.segmented` draws one thumb and `.tabs` one underline, positioned against
+   the selected item with CSS anchor positioning and transitioned on the glide
+   spring — no JS, no measuring, every call site for free. It is gated on
+   `@supports (anchor-scope: all)` (Chrome/Edge 131+, Safari/iOS 26+, Firefox
+   147+); `anchor-scope` is the gate, not anchor positioning, because two
+   controls on one screen must not share an anchor name. Older engines keep the
+   v1 per-item fill. **Direct children only** — the selected item must be a
+   direct child of the track (`:has(> …)` hides the thumb when nothing is
+   selected).
+2. **Physicality — controls give.** Presses sink (v1); a switch knob stretches
+   toward the side it is leaving (`.switch:active` widens it) and springs
+   across. Width on a 16px absolutely positioned knob is fine; never animate
+   the size of anything in flow.
+3. **Reward — once, only for the user's own act.** `useShinyBurst` (the shiny
+   sparkle from the games) fires from the click that earned it: starring a
+   Pokémon, flipping a sprite to shiny. Never on load, never from data that
+   arrived (Firestore, another device), never on a list of things, never looped.
+   If the effect would fire on a page load or on fifty cards at once, it is
+   decoration and it goes.
+4. **Figures move, they do not jump — on change.** `<RollingNumber>` rolls each
+   digit column to its new value (mono digits share one advance, so columns
+   never jitter). It renders its first value still: **counting up on load is a
+   template tell.** Use it where the user is changing the number (EVs left).
+5. **A theme change is an event.** `chooseTheme(id, originFromEvent(e))` spreads
+   the new theme from the pressed control as a circular same-document View
+   Transition (`utils/themeTransition.js`, scoped by `html[data-theme-transition]`
+   so other view transitions keep the platform cross-fade). No origin → instant
+   (a theme restored on boot is not an event).
+
+### Physics tokens
+
+| Token | Curve | Job |
+|---|---|---|
+| `--ease-glide` + `--duration-glide` (520ms, arrives visually ~200ms) | spring ζ 0.72, +3.8% | anything that travels: thumb, underline, knob, a figure's digits, a toast springing home |
+| `--ease-pop` + `--duration-pop` (690ms) | spring ζ 0.42, +23% | a one-shot reward: the favourite pop, the check tick |
+| `--ease-out` + `--duration-reveal` (560ms) | — | the theme reveal, and nothing else |
+
+The springs are **real**: a damped oscillator simulated and sampled into
+`linear()`, with cubic-bezier fallbacks for engines without it. The durations
+include the flat settle tail, so they read longer than they feel. Do not
+hand-edit a point — one bad sample is a visible hitch. Regenerate:
+
+```bash
+node - <<'EOF'
+// x'' = -k(x-1) - c x' from rest; prints CSS linear() + its duration.
+function spring(z, settle, samples) {
+  const w = 4 / (z * settle), k = w * w, c = 2 * z * w, dt = 1 / 2000;
+  let x = 0, v = 0, t = 0, last = 0; const h = [];
+  while (t < 3) { v += (-k * (x - 1) - c * v) * dt; x += v * dt; t += dt; h.push(x);
+    if (Math.abs(x - 1) > 0.004 || Math.abs(v) > 0.05) last = t; }
+  const dur = Math.ceil(last * 100) * 10, pts = [];
+  for (let i = 0; i <= samples; i++) pts.push(i === samples ? 1 : +h[Math.min(h.length - 1, Math.round((i / samples) * dur / 1000 / dt))].toFixed(3));
+  return `${dur}ms linear(${pts.join(', ')})`;
+}
+console.log('glide', spring(0.72, 0.36, 28));
+console.log('pop  ', spring(0.42, 0.5, 36));
+EOF
+```
+
+### The taste gate
+
+Before adding any effect — from React Bits, Kokonut UI, a Dribbble shot or your
+own head — it has to answer yes to all of these (uizze: *show the agent what
+good looks like*; this is what good looks like here):
+
+- **Does it answer something the user just did**, or say something they need to
+  know? Motion that answers nobody is decoration.
+- **Would it survive being on fifty cards?** If not, it is a highlight — and a
+  highlight on everything is an alarm.
+- **Is it transform/opacity only on phones**, and does it degrade to the v1
+  behaviour under reduced motion and on older engines?
+- **Is it ours?** The shiny sparkle, the Poké Ball wobble, the Gengar — the
+  Pokémon vocabulary is the identity. A generic effect a template could ship is
+  the slop this gate exists to stop.
+
+Rejected on purpose (2026-09-24 survey): WebGL/shader backgrounds (Aurora, Silk,
+Beams, Plasma…), cursor effects (SplashCursor, ClickSpark, BlobCursor),
+spotlight/glare/border-glow cards on grids, liquid glass and any backdrop blur
+on phones, headline text gimmicks (SplitText, BlurText, GlitchText, TextType,
+ShinyText on titles), count-up on load, particle/magnet/attract buttons,
+gradient text. Built from the survey since: the ⌘K global search (Kokonut
+*action-search-bar*), the card → detail sprite transition and the PokéPuzzle
+name reveal (`DecryptText`, React Bits *DecryptedText* — plays only for a win
+that just happened). Candidates that passed but are not built yet: ScrubField
+on EV inputs, SwipeRow on the phone's team list.
+
 ## Interaction tokens
 
 Do not hand-write hover/active tints. Use these — they are defined once in
@@ -308,6 +423,15 @@ eight segmented controls before this list existed (2026-09-22).
 | a dialog | `.modal-scrim` > `.modal-panel` with `ref={useModalA11y(onClose)}`; `.modal-header` / `.modal-title` / `.modal-subtitle` / `.modal-close` / `.modal-body` / `.modal-footer` (`--ruled` when the body scrolls under it). Phones get a draggable sheet and every dialog an exit animation for free |
 | a form row | `.field` > `.field-label` + `.input-clean` / `.select-clean` / `.textarea-clean` |
 | a menu | `.menu-surface` > `.menu-item` |
+| **v2** a yes/no setting | `<Switch checked onChange label description variant="row" size="sm" tone>` — never two buttons that each mean half of a boolean |
+| **v2** a checkbox | native `<input type="checkbox" className="check">` inside a `<label>` |
+| **v2** anything loading | `<Loader size="xs\|sm\|md\|lg" label block />` — never a CSS ring, never `animate-spin` on a Poké Ball |
+| **v2** a figure the user is changing | `<RollingNumber value format />` — on change only |
+| **v2** a reward for the user's own tap | `const shiny = useShinyBurst()` → `shiny.fire()` in the click, `{shiny.burst}` inside a `position: relative` control, `is-bursting` on it while `shiny.isBursting` |
+| **v2** a question before destruction | `if (await confirmAction({ title, message, confirmText }))` — never `window.confirm` |
+| **v2** a reversible destructive action | do it, then `toast.info(title, { actions: [{ label: t('toast.undo'), onClick }] })` — undo beats confirm |
+| **v2** the theme | `chooseTheme(id, originFromEvent(event))` / `<ThemeToggle>` — never `changeTheme` from a control (it does not save) |
+| **v2** find anything | the global search (`CommandPalette`, `setIsSearchOpen` in AppLayout, ⌘K / `/`) — add searchable data as a group in it, never a second search dialog |
 
 Control heights are `--control-h-sm/md/lg` (1.75 / 2.25 / 2.75rem): a button, an
 input and a segmented control in one toolbar share a height.

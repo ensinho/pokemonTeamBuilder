@@ -24,6 +24,31 @@
     --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
     --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 
+    /* ---- Physics (design system v2, 2026-09-24) ---------------------------
+       Real springs, simulated and sampled into linear() (the generator is in
+       the design-system skill). A cubic-bezier overshoots once and stops; a
+       spring overshoots and *settles*, and that settle is what makes a thumb
+       or a pill read as an object with mass rather than a colour change.
+       Two, and each has exactly one job:
+
+         --ease-glide  +3.8%, visually arrived by ~40% of --duration-glide.
+                       Anything that TRAVELS to a new place: a segmented
+                       thumb, a tab underline, a switch knob.
+         --ease-pop    +23%. A one-shot reward the user caused with their own
+                       tap: a favourite's burst, a digit landing. Never an
+                       entrance, never a loop, never on page load.
+
+       The durations include the flat settle tail, so they read longer than
+       the motion feels. The cubic-beziers are the fallback for engines
+       without linear(); the @supports block below replaces them. */
+    --ease-glide: cubic-bezier(0.22, 1.18, 0.36, 1);
+    --ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --duration-glide: 520ms;
+    --duration-pop: 690ms;
+    /* The theme change spreading from the control that asked for it — the one
+       full-screen motion in the app, so it is allowed to be seen. */
+    --duration-reveal: 560ms;
+
     /* Duration tokens */
     --duration-press: 100ms;       /* press feedback — must beat the finger lifting */
     --duration-fast: 150ms;
@@ -124,6 +149,17 @@
     --stat-spa: #9DB7F5;
     --stat-spd: #A7DB8D;
     --stat-spe: #FA92B2;
+}
+
+/* Spring curves (see --ease-glide / --ease-pop above). Sampled from a damped
+   harmonic oscillator — glide: ζ 0.72 settling in 360ms; pop: ζ 0.42 settling
+   in 500ms. Regenerate with the script in the design-system skill rather than
+   hand-editing a point: one bad sample is a visible hitch. */
+@supports (transition-timing-function: linear(0, 1)) {
+    :root {
+        --ease-glide: linear(0, 0.038, 0.128, 0.245, 0.377, 0.503, 0.619, 0.722, 0.808, 0.878, 0.933, 0.974, 1.002, 1.021, 1.032, 1.037, 1.038, 1.036, 1.032, 1.027, 1.023, 1.018, 1.014, 1.01, 1.007, 1.004, 1.002, 1.001, 1);
+        --ease-pop: linear(0, 0.063, 0.22, 0.42, 0.633, 0.836, 1, 1.12, 1.197, 1.23, 1.228, 1.2, 1.158, 1.109, 1.059, 1.017, 0.984, 0.961, 0.949, 0.946, 0.95, 0.958, 0.969, 0.981, 0.992, 1, 1.007, 1.011, 1.013, 1.012, 1.011, 1.008, 1.006, 1.003, 1.001, 0.999, 1);
+    }
 }
 
 /* ============================================================
@@ -618,12 +654,6 @@ h4, h5, h6 {
     transform: scale(1.18);
 }
 
-/* Editor modal shiny toggle */
-input[type='checkbox']:checked + div + div {
-    transform: translateX(100%);
-    background-color: var(--color-primary);
-}
-
 /* Elevation utilities */
 .elevation-1 { box-shadow: var(--elevation-1); }
 .elevation-2 { box-shadow: var(--elevation-2); }
@@ -995,6 +1025,66 @@ input[type='checkbox']:checked + div + div {
     cursor: not-allowed;
 }
 
+/* ---- The thumb travels (design system v2) ----------------------------------
+   The fill above teleports: the old option loses it and the new one gains it
+   in the same frame, so nothing says *where* the choice went. Where the engine
+   can, one thumb drawn by the track glides to the chosen option instead.
+
+   Pure CSS: the chosen option names itself the anchor and the track's
+   ::before is positioned against it, so a transition on the insets animates
+   the move whenever aria-pressed / aria-selected changes — no measuring, no
+   JavaScript, and every existing .segmented call site gets it for free.
+
+   Gated on `anchor-scope`, not on anchor positioning in general: two segmented
+   controls on one screen (Profile has three) must not fight over one anchor
+   name, and anchor-scope is what makes each track's name private. Chrome/Edge
+   131+, Safari/iOS 26+, Firefox 147+. Older engines keep the per-item fill
+   above — exactly what they had before. */
+@supports (anchor-scope: all) {
+    .segmented {
+        position: relative;
+        anchor-scope: --segmented-thumb;
+    }
+
+    .segmented::before {
+        content: '';
+        position: absolute;
+        position-anchor: --segmented-thumb;
+        top: anchor(top);
+        right: anchor(right);
+        bottom: anchor(bottom);
+        left: anchor(left);
+        border-radius: var(--radius-sm);
+        background: var(--color-surface-elevated);
+        box-shadow: var(--shadow-sm);
+        pointer-events: none;
+        transition: top var(--duration-glide) var(--ease-glide),
+                    right var(--duration-glide) var(--ease-glide),
+                    bottom var(--duration-glide) var(--ease-glide),
+                    left var(--duration-glide) var(--ease-glide),
+                    opacity var(--duration-fast) var(--ease-smooth);
+    }
+
+    /* Nothing chosen, nothing to point at. */
+    .segmented:not(:has(> [aria-pressed='true'], > [aria-selected='true'], > .is-active))::before {
+        opacity: 0;
+    }
+
+    /* Labels ride above the thumb. */
+    .segmented__item {
+        position: relative;
+        z-index: 1;
+    }
+
+    .segmented__item[aria-pressed='true'],
+    .segmented__item[aria-selected='true'],
+    .segmented__item.is-active {
+        anchor-name: --segmented-thumb;
+        background: transparent;
+        box-shadow: none;
+    }
+}
+
 /* A count riding inside a segment or a tab ("Mine 11"). Figures are
    structure, so mono and tabular. */
 .count-badge {
@@ -1079,6 +1169,49 @@ input[type='checkbox']:checked + div + div {
 .tabs__item[aria-selected='true']::after,
 .tabs__item.is-active::after {
     transform: scaleX(1);
+}
+
+/* The underline travels (design system v2). Same mechanism and the same gate
+   as the segmented thumb above: the selected tab is the anchor, the strip
+   draws one underline against it, and the insets transition on the glide
+   spring. The strip is its own horizontal scroller, which is fine — the
+   underline is positioned inside the same scroll container as its anchor, so
+   the two scroll together. Engines without anchor-scope keep the per-tab
+   underline growing from the centre. */
+@supports (anchor-scope: all) {
+    .tabs {
+        position: relative;
+        anchor-scope: --tabs-underline;
+    }
+
+    .tabs::after {
+        content: '';
+        position: absolute;
+        position-anchor: --tabs-underline;
+        left: anchor(left);
+        right: anchor(right);
+        bottom: anchor(bottom);
+        height: 2px;
+        border-radius: var(--radius-full);
+        background: var(--color-fg);
+        pointer-events: none;
+        transition: left var(--duration-glide) var(--ease-glide),
+                    right var(--duration-glide) var(--ease-glide),
+                    opacity var(--duration-fast) var(--ease-smooth);
+    }
+
+    .tabs:not(:has(> [aria-selected='true'], > .is-active))::after {
+        opacity: 0;
+    }
+
+    .tabs__item[aria-selected='true'],
+    .tabs__item.is-active {
+        anchor-name: --tabs-underline;
+    }
+
+    .tabs__item::after {
+        content: none;
+    }
 }
 
 /* Badge Base & Variants */

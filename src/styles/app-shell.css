@@ -1166,7 +1166,10 @@
     height: 1.35rem;
 }
 
-.app-shell__account-popover.is-header .app-shell__account-lang-btn {
+/* Language and Tera rows are the shared .segmented (index.css) — --sm so the
+   compact popover keeps its density, --block so the two options split the row.
+   The header popover is narrower still, so its segments give up side padding. */
+.app-shell__account-popover.is-header .segmented__item {
     padding: 0 var(--space-1);
 }
 
@@ -1178,48 +1181,6 @@
     font-size: 0.65rem;
     line-height: 1.35;
     color: var(--color-muted);
-}
-
-/* Language and Tera rows are two-option choices inside a bordered popover —
-   so they are the shared segmented track (index.css .segmented), restated for
-   this markup: a raised track, the chosen option lifted onto it. They used to
-   be bordered buttons with a primary-bordered active one: a box in a box, with
-   the popover's one accent spent on a setting. */
-.app-shell__account-language-row {
-    display: flex;
-    gap: var(--space-0_5);
-    width: 100%;
-    padding: var(--space-0_5);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    box-shadow: inset 0 0 0 1px var(--color-border);
-}
-
-.app-shell__account-lang-btn {
-    flex: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: var(--control-h-sm);
-    padding: 0 var(--space-2);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--color-muted);
-    cursor: pointer;
-    transition: background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
-}
-
-.app-shell__account-lang-btn:hover {
-    color: var(--color-fg);
-}
-
-.app-shell__account-lang-btn.is-active {
-    background: var(--color-surface-elevated);
-    color: var(--color-fg);
-    box-shadow: var(--shadow-sm);
 }
 
 .app-shell__account-signout {
@@ -2005,4 +1966,52 @@
 
 @keyframes app-shell-page-in {
     from { opacity: 0; }
+}
+
+/* ---- Global search trigger (desktop) ---------------------------------------
+   Shaped like the field it opens, with its shortcut on its face: the one way a
+   ⌘K palette gets discovered by people who don't already know to press it. A
+   control, so it takes the control edge (--color-border-strong). */
+.app-shell__search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 11rem;
+    height: var(--control-h-sm);
+    padding: 0 var(--space-1) 0 var(--space-2_5);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__search-trigger:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.app-shell__search-trigger > svg {
+    flex: none;
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.app-shell__search-trigger-label {
+    flex: 1;
+    text-align: left;
+}
+
+.app-shell__search-trigger > kbd {
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    color: var(--color-muted);
 }

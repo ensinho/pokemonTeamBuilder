@@ -52,6 +52,8 @@ import { PokemonGenerationQuizAutocomplete } from '../PokemonGenerationQuizAutoc
 import { PokemonGenerationQuizCard } from '../PokemonGenerationQuizCard';
 import { CloseIcon, PokeballIcon } from '../icons';
 import { QuizCelebrationModal } from '../modals';
+import { Loader } from '../Loader';
+import { confirmAction } from '../../store/useConfirmStore';
 
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
 const MIN_AUTOCOMPLETE_CHARACTERS = 5;
@@ -544,9 +546,9 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     }, [activePokemonList, gridFilter, foundNames]);
 
     const gridFilterOptions = [
-        { key: 'all', Icon: LayoutGrid, label: language === 'pt' ? 'Todos' : 'All', count: totalCount },
-        { key: 'guessed', Icon: CheckCircle2, label: language === 'pt' ? 'Adivinhados' : 'Guessed', count: foundCount },
-        { key: 'missing', Icon: HelpCircle, label: language === 'pt' ? 'Faltando' : 'Missing', count: remainingCount },
+        { key: 'all', icon: <LayoutGrid aria-hidden="true" />, label: language === 'pt' ? 'Todos' : 'All', count: totalCount },
+        { key: 'guessed', icon: <CheckCircle2 aria-hidden="true" />, label: language === 'pt' ? 'Adivinhados' : 'Guessed', count: foundCount },
+        { key: 'missing', icon: <HelpCircle aria-hidden="true" />, label: language === 'pt' ? 'Faltando' : 'Missing', count: remainingCount },
     ];
 
     const lastFindName = activeRun?.foundOrder?.[activeRun.foundOrder.length - 1];
@@ -609,18 +611,18 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                         </span>
                     </div>
 
-                    <div className="generation-quiz__grid-filters">
-                        {gridFilterOptions.map(({ key, Icon, label, count }) => (
+                    <div className="generation-quiz__grid-filters segmented segmented--sm" role="group" aria-label={language === 'pt' ? 'Filtrar a grade' : 'Filter the grid'}>
+                        {gridFilterOptions.map(({ key, icon, label, count }) => (
                             <button
                                 key={key}
                                 type="button"
                                 onClick={() => setGridFilter(key)}
-                                className={`generation-quiz__filter-btn ${gridFilter === key ? 'is-active' : ''}`}
+                                className="segmented__item touch-target touch-target--y"
                                 aria-pressed={gridFilter === key}
                             >
-                                <Icon className="generation-quiz__filter-icon" aria-hidden="true" />
+                                {icon}
                                 <span>{label}</span>
-                                <span className="generation-quiz__filter-count">{count}</span>
+                                <span className="count-badge">{count}</span>
                             </button>
                         ))}
                     </div>
@@ -738,7 +740,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                     <div className="category-guesser__grid-wrapper">
                         {isLoadingIndex ? (
                             <div className="category-guesser__loading-state">
-                                <div className="team-builder-spinner" aria-hidden="true" />
+                                <Loader />
                             </div>
                         ) : (
                             <div className="category-guesser__grid">
@@ -879,10 +881,13 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => {
-                                                        if (window.confirm(language === 'pt' ? 'Tem certeza que quer deletar o progresso desta partida?' : "Are you sure you want to delete this run's progress?")) {
-                                                            deleteRun(run.id);
-                                                        }
+                                                    onClick={async () => {
+                                                        const confirmed = await confirmAction({
+                                                            title: t('dialogs.deleteRunTitle'),
+                                                            message: t('dialogs.deleteRunMsg'),
+                                                            confirmText: t('common.delete'),
+                                                        });
+                                                        if (confirmed) deleteRun(run.id);
                                                     }}
                                                     className="generation-quiz-history__btn generation-quiz-history__btn--delete"
                                                     title={language === 'pt' ? 'Deletar Partida' : 'Delete Run'}
@@ -896,7 +901,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
 
                             {isHistoryLoadingMore && (
                                 <div className="generation-quiz__history-loading">
-                                    <div className="generation-quiz__history-loading-spinner" />
+                                    <Loader size="xs" />
                                     <span>{language === 'pt' ? 'Carregando partidas antigas...' : 'Loading older runs...'}</span>
                                 </div>
                             )}

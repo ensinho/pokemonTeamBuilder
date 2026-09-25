@@ -10,6 +10,7 @@ import { EmptyState } from '../EmptyState';
 import { CloseIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import '../../styles/greeting-selector-modal.css';
+import { Loader } from '../Loader';
 
 export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, currentPokemonId, currentPokemonIsShiny, colors, db }) {
     const { t, language } = useTranslation();
@@ -234,7 +235,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
 
                 {isSearching ? (
                     <div className="flex items-center justify-center py-16">
-                        <div className="h-10 w-10 animate-spin rounded-full border-b-2 border-primary" />
+                        <Loader />
                     </div>
                 ) : (
                     <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-8 gap-3">
@@ -274,7 +275,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                         >
                             {isLoadingMore ? (
                                 <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <Loader size="xs" className="loader--inherit" />
                                     {t('modals.greetingSelectorLoadingMore')}
                                 </div>
                             ) : (

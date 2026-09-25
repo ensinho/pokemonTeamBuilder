@@ -17,6 +17,9 @@ import { EV_MAX_PER_STAT, EV_TOTAL_BUDGET, applyEvChange, maxEvFor, remainingEvs
 import { natureLabel, ALL_NATURES } from '../../constants/natures';
 import { UsageBar, pctOf, pretty, RegulationSelect } from '../views/metaShared';
 import { SpriteSelect } from '../SpriteSelect';
+import { Switch } from '../Switch';
+import { RollingNumber } from '../RollingNumber';
+import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { TypeBadge } from '../TypeBadge';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
@@ -105,6 +108,10 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     // behind a drag, so mid-gesture events were validated against a stale
     // budget and bounced at random.
     const remainingEVs = useMemo(() => remainingEvs(customization.evs), [customization.evs]);
+
+    // The sprite in the header sparkles once when the user flips it to shiny —
+    // the game's own way of saying "this one is shiny".
+    const shinyBurst = useShinyBurst();
 
     // Clamp, never reject. The old handler bailed out entirely when a value
     // broke the 510 budget, which froze the slider under the user's finger and
@@ -209,11 +216,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                 <header className="px-4 pt-4 sm:px-6 sm:pt-5">
                     <div className="flex items-start justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0">
-                            <img
-                                src={getPokemonDisplaySprite(pokemon, { shiny: customization.isShiny, animated: true })}
-                                alt={pokemon.name}
-                                className="h-12 w-12 sm:h-14 sm:w-14 image-pixelated flex-shrink-0"
-                            />
+                            <span className="relative inline-flex flex-shrink-0">
+                                <img
+                                    src={getPokemonDisplaySprite(pokemon, { shiny: customization.isShiny, animated: true })}
+                                    alt={pokemon.name}
+                                    className="h-12 w-12 sm:h-14 sm:w-14 image-pixelated"
+                                />
+                                {shinyBurst.burst}
+                            </span>
                             <div className="min-w-0">
                                 <h2 id="team-editor-title" className="truncate text-lg font-bold capitalize text-fg sm:text-xl md:text-2xl">{pokemon.name}</h2>
                                 <div className="flex flex-wrap gap-1.5 mt-1">
@@ -345,21 +355,15 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 </div>
                             </div>
 
-                            <button
-                                type="button"
-                                role="switch"
-                                aria-checked={customization.isShiny}
-                                onClick={() => handleCustomizationChange('isShiny', !customization.isShiny)}
-                                className={`inline-flex w-fit items-center gap-2.5 rounded-full border px-3 py-1.5 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${customization.isShiny ? 'border-success/50 bg-success/15' : 'border-border bg-surface-raised'}`}
-                            >
-                                <span
-                                    className={`relative inline-block h-5 w-9 flex-shrink-0 rounded-full transition-colors ${customization.isShiny ? 'bg-success' : 'bg-bg'}`}
-                                    aria-hidden="true"
-                                >
-                                    <span className={`absolute left-0.5 top-0.5 inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${customization.isShiny ? 'translate-x-4' : 'translate-x-0'}`} />
-                                </span>
-                                <span className="text-sm font-semibold text-fg">{t('modals.editorModalShinyLabel')}</span>
-                            </button>
+                            <Switch
+                                checked={customization.isShiny}
+                                onChange={(next) => {
+                                    handleCustomizationChange('isShiny', next);
+                                    if (next) shinyBurst.fire();
+                                }}
+                                label={t('modals.editorModalShinyLabel')}
+                                className="w-fit"
+                            />
 
                             <div className="border-t border-surface-raised pt-5">
                                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
@@ -447,11 +451,11 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             <div className="flex items-baseline justify-between">
                                 <h3 className="text-lg font-bold text-fg">{t('modals.editorModalEffortValues')}</h3>
                                 <p className="text-sm text-muted">
-                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}>{remainingEVs}</span> / {EV_TOTAL_BUDGET}
+                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}><RollingNumber value={remainingEVs} /></span> / {EV_TOTAL_BUDGET}
                                 </p>
                             </div>
                             <div className="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
-                                <div className="h-full bg-primary transition-all duration-200" style={{ width: `${((EV_TOTAL_BUDGET - remainingEVs) / EV_TOTAL_BUDGET) * 100}%` }} />
+                                <div className="h-full w-full origin-left bg-primary transition-transform duration-200 ease-out" style={{ transform: `scaleX(${(EV_TOTAL_BUDGET - remainingEVs) / EV_TOTAL_BUDGET})` }} />
                             </div>
 
                             {/* The EV column is typable, so it gets a header — otherwise two

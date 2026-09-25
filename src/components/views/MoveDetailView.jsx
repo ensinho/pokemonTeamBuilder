@@ -14,7 +14,7 @@ import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
 import { TypeBadge } from '../TypeBadge';
-import { PokeballIcon } from '../icons';
+import { Loader } from '../Loader';
 
 const CATEGORY_CLASS = {
     physical: 'ref-cat--physical',
@@ -54,9 +54,7 @@ export function MoveDetailView() {
 
     if (status === 'loading') {
         return (
-            <div className="flex items-center justify-center" style={{ minHeight: '50vh', color: 'var(--color-primary)' }} role="status" aria-label="Loading">
-                <PokeballIcon className="w-14 h-14 animate-spin opacity-70" />
-            </div>
+            <Loader size="lg" block />
         );
     }
 

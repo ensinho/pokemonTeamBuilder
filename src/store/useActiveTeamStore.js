@@ -276,8 +276,25 @@ export const useActiveTeamStore = create((set, get) => ({
     },
 
     handleClearTeam: () => {
+        const { currentTeam, teamName, editingTeamId } = get();
         set({ currentTeam: [], teamName: '', editingTeamId: null });
         get().recalculateAnalysis();
+
+        // Clearing is one tap on a small icon beside Save and Share, and it took
+        // a whole unsaved team with it — no confirm, no way back. Asking first
+        // would tax every deliberate clear to protect the accidental ones; an
+        // undo protects the accidents and costs the deliberate ones nothing.
+        if (currentTeam.length === 0 && !teamName) return;
+        toast.info(t('toast.teamCleared'), {
+            key: 'team-cleared',
+            actions: [{
+                label: t('toast.undo'),
+                onClick: () => {
+                    set({ currentTeam, teamName, editingTeamId });
+                    get().recalculateAnalysis();
+                },
+            }],
+        });
     },
 
     handleUpdateTeamMember: (instanceId, newCustomization) => {

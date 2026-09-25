@@ -349,7 +349,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                             type="checkbox"
                             checked={dontShowAgain}
                             onChange={(e) => setDontShowAgain(e.target.checked)}
-                            className="h-4 w-4 rounded accent-[var(--color-primary)]"
+                            className="check"
                         />
                         <span>{pt ? 'Não mostrar novamente' : "Don't show this again"}</span>
                     </label>

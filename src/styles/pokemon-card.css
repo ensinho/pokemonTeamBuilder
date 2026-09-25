@@ -154,6 +154,10 @@
 /* A quiet icon until it matters: no chip behind the star. The filled,
    warning-coloured star is the whole "on" state (StarIcon draws it). */
 .pokemon-card__favorite {
+    /* The shiny burst flies out of here; the card clips at its edges, so the
+       sparks travel a shorter way than they do on the detail screens. */
+    --burst-scale: 0.7;
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;

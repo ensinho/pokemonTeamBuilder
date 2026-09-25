@@ -2837,7 +2837,7 @@
     /* One scroller. The timeline was a 480px list scrolling inside the page's
        own scroller with chaining switched off (.custom-scrollbar), so a thumb
        resting on it moved the timeline and never the page — the classic phone
-       scroll trap. It only ever holds the latest five posts
+       scroll trap. It only ever holds the latest three posts
        (HOME_TIMELINE_LIMIT), so it can be exactly as tall as they are. The
        auto-scroll effect only sets this element's own scrollTop, which is a
        no-op once the element does not scroll. */

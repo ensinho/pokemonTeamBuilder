@@ -339,7 +339,8 @@ export function HomeView({
     // every message here put ~200 interactive controls (avatar, like, reply per
     // row) into a sidebar widget, which is most of what made the home screen
     // feel dense. The full thread is one click away via "Ver Fórum".
-    const HOME_TIMELINE_LIMIT = 5;
+    // Three since 2026-09-24 (Enzo): the rail is a glance, not a reading pane.
+    const HOME_TIMELINE_LIMIT = 3;
     const homeTimelineMessages = useMemo(
         () => messages.slice(-HOME_TIMELINE_LIMIT),
         [messages]

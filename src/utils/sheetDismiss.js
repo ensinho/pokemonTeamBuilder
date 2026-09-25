@@ -37,3 +37,19 @@ export function releaseVelocity(samples) {
     if (!(dt > 0)) return 0;
     return (last.y - first.y) / dt;
 }
+
+/**
+ * The same rule sideways, for a toast swiped off either edge: far enough along
+ * its own width, or flicked hard *in the direction it is travelling* — a flick
+ * back toward the centre is the user changing their mind, not a dismissal.
+ *
+ * @param {object} gesture
+ * @param {number} gesture.dx        signed horizontal travel, px
+ * @param {number} gesture.width     the toast's width, px
+ * @param {number} gesture.velocity  signed release velocity, px/ms
+ */
+export function shouldDismissSwipe({ dx, width, velocity }) {
+    const direction = Math.sign(dx);
+    if (direction === 0) return false;
+    return shouldDismissSheet({ dy: Math.abs(dx), height: width, velocity: velocity * direction });
+}
