@@ -1967,3 +1967,51 @@
 @keyframes app-shell-page-in {
     from { opacity: 0; }
 }
+
+/* ---- Global search trigger (desktop) ---------------------------------------
+   Shaped like the field it opens, with its shortcut on its face: the one way a
+   ⌘K palette gets discovered by people who don't already know to press it. A
+   control, so it takes the control edge (--color-border-strong). */
+.app-shell__search-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 11rem;
+    height: var(--control-h-sm);
+    padding: 0 var(--space-1) 0 var(--space-2_5);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth);
+}
+
+.app-shell__search-trigger:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.app-shell__search-trigger > svg {
+    flex: none;
+    width: 0.95rem;
+    height: 0.95rem;
+}
+
+.app-shell__search-trigger-label {
+    flex: 1;
+    text-align: left;
+}
+
+.app-shell__search-trigger > kbd {
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    color: var(--color-muted);
+}

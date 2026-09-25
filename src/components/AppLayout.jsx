@@ -61,7 +61,7 @@ import {
     MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
-import { BoxIcon, Puzzle, Medal, TrendingUp, Users } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users } from 'lucide-react';
 
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -82,7 +82,19 @@ const loadMetaUsageView = () => import('./views/MetaUsageView');
 // without waiting on a download.
 const loadMobileMoreSheet = () => import('./MobileMoreSheet');
 const MobileMoreSheet = lazy(() => loadMobileMoreSheet().then((m) => ({ default: m.MobileMoreSheet })));
-const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet];
+// The global search is its own chunk too: it opens from the header or ⌘K, and is
+// warmed with the tab destinations on a phone, where the header glyph is its
+// only way in.
+const loadCommandPalette = () => import('./CommandPalette');
+const CommandPalette = lazy(() => loadCommandPalette().then((m) => ({ default: m.CommandPalette })));
+const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet, loadCommandPalette];
+
+const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
+
+// Typing "/" opens search only when the user is not already typing somewhere.
+const isTypingTarget = (target) => Boolean(
+    target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)),
+);
 
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
@@ -358,6 +370,25 @@ export default function AppLayout() {
     const { isInstallable, isIOS, handleInstall } = usePWAInstall();
 
     // UI Local States
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+    // ⌘K / Ctrl+K from anywhere, or "/" when not typing — the palette toggles on
+    // the chord so the same keys that opened it close it again.
+    useEffect(() => {
+        const handleKeyDown = (event) => {
+            const key = event.key?.toLowerCase();
+            if ((event.metaKey || event.ctrlKey) && key === 'k') {
+                event.preventDefault();
+                setIsSearchOpen((open) => !open);
+            } else if (key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target)) {
+                event.preventDefault();
+                setIsSearchOpen(true);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
+
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window !== 'undefined') {
             return window.innerWidth >= BREAKPOINTS.lg;
@@ -861,6 +892,15 @@ export default function AppLayout() {
             .filter((group) => group.items.length > 0);
     }, [mobileTabs, primaryNavItems, navigationGroups]);
 
+    // Every destination the rail knows, once each — what the global search
+    // offers as "Pages" and, with an empty query, as its jump-to list.
+    const searchDestinations = useMemo(() => {
+        const seen = new Set();
+        return [...primaryNavItems, ...navigationGroups.flatMap((group) => group.items)]
+            .filter((item) => item.path && !seen.has(item.key) && seen.add(item.key))
+            .map(({ key, label, path, icon }) => ({ key, label, path, icon }));
+    }, [primaryNavItems, navigationGroups]);
+
     // Landing on a page that lives inside a folded section unfolds it, so "where
     // am I" is answered by the rail itself rather than only by a dot on a folded
     // header. It goes through the same append-and-evict as a click, so arriving
@@ -1149,6 +1189,7 @@ export default function AppLayout() {
                     isInstallable={isInstallable}
                     isIOS={isIOS}
                     onInstall={handleInstall}
+                    onOpenSearch={() => setIsSearchOpen(true)}
                 />
             )}
             {updateAvailable && (
@@ -1224,6 +1265,12 @@ export default function AppLayout() {
                 confirmText={t('dialogs.deleteTeamConfirm')}
                 colors={colors}
             />
+
+            {isSearchOpen && (
+                <Suspense fallback={null}>
+                    <CommandPalette onClose={() => setIsSearchOpen(false)} destinations={searchDestinations} />
+                </Suspense>
+            )}
 
             {/* Answers confirmAction() from anywhere in the app. */}
             <ConfirmHost />
@@ -1437,6 +1484,30 @@ export default function AppLayout() {
                             </div>
 
                             <div className="app-shell__header-actions">
+                                {/* Search: a field-shaped pill with its shortcut on
+                                    desktop, a glyph among the glyphs on a phone. */}
+                                {isMobile ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSearchOpen(true)}
+                                        aria-label={t('search.trigger')}
+                                        className="app-shell__icon-button"
+                                    >
+                                        <Search className="w-5 h-5" aria-hidden="true" />
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsSearchOpen(true)}
+                                        onPointerEnter={() => { loadCommandPalette().catch(() => {}); }}
+                                        aria-keyshortcuts="Meta+K Control+K"
+                                        className="app-shell__search-trigger"
+                                    >
+                                        <Search aria-hidden="true" />
+                                        <span className="app-shell__search-trigger-label">{t('search.trigger')}</span>
+                                        <kbd>{IS_APPLE ? '⌘K' : 'Ctrl K'}</kbd>
+                                    </button>
+                                )}
                                 {/* Desktop keeps the quick theme toggle; guests keep it on mobile too. */}
                                 {(!isMobile || isAnonymous) && (
                                     <ThemeToggle className="app-shell__icon-button" />

@@ -30,6 +30,16 @@ export const RELEASES = [
                 path: '/profile',
             },
             {
+                // `action` instead of `path`: the modal opens the search itself.
+                key: 'global-search',
+                icon: 'search',
+                visual: 'search',
+                title: 'patchNotes.searchTitle',
+                description: 'patchNotes.searchDesc',
+                cta: 'patchNotes.searchCta',
+                action: 'search',
+            },
+            {
                 key: 'small-moments',
                 icon: 'heart',
                 visual: 'delight',

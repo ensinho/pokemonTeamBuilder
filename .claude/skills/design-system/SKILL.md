@@ -353,10 +353,10 @@ Beams, Plasma…), cursor effects (SplashCursor, ClickSpark, BlobCursor),
 spotlight/glare/border-glow cards on grids, liquid glass and any backdrop blur
 on phones, headline text gimmicks (SplitText, BlurText, GlitchText, TextType,
 ShinyText on titles), count-up on load, particle/magnet/attract buttons,
-gradient text. Candidates that passed but are not built yet: a ⌘K command
-palette (Kokonut *action-search-bar*), a shared-element sprite transition from
-card to detail, DecryptedText for the PokéPuzzle reveal, ScrubField on EV
-inputs, SwipeRow on the phone's team list.
+gradient text. Built from the survey since: the ⌘K global search (Kokonut
+*action-search-bar*). Candidates that passed but are not built yet: a
+shared-element sprite transition from card to detail, DecryptedText for the
+PokéPuzzle reveal, ScrubField on EV inputs, SwipeRow on the phone's team list.
 
 ## Interaction tokens
 
@@ -425,6 +425,7 @@ eight segmented controls before this list existed (2026-09-22).
 | **v2** a question before destruction | `if (await confirmAction({ title, message, confirmText }))` — never `window.confirm` |
 | **v2** a reversible destructive action | do it, then `toast.info(title, { actions: [{ label: t('toast.undo'), onClick }] })` — undo beats confirm |
 | **v2** the theme | `chooseTheme(id, originFromEvent(event))` / `<ThemeToggle>` — never `changeTheme` from a control (it does not save) |
+| **v2** find anything | the global search (`CommandPalette`, `setIsSearchOpen` in AppLayout, ⌘K / `/`) — add searchable data as a group in it, never a second search dialog |
 
 Control heights are `--control-h-sm/md/lg` (1.75 / 2.25 / 2.75rem): a button, an
 input and a segmented control in one toolbar share a height.

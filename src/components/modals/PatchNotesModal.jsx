@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Puzzle, Star } from 'lucide-react';
+import { Puzzle, Search, Star } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
@@ -372,6 +372,32 @@ const MaterialVisual = ({ language }) => {
     );
 };
 
+// The palette as it answers "char": the Charmander line in dex order, the way
+// the real search ranks it. Static sprites, like the other illustrations.
+const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
+
+const SearchVisual = () => {
+    const rows = [[4, 'Charmander'], [5, 'Charmeleon'], [6, 'Charizard']];
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center bg-bg p-3" aria-hidden="true">
+            <span className="flex w-[15rem] max-w-full flex-col overflow-hidden rounded-lg bg-surface-raised shadow-sm">
+                <span className="flex items-center gap-2 px-2.5 py-1.5 text-[0.7rem] text-fg">
+                    <Search className="h-3 w-3 text-muted" />
+                    char
+                    <span className="ml-auto rounded bg-surface px-1 font-mono text-[0.5rem] text-muted">{IS_APPLE ? '⌘K' : 'Ctrl K'}</span>
+                </span>
+                {rows.map(([id, name], index) => (
+                    <span key={id} className={`flex items-center gap-2 px-2.5 py-1 ${index === 0 ? 'bg-surface-active' : ''}`}>
+                        <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-6 w-6 object-contain" style={{ imageRendering: 'pixelated' }} />
+                        <span className="text-[0.65rem] font-semibold text-fg">{name}</span>
+                        <span className="ml-auto font-mono text-[0.55rem] text-muted">#{String(id).padStart(4, '0')}</span>
+                    </span>
+                ))}
+            </span>
+        </div>
+    );
+};
+
 const DelightVisual = ({ language }) => {
     const pt = language === 'pt';
     const step = useDemoStep(2, 1400);
@@ -434,6 +460,7 @@ const NOTE_ICONS = {
     swords: SwordsIcon,
     message: MessageIcon,
     puzzle: Puzzle,
+    search: Search,
 };
 
 const NOTE_VISUALS = {
@@ -450,9 +477,10 @@ const NOTE_VISUALS = {
     material: MaterialVisual,
     delight: DelightVisual,
     dock: DockVisual,
+    search: SearchVisual,
 };
 
-export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall }) {
+export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall, onOpenSearch }) {
     const { t, language } = useTranslation();
     const dialogRef = useModalA11y(onClose);
     const navigate = useNavigate();
@@ -518,7 +546,11 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                         const NoteIcon = note.Icon;
                         const NoteVisual = note.Visual;
                         // A note either goes somewhere or opens the history below it.
-                        const activate = note.expandsHistory ? () => setHistoryOpen(true) : () => goTo(path);
+                        const activate = note.expandsHistory
+                            ? () => setHistoryOpen(true)
+                            : note.action === 'search'
+                                ? () => { onClose(); onOpenSearch?.(); }
+                                : () => goTo(path);
                         return (
                             <button
                                 key={key}

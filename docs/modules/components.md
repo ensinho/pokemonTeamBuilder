@@ -248,6 +248,25 @@ Built once so no view draws its own again (see `docs/wounds.md`, 2026-09-24). CS
   sideways; `shouldDismissSwipe` (`utils/sheetDismiss.js`) decides, with the same
   fraction/flick rule as the sheets.
 
+### CommandPalette — global search (2026-09-24)
+**Files:** `src/components/CommandPalette.jsx`, `src/styles/command-palette.css`, `src/utils/globalSearch.js` (+ test)
+
+Search anything from anywhere: Pokémon (name or dex number), moves, abilities,
+items and every rail destination, all from data already in memory. Opened by
+`⌘K` / `Ctrl+K` (toggles), `/` when not typing, the desktop header's field-shaped
+pill, or the phone header's glyph; `AppLayout` owns `isSearchOpen`, lazy-loads the
+chunk (warmed with the phone prefetch) and passes `destinations` (the rail's items,
+deduped). Built on `.modal-scrim` > `.modal-panel` + `useModalA11y`: a palette near
+the top on desktop, a **full-height sheet with the field at the top** below 640px
+(a bottom sheet would put the field under the keyboard). ARIA combobox + listbox;
+arrows walk across groups, Enter opens.
+
+Ranking lives in `utils/globalSearch.js` and is tested: exact > prefix (fewer extra
+words first, so forms rank under their species and a line keeps dex order) > word
+start > all-words-prefix > substring; groups are ordered by their best hit plus a
+`boost` (Pokémon 8, Pages 6), so "char" leads with Charmander but "charm" (an exact
+move) leads with the move, and "meta" finds the page through its route alias.
+
 ## Quiz Components
 
 ### PokemonGenerationQuizCard
