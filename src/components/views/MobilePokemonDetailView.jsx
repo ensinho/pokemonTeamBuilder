@@ -592,6 +592,7 @@ export function MobilePokemonDetailView({
                             artworkSrc={getPokemonArtworkSpriteUrl(identity.id, { shiny: showShiny })}
                             alt={cleanName(identity.name)}
                             eager
+                            heroTarget
                         />
                         <button
                             type="button"

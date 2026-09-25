@@ -119,7 +119,7 @@ export const PokemonCard = React.memo(function PokemonCard({
                 </div>
             </div>
 
-            <div className="pokemon-card__media">
+            <div className="pokemon-card__media" data-hero-source={details.id}>
                 <Sprite src={getPokemonDisplaySprite(details)} artworkSrc={getPokemonArtworkSpriteUrl(details.id)} alt={details.name} className="w-full h-full" />
             </div>
             <p className="pokemon-card__name">{details.name}</p>

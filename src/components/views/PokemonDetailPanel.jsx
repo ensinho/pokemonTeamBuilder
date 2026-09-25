@@ -145,7 +145,7 @@ export function PokemonDetailPanel({
                         <div className="text-center p-3.5 sm:p-4 bg-surface rounded-xl border border-border flex flex-col justify-between items-center">
                             <div className="w-full flex-1 flex flex-col justify-center items-center py-1 sm:py-2">
                                 <div className="relative inline-block">
-                                    <img src={spriteToShow} alt={selectedPokemonDetails.name} className="mx-auto h-24 w-24 sm:h-36 sm:w-36 image-pixelated hover:scale-105 transition-transform duration-300" />
+                                    <img src={spriteToShow} alt={selectedPokemonDetails.name} data-vt-hero="" className="mx-auto h-24 w-24 sm:h-36 sm:w-36 image-pixelated hover:scale-105 transition-transform duration-300" />
                                     <button
                                         type="button"
                                         onClick={() => {

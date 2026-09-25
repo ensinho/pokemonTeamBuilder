@@ -12,6 +12,9 @@ import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
  * loads as a tiny placeholder (naturalWidth ≤ 40, i.e. the PokeAPI blank
  * 40×40 image served for forms without a sprite), we silently switch to
  * the artwork URL so the card never shows the pokéball fallback.
+ *
+ * `heroTarget` — marks the detail screen's hero, the element a card's sprite
+ * travels into when a Pokémon is opened from a list (utils/heroTransition.js).
  */
 export const Sprite = React.memo(function Sprite({
     src,
@@ -20,6 +23,7 @@ export const Sprite = React.memo(function Sprite({
     fallback = POKEBALL_PLACEHOLDER_URL,
     artworkSrc = null,
     eager = false,
+    heroTarget = false,
 }) {
     const [loaded, setLoaded] = useState(false);
     const [errored, setErrored] = useState(false);
@@ -48,7 +52,7 @@ export const Sprite = React.memo(function Sprite({
     const finalSrc = errored || !src ? fallback : usedArtwork ? artworkSrc : src;
 
     return (
-        <span className={`relative inline-block overflow-hidden ${className}`}>
+        <span className={`relative inline-block overflow-hidden ${className}`} data-vt-hero={heroTarget ? '' : undefined}>
             {/* Subtle Pokéball placeholder until the real sprite paints. */}
             {!loaded && (
                 <span

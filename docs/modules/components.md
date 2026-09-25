@@ -248,6 +248,20 @@ Built once so no view draws its own again (see `docs/wounds.md`, 2026-09-24). CS
   sideways; `shouldDismissSwipe` (`utils/sheetDismiss.js`) decides, with the same
   fraction/flick rule as the sheets.
 
+### Hero transition — card → detail (2026-09-24)
+**Files:** `src/utils/heroTransition.js`, `src/components/Sprite.jsx` (`heroTarget`), `src/styles/interactions.css`
+
+`navigateWithHero(navigate, to, options, sourceElement)` opens a Pokémon with its
+sprite flying from the card into the detail hero: a same-document View Transition
+where the source (`[data-hero-source={id}]` on `PokemonCard` and the phone Pokédex
+card) is named `pokemon-hero` in the old snapshot and the destination
+(`<Sprite heroTarget>` on the phone screen, `data-vt-hero` on the desktop panel)
+in the new one, scoped by `html[data-hero-transition]`. The update waits up to
+450ms (timers — rAF does not run during a view transition's update) for the hero
+to exist; the phone hero paints from the index entry at once, the desktop panel's
+waits for the detail record, so a slow desktop load degrades to a cross-fade.
+Plain `navigate` with no View Transitions or under reduced motion.
+
 ### CommandPalette — global search (2026-09-24)
 **Files:** `src/components/CommandPalette.jsx`, `src/styles/command-palette.css`, `src/utils/globalSearch.js` (+ test)
 

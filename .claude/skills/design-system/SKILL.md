@@ -273,6 +273,11 @@ ShinyBurst,ThemeToggle}.jsx`, `src/hooks/useShinyBurst.js`,
 
 1. **Continuity — a selection travels.** When the chosen option changes, the
    thing marking it moves there; it never disappears here and reappears there.
+   The same holds for an object opened from a list: a Pokémon's sprite flies
+   from its card into the detail hero (`navigateWithHero`, `utils/heroTransition.js`;
+   mark the destination with `<Sprite heroTarget>` or `data-vt-hero`, the source
+   with `data-hero-source={id}`; wait with timers, never rAF — rendering is
+   suspended while a view transition's update is pending).
    `.segmented` draws one thumb and `.tabs` one underline, positioned against
    the selected item with CSS anchor positioning and transitioned on the glide
    spring — no JS, no measuring, every call site for free. It is gated on
@@ -354,9 +359,9 @@ spotlight/glare/border-glow cards on grids, liquid glass and any backdrop blur
 on phones, headline text gimmicks (SplitText, BlurText, GlitchText, TextType,
 ShinyText on titles), count-up on load, particle/magnet/attract buttons,
 gradient text. Built from the survey since: the ⌘K global search (Kokonut
-*action-search-bar*). Candidates that passed but are not built yet: a
-shared-element sprite transition from card to detail, DecryptedText for the
-PokéPuzzle reveal, ScrubField on EV inputs, SwipeRow on the phone's team list.
+*action-search-bar*) and the card → detail sprite transition. Candidates that
+passed but are not built yet: DecryptedText for the PokéPuzzle reveal,
+ScrubField on EV inputs, SwipeRow on the phone's team list.
 
 ## Interaction tokens
 

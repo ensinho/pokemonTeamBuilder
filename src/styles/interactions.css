@@ -421,3 +421,25 @@ html[data-theme-transition]::view-transition-new(root) {
     from { clip-path: circle(0 at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 0%)); }
     to   { clip-path: circle(var(--theme-reveal-r, 150%) at var(--theme-reveal-x, 50%) var(--theme-reveal-y, 0%)); }
 }
+
+/* ---- Hero transition ------------------------------------------------------
+   Opening a Pokémon from a list (utils/heroTransition.js): the card's sprite is
+   named in the old snapshot, the detail hero in the new one, and the group
+   morphs position and size on the sheet curve while the page cross-fades. The
+   attribute scopes the name to this one transition — the hero must not carry a
+   view-transition-name the rest of the time (a theme reveal would capture it). */
+html[data-hero-transition] [data-vt-hero] {
+    view-transition-name: pokemon-hero;
+}
+
+html[data-hero-transition]::view-transition-group(pokemon-hero) {
+    animation-duration: var(--duration-entrance);
+    animation-timing-function: var(--ease-drawer);
+}
+
+/* Both ends are square sprites of different sizes: fit, never stretch. */
+html[data-hero-transition]::view-transition-old(pokemon-hero),
+html[data-hero-transition]::view-transition-new(pokemon-hero) {
+    height: 100%;
+    object-fit: contain;
+}
