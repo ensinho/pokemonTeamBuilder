@@ -19,8 +19,9 @@ const SETTLE_MS = 1200;
  * it actually helps: a message arriving while you are already at the bottom.
  *
  * The jump is then re-asserted as images finish loading, because the first jump
- * aims at a height that does not include them yet. Scrolling away from the
- * bottom cancels that immediately, so the pin can never fight the user.
+ * aims at a height that does not include them yet. Touching, wheeling or
+ * key-scrolling the list — or scrolling away from the bottom by any means —
+ * cancels that immediately, so the pin can never fight the user.
  *
  * @param {object} containerRef  the scrollable element
  * @param {object} options
@@ -115,6 +116,16 @@ export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMi
             if (!nearBottom) pinUntil.current = 0;
         };
 
+        // …and so does the *intent* to scroll, before any distance is covered.
+        // Distance alone was not enough: a thumb nudging the thread up 60px sat
+        // inside the 120px "near bottom" band, the pin put it back on the next
+        // frame, and every sprite that landed renewed the pin — so for the
+        // first seconds of a thread of team cards each small scroll was undone
+        // (measured 2026-09-24: six 60px nudges, six 60px snap-backs). That is
+        // the "travadinho" feel. A finger, a wheel or a key on the list means
+        // the user is driving now.
+        const handOver = () => { pinUntil.current = 0; };
+
         // Cold sprites arrive well past the settle window — a thread of team
         // cards pulls a hundred of them. Each one that lands pushes the deadline
         // out, so the pin lasts exactly as long as the thread is still growing
@@ -124,10 +135,18 @@ export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMi
         };
 
         el.addEventListener('scroll', release, { passive: true });
+        el.addEventListener('touchstart', handOver, { passive: true });
+        el.addEventListener('wheel', handOver, { passive: true });
+        el.addEventListener('pointerdown', handOver, { passive: true });
+        el.addEventListener('keydown', handOver);
         el.addEventListener('load', extend, true);
         el.addEventListener('error', extend, true);
         return () => {
             el.removeEventListener('scroll', release);
+            el.removeEventListener('touchstart', handOver);
+            el.removeEventListener('wheel', handOver);
+            el.removeEventListener('pointerdown', handOver);
+            el.removeEventListener('keydown', handOver);
             el.removeEventListener('load', extend, true);
             el.removeEventListener('error', extend, true);
         };

@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { memo, useState, useEffect, useLayoutEffect, useRef, useMemo } from 'react';
+import { groupThreadMessages } from '../../utils/forumThread';
 import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
@@ -19,6 +20,7 @@ import { FriendActionButton } from '../FriendActionButton';
 import { UserProfileModal } from '../modals/UserProfileModal';
 import { TeamsTopicNotice } from '../TeamsTopicNotice';
 import { TrainerBadge } from '../TrainerBadge';
+import { Loader } from '../Loader';
 import {
     MessageIcon,
     PlusIcon,
@@ -62,6 +64,242 @@ const formatRelativeTime = (isoString, language = 'en') => {
     }
     return language === 'pt' ? `há ${diffDays} dias` : `${diffDays}d ago`;
 };
+
+const profileFromMessage = (message) => ({
+    userId: message.createdBy,
+    name: message.creatorName,
+    avatar: message.creatorAvatar,
+    isShiny: message.creatorAvatarIsShiny,
+    trainerSprite: message.creatorTrainerSprite,
+    selectedBadgeId: message.creatorBadgeId || null,
+});
+
+/**
+ * One post in the thread. Memoised, with every handler arriving through one
+ * stable `actions` object, because the parent re-renders on every keystroke in
+ * the composer and on every hover over a shared team's slots — and a thread is
+ * dozens of rows each carrying up to a dozen sprites. Re-rendering all of them
+ * per keystroke was a large part of why typing and scrolling felt heavy.
+ *
+ * `continues`: same trainer, moments after their last line (utils/forumThread)
+ * — the row drops its avatar and byline and tucks under the one above.
+ * `isNew`: arrived after the thread opened — the row rises in once, on mount.
+ */
+const ForumMessage = memo(function ForumMessage({
+    message, continues, isNew, likedByMe, canDelete, isConfirmingDelete, canLike, language, t, actions,
+}) {
+    const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
+    const likeCount = message.likeCount || message.likedBy?.length || 0;
+    const className = [
+        'forum-message-item',
+        continues ? 'forum-message-item--continued' : '',
+        isNew ? 'forum-message-item--new' : '',
+    ].filter(Boolean).join(' ');
+
+    return (
+        <div id={`forum-msg-${message.id}`} className={className}>
+            {continues ? (
+                <span className="forum-message-avatar forum-message-avatar--spacer" aria-hidden="true" />
+            ) : (
+                <button
+                    type="button"
+                    className="forum-message-avatar"
+                    onClick={() => actions.openProfile(message)}
+                    aria-label={`@${message.creatorName}`}
+                >
+                    <AvatarSprite
+                        trainerSprite={message.creatorTrainerSprite}
+                        pokemonId={message.creatorAvatar}
+                        isShiny={message.creatorAvatarIsShiny}
+                        fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                    />
+                </button>
+            )}
+
+            <div className="forum-message-bubble">
+                {!continues && (
+                    <div className="forum-message-header">
+                        <div className="forum-message-identity">
+                            <button
+                                type="button"
+                                className="forum-message-author"
+                                onClick={() => actions.openProfile(message)}
+                            >
+                                <span className="truncate">@{message.creatorName}</span>
+                                {message.creatorBadgeId && <TrainerBadge badgeId={message.creatorBadgeId} size="xs" />}
+                            </button>
+                            {isMsgAdmin && (
+                                <span className="forum-message-author-badge">
+                                    {message.creatorName === 'Professor Oak' ? 'System' : 'Admin'}
+                                </span>
+                            )}
+                        </div>
+                        <span className="forum-message-time">
+                            {formatRelativeTime(message.createdAt, language)}
+                        </span>
+                    </div>
+                )}
+
+                {/* Quoted reply reference */}
+                {message.replyTo && (
+                    <button
+                        type="button"
+                        onClick={() => actions.jumpTo(message.replyTo.messageId)}
+                        className="forum-message-quote"
+                        title={language === 'pt' ? 'Ir para a mensagem original' : 'Jump to original message'}
+                    >
+                        <ReplyIcon className="w-3 h-3 shrink-0" />
+                        <span className="forum-message-quote__author">@{message.replyTo.creatorName}</span>
+                        {message.replyTo.teamSprites?.length > 0 && (
+                            <span className="forum-message-quote__team">
+                                {message.replyTo.teamSprites.map((url, i) => (
+                                    <img
+                                        key={i}
+                                        src={url}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="forum-message-quote__sprite"
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                ))}
+                            </span>
+                        )}
+                        <span className="forum-message-quote__text">
+                            {message.replyTo.textSnippet || (language === 'pt' ? 'mensagem' : 'message')}
+                        </span>
+                    </button>
+                )}
+
+                {message.text && (
+                    <p className="forum-message-text">{message.text}</p>
+                )}
+
+                {message.sharedPuzzle?.rows?.length > 0 && (
+                    <PuzzleShareCard puzzle={message.sharedPuzzle} />
+                )}
+
+                {message.battleInvite?.battleId && (
+                    <BattleInviteCard invite={message.battleInvite} />
+                )}
+
+                {message.sharedTeam && (
+                    <div className="forum-team-share-card">
+                        <div className="forum-team-share-header">
+                            <h5 className="forum-team-share-title">
+                                <PokeballIcon className="w-3.5 h-3.5 text-primary shrink-0" />
+                                <span className="truncate">{message.sharedTeam.name}</span>
+                            </h5>
+                            <div className="forum-team-share-action">
+                                <button
+                                    type="button"
+                                    onClick={() => actions.importTeam(message.sharedTeam)}
+                                    className="btn btn-primary h-7 px-2.5 text-xs font-semibold"
+                                >
+                                    <Download />
+                                    {language === 'pt' ? 'Importar' : 'Import'}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="forum-team-share-slots">
+                            {Array.from({ length: 6 }).map((_, slotIdx) => {
+                                const pk = message.sharedTeam.pokemons?.[slotIdx];
+                                const spriteUrl = pk ? getTeamPokemonDisplaySprite(pk) : null;
+
+                                return (
+                                    <div
+                                        key={slotIdx}
+                                        className="forum-team-share-slot"
+                                        onMouseEnter={(e) => pk && actions.hoverSlot({
+                                            messageId: message.id,
+                                            slotIndex: slotIdx,
+                                            pokemon: pk,
+                                            ref: e.currentTarget
+                                        })}
+                                        onMouseLeave={() => actions.hoverSlot(null)}
+                                    >
+                                        {spriteUrl ? (
+                                            <img
+                                                src={spriteUrl}
+                                                alt={pk.name}
+                                                loading="lazy"
+                                                className="forum-team-share-sprite"
+                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            />
+                                        ) : (
+                                            <span className="forum-team-share-empty">
+                                                <PokeballIcon className="w-3.5 h-3.5" />
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Message actions: quiet until wanted. Like and Reply lead;
+                    Delete is pushed to the far end of the row by the
+                    stylesheet, because a destructive control one thumb-width
+                    from Reply is a mis-tap waiting to happen. */}
+                <div className="forum-msg-actions">
+                    <button
+                        type="button"
+                        onClick={() => actions.like(message.id)}
+                        disabled={!canLike}
+                        aria-pressed={likedByMe}
+                        aria-label={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
+                        title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
+                        className={`forum-msg-action ${likedByMe ? 'is-liked' : ''}`}
+                    >
+                        <HeartIcon className="w-3.5 h-3.5 shrink-0" />
+                        {likeCount > 0 && <span>{likeCount}</span>}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => actions.reply(message)}
+                        title={language === 'pt' ? 'Responder' : 'Reply'}
+                        className="forum-msg-action"
+                    >
+                        <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
+                    </button>
+
+                    {canDelete && (
+                        isConfirmingDelete ? (
+                            <span className="forum-msg-actions__confirm">
+                                <button
+                                    type="button"
+                                    onClick={() => actions.confirmDelete(message.id)}
+                                    className="forum-msg-action is-danger"
+                                >
+                                    {language === 'pt' ? 'Excluir' : 'Delete'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => actions.askDelete(null)}
+                                    className="forum-msg-action"
+                                >
+                                    {t('common.cancel')}
+                                </button>
+                            </span>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={() => actions.askDelete(message.id)}
+                                title={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
+                                aria-label={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
+                                className="forum-msg-action forum-msg-action--icon forum-msg-actions__end"
+                            >
+                                <TrashIcon className="w-3.5 h-3.5" />
+                            </button>
+                        )
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+});
 
 export function FeedView({ showToast, navigate }) {
     const { t, language } = useTranslation();
@@ -351,6 +589,41 @@ export function FeedView({ showToast, navigate }) {
         return { current: hoveredSlot?.ref || null };
     }, [hoveredSlot]);
 
+    // Handlers for ForumMessage, behind one object whose identity never
+    // changes: each call reads the latest closures through the ref, so the
+    // memoised rows are not re-rendered by a new function every render.
+    const latestActions = useRef(null);
+    latestActions.current = {
+        like: (messageId) => toggleMessageLike(currentTopicId, messageId),
+        reply: handleStartReply,
+        jumpTo: scrollToMessage,
+        askDelete: setConfirmingDeleteId,
+        confirmDelete: handleConfirmDeleteMessage,
+        importTeam: handleImportTeam,
+        openProfile: (message) => setSelectedProfile(profileFromMessage(message)),
+        hoverSlot: setHoveredSlot,
+    };
+    const messageActions = useMemo(() => Object.fromEntries(
+        ['like', 'reply', 'jumpTo', 'askDelete', 'confirmDelete', 'importTeam', 'openProfile', 'hoverSlot']
+            .map((name) => [name, (...args) => latestActions.current[name](...args)])
+    ), []);
+
+    const threadRows = useMemo(() => groupThreadMessages(messages), [messages]);
+
+    // Which messages were already there when the thread opened. Anything not
+    // in this set arrived while the user was here, and rises in once. The list
+    // going empty is how a thread (re)opens — the same signal
+    // useChatAutoScroll keys on — so the baseline resets with it, and the
+    // first render of a full thread animates nothing.
+    const openedWithIds = useRef(null);
+    useLayoutEffect(() => {
+        if (messages.length === 0) {
+            openedWithIds.current = null;
+        } else if (!openedWithIds.current) {
+            openedWithIds.current = new Set(messages.map((message) => message.id));
+        }
+    }, [messages]);
+
     return (
         <div className={`forum-view is-pane-${mobilePane}`}>
             {/* Left Sidebar: Topic List — its own screen on a phone */}
@@ -584,6 +857,9 @@ export function FeedView({ showToast, navigate }) {
                 ) : activeTopic ? (
                     /* Chat Thread Screen */
                     <div className="forum-thread">
+                        {/* One line of title, one line of facts. The byline used to
+                            wrap to three lines on a phone ("Conversa · Criado por
+                            @Professor Oak" / "há 101 dias") above every thread. */}
                         <div className="forum-main__header">
                             <button
                                 type="button"
@@ -595,239 +871,44 @@ export function FeedView({ showToast, navigate }) {
                             </button>
                             <div className="forum-main__copy">
                                 <h3 className="forum-main__title">{activeTopic.title}</h3>
-                                <div className="forum-main__meta">
+                                <p className="forum-main__meta">
                                     <span className={`forum-topic-badge forum-topic-badge--${activeTopic.category}`}>
                                         {getCategoryLabel(activeTopic.category)}
                                     </span>
-                                    <span>{language === 'pt' ? 'Criado por' : 'Created by'} @{activeTopic.creatorName}</span>
-                                    <span>{formatRelativeTime(activeTopic.createdAt, language)}</span>
-                                </div>
+                                    <span className="forum-main__meta-text">
+                                        {(activeTopic.messageCount || messages.length)} {language === 'pt' ? 'mensagens' : 'messages'}
+                                        {' · '}@{activeTopic.creatorName}
+                                    </span>
+                                </p>
                             </div>
                         </div>
 
-                        {/* Messages Thread list */}
-                        <div ref={messageListRef} className="forum-message-list custom-scrollbar">
+                        {/* Messages. Keyed by topic so a new thread arrives as a
+                            fresh list (a short fade) instead of the old one's rows
+                            being rewritten in place under the user's eyes. */}
+                        <div key={currentTopicId} ref={messageListRef} className="forum-message-list custom-scrollbar">
                             {isInitialLoadingMessages ? (
-                                <p className="forum-state">{t('common.loading')}</p>
+                                <div className="forum-state"><Loader label={t('common.loading')} /></div>
                             ) : messages.length === 0 ? (
                                 <p className="forum-state">
                                     {language === 'pt' ? 'Nenhuma mensagem escrita neste tópico.' : 'No messages posted in this topic.'}
                                 </p>
                             ) : (
-                                messages.map((message) => {
-                                    const isMsgAdmin = message.createdBy === 'system' || message.userEmail === 'enzopo625@gmail.com' || (message.creatorName === 'Professor Oak');
-                                    const likeCount = message.likeCount || message.likedBy?.length || 0;
-                                    const likedByMe = !!userId && Array.isArray(message.likedBy) && message.likedBy.includes(userId);
-                                    const canDeleteMessage = isAdmin || (!!userId && message.createdBy === userId);
-
-                                    return (
-                                        <div key={message.id} id={`forum-msg-${message.id}`} className="forum-message-item">
-                                            <div
-                                                className="forum-message-avatar"
-                                                onClick={() => setSelectedProfile({
-                                                    userId: message.createdBy,
-                                                    name: message.creatorName,
-                                                    avatar: message.creatorAvatar,
-                                                    isShiny: message.creatorAvatarIsShiny,
-                                                    trainerSprite: message.creatorTrainerSprite,
-                                                    selectedBadgeId: message.creatorBadgeId || null,
-                                                })}
-                                            >
-                                                <AvatarSprite
-                                                    trainerSprite={message.creatorTrainerSprite}
-                                                    pokemonId={message.creatorAvatar}
-                                                    isShiny={message.creatorAvatarIsShiny}
-                                                    fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
-                                                />
-                                            </div>
-
-                                            <div className="forum-message-bubble">
-                                                <div className="forum-message-header">
-                                                    <div className="forum-message-identity">
-                                                        <span
-                                                            className="forum-message-author"
-                                                            onClick={() => setSelectedProfile({
-                                                                userId: message.createdBy,
-                                                                name: message.creatorName,
-                                                                avatar: message.creatorAvatar,
-                                                                isShiny: message.creatorAvatarIsShiny,
-                                                                trainerSprite: message.creatorTrainerSprite,
-                                                                selectedBadgeId: message.creatorBadgeId || null,
-                                                            })}
-                                                        >
-                                                            <span className="truncate">@{message.creatorName}</span>
-                                                            {message.creatorBadgeId && <TrainerBadge badgeId={message.creatorBadgeId} size="xs" />}
-                                                        </span>
-                                                        {isMsgAdmin && (
-                                                            <span className="forum-message-author-badge">
-                                                                {message.creatorName === 'Professor Oak' ? 'System' : 'Admin'}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <span className="forum-message-time">
-                                                        {formatRelativeTime(message.createdAt, language)}
-                                                    </span>
-                                                </div>
-
-                                                {/* Quoted reply reference */}
-                                                {message.replyTo && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => scrollToMessage(message.replyTo.messageId)}
-                                                        className="forum-message-quote"
-                                                        title={language === 'pt' ? 'Ir para a mensagem original' : 'Jump to original message'}
-                                                    >
-                                                        <ReplyIcon className="w-3 h-3 shrink-0" />
-                                                        <span className="forum-message-quote__author">@{message.replyTo.creatorName}</span>
-                                                        {message.replyTo.teamSprites?.length > 0 && (
-                                                            <span className="forum-message-quote__team">
-                                                                {message.replyTo.teamSprites.map((url, i) => (
-                                                                    <img
-                                                                        key={i}
-                                                                        src={url}
-                                                                        alt=""
-                                                                        aria-hidden="true"
-                                                                        className="forum-message-quote__sprite"
-                                                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                                    />
-                                                                ))}
-                                                            </span>
-                                                        )}
-                                                        <span className="forum-message-quote__text">
-                                                            {message.replyTo.textSnippet || (language === 'pt' ? 'mensagem' : 'message')}
-                                                        </span>
-                                                    </button>
-                                                )}
-
-                                                {message.text && (
-                                                    <p className="forum-message-text">{message.text}</p>
-                                                )}
-
-                                                {message.sharedPuzzle?.rows?.length > 0 && (
-                                                    <PuzzleShareCard puzzle={message.sharedPuzzle} />
-                                                )}
-
-                                                {message.battleInvite?.battleId && (
-                                                    <BattleInviteCard invite={message.battleInvite} />
-                                                )}
-
-                                                {/* Render Shared Team snippet inside post */}
-                                                {message.sharedTeam && (
-                                                    <div className="forum-team-share-card">
-                                                        <div className="forum-team-share-header">
-                                                            <h5 className="forum-team-share-title">
-                                                                <PokeballIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                                <span className="truncate">{message.sharedTeam.name}</span>
-                                                            </h5>
-                                                            <div className="forum-team-share-action">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleImportTeam(message.sharedTeam)}
-                                                                    className="btn btn-primary h-7 px-2.5 text-xs font-semibold"
-                                                                >
-                                                                    <Download />
-                                                                    {language === 'pt' ? 'Importar' : 'Import'}
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                        <div className="forum-team-share-slots">
-                                                            {Array.from({ length: 6 }).map((_, slotIdx) => {
-                                                                const pk = message.sharedTeam.pokemons?.[slotIdx];
-                                                                const spriteUrl = pk ? getTeamPokemonDisplaySprite(pk) : null;
-
-                                                                return (
-                                                                    <div
-                                                                        key={slotIdx}
-                                                                        className="forum-team-share-slot"
-                                                                        onMouseEnter={(e) => pk && setHoveredSlot({
-                                                                            messageId: message.id,
-                                                                            slotIndex: slotIdx,
-                                                                            pokemon: pk,
-                                                                            ref: e.currentTarget
-                                                                        })}
-                                                                        onMouseLeave={() => setHoveredSlot(null)}
-                                                                    >
-                                                                        {spriteUrl ? (
-                                                                            <img
-                                                                                src={spriteUrl}
-                                                                                alt={pk.name}
-                                                                                className="forum-team-share-sprite"
-                                                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                                            />
-                                                                        ) : (
-                                                                            <span className="forum-team-share-empty">
-                                                                                <PokeballIcon className="w-3.5 h-3.5" />
-                                                                            </span>
-                                                                        )}
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* Message actions. Like and Reply lead; Delete is pushed to
-                                                    the far end of the row by the stylesheet, because a
-                                                    destructive control one thumb-width from Reply is a
-                                                    mis-tap waiting to happen. */}
-                                                <div className="forum-msg-actions">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => toggleMessageLike(currentTopicId, message.id)}
-                                                        disabled={!userId}
-                                                        aria-pressed={likedByMe}
-                                                        title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
-                                                        className={`forum-msg-action ${likedByMe ? 'is-liked' : ''}`}
-                                                    >
-                                                        <HeartIcon className="w-3.5 h-3.5 shrink-0" />
-                                                        {likeCount > 0 && <span>{likeCount}</span>}
-                                                    </button>
-
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleStartReply(message)}
-                                                        title={language === 'pt' ? 'Responder' : 'Reply'}
-                                                        className="forum-msg-action"
-                                                    >
-                                                        <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
-                                                        <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
-                                                    </button>
-
-                                                    {canDeleteMessage && (
-                                                        confirmingDeleteId === message.id ? (
-                                                            <span className="forum-msg-actions__confirm">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleConfirmDeleteMessage(message.id)}
-                                                                    className="forum-msg-action is-danger"
-                                                                >
-                                                                    {language === 'pt' ? 'Excluir' : 'Delete'}
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setConfirmingDeleteId(null)}
-                                                                    className="forum-msg-action"
-                                                                >
-                                                                    {t('common.cancel')}
-                                                                </button>
-                                                            </span>
-                                                        ) : (
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => setConfirmingDeleteId(message.id)}
-                                                                title={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
-                                                                aria-label={language === 'pt' ? 'Excluir mensagem' : 'Delete message'}
-                                                                className="forum-msg-action forum-msg-action--icon forum-msg-actions__end"
-                                                            >
-                                                                <TrashIcon className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        )
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })
+                                threadRows.map(({ message, continues }) => (
+                                    <ForumMessage
+                                        key={message.id}
+                                        message={message}
+                                        continues={continues}
+                                        isNew={!!openedWithIds.current && !openedWithIds.current.has(message.id)}
+                                        likedByMe={!!userId && Array.isArray(message.likedBy) && message.likedBy.includes(userId)}
+                                        canDelete={isAdmin || (!!userId && message.createdBy === userId)}
+                                        isConfirmingDelete={confirmingDeleteId === message.id}
+                                        canLike={!!userId}
+                                        language={language}
+                                        t={t}
+                                        actions={messageActions}
+                                    />
+                                ))
                             )}
                         </div>
 
