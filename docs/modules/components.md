@@ -248,6 +248,17 @@ Built once so no view draws its own again (see `docs/wounds.md`, 2026-09-24). CS
   sideways; `shouldDismissSwipe` (`utils/sheetDismiss.js`) decides, with the same
   fraction/flick rule as the sheets.
 
+### DecryptText — the PokéPuzzle reveal (2026-09-24)
+**Files:** `src/components/DecryptText.jsx`, `src/utils/decrypt.js` (+ test)
+
+A name that decrypts into place: random letters resolving left to right over
+450–900ms (scaled to the name), punctuation fixed from the first frame, unresolved
+letters muted (`.decrypt-text__noise`). `play` must come from the user's own act —
+`PokePuzzleView` sets `solvedNow` at its two winning-guess branches and clears it
+when the target changes, so reopening a solved day shows the name still. The display
+face is mono, so the scramble never changes the line's width; screen readers get the
+real text.
+
 ### Hero transition — card → detail (2026-09-24)
 **Files:** `src/utils/heroTransition.js`, `src/components/Sprite.jsx` (`heroTarget`), `src/styles/interactions.css`
 

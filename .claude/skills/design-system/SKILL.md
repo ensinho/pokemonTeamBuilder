@@ -359,9 +359,10 @@ spotlight/glare/border-glow cards on grids, liquid glass and any backdrop blur
 on phones, headline text gimmicks (SplitText, BlurText, GlitchText, TextType,
 ShinyText on titles), count-up on load, particle/magnet/attract buttons,
 gradient text. Built from the survey since: the ⌘K global search (Kokonut
-*action-search-bar*) and the card → detail sprite transition. Candidates that
-passed but are not built yet: DecryptedText for the PokéPuzzle reveal,
-ScrubField on EV inputs, SwipeRow on the phone's team list.
+*action-search-bar*), the card → detail sprite transition and the PokéPuzzle
+name reveal (`DecryptText`, React Bits *DecryptedText* — plays only for a win
+that just happened). Candidates that passed but are not built yet: ScrubField
+on EV inputs, SwipeRow on the phone's team list.
 
 ## Interaction tokens
 

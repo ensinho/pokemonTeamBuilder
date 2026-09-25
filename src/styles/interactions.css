@@ -443,3 +443,10 @@ html[data-hero-transition]::view-transition-new(pokemon-hero) {
     height: 100%;
     object-fit: contain;
 }
+
+/* ---- Decrypt ----------------------------------------------------------------
+   The letters still scrambling in a DecryptText reveal read as noise, not as
+   part of the name: muted until they resolve. */
+.decrypt-text__noise {
+    color: var(--color-muted);
+}

@@ -22,6 +22,7 @@ import { buildPuzzleShare } from '../../utils/pokePuzzleShare';
 import { useForumStore } from '../../store/useForumStore';
 import { Loader } from '../Loader';
 import { confirmAction } from '../../store/useConfirmStore';
+import { DecryptText } from '../DecryptText';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -173,6 +174,12 @@ export default function PokePuzzleView() {
     const { target: targetPokemon, guesses, gameStatus, unlockedTips } = session;
     const targetDetails = session.details || { types: [], description: '', image: '', id: 0 };
     const isLoadingDetails = session.detailsLoading;
+
+    // True only between the user's own winning guess and the next target: the
+    // result card decrypts the name for a win that just happened, and shows it
+    // still for a day that was already solved (a reward is never replayed).
+    const [solvedNow, setSolvedNow] = useState(false);
+    useEffect(() => { setSolvedNow(false); }, [targetPokemon?.id]);
 
     // Past daily dates available in the History drawer.
     const pastDates = useMemo(() => getPastDates(), []);
@@ -583,6 +590,7 @@ export default function PokePuzzleView() {
 
         // Check Win
         if (guessStr === targetNormalized) {
+            setSolvedNow(true);
             setStatus('WON');
             showToast(t('pokepuzzle.winTitle'), 'success');
             setTimeout(() => checkBadgeCelebration(), 500);
@@ -697,6 +705,7 @@ export default function PokePuzzleView() {
         setSelectedCharIdx(0);
 
         if (norm === targetNormalized) {
+            setSolvedNow(true);
             setStatus('WON');
             showToast(t('pokepuzzle.winTitle'), 'success');
             setTimeout(() => checkBadgeCelebration(), 500);
@@ -1421,7 +1430,7 @@ export default function PokePuzzleView() {
                                             />
                                         </div>
 
-                                        <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
+                                        <h3 className="pokepuzzle-result-pokemon-name"><DecryptText text={formatPokemonDisplayName(targetPokemon.name)} play={solvedNow && gameStatus === 'WON'} /></h3>
 
                                         <div className="pokepuzzle-result-types mt-0.5">
                                             {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
@@ -1527,7 +1536,7 @@ export default function PokePuzzleView() {
                                             />
                                         </div>
 
-                                        <h3 className="pokepuzzle-result-pokemon-name">{formatPokemonDisplayName(targetPokemon.name)}</h3>
+                                        <h3 className="pokepuzzle-result-pokemon-name"><DecryptText text={formatPokemonDisplayName(targetPokemon.name)} play={solvedNow && gameStatus === 'WON'} /></h3>
 
                                         <div className="pokepuzzle-result-types mt-0.5">
                                             {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
