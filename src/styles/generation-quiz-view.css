@@ -576,51 +576,12 @@
     letter-spacing: -0.01em;
 }
 
+/* The shared .segmented (index.css) with counts in .count-badge; this only
+   places it at the end of the roster header. It used to be three bordered
+   chips with a primary-filled active one and a hover lift — a filter spending
+   the view's accent, and a wobble the design system rules out. */
 .generation-quiz__grid-filters {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-1_5);
     margin-left: auto;
-}
-
-.generation-quiz__filter-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-1_5);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
-    color: var(--color-muted);
-    font-size: 0.74rem;
-    font-weight: 600;
-    padding: var(--space-1_5) var(--space-3);
-    cursor: pointer;
-    transition: border-color var(--duration-fast) var(--ease-smooth), background-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
-}
-
-.generation-quiz__filter-btn:hover {
-    transform: translateY(-1px);
-    color: var(--color-fg);
-}
-
-.generation-quiz__filter-btn.is-active {
-    border-color: var(--color-primary);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-}
-
-.generation-quiz__filter-icon {
-    width: 0.85rem;
-    height: 0.85rem;
-    flex-shrink: 0;
-}
-
-.generation-quiz__filter-count {
-    font-size: 0.66rem;
-    opacity: 0.75;
-    font-variant-numeric: tabular-nums;
 }
 
 .generation-quiz__grid {
@@ -905,18 +866,18 @@
         order: 2;
     }
 
-    .generation-quiz__grid-filters {
+    /* Its own full-width row; compound selector so it beats .segmented's
+       inline-flex (this sheet loads before index.css). */
+    .generation-quiz .generation-quiz__grid-filters {
         order: 3;
+        display: flex;
         width: 100%;
         margin-left: 0;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: var(--space-1_5);
     }
 
-    .generation-quiz__filter-btn {
-        justify-content: center;
-        padding: var(--space-1_5) var(--space-1);
+    .generation-quiz .generation-quiz__grid-filters > .segmented__item {
+        flex: 1 1 0;
+        padding: 0 var(--space-1);
     }
 }
 

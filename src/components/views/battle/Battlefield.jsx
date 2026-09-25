@@ -156,7 +156,7 @@ export function Battlefield({ field, animated = true, onToggleAnimated }) {
                         onClick={onToggleAnimated}
                         title={t('battle.animatedSprites')}
                     >
-                        <Sparkles className="w-3 h-3 text-amber-400 inline-block" />
+                        <Sparkles className="w-3 h-3 text-warning inline-block" />
                         <span>{animated ? 'GIF' : 'PNG'}</span>
                     </button>
                 )}

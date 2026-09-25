@@ -546,9 +546,9 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     }, [activePokemonList, gridFilter, foundNames]);
 
     const gridFilterOptions = [
-        { key: 'all', Icon: LayoutGrid, label: language === 'pt' ? 'Todos' : 'All', count: totalCount },
-        { key: 'guessed', Icon: CheckCircle2, label: language === 'pt' ? 'Adivinhados' : 'Guessed', count: foundCount },
-        { key: 'missing', Icon: HelpCircle, label: language === 'pt' ? 'Faltando' : 'Missing', count: remainingCount },
+        { key: 'all', icon: <LayoutGrid aria-hidden="true" />, label: language === 'pt' ? 'Todos' : 'All', count: totalCount },
+        { key: 'guessed', icon: <CheckCircle2 aria-hidden="true" />, label: language === 'pt' ? 'Adivinhados' : 'Guessed', count: foundCount },
+        { key: 'missing', icon: <HelpCircle aria-hidden="true" />, label: language === 'pt' ? 'Faltando' : 'Missing', count: remainingCount },
     ];
 
     const lastFindName = activeRun?.foundOrder?.[activeRun.foundOrder.length - 1];
@@ -611,18 +611,18 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                         </span>
                     </div>
 
-                    <div className="generation-quiz__grid-filters">
-                        {gridFilterOptions.map(({ key, Icon, label, count }) => (
+                    <div className="generation-quiz__grid-filters segmented segmented--sm" role="group" aria-label={language === 'pt' ? 'Filtrar a grade' : 'Filter the grid'}>
+                        {gridFilterOptions.map(({ key, icon, label, count }) => (
                             <button
                                 key={key}
                                 type="button"
                                 onClick={() => setGridFilter(key)}
-                                className={`generation-quiz__filter-btn ${gridFilter === key ? 'is-active' : ''}`}
+                                className="segmented__item touch-target touch-target--y"
                                 aria-pressed={gridFilter === key}
                             >
-                                <Icon className="generation-quiz__filter-icon" aria-hidden="true" />
+                                {icon}
                                 <span>{label}</span>
-                                <span className="generation-quiz__filter-count">{count}</span>
+                                <span className="count-badge">{count}</span>
                             </button>
                         ))}
                     </div>

@@ -1042,16 +1042,22 @@ export default function PokePuzzleView() {
             <main className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''} ${selectedDate !== getTodayDateString() ? 'is-archive-mode' : ''}`}>
                 {/* Header Area with Tabs and History button */}
                 <div className="pokepuzzle-header-row">
-                    <div className="pokepuzzle-tabs">
+                    <div className="pokepuzzle-tabs segmented segmented--lg segmented--block" role="tablist" aria-label="PokéPuzzle">
                         <button
+                            type="button"
+                            role="tab"
+                            aria-selected={mode === 'daily'}
                             onClick={() => setMode('daily')}
-                            className={`pokepuzzle-tab-btn ${mode === 'daily' ? 'is-active' : ''}`}
+                            className="segmented__item"
                         >
                             {t('pokepuzzle.dailyTab')}
                         </button>
                         <button
+                            type="button"
+                            role="tab"
+                            aria-selected={mode === 'ongoing'}
                             onClick={() => setMode('ongoing')}
-                            className={`pokepuzzle-tab-btn ${mode === 'ongoing' ? 'is-active' : ''}`}
+                            className="segmented__item"
                         >
                             {t('pokepuzzle.ongoingTab')}
                         </button>
