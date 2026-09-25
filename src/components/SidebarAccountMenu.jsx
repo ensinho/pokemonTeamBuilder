@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { ChevronRight, LogOut } from 'lucide-react';
 import { AnchoredPopover } from './AnchoredPopover';
 import { FlowerIcon, MoonIcon, PokeballIcon, SunIcon, SettingsIcon } from './icons';
 import { originFromEvent } from '../utils/themeTransition';
@@ -239,6 +240,61 @@ export function SidebarAccountMenu({
                 zIndex={isHeader ? 95 : 90}
                 placement={isHeader ? 'bottom' : 'top'}
             >
+                {isHeader ? (
+                    /* The phone's gear menu: three things, not eight. It was
+                       identity, profile, what's new, two rows of themes, text
+                       size, language, a Tera switch with a paragraph under it
+                       and sign-out, stacked edge to edge in a 390px popover
+                       (Enzo, 2026-09-24: "muitas opções e fica colado"). The
+                       settings a phone changes once a year live on the profile
+                       — which this menu now opens from its first row — and
+                       "What's new" lives in More → About. What stays is what a
+                       thumb reaches for here: who am I, which theme, leave. */
+                    <div className="account-quick">
+                        <button type="button" onClick={handleOpenProfile} className="account-quick__identity">
+                            <span className="account-quick__avatar">{avatar}</span>
+                            <span className="account-quick__copy">
+                                <span className="account-quick__name">
+                                    <span className="truncate">{accountName}</span>
+                                    {selectedBadgeId && <TrainerBadge badgeId={selectedBadgeId} size="xs" />}
+                                </span>
+                                <span className="account-quick__sub">{t('accountMenu.profileAndSettings')}</span>
+                            </span>
+                            <ChevronRight className="account-quick__chevron" aria-hidden="true" />
+                        </button>
+
+                        <div className="account-quick__theme" role="group" aria-label={t('accountMenu.themeShort')}>
+                            <span className="account-quick__label">{t('accountMenu.themeShort')}</span>
+                            <div className="account-quick__swatches">
+                                {themeGroups.map((group, groupIndex) => (
+                                    <React.Fragment key={group.key}>
+                                        {groupIndex > 0 && <span className="account-quick__divider" aria-hidden="true" />}
+                                        {group.items.map((theme) => {
+                                            const isActive = currentTheme === theme.id;
+                                            return (
+                                                <button
+                                                    key={theme.id}
+                                                    type="button"
+                                                    onClick={(event) => handleThemeChange(theme.id, event)}
+                                                    aria-pressed={isActive}
+                                                    aria-label={theme.label}
+                                                    title={theme.label}
+                                                    className="account-quick__swatch"
+                                                    style={{ '--swatch': theme.swatch }}
+                                                />
+                                            );
+                                        })}
+                                    </React.Fragment>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button type="button" onClick={handleSignOut} className="account-quick__signout">
+                            <LogOut aria-hidden="true" />
+                            <span>{t('accountMenu.signOutLabel')}</span>
+                        </button>
+                    </div>
+                ) : (
                 <div className="app-shell__account-popover-body">
                     <div className="app-shell__account-popover-head">
                         <span className="app-shell__account-popover-avatar">{avatar}</span>
@@ -359,6 +415,7 @@ export function SidebarAccountMenu({
                         </button>
                     </div>
                 </div>
+                )}
             </AnchoredPopover>
         </div>
     );

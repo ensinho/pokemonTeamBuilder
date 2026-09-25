@@ -361,8 +361,10 @@ ShinyText on titles), count-up on load, particle/magnet/attract buttons,
 gradient text. Built from the survey since: the ⌘K global search (Kokonut
 *action-search-bar*), the card → detail sprite transition and the PokéPuzzle
 name reveal (`DecryptText`, React Bits *DecryptedText* — plays only for a win
-that just happened). Candidates that passed but are not built yet: ScrubField
-on EV inputs, SwipeRow on the phone's team list.
+that just happened), and a forum post that arrives while you read rising in
+once (`.forum-message-item--new` — never the rows present at open). Candidates
+that passed but are not built yet: ScrubField on EV inputs. Declined by Enzo
+(2026-09-24): SwipeRow on the phone's team list.
 
 ## Interaction tokens
 

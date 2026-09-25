@@ -845,14 +845,172 @@
     color: var(--color-fg);
 }
 
+/* AnchoredPopover owns the placement and keeps it inside the viewport. A
+   `left: 60px !important` for screens under 400px used to override it, and on
+   a 390px phone that pushed a 366px menu 36px past the right edge — the
+   "colado" Enzo saw on 2026-09-24. */
 .app-shell__account-popover {
     width: min(20rem, calc(100vw - 1.5rem));
     border-radius: var(--radius-lg);
     overflow: hidden;
+}
 
-    @media (max-width: 400px) {
-        left: 60px !important;
+.app-shell__account-popover.is-header {
+    width: min(17.5rem, calc(100vw - 2rem));
+}
+
+/* ---- The phone's gear menu (SidebarAccountMenu, variant="header") ---------
+   Three rows separated by space, not rules: identity (opens the profile, where
+   the rest of the settings live), the theme swatches, sign-out. */
+.account-quick {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-1_5);
+}
+
+.account-quick__identity {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.account-quick__identity:hover {
+    background: var(--color-surface-hover);
+}
+
+.account-quick__avatar {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.account-quick__copy {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    gap: var(--space-0_5);
+}
+
+.account-quick__name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    font-size: var(--text-sm);
+    font-weight: 600;
+}
+
+.account-quick__sub {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.account-quick__chevron {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+    transition: translate var(--duration-fast) var(--ease-smooth);
+}
+
+.account-quick__identity:hover .account-quick__chevron {
+    translate: var(--space-0_5) 0;
+}
+
+.account-quick__theme {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-2_5);
+}
+
+.account-quick__label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-muted);
+}
+
+.account-quick__swatches {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+/* Dark three | light three: a hairline says "two families" without the two
+   labelled rows it took before. */
+.account-quick__divider {
+    width: 1px;
+    height: var(--space-4);
+    background: var(--color-border);
+}
+
+/* The active swatch wears a ring in the page colour, then the text colour —
+   legible on all six swatches without a raw colour. The press gives. */
+.account-quick__swatch {
+    position: relative;
+    width: 1.375rem;
+    height: 1.375rem;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--swatch);
+    cursor: pointer;
+    transition: box-shadow var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.account-quick__swatch:active {
+    scale: var(--press-scale);
+}
+
+.account-quick__swatch[aria-pressed='true'] {
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 3.5px var(--color-fg);
+}
+
+/* 22px dots, 44px targets: the hit area grows, the dot does not. */
+@media (pointer: coarse) {
+    .account-quick__swatch::after {
+        content: '';
+        position: absolute;
+        inset: calc(-1 * var(--space-1));
     }
+}
+
+.account-quick__signout {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-2) var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-danger);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.account-quick__signout:hover {
+    background: color-mix(in srgb, var(--color-danger) 10%, var(--color-surface));
+}
+
+.account-quick__signout > svg {
+    width: 1rem;
+    height: 1rem;
 }
 
 .app-shell__account-popover.is-collapsed {
@@ -1123,56 +1281,6 @@
     color: var(--color-primary);
 }
 
-/* Compact, calmer spacing for the mobile (header) account menu */
-.app-shell__account-popover.is-header .app-shell__account-popover-head {
-    padding: var(--space-2_5) var(--space-3);
-    gap: var(--space-2);
-}
-
-.app-shell__account-popover.is-header .app-shell__account-popover-section {
-    padding: var(--space-2) var(--space-3);
-}
-
-.app-shell__account-popover.is-header .app-shell__account-popover-label {
-    margin-bottom: var(--space-1_5);
-}
-
-.app-shell__account-popover.is-header .app-shell__account-menu-item {
-    align-items: center;
-    padding: var(--space-2) var(--space-2);
-    gap: var(--space-2);
-}
-
-.app-shell__account-popover.is-header .app-shell__account-menu-item-note {
-    font-size: 0.65rem;
-    line-height: 1.3;
-}
-
-.app-shell__account-popover.is-header .app-shell__account-menu-item--danger {
-    /* Sign-out needs no descriptive note on the compact menu — the label says it. */
-    padding: var(--space-2);
-}
-
-.app-shell__account-popover.is-header .app-shell__account-menu-item--danger .app-shell__account-menu-item-note {
-    display: none;
-}
-
-.app-shell__account-popover.is-header .app-shell__account-theme-groups {
-    gap: var(--space-1_5);
-}
-
-.app-shell__account-popover.is-header .app-shell__account-theme-dot {
-    width: 1.35rem;
-    height: 1.35rem;
-}
-
-/* Language and Tera rows are the shared .segmented (index.css) — --sm so the
-   compact popover keeps its density, --block so the two options split the row.
-   The header popover is narrower still, so its segments give up side padding. */
-.app-shell__account-popover.is-header .segmented__item {
-    padding: 0 var(--space-1);
-}
-
 /* One-line rationale under a settings row — used where the setting's name isn't
    self-explanatory (Tera Type being a generation IX mechanic). Muted colour is
    the whole de-emphasis; no extra opacity on top. */
@@ -1293,10 +1401,15 @@
     color: var(--color-muted);
 }
 
+/* One line, like the title: with the search in the centre column the title
+   column can be narrow, and a wrapped subtitle overran the band. */
 .app-shell__header-subtitle {
     margin-top: var(--space-0_5);
     font-size: 0.75rem;
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: 640px) {
@@ -1309,6 +1422,34 @@
     display: flex;
     align-items: center;
     gap: var(--space-1_5);
+}
+
+/* The header's right end: the active team's slots (desktop only) and the
+   action glyphs, one group so the band has three parts at most. */
+.app-shell__header-end {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+/* Desktop: three columns — title | search | team + actions. The outer
+   columns share the leftover width equally, so the search sits on the page
+   column's centre line; when the right end holds a full team and needs more
+   than its share (a narrow window), its floor is its own content and the
+   search yields a little leftward rather than overlapping the slots. */
+@media (min-width: 1024px) {
+    .app-shell__header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(15rem, 30rem) minmax(max-content, 1fr);
+        gap: var(--space-4);
+    }
+
+    .app-shell__header-search {
+        display: flex;
+        min-width: 0;
+    }
 }
 
 .app-shell__body {
@@ -1976,9 +2117,10 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    min-width: 11rem;
-    height: var(--control-h-sm);
-    padding: 0 var(--space-1) 0 var(--space-2_5);
+    width: 100%;
+    min-width: 0;
+    height: var(--control-h-md);
+    padding: 0 var(--space-1_5) 0 var(--space-3);
     border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-full);
     background: var(--color-surface);
@@ -2003,7 +2145,11 @@
 
 .app-shell__search-trigger-label {
     flex: 1;
+    min-width: 0;
     text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .app-shell__search-trigger > kbd {

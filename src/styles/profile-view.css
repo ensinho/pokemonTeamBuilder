@@ -427,6 +427,13 @@
     color: var(--color-muted);
 }
 
+/* The page-sized stepper: a full control height rather than the popover's
+   1.5rem, since here it is a setting of its own and a thumb's target. */
+.profile-text-size .text-size-control__step,
+.profile-text-size .text-size-control__value {
+    height: var(--control-h-md);
+}
+
 .profile-theme-group__label--dark {
     color: color-mix(in srgb, var(--color-fg) 75%, var(--color-primary));
 }
