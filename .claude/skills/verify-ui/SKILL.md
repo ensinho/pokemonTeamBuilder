@@ -21,7 +21,7 @@ npm run lint 2>&1 | tail -2    # compare the TOTAL to the baseline, not to zero
 npx eslint <touched files>     # nothing new in what you edited
 ```
 
-Lint baseline: **93 problems (62 errors, 31 warnings) on 2026-09-24.** A change
+Lint baseline: **91 problems (60 errors, 31 warnings) on 2026-09-24** (update it when a change lowers it). A change
 may lower it, never raise it. Watch for `react-refresh/only-export-components`
 (a hook and a component in one file) and `no-undef` after moving code.
 
@@ -80,6 +80,21 @@ Rules that make the pass worth something:
   app never boots.
 - **Ignore** `ERR_BLOCKED_BY_RESPONSE.NotSameOrigin` (external sprite hosts in
   headless) and the broken-image glyph in empty team slots; nothing else.
+
+## 2b. When the cascade itself changes
+
+Stylesheet order, imports, a selector's specificity: a screenshot diff says
+*that* something moved, not *what*. Build both versions, serve them with
+`npx vite preview --outDir <dir> --port <n>` (two ports), and diff the
+**computed styles**: walk every element under `.app-shell`, key it by its
+structural path (tag + classes + child index), record the properties the cascade
+decides (margins, paddings, gaps, font, colours, borders, radius, display,
+overflow, flex/grid), and report each `(classes, property): before → after`.
+That names the exact rule pair that flipped and whether a stylesheet is simply
+missing on a route (a whole block of properties falling back to defaults).
+Pass `MSYS_NO_PATHCONV=1` when a route argument starts with `/` in Git Bash, or
+it becomes `C:/Program Files/Git/...`. The 2026-09-24 barrel entry in
+`docs/wounds.md` is the worked example.
 
 ## 3. The report
 

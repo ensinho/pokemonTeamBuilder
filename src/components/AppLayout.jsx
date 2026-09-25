@@ -66,7 +66,11 @@ import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users } from 'lucide-react'
 // HomeView stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
 // the initial bundle — the heavy ones (Pokedex, PokePuzzle) dominate it.
-import { HomeView } from './views';
+// Views' CSS first, in the barrel's old order (see the module); HomeView's JS
+// directly, so the views barrel — and every other view — stays out of the
+// entry bundle.
+import '../styles/eagerViewStyles';
+import { HomeView } from './views/HomeView';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
 // idle prefetch below and React.lazy share one import: the module loader caches
