@@ -5,7 +5,7 @@ import { Sparkles, Database, ChevronRight } from 'lucide-react';
 
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
-import { getPokemonFrontSpriteUrl, sanitizeSpriteUrl } from '../../utils/pokemonSprites';
+import { sanitizeSpriteUrl } from '../../utils/pokemonSprites';
 import { getEvolutionChainData, getStaticPokemonDetail, getPokemonSpeciesData, getPokemonApiData } from '../../services/pokemonDataCache';
 import { buildPokemonForms } from '../../utils/pokemonForms';
 import { useModalA11y } from '../../hooks/useModalA11y';
@@ -80,7 +80,7 @@ export function PokemonDetailModal({
     const typeDefenses = useMemo(() => computeTypeDefenses(pokemon?.types || []), [pokemon]);
 
     useEffect(() => {
-        if (!pokemon?.id) {
+        if (!pokemon || !pokemon.evolution_chain_url) {
             setEvolutionDetails([]);
             return undefined;
         }
@@ -89,18 +89,7 @@ export function PokemonDetailModal({
 
         const fetchEvolutionChain = async () => {
             try {
-                // Mirror docs carry the chain url; the other sources (PokéAPI,
-                // the offline data) reach it through the species.
-                let chainUrl = pokemon.evolution_chain_url;
-                if (!chainUrl) {
-                    const species = await getPokemonSpeciesData(pokemon.id).catch(() => null);
-                    chainUrl = species?.evolution_chain?.url;
-                }
-                if (!chainUrl) {
-                    if (!cancelled) setEvolutionDetails([]);
-                    return;
-                }
-                const data = await getEvolutionChainData(chainUrl);
+                const data = await getEvolutionChainData(pokemon.evolution_chain_url);
                 const chain = [];
                 let evoData = data.chain;
                 do {
@@ -123,20 +112,17 @@ export function PokemonDetailModal({
                         return staticDetail;
                     }
 
-                    // Offline, a mirror doc that was never read throws — that must
-                    // not cost the whole chain.
-                    if (db) {
-                        try {
-                            const docSnap = await getDoc(doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id));
-                            if (docSnap.exists()) {
-                                const detail = docSnap.data();
-                                setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: detail }));
-                                return detail;
-                            }
-                        } catch (_) { /* fall through to the derived sprite */ }
+                    if (!db) return { name: evo.name, sprite: POKEBALL_PLACEHOLDER_URL };
+
+                    const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const detail = docSnap.data();
+                        setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: detail }));
+                        return detail;
                     }
 
-                    return { name: evo.name, id: Number(id), sprite: getPokemonFrontSpriteUrl(id) };
+                    return { name: evo.name, sprite: POKEBALL_PLACEHOLDER_URL };
                 });
 
                 const resolvedDetails = await Promise.all(detailsPromises);

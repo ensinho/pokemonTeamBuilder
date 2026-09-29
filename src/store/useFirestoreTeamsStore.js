@@ -7,7 +7,6 @@ import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/teamDuplication';
-import { settleWrite } from '../utils/firestoreWrite';
 
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
@@ -124,32 +123,26 @@ export const useFirestoreTeamsStore = create((set, get) => {
             // reversible one.
             const doomed = get().savedTeams.find((team) => team.id === teamId);
 
-            const retry = [{ label: t('toast.retry'), onClick: () => get().handleDeleteTeam(teamId) }];
             try {
-                await settleWrite(
-                    deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId)),
-                    { onLateError: () => toast.error(t('toast.teamDeleteError'), { actions: retry }) },
-                );
+                await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId));
                 toast.info(t('toast.teamDeleted'), {
                     description: doomed?.name,
                     actions: doomed ? [{
                         label: t('toast.undo'),
                         onClick: async () => {
                             const { id, ...payload } = doomed;
-                            const onError = () => toast.error(t('toast.teamSaveError'));
                             try {
-                                await settleWrite(
-                                    setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, id), payload),
-                                    { onLateError: onError },
-                                );
+                                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, id), payload);
                             } catch (_) {
-                                onError();
+                                toast.error(t('toast.teamSaveError'));
                             }
                         },
                     }] : [],
                 });
             } catch (e) {
-                toast.error(t('toast.teamDeleteError'), { actions: retry });
+                toast.error(t('toast.teamDeleteError'), {
+                    actions: [{ label: t('toast.retry'), onClick: () => get().handleDeleteTeam(teamId) }],
+                });
             }
         },
 
@@ -175,16 +168,12 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const payload = buildDuplicateTeamPayload(team, name);
             const teamId = doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
 
-            const onError = () => toast.error(pt ? 'Não foi possível duplicar o time' : 'Could not duplicate team');
             pendingDuplicateNames.add(name);
             try {
-                await settleWrite(
-                    setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), payload),
-                    { onLateError: onError },
-                );
+                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), payload);
                 return { id: teamId, ...payload };
             } catch (e) {
-                onError();
+                toast.error(pt ? 'Não foi possível duplicar o time' : 'Could not duplicate team');
                 return null;
             } finally {
                 pendingDuplicateNames.delete(name);
@@ -195,14 +184,13 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const userId = useAuthStore.getState().userId;
             if (!db || !userId) return;
 
-            const onError = () => toast.error(t('toast.favoriteError'));
             try {
-                await settleWrite(setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, team.id), {
+                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, team.id), {
                     ...team,
                     isFavorite: !team.isFavorite
-                }, { merge: true }), { onLateError: onError });
+                }, { merge: true });
             } catch (e) {
-                onError();
+                toast.error(t('toast.favoriteError'));
             }
         },
 
@@ -224,10 +212,10 @@ export const useFirestoreTeamsStore = create((set, get) => {
                     toast.success(t('toast.favoriteAdded'));
                 }
 
-                await settleWrite(setDoc(favoritesDocRef, {
+                await setDoc(favoritesDocRef, {
                     ids: Array.from(newFavorites),
                     updatedAt: new Date().toISOString()
-                }), { onLateError: () => toast.error(t('toast.favoriteError')) });
+                });
             } catch (e) {
                 console.error("Error toggling favorite pokemon:", e);
                 toast.error(t('toast.favoriteError'));

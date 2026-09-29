@@ -51,42 +51,6 @@ After adding new static files, always regenerate `cache-manifest.json` via one o
 
 ---
 
-## Offline builder data (`offline-builder.json`)
-
-Built by **`npm run data:offline`** (`scripts/build-offline-builder.mjs`) from the committed `pokemon-index.json`: abilities, learnable moves and base stats for **every** index entry (1213, forms included), plus type / power / accuracy / PP / category for every move those lists mention (from Showdown's `moves.json`). Names are interned into tables, so the file is ~480 KB (~110 KB gzipped) and cheap to precache. Re-run it whenever `data:cache` changes the index — it is not part of the daily refresh.
-
-It is what lets a team be built with no network. `resolvePokemonDetail` and `getMoveDetails` read it **first when `navigator.onLine` is false** (the other tiers would each cost a timeout), and **last otherwise** (a dead connection the browser still calls online). Decoding lives in `src/utils/offlineBuilderData.js` (tested); it returns the same shapes as the live sources.
-
-- **Fetched by `apiName`, keyed by index id.** The newer Megas' ids (10278–10326) mean other forms in PokéAPI (wounds.md, 2026-09-08) — an id lookup would bake Scatterbug's moves onto Mega Clefable.
-- **It is a fallback, not a replacement.** It has no `learnedBy`/`machines`/flavour text, which the Moves list and Pokédex pages want online.
-- **Only one detail cascade.** `AppLayout.fetchPokemonDetails` (detail modal, re-opening a saved team) goes through `resolvePokemonDetail`; a private Firestore-only path is what failed offline.
-
-## Offline Pokédex pack (`pokedex/`)
-
-The builder file above covers team building; this covers **the whole Pokédex** — the detail page for any Pokémon, never opened or not. Built by **`npm run data:pokedex`** (`scripts/build-offline-pokedex.mjs`, ≈7k PokéAPI requests, a few minutes):
-
-| File | Content |
-|------|---------|
-| `pokedex/{indexId}.json` | the `/pokemon` record (stats + EV yield, abilities, learnsets per version group, sprite paths), its encounters, and — in the species' default Pokémon's file — the `/pokemon-species` record |
-| `pokedex/shared.json` | name tables, every learnable move (type/power/PP/class + TM per version group), machine → item, ability short effects, every evolution chain, `apiIdToIndexId` for the locally-numbered Megas |
-| `pokedex/manifest.json` | `version` (content hash), the files, and the sprites to download: pixel normal/shiny for every entry, Gen 5 animated for ≤649 |
-
-Measured on a device: 8.6 MB of data (1.4 MB over the wire) + 69.7 MB of sprites — the Gen 5 animated GIFs are almost all of that — ≈ 78 MB, on top of the ~19 MB precache.
-
-**How it reaches the device.** Not precached — only the manifest is. `src/services/offlinePokedexDownload.js` downloads it in the page, in the background (`useOfflinePokedexSync`: 8 s after boot, in idle time, paused while offline, skipped under Data Saver), resumably (anything already cached is skipped). State and the Profile switch live in `useOfflinePokedexStore`; turning it off deletes the pack.
-- **Data** goes to `offline-pokedex-<version>`, read by the data service with `caches.match` before the network. A new pack downloads beside the old one, which keeps serving until the new one is complete.
-- **Sprites** go into `pokemon-sprites` — the cache the worker's sprite route serves `<img>` from. That route therefore has **no `maxAgeSeconds`** (an age check would reject every downloaded sprite a month later) and a `maxEntries` above the pack's size. Its `handlerDidError` plugin answers an offline miss (HD artwork, the generation strip) with the same Pokémon's pixel sprite.
-
-**How it is read.** `getPokemonApiData`, `getPokemonSpeciesData`, `getPokemonEncountersData`, `getEvolutionChainData`, `getMoveDetails`, `getMachineDetails` and `getAbilityDescription` go through `withPokedexFallback`: pack first when `navigator.onLine` is false, network first otherwise with the pack covering failures. `src/utils/offlinePokedex.js` (tested) rebuilds the **PokéAPI response shape** — so the detail hook, forms, quizzes and PokéRoom need no offline branches. When a consumer starts reading a new PokéAPI field, add it to the build script and the decoder, or it will be missing offline.
-
-**Also required for offline:** a Firestore read in a data cascade must be wrapped (`readMirrorDoc` in `usePokemonDetailData`) — a never-read doc throws offline, and unwrapped it aborted the whole detail panel.
-
-## What the service worker holds
-
-`vite.config.js` precaches every top-level `data/*.json` plus the usage files the builder itself reads (the default format and each non-`tier` regulation, computed from `usage-index.json` at build time). `ignoreURLParametersMatching` drops the loaders' `?v=` / `?d=` cache-busters, which would otherwise keep every data request from matching its precached entry. Runtime caches cover the other ladder files (`usage-data`, `ignoreSearch`), PokéAPI (`pokeapi`, CacheFirst 30 d) and sprites. A static file added under a subfolder of `data/` is **not** precached unless it is added there.
-
----
-
 ## Competitive Usage (`usage-index.json` + `usage/`)
 
 Built separately by **`node scripts/build-usage-stats.mjs`** (`npm run data:usage`) from Smogon's monthly stats. The build auto-discovers the latest published month and, from that month's directory listing, which ladders ran and at which rating bands — so `FORMATS` in the script may name ladders speculatively (a BSS series that rotates, a tier that was folded away) and anything absent is skipped silently.
@@ -199,7 +163,7 @@ The Firestore `pokemons` collection at `artifacts/pokemonTeamBuilder/pokemons` i
 
 **File:** `src/utils/pokemonSprites.js`
 
-Sprites are loaded from jsDelivr (`cdn.jsdelivr.net/gh/PokeAPI/sprites@master/…`; `raw.githubusercontent.com` is the legacy host), not bundled locally. The `getPokemonFrontSpriteUrl(id, shiny)` function derives the URL from the Pokémon ID. The service worker's `pokemon-sprites` route serves them — it must match `sprites@master/` (it once required `sprites/` and matched nothing). Images the page loads itself are opaque and are **not** cached by that route; the offline Pokédex download (CORS fetches) is what fills it.
+Sprites are loaded from `raw.githubusercontent.com` (PokeAPI sprites repo), not bundled locally. The `getPokemonFrontSpriteUrl(id, shiny)` function derives the URL from the Pokémon ID. The PWA service worker (via `vite-plugin-pwa`) caches sprite responses at runtime.
 
 All sprite images must use `image-rendering: pixelated` (applied via `.sprite-img` class). Do not apply CSS smoothing filters to sprites.
 

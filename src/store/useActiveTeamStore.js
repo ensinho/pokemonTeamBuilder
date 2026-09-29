@@ -16,7 +16,6 @@ import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
 import { useLanguageStore } from './useLanguageStore';
 import { useThemeStore } from './useThemeStore';
 import { megaDisplayName } from '../hooks/useMegaStones';
-import { settleWrite } from '../utils/firestoreWrite';
 
 // Monotonic counter so instanceIds stay unique even when several members are
 // created within the same millisecond (e.g. the randomizer building 6 at once).
@@ -341,18 +340,10 @@ export const useActiveTeamStore = create((set, get) => ({
             updatedAt: new Date().toISOString()
         };
 
-        const retry = [{ label: t('toast.retry'), onClick: () => get().handleSaveTeam(savedTeams) }];
         try {
-            // Offline the team is saved on this device the moment setDoc runs;
-            // settleWrite says so instead of waiting on an ack that won't come.
-            const outcome = await settleWrite(
-                setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData),
-                { onLateError: () => toast.error(t('toast.teamSaveError'), { actions: retry }) },
-            );
+            await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), teamData);
             toast.success(t('toast.teamSaved', { name: teamName }), {
-                description: outcome === 'queued'
-                    ? t('toast.savedOnDevice')
-                    : t('toast.teamSavedDesc', { count: currentTeam.length }),
+                description: t('toast.teamSavedDesc', { count: currentTeam.length }),
                 actions: [{ label: t('toast.viewTeams'), onClick: () => navigateTo('/teams') }],
             });
             useFirestoreTeamsStore.getState().setActiveTeamId(teamId);
@@ -360,7 +351,9 @@ export const useActiveTeamStore = create((set, get) => ({
             // Switch into edit mode for the just-saved team (button becomes "Update team").
             set({ editingTeamId: teamId });
         } catch (e) {
-            toast.error(t('toast.teamSaveError'), { actions: retry });
+            toast.error(t('toast.teamSaveError'), {
+                actions: [{ label: t('toast.retry'), onClick: () => get().handleSaveTeam(savedTeams) }],
+            });
         }
     },
 

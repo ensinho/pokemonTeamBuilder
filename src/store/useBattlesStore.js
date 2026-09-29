@@ -133,23 +133,11 @@ export const useBattlesStore = create((set, get) => ({
 
         battlesUnsub = onSnapshot(
             query(collection(db, battlesPath()), where('players', 'array-contains', userId)),
-            // Firestore's persistent cache answers first with whatever it held
-            // when the app last closed. Those rows are fine to show, but they are
-            // not "loaded": the notification hook seeds its baseline from the
-            // first loaded snapshot, so a stale one would announce every turn
-            // taken while the app was closed (docs/wounds.md, 2026-09-21).
-            // Metadata changes are needed to hear the cache → server hand-off
-            // when no document actually changed.
-            { includeMetadataChanges: true },
             (snapshot) => {
                 const rows = snapshot.docs
                     .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
                     .sort((a, b) => String(b.lastActivityAt || '').localeCompare(String(a.lastActivityAt || '')));
-                set((state) => ({
-                    battles: rows,
-                    isLoadingBattles: false,
-                    hasLoadedBattles: state.hasLoadedBattles || !snapshot.metadata.fromCache,
-                }));
+                set({ battles: rows, isLoadingBattles: false, hasLoadedBattles: true });
             },
             (error) => {
                 console.error('Error loading battles:', error);

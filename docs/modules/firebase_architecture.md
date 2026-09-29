@@ -56,13 +56,6 @@ artifacts/
 
 Rule: Local state gives immediacy (optimistic updates), but `onSnapshot` is the synchronizing truth. Never treat local state alone as the source of truth for saved data.
 
-### Offline: persistent cache (2026-09-29)
-
-`src/services/firebase.js` initialises Firestore with `persistentLocalCache` + `persistentMultipleTabManager` (IndexedDB; the SDK drops to memory where that is unavailable). Saved teams and favourites therefore open offline, and offline writes survive a reload and sync on reconnect. Two rules follow:
-
-- **A write's promise resolves only on server ack — never offline.** Anything that shows feedback after a write goes through `settleWrite` (`src/utils/firestoreWrite.js`): `'synced'`, or `'queued'` (committed on this device) immediately when offline / after 4 s otherwise, with late server rejections routed to `onLateError`. Do not `await setDoc` before a toast, and never `await` a write on the boot path — that held `isAuthReconciled` until the splash ceiling.
-- **A listener's first snapshot may be stale cache.** Rendering it is fine; *diffing* it is not. See `useBattlesStore`: `includeMetadataChanges: true` and `hasLoadedBattles` only once a snapshot has `!metadata.fromCache`.
-
 ---
 
 ## Known Gotchas
