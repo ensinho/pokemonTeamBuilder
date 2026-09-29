@@ -347,8 +347,11 @@ export const useAuthStore = create((set, get) => {
                     } finally {
                         profileHydratedFromFirestore = true;
 
-                        // Push preferences state to Firestore to ensure sync
-                        await get().syncPreferencesToFirestore();
+                        // Push preferences state to Firestore to ensure sync.
+                        // Not awaited: a write only resolves on server ack, so
+                        // offline this held `isAuthReconciled` (and the phone
+                        // splash) until the ceiling. The local cache has it at once.
+                        get().syncPreferencesToFirestore().catch(() => {});
 
                         // Keep the public directory entry current (no-op for
                         // anonymous accounts). Not awaited — boot must not wait

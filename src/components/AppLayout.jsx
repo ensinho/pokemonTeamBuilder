@@ -8,6 +8,8 @@ import { useAuthStore, resolveAvatar } from '../store/useAuthStore';
 import { useFriends } from '../hooks/useFriends';
 import { useBattles } from '../hooks/useBattles';
 import { useBattleNotifications } from '../hooks/useBattleNotifications';
+import { useConnectivityToasts } from '../hooks/useConnectivityToasts';
+import { useOfflinePokedexSync } from '../hooks/useOfflinePokedexSync';
 import { useActiveTeam } from '../hooks/useActiveTeam';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
@@ -26,7 +28,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
-import { getStaticPokemonDetail } from '../services/pokemonDataCache';
+import { resolvePokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
@@ -435,6 +437,8 @@ export default function AppLayout() {
     useFriends();
     useBattles();
     useBattleNotifications();
+    useConnectivityToasts();
+    useOfflinePokedexSync();
 
     // The signed-in trainer's own avatar, with their pokemon/trainer choice
     // applied. Memoized off the primitives so the shell doesn't rebuild it on
@@ -951,34 +955,26 @@ export default function AppLayout() {
             .slice(0, 3);
     }, [savedTeams]);
 
-    // Fetch details helper (caches detail docs)
+    // Fetch details helper (caches detail docs). Goes through the shared
+    // cascade — Firestore mirror, static, PokéAPI, then the precached offline
+    // roster — because a Firestore-only path failed offline, and with it both
+    // the detail modal and re-opening a saved team in the builder.
     const fetchPokemonDetails = useCallback(async (pokemonId) => {
         if (pokemonDetailsCache[pokemonId]) {
             return pokemonDetailsCache[pokemonId];
         }
 
         try {
-            const staticDetail = await getStaticPokemonDetail(pokemonId);
-            if (staticDetail) {
-                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: staticDetail }));
-                return staticDetail;
+            const detail = await resolvePokemonDetail(pokemonId);
+            if (detail) {
+                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: detail }));
+                return detail;
             }
-
-            if (!db) return null;
-
-            const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(pokemonId));
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const pokemonData = docSnap.data();
-                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: pokemonData }));
-                return pokemonData;
-            }
-            return null;
         } catch (error) {
             console.error("Failed to fetch Pokémon details:", error);
-            showToast(t('layout.loadDetailsError', { id: pokemonId }), "error");
-            return null;
         }
+        showToast(t('layout.loadDetailsError', { id: pokemonId }), "error");
+        return null;
     }, [pokemonDetailsCache, showToast]);
 
     // Load shared team via URL search params (?team=ID)
