@@ -1,5 +1,4 @@
 import { normalizeUiScale } from '../utils/uiScale';
-import pokeballPlaceholder from '../assets/pokeball-placeholder.svg';
 
 // ============================================================
 // THEME — single source of truth for colors.
@@ -10,12 +9,7 @@ import pokeballPlaceholder from '../assets/pokeball-placeholder.svg';
 
 // Bump this when the patch-notes screen has new content to surface.
 export const PATCH_NOTES_VERSION = '1.13.0';
-// Bundled, not hot-linked: it is the loading and error image for every sprite,
-// so it has to be there when the network isn't. It used to be a pixilart.com
-// URL, which answers hot-links with an HTML page — broken offline and often
-// online. The grey stroke reads on light and dark themes alike (an <img> can't
-// inherit currentColor).
-export const POKEBALL_PLACEHOLDER_URL = pokeballPlaceholder;
+export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
 
 // JS-side mirror of the CSS variables. Components that still
 // pass a `colors` prop read from here.

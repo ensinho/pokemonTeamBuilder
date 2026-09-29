@@ -19,10 +19,7 @@ Three channels, deliberately separate, all reachable from one switch:
 1. **Never diff a listener's output before it has answered.** `useBattlesStore`
    exposes `hasLoadedBattles`; `battles: []` on its own means "not asked yet"
    just as often as "none". Getting this wrong fired one banner per waiting
-   battle on every app open (wounds.md, 2026-09-21). Since Firestore's
-   persistent cache (2026-09-29), "answered" means answered **by the server**:
-   the first snapshot is whatever the cache held when the app closed, so the
-   flag waits for `!snapshot.metadata.fromCache`.
+   battle on every app open (wounds.md, 2026-09-21).
 2. **One notification per kind, not per event.** Everything battle-shaped
    carries the tag `ptb-battles`, the daily nudge `ptb-daily`. The service
    worker counts what is already on screen and replaces it with a summary

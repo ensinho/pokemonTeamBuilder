@@ -13,20 +13,7 @@ import {
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 import { VERSION_GROUPS, formatLocationName } from '../constants/pokemonVersions';
 import { buildPokemonForms, formDisplayName } from '../utils/pokemonForms';
-import { getPokemonFrontSpriteUrl, sanitizeSpriteUrl } from '../utils/pokemonSprites';
-
-// The Firestore mirror is a nice-to-have source, never a required one: offline,
-// a doc that was never read throws, and letting that escape aborted the whole
-// panel — no details, no species, no moves.
-const readMirrorDoc = async (db, id) => {
-    if (!db) return null;
-    try {
-        const snap = await getDoc(doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(id)));
-        return snap.exists() ? snap.data() : null;
-    } catch (_) {
-        return null;
-    }
-};
+import { sanitizeSpriteUrl } from '../utils/pokemonSprites';
 
 const displayNameFromApi = (apiData) =>
     apiData?.id > 1025 ? formDisplayName(apiData.name, apiData.species?.name) : apiData?.name;
@@ -95,7 +82,11 @@ export function usePokemonDetailData({
                     details = selectedPokemon;
                     setPokemonDetailsCache?.((prev) => ({ ...prev, [selectedPokemon.id]: selectedPokemon }));
                 } else {
-                    details = await readMirrorDoc(db, selectedPokemon.id);
+                    if (db) {
+                        const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(selectedPokemon.id));
+                        const docSnap = await getDoc(docRef);
+                        if (docSnap.exists()) details = docSnap.data();
+                    }
                     if (!details) details = await getStaticPokemonDetail(selectedPokemon.id);
                     if (!details) {
                         const apiData = await getPokemonApiData(selectedPokemon.id);
@@ -103,17 +94,11 @@ export function usePokemonDetailData({
                             // Carry stats + abilities so the Base Stats panel and the
                             // abilities row render for forms/megas with no Firestore/static
                             // doc (e.g. excadrill-mega) — otherwise those panels stay empty.
-                            // The Gen 5 animated sprite, where one exists, is the hero
-                            // the mirror docs use, and the one the offline Pokédex has.
-                            const animated = apiData.sprites?.versions?.['generation-v']?.['black-white']?.animated;
                             details = {
                                 id: apiData.id,
                                 name: displayNameFromApi(apiData),
                                 types: apiData.types?.map((ty) => ty.type?.name).filter(Boolean) || [],
                                 sprite: apiData.sprites?.other?.['official-artwork']?.front_default || apiData.sprites?.front_default,
-                                shinySprite: apiData.sprites?.other?.['official-artwork']?.front_shiny || apiData.sprites?.front_shiny,
-                                animatedSprite: animated?.front_default || undefined,
-                                animatedShinySprite: animated?.front_shiny || undefined,
                                 stats: apiData.stats?.map((s) => ({ name: s.stat?.name, base_stat: s.base_stat })).filter((s) => s.name) || [],
                                 abilities: apiData.abilities?.map((a) => ({ name: a.ability?.name, url: a.ability?.url, is_hidden: a.is_hidden })).filter((a) => a.name) || [],
                             };
@@ -179,10 +164,11 @@ export function usePokemonDetailData({
                     if (pokemonDetailsCache && pokemonDetailsCache[id]) return pokemonDetailsCache[id];
                     const staticDetail = await getStaticPokemonDetail(id);
                     if (staticDetail) { setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: staticDetail })); return staticDetail; }
-                    const d = await readMirrorDoc(db, id);
-                    if (d) { setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: d })); return d; }
-                    // The pixel sprite derives from the id, and the offline Pokédex has it.
-                    return { name: evo.name, id: Number(id), sprite: getPokemonFrontSpriteUrl(id) };
+                    if (!db) return { name: evo.name, id: Number(id), sprite: POKEBALL_PLACEHOLDER_URL };
+                    const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', id);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) { const d = docSnap.data(); setPokemonDetailsCache?.((prev) => ({ ...prev, [id]: d })); return d; }
+                    return { name: evo.name, id: Number(id), sprite: POKEBALL_PLACEHOLDER_URL };
                 });
                 const resolved = await Promise.all(detailsPromises);
                 if (!cancelled) setEvolutionDetails(resolved);

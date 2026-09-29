@@ -15,12 +15,11 @@ import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon, SparklesIcon,
 } from '../icons';
-import { Flame, Medal, Lock, Check, Sparkles, Bell, Type, WifiOff } from 'lucide-react';
+import { Flame, Medal, Lock, Check, Sparkles, Bell, Type } from 'lucide-react';
 import { TextSizeControl } from '../TextSizeControl';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
-import { useOfflinePokedexStore } from '../../store/useOfflinePokedexStore';
 
 const EmailVerifyRow = () => {
     const showToast = useToastStore((state) => state.showToast);
@@ -144,47 +143,6 @@ const NotificationsCard = () => {
                     {iosInstallNeeded ? t('battle.notifyIosInstall') : t('battle.notifyUnsupported')}
                 </p>
             ) : null}
-        </SectionCard>
-    );
-};
-
-// The whole Pokédex on this device. The switch is the setting; its
-// description is the status, so there is no separate pill or progress bar.
-const OfflinePokedexCard = () => {
-    const { t } = useTranslation();
-    const enabled = useOfflinePokedexStore((state) => state.enabled);
-    const status = useOfflinePokedexStore((state) => state.status);
-    const done = useOfflinePokedexStore((state) => state.done);
-    const total = useOfflinePokedexStore((state) => state.total);
-    const error = useOfflinePokedexStore((state) => state.error);
-    const setEnabled = useOfflinePokedexStore((state) => state.setEnabled);
-
-    const percent = total ? Math.floor((done / total) * 100) : 0;
-    const description = !enabled
-        ? t('profile.offlinePokedexOff')
-        : {
-            downloading: t('profile.offlinePokedexDownloading', { percent }),
-            paused: t('profile.offlinePokedexPaused', { percent }),
-            ready: t('profile.offlinePokedexReady'),
-            saver: t('profile.offlinePokedexSaver'),
-            unsupported: t('profile.offlinePokedexUnsupported'),
-            error: error === 'quota' ? t('profile.offlinePokedexQuota') : t('profile.offlinePokedexError'),
-        }[status] || t('profile.offlinePokedexWaiting');
-
-    return (
-        <SectionCard
-            className="profile-card--gameplay"
-            title={t('profile.sectionOffline')}
-            subtitle={t('profile.sectionOfflineDesc')}
-            icon={<WifiOff className="w-5 h-5" />}
-        >
-            <Switch
-                variant="row"
-                checked={enabled}
-                onChange={(next) => setEnabled(next)}
-                label={t('profile.offlinePokedexLabel')}
-                description={description}
-            />
         </SectionCard>
     );
 };
@@ -494,8 +452,6 @@ export function ProfileView({
                     </SectionCard>
 
                     <NotificationsCard />
-
-                    <OfflinePokedexCard />
 
                     <SectionCard
                         className="profile-card--sync"
