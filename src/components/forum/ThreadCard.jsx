@@ -153,7 +153,7 @@ export const ThreadCard = memo(function ThreadCard({
 
                         {likesCount > 0 && (
                             <span className="thread-card__metric" title={`${likesCount} ${language === 'pt' ? 'curtidas' : 'likes'}`}>
-                                <HeartIcon className="w-3.5 h-3.5 text-rose-400" />
+                                <HeartIcon className="w-3.5 h-3.5 text-primary" />
                                 <span>{likesCount}</span>
                             </span>
                         )}

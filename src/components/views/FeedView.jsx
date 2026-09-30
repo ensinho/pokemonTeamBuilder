@@ -399,6 +399,7 @@ export function FeedView({ showToast, navigate }) {
                                 sortBy={sortBy}
                                 onSortChange={setSortBy}
                                 onOpenCreateTopic={() => setIsCreateModalOpen(true)}
+                                totalTopics={filteredTopics.length}
                                 language={language}
                             />
 

@@ -199,7 +199,7 @@ export const CommentItem = memo(function CommentItem({
                         aria-pressed={likedByMe}
                         className={`comment-item__action-btn ${likedByMe ? 'is-liked' : ''}`}
                     >
-                        <HeartIcon className={`w-3.5 h-3.5 shrink-0 ${likedByMe ? 'fill-rose-500 text-rose-500' : ''}`} />
+                        <HeartIcon className={`w-3.5 h-3.5 shrink-0 ${likedByMe ? 'fill-primary text-primary' : ''}`} />
                         <span>{likeCount > 0 ? likeCount : (language === 'pt' ? 'Curtir' : 'Like')}</span>
                     </button>
 

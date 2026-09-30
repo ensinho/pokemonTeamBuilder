@@ -156,7 +156,7 @@ export function ThreadDetail({
                                 className={`thread-op-action-btn ${opLikedByMe ? 'is-liked' : ''}`}
                                 aria-label={opLikedByMe ? 'Curtido' : 'Curtir'}
                             >
-                                <HeartIcon className={`w-4 h-4 shrink-0 ${opLikedByMe ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                <HeartIcon className={`w-4 h-4 shrink-0 ${opLikedByMe ? 'fill-primary text-primary' : ''}`} />
                                 <span className="font-medium">
                                     {opLikeCount > 0 ? opLikeCount : (language === 'pt' ? 'Curtir' : 'Like')}
                                 </span>

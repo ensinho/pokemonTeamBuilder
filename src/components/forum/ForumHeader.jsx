@@ -27,21 +27,20 @@ export function ForumHeader({
     sortBy,
     onSortChange,
     onOpenCreateTopic,
+    totalTopics = 0,
     language = 'pt',
 }) {
     return (
         <div className="forum-header">
-            {/* Top Compact Banner */}
+            {/* Top Compact Heading Row (like Pokédex panel header) */}
             <div className="forum-header__banner">
-                <div className="forum-header__titles">
-                    <h1 className="forum-header__title">
-                        {language === 'pt' ? 'Discussões & Estratégia' : 'Discussions & Strategy'}
-                    </h1>
-                    <p className="forum-header__desc">
-                        {language === 'pt'
-                            ? 'Compartilhe times e converse com treinadores.'
-                            : 'Share team compositions and chat with trainers.'}
-                    </p>
+                <div className="forum-header__heading-row">
+                    <h2 className="forum-header__title">
+                        {language === 'pt' ? 'Fórum da Comunidade' : 'Community Forum'}
+                    </h2>
+                    {totalTopics > 0 && (
+                        <span className="forum-header__meta">{totalTopics}</span>
+                    )}
                 </div>
 
                 <button
