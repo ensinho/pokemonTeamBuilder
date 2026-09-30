@@ -408,5 +408,25 @@ export const useForumStore = create((set, get) => ({
             toast.error(t('toast.messageDeleteError'));
             return false;
         }
+    },
+
+    // Delete a topic. Firestore rules permit only the author or an admin.
+    deleteTopic: async (topicId) => {
+        if (!db || !topicId) return false;
+        const authState = useAuthStore.getState();
+        if (!authState.userId) return false;
+
+        try {
+            await deleteDoc(doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId));
+            if (get().currentTopicId === topicId) {
+                get().setCurrentTopicId(null);
+            }
+            toast.success(t('toast.topicDeleted') || 'Tópico excluído com sucesso.');
+            return true;
+        } catch (err) {
+            console.error("Error deleting topic:", err);
+            toast.error(t('toast.topicDeleteError') || 'Erro ao excluir tópico.');
+            return false;
+        }
     }
 }));
