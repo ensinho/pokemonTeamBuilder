@@ -7,6 +7,8 @@ import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/teamDuplication';
+import { ensureSpeciesIndex } from '../services/speciesIndex';
+import { hasDuplicateSpecies } from '../utils/teamUniqueness';
 
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
@@ -157,6 +159,15 @@ export const useFirestoreTeamsStore = create((set, get) => {
 
             if (!db || !userId || !team) {
                 toast.error(pt ? 'Não foi possível duplicar o time' : 'Could not duplicate team');
+                return null;
+            }
+
+            // A copy is a new team, so it has to pass the rule a new team does. One
+            // saved before the Species Clause can still be opened and fixed; it
+            // just cannot be multiplied.
+            const { baseIdOf } = await ensureSpeciesIndex();
+            if (hasDuplicateSpecies(team.pokemons, baseIdOf)) {
+                toast.warning(t('toast.duplicateHasDuplicates'));
                 return null;
             }
 

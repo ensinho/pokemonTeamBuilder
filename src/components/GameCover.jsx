@@ -194,6 +194,42 @@ export function GamePickerModal({
                 </div>
 
                 <div className="game-picker__body custom-scrollbar">
+                    <section className="game-picker__section">
+                        {hasRegulations && (
+                            <div className="game-picker__section-head">
+                                <h3 className="game-picker__section-title">
+                                    {pt ? 'Pokédex do jogo' : 'Game Pokédex'}
+                                </h3>
+                                <p className="game-picker__section-sub">
+                                    {pt
+                                        ? 'Filtra a Pokédex pelos Pokémon obteníveis no jogo'
+                                        : 'Filters the Pokédex to a game’s obtainable Pokémon'}
+                                </p>
+                            </div>
+                        )}
+                        <div className="game-picker__grid game-picker__grid--flush">
+                            <GameCard
+                                logo={POKEMON_LOGO}
+                                label={t('builder.allGames')}
+                                sub={t('builder.allGamesSubtitle')}
+                                accent="var(--color-primary)"
+                                active={current === 'all'}
+                                onClick={() => choose('all')}
+                            />
+                            {games.map((game) => (
+                                <GameCard
+                                    key={game.key}
+                                    logo={getGameLogo(game.key)}
+                                    label={game.label}
+                                    sub={game.count ? `${game.count} Pokémon` : null}
+                                    accent={getGameAccent(game.generation)}
+                                    active={current === game.key}
+                                    onClick={() => choose(game.key)}
+                                />
+                            ))}
+                        </div>
+                    </section>
+
                     {hasRegulations && (
                         <section className="game-picker__section">
                             <div className="game-picker__section-head">
@@ -269,42 +305,6 @@ export function GamePickerModal({
                             )}
                         </section>
                     )}
-
-                    <section className="game-picker__section">
-                        {hasRegulations && (
-                            <div className="game-picker__section-head">
-                                <h3 className="game-picker__section-title">
-                                    {pt ? 'Pokédex do jogo' : 'Game Pokédex'}
-                                </h3>
-                                <p className="game-picker__section-sub">
-                                    {pt
-                                        ? 'Filtra a Pokédex pelos Pokémon obteníveis no jogo'
-                                        : 'Filters the Pokédex to a game’s obtainable Pokémon'}
-                                </p>
-                            </div>
-                        )}
-                        <div className="game-picker__grid game-picker__grid--flush">
-                            <GameCard
-                                logo={POKEMON_LOGO}
-                                label={t('builder.allGames')}
-                                sub={t('builder.allGamesSubtitle')}
-                                accent="var(--color-primary)"
-                                active={current === 'all'}
-                                onClick={() => choose('all')}
-                            />
-                            {games.map((game) => (
-                                <GameCard
-                                    key={game.key}
-                                    logo={getGameLogo(game.key)}
-                                    label={game.label}
-                                    sub={game.count ? `${game.count} Pokémon` : null}
-                                    accent={getGameAccent(game.generation)}
-                                    active={current === game.key}
-                                    onClick={() => choose(game.key)}
-                                />
-                            ))}
-                        </div>
-                    </section>
                 </div>
             </div>
         </div>,

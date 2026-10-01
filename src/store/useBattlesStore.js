@@ -25,6 +25,7 @@ import {
     BATTLE_FORMAT, BATTLE_LEVEL, RANDOM_BATTLE_FORMAT,
     battleOpponentId, buildBattleTeamText,
 } from '../utils/battle';
+import { ensureSpeciesIndex } from '../services/speciesIndex';
 
 const battlesPath = () => `artifacts/${appId}/battles`;
 
@@ -395,8 +396,8 @@ export const useBattlesStore = create((set, get) => ({
      * Submit my team for a battle.
      *
      * The team is stored as battle-safe Showdown import text (see
-     * `buildBattleTeamText` — it strips the `@ Nothing` placeholder and refuses a
-     * moveless Pokémon), which is exactly what the phase-3 resolver hands to
+     * `buildBattleTeamText` — it refuses a moveless Pokémon and writes every
+     * spread in EVs), which is exactly what the phase-3 resolver hands to
      * `Teams.import()`. It lives in `battles/{id}/teams/{uid}`, readable only by
      * its owner, so the opponent can't inspect the sets.
      *
@@ -408,7 +409,8 @@ export const useBattlesStore = create((set, get) => ({
         if (!db || !userId || !battleId) return false;
 
         const members = Array.isArray(team) ? team.filter(Boolean) : [];
-        const { text: showdownText, errors } = buildBattleTeamText(members);
+        const { entryById } = await ensureSpeciesIndex();
+        const { text: showdownText, errors } = buildBattleTeamText(members, { entryById });
 
         if (errors.length > 0) {
             const first = errors[0];
