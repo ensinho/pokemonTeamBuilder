@@ -11,6 +11,7 @@ import { CloseIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import '../../styles/greeting-selector-modal.css';
 import { Loader } from '../Loader';
+import { fallbackImage } from '../../utils/imageFallback';
 
 export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, currentPokemonId, currentPokemonIsShiny, colors, db }) {
     const { t, language } = useTranslation();
@@ -256,7 +257,7 @@ export function GreetingPokemonSelectorModal({ onClose, onSelect, allPokemons, c
                                     src={getPokemonDisplaySprite(pokemon, { shiny: isShinySelection })}
                                     alt={pokemon.name}
                                     className="w-16 h-16 mx-auto"
-                                    onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                 />
                                 <p className="mt-1 truncate text-xs capitalize text-fg">
                                     {pokemon.name}

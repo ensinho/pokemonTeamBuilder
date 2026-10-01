@@ -47,6 +47,7 @@ import {
     TrophyIcon,
 } from '../icons';
 import { Loader } from '../Loader';
+import { fallbackImage } from '../../utils/imageFallback';
 
 // Inline CSS custom properties driving the per-type disc/ring behind a team
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
@@ -973,7 +974,7 @@ export function TeamBuilderView({
                                                     <img
                                                         key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
                                                         src={getTeamPokemonDisplaySprite(pokemon)}
-                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                         alt={pokemon.name}
                                                         className="team-builder-sprite-stack__item"
                                                     />

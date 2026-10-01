@@ -11,6 +11,7 @@ import { SavedTeamsIcon, SwordsIcon, SuccessToastIcon, TrophyIcon } from './icon
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
 import { getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
+import { fallbackImage } from '../utils/imageFallback';
 
 // Shortcuts to what the navigation does *not* already put one tap away. This
 // was Builder, Pokédex, Teams and PokéPuzzle — three of the phone dock's five
@@ -129,7 +130,7 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                                                 <img
                                                     key={mon.instanceId || `${team.id}-${mon.id}-${i}`}
                                                     src={getTeamPokemonDisplaySprite(mon)}
-                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                     alt=""
                                                     loading="lazy"
                                                 />

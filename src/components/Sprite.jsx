@@ -50,6 +50,10 @@ export const Sprite = React.memo(function Sprite({
     }, [artworkSrc, usedArtwork, errored]);
 
     const finalSrc = errored || !src ? fallback : usedArtwork ? artworkSrc : src;
+    // jsDelivr allows CORS. Asked for that way, a sprite comes back as a normal
+    // 200 the service worker can keep; a plain <img> request gets an opaque
+    // response it refuses to cache, so browsed sprites never worked offline.
+    const corsMode = /^https:\/\/cdn\.jsdelivr\.net\//.test(finalSrc || '') ? 'anonymous' : undefined;
 
     return (
         <span className={`relative inline-block overflow-hidden ${className}`} data-vt-hero={heroTarget ? '' : undefined}>
@@ -64,6 +68,7 @@ export const Sprite = React.memo(function Sprite({
             )}
             <img
                 src={finalSrc}
+                crossOrigin={corsMode}
                 alt={alt}
                 loading={eager ? 'eager' : 'lazy'}
                 decoding="async"

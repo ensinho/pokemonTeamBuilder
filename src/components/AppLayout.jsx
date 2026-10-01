@@ -8,6 +8,8 @@ import { useAuthStore, resolveAvatar } from '../store/useAuthStore';
 import { useFriends } from '../hooks/useFriends';
 import { useBattles } from '../hooks/useBattles';
 import { useBattleNotifications } from '../hooks/useBattleNotifications';
+import { useConnectivityToasts } from '../hooks/useConnectivityToasts';
+import { useOfflinePokedexSync } from '../hooks/useOfflinePokedexSync';
 import { useActiveTeam } from '../hooks/useActiveTeam';
 import { useActiveTeamStore } from '../store/useActiveTeamStore';
 import { useFirestoreTeams } from '../hooks/useFirestoreTeams';
@@ -26,7 +28,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
-import { getStaticPokemonDetail } from '../services/pokemonDataCache';
+import { resolvePokemonDetail } from '../services/pokemonDataCache';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
@@ -350,7 +352,7 @@ export default function AppLayout() {
         handleReorderTeam, handleSaveTeam, handleClearTeam, handleExportToShowdown,
         handleShareTeam, editingTeamMember, setEditingTeamMember, shareModal,
         closeShareModal, handleUpdateTeamMember, suggestedPokemonIds, teamAnalysis,
-        setCurrentTeam, shareTeamByData, handleAddPokemon, setEditingTeamId,
+        shareTeamByData, handleAddPokemon, importTeam, createShareLink,
         handleRandomizeTeam, isRandomizing
     } = useActiveTeam();
 
@@ -435,6 +437,8 @@ export default function AppLayout() {
     useFriends();
     useBattles();
     useBattleNotifications();
+    useConnectivityToasts();
+    useOfflinePokedexSync();
 
     // The signed-in trainer's own avatar, with their pokemon/trainer choice
     // applied. Memoized off the primitives so the shell doesn't rebuild it on
@@ -928,8 +932,12 @@ export default function AppLayout() {
 
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {
-        const teamIds = new Set(currentTeam.map(p => p.id));
-        const available = pokedex.pokemons.filter(p => !teamIds.has(p.id));
+        // By species, not by id: with Dragonite on the team the picker used to
+        // keep offering Mega Dragonite (its own id), which is how one species
+        // ended up on a team twice. The store refuses that add; offering it is
+        // a dead end. `baseId` is on every form entry of the index.
+        const teamSpecies = new Set(currentTeam.map(p => p.speciesId || p.baseId || p.id));
+        const available = pokedex.pokemons.filter(p => !teamSpecies.has(p.baseId || p.id));
 
         const indexMap = new Map(pokedex.pokemons.map((p, idx) => [p.id, idx]));
 
@@ -951,34 +959,26 @@ export default function AppLayout() {
             .slice(0, 3);
     }, [savedTeams]);
 
-    // Fetch details helper (caches detail docs)
+    // Fetch details helper (caches detail docs). Goes through the shared
+    // cascade — Firestore mirror, static, PokéAPI, then the precached offline
+    // roster — because a Firestore-only path failed offline, and with it both
+    // the detail modal and re-opening a saved team in the builder.
     const fetchPokemonDetails = useCallback(async (pokemonId) => {
         if (pokemonDetailsCache[pokemonId]) {
             return pokemonDetailsCache[pokemonId];
         }
 
         try {
-            const staticDetail = await getStaticPokemonDetail(pokemonId);
-            if (staticDetail) {
-                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: staticDetail }));
-                return staticDetail;
+            const detail = await resolvePokemonDetail(pokemonId);
+            if (detail) {
+                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: detail }));
+                return detail;
             }
-
-            if (!db) return null;
-
-            const docRef = doc(db, 'artifacts/pokemonTeamBuilder/pokemons', String(pokemonId));
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const pokemonData = docSnap.data();
-                setPokemonDetailsCache(prev => ({ ...prev, [pokemonId]: pokemonData }));
-                return pokemonData;
-            }
-            return null;
         } catch (error) {
             console.error("Failed to fetch Pokémon details:", error);
-            showToast(t('layout.loadDetailsError', { id: pokemonId }), "error");
-            return null;
         }
+        showToast(t('layout.loadDetailsError', { id: pokemonId }), "error");
+        return null;
     }, [pokemonDetailsCache, showToast]);
 
     // Load shared team via URL search params (?team=ID)
@@ -993,33 +993,11 @@ export default function AppLayout() {
             const teamDoc = await getDoc(teamDocRef);
             if (teamDoc.exists()) {
                 const teamData = teamDoc.data();
-                const detailsPromises = teamData.pokemons.map(p => fetchPokemonDetails(p.id));
-                const teamPokemonDetails = await Promise.all(detailsPromises);
-
-                const customizedTeam = teamPokemonDetails.map((detail, i) => {
-                    if (!detail) return null;
-                    const savedPokemonData = teamData.pokemons[i] || {};
-                    const defaultCustomization = {
-                        item: '',
-                        nature: 'serious',
-                        teraType: detail.types?.[0] || 'normal',
-                        isShiny: false,
-                        ability: detail.abilities?.[0]?.name || 'unknown',
-                        moves: [],
-                        evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
-                        ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
-                    };
-                    return {
-                        ...detail,
-                        instanceId: savedPokemonData.instanceId || `${detail.id}-${Date.now()}-${i}`,
-                        customization: { ...defaultCustomization, ...(savedPokemonData.customization || {}) },
-                    };
-                });
-
-                setCurrentTeam(customizedTeam.filter(Boolean));
-                setTeamName(teamData.name);
                 dismissToast(loadingId);
-                showToast(t('layout.loadedSharedTeam', { name: teamData.name }), 'success');
+                // The store's importer reports the outcome itself (including any
+                // repeated Pokémon it left out), so no second toast here.
+                const loaded = await importTeam({ name: teamData.name, pokemons: teamData.pokemons || [] });
+                if (!loaded) return;
 
                 navigate('/builder');
                 try {
@@ -1035,7 +1013,7 @@ export default function AppLayout() {
             dismissToast(loadingId);
             showToast(t('layout.failedLoadSharedTeam'), 'error');
         }
-    }, [showToast, dismissToast, sharedTeamLoaded, navigate, fetchPokemonDetails, setCurrentTeam, setTeamName]);
+    }, [showToast, dismissToast, sharedTeamLoaded, navigate, importTeam]);
 
     useEffect(() => {
         if (!db || !isAuthReady) return;
@@ -1049,35 +1027,23 @@ export default function AppLayout() {
     // Saved team handlers
     const handleEditTeam = useCallback(async (team) => {
         showToast(t('layout.loadingTeamName', { name: team.name }), 'info');
-
-        const teamPokemonDetailsPromises = team.pokemons.map(p => fetchPokemonDetails(p.id));
-        const teamPokemonDetails = await Promise.all(teamPokemonDetailsPromises);
-
-        const customizedTeam = teamPokemonDetails.map((detail, i) => {
-            if (!detail) return null;
-            const savedPokemonData = team.pokemons[i];
-            const defaultCustomization = {
-                item: '', nature: 'serious', teraType: detail.types?.[0] || 'normal', isShiny: false,
-                ability: detail.abilities?.[0]?.name || 'unknown',
-                moves: [],
-                evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
-                ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 }
-            };
-
-            return {
-                ...detail,
-                instanceId: savedPokemonData.instanceId,
-                customization: { ...defaultCustomization, ...savedPokemonData.customization }
-            };
-        }).filter(Boolean);
-
-        setCurrentTeam(customizedTeam);
-        setTeamName(team.name);
-        setEditingTeamId(team.id);
+        const loaded = await importTeam(team, { mode: 'edit' });
+        if (!loaded) return;
         navigate('/builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId]);
+    }, [showToast, navigate, importTeam]);
+
+    // A team that is not the user's own — a tournament roster. It must not go
+    // through handleEditTeam: that path reads `customization` and `instanceId`
+    // off each member, and a tournament set has neither (2026-09-30 wound).
+    const handleImportTeam = useCallback(async (team) => {
+        const loaded = await importTeam(team);
+        if (!loaded) return;
+        navigate('/builder');
+        setIsSidebarOpen(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [navigate, importTeam]);
 
     // Duplicate a saved team, then offer to open the copy in the builder. The
     // toast action (rather than an automatic redirect) keeps the user wherever
@@ -1114,21 +1080,8 @@ export default function AppLayout() {
     const handleExportSavedTeamToShowdown = useCallback(async (team) => {
         const teamMembers = team?.pokemons || [];
         if (teamMembers.length === 0) return showToast(t('layout.emptySavedTeamWarning'), 'warning');
-        const exportText = useActiveTeamStore.getState().buildShowdownExportText(teamMembers);
-        
-        const teamNameText = team?.name ? ` "${team.name}"` : '';
-        const msg = language === 'pt'
-            ? `Time${teamNameText} copiado! Redirecionando para o Pokémon Showdown em 2 segundos...`
-            : `Team${teamNameText} copied! Redirecting to Pokémon Showdown in 2 seconds...`;
-        showToast(msg, 'success');
-
-        await useActiveTeamStore.getState().copyTextToClipboard(exportText, null);
-
-        // Redirect after a 2 second delay so user sees the toast on the page
-        setTimeout(() => {
-            window.open('https://play.pokemonshowdown.com/teambuilder', '_blank');
-        }, 2000);
-    }, [showToast, t, language]);
+        await useActiveTeamStore.getState().exportMembersToShowdown(teamMembers, team?.name || '');
+    }, [showToast, t]);
 
     const handleEditTeamMember = useCallback((pokemon) => {
         setEditingTeamMember(pokemon);
@@ -1231,6 +1184,9 @@ export default function AppLayout() {
                 pokemons={shareModal.pokemons}
                 defaultTitle={shareModal.defaultTitle}
                 shareUrl={shareModal.shareUrl}
+                linkStatus={shareModal.linkStatus}
+                onRetryLink={createShareLink}
+                sourceTeam={shareModal.source}
                 colors={colors}
                 showToast={showToast}
             />
@@ -1687,10 +1643,10 @@ export default function AppLayout() {
                                     <Route path="/items" element={<ItemsListView />} />
                                     <Route path="/items/:name" element={<ItemDetailView />} />
                                     <Route path="/tournaments" element={
-                                        <TournamentsView db={db} onOpenTeam={handleEditTeam} />
+                                        <TournamentsView db={db} onOpenTeam={handleImportTeam} />
                                     } />
                                     <Route path="/tournaments/team/:id" element={
-                                        <TournamentTeamView onImport={handleEditTeam} colors={colors} />
+                                        <TournamentTeamView onImport={handleImportTeam} colors={colors} />
                                     } />
                                     <Route path="/meta" element={<MetaUsageView />} />
                                     <Route path="/meta/:idOrName" element={<PokemonUsageView />} />

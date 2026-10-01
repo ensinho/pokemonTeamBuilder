@@ -6,6 +6,7 @@ import { useReferenceStore } from '../../store/useReferenceStore';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
+import { fallbackImage } from '../../utils/imageFallback';
 
 // Pretty-print a Showdown/slug name for display.
 export const pretty = (s = '') => String(s).replace(/-/g, ' ');
@@ -156,7 +157,7 @@ export function MonSprite({ id, name, item, className = 'h-12 w-12 image-pixelat
     return (
         <img
             src={getPokemonFrontSpriteUrl(resolvedId)}
-            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
             alt={name || ''}
             loading="lazy"
             className={className}

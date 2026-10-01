@@ -16,6 +16,7 @@ import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { fallbackImage } from '../../utils/imageFallback';
 
 export const CommentItem = memo(function CommentItem({
     comment,
@@ -176,7 +177,7 @@ export const CommentItem = memo(function CommentItem({
                                                 alt={pk.name}
                                                 loading="lazy"
                                                 className="forum-team-share-sprite"
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                             />
                                         ) : (
                                             <span className="forum-team-share-empty">

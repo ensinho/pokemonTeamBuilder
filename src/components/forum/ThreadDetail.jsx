@@ -9,6 +9,7 @@ import { PuzzleShareCard } from '../PuzzleShareCard';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { useChatAutoScroll } from '../../hooks/useChatAutoScroll';
+import { fallbackImage } from '../../utils/imageFallback';
 
 export function ThreadDetail({
     topic,
@@ -118,7 +119,7 @@ export function ThreadDetail({
                                                     alt={pk.name}
                                                     loading="lazy"
                                                     className="forum-team-share-sprite"
-                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                 />
                                             ) : (
                                                 <span className="forum-team-share-empty">

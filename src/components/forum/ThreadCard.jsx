@@ -5,6 +5,7 @@ import { PokeballIcon, MessageIcon, HeartIcon, ClockIcon, SparklesIcon } from '.
 import { formatForumTime, getCategoryMeta } from '../../utils/forumTime';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { fallbackImage } from '../../utils/imageFallback';
 
 export const ThreadCard = memo(function ThreadCard({
     topic,
@@ -116,7 +117,7 @@ export const ThreadCard = memo(function ThreadCard({
                                             alt={pk.name}
                                             className="thread-card__team-sprite"
                                             loading="lazy"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                         />
                                     ) : (
                                         <PokeballIcon className="w-3 h-3 text-muted opacity-40" />

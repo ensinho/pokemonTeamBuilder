@@ -2,6 +2,19 @@ import { doc, getDoc } from 'firebase/firestore';
 import { POKEAPI_BASE_URL } from '../constants/firebase';
 import { db } from './firebase';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, sanitizeSpriteUrl } from '../utils/pokemonSprites';
+import { decodeOfflineMove, decodeOfflinePokemon } from '../utils/offlineBuilderData';
+import { isBrowserOffline } from '../utils/firestoreWrite';
+import {
+    decodePokedexAbilityEffect,
+    decodePokedexChain,
+    decodePokedexEncounters,
+    decodePokedexMachine,
+    decodePokedexMove,
+    decodePokedexPokemon,
+    decodePokedexSpecies,
+    pokedexFileId,
+} from '../utils/offlinePokedex';
+import { pokedexDataUrl } from './offlinePokedexDownload';
 
 // Bump this version whenever the SHAPE of cached data changes (e.g. adding `types`
 // to pokemon-index.json). It invalidates all stale entries from older versions so
@@ -198,6 +211,117 @@ const fetchLargeStaticJson = (path) => fetchJsonCached(getStaticDataUrl(path), {
     allow404: true,
 });
 
+// Everything the Team Builder needs with no network — abilities, learnable moves
+// and stats per Pokémon, plus move data (scripts/build-offline-builder.mjs). The
+// service worker precaches it; memory-only here for the same quota reason as the
+// index. A failed load isn't memoised, so the next call retries.
+let offlineBuilderPromise;
+const getOfflineBuilderData = () => {
+    if (!offlineBuilderPromise) {
+        offlineBuilderPromise = fetchLargeStaticJson('offline-builder.json')
+            .catch(() => null)
+            .then((data) => {
+                if (!data) offlineBuilderPromise = null;
+                return data;
+            });
+    }
+    return offlineBuilderPromise;
+};
+
+const getOfflinePokemonDetail = async (id) => {
+    const detail = decodeOfflinePokemon(await getOfflineBuilderData(), id, POKEAPI_BASE_URL);
+    if (!detail) return null;
+    return {
+        ...detail,
+        sprite: getPokemonArtworkSpriteUrl(id),
+        shinySprite: getPokemonArtworkSpriteUrl(id, { shiny: true }),
+        animatedSprite: getPokemonFrontSpriteUrl(id),
+        animatedShinySprite: getPokemonFrontSpriteUrl(id, { shiny: true }),
+    };
+};
+
+// ── Offline Pokédex pack (public/data/pokedex/) ─────────────────────────────
+// The whole Pokédex, downloaded in the background by offlinePokedexDownload.js
+// into the Cache API — read from there first, by the same plain URL (no
+// cache-buster) it was stored under, then from the network. A miss (not yet
+// downloaded and offline) just returns null.
+const readPokedexFile = async (name) => {
+    const url = pokedexDataUrl(name);
+    if (typeof caches !== 'undefined') {
+        const hit = await caches.match(url).catch(() => null);
+        if (hit) return hit.json();
+    }
+    const response = await fetch(url);
+    return response.ok ? response.json() : null;
+};
+const pokedexMemory = new Map();
+const fetchPokedexJson = (name) => {
+    if (!pokedexMemory.has(name)) {
+        const request = readPokedexFile(name)
+            .catch(() => null)
+            .then((data) => {
+                if (!data) pokedexMemory.delete(name);
+                return data;
+            });
+        pokedexMemory.set(name, request);
+    }
+    return pokedexMemory.get(name);
+};
+const getPokedexShared = () => fetchPokedexJson('shared.json');
+
+// PokéAPI URLs carry PokéAPI ids; bare numbers come from routes and index entries.
+const pokedexIdsFromArg = (arg) => {
+    const value = String(arg ?? '');
+    if (/^https?:\/\//i.test(value)) return { apiId: getIdFromResource(value) };
+    const id = Number.parseInt(value, 10);
+    return Number.isInteger(id) && String(id) === value.trim() ? { indexId: id } : {};
+};
+
+const offlinePokemonApiData = async (arg) => {
+    const shared = await getPokedexShared();
+    const fileId = pokedexFileId(shared, pokedexIdsFromArg(arg));
+    if (!fileId) return null;
+    return decodePokedexPokemon(await fetchPokedexJson(`${fileId}.json`), shared, POKEAPI_BASE_URL);
+};
+
+const offlineSpeciesData = async (arg) => {
+    const { apiId, indexId } = pokedexIdsFromArg(arg);
+    const id = apiId ?? indexId; // a species id is its default Pokémon's index id
+    if (!Number.isInteger(id)) return null;
+    let file = await fetchPokedexJson(`${id}.json`);
+    // A form's file has no species of its own — follow it to the base species.
+    if (file && !file.s && file.p?.sp?.[1] && file.p.sp[1] !== id) file = await fetchPokedexJson(`${file.p.sp[1]}.json`);
+    return decodePokedexSpecies(file, POKEAPI_BASE_URL);
+};
+
+const offlineEncounters = async (pokemonId) => {
+    const shared = await getPokedexShared();
+    const fileId = pokedexFileId(shared, pokedexIdsFromArg(pokemonId));
+    return fileId ? decodePokedexEncounters(await fetchPokedexJson(`${fileId}.json`), shared) : null;
+};
+
+// Offline, try the pack first — every network tier would only cost a failed
+// request. Online, the network answers and the pack covers its failures.
+const withPokedexFallback = async (network, offline) => {
+    const fromPack = () => offline().catch(() => null);
+    if (isBrowserOffline()) {
+        const packed = await fromPack();
+        if (packed) return packed;
+    }
+    try {
+        return await network();
+    } catch (error) {
+        const packed = await fromPack();
+        if (packed) return packed;
+        throw error;
+    }
+};
+
+// The Pokédex pack has TM data; the precached builder file is the floor.
+const getOfflineMoveDetails = async (name) =>
+    decodePokedexMove(await getPokedexShared(), name, POKEAPI_BASE_URL)
+    || decodeOfflineMove(await getOfflineBuilderData(), name);
+
 const stripDiacritics = (value = '') => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
 export const normalizePokemonQuizInput = (value = '') => stripDiacritics(String(value)
@@ -341,11 +465,25 @@ export const getMoveDetails = async (moveUrl, moveName) => {
     const staticMove = staticMoves?.get(name);
     if (staticMove?.type) return staticMove;
 
-    const data = await fetchPokeApiJson(moveUrl || `/move/${name}`, {
-        cacheKey: `move:${name}`,
-        ttlMs: REFERENCE_TTL_MS,
-        storage: 'local',
-    });
+    // Offline, don't spend a failed request per move — the editor asks for
+    // dozens at once.
+    if (isBrowserOffline()) {
+        const offlineMove = await getOfflineMoveDetails(name);
+        if (offlineMove) return offlineMove;
+    }
+
+    let data;
+    try {
+        data = await fetchPokeApiJson(moveUrl || `/move/${name}`, {
+            cacheKey: `move:${name}`,
+            ttlMs: REFERENCE_TTL_MS,
+            storage: 'local',
+        });
+    } catch (error) {
+        const offlineMove = await getOfflineMoveDetails(name);
+        if (offlineMove) return offlineMove;
+        throw error;
+    }
 
     return {
         name: data.name,
@@ -564,58 +702,76 @@ export const getItemDetails = async (item) => {
     };
 };
 
-export const getMachineDetails = async (machineUrl) => {
-    return fetchPokeApiJson(machineUrl, {
+export const getMachineDetails = async (machineUrl) => withPokedexFallback(
+    () => fetchPokeApiJson(machineUrl, {
         cacheKey: `machine:${getIdFromResource(machineUrl) || machineUrl}`,
         ttlMs: REFERENCE_TTL_MS,
         storage: 'local',
-    });
-};
+    }),
+    async () => decodePokedexMachine(await getPokedexShared(), getIdFromResource(machineUrl)),
+);
 
 export const getAbilityDescription = async (ability) => {
     const name = getNamedResourceName(ability, ability?.url);
     if (!name) return 'No description available.';
 
-    const data = await fetchPokeApiJson(ability?.url || `/ability/${name}`, {
-        cacheKey: `ability:${name}`,
-        ttlMs: REFERENCE_TTL_MS,
-        storage: 'local',
-    });
-    const effectEntry = data.effect_entries?.find((entry) => entry.language?.name === 'en');
-    return effectEntry?.short_effect || 'No description available.';
+    return withPokedexFallback(
+        async () => {
+            const data = await fetchPokeApiJson(ability?.url || `/ability/${name}`, {
+                cacheKey: `ability:${name}`,
+                ttlMs: REFERENCE_TTL_MS,
+                storage: 'local',
+            });
+            const effectEntry = data.effect_entries?.find((entry) => entry.language?.name === 'en');
+            return effectEntry?.short_effect || 'No description available.';
+        },
+        async () => decodePokedexAbilityEffect(await getPokedexShared(), name),
+    );
 };
 
-export const getEvolutionChainData = (evolutionChainUrl) => fetchPokeApiJson(evolutionChainUrl, {
-    cacheKey: `evolution-chain:${getIdFromResource(evolutionChainUrl) || evolutionChainUrl}`,
-    ttlMs: REFERENCE_TTL_MS,
-    storage: 'local',
-});
-
-export const getPokemonApiData = (pokemonIdOrUrl) => fetchPokeApiJson(
-    /^https?:\/\//i.test(String(pokemonIdOrUrl)) ? pokemonIdOrUrl : `/pokemon/${pokemonIdOrUrl}`,
-    {
-        cacheKey: `pokemon:${getIdFromResource(pokemonIdOrUrl) || pokemonIdOrUrl}`,
-        ttlMs: SESSION_TTL_MS,
-        storage: 'session',
-    }
-);
-
-export const getPokemonSpeciesData = (pokemonIdOrUrl) => fetchPokeApiJson(
-    /^https?:\/\//i.test(String(pokemonIdOrUrl)) ? pokemonIdOrUrl : `/pokemon-species/${pokemonIdOrUrl}`,
-    {
-        cacheKey: `pokemon-species:${getIdFromResource(pokemonIdOrUrl) || pokemonIdOrUrl}`,
+export const getEvolutionChainData = (evolutionChainUrl) => withPokedexFallback(
+    () => fetchPokeApiJson(evolutionChainUrl, {
+        cacheKey: `evolution-chain:${getIdFromResource(evolutionChainUrl) || evolutionChainUrl}`,
         ttlMs: REFERENCE_TTL_MS,
         storage: 'local',
-    }
+    }),
+    async () => decodePokedexChain(await getPokedexShared(), getIdFromResource(evolutionChainUrl), POKEAPI_BASE_URL),
 );
 
-export const getPokemonEncountersData = (pokemonId) => fetchPokeApiJson(
-    `/pokemon/${pokemonId}/encounters`,
-    {
-        cacheKey: `pokemon-encounters:${pokemonId}`,
-        ttlMs: REFERENCE_TTL_MS,
-        storage: 'local',
-    }
+export const getPokemonApiData = (pokemonIdOrUrl) => withPokedexFallback(
+    () => fetchPokeApiJson(
+        /^https?:\/\//i.test(String(pokemonIdOrUrl)) ? pokemonIdOrUrl : `/pokemon/${pokemonIdOrUrl}`,
+        {
+            cacheKey: `pokemon:${getIdFromResource(pokemonIdOrUrl) || pokemonIdOrUrl}`,
+            ttlMs: SESSION_TTL_MS,
+            storage: 'session',
+        }
+    ),
+    () => offlinePokemonApiData(pokemonIdOrUrl),
+);
+
+export const getPokemonSpeciesData = (pokemonIdOrUrl) => withPokedexFallback(
+    () => fetchPokeApiJson(
+        /^https?:\/\//i.test(String(pokemonIdOrUrl)) ? pokemonIdOrUrl : `/pokemon-species/${pokemonIdOrUrl}`,
+        {
+            cacheKey: `pokemon-species:${getIdFromResource(pokemonIdOrUrl) || pokemonIdOrUrl}`,
+            ttlMs: REFERENCE_TTL_MS,
+            storage: 'local',
+        }
+    ),
+    () => offlineSpeciesData(pokemonIdOrUrl),
+);
+
+export const getPokemonEncountersData = (pokemonId) => withPokedexFallback(
+    () => fetchPokeApiJson(
+        `/pokemon/${pokemonId}/encounters`,
+        {
+            cacheKey: `pokemon-encounters:${pokemonId}`,
+            ttlMs: REFERENCE_TTL_MS,
+            storage: 'local',
+        }
+    ),
+    () => offlineEncounters(pokemonId),
 );
 
 // Normalize a raw PokéAPI `/pokemon` response into the "fat" shape the Team Builder
@@ -665,6 +821,13 @@ export const resolvePokemonDetail = async (pokemonId) => {
     const id = Number.parseInt(pokemonId, 10);
     if (!Number.isInteger(id) || id <= 0) return null;
 
+    // Offline, the baked roster is the only source that can answer, and trying
+    // the others first costs a Firestore timeout before it gets the chance.
+    if (isBrowserOffline()) {
+        const offlineDetail = await getOfflinePokemonDetail(id);
+        if (offlineDetail) return offlineDetail;
+    }
+
     let partialDetail = null;
 
     // 1) Firestore mirror (already-baked fat doc) — same source the detail panel prefers.
@@ -695,8 +858,35 @@ export const resolvePokemonDetail = async (pokemonId) => {
         const apiData = await getPokemonApiData(id);
         if (apiData) return normalizePokemonApiData(apiData);
     } catch (_) {
-        // Offline / API down — a moveless doc is still better than nothing.
+        // Offline / API down — fall through to the baked roster.
     }
 
+    // 4) The precached offline roster: complete, if not as fresh as PokéAPI.
+    //    Still beats a moveless partial doc.
+    const offlineDetail = await getOfflinePokemonDetail(id);
+    if (offlineDetail) return offlineDetail;
+
     return partialDetail;
+};
+
+/**
+ * Resolve a form by its PokéAPI name ("rotom-wash") when no id is known.
+ *
+ * The index only lists the forms the builder offers, so a tournament team can
+ * name one it has no entry for. PokéAPI answers by name as well as by id; the
+ * record that comes back carries the form's real id, types and stats.
+ *
+ * @param {string} name PokéAPI slug
+ * @returns {Promise<object|null>} a fat pokémon object, or null if there is none
+ */
+export const resolvePokemonDetailByName = async (name) => {
+    const slug = String(name || '').toLowerCase().trim();
+    if (!/^[a-z0-9-]+$/.test(slug)) return null;
+    try {
+        const apiData = await getPokemonApiData(slug);
+        return apiData?.id ? normalizePokemonApiData(apiData) : null;
+    } catch (_) {
+        // Unknown name (404) or offline — the caller keeps the base species.
+        return null;
+    }
 };

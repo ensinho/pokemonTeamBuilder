@@ -35,6 +35,7 @@ import {
 } from '../icons';
 import { Save, SaveAll } from 'lucide-react';
 import { Loader } from '../Loader';
+import { fallbackImage } from '../../utils/imageFallback';
 
 // Inline CSS custom properties for the per-type ring/tint behind a sprite.
 const typeVars = (pokemon) => {
@@ -1054,7 +1055,7 @@ export const MobileTeamBuilderView = ({
                                                 src={getTeamPokemonDisplaySprite(pokemon)}
                                                 alt={pokemon.name}
                                                 className="-ml-2 h-9 w-9 rounded-full border-2 border-bg bg-surface first:ml-0"
-                                                onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                             />
                                         ))}
                                     </div>

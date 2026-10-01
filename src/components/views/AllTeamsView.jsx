@@ -8,6 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { Eye, Pencil, Check, ExternalLink, Copy } from 'lucide-react';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const timestampToDate = (value) => {
     if (!value) return null;
@@ -266,7 +267,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                 <img
                                                     key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
                                                     src={getTeamPokemonDisplaySprite(pokemon)}
-                                                    onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                     alt={pokemon.name}
                                                     className="team-builder-sprite-stack__item all-teams-view__sprite-item"
                                                 />
@@ -390,7 +391,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                         <div key={pokemon.instanceId || `${team.id}-${pokemon.id}`} className="all-teams-view__list-item-sprite-wrap">
                                                             <img
                                                                 src={getTeamPokemonDisplaySprite(pokemon)}
-                                                                onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                                 alt={pokemon.name}
                                                                 className="all-teams-view__list-item-sprite sprite-fade"
                                                             />

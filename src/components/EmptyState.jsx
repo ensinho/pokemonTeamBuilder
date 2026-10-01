@@ -1,6 +1,7 @@
 import React from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
 import { GengarPresence } from './GengarPresence';
+import { fallbackImage } from '../utils/imageFallback';
 
 /**
  * EmptyState — friendly empty/error placeholder.
@@ -27,7 +28,7 @@ export function EmptyState({ title, message, action, spriteSrc, compact = false 
                         alt=""
                         aria-hidden="true"
                         className={`empty-state__illustration ${sizeImg} object-contain opacity-80 select-none`}
-                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                     />
                 ) : (
                     <GengarPresence variant="idle" size={compact ? 72 : 116} />

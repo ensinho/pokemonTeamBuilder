@@ -5,6 +5,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons } from '../../constants/types';
+import { fallbackImage } from '../../utils/imageFallback';
 
 // Sample Pokémon for the simulated demo grid. Megas appear in BASE FORM in grid
 // and MORPH into Mega form when added to the team roster.
@@ -205,7 +206,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                                     </span>
                                                     <img
                                                         src={spriteUrl}
-                                                        onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(p.id); }}
+                                                        onError={fallbackImage(getPokemonFrontSpriteUrl(p.id))}
                                                         alt=""
                                                         className="h-10 w-10 object-contain image-pixelated"
                                                     />
@@ -290,7 +291,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-surface">
                                                 <img
                                                     src={getPokemonArtworkSpriteUrl(mon.id)}
-                                                    onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(mon.id); }}
+                                                    onError={fallbackImage(getPokemonFrontSpriteUrl(mon.id))}
                                                     alt=""
                                                     className="h-9 w-9 object-contain"
                                                 />

@@ -6,6 +6,7 @@ import { CORES } from '../utils/metaCores';
 import { useTranslation } from '../hooks/useTranslation';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../constants/theme';
+import { fallbackImage } from '../utils/imageFallback';
 
 const ACCENT = Object.fromEntries(CORES.map((c) => [c.id, c.accent]));
 const pretty = (s = '') => s.replace(/-/g, ' ');
@@ -53,7 +54,7 @@ export function SynergySuggestions({ suggestions = [], onAdd, disabled = false }
                             </span>
                             <img
                                 src={getPokemonFrontSpriteUrl(s.id)}
-                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                 alt=""
                                 aria-hidden="true"
                                 loading="lazy"

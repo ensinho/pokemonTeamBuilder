@@ -7,6 +7,9 @@ import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { buildDuplicateTeamName, buildDuplicateTeamPayload } from '../utils/teamDuplication';
+import { ensureSpeciesIndex } from '../services/speciesIndex';
+import { hasDuplicateSpecies } from '../utils/teamUniqueness';
+import { settleWrite } from '../utils/firestoreWrite';
 
 export const useFirestoreTeamsStore = create((set, get) => {
     let teamsUnsubscribe = null;
@@ -123,26 +126,32 @@ export const useFirestoreTeamsStore = create((set, get) => {
             // reversible one.
             const doomed = get().savedTeams.find((team) => team.id === teamId);
 
+            const retry = [{ label: t('toast.retry'), onClick: () => get().handleDeleteTeam(teamId) }];
             try {
-                await deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId));
+                await settleWrite(
+                    deleteDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId)),
+                    { onLateError: () => toast.error(t('toast.teamDeleteError'), { actions: retry }) },
+                );
                 toast.info(t('toast.teamDeleted'), {
                     description: doomed?.name,
                     actions: doomed ? [{
                         label: t('toast.undo'),
                         onClick: async () => {
                             const { id, ...payload } = doomed;
+                            const onError = () => toast.error(t('toast.teamSaveError'));
                             try {
-                                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, id), payload);
+                                await settleWrite(
+                                    setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, id), payload),
+                                    { onLateError: onError },
+                                );
                             } catch (_) {
-                                toast.error(t('toast.teamSaveError'));
+                                onError();
                             }
                         },
                     }] : [],
                 });
             } catch (e) {
-                toast.error(t('toast.teamDeleteError'), {
-                    actions: [{ label: t('toast.retry'), onClick: () => get().handleDeleteTeam(teamId) }],
-                });
+                toast.error(t('toast.teamDeleteError'), { actions: retry });
             }
         },
 
@@ -160,6 +169,15 @@ export const useFirestoreTeamsStore = create((set, get) => {
                 return null;
             }
 
+            // A copy is a new team, so it has to pass the rule a new team does. One
+            // saved before the Species Clause can still be opened and fixed; it
+            // just cannot be multiplied.
+            const { baseIdOf } = await ensureSpeciesIndex();
+            if (hasDuplicateSpecies(team.pokemons, baseIdOf)) {
+                toast.warning(t('toast.duplicateHasDuplicates'));
+                return null;
+            }
+
             const name = buildDuplicateTeamName(
                 team.name,
                 [...get().savedTeams.map((saved) => saved.name), ...pendingDuplicateNames],
@@ -168,12 +186,16 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const payload = buildDuplicateTeamPayload(team, name);
             const teamId = doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
 
+            const onError = () => toast.error(pt ? 'Não foi possível duplicar o time' : 'Could not duplicate team');
             pendingDuplicateNames.add(name);
             try {
-                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), payload);
+                await settleWrite(
+                    setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, teamId), payload),
+                    { onLateError: onError },
+                );
                 return { id: teamId, ...payload };
             } catch (e) {
-                toast.error(pt ? 'Não foi possível duplicar o time' : 'Could not duplicate team');
+                onError();
                 return null;
             } finally {
                 pendingDuplicateNames.delete(name);
@@ -184,13 +206,14 @@ export const useFirestoreTeamsStore = create((set, get) => {
             const userId = useAuthStore.getState().userId;
             if (!db || !userId) return;
 
+            const onError = () => toast.error(t('toast.favoriteError'));
             try {
-                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, team.id), {
+                await settleWrite(setDoc(doc(db, `artifacts/${appId}/users/${userId}/teams`, team.id), {
                     ...team,
                     isFavorite: !team.isFavorite
-                }, { merge: true });
+                }, { merge: true }), { onLateError: onError });
             } catch (e) {
-                toast.error(t('toast.favoriteError'));
+                onError();
             }
         },
 
@@ -212,10 +235,10 @@ export const useFirestoreTeamsStore = create((set, get) => {
                     toast.success(t('toast.favoriteAdded'));
                 }
 
-                await setDoc(favoritesDocRef, {
+                await settleWrite(setDoc(favoritesDocRef, {
                     ids: Array.from(newFavorites),
                     updatedAt: new Date().toISOString()
-                });
+                }), { onLateError: () => toast.error(t('toast.favoriteError')) });
             } catch (e) {
                 console.error("Error toggling favorite pokemon:", e);
                 toast.error(t('toast.favoriteError'));

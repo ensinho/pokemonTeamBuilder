@@ -6,6 +6,7 @@ import { Download } from 'lucide-react';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
+import { fallbackImage } from '../../utils/imageFallback';
 
 /**
  * `friendAction` is injected rather than built here: this modal is rendered from
@@ -131,7 +132,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                                                                 src={spriteUrl}
                                                                 alt={pk.name}
                                                                 className="w-7 h-7 object-contain"
-                                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                             />
                                                         ) : (
                                                             <PokeballIcon className="w-4 h-4 text-muted opacity-10" />

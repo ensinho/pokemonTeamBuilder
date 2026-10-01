@@ -2,6 +2,7 @@ import React from 'react';
 import { SwordsIcon, PokeballIcon, SavedTeamsIcon, ShieldCheckIcon, FlameIcon } from '../icons';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { fallbackImage } from '../../utils/imageFallback';
 
 export function ForumSidebar({
     featuredTeam,
@@ -35,7 +36,7 @@ export function ForumSidebar({
                                             src={spriteUrl}
                                             alt={pk ? pk.name : ''}
                                             className="w-full h-full object-contain"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                         />
                                     ) : (
                                         <PokeballIcon className="w-3.5 h-3.5 text-muted opacity-30" />

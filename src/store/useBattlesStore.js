@@ -25,6 +25,7 @@ import {
     BATTLE_FORMAT, BATTLE_LEVEL, RANDOM_BATTLE_FORMAT,
     battleOpponentId, buildBattleTeamText,
 } from '../utils/battle';
+import { ensureSpeciesIndex } from '../services/speciesIndex';
 
 const battlesPath = () => `artifacts/${appId}/battles`;
 
@@ -133,11 +134,23 @@ export const useBattlesStore = create((set, get) => ({
 
         battlesUnsub = onSnapshot(
             query(collection(db, battlesPath()), where('players', 'array-contains', userId)),
+            // Firestore's persistent cache answers first with whatever it held
+            // when the app last closed. Those rows are fine to show, but they are
+            // not "loaded": the notification hook seeds its baseline from the
+            // first loaded snapshot, so a stale one would announce every turn
+            // taken while the app was closed (docs/wounds.md, 2026-09-21).
+            // Metadata changes are needed to hear the cache → server hand-off
+            // when no document actually changed.
+            { includeMetadataChanges: true },
             (snapshot) => {
                 const rows = snapshot.docs
                     .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
                     .sort((a, b) => String(b.lastActivityAt || '').localeCompare(String(a.lastActivityAt || '')));
-                set({ battles: rows, isLoadingBattles: false, hasLoadedBattles: true });
+                set((state) => ({
+                    battles: rows,
+                    isLoadingBattles: false,
+                    hasLoadedBattles: state.hasLoadedBattles || !snapshot.metadata.fromCache,
+                }));
             },
             (error) => {
                 console.error('Error loading battles:', error);
@@ -395,8 +408,8 @@ export const useBattlesStore = create((set, get) => ({
      * Submit my team for a battle.
      *
      * The team is stored as battle-safe Showdown import text (see
-     * `buildBattleTeamText` — it strips the `@ Nothing` placeholder and refuses a
-     * moveless Pokémon), which is exactly what the phase-3 resolver hands to
+     * `buildBattleTeamText` — it refuses a moveless Pokémon and writes every
+     * spread in EVs), which is exactly what the phase-3 resolver hands to
      * `Teams.import()`. It lives in `battles/{id}/teams/{uid}`, readable only by
      * its owner, so the opponent can't inspect the sets.
      *
@@ -408,7 +421,8 @@ export const useBattlesStore = create((set, get) => ({
         if (!db || !userId || !battleId) return false;
 
         const members = Array.isArray(team) ? team.filter(Boolean) : [];
-        const { text: showdownText, errors } = buildBattleTeamText(members);
+        const { entryById } = await ensureSpeciesIndex();
+        const { text: showdownText, errors } = buildBattleTeamText(members, { entryById });
 
         if (errors.length > 0) {
             const first = errors[0];

@@ -4,8 +4,6 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useBattlesStore } from '../../store/useBattlesStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
-import { useReferenceStore } from '../../store/useReferenceStore';
-import { useToastStore } from '../../store/useToastStore';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { AvatarSprite } from '../AvatarSprite';
 import { BattleInviteCard } from '../BattleInviteCard';
@@ -42,6 +40,7 @@ import {
     SwordsIcon,
 } from '../icons';
 import { Download, Edit, Award, Puzzle, GitBranch, GitCommit, FileText, Sparkles, BookOpen, Flame, Folder, User, Palette } from 'lucide-react';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const DEFAULT_GREETING_POKEMON = {
     morning: { id: 196, name: 'espeon' },
@@ -250,7 +249,7 @@ export function HomeView({
     const resolvedUsername = displayName
         ? displayName.toLowerCase().replace(/\s+/g, '')
         : (userEmail ? userEmail.split('@')[0].toLowerCase().replace(/\s+/g, '') : 'trainer');
-    const { currentTeam: activeRoster, teamName: activeRosterName, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore();
+    const { currentTeam: activeRoster, teamName: activeRosterName } = useActiveTeamStore();
 
     const [replyText, setReplyText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
@@ -436,49 +435,13 @@ export function HomeView({
         }
     };
 
+    // Import a team from a forum post. The store's importer resolves each
+    // Pokémon's full record and reports the outcome — this used to copy the
+    // posted members straight in, so the editor opened on a Pokémon with no
+    // move list and no base stats.
     const handleImportTeam = async (sharedTeam) => {
-        if (!sharedTeam || !sharedTeam.pokemons) return;
-
-        let pokemonIndex = useReferenceStore.getState().pokemonIndex || [];
-        if (!pokemonIndex || pokemonIndex.length === 0) {
-            try {
-                pokemonIndex = await useReferenceStore.getState().fetchPokemonIndex();
-            } catch (err) {
-                console.error("Failed to fetch pokemon index on import:", err);
-                pokemonIndex = [];
-            }
-        }
-        const indexById = new Map((pokemonIndex || []).map((p) => [p.id, p]));
-
-        const enrichedPokemons = await Promise.all(sharedTeam.pokemons.map(async (p) => {
-            if (!p) return p;
-            let indexEntry = indexById.get(p.id);
-            if (!indexEntry && p.id) {
-                try {
-                    indexEntry = await getStaticPokemonDetail(p.id);
-                } catch (_) { /* ignore */ }
-            }
-            const types = (Array.isArray(p.types) && p.types.length > 0)
-                ? p.types
-                : ((Array.isArray(indexEntry?.types) && indexEntry.types.length > 0) ? indexEntry.types : ['normal']);
-
-            return {
-                ...(indexEntry || {}),
-                ...p,
-                types,
-            };
-        }));
-
-        setCurrentTeam(enrichedPokemons);
-        setTeamName(sharedTeam.name || 'Imported Team');
-        setEditingTeamId(null);
-        useToastStore.getState().showToast(
-            language === 'pt'
-                ? `Time "${sharedTeam.name}" importado!`
-                : `Team "${sharedTeam.name}" imported!`,
-            "success"
-        );
-        navigate('/builder');
+        const loaded = await useActiveTeamStore.getState().importTeam(sharedTeam);
+        if (loaded) navigate('/builder');
     };
 
     const popoverAnchor = useMemo(() => {
@@ -707,7 +670,7 @@ export function HomeView({
                     src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
                     alt="Mystery daily Pokemon"
                     className={`home-daily__sprite h-10 w-10 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'}`}
-                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                 />
             </div>
 
@@ -833,7 +796,7 @@ export function HomeView({
                                             src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
                                             alt={greetingPokemonData.name}
                                             className="home-partner-card__sprite sprite-fade"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                         />
                                     </div>
 
@@ -936,7 +899,7 @@ export function HomeView({
                                                         alt={pokemon.name}
                                                         className="home-team-slot__sprite sprite-fade"
                                                         title={pokemon.name}
-                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                     />
                                                 ) : (
                                                     <div className="home-team-slot__empty">
@@ -1016,7 +979,7 @@ export function HomeView({
                                         src={greetingPokemonData ? getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true }) : POKEBALL_PLACEHOLDER_URL}
                                         alt="Trainer Avatar"
                                         className="home-profile-avatar"
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                         style={{ imageRendering: 'pixelated' }}
                                     />
                                     <button
@@ -1237,7 +1200,7 @@ export function HomeView({
                                                                                     src={spriteUrl}
                                                                                     alt={pk.name}
                                                                                     className="h-8 w-8 object-contain"
-                                                                                    onError={(e) => { e.currentTarget.src = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/poke-ball.png'; }}
+                                                                                    onError={fallbackImage('https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/poke-ball.png')}
                                                                                 />
                                                                             ) : (
                                                                                 <span className="opacity-25"><PokeballIcon className="w-3.5 h-3.5" /></span>

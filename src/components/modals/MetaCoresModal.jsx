@@ -12,6 +12,7 @@ import { buildCores } from '../../utils/metaCores';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { CloseIcon } from '../icons';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const pretty = (s = '') => s.replace(/-/g, ' ');
 
@@ -37,7 +38,7 @@ function PickCard({ member, accent, selected, onTeam, disabled, onToggle, addLab
             <div className="relative">
                 <img
                     src={getPokemonFrontSpriteUrl(member.id)}
-                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                     alt=""
                     className="h-12 w-12 image-pixelated"
                     loading="lazy"
@@ -244,7 +245,7 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                                                     >
                                                         <img
                                                             src={getPokemonFrontSpriteUrl(m.id)}
-                                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                             alt=""
                                                             className="h-9 w-9 image-pixelated"
                                                             loading="lazy"
