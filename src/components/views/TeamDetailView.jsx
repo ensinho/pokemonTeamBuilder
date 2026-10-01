@@ -22,6 +22,7 @@ import { useTournamentData } from '../../hooks/useTournamentData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { EmptyState } from '../EmptyState';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 
@@ -267,7 +268,7 @@ export function TeamDetailView({
                         >
                             <img
                                 src={getTeamPokemonDisplaySprite(p)}
-                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                 alt={p.name}
                                 className="team-detail-roster__sprite"
                             />
@@ -341,7 +342,7 @@ export function TeamDetailView({
                                 <div className="team-detail-member__head">
                                     <img
                                         src={getTeamPokemonDisplaySprite(m)}
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                         alt={m.name}
                                         className="team-detail-member__sprite"
                                     />

@@ -20,7 +20,16 @@ import { planPokedexDownload } from '../utils/offlinePokedex';
 const DATA_CACHE_PREFIX = 'offline-pokedex-';
 const SPRITE_CACHE = 'pokemon-sprites';
 const STATE_KEY = 'ptbOfflinePokedex';
-const CONCURRENCY = 6;
+const CONCURRENCY = 2;
+// A sprite host that answers 403/429 is rate limiting this device. The run
+// backs off instead of pressing on: hammering it is what got every <img> on
+// the page refused too. Whatever was left is picked up on the next run.
+const THROTTLED = new Set([403, 429]);
+const BACKOFF_MS = [2000, 8000, 30000];
+const sleep = (ms, signal) => new Promise((resolve) => {
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => { clearTimeout(timer); resolve(); }, { once: true });
+});
 
 const basePath = () => {
     const base = import.meta.env.BASE_URL || '/';
@@ -91,13 +100,15 @@ export async function downloadOfflinePokedex({ onProgress = () => {}, signal } =
 
     let done = 0;
     let quotaError = null;
+    let throttles = 0;
+    let throttledOut = false;
 
     // One pass over `queue`; returns the tasks that failed.
     const runPass = async (queue, countProgress) => {
         const failures = [];
         let next = 0;
         const worker = async () => {
-            while (next < queue.length && !signal?.aborted && !quotaError) {
+            while (next < queue.length && !signal?.aborted && !quotaError && !throttledOut) {
                 const task = queue[next];
                 next += 1;
                 const cache = task.kind === 'data' ? dataCache : spriteCache;
@@ -106,7 +117,12 @@ export async function downloadOfflinePokedex({ onProgress = () => {}, signal } =
                         const response = await fetch(task.url, { mode: 'cors', signal });
                         // 404: the sprite repo lacks that file (some forms). Nothing to cache, nothing to retry.
                         if (response.ok) await cache.put(task.url, response);
-                        else if (response.status !== 404) failures.push(task);
+                        else if (THROTTLED.has(response.status)) {
+                            failures.push(task);
+                            if (throttles >= BACKOFF_MS.length) { throttledOut = true; return; }
+                            await sleep(BACKOFF_MS[throttles], signal);
+                            throttles += 1;
+                        } else if (response.status !== 404) failures.push(task);
                     }
                 } catch (error) {
                     if (signal?.aborted) return;
@@ -127,12 +143,13 @@ export async function downloadOfflinePokedex({ onProgress = () => {}, signal } =
     };
 
     let failures = await runPass(tasks, true);
-    if (failures.length && !signal?.aborted && !quotaError) failures = await runPass(failures, false);
+    if (failures.length && !signal?.aborted && !quotaError && !throttledOut) failures = await runPass(failures, false);
     if (quotaError) throw quotaError;
     if (signal?.aborted) return { aborted: true };
 
     const failedData = failures.filter((task) => task.kind === 'data').length;
-    const complete = failures.length === 0;
+    // Stopped for rate limiting: the rest is still owed, not failed.
+    const complete = failures.length === 0 && !throttledOut;
     writeOfflinePokedexState({ version, complete });
     // The old pack is only dropped once the new one's data is all here.
     if (failedData === 0) await dropOtherDataCaches(dataCacheName);

@@ -38,6 +38,7 @@ import {
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import '../../styles/forum-view.css';
 import { ChevronLeft, Download } from 'lucide-react';
+import { fallbackImage } from '../../utils/imageFallback';
 
 // Helper to format relative time
 const formatRelativeTime = (isoString, language = 'en') => {
@@ -223,7 +224,7 @@ const ForumMessage = memo(function ForumMessage({
                                                 alt={pk.name}
                                                 loading="lazy"
                                                 className="forum-team-share-sprite"
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                             />
                                         ) : (
                                             <span className="forum-team-share-empty">
@@ -1080,7 +1081,7 @@ export function FeedView({ showToast, navigate }) {
                                                 alt={pk ? pk.name : ''}
                                                 className="forum-right-team-sprite"
                                                 title={pk ? pk.name : ''}
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                             />
                                         ) : (
                                             <PokeballIcon className="w-3.5 h-3.5 text-muted opacity-25 shrink-0" />

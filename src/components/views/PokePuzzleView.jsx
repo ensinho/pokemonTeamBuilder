@@ -23,6 +23,7 @@ import { useForumStore } from '../../store/useForumStore';
 import { Loader } from '../Loader';
 import { confirmAction } from '../../store/useConfirmStore';
 import { DecryptText } from '../DecryptText';
+import { fallbackImage } from '../../utils/imageFallback';
 
 // Constants
 const MAX_ATTEMPTS = 8;
@@ -1432,7 +1433,7 @@ export default function PokePuzzleView() {
                                                 src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
                                                 alt={targetPokemon.name}
                                                 className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
-                                                onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
+                                                onError={fallbackImage(getPokemonFrontSpriteUrl(targetPokemon.id))}
                                             />
                                         </div>
 
@@ -1538,7 +1539,7 @@ export default function PokePuzzleView() {
                                                 src={targetDetails.image || getPokemonArtworkSpriteUrl(targetPokemon.id)}
                                                 alt={targetPokemon.name}
                                                 className="pokepuzzle-result-sprite pokepuzzle-revealed sprite-fade"
-                                                onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(targetPokemon.id); }}
+                                                onError={fallbackImage(getPokemonFrontSpriteUrl(targetPokemon.id))}
                                             />
                                         </div>
 
@@ -1662,7 +1663,7 @@ export default function PokePuzzleView() {
                                                     }
                                                     alt="Pokémon preview"
                                                     className={`pokepuzzle-history__pokemon-sprite ${!isCompleted ? 'is-mystery' : ''}`}
-                                                    onError={(e) => { e.currentTarget.src = getPokemonFrontSpriteUrl(pokemon.id); }}
+                                                    onError={fallbackImage(getPokemonFrontSpriteUrl(pokemon.id))}
                                                 />
                                                 <div className="pokepuzzle-history__pokemon-info">
                                                     <span className="pokepuzzle-history__pokemon-name">

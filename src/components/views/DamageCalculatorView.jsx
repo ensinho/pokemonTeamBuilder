@@ -16,6 +16,7 @@ import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useBattleItems } from '../../hooks/useBattleItems';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { competitivePresetFor } from '../../utils/loadCompetitivePreset';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const NATURES = Object.keys(NATURE_MODIFIERS);
 const TYPES = [
@@ -632,7 +633,7 @@ export function DamageCalculatorView() {
                                 src={getPokemonDisplaySprite(pState.pokemon, { preferArtwork: true })}
                                 alt={pState.pokemon.name}
                                 className="w-14 h-14 object-contain"
-                                onError={(e) => { e.target.src = getPokemonDisplaySprite(pState.pokemon); }}
+                                onError={fallbackImage(getPokemonDisplaySprite(pState.pokemon))}
                             />
                         ) : (
                             <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted"><circle cx="12" cy="12" r="10" /><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" /></svg>

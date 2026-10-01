@@ -14,6 +14,7 @@ import { maxWidthBelow } from '../../constants/breakpoints';
 import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getGameLogo, getGameAccent } from '../../assets/gameLogos';
+import { fallbackImage } from '../../utils/imageFallback';
 import '../../styles/game-cover.css';
 import '../../styles/gyms-view.css';
 
@@ -179,7 +180,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                         >
                                             <img
                                                 src={id ? getPokemonFrontSpriteUrl(id) : POKEBALL_PLACEHOLDER_URL}
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                 alt=""
                                                 className="h-14 w-14 image-pixelated group-hover:scale-110 transition-transform"
                                             />
@@ -319,7 +320,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
                 >
                     <img
                         src={id ? getPokemonFrontSpriteUrl(id) : POKEBALL_PLACEHOLDER_URL}
-                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                         alt=""
                         className="h-12 w-12 image-pixelated group-hover:scale-110 transition-transform"
                         loading="lazy"

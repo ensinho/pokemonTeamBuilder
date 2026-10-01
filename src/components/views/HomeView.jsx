@@ -42,6 +42,7 @@ import {
     SwordsIcon,
 } from '../icons';
 import { Download, Edit, Award, Puzzle, GitBranch, GitCommit, FileText, Sparkles, BookOpen, Flame, Folder, User, Palette } from 'lucide-react';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const DEFAULT_GREETING_POKEMON = {
     morning: { id: 196, name: 'espeon' },
@@ -707,7 +708,7 @@ export function HomeView({
                     src={getPokemonArtworkSpriteUrl(dailyPokePuzzleSummary?.solved ? dailyPokePuzzleTarget.id : teaserSilhouetteId)}
                     alt="Mystery daily Pokemon"
                     className={`home-daily__sprite h-10 w-10 object-contain ${dailyPokePuzzleSummary?.solved ? '' : 'pokepuzzle-silhouette'}`}
-                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                 />
             </div>
 
@@ -833,7 +834,7 @@ export function HomeView({
                                             src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
                                             alt={greetingPokemonData.name}
                                             className="home-partner-card__sprite sprite-fade"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                         />
                                     </div>
 
@@ -936,7 +937,7 @@ export function HomeView({
                                                         alt={pokemon.name}
                                                         className="home-team-slot__sprite sprite-fade"
                                                         title={pokemon.name}
-                                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                     />
                                                 ) : (
                                                     <div className="home-team-slot__empty">
@@ -1016,7 +1017,7 @@ export function HomeView({
                                         src={greetingPokemonData ? getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true }) : POKEBALL_PLACEHOLDER_URL}
                                         alt="Trainer Avatar"
                                         className="home-profile-avatar"
-                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                        onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                         style={{ imageRendering: 'pixelated' }}
                                     />
                                     <button
@@ -1237,7 +1238,7 @@ export function HomeView({
                                                                                     src={spriteUrl}
                                                                                     alt={pk.name}
                                                                                     className="h-8 w-8 object-contain"
-                                                                                    onError={(e) => { e.currentTarget.src = 'https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/poke-ball.png'; }}
+                                                                                    onError={fallbackImage('https://cdn.jsdelivr.net/gh/PokeAPI/sprites@master/sprites/items/poke-ball.png')}
                                                                                 />
                                                                             ) : (
                                                                                 <span className="opacity-25"><PokeballIcon className="w-3.5 h-3.5" /></span>

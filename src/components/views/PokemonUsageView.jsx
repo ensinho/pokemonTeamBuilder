@@ -23,6 +23,7 @@ import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { EmptyState } from '../EmptyState';
 import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, formatUsageSpread, SourceCredit, useSmartBack } from './metaShared';
 import { FormatPicker } from './metaControls';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const slugify = toApiSlug;
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
@@ -169,7 +170,7 @@ export function PokemonUsageView() {
                             alt={entry.name}
                             className="h-20 w-20 shrink-0 object-contain image-pixelated transition-transform hover:scale-110 duration-300"
                             style={{ filter: `drop-shadow(0 6px 14px ${accent}44)` }}
-                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                         />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -319,7 +320,7 @@ export function PokemonUsageView() {
                                                     src={getPokemonFrontSpriteUrl(resolvedTeam.spriteId)}
                                                     alt={resolvedTeam.name}
                                                     className="h-10 w-10 image-pixelated shrink-0 object-contain transition-transform duration-300 group-hover:scale-110"
-                                                    onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                 />
                                                 <span className="text-[9px] font-extrabold text-fg truncate w-full text-center capitalize">{pretty(resolvedTeam.name).split('-')[0]}</span>
                                                 <span className="text-[9px] font-bold tabular-nums text-primary">{pctOf(tm.count, n)}%</span>
@@ -409,7 +410,7 @@ export function PokemonUsageView() {
                                                 src={getPokemonFrontSpriteUrl(resolvedTourneyMon.spriteId)}
                                                 alt={resolvedTourneyMon.name}
                                                 className="h-8 w-8 image-pixelated shrink-0 object-contain bg-surface-raised rounded-full border border-border shadow-sm"
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                             />
                                         );
                                     })}

@@ -25,6 +25,7 @@ import { typeColors, typeIcons } from '../../../constants/types';
 import { POKEBALL_PLACEHOLDER_URL } from '../../../constants/theme';
 import '../../../styles/battle-view.css';
 import { confirmAction } from '../../../store/useConfirmStore';
+import { fallbackImage } from '../../../utils/imageFallback';
 
 const ANIMATED_SPRITES_KEY = 'ptb:battleAnimatedSprites';
 const CHOICE_STORAGE_KEY = (battleId, round) => `ptb:battleChoice:${battleId}:${round}`;
@@ -50,7 +51,7 @@ function TeamSpriteBar({ sprites = [], showLevels = false }) {
                                     src={getPokemonFrontSpriteUrl(mon.id)}
                                     alt={mon.name || ''}
                                     loading="lazy"
-                                    onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                 />
                                 {showLevels && mon.level && (
                                     <span className="battle-team-bar__level">L{mon.level}</span>
@@ -651,7 +652,7 @@ export function BattleDetailView() {
                                                             src={getTeamPokemonDisplaySprite(mon)}
                                                             alt={mon.name}
                                                             loading="lazy"
-                                                            onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                            onError={fallbackImage(POKEBALL_PLACEHOLDER_URL)}
                                                         />
                                                     ))}
                                                 </div>

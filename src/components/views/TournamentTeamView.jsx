@@ -20,6 +20,7 @@ import { EmptyState } from '../EmptyState';
 import { ShowdownIcon } from '../icons';
 import { MoveChip, pretty, useSmartBack } from './metaShared';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
+import { fallbackImage } from '../../utils/imageFallback';
 
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 const EV_LABEL = { hp: 'HP', atk: 'Atk', def: 'Def', spa: 'SpA', spd: 'SpD', spe: 'Spe' };
@@ -215,7 +216,7 @@ export function TournamentTeamView({ onImport, colors }) {
                                         src={getPokemonFrontSpriteUrl(m.resolvedId || m.id)}
                                         alt={m.resolvedName || m.name}
                                         className="h-14 w-14 image-pixelated shrink-0 object-contain transition-transform duration-300 group-hover:scale-110"
-                                        onError={(e) => { e.currentTarget.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; }}
+                                        onError={fallbackImage('data:image/gif;base64,R0lGODlhAQABAAAAACw=')}
                                     />
                                 </Link>
                                 <div className="min-w-0 flex-1">
