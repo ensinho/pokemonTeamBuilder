@@ -19,8 +19,9 @@ import { useAuthStore } from './useAuthStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { navigateTo, promptSignIn } from '../utils/navigation';
-import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
-import { megaDisplayName } from '../hooks/useMegaStones';
+import { ensureSpeciesIndex, getSpeciesIndex } from '../services/speciesIndex';
+import { serializeTeam } from '../utils/teamSerialization';
+import { hasDuplicateSpecies, withoutDuplicateSharedTeams } from '../utils/teamUniqueness';
 
 let topicsUnsubscribe = null;
 let messagesUnsubscribe = null;
@@ -53,25 +54,20 @@ const getMegaStones = async () => {
     return {};
 };
 
-const serializeTeamPokemon = (pokemon, megaStones = null) => {
-    const item = pokemon?.customization?.item;
-    const mega = (item && megaStones) ? megaStones[item] : null;
-    const isMega = mega && mega.baseId === pokemon.id;
-    
-    const spriteId = isMega ? mega.spriteId : pokemon.id;
-    const displayName = isMega ? megaDisplayName(mega.form) : pokemon.name;
-    const types = (isMega && mega?.types) ? mega.types : (pokemon?.types || []);
-
+// A team attached to a post, in its stored shape — or null when it may not be
+// posted. The forum is public, so the Species Clause applies to what goes up;
+// the caller is told through the toast and the post is not sent.
+const serializeAttachedTeam = async (attachedTeam) => {
+    const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
+    if (hasDuplicateSpecies(attachedTeam.pokemons, baseIdOf)) {
+        toast.warning(t('toast.forumHasDuplicates'), { key: 'team-duplicates' });
+        return null;
+    }
+    // Field by field: the attachment can be a whole saved-team document, and
+    // only its name and roster belong on a public post.
     return {
-        id: pokemon.id,
-        name: displayName,
-        types,
-        sprite: getPokemonArtworkSpriteUrl(spriteId),
-        shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
-        animatedSprite: getPokemonFrontSpriteUrl(spriteId),
-        animatedShinySprite: getPokemonFrontSpriteUrl(spriteId, { shiny: true }),
-        instanceId: pokemon.instanceId,
-        customization: pokemon.customization || {},
+        name: String(attachedTeam.name || '').slice(0, 100),
+        pokemons: serializeTeam(attachedTeam.pokemons.slice(0, 6), megaStones, baseIdOf),
     };
 };
 
@@ -153,13 +149,27 @@ export const useForumStore = create((set, get) => ({
         const messagesRef = collection(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`);
         const q = query(messagesRef, orderBy('createdAt', 'asc'));
 
-        messagesUnsubscribe = onSnapshot(q, (snapshot) => {
-            const msgList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            set({ messages: msgList, isInitialLoadingMessages: false });
+        // Everything that reads forum messages reads them from here, so this is
+        // the one place legacy repeated-Pokémon teams are kept off screen.
+        let latest = null;
+        const publish = () => {
+            if (latest) set({ messages: withoutDuplicateSharedTeams(latest, getSpeciesIndex().baseIdOf) });
+        };
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            latest = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            publish();
+            set({ isInitialLoadingMessages: false });
         }, (error) => {
             console.error(`Error loading messages for topic ${topicId}:`, error);
             set({ isInitialLoadingMessages: false });
         });
+        messagesUnsubscribe = unsubscribe;
+        // Older posts only stored each Pokémon's id, and telling a form from its
+        // base species takes the index. Re-filter once it is in, unless the
+        // listener has moved on to another topic meanwhile.
+        if (!getSpeciesIndex().ready) {
+            ensureSpeciesIndex().then(() => { if (messagesUnsubscribe === unsubscribe) publish(); });
+        }
     },
 
     cleanupTopicsListener: () => {
@@ -205,11 +215,8 @@ export const useForumStore = create((set, get) => ({
 
             let serializedAttachedTeam = null;
             if (attachedTeam && attachedTeam.pokemons) {
-                const megaStones = await getMegaStones();
-                serializedAttachedTeam = {
-                    ...attachedTeam,
-                    pokemons: attachedTeam.pokemons.map(p => serializeTeamPokemon(p, megaStones))
-                };
+                serializedAttachedTeam = await serializeAttachedTeam(attachedTeam);
+                if (!serializedAttachedTeam) return null;
             }
 
             const topicData = {
@@ -293,11 +300,8 @@ export const useForumStore = create((set, get) => ({
 
             let serializedAttachedTeam = null;
             if (attachedTeam && attachedTeam.pokemons) {
-                const megaStones = await getMegaStones();
-                serializedAttachedTeam = {
-                    ...attachedTeam,
-                    pokemons: attachedTeam.pokemons.map(p => serializeTeamPokemon(p, megaStones))
-                };
+                serializedAttachedTeam = await serializeAttachedTeam(attachedTeam);
+                if (!serializedAttachedTeam) return false;
             }
 
             // Quoted reply reference (optional). Kept as a compact snapshot so the
@@ -406,6 +410,26 @@ export const useForumStore = create((set, get) => ({
         } catch (err) {
             console.error("Error deleting message:", err);
             toast.error(t('toast.messageDeleteError'));
+            return false;
+        }
+    },
+
+    // Delete a topic. Firestore rules permit only the author or an admin.
+    deleteTopic: async (topicId) => {
+        if (!db || !topicId) return false;
+        const authState = useAuthStore.getState();
+        if (!authState.userId) return false;
+
+        try {
+            await deleteDoc(doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId));
+            if (get().currentTopicId === topicId) {
+                get().setCurrentTopicId(null);
+            }
+            toast.success(t('toast.topicDeleted') || 'Tópico excluído com sucesso.');
+            return true;
+        } catch (err) {
+            console.error("Error deleting topic:", err);
+            toast.error(t('toast.topicDeleteError') || 'Erro ao excluir tópico.');
             return false;
         }
     }

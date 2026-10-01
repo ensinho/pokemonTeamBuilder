@@ -4,8 +4,6 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useBattlesStore } from '../../store/useBattlesStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
-import { useReferenceStore } from '../../store/useReferenceStore';
-import { useToastStore } from '../../store/useToastStore';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { AvatarSprite } from '../AvatarSprite';
 import { BattleInviteCard } from '../BattleInviteCard';
@@ -251,7 +249,7 @@ export function HomeView({
     const resolvedUsername = displayName
         ? displayName.toLowerCase().replace(/\s+/g, '')
         : (userEmail ? userEmail.split('@')[0].toLowerCase().replace(/\s+/g, '') : 'trainer');
-    const { currentTeam: activeRoster, teamName: activeRosterName, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore();
+    const { currentTeam: activeRoster, teamName: activeRosterName } = useActiveTeamStore();
 
     const [replyText, setReplyText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
@@ -437,49 +435,13 @@ export function HomeView({
         }
     };
 
+    // Import a team from a forum post. The store's importer resolves each
+    // Pokémon's full record and reports the outcome — this used to copy the
+    // posted members straight in, so the editor opened on a Pokémon with no
+    // move list and no base stats.
     const handleImportTeam = async (sharedTeam) => {
-        if (!sharedTeam || !sharedTeam.pokemons) return;
-
-        let pokemonIndex = useReferenceStore.getState().pokemonIndex || [];
-        if (!pokemonIndex || pokemonIndex.length === 0) {
-            try {
-                pokemonIndex = await useReferenceStore.getState().fetchPokemonIndex();
-            } catch (err) {
-                console.error("Failed to fetch pokemon index on import:", err);
-                pokemonIndex = [];
-            }
-        }
-        const indexById = new Map((pokemonIndex || []).map((p) => [p.id, p]));
-
-        const enrichedPokemons = await Promise.all(sharedTeam.pokemons.map(async (p) => {
-            if (!p) return p;
-            let indexEntry = indexById.get(p.id);
-            if (!indexEntry && p.id) {
-                try {
-                    indexEntry = await getStaticPokemonDetail(p.id);
-                } catch (_) { /* ignore */ }
-            }
-            const types = (Array.isArray(p.types) && p.types.length > 0)
-                ? p.types
-                : ((Array.isArray(indexEntry?.types) && indexEntry.types.length > 0) ? indexEntry.types : ['normal']);
-
-            return {
-                ...(indexEntry || {}),
-                ...p,
-                types,
-            };
-        }));
-
-        setCurrentTeam(enrichedPokemons);
-        setTeamName(sharedTeam.name || 'Imported Team');
-        setEditingTeamId(null);
-        useToastStore.getState().showToast(
-            language === 'pt'
-                ? `Time "${sharedTeam.name}" importado!`
-                : `Team "${sharedTeam.name}" imported!`,
-            "success"
-        );
-        navigate('/builder');
+        const loaded = await useActiveTeamStore.getState().importTeam(sharedTeam);
+        if (loaded) navigate('/builder');
     };
 
     const popoverAnchor = useMemo(() => {

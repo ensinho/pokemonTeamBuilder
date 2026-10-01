@@ -66,9 +66,15 @@ describe('buildShowdownExportText', () => {
 
     it('falls back gracefully for a bare member', () => {
         const text = buildShowdownExportText([{ name: 'pikachu' }]);
-        expect(text).toContain('Pikachu @ Nothing');
+        expect(text.split('\n')[0]).toBe('Pikachu');
         expect(text).toContain('Level: 50');
         expect(text).toContain('Serious Nature');
+    });
+
+    it('writes no "@" line part for an empty hand', () => {
+        const text = buildShowdownExportText([{ name: 'pikachu', customization: { item: '' } }]);
+        expect(text).not.toContain('@');
+        expect(text).not.toContain('Nothing');
     });
 
     it('separates multiple members with a blank line', () => {
@@ -101,5 +107,60 @@ describe('buildShowdownExportText — Tera Type line', () => {
 
     it('leaves no blank line where the Tera line was', () => {
         expect(buildShowdownExportText([member], { includeTeraType: false })).not.toMatch(/\n\n/);
+    });
+});
+
+describe('buildShowdownExportText — Mega names', () => {
+    it('keeps the name a paste gave verbatim, Mega suffix included', () => {
+        const text = buildShowdownExportText([{
+            name: 'floette',
+            showdownName: 'Floette-Mega',
+            customization: { item: 'floettite' },
+        }]);
+        expect(text.split('\n')[0]).toBe('Floette-Mega @ Floettite');
+    });
+
+    it('names plain Floette holding Floettite as Floette-Eternal', () => {
+        const text = buildShowdownExportText([{ name: 'floette', customization: { item: 'floettite' } }]);
+        expect(text.split('\n')[0]).toBe('Floette-Eternal @ Floettite');
+    });
+
+    it('writes a Mega holding its stone as the base species', () => {
+        const text = buildShowdownExportText([{ name: 'charizard-mega-y', customization: { item: 'charizardite-y' } }]);
+        expect(text.split('\n')[0]).toBe('Charizard @ Charizardite Y');
+    });
+});
+
+describe('buildShowdownExportText — Stat Points', () => {
+    const champion = {
+        name: 'garchomp',
+        types: ['dragon', 'ground'],
+        customization: {
+            evScale: 'sp',
+            teraType: 'steel',
+            evs: { hp: 2, attack: 32, speed: 32 },
+        },
+    };
+
+    it('keeps Stat Points as written by default', () => {
+        const text = buildShowdownExportText([champion]);
+        expect(text).toContain('EVs: 2 HP / 32 Atk / 32 Spe');
+    });
+
+    it('omits the Tera Type line for a Stat Points member', () => {
+        expect(buildShowdownExportText([champion])).not.toContain('Tera Type');
+    });
+
+    it('converts Stat Points to EVs only when asked', () => {
+        const text = buildShowdownExportText([champion], { evScale: 'ev' });
+        expect(text).toContain('EVs: 12 HP / 252 Atk / 252 Spe');
+    });
+
+    it('leaves an EV member untouched when asked for EVs', () => {
+        const text = buildShowdownExportText([{
+            name: 'garchomp',
+            customization: { evs: { attack: 252, speed: 252, hp: 4 } },
+        }], { evScale: 'ev' });
+        expect(text).toContain('EVs: 4 HP / 252 Atk / 252 Spe');
     });
 });

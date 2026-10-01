@@ -55,25 +55,39 @@ export async function competitivePresetFor(id) {
     const smogonSet = smogonById[id]?.sets?.[0] || null;
     if (!usage && !comp && !smogonSet) return null;
 
-    const usedMoves = (usage?.moves || comp?.moves || []).slice(0, 4).map((m) => toSlug(m.name)).filter(Boolean);
+    // Candidates, most used first — more than four, because usage is keyed by base
+    // species: Rotom's list holds Rotom-Wash's Hydro Pump, Gyarados's abilities
+    // lead with Mega Gyarados's Mold Breaker. Whoever builds the member keeps the
+    // first ones this exact Pokémon can actually have (see createTeamMember).
+    const usedMoves = (usage?.moves || comp?.moves || []).slice(0, 12).map((m) => toSlug(m.name)).filter(Boolean);
+    const usedAbilities = (usage?.abilities || comp?.abilities || []).map((a) => toSlug(a.name)).filter(Boolean);
     const abilityName = usage?.abilities?.[0]?.name || comp?.abilities?.[0]?.name;
     const teraName = usage?.tera?.[0]?.name || comp?.tera?.[0]?.name || smogonSet?.tera?.[0];
 
     // EVs: prefer the curated Smogon set's standard 0-252 spread; only use a usage
     // spread if it actually looks like a full investment (Champions spreads don't).
+    //
+    // The nature travels with whichever spread is chosen. It used to be picked
+    // independently — the ladder's most common nature on top of Smogon's EVs —
+    // which could pair an Adamant nature with 252 SpA. (IVs stay at 31: the moves
+    // come from usage, and a set's zeroed Attack IV would punish a physical one.)
     let evs = smogonSet?.evs || null;
+    let nature = smogonSet?.evs ? smogonSet.nature : undefined;
     if (!evs && usage?.spreads?.[0]?.evs) {
         const raw = usage.spreads[0].evs;
         if (Object.values(raw).reduce((a, b) => a + b, 0) >= 100) {
             evs = {};
             for (const [k, v] of Object.entries(raw)) if (EV_MAP[k]) evs[EV_MAP[k]] = v;
+            nature = usage.spreads[0].nature?.toLowerCase();
         }
     }
+    nature = nature || usage?.spreads?.[0]?.nature?.toLowerCase() || smogonSet?.nature || undefined;
 
     return {
         item: usage?.items?.[0]?.slug || comp?.items?.[0]?.slug || smogonSet?.item || '',
         ability: abilityName ? toSlug(abilityName) : (smogonSet?.ability || undefined),
-        nature: usage?.spreads?.[0]?.nature?.toLowerCase() || smogonSet?.nature || undefined,
+        abilities: [...usedAbilities, smogonSet?.ability].filter(Boolean),
+        nature,
         teraType: teraName ? teraName.toLowerCase() : undefined,
         moves: usedMoves.length ? usedMoves : (smogonSet ? primaryMoves(smogonSet) : []),
         evs,

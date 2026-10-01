@@ -25,9 +25,11 @@ import {
     CircleCheck,
     CircleUserRound,
     CircleX,
+    Clock,
     Database,
     Dice4,
     Download,
+    Flame,
     Gauge,
     Globe,
     Heart,
@@ -44,8 +46,10 @@ import {
     Reply,
     Save,
     Scroll,
+    Search,
     Settings,
     Share2,
+    ShieldCheck,
     ShoppingBag,
     Sparkles,
     SquarePen,
@@ -294,4 +298,20 @@ export const ChevronDownIcon = ({ className = 'w-5 h-5', color }) => (
 
 export const ChevronLeftIcon = ({ className = 'w-5 h-5', color }) => (
     <ChevronLeft className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ClockIcon = ({ className = 'w-4 h-4 shrink-0', color }) => (
+    <Clock className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const FlameIcon = ({ className = 'w-4 h-4 shrink-0', color }) => (
+    <Flame className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const ShieldCheckIcon = ({ className = 'w-4 h-4 shrink-0', color }) => (
+    <ShieldCheck className={className} color={color || 'currentColor'} aria-hidden="true" />
+);
+
+export const SearchIcon = ({ className = 'w-4 h-4 shrink-0', color }) => (
+    <Search className={className} color={color || 'currentColor'} aria-hidden="true" />
 );

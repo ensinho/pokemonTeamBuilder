@@ -868,3 +868,25 @@ export const resolvePokemonDetail = async (pokemonId) => {
 
     return partialDetail;
 };
+
+/**
+ * Resolve a form by its PokéAPI name ("rotom-wash") when no id is known.
+ *
+ * The index only lists the forms the builder offers, so a tournament team can
+ * name one it has no entry for. PokéAPI answers by name as well as by id; the
+ * record that comes back carries the form's real id, types and stats.
+ *
+ * @param {string} name PokéAPI slug
+ * @returns {Promise<object|null>} a fat pokémon object, or null if there is none
+ */
+export const resolvePokemonDetailByName = async (name) => {
+    const slug = String(name || '').toLowerCase().trim();
+    if (!/^[a-z0-9-]+$/.test(slug)) return null;
+    try {
+        const apiData = await getPokemonApiData(slug);
+        return apiData?.id ? normalizePokemonApiData(apiData) : null;
+    } catch (_) {
+        // Unknown name (404) or offline — the caller keeps the base species.
+        return null;
+    }
+};
