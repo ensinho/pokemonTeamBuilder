@@ -13,7 +13,8 @@ import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useBattleItems } from '../../hooks/useBattleItems';
 import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
-import { EV_MAX_PER_STAT, EV_TOTAL_BUDGET, applyEvChange, maxEvFor, remainingEvs } from '../../utils/evBudget';
+import { applyEvChange, convertSpread, effectiveEv, evLimitsFor, maxEvFor, remainingEvs } from '../../utils/evBudget';
+import { calcStat } from '../../utils/damageCalc';
 import { natureLabel, ALL_NATURES } from '../../constants/natures';
 import { UsageBar, pctOf, pretty, RegulationSelect } from '../views/metaShared';
 import { SpriteSelect } from '../SpriteSelect';
@@ -107,7 +108,13 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     // Derived, not stored: a `useState` + `useEffect` pair lagged one render
     // behind a drag, so mid-gesture events were validated against a stale
     // budget and bounced at random.
-    const remainingEVs = useMemo(() => remainingEvs(customization.evs), [customization.evs]);
+    // Which scale this member's spread is written in: mainline EVs, or Pokémon
+    // Champions' Stat Points (see evBudget.js). It decides the caps, the labels
+    // and how the numbers feed the stat formula — and it is exported as written.
+    const evScale = customization.evScale === 'sp' ? 'sp' : 'ev';
+    const evLimits = evLimitsFor(evScale);
+    const evUnit = evScale === 'sp' ? 'SP' : 'EV';
+    const remainingEVs = useMemo(() => remainingEvs(customization.evs, evScale), [customization.evs, evScale]);
 
     // The sprite in the header sparkles once when the user flips it to shiny —
     // the game's own way of saying "this one is shiny".
@@ -118,7 +125,25 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     // made the leftover EVs unspendable. Now the thumb travels as far as the
     // budget allows and stops on the real cap. (See docs/wounds.md 2026-09-21.)
     const handleEvChange = (stat, value) => {
-        setCustomization((prev) => ({ ...prev, evs: applyEvChange(prev.evs, stat, value) }));
+        setCustomization((prev) => ({
+            ...prev,
+            evs: applyEvChange(prev.evs, stat, value, prev.evScale === 'sp' ? 'sp' : 'ev'),
+        }));
+    };
+
+    // Switching scale re-expresses the spread instead of clearing it: 252 EVs
+    // become 32 Stat Points and back, so the build survives the flip.
+    const handleScaleChange = (nextScale) => {
+        setCustomization((prev) => {
+            const current = prev.evScale === 'sp' ? 'sp' : 'ev';
+            if (current === nextScale) return prev;
+            const { evScale: _dropped, ...rest } = prev;
+            return {
+                ...rest,
+                evs: convertSpread(prev.evs, current, nextScale),
+                ...(nextScale === 'sp' ? { evScale: 'sp' } : {}),
+            };
+        });
     };
 
     const handleCustomizationChange = (field, value) => {
@@ -157,12 +182,18 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         handleMoveToggle(match ? match.name : slug);
     };
 
-    const calculateStat = (base, ev, statName) => {
-        if (statName === 'hp') {
-            return Math.floor(base * 2 + 31 + Math.floor(ev / 4)) + 110;
-        }
-        return Math.floor(Math.floor(base * 2 + 31 + Math.floor(ev / 4)) + 5);
-    };
+    // The stat the set will actually have: at the level the paste is exported
+    // at, with the nature and IVs applied. This used to be the level-100,
+    // neutral-nature, all-31 figure — so the number on screen matched neither
+    // the export ("Level: 50") nor the nature picked one tab over.
+    const calculateStat = (base, ev, statName) => calcStat({
+        base,
+        ev: effectiveEv(ev, evScale),
+        iv: Number.isFinite(Number(customization.ivs?.[statName])) ? Number(customization.ivs[statName]) : 31,
+        level: Number(customization.level) > 0 ? Number(customization.level) : 50,
+        nature: customization.nature || 'serious',
+        statKey: statName,
+    });
 
     const filteredMoves = useMemo(() => {
         const moves = pokemon.moves || [];
@@ -448,14 +479,21 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                     {activeTab === 'stats' && (
                         <div role="tabpanel" id="panel-stats" aria-labelledby="tab-stats" className="space-y-5">
-                            <div className="flex items-baseline justify-between">
-                                <h3 className="text-lg font-bold text-fg">{t('modals.editorModalEffortValues')}</h3>
+                            <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                <h3 className="text-lg font-bold text-fg">{evScale === 'sp' ? t('modals.editorModalStatPoints') : t('modals.editorModalEffortValues')}</h3>
                                 <p className="text-sm text-muted">
-                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}><RollingNumber value={remainingEVs} /></span> / {EV_TOTAL_BUDGET}
+                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}><RollingNumber value={remainingEVs} /></span> / {evLimits.total}
                                 </p>
                             </div>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="segmented segmented--sm" role="group" aria-label={t('modals.editorModalScaleLabel')}>
+                                    <button type="button" className="segmented__item" aria-pressed={evScale === 'ev'} onClick={() => handleScaleChange('ev')}>EVs</button>
+                                    <button type="button" className="segmented__item" aria-pressed={evScale === 'sp'} onClick={() => handleScaleChange('sp')}>{t('modals.editorModalStatPoints')}</button>
+                                </div>
+                                <p className="text-xs text-muted">{evScale === 'sp' ? t('modals.editorModalScaleHintSp') : t('modals.editorModalScaleHintEv')}</p>
+                            </div>
                             <div className="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
-                                <div className="h-full w-full origin-left bg-primary transition-transform duration-200 ease-out" style={{ transform: `scaleX(${(EV_TOTAL_BUDGET - remainingEVs) / EV_TOTAL_BUDGET})` }} />
+                                <div className="h-full w-full origin-left bg-primary transition-transform duration-200 ease-out" style={{ transform: `scaleX(${Math.min(1, Math.max(0, (evLimits.total - remainingEVs) / evLimits.total))})` }} />
                             </div>
 
                             {/* The EV column is typable, so it gets a header — otherwise two
@@ -463,7 +501,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             <div className="flex items-center gap-3 text-[11px] font-semibold text-muted">
                                 <span className="w-10 shrink-0" />
                                 <span className="min-w-0 flex-1" />
-                                <span className="w-14 shrink-0 text-center">EV</span>
+                                <span className="w-14 shrink-0 text-center">{evUnit}</span>
                                 <span className="w-9 shrink-0 text-right">{pt ? 'Total' : 'Stat'}</span>
                             </div>
 
@@ -473,10 +511,10 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     const ev = Number(customization.evs?.[statName]) || 0;
                                     const totalStat = calculateStat(baseStat, ev, statName);
                                     const colorVar = STAT_COLOR_VAR[statName] ?? '--stat-hp';
-                                    const fillPct = Math.min(100, (ev / EV_MAX_PER_STAT) * 100);
+                                    const fillPct = Math.min(100, (ev / evLimits.maxPerStat) * 100);
                                     const statColor = `var(${colorVar})`;
                                     const statLabel = statName.replace(/-/g, ' ');
-                                    const affordable = maxEvFor(customization.evs, statName);
+                                    const affordable = maxEvFor(customization.evs, statName, evScale);
 
                                     // One clean row: stat · slider · typed EV · final stat.
                                     // step=1 on purpose: at step=4 the last 1-3 EVs of a spread
@@ -489,14 +527,14 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                             <input
                                                 type="range"
                                                 min="0"
-                                                max={EV_MAX_PER_STAT}
+                                                max={evLimits.maxPerStat}
                                                 value={ev}
                                                 step="1"
                                                 onChange={(event) => handleEvChange(statName, event.target.value)}
                                                 className="ev-slider min-w-0 flex-1"
                                                 style={{ background: `linear-gradient(to right, ${statColor} 0%, ${statColor} ${fillPct}%, var(--color-surface-raised) ${fillPct}%, var(--color-surface-raised) 100%)` }}
-                                                aria-label={`${statLabel} EV`}
-                                                aria-valuetext={`${ev} EV`}
+                                                aria-label={`${statLabel} ${evUnit}`}
+                                                aria-valuetext={`${ev} ${evUnit}`}
                                             />
                                             <input
                                                 type="number"
@@ -508,7 +546,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 onChange={(event) => handleEvChange(statName, event.target.value)}
                                                 onFocus={(event) => event.target.select()}
                                                 className="w-14 shrink-0 rounded-md border border-border bg-surface-raised px-1 py-1 text-center font-mono text-xs tabular-nums text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary"
-                                                aria-label={`${statLabel} EV value`}
+                                                aria-label={`${statLabel} ${evUnit} value`}
                                                 title={pt ? `Máximo disponível agora: ${affordable}` : `Most you can spend here right now: ${affordable}`}
                                             />
                                             <span className="w-9 shrink-0 text-right font-mono text-sm font-bold tabular-nums text-fg" title={pt ? 'Total' : 'Total stat'}>{totalStat}</span>

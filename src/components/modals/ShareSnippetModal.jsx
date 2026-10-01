@@ -12,9 +12,10 @@ import { CloseIcon, ShareIcon, SwordsIcon, ChartColumnIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useActiveTeamStore } from '../../store/useActiveTeamStore';
-import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
-import { useMegaStones, megaDisplayName } from '../../hooks/useMegaStones';
+import { getPokemonArtworkSpriteUrl } from '../../utils/pokemonSprites';
+import { useMegaStones } from '../../hooks/useMegaStones';
+import { formatEvSpread, formatIvNotes } from '../../utils/smogonSets';
+import { normalizeSpread } from '../../utils/statKeys';
 import { typeColors, typeIcons } from '../../constants/types';
 
 const BRAND_URL = 'https://github.com/ensinho/pokemonTeamBuilder';
@@ -614,6 +615,34 @@ const renderCompetitiveCardSnippetSync = ({ canvas, pokemons, trainerName, teamI
             ctx.fillText(titleCase(item), infoX + 28, itemY + 11, Math.max(40, maxItemTextW));
         }
 
+        // Nature, Tera and the spread — on every card, whichever tab the right
+        // half shows, so one image carries the whole set. (The spread used to
+        // exist only on the "stats" tab, and the moves only on the other.)
+        const usesStatPoints = customization.evScale === 'sp';
+        const natureLine = [
+            titleCase(customization.nature || 'serious'),
+            !usesStatPoints && customization.teraType ? `Tera ${titleCase(customization.teraType)}` : null,
+        ].filter(Boolean).join('  ·  ');
+        ctx.fillStyle = '#A5B4FC';
+        ctx.font = '600 11px system-ui, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(natureLine, infoX, cardY + 114, Math.max(40, cardX + 270 - infoX));
+
+        const spreadText = formatEvSpread(normalizeSpread(customization.evs, 0));
+        const ivText = formatIvNotes(normalizeSpread(customization.ivs, 31));
+        const spreadLine = [
+            spreadText ? `${usesStatPoints ? 'SPs' : 'EVs'} ${spreadText}` : null,
+            ivText ? `IVs ${ivText}` : null,
+        ].filter(Boolean).join('  ·  ');
+        if (spreadLine) {
+            ctx.fillStyle = '#6EE7B7';
+            ctx.font = '600 11px system-ui, sans-serif';
+            // Spans the whole left half, under the sprite: a five-stat spread
+            // does not fit beside it.
+            ctx.fillText(spreadLine, cardX + 14, cardY + 138, 254);
+        }
+
         // Vertical divider
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
         ctx.lineWidth = 1;
@@ -627,8 +656,9 @@ const renderCompetitiveCardSnippetSync = ({ canvas, pokemons, trainerName, teamI
         const rightW = colW - 298;
 
         if (cardTab === 'stats') {
-            const evs = customization.evs || {};
+            const evs = normalizeSpread(customization.evs, 0);
             const nature = customization.nature || 'serious';
+            const unit = usesStatPoints ? 'SP' : 'EV';
 
             ctx.fillStyle = '#A5B4FC';
             ctx.font = '700 13px system-ui, sans-serif';
@@ -657,7 +687,7 @@ const renderCompetitiveCardSnippetSync = ({ canvas, pokemons, trainerName, teamI
 
                 ctx.fillStyle = val > 0 ? '#6EE7B7' : '#D1D5DB';
                 ctx.font = val > 0 ? '700 11px system-ui, sans-serif' : '500 11px system-ui, sans-serif';
-                ctx.fillText(`${val} EV`, rx + 32, ry);
+                ctx.fillText(`${val} ${unit}`, rx + 32, ry);
             });
         } else {
             // Moves View (Type Icon Badge ONLY — NO text string!)
@@ -761,6 +791,9 @@ export const ShareSnippetModal = ({
     pokemons = [],
     defaultTitle = '',
     shareUrl = '',
+    linkStatus = 'idle',
+    onRetryLink,
+    sourceTeam = [],
     showToast,
 }) => {
     const { t, language } = useTranslation();
@@ -1001,34 +1034,20 @@ export const ShareSnippetModal = ({
             return;
         }
 
-        const currentTeam = useActiveTeamStore.getState().currentTeam;
-        if (!currentTeam || currentTeam.length === 0) {
+        // The team this modal was opened for — not whatever the builder holds.
+        // Sharing a *saved* team from the list used to post the builder's
+        // current roster instead, or fail outright when the builder was empty.
+        if (!sourceTeam || sourceTeam.length === 0) {
             showToast?.(t('modals.shareModalErrGenerate'), 'error');
             return;
         }
 
         setIsPosting(true);
         try {
+            // The forum store serializes (and applies the Species Clause to) the roster.
             const forumTeamData = {
                 name: title || t('modals.shareModalDefaultTitle'),
-                pokemons: currentTeam.map((p) => {
-                    const item = p?.customization?.item;
-                    const mega = item && megaStones ? megaStones[item] : null;
-                    const isMega = mega && mega.baseId === p.id;
-                    const spriteId = isMega ? mega.spriteId : p.id;
-                    const name = isMega ? megaDisplayName(mega.form) : p.name;
-                    return {
-                        id: p.id,
-                        name,
-                        types: Array.isArray(p.types) ? p.types : (p.types ? [p.types] : []),
-                        sprite: getPokemonArtworkSpriteUrl(spriteId),
-                        shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
-                        animatedSprite: getPokemonFrontSpriteUrl(spriteId),
-                        animatedShinySprite: getPokemonFrontSpriteUrl(spriteId, { shiny: true }),
-                        instanceId: p.instanceId,
-                        customization: p.customization || {},
-                    };
-                }),
+                pokemons: sourceTeam,
             };
 
             const postText = subtitle
@@ -1054,7 +1073,7 @@ export const ShareSnippetModal = ({
         } finally {
             setIsPosting(false);
         }
-    }, [title, subtitle, onClose, showToast, t, megaStones]);
+    }, [title, subtitle, onClose, showToast, t, sourceTeam]);
 
     if (!isOpen) return null;
 
@@ -1270,6 +1289,29 @@ export const ShareSnippetModal = ({
                         )}
                         <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
                     </div>
+
+                    {/* The link is written to the database; the picture is not. While
+                        it is pending or has failed, say so here — the image
+                        actions below work either way. */}
+                    {!shareUrl && linkStatus === 'pending' && (
+                        <p className="rounded-xl bg-surface-raised p-3 text-xs text-muted" role="status">
+                            {t('modals.shareModalLinkPending')}
+                        </p>
+                    )}
+                    {!shareUrl && linkStatus === 'error' && (
+                        <div className="flex items-center gap-2 rounded-xl bg-surface-raised p-2" role="status">
+                            <p className="min-w-0 flex-1 px-1 text-xs text-muted">{t('modals.shareModalLinkFailed')}</p>
+                            {onRetryLink && (
+                                <button
+                                    type="button"
+                                    onClick={onRetryLink}
+                                    className="rounded-lg bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 px-3 py-1.5 text-xs font-bold transition-all"
+                                >
+                                    {t('toast.retry')}
+                                </button>
+                            )}
+                        </div>
+                    )}
 
                     {/* Share URL copy field */}
                     {shareUrl && (

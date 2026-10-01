@@ -30,5 +30,8 @@ export function useActiveTeam() {
         buildShowdownExportText: store.buildShowdownExportText,
         shareTeamByData: store.shareTeamByData,
         handleShareTeam: store.handleShareTeam,
+        createShareLink: store.createShareLink,
+        importTeam: store.importTeam,
+        exportMembersToShowdown: store.exportMembersToShowdown,
     };
 }
