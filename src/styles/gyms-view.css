@@ -34,7 +34,7 @@
     .gyms-view .gyms-section-head h2 {
         font-family: var(--font-display);
         font-size: var(--text-md);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
         letter-spacing: -0.03em;
         text-transform: none;
         color: var(--color-fg);

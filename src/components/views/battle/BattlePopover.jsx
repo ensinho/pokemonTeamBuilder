@@ -127,7 +127,7 @@ export function MonTooltipCard({ speciesName, level = 50, hpCondition, status, i
                 <div className="flex items-center gap-2">
                     <span className="font-bold text-sm text-fg">{spec.name}</span>
                     {level && <span className="text-xs text-muted font-mono">L{level}</span>}
-                    {!isMine && <span className="text-[10px] text-muted uppercase font-bold bg-surface-raised px-1 py-0.5 rounded">Enemy</span>}
+                    {!isMine && <span className="text-2xs text-muted uppercase font-bold bg-surface-raised px-1 py-0.5 rounded tracking-[0.06em]">Enemy</span>}
                 </div>
                 <div className="flex items-center gap-1">
                     {(spec.types || []).map((type) => {
@@ -189,7 +189,7 @@ export function MonTooltipCard({ speciesName, level = 50, hpCondition, status, i
                 {status && (
                     <div className="battle-popover__meta-row">
                         <Zap className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
-                        <span className="text-xs font-bold text-amber-400 uppercase">{status}</span>
+                        <span className="text-xs font-bold text-amber-400">{status}</span>
                     </div>
                 )}
             </div>

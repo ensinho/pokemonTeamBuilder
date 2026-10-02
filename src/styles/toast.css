@@ -180,7 +180,7 @@
 .toast__title {
     margin: 0;
     font-size: var(--text-base);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     line-height: 1.35;
     color: var(--color-fg);
     /* Long messages wrap instead of being cut. The old toast used `truncate`,
@@ -217,7 +217,7 @@
     border: none;
     border-radius: var(--radius-md);
     font-size: var(--text-sm);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     line-height: 1;
     cursor: pointer;
     transition:

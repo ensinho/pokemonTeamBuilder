@@ -29,7 +29,7 @@ export function MoveChip({ name, type, className = '' }) {
         <button
             type="button"
             onClick={(e) => goToMove(name, e)}
-            className={`inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] font-semibold capitalize transition-opacity hover:opacity-75 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${color ? '' : 'border-border bg-surface-raised text-fg'} ${className}`}
+            className={`inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs font-semibold capitalize transition-opacity hover:opacity-75 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${color ? '' : 'border-border bg-surface-raised text-fg'}  ${className}`}
             style={style}
             title={pretty(name)}
         >
@@ -90,7 +90,7 @@ export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary
             onClick={onClick}
             title={title}
             aria-pressed={onClick ? active : undefined}
-            className={`group relative flex w-full items-center gap-2 overflow-hidden rounded-lg border bg-surface px-2.5 py-1.5 text-left ${active ? 'border-primary ring-1 ring-primary/40' : 'border-border'} ${onClick ? 'transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''}`}
+            className={`group relative flex w-full items-center gap-2 overflow-hidden rounded-lg border bg-surface px-2.5 py-1.5 text-left ${active ? 'border-primary ring-1 ring-primary/40' : 'border-border'}  ${onClick ? 'transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''}`}
         >
             <span
                 className="absolute inset-y-0 left-0 rounded-lg opacity-15 transition-all"
@@ -98,9 +98,9 @@ export function UsageBar({ label, icon, pct, count, color = 'var(--color-primary
                 aria-hidden="true"
             />
             {icon && <span className="relative z-10 flex h-4 w-4 shrink-0 items-center justify-center">{icon}</span>}
-            <span className="relative z-10 min-w-0 flex-1 truncate text-[12px] font-semibold capitalize text-fg">{label}</span>
-            <span className="relative z-10 shrink-0 text-[11px] font-bold tabular-nums" style={{ color }}>{pct}%</span>
-            {count != null && <span className="relative z-10 shrink-0 text-[10px] tabular-nums text-muted">{count}</span>}
+            <span className="relative z-10 min-w-0 flex-1 truncate text-xs font-semibold capitalize text-fg">{label}</span>
+            <span className="relative z-10 shrink-0 text-2xs font-bold tabular-nums" style={{ color }}>{pct}%</span>
+            {count != null && <span className="relative z-10 shrink-0 text-2xs tabular-nums text-muted">{count}</span>}
             {trailing && <span className="relative z-10 flex shrink-0 items-center justify-center">{trailing}</span>}
         </Comp>
     );
@@ -121,7 +121,7 @@ export const SOURCE_LINKS = {
 export function SourceCredit({ pt = false, sources = ['vgcpastes', 'smogon', 'limitless', 'pikalytics'], className = '' }) {
     const links = sources.map((k) => SOURCE_LINKS[k]).filter(Boolean);
     return (
-        <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted ${className}`}>
+        <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-2xs text-muted ${className}`}>
             <span className="inline-flex items-center gap-1 font-medium">
                 <Info className="h-3 w-3" /> {pt ? 'Fontes' : 'Sources'}
             </span>

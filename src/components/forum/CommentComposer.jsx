@@ -190,7 +190,7 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-muted hidden md:inline">
+                        <span className="text-2xs text-muted hidden md:inline">
                             {language === 'pt' ? 'Enter envia • Shift+Enter quebra linha' : 'Enter sends • Shift+Enter new line'}
                         </span>
                         <button

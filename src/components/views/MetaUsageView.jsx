@@ -26,7 +26,7 @@ import { Loader } from '../Loader';
 function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
     return (
         <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
-            <span className="w-5 shrink-0 text-center text-[11px] font-bold text-muted">#{rank}</span>
+            <span className="w-5 shrink-0 text-center text-2xs font-bold text-muted">#{rank}</span>
             <div className="flex shrink-0 -space-x-1.5">
                 {core.ids.map((id) => (
                     <button
@@ -40,12 +40,12 @@ function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
                     </button>
                 ))}
             </div>
-            <span className="min-w-0 flex-1 truncate text-[12px] font-semibold capitalize text-fg">
+            <span className="min-w-0 flex-1 truncate text-xs font-semibold capitalize text-fg">
                 {core.names.map(pretty).join(' · ')}
             </span>
             <div className="shrink-0 text-right">
                 <span className="block text-sm font-extrabold tabular-nums text-primary">{core.pct}%</span>
-                <span className="block text-[10px] tabular-nums text-muted">{core.count.toLocaleString()} {unit}</span>
+                <span className="block text-2xs tabular-nums text-muted">{core.count.toLocaleString()} {unit}</span>
             </div>
         </div>
     );
@@ -239,7 +239,7 @@ export function MetaUsageView() {
                     cut off at "clique em um..." reads as broken. The how-to clause
                     is for a pointer; on a phone the cards are plainly tappable,
                     so dropping it is what lets the sentence end on its own. */}
-                <p className="max-w-2xl text-[13px] text-muted sm:text-sm">
+                <p className="max-w-2xl text-sm text-muted sm:text-sm">
                     {usingSmogon && format ? (
                         <>
                             {pt
@@ -364,7 +364,7 @@ export function MetaUsageView() {
                             <Users className="h-4 w-4" /> {pt ? 'Times mais usados' : 'Most-used teams'}
                         </h2>
                         {!regHasTeams && format && (
-                            <span className="text-[11px] text-muted">
+                            <span className="text-2xs text-muted">
                                 {pt ? '(todas as regulações — sem times de torneio nesta ainda)' : '(all regulations — no tournament teams in this one yet)'}
                             </span>
                         )}
@@ -381,10 +381,10 @@ export function MetaUsageView() {
                                     className="group flex flex-col gap-2.5 rounded-2xl border border-border bg-surface p-3 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-[10px] font-bold text-muted">#{i + 1}</span>
+                                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs font-bold text-muted">#{i + 1}</span>
                                         <span className="text-right">
                                             <span className="text-sm font-extrabold tabular-nums text-primary">{tm.count}</span>
-                                            <span className="ml-1 text-[11px] text-muted">{tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team')} · {tm.pct}%</span>
+                                            <span className="ml-1 text-2xs text-muted">{tm.count > 1 ? (pt ? 'times' : 'teams') : (pt ? 'time' : 'team')} · {tm.pct}%</span>
                                         </span>
                                     </div>
                                     <div className="flex flex-wrap gap-1.5">
@@ -393,7 +393,7 @@ export function MetaUsageView() {
                                         ))}
                                     </div>
                                     <div className="flex items-center justify-between gap-2">
-                                        <span className="min-w-0 truncate text-[11px] text-muted">{[tm.tournament, tm.placement].filter(Boolean).join(' · ')}</span>
+                                        <span className="min-w-0 truncate text-2xs text-muted">{[tm.tournament, tm.placement].filter(Boolean).join(' · ')}</span>
                                         <ArrowUpRight className="h-3.5 w-3.5 shrink-0 text-muted transition-colors group-hover:text-primary" />
                                     </div>
                                 </button>
@@ -424,17 +424,17 @@ export function MetaUsageView() {
                                         onClick={() => openMon(mon.id)}
                                         className="meta-mon-card group relative flex flex-col items-center rounded-2xl border border-border bg-surface p-2.5 text-center transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                     >
-                                        <span className="absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-[10px] font-bold text-muted">{rank}</span>
+                                        <span className="absolute left-2 top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-surface-raised px-1 text-2xs font-bold text-muted">{rank}</span>
                                         <MonSprite id={mon.id} name={mon.name} className="h-16 w-16 image-pixelated" />
-                                        <span className="w-full truncate text-[12px] font-bold capitalize text-fg">{pretty(mon.name)}</span>
+                                        <span className="w-full truncate text-xs font-bold capitalize text-fg">{pretty(mon.name)}</span>
                                         <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-surface-raised">
                                             <span className="block h-full rounded-full bg-primary" style={{ width: `${Math.max(mon.pct, 3)}%` }} />
                                         </div>
-                                        <span className="meta-mon-card__pct mt-1 text-[10px] font-semibold tabular-nums text-muted">
+                                        <span className="meta-mon-card__pct mt-1 text-2xs font-semibold tabular-nums text-muted">
                                             <strong className="meta-mon-card__value">{mon.pct}%</strong> {usingSmogon ? (pt ? 'uso' : 'usage') : `· ${mon.count} ${pt ? 'times' : 'teams'}`}
                                         </span>
                                         {Number.isFinite(mon.winRate) && (
-                                            <span className="text-[10px] font-semibold tabular-nums text-muted">
+                                            <span className="text-2xs font-semibold tabular-nums text-muted">
                                                 {mon.winRate}% {pt ? 'vit' : 'WR'}
                                             </span>
                                         )}
@@ -457,7 +457,7 @@ export function MetaUsageView() {
                         <h2 className="mb-1 flex items-center gap-1.5 text-base font-semibold text-fg">
                             <Layers className="h-4 w-4" /> {pt ? 'Duplas comuns' : 'Common pairs'}
                         </h2>
-                        <p className="mb-3 text-[0.6875rem] text-muted">
+                        <p className="mb-3 text-2xs text-muted">
                             {isTier
                                 ? (pt ? 'Parceiros mais frequentes no ladder' : 'Most frequent partners on the ladder')
                                 : (pt ? 'De times recentes de torneios' : 'From recent tournament teams')}

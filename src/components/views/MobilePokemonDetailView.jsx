@@ -544,7 +544,7 @@ export function MobilePokemonDetailView({
                                     if (!showShiny) shinyBurst.fire();
                                     setShowShiny((value) => !value);
                                 }}
-                                className={`pdm__iconbtn ${showShiny ? 'is-active' : ''} ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
+                                className={`pdm__iconbtn ${showShiny ? 'is-active' : ''}  ${shinyBurst.isBursting ? 'is-bursting' : ''}`}
                                 aria-pressed={showShiny}
                                 aria-label={t('pokedex.toggleShiny')}
                             >
@@ -558,7 +558,7 @@ export function MobilePokemonDetailView({
                                         if (!isFavorite) favoriteBurst.fire();
                                         onToggleFavoritePokemon(Number(identity.id));
                                     }}
-                                    className={`pdm__iconbtn ${isFavorite ? 'is-active' : ''} ${favoriteBurst.isBursting ? 'is-bursting' : ''}`}
+                                    className={`pdm__iconbtn ${isFavorite ? 'is-active' : ''}  ${favoriteBurst.isBursting ? 'is-bursting' : ''}`}
                                     aria-pressed={isFavorite}
                                     aria-label={isFavorite ? t('common.remove') : t('pokedex.addFavorite')}
                                 >

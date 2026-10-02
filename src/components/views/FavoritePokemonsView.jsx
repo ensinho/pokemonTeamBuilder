@@ -234,7 +234,7 @@ export function FavoritePokemonsView({
                                     {groupedByGen.map(([groupName, pokemonList]) => (
                                         <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm max-lg:backdrop-filter-none transition-all duration-300 hover:shadow-md">
                                             <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                                                <h3 className="text-base font-bold text-fg capitalize tracking-wide flex items-center gap-2">
+                                                <h3 className="text-base font-bold text-fg capitalize flex items-center gap-2">
                                                     <StarIcon className="w-4 h-4 text-warning shrink-0" />
                                                     <span>{groupName}</span>
                                                 </h3>
@@ -265,7 +265,7 @@ export function FavoritePokemonsView({
                                     {groupedByType.map(([groupName, pokemonList]) => (
                                         <div key={groupName} className="mb-6 border border-border bg-surface-raised/20 rounded-xl p-4 shadow-sm backdrop-blur-sm max-lg:backdrop-filter-none transition-all duration-300 hover:shadow-md">
                                             <div className="flex items-center justify-between mb-4 border-b border-border pb-2">
-                                                <h3 className="text-base font-bold text-fg capitalize tracking-wide flex items-center gap-2">
+                                                <h3 className="text-base font-bold text-fg capitalize flex items-center gap-2">
                                                     {typeIcons[groupName] && (
                                                         <img
                                                             src={typeIcons[groupName]}

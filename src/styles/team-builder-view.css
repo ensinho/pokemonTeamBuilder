@@ -50,31 +50,31 @@
 .team-builder-control__label {
     margin: 0;
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .team-builder-panel__title {
     margin: var(--space-1) 0 0;
-    font-size: 1.1rem;
-    font-weight: 700;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.02em;
     color: var(--color-fg);
 }
 
 .team-builder-panel__title--small {
-    font-size: 0.9375rem;
+    font-size: var(--text-md);
 }
 
 .team-builder-panel__title--compact {
     margin-top: 0;
-    font-size: 0.9375rem;
+    font-size: var(--text-md);
 }
 
 .team-builder-panel__copy {
     margin: var(--space-2) 0 0;
     max-width: 20rem;
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     line-height: 1.5;
     color: var(--color-muted);
 }
@@ -88,13 +88,13 @@
     background: var(--color-surface-raised);
     padding: var(--space-1) var(--space-2);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .team-builder-panel__meta--compact {
     padding: var(--space-1) var(--space-2);
-    font-size: 0.625rem;
+    font-size: var(--text-2xs);
 }
 
 .team-builder-control {
@@ -109,17 +109,21 @@
 }
 
 .team-builder-control__label--compact {
-    font-size: 0.625rem;
+    font-size: var(--text-2xs);
     letter-spacing: 0.08em;
 }
 
+/* Fields share the input primitive's look (index.css .input-clean): a surface
+   fill and the control edge (--color-border-strong). They used the region
+   whisper (--color-border) on a raised fill, which on the light themes is
+   #f7f7f7 on #f6f6f7 — a search field with no edge at all. */
 .team-builder-field,
 .team-builder-select,
 .team-builder-toggle {
     width: 100%;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
+    background: var(--color-surface);
     color: var(--color-fg);
     padding: var(--space-2) var(--space-3);
     box-sizing: border-box;
@@ -133,9 +137,9 @@
    controls never lines up along its baseline. */
 .team-builder-field--compact {
     border-radius: var(--radius-md);
-    height: 2.25rem;
+    height: var(--control-h-md);
     padding: 0 var(--space-3);
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
 }
 
 /* The local field padding above would otherwise close the gutter the shared
@@ -155,8 +159,8 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-1_5);
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     cursor: pointer;
 }
 
@@ -166,7 +170,7 @@
     gap: var(--space-1_5);
     border-radius: var(--radius-md);
     padding: 0 var(--space-2_5);
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
 }
 
 .team-builder-toggle.is-active {
@@ -194,35 +198,33 @@
     outline-offset: 2px;
 }
 
+/* Six slots on the team surface itself. No well around them: the card owns
+   the edge (v3) — a bordered --color-bg tray 6px inside the panel was the box
+   in a box the builder opened with. A filled slot is a raised fill; an empty
+   one is dashed, the one place dashed belongs (it means empty). */
 .team-builder-slots {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-1_5);
-    min-height: 10rem;
-    margin-top: var(--space-1_5);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background: var(--color-bg);
-    padding: var(--space-2);
+    gap: var(--space-2);
 }
 
 .team-builder-slot {
     position: relative;
     display: flex;
-    min-height: 5rem;
+    min-height: 5.5rem;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: var(--space-1);
     border: 1px solid transparent;
     border-radius: var(--radius-md);
-    padding: var(--space-1_5) var(--space-1);
+    padding: var(--space-2) var(--space-1);
     text-align: center;
-    background: transparent;
+    background: var(--color-surface-raised);
+    cursor: pointer;
 }
 
 /* Hover states */
-.team-builder-type-button:hover,
 .team-builder-button:hover,
 .team-builder-icon-button:hover {
     border-color: var(--color-border-hover);
@@ -281,8 +283,7 @@
 
 .team-builder-slot:not(.team-builder-slot--empty):hover,
 .team-builder-slot:not(.team-builder-slot--empty):focus-within {
-    border-color: var(--color-primary);
-    background: var(--color-surface-raised);
+    background: var(--color-surface-hover);
 }
 
 .team-builder-slot.is-dragging {
@@ -299,33 +300,47 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.675rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    text-transform: capitalize;
     color: var(--color-fg);
 }
 
+/* Edit / remove: quiet glyphs on the slot's corners, present on hover and on
+   keyboard focus. No ring round them — a bordered circle on a filled slot was
+   a box on a box. */
 .team-builder-slot__control {
     position: absolute;
-    top: 0.2rem;
+    top: var(--space-1);
     display: inline-flex;
     height: 1.5rem;
     width: 1.5rem;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
+    border: none;
+    border-radius: var(--radius-sm);
     background: var(--color-surface);
     color: var(--color-muted);
     opacity: 0;
-    transition: opacity var(--duration-fast) var(--ease-smooth);
+    cursor: pointer;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                background-color var(--duration-fast) var(--ease-smooth);
 }
 
+.team-builder-slot__control svg { width: 0.875rem; height: 0.875rem; }
+
+.team-builder-slot__control:hover { color: var(--color-fg); }
+
 .team-builder-slot__control--edit {
-    left: 0.2rem;
+    left: var(--space-1);
 }
 
 .team-builder-slot__control--remove {
-    right: 0.2rem;
+    right: var(--space-1);
+}
+
+.team-builder-slot__control--remove:hover {
     color: var(--color-danger);
 }
 
@@ -335,18 +350,15 @@
 }
 
 .team-builder-slot--empty {
-    border: 1px dashed color-mix(in srgb, var(--color-border) 55%, transparent);
-    background: var(--color-surface);
+    border: 1px dashed var(--color-border-strong);
+    background: transparent;
+    cursor: default;
 }
 
-.team-builder-slot--empty:hover {
-    border-color: var(--color-border-hover);
-    background: var(--color-surface-raised);
-}
-
-.team-builder-slot--empty img {
-    width: 2.25rem;
-    opacity: 0.25;
+.team-builder-slot__placeholder {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--color-border-strong);
 }
 
 .team-builder-action-row,
@@ -368,8 +380,8 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     padding: var(--space-2) var(--space-3);
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     color: var(--color-fg);
 }
 
@@ -391,13 +403,13 @@
 
 .team-builder-button--inline {
     padding: var(--space-1_5) var(--space-2_5);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--color-primary);
 }
 
 .team-builder-button--inline-compact {
     padding: var(--space-1) var(--space-2);
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
 }
 
 .team-builder-button--small {
@@ -405,7 +417,7 @@
     gap: var(--space-1_5);
     border-radius: var(--radius-md);
     padding: var(--space-1_5) var(--space-2);
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
 }
 
 .team-builder-icon-button {
@@ -481,8 +493,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
@@ -579,7 +591,7 @@
     background: var(--color-surface-raised);
     padding: 0 var(--space-3);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     white-space: nowrap;
     color: var(--color-muted);
 }
@@ -664,25 +676,31 @@
     gap: var(--space-1);
 }
 
+/* Type toggles: the type's own icon on a quiet fill; on is a ring and a tint
+   (selection is state, so it takes the brand colour). Fill-only — eighteen
+   bordered squares in a row were eighteen boxes. */
 .team-builder-type-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-border);
+    border: none;
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     padding: var(--space-1_5);
+    cursor: pointer;
 }
 
+.team-builder-type-button:hover { background: var(--color-surface-hover); }
+
 .team-builder-type-button--compact {
-    width: 1.85rem;
-    height: 1.85rem;
+    width: 2rem;
+    height: 2rem;
     padding: var(--space-1);
 }
 
 .team-builder-type-button.is-active {
-    border-color: var(--color-primary);
     background: var(--color-primary-soft);
+    box-shadow: var(--ring-primary);
 }
 
 .team-builder-analysis-grid {
@@ -718,7 +736,7 @@
 .team-builder-analysis-card__title {
     margin: 0 0 var(--space-2);
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     letter-spacing: 0;
 }
 
@@ -732,20 +750,333 @@
 }
 
 .team-builder-analysis-score {
-    font-size: 0.675rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
 }
 
 .team-builder-analysis-score--success {
     color: var(--color-success);
 }
 
+/* ============================================================
+   DESKTOP BUILDER (design system v3, 2026-10-02)
+   Left: the composer — one surface for the team (name, slots, what it adds
+   up to, what you can do with it) and one for its analysis. Right: the
+   picker surface, then "Recent teams" as a plain section of cards on the
+   canvas. Before v3 the left column was five boxes (meta core, guide, team,
+   analysis, and a bordered tray round the slots inside the team box).
+   ============================================================ */
+/* The composer column has a floor: at 3/12 of a 1440 window it was 254px and
+   "Ameaças do meta" ran out of its own tab strip. */
+.tb-desk {
+    grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr);
+}
+
+.tb-desk__composer {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+.tb-desk__picker {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    min-width: 0;
+}
+
+.tb-team {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.tb-team__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+/* The team's name is its title: the subheading role, editable in place. The
+   negative inline margin puts the text — not the field's box — on the card's
+   padding edge, so it lines up with the slots under it. */
+.tb-team__name {
+    flex: 1;
+    min-width: 0;
+    height: var(--control-h-sm);
+    margin-left: calc(var(--space-2) * -1);
+    padding: 0 var(--space-2);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-fg);
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em;
+    text-overflow: ellipsis;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                border-color var(--duration-fast) var(--ease-smooth),
+                box-shadow var(--duration-fast) var(--ease-smooth);
+}
+
+.tb-team__name::placeholder { color: var(--color-muted); }
+
+.tb-team__name:hover { background: var(--color-surface-hover); }
+
+.tb-team__name:focus,
+.tb-team__name:focus-visible {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-surface);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
+}
+
+.tb-team__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+.tb-team__save {
+    flex: 1;
+    margin-right: var(--space-1);
+}
+
+/* Destructive, so it says so on hover — the one glyph in the row that does. */
+.btn.btn-ghost.tb-team__clear:hover:not(:disabled) {
+    color: var(--color-danger);
+}
+
+.tb-team__tools {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* "Meta core": a row you open, on the raised fill the slots use. */
+.tb-core-row {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    min-height: var(--control-h-md);
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-2) 0 var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.tb-core-row:hover { background: var(--color-surface-hover); }
+.tb-core-row:active { background: var(--color-surface-active); }
+
+.tb-core-row__icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+.tb-core-row__label {
+    flex-shrink: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+}
+
+.tb-core-row__value {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: var(--space-1);
+    overflow: hidden;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    white-space: nowrap;
+}
+
+.tb-core-row__empty {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* A detected core, tinted in its own accent the way a type chip is. */
+.tb-core-chip {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: var(--space-1);
+    height: 1.25rem;
+    padding: 0 var(--space-1_5);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--core-accent, var(--color-primary)) 14%, transparent);
+    color: color-mix(in srgb, var(--core-accent, var(--color-primary)) 60%, var(--color-fg));
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tb-core-chip svg { width: 0.75rem; height: 0.75rem; flex-shrink: 0; }
+
+.tb-core-row__more {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.tb-core-row__chevron {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+    color: var(--color-muted);
+}
+
+/* Analysis: three groups on the card itself — a quiet title with a status
+   mark (green adds up, red is exposed) and the type icons. Until v3 each group
+   was its own bordered card with a green or red mono heading. */
+.tb-analysis {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-top: var(--space-1);
+}
+
+.tb-analysis__groups {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.tb-analysis__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.tb-analysis__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0;
+    color: var(--color-fg-secondary);
+}
+
+.tb-analysis__mark {
+    width: 0.375rem;
+    height: 0.375rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+}
+
+.tb-analysis__mark--good { background: var(--color-success); }
+.tb-analysis__mark--bad { background: var(--color-danger); }
+
+.tb-analysis__types {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+}
+
+.tb-analysis__empty {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.45;
+    color: var(--color-muted);
+}
+
+/* Recent teams: a section on the canvas, each team one card. */
+.tb-recent__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+    gap: var(--space-3);
+}
+
+.tb-recent-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.tb-recent-card__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.tb-recent-card__title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.btn.tb-recent-card__star.is-on { color: var(--color-accent); }
+
+.tb-recent-card__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    margin-top: auto;
+}
+
+.tb-recent-card__edit { flex: 1; }
+
+.btn.tb-recent-card__active[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--color-success) 14%, transparent);
+    color: color-mix(in srgb, var(--color-success) 80%, var(--color-fg));
+}
+
+.btn.btn-ghost.tb-recent-card__delete:hover:not(:disabled) { color: var(--color-danger); }
+
+.tb-recent__empty {
+    margin: 0;
+    padding: var(--space-4) 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+/* The identity strip under the slots (TeamIdentitySummary). */
+.tb-identity { margin: 0; }
+
+.tb-identity .stat__value { font-size: var(--text-sm); }
+
+.tb-identity__hint {
+    margin: 0;
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .team-builder-header-input {
     border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
     padding: var(--space-1) var(--space-2);
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     border-radius: var(--radius-md);
     outline: none;
@@ -854,7 +1185,7 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .team-builder-mobile__filter-toggle.has-active,
@@ -887,8 +1218,8 @@
     border-radius: var(--radius-full);
     background: var(--color-primary);
     color: var(--color-on-primary);
-    font-size: 0.625rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     line-height: 1;
 }
 
@@ -982,8 +1313,8 @@
     display: block;
     width: 100%;
     margin-top: var(--space-0_5);
-    font-size: 0.45rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     text-transform: capitalize;
     text-align: left;
     white-space: nowrap;
@@ -1000,9 +1331,9 @@
     border: 1px solid color-mix(in srgb, var(--color-success) 20%, var(--color-border));
     background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
     padding: var(--space-0_5) var(--space-1_5);
-    font-size: 0.475rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
     color: var(--color-success);
 }
@@ -1038,8 +1369,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.675rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     line-height: 1.3;
     color: var(--color-fg);
 }
@@ -1138,7 +1469,9 @@
     align-items: center;
 }
 
-/* Collapsible filter bar: type chips + search + chevron on a single row */
+/* Filter bar: search + the filter disclosure on the first row, the eighteen
+   type toggles on their own row under it. They used to share one row, which
+   left the search 140px wide ("Pesquisar P…") the moment the grid was wide. */
 .team-builder-filterbar {
     display: flex;
     align-items: center;
@@ -1147,15 +1480,15 @@
 }
 
 .team-builder-filterbar .team-builder-type-grid--compact {
-    flex: 0 1 auto;
+    order: 3;
+    flex: 1 1 100%;
     min-width: 0;
-    justify-content: flex-end;
+    justify-content: flex-start;
 }
 
 .team-builder-search-wrap--inline {
-    flex: 1 1 240px;
-    min-width: 200px;
-    height: 2.15rem;
+    flex: 1 1 15rem;
+    min-width: 12rem;
 }
 
 .team-builder-filter-toggle {
@@ -1164,11 +1497,11 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 2.15rem;
-    height: 2.15rem;
+    width: var(--control-h-md);
+    height: var(--control-h-md);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
     color: var(--color-muted);
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth),
@@ -1181,10 +1514,11 @@
     border-color: var(--color-border-hover);
 }
 
+/* Open is a fill, like a pressed toggle — the brand colour stays on the dot
+   that says filters are active. */
 .team-builder-filter-toggle.is-open {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
-    background: var(--color-primary-soft);
+    color: var(--color-fg);
+    background: var(--color-surface-active);
 }
 
 .team-builder-filter-toggle__chevron {
@@ -1206,12 +1540,16 @@
     box-shadow: 0 0 0 2px var(--color-surface);
 }
 
+/* The app's search field: the field primitive with its glyph inside. One
+   focus treatment for every field — the inset primary ring of .input-clean —
+   where this one used an outer primary-soft halo, so a search box and the
+   select beside it answered focus differently. */
 .team-builder-search-wrap {
     position: relative;
     flex: 2;
-    min-width: 140px;
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
+    min-width: 8.75rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-md);
     transition: border-color var(--duration-fast) var(--ease-smooth),
         background-color var(--duration-fast) var(--ease-smooth),
@@ -1224,13 +1562,12 @@
 
 .team-builder-search-wrap:focus-within {
     border-color: var(--color-primary);
-    background: var(--color-surface);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
 .team-builder-search-icon {
     position: absolute;
-    left: 0.6rem;
+    left: var(--space-3);
     top: 50%;
     transform: translateY(-50%);
     color: var(--color-muted);
@@ -1240,8 +1577,14 @@
 }
 
 .team-builder-search-icon svg {
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 1rem;
+    height: 1rem;
+}
+
+/* The wrapper owns the 1px edge, so the field inside is that much shorter —
+   the whole control lands on --control-h-md, flush with a .btn beside it. */
+.team-builder-search-wrap > .team-builder-search-input {
+    height: calc(var(--control-h-md) - 2px);
 }
 
 .team-builder-search-input {
@@ -1261,7 +1604,7 @@
 
 .team-builder-search-clear {
     position: absolute;
-    right: 0.5rem;
+    right: var(--space-2);
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
@@ -1438,7 +1781,7 @@
     .pokedex-moves-table th,
     .pokedex-moves-table td {
         padding: var(--space-2) var(--space-1) !important;
-        font-size: 0.72rem !important;
+        font-size: var(--text-xs) !important;
     }
 
     .pokedex-moves-table th:first-child,
@@ -1644,8 +1987,8 @@
     border-radius: var(--radius-full);
     background: var(--color-primary);
     color: var(--color-on-primary);
-    font-size: 0.625rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     line-height: 1;
     border: 2px solid var(--color-surface);
 }
@@ -1690,7 +2033,7 @@
 .pokedex-sheet-label {
     margin: 0 0 var(--space-2);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -1719,8 +2062,8 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-fg);
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth),
                 background-color var(--duration-fast) var(--ease-smooth);
@@ -1741,8 +2084,8 @@
     border-radius: var(--radius-full);
     background: var(--color-primary);
     color: var(--color-on-primary);
-    font-size: 0.625rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
 }
 
 /* Team Builder mobile composer — compact 3-row layout:
@@ -1848,8 +2191,8 @@
 
 /* Result count above the picker grid (game & Core moved to the Filtros sheet). */
 .team-builder-mobile__result-count {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -1891,8 +2234,8 @@
     border-radius: var(--radius-full);
     background: var(--color-primary);
     color: var(--color-on-primary);
-    font-size: 0.6rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     line-height: 1;
 }
 
@@ -1920,8 +2263,8 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-fg);
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth),
                 background-color var(--duration-fast) var(--ease-smooth);
@@ -1972,7 +2315,7 @@
 .pokedex-section-title {
     grid-column: 1 / -1;
     font-size: var(--text-sm);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     letter-spacing: 0;
     color: var(--color-primary);
     padding: var(--space-1) 0 var(--space-2);
@@ -1989,7 +2332,7 @@
 }
 
 .pokedex-section-title--mobile {
-    font-size: 0.625rem;
+    font-size: var(--text-2xs);
     margin: var(--space-5) var(--space-1) var(--space-2);
 }
 /* The condensed composer's compact Save is 25px tall. On a coarse pointer it
@@ -2088,8 +2431,8 @@
         align-items: center;
         gap: var(--space-1);
         margin-top: var(--space-0_5);
-        font-size: 0.625rem;
-        font-weight: 600;
+        font-size: var(--text-2xs);
+        font-weight: var(--weight-semibold);
         letter-spacing: 0;
         color: var(--synergy-color, var(--color-primary));
     }

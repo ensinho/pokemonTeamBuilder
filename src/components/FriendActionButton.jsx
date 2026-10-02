@@ -30,10 +30,10 @@ export function FriendActionButton({ targetUserId, className = '' }) {
     }
 
     if (friends.some((friend) => friend.userId === targetUserId)) {
-        return <span className={`badge badge-success ${className}`}>{t('friends.alreadyFriends')}</span>;
+        return <span className={`badge badge--success ${className}`}>{t('friends.alreadyFriends')}</span>;
     }
     if (outgoingRequests.some((row) => row.to === targetUserId)) {
-        return <span className={`badge badge-outline ${className}`}>{t('friends.requestPending')}</span>;
+        return <span className={`badge ${className}`}>{t('friends.requestPending')}</span>;
     }
     if (incomingRequests.some((row) => row.from === targetUserId)) {
         return (

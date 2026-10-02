@@ -21,13 +21,13 @@
 .greeting-selector__types-label {
     margin: 0;
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .greeting-selector__types-current {
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-primary);
     white-space: nowrap;
     overflow: hidden;
@@ -65,7 +65,7 @@
 /* ALL chip: dashed so it reads as "everything" rather than a single type. */
 .greeting-selector__type-button--all {
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     border-style: dashed;
 }

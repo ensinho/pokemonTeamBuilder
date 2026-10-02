@@ -243,14 +243,14 @@ export const CommentItem = memo(function CommentItem({
                                 <button
                                     type="button"
                                     onClick={() => actions.confirmDelete(comment.id)}
-                                    className="btn btn-danger h-6 px-2 text-[11px]"
+                                    className="btn btn-danger h-6 px-2 text-2xs"
                                 >
                                     {language === 'pt' ? 'Excluir' : 'Delete'}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => actions.askDelete(null)}
-                                    className="btn btn-secondary h-6 px-2 text-[11px]"
+                                    className="btn btn-secondary h-6 px-2 text-2xs"
                                 >
                                     {t ? t('common.cancel') : 'Cancelar'}
                                 </button>

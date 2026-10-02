@@ -58,67 +58,47 @@
 }
 
 /* ── Synergy-pick cards ─────────────────────────────────────────────── */
-/* A suggestion is highlighted by a ring and a tint, not by a gradient border
-   and a glow that breathes forever. The whole point of the synergy row is that
-   *every* card in it qualifies, so an animation there carries no information —
-   it is just a dozen shadows recompositing on a loop. Declared after the base
-   hover so its own hover wins at equal specificity (it used to lose, and the
-   tint vanished under the cursor). */
+/* A suggestion says *why* in one quiet line under the name — the reason's icon
+   in its own colour, the words muted. v3 removed the ring, the tint and the
+   corner sparkle: with an empty team every card on the first page qualifies
+   ("Top meta pick"), so fifty violet rings and fifty corner badges carried no
+   information and made the grid the loudest thing in the app. */
 .pokemon-card--synergy {
     --synergy-color: var(--color-primary);
-    overflow: visible;
-    background: color-mix(in srgb, var(--synergy-color) 7%, var(--color-surface));
-    box-shadow: inset 0 0 0 1px var(--synergy-color);
 }
 
-.pokemon-card--synergy:hover {
-    background: color-mix(in srgb, var(--synergy-color) 12%, var(--color-surface));
-}
-
-/* Floating reason icon pill — straddles the card's top-right corner. */
-.pokemon-card__reason-icon {
-    position: absolute;
-    top: calc(var(--space-1_5) * -1);
-    right: calc(var(--space-1_5) * -1);
-    z-index: 2;
-    display: flex;
+/* Reason line below the name: icon in the reason's colour, words muted. */
+.pokemon-card__reason-label {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 50%;
-    background: var(--synergy-color);
-    color: var(--color-on-primary);
-    box-shadow: 0 0 0 2px var(--color-bg);
-}
-
-.pokemon-card__reason-icon svg {
-    width: 0.7rem;
-    height: 0.7rem;
-}
-
-/* Reason label below the name */
-.pokemon-card__reason-label {
-    display: block;
-    width: 100%;
+    gap: var(--space-1);
+    max-width: 100%;
     padding: 0 var(--space-0_5);
     margin-top: calc(var(--space-0_5) * -1);
     margin-bottom: var(--space-1);
-    font-size: 0.625rem;
-    font-weight: 600;
-    text-transform: capitalize;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--color-muted);
+}
+
+.pokemon-card__reason-label svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    flex-shrink: 0;
     color: var(--synergy-color);
 }
 
-/* The older non-synergy suggestion: same shape as synergy, success-tinted. */
-.pokemon-card--suggested {
-    background: color-mix(in srgb, var(--color-success) 6%, var(--color-surface));
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-success) 40%, transparent);
+.pokemon-card__reason-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+
 
 .pokemon-card__topbar {
     display: flex;
@@ -144,9 +124,9 @@
     border: none;
     background: color-mix(in srgb, var(--color-success) 14%, transparent);
     padding: var(--space-0_5) var(--space-1_5);
-    font-size: 0.5625rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
     color: var(--color-success);
 }
@@ -201,8 +181,8 @@
 
 .pokemon-card__name {
     margin: var(--space-1_5) var(--space-1);
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     text-transform: capitalize;
     color: var(--color-fg);
 }
@@ -218,8 +198,8 @@
 /* Muted colour is the whole de-emphasis — no opacity stacked on top of it. */
 .pokemon-card__dex-number {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
-    font-weight: 500;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
     letter-spacing: -0.02em;
@@ -249,7 +229,7 @@
     background: var(--color-surface-raised);
     padding: 0 var(--space-2);
     font-size: var(--text-xs);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     color: var(--color-fg);
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth),
@@ -279,7 +259,7 @@
     .pokemon-card__name {
         width: 100%;
         margin: var(--space-1) var(--space-0_5) 0;
-        font-size: 0.75rem;
+        font-size: var(--text-xs);
         line-height: 1.25;
         white-space: nowrap;
         overflow: hidden;

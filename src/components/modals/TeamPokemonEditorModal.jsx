@@ -20,7 +20,7 @@ import { SpriteSelect } from '../SpriteSelect';
 import { Switch } from '../Switch';
 import { RollingNumber } from '../RollingNumber';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { CloseIcon, SaveIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -200,7 +200,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     ];
 
     const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm capitalize text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary';
-    const fieldLabelClassName = 'mb-1 block text-[11px] font-bold uppercase tracking-[0.06em] text-muted';
+    const fieldLabelClassName = 'mb-1 block text-2xs font-bold uppercase tracking-[0.06em] text-muted';
 
     return (
         <div className="modal-scrim" onClick={onClose} role="presentation">
@@ -227,7 +227,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             <div className="min-w-0">
                                 <h2 id="team-editor-title" className="truncate text-lg font-bold capitalize text-fg sm:text-xl md:text-2xl">{pokemon.name}</h2>
                                 <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {(pokemon.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                    {(pokemon.types || []).map((type) => <TypeChip key={type} type={type} />)}
                                 </div>
                                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
                                     <span className="text-xs text-muted">
@@ -239,7 +239,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         <span className="text-xs text-muted">{t('common.none')}</span>
                                     )}
                                     {pokemonWeaknesses.length > 4 && (
-                                        <span className="rounded-full bg-surface-raised px-2 py-1 text-[10px] font-bold text-muted">
+                                        <span className="rounded-full bg-surface-raised px-2 py-1 text-2xs font-bold text-muted">
                                             +{pokemonWeaknesses.length - 4}
                                         </span>
                                     )}
@@ -289,7 +289,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     <div className="mb-2 flex flex-wrap items-center gap-2">
                                         <Sparkles className="h-4 w-4 text-primary" />
                                         <h3 className="text-sm font-bold text-fg">{pt ? 'Conjuntos Smogon' : 'Smogon sets'}</h3>
-                                        <span className="text-[11px] text-muted">{pt ? 'um clique preenche tudo' : 'one click fills everything'}</span>
+                                        <span className="text-2xs text-muted">{pt ? 'um clique preenche tudo' : 'one click fills everything'}</span>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                                         {smogonEntry.sets.map((set, i) => {
@@ -304,13 +304,13 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 >
                                                     <span className="flex items-center justify-between gap-1">
                                                         <span className="truncate text-sm font-bold text-fg">{set.name}</span>
-                                                        {set.source && <span className="shrink-0 rounded bg-primary/15 px-1 text-[9px] font-bold text-primary">{set.source}</span>}
+                                                        {set.source && <span className="shrink-0 rounded bg-primary/15 px-1 text-2xs font-bold text-primary">{set.source}</span>}
                                                     </span>
-                                                    <span className="block truncate text-[11px] capitalize text-muted">
+                                                    <span className="block truncate text-2xs capitalize text-muted">
                                                         {set.item ? set.item.replace(/-/g, ' ') : (pt ? 'sem item' : 'no item')}
                                                         {set.tera?.[0] ? ` · Tera ${set.tera[0].replace(/-/g, ' ')}` : ''}
                                                     </span>
-                                                    {spread && <span className="mt-0.5 block truncate font-mono text-[10px] text-muted">{spread}</span>}
+                                                    {spread && <span className="mt-0.5 block truncate font-mono text-2xs text-muted">{spread}</span>}
                                                 </button>
                                             );
                                         })}
@@ -429,7 +429,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 disabled={isDisabled}
                                                 onClick={() => handleMoveToggle(move.name)}
                                                 aria-pressed={isSelected}
-                                                className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm capitalize text-fg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isSelected ? 'font-semibold' : 'border-border bg-surface-raised hover:border-border-hover'} ${isDisabled ? 'cursor-not-allowed opacity-40 hover:border-border' : ''}`}
+                                                className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm capitalize text-fg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isSelected ? 'font-semibold' : 'border-border bg-surface-raised hover:border-border-hover'}  ${isDisabled ? 'cursor-not-allowed opacity-40 hover:border-border' : ''}`}
                                                 style={style}
                                             >
                                                 {moveType ? (
@@ -460,7 +460,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                             {/* The EV column is typable, so it gets a header — otherwise two
                                 bare number columns sit side by side with nothing naming them. */}
-                            <div className="flex items-center gap-3 text-[11px] font-semibold text-muted">
+                            <div className="flex items-center gap-3 text-2xs font-semibold text-muted">
                                 <span className="w-10 shrink-0" />
                                 <span className="min-w-0 flex-1" />
                                 <span className="w-14 shrink-0 text-center">EV</span>
@@ -485,7 +485,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     // let me set precise numbers".
                                     return (
                                         <div key={statName} className="flex items-center gap-3">
-                                            <span className="w-10 shrink-0 text-xs font-bold uppercase tracking-wide" style={{ color: statColor }}>{STAT_ABBR[statName]}</span>
+                                            <span className="w-10 shrink-0 text-xs font-bold" style={{ color: statColor }}>{STAT_ABBR[statName]}</span>
                                             <input
                                                 type="range"
                                                 min="0"
@@ -522,7 +522,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                     {activeTab === 'usage' && (
                         <div role="tabpanel" id="panel-usage" aria-labelledby="tab-usage" className="space-y-4">
                             <div className="flex flex-wrap items-center justify-between gap-2">
-                                <p className="text-[13px] text-muted">
+                                <p className="text-sm text-muted">
                                     {pt
                                         ? <>O que os melhores jogadores usam em <span className="font-bold text-fg">{usageN.toLocaleString(pt ? 'pt-BR' : 'en-US')}</span> times — clique para aplicar.</>
                                         : <>What top players run across <span className="font-bold text-fg">{usageN.toLocaleString(pt ? 'pt-BR' : 'en-US')}</span> teams — click to apply.</>}
@@ -534,13 +534,13 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                             value={fmtId}
                                             onChange={(val) => setSearchParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', val); return p; }, { replace: true })}
                                             pt={pt}
-                                            className="py-1 px-2.5 text-[11px] h-8 rounded-lg"
+                                            className="py-1 px-2.5 text-2xs h-8 rounded-lg"
                                         />
                                     )}
                                     <button
                                         type="button"
                                         onClick={() => { onClose(); navigate(fmtId ? `/meta/${pokemon.id}?fmt=${fmtId}` : `/meta/${pokemon.id}`, { state: linkState }); }}
-                                        className="inline-flex items-center gap-1 rounded-lg bg-surface-raised px-2.5 py-1 text-[11px] font-semibold text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8"
+                                        className="inline-flex items-center gap-1 rounded-lg bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8"
                                     >
                                         <TrendingUp className="h-3.5 w-3.5" /> {pt ? 'Página completa' : 'Full usage page'} <ArrowUpRight className="h-3 w-3" />
                                     </button>
@@ -559,7 +559,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     {usage?.items?.length > 0 && (
                                         <section className="rounded-xl border border-border bg-bg p-3">
-                                            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
                                                 <Package className="h-3.5 w-3.5 text-primary" /> {pt ? 'Itens' : 'Held items'}
                                             </h3>
                                             <div className="space-y-1.5">
@@ -585,9 +585,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                                     {usage?.moves?.length > 0 && (
                                         <section className="rounded-xl border border-border bg-bg p-3">
-                                            <h3 className="mb-2 flex items-center justify-between gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <h3 className="mb-2 flex items-center justify-between gap-1.5 text-xs font-bold text-muted">
                                                 <span className="flex items-center gap-1.5"><Swords className="h-3.5 w-3.5 text-primary" /> {pt ? 'Golpes' : 'Moves'}</span>
-                                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${customization.moves.length === 4 ? 'bg-success/15 text-success' : 'bg-surface-raised text-muted'}`}>{customization.moves.length}/4</span>
+                                                <span className={`rounded-full px-2 py-0.5 text-2xs font-bold ${customization.moves.length === 4 ? 'bg-success/15 text-success' : 'bg-surface-raised text-muted'}`}>{customization.moves.length}/4</span>
                                             </h3>
                                             <div className="space-y-1.5">
                                                 {usage.moves.slice(0, 10).map((mv) => {
@@ -615,7 +615,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                                     {(usage?.abilities?.length > 0 || usageNatures.length > 0) && (
                                         <section className="rounded-xl border border-border bg-bg p-3">
-                                            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
                                                 <Zap className="h-3.5 w-3.5 text-primary" /> {pt ? 'Habilidades' : 'Abilities'}
                                             </h3>
                                             <div className="space-y-1.5">
@@ -627,7 +627,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 })}
                                                 {usageNatures.length > 0 && (
                                                     <>
-                                                        <p className="pt-1.5 text-[10px] font-bold uppercase tracking-wide text-muted">{pt ? 'Naturezas' : 'Natures'}</p>
+                                                        <p className="pt-1.5 text-2xs font-bold text-muted">{pt ? 'Naturezas' : 'Natures'}</p>
                                                         {usageNatures.slice(0, 4).map((nat) => {
                                                             const active = customization.nature === nat.nature.toLowerCase();
                                                             return (
@@ -642,7 +642,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
 
                                     {showTeraType && teraList.length > 0 && (
                                         <section className="rounded-xl border border-border bg-bg p-3">
-                                            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted">
+                                            <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
                                                 <Sparkles className="h-3.5 w-3.5 text-primary" /> {pt ? 'Tipo Tera' : 'Tera type'}
                                             </h3>
                                             <div className="flex flex-wrap gap-1.5">
@@ -655,7 +655,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                             key={tt.name}
                                                             type="button"
                                                             onClick={() => applyTeraSlug(slug)}
-                                                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'ring-1 ring-primary' : ''}`}
+                                                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-bold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'ring-1 ring-primary' : ''}`}
                                                             style={{ color: c, backgroundColor: `${c}1f`, borderColor: active ? c : `${c}55` }}
                                                         >
                                                             {typeIcons[slug] && <img src={typeIcons[slug]} alt="" className="h-3 w-3" />}
@@ -665,7 +665,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                     );
                                                 })}
                                             </div>
-                                            <p className="mt-2 text-[10px] text-muted">{pt ? 'EVs confiáveis estão nos conjuntos Smogon (aba Build).' : 'Reliable EV spreads live in the Smogon sets (Build tab).'}</p>
+                                            <p className="mt-2 text-2xs text-muted">{pt ? 'EVs confiáveis estão nos conjuntos Smogon (aba Build).' : 'Reliable EV spreads live in the Smogon sets (Build tab).'}</p>
                                         </section>
                                     )}
                                 </div>

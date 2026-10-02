@@ -16,7 +16,7 @@ function ThreatTypeChip({ type }) {
     return icon ? (
         <img src={icon} alt={label} title={label} className="h-4 w-4 shrink-0 object-contain" />
     ) : (
-        <span className="text-[10px] font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
+        <span className="text-2xs font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
     );
 }
 
@@ -58,18 +58,18 @@ export function TeamThreats({ threats = [], hasTeam = false, onOpenDetail, bare 
                                     className="h-9 w-9 shrink-0 image-pixelated"
                                 />
                                 <div className="min-w-0 flex-1">
-                                    <p className="truncate text-[12px] font-bold capitalize text-fg">{thr.name || `#${thr.id}`}</p>
+                                    <p className="truncate text-xs font-bold capitalize text-fg">{thr.name || `#${thr.id}`}</p>
                                     <div className="mt-0.5 flex flex-wrap items-center gap-1">
                                         {(thr.types || []).map((tp) => <ThreatTypeChip key={tp} type={tp} />)}
                                     </div>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-1.5">
                                     {Number.isFinite(thr.winRate) && (
-                                        <span className="rounded-md bg-surface-raised px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                                        <span className="rounded-md bg-surface-raised px-1.5 py-0.5 text-2xs font-semibold tabular-nums text-muted">
                                             {t('builder.threatWinRate', { rate: thr.winRate })}
                                         </span>
                                     )}
-                                    <span className="rounded-md bg-surface-raised px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted">
+                                    <span className="rounded-md bg-surface-raised px-1.5 py-0.5 text-2xs font-semibold tabular-nums text-muted">
                                         {t('builder.threatWeak', { count: thr.weakCount, total: thr.teamSize })}
                                     </span>
                                 </div>
@@ -88,7 +88,7 @@ export function TeamThreats({ threats = [], hasTeam = false, onOpenDetail, bare 
                 <ShieldAlert className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
                 <h3 className="team-builder-panel__title team-builder-panel__title--compact">{t('builder.threatsTitle')}</h3>
             </div>
-            <p className="mt-1 text-[11px] text-muted">{t('builder.threatsSubtitle')}</p>
+            <p className="mt-1 text-2xs text-muted">{t('builder.threatsSubtitle')}</p>
             {list}
         </section>
     );

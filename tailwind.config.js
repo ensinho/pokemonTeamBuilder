@@ -58,7 +58,12 @@ export default {
                 'surface-active': themeColor('--color-surface-active'),
                 'on-primary': themeColor('--color-on-primary'),
                 fg: themeColor('--color-fg'),
+                // v3: the middle text step — reading text that is not a headline.
+                'fg-secondary': themeColor('--color-fg-secondary'),
                 muted: themeColor('--color-muted'),
+                // v3: the neutral-inverted primary action (fg fill, surface ink).
+                inverse: themeColor('--color-inverse'),
+                'on-inverse': themeColor('--color-on-inverse'),
                 border: themeColor('--color-border'),
                 // The visible edge of a control, and the lifted segment of a
                 // track — see the tokens' notes in src/index.css.
@@ -79,10 +84,67 @@ export default {
                 mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
                 pixel: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
             },
+            // ---- Design system v3: one scale for utilities and CSS -------------
+            // Before v3, Tailwind's `text-sm` was 0.875rem while index.css's
+            // `--text-sm` was 0.8125rem; `rounded-lg` was 8px while `--radius-md`
+            // was 10px; `shadow-lg` was a black rgba tuned for a white page. A
+            // component styled with utilities and one styled in CSS disagreed on
+            // all three. These keys point the utilities at the tokens, so a size,
+            // a corner or a shadow has one meaning in the whole app.
+            fontSize: {
+                '2xs': ['var(--text-2xs)', { lineHeight: '1.35' }],
+                xs: ['var(--text-xs)', { lineHeight: '1.4' }],
+                sm: ['var(--text-sm)', { lineHeight: '1.45' }],
+                base: ['var(--text-base)', { lineHeight: '1.5' }],
+                md: ['var(--text-md)', { lineHeight: '1.45' }],
+                lg: ['var(--text-lg)', { lineHeight: '1.35' }],
+                xl: ['var(--text-xl)', { lineHeight: '1.25' }],
+                '2xl': ['var(--text-2xl)', { lineHeight: '1.15' }],
+                '3xl': ['var(--text-3xl)', { lineHeight: '1.1' }],
+            },
+            // Three weights (see --weight-* in index.css). `bold` and heavier
+            // resolve to semibold: 344 `font-bold`s made every screen shout.
+            fontWeight: {
+                normal: 'var(--weight-regular)',
+                medium: 'var(--weight-medium)',
+                semibold: 'var(--weight-semibold)',
+                bold: 'var(--weight-semibold)',
+                extrabold: 'var(--weight-semibold)',
+                black: 'var(--weight-semibold)',
+            },
+            borderRadius: {
+                DEFAULT: 'var(--radius-sm)',
+                sm: 'var(--radius-sm)',
+                md: 'var(--radius-sm)',
+                lg: 'var(--radius-md)',
+                xl: 'var(--radius-lg)',
+                '2xl': 'var(--radius-lg)',
+                '3xl': 'var(--radius-xl)',
+                full: 'var(--radius-full)',
+            },
             boxShadow: {
+                DEFAULT: 'var(--shadow-sm)',
+                sm: 'var(--shadow-sm)',
+                md: 'var(--shadow-md)',
+                lg: 'var(--shadow-lg)',
+                xl: 'var(--shadow-xl)',
+                '2xl': 'var(--shadow-xl)',
+                inner: 'none',
                 'elevation-1': 'var(--elevation-1)',
                 'elevation-2': 'var(--elevation-2)',
                 'elevation-3': 'var(--elevation-3)',
+            },
+            // `transition-all` animates layout too (width, padding…), which the
+            // design system forbids; 65 utilities used it. It now means "every
+            // visual property", the list the skill prescribes, on the house curve.
+            transitionProperty: {
+                all: 'color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, translate, scale, rotate, filter',
+            },
+            transitionTimingFunction: {
+                DEFAULT: 'var(--ease-smooth)',
+            },
+            transitionDuration: {
+                DEFAULT: 'var(--duration-fast)',
             },
             keyframes: {
                 'fade-in': {
@@ -106,12 +168,14 @@ export default {
                     '100%': { opacity: '0', transform: 'translateY(-8px)' },
                 },
             },
+            // On the motion tokens: Tailwind's bare `ease-out` settles on a
+            // different curve from every hand-written transition next to it.
             animation: {
-                'fade-in': 'fade-in 0.2s ease-out forwards',
-                'scale-in': 'scale-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-                'slide-up': 'slide-up 0.3s ease-out forwards',
+                'fade-in': 'fade-in var(--duration-slow) var(--ease-out) forwards',
+                'scale-in': 'scale-in var(--duration-slow) var(--ease-out) forwards',
+                'slide-up': 'slide-up var(--duration-entrance) var(--ease-out) forwards',
                 shimmer: 'shimmer 1.5s infinite',
-                'fade-in-out': 'fade-in-out 3s ease-out forwards',
+                'fade-in-out': 'fade-in-out 3s var(--ease-out) forwards',
             },
         },
     },

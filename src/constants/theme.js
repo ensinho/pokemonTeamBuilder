@@ -15,8 +15,9 @@ export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b
 // pass a `colors` prop read from here.
 export const THEMES = {
     dark: {
-        primary: '#7c6ae8',
-        primarySoft: 'rgba(124, 106, 232, 0.12)',
+        primary: '#8b7cee',
+        primarySoft: 'rgba(139, 124, 238, 0.14)',
+        onPrimary: '#09090b',
         accent: '#FBBF24',
         background: '#09090b',
         card: '#18181c',
@@ -32,12 +33,13 @@ export const THEMES = {
     eclipse: {
         primary: '#a78bfa',
         primarySoft: 'rgba(167, 139, 250, 0.12)',
-        accent: '#c084fc',
+        onPrimary: '#050505',
+        accent: '#FBBF24',
         background: '#050505',
         card: '#141414',
         cardLight: '#1e1e1e',
         text: '#fafafa',
-        textMuted: '#737373',
+        textMuted: '#8a8a8a',
         border: '#1f1f1f',
         success: '#34D399',
         danger: '#FB7185',
@@ -47,12 +49,13 @@ export const THEMES = {
     light: {
         primary: '#6353b3',
         primarySoft: 'rgba(99, 83, 179, 0.1)',
+        onPrimary: '#ffffff',
         accent: '#B45309',
         background: '#f2f2f3',
         card: '#FFFFFF',
         cardLight: '#f6f6f7',
         text: '#09090b',
-        textMuted: '#71717a',
+        textMuted: '#68686f',
         border: '#f7f7f7',
         success: '#047857',
         danger: '#B91C1C',
@@ -62,12 +65,13 @@ export const THEMES = {
     daybreak: {
         primary: '#2563EB',
         primarySoft: 'rgba(37, 99, 235, 0.1)',
-        accent: '#0EA5E9',
+        onPrimary: '#ffffff',
+        accent: '#B45309',
         background: '#eef2fb',
         card: '#FFFFFF',
         cardLight: '#f4f7fd',
         text: '#0f172a',
-        textMuted: '#64748b',
+        textMuted: '#5b6a80',
         border: '#f4f7fc',
         success: '#047857',
         danger: '#B91C1C',
@@ -77,7 +81,8 @@ export const THEMES = {
     midnight: {
         primary: '#38BDF8',
         primarySoft: 'rgba(56, 189, 248, 0.1)',
-        accent: '#22D3EE',
+        onPrimary: '#0a0f1a',
+        accent: '#FBBF24',
         background: '#0a0f1a',
         card: '#151f38',
         cardLight: '#1d2a45',
@@ -90,14 +95,15 @@ export const THEMES = {
         info: '#60A5FA',
     },
     solar: {
-        primary: '#ca8a04',
-        primarySoft: 'rgba(202, 138, 4, 0.1)',
-        accent: '#d97706',
+        primary: '#9a5f07',
+        primarySoft: 'rgba(154, 95, 7, 0.1)',
+        onPrimary: '#ffffff',
+        accent: '#B45309',
         background: '#f5f2e2',
         card: '#FFFFFF',
         cardLight: '#fbf9ef',
         text: '#1c1917',
-        textMuted: '#78716c',
+        textMuted: '#6f6863',
         border: '#f9f7ed',
         success: '#047857',
         danger: '#B91C1C',
@@ -109,7 +115,7 @@ export const THEMES = {
 // Display metadata for the theme picker UI. Order here drives render order.
 // `mode` groups themes as dark vs light so the picker can label them separately.
 export const THEME_META = [
-    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#7c6ae8', mode: 'dark' },
+    { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#8b7cee', mode: 'dark' },
     { id: 'eclipse', label: 'Eclipse', hint: 'Ultra-dark violet neon', swatch: '#8B5CF6', mode: 'dark' },
     { id: 'midnight', label: 'Midnight', hint: 'Deep blue, ocean nights', swatch: '#38BDF8', mode: 'dark' },
     { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB', mode: 'light' },
@@ -152,6 +158,7 @@ export function applyTheme(theme) {
     root.setAttribute('data-theme', theme);
     root.style.setProperty('--color-primary', t.primary);
     root.style.setProperty('--color-primary-soft', t.primarySoft);
+    root.style.setProperty('--color-on-primary', t.onPrimary);
     root.style.setProperty('--color-accent', t.accent);
     root.style.setProperty('--color-bg', t.background);
     root.style.setProperty('--color-surface', t.card);

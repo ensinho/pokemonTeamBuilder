@@ -37,8 +37,14 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, he
                 {header}
                 <nav className="more-sheet__nav" aria-label={t('nav.moreSheetLabel')}>
                     {sections.map((section) => (
-                        <section key={section.key} className="more-sheet__section" aria-labelledby={`more-sheet-${section.key}`}>
-                            <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
+                        <section
+                            key={section.key}
+                            className="more-sheet__section"
+                            aria-labelledby={section.title ? `more-sheet-${section.key}` : undefined}
+                        >
+                            {section.title && (
+                                <h3 id={`more-sheet-${section.key}`} className="more-sheet__section-title">{section.title}</h3>
+                            )}
                             <ul className="more-sheet__grid">
                                 {section.items.map((item) => {
                                     const active = currentPage === item.key;

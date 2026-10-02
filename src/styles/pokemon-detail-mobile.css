@@ -138,15 +138,15 @@
 .pdm__dex {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .pdm__name {
     margin: 0;
-    font-size: 2rem;
-    font-weight: 800;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
     line-height: 1.1;
     letter-spacing: -0.02em;
     text-transform: capitalize;
@@ -155,7 +155,7 @@
 
 .pdm__genus {
     margin: var(--space-0_5) 0 0;
-    font-size: 0.875rem;
+    font-size: var(--text-base);
     color: var(--color-muted);
 }
 
@@ -246,8 +246,8 @@
     border: none;
     background: transparent;
     color: var(--color-muted);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     white-space: nowrap;
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth);
@@ -296,21 +296,21 @@
 
 .pdm-section__title {
     margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .pdm-section__meta {
     font-family: var(--font-mono);
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .pdm-prose {
     margin: 0;
-    font-size: 0.9375rem;
+    font-size: var(--text-md);
     line-height: 1.55;
     color: var(--color-fg);
 }
@@ -339,15 +339,15 @@
 
 .pdm-kv__label {
     flex: 0 0 auto;
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     color: var(--color-muted);
 }
 
 .pdm-kv__value {
     margin: 0;
     min-width: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     text-align: right;
 }
@@ -366,7 +366,7 @@
 }
 
 .pdm-ability em {
-    font-size: 0.6875rem;
+    font-size: var(--text-2xs);
     font-style: normal;
     color: var(--color-muted);
 }
@@ -390,14 +390,14 @@
     align-items: baseline;
     gap: var(--space-2);
     margin: 0 0 var(--space-2);
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .pdm-defense__mult {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -445,8 +445,8 @@
 }
 
 .pdm-rail__item span {
-    font-size: 0.6875rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     line-height: 1.2;
     text-align: center;
     text-transform: capitalize;
@@ -477,8 +477,8 @@
 
 .pdm-move__slot {
     flex: 0 0 2.75rem;
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     text-transform: capitalize;
 }
@@ -492,13 +492,13 @@
 }
 
 .pdm-move__name {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     text-transform: capitalize;
 }
 
 .pdm-move__stats {
-    font-size: 0.6875rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
 }
 
@@ -515,8 +515,8 @@
     align-items: center;
     gap: var(--space-1_5);
     margin: 0 0 var(--space-2);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
@@ -525,7 +525,7 @@
     align-items: center;
     gap: var(--space-2);
     padding-block: var(--space-1_5);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -539,8 +539,8 @@
        invisible on a dark theme. */
     background: color-mix(in srgb, var(--pdm-pill) 18%, transparent);
     color: color-mix(in srgb, var(--pdm-pill) 70%, var(--color-fg));
-    font-size: 0.625rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
 }
 
 .pdm-encounter__method {
@@ -579,8 +579,8 @@
 
 .pdm-sprite__label {
     margin: 0 0 var(--space-1_5);
-    font-size: 0.6875rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -601,8 +601,8 @@
     border-radius: var(--radius-sm);
     background: transparent;
     color: var(--color-muted);
-    font-size: 0.625rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
 }
 
@@ -637,14 +637,14 @@
 
 .pdm-empty__title {
     margin: 0;
-    font-size: 0.9375rem;
-    font-weight: 600;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .pdm-empty__message {
     margin: 0;
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     max-width: 28rem;
 }
 
@@ -656,8 +656,8 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-fg);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
 }
 
 /* The competitive panel is a desktop component: its bordered cards inside these

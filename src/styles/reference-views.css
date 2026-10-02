@@ -20,8 +20,8 @@
 
 .ref-toolbar__count {
     margin-left: auto;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     letter-spacing: 0;
     color: var(--color-muted);
     font-variant-numeric: tabular-nums;
@@ -50,7 +50,7 @@
     background: var(--color-surface-raised);
     border-bottom: 1px solid var(--color-border);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -70,7 +70,7 @@
 }
 .ref-head__btn:hover { color: var(--color-fg); }
 .ref-head__btn.is-active { color: var(--color-primary); }
-.ref-head__sort { font-size: 0.625rem; opacity: 0.7; }
+.ref-head__sort { font-size: var(--text-2xs); opacity: 0.7; }
 
 /* Rows */
 .ref-row {
@@ -100,12 +100,12 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-0_5);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     text-transform: capitalize;
     line-height: 1.2;
 }
 .ref-row__sub {
-    font-size: 0.6875rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
     text-transform: capitalize;
 }
@@ -113,10 +113,10 @@
 .ref-num {
     font-variant-numeric: tabular-nums;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     text-align: right;
 }
-.ref-num--muted { color: var(--color-muted); font-weight: 600; }
+.ref-num--muted { color: var(--color-muted); font-weight: var(--weight-semibold); }
 
 .ref-cat {
     display: inline-flex;
@@ -124,8 +124,8 @@
     justify-content: center;
     padding: var(--space-0_5) var(--space-2);
     border-radius: var(--radius-full);
-    font-size: 0.6875rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     text-transform: capitalize;
     white-space: nowrap;
     border: 1px solid var(--color-border);
@@ -153,7 +153,7 @@
     border: 1px solid var(--color-border);
     background: var(--color-bg);
     color: var(--color-fg);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     text-transform: capitalize;
     cursor: pointer;
     transition: border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth);
@@ -167,8 +167,8 @@
     border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
 }
 .ref-mon-more:hover { color: var(--color-fg); }
@@ -176,7 +176,7 @@
     grid-column: 1 / -1;
     margin-top: var(--space-2);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -186,15 +186,15 @@
     padding-top: var(--space-2);
     margin-top: var(--space-0_5);
     border-top: 1px dashed var(--color-border);
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     line-height: 1.5;
     color: var(--color-muted);
 }
-.ref-effect strong { color: var(--color-fg); font-weight: 600; }
+.ref-effect strong { color: var(--color-fg); font-weight: var(--weight-semibold); }
 
 /* Effect cell shown inline (abilities/items main column) */
 .ref-row__effect {
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     line-height: 1.4;
     color: var(--color-muted);
     overflow: hidden;
@@ -237,8 +237,8 @@
     border: none;
     background: transparent;
     color: var(--color-primary);
-    font-weight: 700;
-    font-size: 0.8125rem;
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-sm);
     cursor: pointer;
 }
 .ref-loadmore:hover { background: var(--color-surface-raised); }
@@ -315,7 +315,7 @@
     }
 
     .ref-row__name {
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
     }
 
     /* Dense-list badges: a type counted, not read. Compound selector, because
@@ -324,7 +324,7 @@
     .ref-row .ref-type-cell > * {
         margin: 0;
         padding: var(--space-0_5) var(--space-1_5);
-        font-size: 0.625rem;
+        font-size: var(--text-2xs);
         box-shadow: none;
     }
 }

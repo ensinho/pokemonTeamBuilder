@@ -144,7 +144,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
                     <ul className="space-y-2">
                         {guide.tips.map((tip, index) => (
                             <li key={index} className="flex items-start gap-2 text-sm leading-snug text-fg">
-                                <span className="mt-0.5 shrink-0 text-[10px] font-extrabold text-primary">✦</span>
+                                <span className="mt-0.5 shrink-0 text-2xs font-extrabold text-primary">✦</span>
                                 <span>{tip}</span>
                             </li>
                         ))}
@@ -161,7 +161,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
                         </p>
                     ) : (
                         <>
-                            <p className="mb-2 text-[11px] text-muted">
+                            <p className="mb-2 text-2xs text-muted">
                                 {t('guide.suggestionLabel')}
                             </p>
                             <form onSubmit={handleSendSuggestion} className="flex flex-col gap-2">

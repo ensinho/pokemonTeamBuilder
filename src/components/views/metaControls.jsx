@@ -31,7 +31,7 @@ function FormatOption({ format, active, onPick }) {
         >
             <span className="min-w-0 flex-1 truncate text-sm font-semibold">{format.label}</span>
             {Number.isFinite(format.species) && (
-                <span className="shrink-0 text-[0.625rem] tabular-nums text-muted">{format.species}</span>
+                <span className="shrink-0 text-2xs tabular-nums text-muted">{format.species}</span>
             )}
             {active && <Check className="h-4 w-4 shrink-0" aria-hidden="true" />}
         </button>
@@ -67,7 +67,7 @@ function FormatList({ formats, value, onPick, pt, autoFocus }) {
                     </p>
                 ) : groups.map((g) => (
                     <div key={g.name} className="mb-1 last:mb-0">
-                        <p className="sticky top-0 z-10 bg-surface px-3 py-1.5 text-[0.6875rem] font-semibold text-muted">
+                        <p className="sticky top-0 z-10 bg-surface px-3 py-1.5 text-2xs font-semibold text-muted">
                             {g.name}
                         </p>
                         {g.items.map((f) => (
@@ -126,11 +126,11 @@ export function FormatPicker({ formats = [], value, onChange, pt = false, classN
                 onClick={() => setOpen((v) => !v)}
                 aria-haspopup="listbox"
                 aria-expanded={open}
-                className={`flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'py-1.5' : 'py-2'} ${className}`}
+                className={`flex min-h-11 items-center gap-2 rounded-xl border border-border bg-surface px-3 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${compact ? 'py-1.5' : 'py-2'}  ${className}`}
             >
                 <span className="min-w-0 flex-1">
                     {current?.group && !compact && (
-                        <span className="block truncate text-[0.625rem] leading-tight text-muted">{current.group}</span>
+                        <span className="block truncate text-2xs leading-tight text-muted">{current.group}</span>
                     )}
                     <span className="block truncate text-sm font-semibold text-fg">
                         {current?.label || (pt ? 'Formato' : 'Format')}
@@ -226,7 +226,7 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
             >
                 {pt ? 'Tipos' : 'Types'}
                 {count > 0 && (
-                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[0.625rem] tabular-nums text-on-primary">
+                    <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-2xs tabular-nums text-on-primary">
                         {count}
                     </span>
                 )}
@@ -252,7 +252,7 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
                                         backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)`,
                                         color: `color-mix(in srgb, ${color} 45%, var(--color-fg))`,
                                     } : undefined}
-                                    className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-1 text-[0.6875rem] font-semibold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
+                                    className={`inline-flex items-center gap-1 rounded-md border px-1.5 py-1 text-2xs font-semibold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
                                         active ? '' : 'border-transparent bg-surface-raised text-muted hover:bg-surface-hover hover:text-fg'
                                     }`}
                                 >
@@ -266,7 +266,7 @@ export function TypeFilter({ selected = [], onChange, pt = false }) {
                         <button
                             type="button"
                             onClick={() => onChange([])}
-                            className="mt-2 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[0.6875rem] font-semibold text-muted transition-colors hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="mt-2 inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-2xs font-semibold text-muted transition-colors hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             <X className="h-3 w-3" aria-hidden="true" />
                             {pt ? 'Limpar tipos' : 'Clear types'}

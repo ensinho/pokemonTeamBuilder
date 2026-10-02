@@ -46,7 +46,7 @@
     .meta-mon-card__value {
         font-family: var(--font-display);
         font-size: var(--text-sm);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
         color: var(--color-fg);
     }
 }

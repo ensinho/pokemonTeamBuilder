@@ -1039,7 +1039,7 @@ export default function PokePuzzleView() {
 
     return (
         <>
-            <main className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''} ${selectedDate !== getTodayDateString() ? 'is-archive-mode' : ''}`}>
+            <main className={`pokepuzzle-view ${gameStatus !== 'IN_PROGRESS' ? 'has-ended' : ''}  ${selectedDate !== getTodayDateString() ? 'is-archive-mode' : ''}`}>
                 {/* Header Area with Tabs and History button */}
                 <div className="pokepuzzle-header-row">
                     <div className="pokepuzzle-tabs segmented segmented--lg segmented--block" role="tablist" aria-label="PokéPuzzle">
@@ -1107,7 +1107,7 @@ export default function PokePuzzleView() {
                 {mode === 'daily' && gameStatus !== 'IN_PROGRESS' && (
                     <div className="pokepuzzle-header-countdown animate-fade-in">
                         <span className="pokepuzzle-header-countdown-label">
-                            {language === 'pt' ? 'PRÓXIMO EM' : 'NEXT IN'}
+                            {language === 'pt' ? 'Próximo em' : 'Next in'}
                         </span>
                         <span className="pokepuzzle-header-countdown-time">{nextDailyCountdown}</span>
                     </div>
@@ -1132,10 +1132,10 @@ export default function PokePuzzleView() {
                                         <span>{language === 'pt' ? 'Dicas' : 'Service'}</span>
                                     </h3>
                                     <div className="flex gap-2 items-center">
-                                        <span className="text-[10px] uppercase font-bold text-accent bg-accent/10 border border-accent px-2 py-0.5 rounded">
+                                        <span className="text-2xs uppercase font-bold text-accent bg-accent/10 border border-accent px-2 py-0.5 rounded tracking-[0.06em]">
                                             {language === 'pt' ? `Geração ${getGenerationByPokemonId(targetPokemon.id)}` : `Gen ${getGenerationByPokemonId(targetPokemon.id)}`}
                                         </span>
-                                        <span className="text-[10px] uppercase font-bold text-muted bg-surface-raised px-2 py-0.5 rounded">
+                                        <span className="text-2xs uppercase font-bold text-muted bg-surface-raised px-2 py-0.5 rounded tracking-[0.06em]">
                                             {guesses.length} / {MAX_ATTEMPTS} {language === 'pt' ? 'tentativas' : 'tries'}
                                         </span>
                                     </div>
@@ -1153,7 +1153,7 @@ export default function PokePuzzleView() {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTipTab('description')}
-                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''} ${!showPokedexEntry ? 'is-locked' : ''}`}
+                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'description' ? 'is-active' : ''}  ${!showPokedexEntry ? 'is-locked' : ''}`}
                                     >
                                         <FileText className="w-3.5 h-3.5" />
                                         <span>{language === 'pt' ? 'Descrição' : 'Description'}</span>
@@ -1162,7 +1162,7 @@ export default function PokePuzzleView() {
                                     <button
                                         type="button"
                                         onClick={() => setActiveTipTab('silhouette')}
-                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'silhouette' ? 'is-active' : ''} ${!showSilhouette ? 'is-locked' : ''}`}
+                                        className={`pokepuzzle-tip-tab-trigger ${activeTipTab === 'silhouette' ? 'is-active' : ''}  ${!showSilhouette ? 'is-locked' : ''}`}
                                     >
                                         <Image className="w-3.5 h-3.5" />
                                         <span>{language === 'pt' ? 'Silhueta' : 'Silhouette'}</span>
@@ -1179,7 +1179,7 @@ export default function PokePuzzleView() {
                                                 {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
                                                     <span
                                                         key={type}
-                                                        className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded"
+                                                        className="home-type-pill capitalize text-2xs py-0.5 px-2.5 font-bold border rounded"
                                                         style={{
                                                             backgroundColor: `${typeColors[type]}18`,
                                                             borderColor: `${typeColors[type]}35`,
@@ -1205,7 +1205,7 @@ export default function PokePuzzleView() {
                                                     <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
                                                         <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
                                                     </span>
-                                                    <span className="text-[10px] text-muted opacity-75">
+                                                    <span className="text-2xs text-muted opacity-75">
                                                         {language === 'pt' ? 'Desbloqueia na 3ª tentativa' : 'Unlocks at 3 attempts'}
                                                     </span>
                                                     <button
@@ -1239,7 +1239,7 @@ export default function PokePuzzleView() {
                                                     <span className="text-xs text-muted font-medium flex items-center gap-1.5 justify-center">
                                                         <Lock className="w-3.5 h-3.5" /> {t('pokepuzzle.tipLocked')}
                                                     </span>
-                                                    <span className="text-[10px] text-muted opacity-75">
+                                                    <span className="text-2xs text-muted opacity-75">
                                                         {language === 'pt' ? 'Desbloqueia na 7ª tentativa' : 'Unlocks at 7 attempts'}
                                                     </span>
                                                     <button
@@ -1279,10 +1279,10 @@ export default function PokePuzzleView() {
                                             return (
                                                 <div
                                                     key={letterIdx}
-                                                    className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''} ${row.submitted && status === 'correct' ? 'is-correct' :
+                                                    className={`pokepuzzle-tile ${hasLtr ? 'has-letter' : ''}  ${row.submitted && status === 'correct' ? 'is-correct' :
                                                         row.submitted && status === 'present' ? 'is-present' :
                                                             row.submitted && status === 'absent' ? 'is-absent' : ''
-                                                        } ${isSelected ? 'is-selected-cell' : ''} ${!row.submitted ? 'is-active-row' : ''}`}
+                                                        }  ${isSelected ? 'is-selected-cell' : ''}  ${!row.submitted ? 'is-active-row' : ''}`}
                                                     role="gridcell"
                                                     onClick={() => {
                                                         if (!row.submitted) {
@@ -1356,7 +1356,7 @@ export default function PokePuzzleView() {
                                                     className={`pokepuzzle-autocomplete-item ${idx === activeSuggestionIdx ? 'is-active' : ''}`}
                                                 >
                                                     <span className="capitalize">{p.displayName}</span>
-                                                    <span className="text-[10px] text-muted uppercase font-bold">
+                                                    <span className="text-2xs text-muted font-bold">
                                                         #{String(p.id).padStart(3, '0')}
                                                     </span>
                                                 </div>
@@ -1385,7 +1385,7 @@ export default function PokePuzzleView() {
                                                         type="button"
                                                         key={key}
                                                         onClick={() => handleKeyClick(key)}
-                                                        className={`pokepuzzle-key ${isWide ? 'is-wide' : ''} ${status === 'correct' ? 'is-correct' :
+                                                        className={`pokepuzzle-key ${isWide ? 'is-wide' : ''}  ${status === 'correct' ? 'is-correct' :
                                                             status === 'present' ? 'is-present' :
                                                                 status === 'absent' ? 'is-absent' : ''
                                                             }`}
@@ -1442,7 +1442,7 @@ export default function PokePuzzleView() {
                                             {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
                                                 <span
                                                     key={type}
-                                                    className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
+                                                    className="home-type-pill capitalize text-2xs py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
                                                     style={{
                                                         backgroundColor: `${typeColors[type]}18`,
                                                         borderColor: `${typeColors[type]}35`,
@@ -1463,7 +1463,7 @@ export default function PokePuzzleView() {
 
                                         {/* Mini attempt preview grid */}
                                         <div className="pokepuzzle-share-preview mt-2 w-full">
-                                            <span className="text-[10px] text-muted uppercase font-bold tracking-wider mb-2 block">
+                                            <span className="text-2xs text-muted font-bold mb-2 block">
                                                 {language === 'pt' ? 'Resumo das Tentativas' : 'Attempts Summary'}
                                             </span>
                                             <div className="flex flex-col gap-1 items-center justify-center">
@@ -1548,7 +1548,7 @@ export default function PokePuzzleView() {
                                             {isLoadingDetails ? '...' : (targetDetails.types || []).map(type => (
                                                 <span
                                                     key={type}
-                                                    className="home-type-pill capitalize text-[10px] py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
+                                                    className="home-type-pill capitalize text-2xs py-0.5 px-2.5 font-bold border rounded mr-1 inline-block"
                                                     style={{
                                                         backgroundColor: `${typeColors[type]}18`,
                                                         borderColor: `${typeColors[type]}35`,

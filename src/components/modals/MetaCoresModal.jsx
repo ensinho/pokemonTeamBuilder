@@ -23,7 +23,7 @@ function PickCard({ member, accent, selected, onTeam, disabled, onToggle, addLab
             onClick={onToggle}
             title={onTeam ? '' : addLabel}
             aria-pressed={selected}
-            className={`relative flex flex-col items-center gap-1 rounded-xl border bg-surface p-2 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-transparent ring-2' : 'border-border hover:-translate-y-0.5 hover:border-primary'} ${(onTeam || disabled) ? 'cursor-not-allowed opacity-45 hover:translate-y-0' : ''}`}
+            className={`relative flex flex-col items-center gap-1 rounded-xl border bg-surface p-2 text-center transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${selected ? 'border-transparent ring-2' : 'border-border hover:-translate-y-0.5 hover:border-primary'}  ${(onTeam || disabled) ? 'cursor-not-allowed opacity-45 hover:translate-y-0' : ''}`}
             style={selected ? { '--tw-ring-color': accent } : undefined}
         >
             {selected && (
@@ -32,7 +32,7 @@ function PickCard({ member, accent, selected, onTeam, disabled, onToggle, addLab
                 </span>
             )}
             {onTeam && (
-                <span className="absolute -right-1 -top-1 rounded-full bg-success px-1.5 py-0.5 text-[8px] font-bold text-white">✓</span>
+                <span className="absolute -right-1 -top-1 rounded-full bg-success px-1.5 py-0.5 text-2xs font-bold text-white">✓</span>
             )}
             <div className="relative">
                 <img
@@ -43,13 +43,13 @@ function PickCard({ member, accent, selected, onTeam, disabled, onToggle, addLab
                     loading="lazy"
                 />
                 {member.usage > 0 && (
-                    <span className="absolute -right-1.5 -bottom-1 inline-flex items-center gap-0.5 rounded-full bg-primary px-1 text-[8px] font-bold text-white">
+                    <span className="absolute -right-1.5 -bottom-1 inline-flex items-center gap-0.5 rounded-full bg-primary px-1 text-2xs font-bold text-white">
                         <Trophy className="h-1.5 w-1.5" />{member.usage}
                     </span>
                 )}
             </div>
-            <span className="w-full truncate text-[11px] font-bold capitalize text-fg">{pretty(member.name)}</span>
-            <span className="w-full truncate rounded px-1 text-[9px] font-semibold capitalize" style={{ color: accent, backgroundColor: `${accent}1f` }}>
+            <span className="w-full truncate text-2xs font-bold capitalize text-fg">{pretty(member.name)}</span>
+            <span className="w-full truncate rounded px-1 text-2xs font-semibold capitalize" style={{ color: accent, backgroundColor: `${accent}1f` }}>
                 {pretty(member.tag)}
             </span>
         </button>
@@ -159,7 +159,7 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                         )}
                         <Atom className="h-5 w-5 shrink-0 text-primary" />
                         <div className="min-w-0">
-                            <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{pt ? 'Fluxo inicial' : 'Starter flow'}</div>
+                            <div className="text-2xs font-bold text-muted">{pt ? 'Fluxo inicial' : 'Starter flow'}</div>
                             <h2 id="meta-cores-title" className="flex items-center gap-1.5 truncate text-lg font-extrabold text-fg">
                                 {selected
                                     ? (() => { const SelIcon = coreIconFor(selected.id); return <><SelIcon className="h-5 w-5 shrink-0" style={{ color: selected.accent }} />{selected.name}</>; })()
@@ -201,9 +201,9 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                                     >
                                         <CoreIcon className="h-8 w-8" style={{ color: core.accent }} />
                                         <div className="mt-2 text-lg font-extrabold text-fg">{core.name}</div>
-                                        <div className="mt-0.5 text-[11px] font-semibold text-muted">{core.memberCount} {pt ? 'Pokémon' : 'mons'}</div>
+                                        <div className="mt-0.5 text-2xs font-semibold text-muted">{core.memberCount} {pt ? 'Pokémon' : 'mons'}</div>
                                         {matches.has(core.id) && (
-                                            <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold text-white">
+                                            <span className="absolute right-3 top-3 rounded-full bg-primary px-2 py-0.5 text-2xs font-bold text-white">
                                                 {pt ? 'no seu time' : 'on your team'}
                                             </span>
                                         )}
@@ -219,7 +219,7 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                             {suggestedTeam.length > 0 && (
                                 <div className="rounded-xl border border-border bg-surface-raised p-3">
                                     <div className="mb-2.5 flex items-center justify-between gap-2">
-                                        <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-muted">
+                                        <h3 className="flex items-center gap-1.5 text-xs font-bold text-muted">
                                             <Users className="h-4 w-4" style={{ color: selected.accent }} />
                                             {pt ? 'Time sugerido' : 'Suggested team'}
                                         </h3>
@@ -227,7 +227,7 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                                             type="button"
                                             onClick={addSuggested}
                                             disabled={remainingSlots === 0 || suggestedTeam.every((m) => teamIds.has(m.id))}
-                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                                            className="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-2xs font-bold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
                                             style={{ backgroundColor: selected.accent }}
                                         >
                                             <Plus className="h-3 w-3" />
@@ -250,10 +250,10 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                                                             loading="lazy"
                                                         />
                                                         {onTeam && (
-                                                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-success text-[8px] font-bold text-white">✓</span>
+                                                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-success text-2xs font-bold text-white">✓</span>
                                                         )}
                                                     </div>
-                                                    <span className="w-full truncate text-center text-[9px] font-semibold capitalize text-muted">{pretty(m.name)}</span>
+                                                    <span className="w-full truncate text-center text-2xs font-semibold capitalize text-muted">{pretty(m.name)}</span>
                                                 </div>
                                             );
                                         })}
@@ -263,14 +263,14 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
 
                             {/* How to build — compact chip steps */}
                             <div className="mt-3">
-                                <h3 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted">
+                                <h3 className="mb-1.5 flex items-center gap-1.5 text-2xs font-bold text-muted">
                                     <ListChecks className="h-3.5 w-3.5" style={{ color: selected.accent }} />
                                     {pt ? 'Como montar' : 'How to build it'}
                                 </h3>
                                 <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
                                     {(pt ? selected.guide.pt : selected.guide.en).map((step, i) => (
-                                        <span key={i} className="flex items-start gap-1.5 rounded-md bg-surface-raised px-2.5 py-1.5 text-[11px] font-medium leading-snug text-fg">
-                                            <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-bold text-white" style={{ backgroundColor: selected.accent }}>{i + 1}</span>
+                                        <span key={i} className="flex items-start gap-1.5 rounded-md bg-surface-raised px-2.5 py-1.5 text-2xs font-medium leading-snug text-fg">
+                                            <span className="mt-px flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-2xs font-bold text-white" style={{ backgroundColor: selected.accent }}>{i + 1}</span>
                                             <span>{step}</span>
                                         </span>
                                     ))}
@@ -288,7 +288,7 @@ export function MetaCoresModal({ onClose, currentTeam = [], onAddToTeam }) {
                                 .filter((g) => g.list.length > 0)
                                 .map((g) => (
                                     <div key={g.key} className="mt-4">
-                                        <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-muted">{g.icon}{g.label}</h3>
+                                        <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold text-muted">{g.icon}{g.label}</h3>
                                         <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 md:grid-cols-6">
                                             {g.list.map((m) => {
                                                 const onTeam = teamIds.has(m.id);

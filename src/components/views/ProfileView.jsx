@@ -678,7 +678,7 @@ export function ProfileView({
                             return (
                                 <div
                                     key={badge.id}
-                                    className={`profile-badge-card ${isEquipped ? 'is-equipped' : ''} ${!isUnlocked ? 'is-locked' : ''}`}
+                                    className={`profile-badge-card ${isEquipped ? 'is-equipped' : ''}  ${!isUnlocked ? 'is-locked' : ''}`}
                                 >
                                     <div className="profile-badge-card__top">
                                         <div

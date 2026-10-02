@@ -17,7 +17,7 @@ const GENGAR_ID = 94;
 export function GengarPresence({ size = 96, variant = 'idle', label, className = '' }) {
     return (
         <div
-            className={`gengar-presence gengar-presence--${variant} ${className}`}
+            className={`gengar-presence gengar-presence--${variant}  ${className}`}
             style={{ '--gp-size': `${size}px` }}
             role={variant === 'loading' ? 'status' : undefined}
             aria-label={variant === 'loading' ? (label || 'Loading') : undefined}

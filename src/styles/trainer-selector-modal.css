@@ -49,8 +49,8 @@
 .trainer-selector__label {
     display: block;
     width: 100%;
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     line-height: 1.2;
     text-align: center;
     color: var(--color-fg);
@@ -60,8 +60,8 @@
 .trainer-selector__gen {
     display: inline-block;
     margin-left: var(--space-1);
-    font-size: 0.55rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.06em;
     color: var(--color-muted);
 }

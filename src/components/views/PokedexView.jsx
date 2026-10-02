@@ -92,7 +92,7 @@ const MobilePokedexPokemonCard = ({
                 <p className="team-builder-mobile-card__name min-w-0 font-bold capitalize">
                     {pokemon.name}
                 </p>
-                <span className="shrink-0 font-mono text-[10px] font-semibold tabular-nums text-muted select-none">
+                <span className="shrink-0 font-mono text-2xs font-semibold tabular-nums text-muted select-none">
                     #{pokemon.id}
                 </span>
             </div>
@@ -195,7 +195,7 @@ export function PokedexView({
     // --- MOBILE VIEW TEMPLATE ---
     if (isMobile) {
         return (
-            <div className="team-builder-mobile space-y-4 font-mono">
+            <div className="team-builder-mobile space-y-4">
                 <section className="pokedex-mobile-filterbar-band">
                     <div className="pokedex-mobile-filterbar">
                         <div className="relative flex-1 min-w-0">
@@ -279,7 +279,7 @@ export function PokedexView({
                                             </option>
                                         ))}
                                     </select>
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-[10px]">▼</span>
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted text-2xs">▼</span>
                                 </div>
                             </div>
 
@@ -325,7 +325,7 @@ export function PokedexView({
                                                 title={type}
                                             >
                                                 <img src={typeIcons[type]} alt={type} className="w-3.5 h-3.5 object-contain" />
-                                                <span className="text-[10px] font-bold capitalize select-none">{type}</span>
+                                                <span className="text-2xs font-bold capitalize select-none">{type}</span>
                                             </button>
                                         );
                                     })}

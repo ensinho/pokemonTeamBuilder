@@ -65,7 +65,7 @@ export function BadgeUnlockModal() {
                 />
 
                 {/* Header Tag */}
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary border border-primary-border text-[11px] font-bold uppercase tracking-wider mb-4 animate-bounce">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-soft text-primary border border-primary-border text-2xs font-bold uppercase mb-4 animate-bounce tracking-[0.06em]">
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>{language === 'pt' ? 'Nova Conquista Desbloqueada!' : 'New Badge Unlocked!'}</span>
                 </div>

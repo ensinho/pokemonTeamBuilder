@@ -206,7 +206,7 @@ export const FooterFeedback = ({ db, userId, userEmail, displayName, showToast, 
                     </button>
                     {showDisclaimerTooltip && (
                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 pointer-events-none z-30">
-                            <div className="px-2.5 py-1 bg-surface-raised text-[10px] text-fg rounded-md shadow-lg whitespace-nowrap animate-footer-tooltip">
+                            <div className="px-2.5 py-1 bg-surface-raised text-2xs text-fg rounded-md shadow-lg whitespace-nowrap animate-footer-tooltip">
                                 {t('layout.disclaimerTitle')}
                             </div>
                         </div>
@@ -264,7 +264,7 @@ const DisclaimerModal = ({ onClose }) => {
                         >
                             {t('layout.disclaimerTitle')}
                         </h2>
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-primary">
+                        <span className="text-2xs font-bold text-primary">
                             Fan Project
                         </span>
                     </div>

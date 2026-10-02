@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
@@ -15,7 +15,6 @@ import { PokemonCard } from '../PokemonCard';
 import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
-import { TypeBadge } from '../TypeBadge';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
 import { Atom } from 'lucide-react';
 import { coreIconFor } from '../coreIcons';
@@ -45,6 +44,7 @@ import {
     StarIcon,
     TrashIcon,
     TrophyIcon,
+    PokeballIcon,
 } from '../icons';
 import { Loader } from '../Loader';
 
@@ -69,7 +69,7 @@ function AnalysisTypeBadge({ type }) {
     return icon ? (
         <img src={icon} alt={label} title={label} className="w-5 h-5 shrink-0 object-contain" />
     ) : (
-        <span className="text-[11px] font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
+        <span className="text-2xs font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
     );
 }
 
@@ -502,80 +502,38 @@ export function TeamBuilderView({
                 />
             ) : null}
 
-            {isDesktopLayout ? <main className="team-builder grid grid-cols-12 gap-6 xl:gap-7">
-                <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-6 lg:self-start">
-                    <div className="flex items-center gap-2">
-                        {!isPlaythrough && <button
-                            type="button"
-                            onClick={() => setIsCoresOpen(true)}
-                            className="team-builder-panel flex flex-1 items-center gap-2.5 p-3 text-left transition-all hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            title={language === 'pt' ? 'Montar a partir de um core do meta' : 'Build around a meta core'}
-                        >
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/15">
-                                <Atom className="h-4 w-4 text-primary" />
-                            </span>
-                            <span className="min-w-0 flex-1">
-                                <span className="block text-[11px] font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Core do Meta' : 'Meta Core'}</span>
-                                <span className="mt-1 flex flex-wrap items-center gap-1">
-                                    {teamCores.length > 0 ? (
-                                        teamCores.slice(0, 3).map((c) => {
-                                            const CIcon = coreIconFor(c.id);
-                                            return (
-                                                <span key={c.id} className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold" style={{ color: c.accent, backgroundColor: `${c.accent}22` }}>
-                                                    <CIcon className="h-3 w-3" />{c.name}
-                                                </span>
-                                            );
-                                        })
-                                    ) : (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-surface-raised px-1.5 py-0.5 text-[10px] font-semibold text-muted">
-                                            {language === 'pt' ? 'Nenhum core ainda' : 'No core yet'}
-                                        </span>
-                                    )}
-                                    {teamCores.length > 3 && <span className="text-[10px] font-bold text-muted">+{teamCores.length - 3}</span>}
-                                </span>
-                            </span>
-                            <ChevronDown className="h-4 w-4 shrink-0 -rotate-90 text-muted" />
-                        </button>}
-                        <button
-                            type="button"
-                            onClick={() => setIsOnboardingOpen(true)}
-                            className="team-builder-panel flex h-[58px] shrink-0 items-center justify-center p-3 text-muted hover:text-primary hover:border-primary transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                            title={language === 'pt' ? 'Como funciona a montagem automática e Megas' : 'How auto building & Megas work'}
-                            aria-label={language === 'pt' ? 'Guia do Team Builder' : 'Team Builder Guide'}
-                        >
-                            <HelpCircle className="h-5 w-5" />
-                        </button>
-                    </div>
-                    <section className="team-builder-panel p-4">
-                        <div className="team-builder-current-head">
-                            <div className="team-builder-panel__header team-builder-panel__header--compact flex items-center justify-between gap-3 mb-4">
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <input
-                                        id="team-builder-name"
-                                        type="text"
-                                        value={teamName}
-                                        onChange={(e) => setTeamName(e.target.value)}
-                                        placeholder={t('builder.teamNamePlaceholder')}
-                                        className="team-builder-header-input font-bold text-base text-fg focus:outline-none focus:ring-0 m-0 w-full truncate"
-                                        aria-label={language === 'pt' ? 'Nome do time' : 'Team name'}
-                                    />
-                                    {editingTeamId && (
-                                        editingTeamId === activeTeamId ? (
-                                            <span className="home-active-badge flex items-center gap-1 text-[11px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0 self-center">★ {t('common.active')}</span>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => setActiveTeamId(editingTeamId)}
-                                                className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[11px] rounded-xl uppercase font-bold tracking-wider shrink-0"
-                                                style={{ padding: '0.25rem 0.5rem', minHeight: 'auto', borderRadius: '12px  ' }}
-                                            >
-                                                {language === 'pt' ? 'Ativar' : 'Set Active'}
-                                            </button>
-                                        )
-                                    )}
-                                </div>
-                                <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0">{currentTeam.length}/6</span>
-                            </div>
+            {isDesktopLayout ? <main className="team-builder tb-desk grid gap-6 xl:gap-8">
+                {/* The composer: one surface for the team you are building — its
+                    name, its six slots, what it adds up to and what you can do
+                    with it. v3 folded the meta-core and guide boxes that sat
+                    above it into its footer: three boxes stacked in a 300px
+                    column read as three things to look at, not one team. */}
+                <div className="tb-desk__composer lg:sticky lg:top-6 lg:self-start">
+                    <section className="card tb-team" aria-label={language === 'pt' ? 'Time atual' : 'Current team'}>
+                        <div className="tb-team__head">
+                            <input
+                                id="team-builder-name"
+                                type="text"
+                                value={teamName}
+                                onChange={(e) => setTeamName(e.target.value)}
+                                placeholder={t('builder.teamNamePlaceholder')}
+                                className="tb-team__name"
+                                aria-label={language === 'pt' ? 'Nome do time' : 'Team name'}
+                            />
+                            {editingTeamId && (
+                                editingTeamId === activeTeamId ? (
+                                    <span className="badge badge--primary shrink-0">★ {t('common.active')}</span>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTeamId(editingTeamId)}
+                                        className="btn btn-ghost btn-sm shrink-0"
+                                    >
+                                        {language === 'pt' ? 'Ativar' : 'Set active'}
+                                    </button>
+                                )
+                            )}
+                            <span className="badge badge--figure shrink-0" aria-label={`${currentTeam.length} / 6`}>{currentTeam.length}/6</span>
                         </div>
 
                         <div className="team-builder-slots" aria-label="Current team slots">
@@ -659,15 +617,15 @@ export function TeamBuilderView({
 
                             {Array.from({ length: 6 - currentTeam.length }).map((_, index) => (
                                 <div key={index} className="team-builder-slot team-builder-slot--empty" aria-hidden="true">
-                                    <img src={POKEBALL_PLACEHOLDER_URL} alt="Empty team slot" />
+                                    <PokeballIcon className="team-builder-slot__placeholder" />
                                 </div>
                             ))}
                         </div>
 
                         <TeamIdentitySummary team={currentTeam} />
 
-                        <div className="team-builder-action-row">
-                            <button type="button" onClick={handleSaveTeam} className="team-builder-button team-builder-button--primary team-builder-button--grow">
+                        <div className="tb-team__actions">
+                            <button type="button" onClick={handleSaveTeam} className="btn btn-primary tb-team__save">
                                 <SaveIcon />
                                 {editingTeamId ? t('builder.update') : t('builder.save')}
                             </button>
@@ -675,19 +633,60 @@ export function TeamBuilderView({
                                 type="button"
                                 onClick={() => handleRandomizeTeam?.(displayedPokemons)}
                                 disabled={isRandomizing || displayedPokemons.length === 0}
-                                className="team-builder-icon-button"
+                                className="btn btn-ghost btn-icon btn-muted"
                                 aria-label={t('builder.randomizeTeam')}
                                 title={t('builder.randomizeTeam')}
                             >
-                                <Dices className="h-4 w-4" />
+                                <Dices />
                             </button>
-                            <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="team-builder-icon-button" title={t('builder.exportShowdown')}><ShowdownIcon /></button>
-                            <button onClick={handleShareTeam} type="button" aria-label="Share team" className="team-builder-icon-button" title={t('builder.shareTeam')}><ShareIcon /></button>
-                            <button onClick={handleClearTeam} type="button" aria-label="Clear team" className="team-builder-icon-button team-builder-icon-button--danger" title={t('builder.clearTeam')}><ClearIcon /></button>
+                            <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="btn btn-ghost btn-icon btn-muted" title={t('builder.exportShowdown')}><ShowdownIcon /></button>
+                            <button onClick={handleShareTeam} type="button" aria-label="Share team" className="btn btn-ghost btn-icon btn-muted" title={t('builder.shareTeam')}><ShareIcon /></button>
+                            <button onClick={handleClearTeam} type="button" aria-label="Clear team" className="btn btn-ghost btn-icon btn-muted tb-team__clear" title={t('builder.clearTeam')}><ClearIcon /></button>
+                        </div>
+
+                        <div className="tb-team__tools">
+                            {!isPlaythrough && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCoresOpen(true)}
+                                    className="tb-core-row"
+                                    title={language === 'pt' ? 'Montar a partir de um core do meta' : 'Build around a meta core'}
+                                >
+                                    <Atom className="tb-core-row__icon" aria-hidden="true" />
+                                    <span className="tb-core-row__label">{language === 'pt' ? 'Core do meta' : 'Meta core'}</span>
+                                    <span className="tb-core-row__value">
+                                        {teamCores.length > 0 ? (
+                                            <>
+                                                {teamCores.slice(0, 2).map((c) => {
+                                                    const CIcon = coreIconFor(c.id);
+                                                    return (
+                                                        <span key={c.id} className="tb-core-chip" style={{ '--core-accent': c.accent }}>
+                                                            <CIcon aria-hidden="true" />{c.name}
+                                                        </span>
+                                                    );
+                                                })}
+                                                {teamCores.length > 2 && <span className="tb-core-row__more">+{teamCores.length - 2}</span>}
+                                            </>
+                                        ) : (
+                                            <span className="tb-core-row__empty">{language === 'pt' ? 'Nenhum ainda' : 'None yet'}</span>
+                                        )}
+                                    </span>
+                                    <ChevronRight className="tb-core-row__chevron" aria-hidden="true" />
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setIsOnboardingOpen(true)}
+                                className="btn btn-ghost btn-icon btn-sm btn-muted"
+                                title={language === 'pt' ? 'Como funciona a montagem automática e Megas' : 'How auto building & Megas work'}
+                                aria-label={language === 'pt' ? 'Guia do construtor' : 'Builder guide'}
+                            >
+                                <HelpCircle />
+                            </button>
                         </div>
                     </section>
 
-                    <section className="team-builder-panel p-4">
+                    <section className="card tb-analysis">
                         <div role="tablist" aria-label={t('builder.analysisTitle')} className="tabs">
                             {[
                                 { id: 'analysis', label: t('builder.analysisTitle') },
@@ -708,21 +707,21 @@ export function TeamBuilderView({
                         </div>
 
                         {(analysisTab === 'analysis' || isPlaythrough) ? (
-                            <div className="team-builder-analysis-grid mt-4">
-                                <div className="team-builder-analysis-card">
-                                    <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive coverage'}</h4>
-                                    <div className="flex flex-wrap gap-1.5">
+                            <div className="tb-analysis__groups">
+                                <div className="tb-analysis__group">
+                                    <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />{language === 'pt' ? 'Cobertura ofensiva' : 'Offensive coverage'}</h3>
+                                    <div className="tb-analysis__types">
                                         {currentTeam.length > 0
                                             ? (teamAnalysis.strengths.size > 0
                                                 ? Array.from(teamAnalysis.strengths).sort().map((type) => <AnalysisTypeBadge key={type} type={type} colors={colors} />)
-                                                : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
-                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
+                                                : <p className="tb-analysis__empty">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
+                                            : <p className="tb-analysis__empty">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
                                     </div>
                                 </div>
 
-                                <div className="team-builder-analysis-card">
-                                    <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--success">{language === 'pt' ? 'Cobertura Defensiva' : 'Defensive coverage'}</h4>
-                                    <div className="flex flex-wrap gap-1.5">
+                                <div className="tb-analysis__group">
+                                    <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />{language === 'pt' ? 'Cobertura defensiva' : 'Defensive coverage'}</h3>
+                                    <div className="tb-analysis__types">
                                         {currentTeam.length > 0
                                             ? (teamAnalysis.defensiveCoverage && Object.keys(teamAnalysis.defensiveCoverage).length > 0
                                                 ? Object.entries(teamAnalysis.defensiveCoverage).sort(([, a], [, b]) => b - a).map(([type, count]) => (
@@ -733,14 +732,14 @@ export function TeamBuilderView({
                                                         )}
                                                     </div>
                                                 ))
-                                                : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Nenhuma cobertura defensiva.' : 'No defensive coverage.'}</p>)
-                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Cobertura defensiva aparece após a primeira escolha.' : 'Defensive coverage appears after the first pick.'}</p>}
+                                                : <p className="tb-analysis__empty">{language === 'pt' ? 'Nenhuma cobertura defensiva.' : 'No defensive coverage.'}</p>)
+                                            : <p className="tb-analysis__empty">{language === 'pt' ? 'Cobertura defensiva aparece após a primeira escolha.' : 'Defensive coverage appears after the first pick.'}</p>}
                                     </div>
                                 </div>
 
-                                <div className="team-builder-analysis-card">
-                                    <h4 className="team-builder-analysis-card__title team-builder-analysis-card__title--danger">{language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive weaknesses'}</h4>
-                                    <div className="flex flex-wrap gap-1.5">
+                                <div className="tb-analysis__group">
+                                    <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--bad" aria-hidden="true" />{language === 'pt' ? 'Fraquezas defensivas' : 'Defensive weaknesses'}</h3>
+                                    <div className="tb-analysis__types">
                                         {currentTeam.length > 0
                                             ? (Object.keys(teamAnalysis.weaknesses).length > 0
                                                 ? Object.entries(teamAnalysis.weaknesses).sort(([, a], [, b]) => b - a).map(([type, score]) => (
@@ -749,20 +748,20 @@ export function TeamBuilderView({
                                                         <span className="team-builder-analysis-score">({score}x)</span>
                                                     </div>
                                                 ))
-                                                : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
-                                            : <p className="team-builder-empty-note !p-0 text-xs">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
+                                                : <p className="tb-analysis__empty">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
+                                            : <p className="tb-analysis__empty">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
                                     </div>
                                 </div>
                             </div>
                         ) : (
-                            <div className="mt-4">
+                            <div className="tb-analysis__threats">
                                 <TeamThreats threats={teamThreats} hasTeam={currentTeam.length > 0} onOpenDetail={openDetailModal} bare />
                             </div>
                         )}
                     </section>
                 </div>
 
-                <div className="lg:col-span-9 space-y-6">
+                <div className="tb-desk__picker">
                     <section className="team-builder-panel team-builder-panel--picker p-4">
                         <div className="team-builder-picker-cover-row">
                             <GameCoverBanner
@@ -889,7 +888,7 @@ export function TeamBuilderView({
                                 </div>
                             ) : (
                                 <div className="team-builder-results__scroll custom-scrollbar">
-                                    <div className="team-builder-results__grid grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 p-1 py-2">
+                                    <div className="team-builder-results__grid grid grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 p-1 py-2">
                                         {isGameFilterActive ? (
                                             (grid.visibleSections || []).map((section) => (
                                                 <React.Fragment key={section.key}>
@@ -956,19 +955,33 @@ export function TeamBuilderView({
                         </div>
                     </section>
 
-                    <section className="team-builder-panel p-4">
-                        <div className="team-builder-panel__header team-builder-panel__header--compact">
-                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">{language === 'pt' ? 'Times recentes' : 'Recent teams'}</h2>
-                            <button type="button" onClick={onNavigateToTeams} className="team-builder-button team-builder-button--inline team-builder-button--inline-compact">{language === 'pt' ? 'Ver todos' : 'View all'}</button>
+                    <section className="section tb-recent">
+                        <div className="section-head">
+                            <h2 className="section-title">{language === 'pt' ? 'Times recentes' : 'Recent teams'}</h2>
+                            {recentTeams.length > 0 && <span className="section-meta">{recentTeams.length}</span>}
+                            <button type="button" onClick={onNavigateToTeams} className="section-action btn btn-link">{language === 'pt' ? 'Ver todos' : 'View all'}</button>
                         </div>
 
-                        <div className="team-builder-recent-list team-builder-recent-list--wide custom-scrollbar mt-4">
-                            {recentTeams.length > 0 ? recentTeams.map((team) => (
-                                <article key={team.id} className="team-builder-recent-card team-builder-recent-card--wide">
-                                    <div className="team-builder-recent-card__main">
-                                        <div className="min-w-0 flex-1">
-                                            <p className="team-builder-recent-card__title">{team.name}</p>
-                                            <div className="team-builder-sprite-stack mt-3">
+                        {recentTeams.length > 0 ? (
+                            <div className="tb-recent__grid">
+                                {recentTeams.map((team) => {
+                                    const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
+                                    return (
+                                        <article key={team.id} className="card card--compact tb-recent-card">
+                                            <div className="tb-recent-card__head">
+                                                <p className="tb-recent-card__title">{team.name}</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleFavorite(team)}
+                                                    title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
+                                                    aria-label={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
+                                                    aria-pressed={!!team.isFavorite}
+                                                    className={`btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__star ${team.isFavorite ? 'is-on' : ''}`}
+                                                >
+                                                    <StarIcon isFavorite={team.isFavorite} color="currentColor" />
+                                                </button>
+                                            </div>
+                                            <div className="team-builder-sprite-stack">
                                                 {team.pokemons.map((pokemon) => (
                                                     <img
                                                         key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
@@ -979,37 +992,25 @@ export function TeamBuilderView({
                                                     />
                                                 ))}
                                             </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => handleToggleFavorite(team)}
-                                            title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
-                                            className={`team-builder-icon-button team-builder-icon-button--small ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
-                                        >
-                                            <StarIcon isFavorite={team.isFavorite} color="currentColor" />
-                                        </button>
-                                    </div>
-
-                                    <div className="team-builder-recent-card__actions">
-                                        {(() => {
-                                            const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
-                                            return (
+                                            <div className="tb-recent-card__actions">
                                                 <button
                                                     type="button"
                                                     onClick={() => setActiveTeamId(isActive ? null : team.id)}
-                                                    className={`team-builder-button team-builder-button--small ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'}`}
-                                                    style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
+                                                    aria-pressed={isActive}
+                                                    className="btn btn-secondary btn-sm tb-recent-card__active"
                                                 >
-                                                    {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
+                                                    {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set active')}
                                                 </button>
-                                            );
-                                        })()}
-                                        <button type="button" onClick={() => handleEditTeam(team)} className="team-builder-button team-builder-button--secondary team-builder-button--grow team-builder-button--small">{t('common.edit')}</button>
-                                        <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="team-builder-icon-button team-builder-icon-button--danger team-builder-icon-button--small" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
-                                    </div>
-                                </article>
-                            )) : <div className="team-builder-empty-note">{language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}</div>}
-                        </div>
+                                                <button type="button" onClick={() => handleEditTeam(team)} className="btn btn-secondary btn-sm tb-recent-card__edit">{t('common.edit')}</button>
+                                                <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__delete" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
+                                            </div>
+                                        </article>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <p className="tb-recent__empty">{language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}</p>
+                        )}
                     </section>
                 </div>
             </main> : null}

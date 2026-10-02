@@ -13,7 +13,7 @@ import '../styles/pokemon-card.css';
 const REASON_VISUALS = {
     ability: (r) => ({ Icon: coreIconFor(r.coreId), color: r.accent || 'var(--color-primary)' }),
     partner: () => ({ Icon: Trophy, color: 'var(--color-primary)' }),
-    type:    () => ({ Icon: ShieldCheck, color: '#38bdf8' }),
+    type:    () => ({ Icon: ShieldCheck, color: 'var(--color-info)' }),
     meta:    () => ({ Icon: Sparkles, color: 'var(--color-primary)' }),
 };
 function reasonVisual(reason) {
@@ -72,14 +72,9 @@ export const PokemonCard = React.memo(function PokemonCard({
             role="button"
             tabIndex={0}
             aria-label={`View details for ${details.name}`}
-            className={`pokemon-card group ${hasSynergy ? 'pokemon-card--synergy' : isSuggested ? 'pokemon-card--suggested' : ''} ${isSelected ? 'pokemon-card--selected' : ''}`}
+            className={`pokemon-card group ${hasSynergy ? 'pokemon-card--synergy' : isSuggested ? 'pokemon-card--suggested' : ''}  ${isSelected ? 'pokemon-card--selected' : ''}`}
             style={hasSynergy ? { '--synergy-color': reasonColor } : undefined}
         >
-            {hasSynergy && (
-                <span className="pokemon-card__reason-icon" title={synergyReason.label}>
-                    <ReasonIcon />
-                </span>
-            )}
             <div className="pokemon-card__topbar">
                 <div className="pokemon-card__types">
                     <span className="pokemon-card__dex-number" title={`#${details.id}`}>
@@ -108,7 +103,7 @@ export const PokemonCard = React.memo(function PokemonCard({
                             type="button"
                             className={`pokemon-card__favorite ${
                                 isFavorite ? 'is-active' : ''
-                            } ${shiny.isBursting ? 'is-bursting' : ''}`}
+                            }  ${shiny.isBursting ? 'is-bursting' : ''}`}
                             aria-label={isFavorite ? `Remove ${details.name} from favorites` : `Add ${details.name} to favorites`}
                             title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                         >
@@ -124,7 +119,10 @@ export const PokemonCard = React.memo(function PokemonCard({
             </div>
             <p className="pokemon-card__name">{details.name}</p>
             {hasSynergy && synergyReason.label && (
-                <span className="pokemon-card__reason-label" style={{ color: reasonColor }}>{synergyReason.label}</span>
+                <span className="pokemon-card__reason-label" title={synergyReason.label}>
+                    <ReasonIcon aria-hidden="true" />
+                    <span className="pokemon-card__reason-text">{synergyReason.label}</span>
+                </span>
             )}
 
             {onAddToTeam && (

@@ -11,7 +11,7 @@ import { typeColors, typeIcons } from '../../constants/types';
 import { getTeamPokemonDisplaySprite, getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { analyzeTeam } from '../../utils/teamAnalysis';
 import { suggestItemsForPokemon, itemSpriteUrl } from '../../utils/itemSuggestions';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { ShowdownIcon } from '../icons';
 import { CompactStatBar, getPokemonWeaknessEntries, WeaknessBadge } from '../modals/pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -362,7 +362,7 @@ export function TeamDetailView({
                                             )}
                                         </div>
                                         <div className="flex flex-wrap gap-1 mt-1">
-                                            {(m.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                            {(m.types || []).map((type) => <TypeChip key={type} type={type} size="sm" />)}
                                         </div>
                                     </div>
                                 </div>
