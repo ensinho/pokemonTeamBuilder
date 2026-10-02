@@ -81,7 +81,7 @@
     color: var(--color-muted);
     font-family: var(--font-mono);
     font-size: var(--text-2xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     line-height: 1.4;
 }
 
@@ -105,7 +105,7 @@
     padding: var(--space-1_5) var(--space-2) var(--space-1);
     font-family: var(--font-display);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.03em;
     color: var(--color-muted);
 }
@@ -164,7 +164,7 @@
 .command-palette__title {
     overflow: hidden;
     font-size: var(--text-base);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     line-height: 1.25;
     text-overflow: ellipsis;
     white-space: nowrap;

@@ -209,10 +209,10 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                                         alt=""
                                                         className="h-10 w-10 object-contain image-pixelated"
                                                     />
-                                                    <span className="mt-1 w-full truncate text-[0.6875rem] font-semibold text-fg">
+                                                    <span className="mt-1 w-full truncate text-2xs font-semibold text-fg">
                                                         {displayName}
                                                     </span>
-                                                    <span className="w-full truncate text-[0.625rem] text-muted">
+                                                    <span className="w-full truncate text-2xs text-muted">
                                                         {p.item}
                                                     </span>
                                                 </button>
@@ -226,7 +226,7 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                                 className="flex flex-col items-center justify-center rounded-md border border-dashed border-border-strong p-2 text-center"
                                             >
                                                 <img src={POKEBALL_PLACEHOLDER_URL} alt="" className="h-6 w-6 opacity-25" />
-                                                <span className="mt-1 text-[0.625rem] text-muted">{pt ? 'Vazio' : 'Empty'}</span>
+                                                <span className="mt-1 text-2xs text-muted">{pt ? 'Vazio' : 'Empty'}</span>
                                             </div>
                                         );
                                     })}
@@ -249,13 +249,13 @@ export function TeamBuilderOnboardingModal({ onClose }) {
                                                 </>
                                             )}
                                         </span>
-                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-surface px-1.5 py-0.5 text-[0.625rem] font-medium text-muted">
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-sm bg-surface px-1.5 py-0.5 text-2xs font-medium text-muted">
                                             <Package className="h-3 w-3" />
                                             {activeLastAdded.item}
                                         </span>
                                     </div>
 
-                                    <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-[0.6875rem]">
+                                    <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-2xs">
                                         <div className="flex gap-1"><dt className="text-muted">{pt ? 'Habilidade' : 'Ability'}</dt><dd className="font-medium text-fg">{activeLastAdded.ability}</dd></div>
                                         <div className="flex gap-1"><dt className="text-muted">Nature</dt><dd className="font-medium text-fg">{activeLastAdded.nature}</dd></div>
                                         <div className="col-span-2 flex gap-1"><dt className="text-muted">EVs</dt><dd className="font-medium text-fg tabular-nums">{activeLastAdded.evs}</dd></div>

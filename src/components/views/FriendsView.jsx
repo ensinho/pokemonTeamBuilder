@@ -127,10 +127,10 @@ export function FriendsView() {
     // The action button for a trainer found via search or an invite link.
     const relationshipAction = (profile) => {
         if (friendIds.has(profile.userId)) {
-            return <span className="badge badge-success">{t('friends.alreadyFriends')}</span>;
+            return <span className="badge badge--success">{t('friends.alreadyFriends')}</span>;
         }
         if (outgoingIds.has(profile.userId)) {
-            return <span className="badge badge-outline">{t('friends.requestPending')}</span>;
+            return <span className="badge">{t('friends.requestPending')}</span>;
         }
         if (incomingIds.has(profile.userId)) {
             return (

@@ -32,7 +32,7 @@ function MetricTile({ icon, value, label, accent }) {
         <div className="flex flex-col items-center rounded-xl border border-border bg-surface px-3 py-2.5 text-center">
             <span className="mb-0.5" style={accent ? { color: accent } : undefined}>{icon}</span>
             <span className="text-lg font-extrabold tabular-nums text-fg">{value}</span>
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</span>
+            <span className="text-2xs font-semibold text-muted">{label}</span>
         </div>
     );
 }
@@ -179,13 +179,13 @@ export function PokemonUsageView() {
                         </div>
                         <div className="mt-1.5 flex flex-wrap gap-1.5">
                             {types.map((tp) => (
-                                <span key={tp} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold capitalize" style={{ color: typeColors[tp], backgroundColor: `${typeColors[tp]}1f` }}>
+                                <span key={tp} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-bold capitalize" style={{ color: typeColors[tp], backgroundColor: `${typeColors[tp]}1f` }}>
                                     {typeIcons[tp] && <img src={typeIcons[tp]} alt="" className="h-3.5 w-3.5" />}{cap(tp)}
                                 </span>
                             ))}
                         </div>
                         <div className="mt-4 flex flex-wrap items-center gap-2">
-                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1.75 text-[12px] font-bold text-fg transition-all active:scale-95">
+                            <Link to={`/pokemon/${id}`} state={linkState} className="inline-flex items-center gap-1.5 rounded-xl bg-surface-raised px-3.5 py-1.75 text-xs font-bold text-fg transition-all active:scale-95">
                                 <BookOpen className="h-3.5 w-3.5" /> {pt ? 'Ficha completa' : 'Full Pokédex entry'}
                             </Link>
                             {format && (
@@ -194,7 +194,7 @@ export function PokemonUsageView() {
                                 // names the one it is showing even when the Meta list
                                 // that linked here was ranked at another.
                                 <span
-                                    className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-[11px] font-semibold text-muted"
+                                    className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs font-semibold text-muted"
                                     title={detailCutoff > 0
                                         ? (pt ? `Partidas entre jogadores com rating ${detailCutoff} ou mais` : `Games between players rated ${detailCutoff} and above`)
                                         : undefined}
@@ -279,9 +279,9 @@ export function PokemonUsageView() {
                                         const spread = formatUsageSpread(sp.evs);
                                         return (
                                             <div key={`${sp.nature}-${i}`} className="flex items-center gap-2 rounded-lg border border-border bg-surface px-2.5 py-2 hover:border-border transition-colors">
-                                                <span className="shrink-0 rounded bg-surface-raised px-2 py-0.5 text-[11px] font-bold text-fg">{sp.nature}</span>
-                                                <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-muted">{spread || (pt ? 'sem EVs' : 'no EVs')}</span>
-                                                <span className="shrink-0 text-[11px] font-bold tabular-nums text-primary">{pctOf(sp.count, n)}%</span>
+                                                <span className="shrink-0 rounded bg-surface-raised px-2 py-0.5 text-2xs font-bold text-fg">{sp.nature}</span>
+                                                <span className="min-w-0 flex-1 truncate font-mono text-2xs text-muted">{spread || (pt ? 'sem EVs' : 'no EVs')}</span>
+                                                <span className="shrink-0 text-2xs font-bold tabular-nums text-primary">{pctOf(sp.count, n)}%</span>
                                             </div>
                                         );
                                     })}
@@ -295,7 +295,7 @@ export function PokemonUsageView() {
                                     {teraList.slice(0, 6).map((tt) => {
                                         const c = typeColors[tt.name?.toLowerCase()] || 'var(--color-muted)';
                                         return (
-                                            <span key={tt.name} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold capitalize" style={{ color: c, backgroundColor: `${c}1f` }}>
+                                            <span key={tt.name} className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-2xs font-bold capitalize" style={{ color: c, backgroundColor: `${c}1f` }}>
                                                 {typeIcons[tt.name?.toLowerCase()] && <img src={typeIcons[tt.name.toLowerCase()]} alt="" className="h-3.5 w-3.5" />}
                                                 {tt.name}{n > 0 && tt.count ? ` ${pctOf(tt.count, n)}%` : ''}
                                             </span>
@@ -321,8 +321,8 @@ export function PokemonUsageView() {
                                                     className="h-10 w-10 image-pixelated shrink-0 object-contain transition-transform duration-300 group-hover:scale-110"
                                                     onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
                                                 />
-                                                <span className="text-[9px] font-extrabold text-fg truncate w-full text-center capitalize">{pretty(resolvedTeam.name).split('-')[0]}</span>
-                                                <span className="text-[9px] font-bold tabular-nums text-primary">{pctOf(tm.count, n)}%</span>
+                                                <span className="text-2xs font-extrabold text-fg truncate w-full text-center capitalize">{pretty(resolvedTeam.name).split('-')[0]}</span>
+                                                <span className="text-2xs font-bold tabular-nums text-primary">{pctOf(tm.count, n)}%</span>
                                             </button>
                                         );
                                     })}
@@ -338,7 +338,7 @@ export function PokemonUsageView() {
             {/* Curated Smogon sets (named sets with reasoning) */}
             {smogon?.sets?.length > 0 && (
                 <div className="mt-6">
-                    <h2 className="mb-3.5 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">
+                    <h2 className="mb-3.5 flex items-center gap-1.5 text-sm font-bold text-muted">
                         <Sparkles className="h-4 w-4" /> {pt ? 'Sets recomendados (Smogon)' : 'Recommended sets (Smogon)'}
                     </h2>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
@@ -352,9 +352,9 @@ export function PokemonUsageView() {
                                 >
                                     <div className="mb-2.5 flex items-center justify-between gap-2">
                                         <h3 className="truncate text-sm font-extrabold text-fg">{set.name}</h3>
-                                        {set.source && <span className="shrink-0 rounded-full bg-surface-raised px-2.5 py-0.5 text-[9px] font-bold text-muted uppercase tracking-wide">{set.source}</span>}
+                                        {set.source && <span className="shrink-0 rounded-full bg-surface-raised px-2.5 py-0.5 text-2xs font-bold text-muted uppercase tracking-[0.06em]">{set.source}</span>}
                                     </div>
-                                    <div className="mb-3 flex flex-wrap gap-1.5 text-[11px]">
+                                    <div className="mb-3 flex flex-wrap gap-1.5 text-2xs">
                                         {set.item && (
                                             <button type="button" onClick={(e) => goToItem(set.item, e)} className="inline-flex items-center gap-1 rounded-md bg-surface-raised px-1.5 py-0.5 capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                                                 <img src={itemSpriteUrl(slugify(set.item))} alt="" className="h-4 w-4 image-pixelated shrink-0" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
@@ -373,10 +373,10 @@ export function PokemonUsageView() {
                                             </span>
                                         )}
                                     </div>
-                                    {spread && <p className="mb-3 text-[11px] text-muted"><span className="font-semibold text-fg">EVs:</span> {spread}</p>}
+                                    {spread && <p className="mb-3 text-2xs text-muted"><span className="font-semibold text-fg">EVs:</span> {spread}</p>}
                                     <div className="grid grid-cols-2 gap-1.5">
                                         {primaryMoves(set).map((mv) => (
-                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg border border-border bg-surface-raised/20 text-[10px] hover:border-border transition-colors" />
+                                            <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg border border-border bg-surface-raised/20 text-2xs hover:border-border transition-colors" />
                                         ))}
                                     </div>
                                 </article>
@@ -389,7 +389,7 @@ export function PokemonUsageView() {
             {/* Recent tournament teams featuring this Pokémon */}
             {featuredTeams.length > 0 && (
                 <div className="mt-6">
-                    <h2 className="mb-3.5 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted">
+                    <h2 className="mb-3.5 flex items-center gap-1.5 text-sm font-bold text-muted">
                         <Trophy className="h-4 w-4" /> {pt ? 'Times recentes com este Pokémon' : 'Recent teams featuring it'}
                     </h2>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -416,7 +416,7 @@ export function PokemonUsageView() {
                                 </div>
                                 <div className="min-w-0 flex-1">
                                     <p className="truncate text-xs font-bold text-fg group-hover:text-primary transition-colors">{tm.tournament || tm.title}</p>
-                                    <p className="truncate text-[10px] font-semibold text-muted mt-0.5">{[tm.placement, tm.format].filter(Boolean).join(' · ')}</p>
+                                    <p className="truncate text-2xs font-semibold text-muted mt-0.5">{[tm.placement, tm.format].filter(Boolean).join(' · ')}</p>
                                 </div>
                                 <ArrowUpRight className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-primary" />
                             </button>

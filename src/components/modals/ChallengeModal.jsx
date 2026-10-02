@@ -100,7 +100,7 @@ export function ChallengeModal({
                                 fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-40" />}
                             />
                             <div className="min-w-0 flex-1">
-                                <span className="text-[10px] text-muted font-bold uppercase tracking-wider block">
+                                <span className="text-2xs text-muted font-bold block">
                                     {language === 'pt' ? 'Oponente' : 'Opponent'}
                                 </span>
                                 <h4 className="text-sm font-bold text-fg truncate">
@@ -110,7 +110,7 @@ export function ChallengeModal({
                         </div>
                     ) : (
                         <div className="space-y-1.5">
-                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted block">
+                            <label className="text-2xs font-bold text-muted block">
                                 {t('battle.selectFriendPrompt')}
                             </label>
                             {friends.length === 0 ? (
@@ -137,7 +137,7 @@ export function ChallengeModal({
 
                     {/* Battle Mode Cards (Minimalist) */}
                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted block">
+                        <label className="text-2xs font-bold text-muted block">
                             {t('battle.chooseFormatTitle')}
                         </label>
 

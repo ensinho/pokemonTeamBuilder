@@ -177,7 +177,7 @@ export function QuizCelebrationModal({
             >
                 <div className="relative z-10 space-y-6">
                     {/* Badge */}
-                    <div className="mx-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent-soft text-accent text-xs font-bold uppercase tracking-wider">
+                    <div className="mx-auto inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/30 bg-accent-soft text-accent text-xs font-bold uppercase tracking-[0.06em]">
                         {t('quiz.celebrationBadge')}
                     </div>
 
@@ -214,11 +214,11 @@ export function QuizCelebrationModal({
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto bg-surface-raised/30 rounded-2xl p-4 border border-border">
                         <div className="text-center">
-                            <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">{t('quiz.totalGuessed')}</span>
+                            <span className="block text-xs text-muted font-bold mb-1">{t('quiz.totalGuessed')}</span>
                             <span className="text-lg font-black text-fg">{totalCount}</span>
                         </div>
                         <div className="text-center border-l border-border">
-                            <span className="block text-xs text-muted uppercase font-bold tracking-wider mb-1">{t('quiz.accuracy')}</span>
+                            <span className="block text-xs text-muted font-bold mb-1">{t('quiz.accuracy')}</span>
                             <span className="text-lg font-black text-success">{finalAccuracy}%</span>
                         </div>
                     </div>

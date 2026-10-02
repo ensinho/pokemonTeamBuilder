@@ -11,7 +11,7 @@ import { buildPokemonForms } from '../../utils/pokemonForms';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { AbilityChip } from '../AbilityChip';
 import { StatBar } from '../StatBar';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { CloseIcon, PlusIcon, SparklesIcon, StarIcon } from '../icons';
 import { getPokemonWeaknessEntries } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -252,14 +252,14 @@ export function PokemonDetailModal({
                                     {pokemon.name} <span className="text-muted font-normal text-base">#{pokemon.id}</span>
                                 </h2>
                                 <div className="mt-2 flex flex-wrap justify-center gap-1.5">
-                                    {(pokemon.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                    {(pokemon.types || []).map((type) => <TypeChip key={type} type={type} />)}
                                 </div>
                             </div>
                         </div>
 
                         {/* Base Stats Card */}
                         <div className="rounded-xl bg-bg p-4 border border-border flex flex-col justify-between">
-                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{t('pokedex.baseStats')}</h4>
+                            <h4 className="mb-3 text-center text-xs font-bold text-muted">{t('pokedex.baseStats')}</h4>
                             <div className="space-y-2 flex-1 flex flex-col justify-center">
                                 {pokemon.stats?.map((stat) => (
                                     <StatBar key={stat.name} stat={stat.name} value={stat.base_stat} colors={colors} />
@@ -271,7 +271,7 @@ export function PokemonDetailModal({
                     {/* ── Evolution Line ── */}
                     {evolutionDetails.length > 1 && (
                         <div className="rounded-xl bg-bg p-4 border border-border mt-4">
-                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{language === 'pt' ? 'Linha Evolutiva' : 'Evolution Line'}</h4>
+                            <h4 className="mb-3 text-center text-xs font-bold text-muted">{language === 'pt' ? 'Linha Evolutiva' : 'Evolution Line'}</h4>
                             <div className="overflow-x-auto custom-scrollbar pb-1">
                                 <div className="flex min-w-max items-center gap-2 px-1 justify-center">
                                     {evolutionDetails.map((evo, index) => (
@@ -296,7 +296,7 @@ export function PokemonDetailModal({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                         {/* Pokédex Data card */}
                         <div className="rounded-xl bg-bg p-4 border border-border">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
+                            <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
                                 <Database className="w-3.5 h-3.5 text-primary" />
                                 <span>{language === 'pt' ? 'Dados da Pokédex' : 'Pokédex Data'}</span>
                             </h4>
@@ -309,7 +309,7 @@ export function PokemonDetailModal({
                                     <tr className="border-b border-border py-2.5 flex justify-between items-center">
                                         <td className="text-muted">{t('pokedex.typesFilterLabel')}</td>
                                         <td className="flex gap-1">
-                                            {pokemon.types?.map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                            {pokemon.types?.map((type) => <TypeChip key={type} type={type} size="sm" />)}
                                         </td>
                                     </tr>
                                     <tr className="py-2.5 flex justify-between items-start">
@@ -320,8 +320,8 @@ export function PokemonDetailModal({
                                                 return (
                                                     <div key={idx} className="capitalize text-xs">
                                                         {isHidden ? (
-                                                            <span className="text-muted font-normal text-[11px] inline-flex items-center gap-1">
-                                                                <AbilityChip ability={ab} onBeforeNavigate={onClose} /> <span className="text-[10px] text-muted">{language === 'pt' ? '(oculta)' : '(hidden)'}</span>
+                                                            <span className="text-muted font-normal text-2xs inline-flex items-center gap-1">
+                                                                <AbilityChip ability={ab} onBeforeNavigate={onClose} /> <span className="text-2xs text-muted">{language === 'pt' ? '(oculta)' : '(hidden)'}</span>
                                                             </span>
                                                         ) : (
                                                             <span className="inline-block">
@@ -339,14 +339,14 @@ export function PokemonDetailModal({
                                 <button
                                     type="button"
                                     onClick={() => { onClose(); navigate(`/pokedex?pokemon=${pokemon.id}`); }}
-                                    className="text-[11px] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-raised hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="text-2xs flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-raised hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                     {t('modals.pokedexViewLocations')}
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => { onClose(); navigate(`/pokemon/${pokemon.id}`); }}
-                                    className="text-[11px] flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-raised hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="text-2xs flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-raised hover:text-primary transition-all text-muted font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                                 >
                                     {t('pdetail.viewFullPage')}
                                 </button>
@@ -355,18 +355,18 @@ export function PokemonDetailModal({
 
                         {/* Type Defenses card */}
                         <div className="rounded-xl bg-bg p-4 border border-border">
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
+                            <h4 className="text-xs font-bold text-muted flex items-center gap-1.5 pb-2 mb-2 border-b border-border">
                                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                                 <span>{t('pokedex.typeEffectivenessTitle')}</span>
                             </h4>
-                            <p className="text-[11px] text-muted mb-3">{t('pokedex.typeEffectivenessSubtitle')}</p>
+                            <p className="text-2xs text-muted mb-3">{t('pokedex.typeEffectivenessSubtitle')}</p>
                             <div className="space-y-2">
                                 {defGroups.map((g) => (
-                                    <div key={g.mult} className={`rounded-lg border ${g.border} ${g.bg} px-3 py-2`}>
-                                        <span className={`text-[10px] font-extrabold uppercase tracking-widest ${g.text} block mb-1.5`}>{g.label}</span>
+                                    <div key={g.mult} className={`rounded-lg border ${g.border}  ${g.bg} px-3 py-2`}>
+                                        <span className={`text-2xs font-extrabold ${g.text} block mb-1.5`}>{g.label}</span>
                                         <div className="flex flex-wrap gap-1.5">
                                             {g.types.map((tName) => (
-                                                <span key={tName} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold capitalize ${g.badge}`}>
+                                                <span key={tName} className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-semibold capitalize ${g.badge}`}>
                                                     <img src={typeIcons[tName]} alt={tName} className="h-3.5 w-3.5 shrink-0" />
                                                     {tName}
                                                 </span>
@@ -376,13 +376,13 @@ export function PokemonDetailModal({
                                 ))}
                                 {neutralTypes.length > 0 && (
                                     <details className="group">
-                                        <summary className="cursor-pointer text-[10px] font-bold uppercase tracking-wider text-muted hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
+                                        <summary className="cursor-pointer text-2xs font-bold text-muted hover:text-muted transition-colors select-none list-none flex items-center gap-1.5 py-1">
                                             <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
                                             {neutralTypes.length} {language === 'pt' ? 'tipos neutros' : 'neutral types'} (1×)
                                         </summary>
                                         <div className="flex flex-wrap gap-1.5 pt-2 pl-1">
                                             {neutralTypes.map((tName) => (
-                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full bg-surface-raised/40 px-2 py-0.5 text-[11px] font-semibold capitalize text-muted">
+                                                <span key={tName} className="inline-flex items-center gap-1 rounded-full bg-surface-raised/40 px-2 py-0.5 text-2xs font-semibold capitalize text-muted">
                                                     <img src={typeIcons[tName]} alt={tName} className="h-3.5 w-3.5 shrink-0 opacity-60" />
                                                     {tName}
                                                 </span>
@@ -397,7 +397,7 @@ export function PokemonDetailModal({
                     {/* ── Form picker (for Megas / alternate forms) ── */}
                     {forms.length > 0 && onAdd && (
                         <div className="rounded-xl bg-bg p-4 border border-border mt-4">
-                            <h4 className="mb-3 text-center text-xs font-bold uppercase tracking-wider text-muted">{t('modals.detailModalFormToAdd')}</h4>
+                            <h4 className="mb-3 text-center text-xs font-bold text-muted">{t('modals.detailModalFormToAdd')}</h4>
                             <div className="flex flex-wrap justify-center gap-2">
                                 <button
                                     type="button"
@@ -420,7 +420,7 @@ export function PokemonDetailModal({
                                             <span className="block text-xs font-bold capitalize text-fg leading-tight">{form.displayName}</span>
                                             {form.types?.length > 0 && (
                                                 <span className="mt-1 flex gap-1">
-                                                    {(form.types || []).map((type) => <TypeBadge key={type} type={type} colors={colors} />)}
+                                                    {(form.types || []).map((type) => <TypeChip key={type} type={type} size="sm" />)}
                                                 </span>
                                             )}
                                         </span>

@@ -53,8 +53,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.01em;
     color: var(--color-fg);
 }
@@ -62,8 +62,8 @@
 /* Ink, not the accent: a "see all" is navigation, and the panel's one accent
    belongs to its action (Build a team). The arrow in the copy is the cue. */
 .hd-panel__link {
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     color: var(--color-fg);
     letter-spacing: 0;
     cursor: pointer;
@@ -150,8 +150,8 @@
     position: absolute;
     top: -0.2rem;
     right: -0.2rem;
-    font-size: 0.55rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     font-family: monospace;
     color: var(--color-primary);
     background: var(--color-primary-soft);
@@ -169,7 +169,7 @@
 }
 
 .hd-meta-mon-name {
-    font-size: 0.625rem;
+    font-size: var(--text-2xs);
     text-transform: capitalize;
     color: var(--color-muted);
     text-align: center;
@@ -182,7 +182,7 @@
 
 .hd-meta-mon-btn.is-active .hd-meta-mon-name {
     color: var(--color-fg);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 
@@ -254,7 +254,7 @@
         height: 2.4rem;
     }
     .hd-meta-mon-name {
-        font-size: 0.6875rem;
+        font-size: var(--text-2xs);
     }
 }
 
@@ -348,8 +348,8 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
     overflow: hidden;
-    font-size: 0.6875rem;
-    font-weight: 500;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
     line-height: 1.2;
     text-align: center;
     overflow-wrap: anywhere;
@@ -420,14 +420,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .hd-team-row__meta {
     flex-shrink: 0;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--color-muted);
     font-variant-numeric: tabular-nums;
 }
@@ -442,14 +442,14 @@
 
 .hd-continue-start__title {
     margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .hd-continue-start__body {
     margin: 0 0 var(--space-3);
-    font-size: 0.8125rem;
+    font-size: var(--text-sm);
     color: var(--color-muted);
 }
 
@@ -464,8 +464,8 @@
     border-radius: var(--radius-md);
     background: var(--color-primary);
     color: var(--color-on-primary);
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: opacity var(--duration-fast) var(--ease-smooth);
 }
@@ -478,8 +478,8 @@
    of the two places it appeared. */
 .hd-meta-caption {
     margin: 0 0 var(--space-2_5);
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     color: var(--color-muted);
 }
 
@@ -594,13 +594,13 @@
 }
 
 .hd-tourney-row__title {
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .hd-tourney-row__event {
-    font-size: 0.6875rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
 }
 
@@ -611,8 +611,8 @@
     background: var(--color-primary-soft);
     color: var(--color-primary);
     font-family: var(--font-display);
-    font-size: 0.625rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.02em;
 }
 
@@ -646,7 +646,7 @@
         -webkit-line-clamp: 1;
         line-clamp: 1;
         text-align: left;
-        font-size: 0.75rem;
+        font-size: var(--text-xs);
     }
 
     .hd-quick-tile__icon {

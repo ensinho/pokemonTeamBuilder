@@ -1132,7 +1132,7 @@ export const ShareSnippetModal = ({
                         <div className="p-3.5 rounded-xl bg-surface-raised/40 border border-surface-raised space-y-3">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">
+                                    <label className="mb-1 block text-2xs font-bold text-muted">
                                         {t('modals.shareModalTrainerLabel')}
                                     </label>
                                     <input
@@ -1145,7 +1145,7 @@ export const ShareSnippetModal = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">
+                                    <label className="mb-1 block text-2xs font-bold text-muted">
                                         {t('modals.shareModalTeamIdLabel')}
                                     </label>
                                     <input
@@ -1161,14 +1161,14 @@ export const ShareSnippetModal = ({
 
                             {/* Card Content Sub-Tab */}
                             <div className="flex items-center justify-between pt-1">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">
+                                <span className="text-2xs font-bold text-muted">
                                     Display Content:
                                 </span>
                                 <div className="inline-flex rounded-lg bg-surface p-0.5 border border-surface-raised">
                                     <button
                                         type="button"
                                         onClick={() => setCardTab('moves')}
-                                        className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold rounded-md transition-all ${
+                                        className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-all ${
                                             cardTab === 'moves'
                                                 ? 'bg-primary text-white'
                                                 : 'text-muted hover:text-fg'
@@ -1180,7 +1180,7 @@ export const ShareSnippetModal = ({
                                     <button
                                         type="button"
                                         onClick={() => setCardTab('stats')}
-                                        className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-bold rounded-md transition-all ${
+                                        className={`flex items-center gap-1.5 px-3 py-1 text-2xs font-bold rounded-md transition-all ${
                                             cardTab === 'stats'
                                                 ? 'bg-primary text-white'
                                                 : 'text-muted hover:text-fg'
@@ -1196,7 +1196,7 @@ export const ShareSnippetModal = ({
                         <div className="p-3.5 rounded-xl bg-surface-raised/40 border border-surface-raised space-y-3">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
-                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">
+                                    <label className="mb-1 block text-2xs font-bold text-muted">
                                         {t('modals.shareModalTitleLabel')}
                                     </label>
                                     <input
@@ -1209,7 +1209,7 @@ export const ShareSnippetModal = ({
                                     />
                                 </div>
                                 <div>
-                                    <label className="mb-1 block text-[11px] font-bold uppercase tracking-wider text-muted">
+                                    <label className="mb-1 block text-2xs font-bold text-muted">
                                         {t('modals.shareModalSubtitleLabel')}
                                     </label>
                                     <input
@@ -1225,7 +1225,7 @@ export const ShareSnippetModal = ({
 
                             {/* Background Selector */}
                             <div>
-                                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-muted">
+                                <label className="mb-1.5 block text-2xs font-bold text-muted">
                                     {t('modals.shareModalBackgroundLabel')}
                                 </label>
                                 <div className="grid grid-cols-4 gap-2">
@@ -1244,7 +1244,7 @@ export const ShareSnippetModal = ({
                                                 title={bg.name}
                                             >
                                                 <img src={bg.url} alt={bg.name} className="w-full h-full object-cover" />
-                                                <span className="absolute inset-x-0 bottom-0 text-[9px] font-bold uppercase bg-black/60 text-white text-center py-0.5">
+                                                <span className="absolute inset-x-0 bottom-0 text-2xs font-bold bg-black/60 text-white text-center py-0.5">
                                                     {bg.name}
                                                 </span>
                                             </button>

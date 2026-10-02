@@ -76,7 +76,7 @@
 .bottom-sheet__title {
     margin: 0;
     font-size: var(--text-md);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 

@@ -10,7 +10,7 @@
 
 .battle-intro {
     margin: 0;
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--color-muted);
 }
 
@@ -85,8 +85,8 @@
 }
 
 .battle-card__name {
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -94,7 +94,7 @@
 }
 
 .battle-card__status {
-    font-size: 0.688rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
 }
 
@@ -104,16 +104,16 @@
     border-radius: var(--radius-full);
     background: var(--color-primary);
     color: var(--color-on-primary);
-    font-size: 0.625rem;
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
 .battle-card__dismiss {
     flex-shrink: 0;
     padding: var(--space-1) var(--space-2_5);
-    font-size: 0.688rem;
+    font-size: var(--text-2xs);
 }
 
 /* ── Avatars ──────────────────────────────────────────────────────── */
@@ -240,20 +240,20 @@
 .battle-header__eyebrow {
     margin: 0;
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .battle-header__name {
     margin: 0;
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .battle-header__meta {
     margin: 0;
-    font-size: 0.688rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
 }
 
@@ -276,20 +276,20 @@
    tracking come down. */
 .battle-panel__title {
     margin: 0;
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .battle-panel__copy {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: var(--text-base);
     color: var(--color-fg);
 }
 
 .battle-panel__label {
-    font-size: 0.688rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -312,8 +312,8 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
-    font-size: 0.688rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -390,8 +390,8 @@
     bottom: 0;
     padding: 0 var(--space-0_5);
     border-top-left-radius: var(--radius-sm);
-    font-size: 0.6rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     line-height: 1.2;
     color: var(--color-fg);
     background: color-mix(in srgb, var(--color-bg) 78%, transparent);
@@ -411,7 +411,7 @@
 }
 
 .battle-chat__empty {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     font-style: italic;
     color: var(--color-muted);
     text-align: center;
@@ -445,13 +445,13 @@
 }
 
 .battle-chat__author {
-    font-size: 0.625rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .battle-chat__text {
-    font-size: 0.85rem;
+    font-size: var(--text-base);
     color: var(--color-fg);
     overflow-wrap: anywhere;
 }
@@ -492,9 +492,9 @@
 
 .battlefield__turn,
 .battlefield__weather {
-    font-size: 0.625rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
     color: var(--color-primary);
 }
@@ -528,8 +528,8 @@
 }
 
 .battlefield__trainer {
-    font-size: 0.688rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -567,7 +567,7 @@
 }
 
 .battlefield-slot__waiting {
-    font-size: 0.688rem;
+    font-size: var(--text-2xs);
     font-style: italic;
 }
 
@@ -588,15 +588,15 @@
     display: flex;
     align-items: baseline;
     gap: var(--space-1_5);
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .battlefield-slot__level,
 .battlefield-slot__gender {
-    font-size: 0.625rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -657,7 +657,7 @@
 }
 
 .battlefield-hp__text {
-    font-size: 0.625rem;
+    font-size: var(--text-2xs);
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
     white-space: nowrap;
@@ -670,8 +670,8 @@
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
-    font-size: 0.563rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.08em;
     color: var(--color-muted);
 }
@@ -729,8 +729,8 @@
 .battlefield__result {
     margin: var(--space-2) 0 0;
     text-align: center;
-    font-size: 0.95rem;
-    font-weight: 800;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
 }
 
 .battlefield__result.is-win {
@@ -756,7 +756,7 @@
     }
 
     .battlefield-slot__name {
-        font-size: 0.78rem;
+        font-size: var(--text-xs);
     }
 
     .battlefield-slot__sprite {
@@ -784,8 +784,8 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
-    font-size: 0.625rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     transition: color var(--duration-fast) var(--ease-smooth),
         border-color var(--duration-fast) var(--ease-smooth);
@@ -817,8 +817,8 @@
     padding: var(--space-2) var(--space-3);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
 }
 
 .battle-turn-banner.is-yours {
@@ -830,7 +830,7 @@
 .battle-turn-banner.is-waiting {
     background: var(--color-surface-raised);
     color: var(--color-muted);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .battle-turn-banner__icon {
@@ -869,8 +869,8 @@
 }
 
 .battle-turn-banner__choice {
-    font-size: 0.688rem;
-    font-weight: 500;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-medium);
     font-style: italic;
     color: var(--color-muted);
     text-align: right;
@@ -978,14 +978,14 @@
 }
 
 .battle-move__name {
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     text-transform: capitalize;
 }
 
 .battle-move__pp {
-    font-size: 0.625rem;
+    font-size: var(--text-2xs);
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
 }
@@ -1053,7 +1053,7 @@
 }
 
 .battle-move__hp-text {
-    font-size: 0.563rem;
+    font-size: var(--text-2xs);
     font-variant-numeric: tabular-nums;
     color: var(--color-muted);
     white-space: nowrap;
@@ -1082,15 +1082,15 @@
 }
 
 .battle-transcript__line {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     line-height: 1.45;
     color: var(--color-fg);
 }
 
 .battle-transcript__line.is-turn {
     margin-top: var(--space-2);
-    font-weight: 800;
-    letter-spacing: 0.06em;
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
     color: var(--color-primary);
 }
@@ -1107,12 +1107,12 @@
 
 .battle-transcript__line.is-faint {
     color: var(--color-danger);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 .battle-transcript__line.is-win {
     color: var(--color-success);
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
 }
 
 @media (max-width: 560px) {
@@ -1191,14 +1191,14 @@
 
 .battle-nav-opponent__name {
     margin: 0;
-    font-size: 0.875rem;
-    font-weight: 700;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     line-height: 1.2;
 }
 
 .battle-nav-opponent__meta {
-    font-size: 0.688rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
 }
 
@@ -1233,7 +1233,7 @@
 .battle-sprite-toggle--compact {
     align-self: center;
     padding: var(--space-0_5) var(--space-2);
-    font-size: 0.625rem;
+    font-size: var(--text-2xs);
     border-radius: var(--radius-full);
 }
 
@@ -1247,8 +1247,8 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: var(--color-surface);
-    font-size: 0.688rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     cursor: pointer;
     transition: background var(--duration-fast), border-color var(--duration-fast);
@@ -1308,8 +1308,8 @@
 .battle-move--chip .battle-move__type-tag {
     padding: var(--space-0_5) var(--space-1);
     border-radius: var(--radius-sm);
-    font-size: 0.55rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     color: var(--color-on-primary);
     line-height: 1;
@@ -1335,8 +1335,8 @@
     border: none;
     border-radius: var(--radius-md);
     background: transparent;
-    font-size: 0.78rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     cursor: pointer;
     transition: background var(--duration-fast), color var(--duration-fast);
@@ -1357,8 +1357,8 @@
     border-radius: var(--radius-full);
     background: var(--color-primary-soft);
     color: var(--color-primary);
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
 }
 
 .battle-panel--side-log,
@@ -1412,8 +1412,8 @@
     background: var(--color-surface-raised);
     border: 1px solid var(--color-border);
     color: var(--color-primary);
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     letter-spacing: 0.1em;
     box-shadow: var(--shadow-sm);
 }
@@ -1480,13 +1480,13 @@
 }
 
 .battle-log__user-name {
-    font-size: 0.825rem;
-    font-weight: 700;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .battle-log__used-label {
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -1494,8 +1494,8 @@
     padding: var(--space-0_5) var(--space-2);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    font-weight: 700;
-    font-size: 0.72rem;
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-xs);
 }
 
 .battle-log__card-details {
@@ -1510,22 +1510,22 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-2);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     line-height: 1.35;
     color: var(--color-fg);
 }
 
 .battle-log__detail-target {
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
 }
 
 .battle-log__stat-pill {
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-sm);
-    font-size: 0.7rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
 }
 
 .battle-log__stat-pill.is-up {
@@ -1541,36 +1541,36 @@
 }
 
 .battle-log__hp-badge {
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .battle-log__user,
 .battle-log__mon {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .battle-log__action-label {
     color: var(--color-muted);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
 }
 
 .battle-log__move-chip {
     padding: var(--space-0_5) var(--space-2);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    font-weight: 700;
-    font-size: 0.75rem;
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-xs);
 }
 
 .battle-log__stat-badge {
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-sm);
-    font-size: 0.72rem;
-    font-weight: 800;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
 }
 
 .battle-log__stat-badge.is-up {
@@ -1587,14 +1587,14 @@
 
 .battle-log__faint-chip {
     color: var(--color-danger);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .battle-log__hp-chip,
 .battle-log__heal-chip {
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     font-variant-numeric: tabular-nums;
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -1603,8 +1603,8 @@
 }
 
 .battle-log__effect-badge {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
 }
 
 .battle-log__item--effect.is-super .battle-log__effect-badge {
@@ -1623,23 +1623,23 @@
 .battle-log__status-tag {
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-sm);
-    font-size: 0.625rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
 }
 
 .battle-log__switch-badge {
     color: var(--color-info);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
 }
 
 .battle-log__item--win {
     justify-content: center;
     color: var(--color-success);
-    font-weight: 800;
-    font-size: 0.85rem;
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-base);
     padding: var(--space-1_5);
     border: 1px dashed var(--color-success);
     background: color-mix(in srgb, var(--color-success) 10%, transparent);
@@ -1710,7 +1710,7 @@
     background: color-mix(in srgb, var(--color-surface) 96%, #000);
     backdrop-filter: blur(12px);
     box-shadow: var(--shadow-lg);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     color: var(--color-fg);
     display: flex;
     flex-direction: column;
@@ -1730,15 +1730,15 @@
 .battle-popover__type-pill {
     padding: var(--space-0_5) var(--space-1);
     border-radius: var(--radius-sm);
-    font-size: 0.55rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     color: var(--color-on-primary);
 }
 
 .battle-popover__category {
-    font-size: 0.55rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-sm);
@@ -1778,19 +1778,19 @@
 
 .battle-popover__stat-label {
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .battle-popover__stat-value {
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
 }
 
 .battle-popover__desc {
     margin: 0;
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     line-height: 1.35;
     color: var(--color-muted);
 }
@@ -1799,8 +1799,8 @@
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-sm);
     border: 1px solid var(--color-border);
-    font-size: 0.55rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
 }
 
 .battle-popover__stats-grid {
@@ -1820,14 +1820,14 @@
 }
 
 .battle-popover__stat-lbl {
-    font-size: 0.55rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
 .battle-popover__stat-num {
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
 }
 

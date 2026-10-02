@@ -88,11 +88,11 @@ export function TrainerBadge({
                         <span className="w-4 h-4 shrink-0">
                             <BadgeIcon className="w-full h-full" />
                         </span>
-                        <span className="font-bold text-[0.8125rem] text-primary leading-tight">
+                        <span className="font-bold text-sm text-primary leading-tight">
                             {badgeName}
                         </span>
                     </div>
-                    <p className="text-[0.7rem] text-muted leading-snug">
+                    <p className="text-2xs text-muted leading-snug">
                         {badgeDesc}
                     </p>
                 </div>

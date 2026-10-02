@@ -53,7 +53,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
 
                 {/* Trainer Card Header */}
                 <div className="relative h-24 bg-gradient-to-r from-primary/30 to-primary/10 border-b border-border flex items-end px-6 pb-3">
-                    <div className="absolute top-2 left-3 text-[9px] font-mono text-muted uppercase tracking-widest">
+                    <div className="absolute top-2 left-3 text-2xs font-mono text-muted">
                         Gengar Trainer ID: #{profile.userId.slice(0, 8)}
                     </div>
                 </div>
@@ -71,8 +71,8 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                                 fallback={<PokeballIcon className="w-10 h-10 text-muted opacity-30" />}
                             />
                         </div>
-                        <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-primary-soft text-primary border border-primary-border">
-                            {isMsgAdmin ? 'LIGA DE ELITE' : 'TREINADOR'}
+                        <span className="text-2xs font-bold px-2.5 py-1 rounded-full bg-primary-soft text-primary border border-primary-border">
+                            {isMsgAdmin ? 'Liga de elite' : 'Treinador'}
                         </span>
                     </div>
 
@@ -91,7 +91,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
 
                     {/* Shared Teams Section */}
                     <div className="mt-6 space-y-3">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1 border-b border-border pb-1">
+                        <h4 className="text-xs font-bold text-muted flex items-center gap-1 border-b border-border pb-1">
                             <SwordsIcon className="w-3.5 h-3.5 text-primary" />
                             {language === 'pt' ? 'Times Compartilhados Recentes' : 'Recent Shared Teams'}
                         </h4>
@@ -114,7 +114,7 @@ export function UserProfileModal({ isOpen, profile, onClose, messages = [], hand
                                                     handleImportTeam(team);
                                                     onClose();
                                                 }}
-                                                className="btn btn-primary py-0.5 px-2 h-6 text-[10px] font-bold flex items-center gap-0.5"
+                                                className="btn btn-primary py-0.5 px-2 h-6 text-2xs font-bold flex items-center gap-0.5"
                                             >
                                                 <Download className="w-3 h-3 text-white" />
                                                 {language === 'pt' ? 'Importar' : 'Import'}

@@ -67,7 +67,7 @@
 .gengar-presence__label {
     margin: 0;
     font-size: var(--text-sm, 0.8125rem);
-    font-weight: 500;
+    font-weight: var(--weight-medium);
     color: var(--color-muted);
     letter-spacing: 0.01em;
 }

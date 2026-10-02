@@ -5,8 +5,8 @@ import { useTranslation } from '../hooks/useTranslation';
  * The standard way to name a Pokémon type: icon + label in a pill outlined and
  * tinted in that type's canonical colour.
  *
- * Prefer this over `TypeBadge` (the small solid-fill badge) anywhere the type is
- * read rather than counted — detail screens, matchup lists, move rows. The
+ * The one way to name a type (v3 retired the solid ALL-CAPS `TypeBadge`); a
+ * dense grid that only counts types shows the bare type icon instead. The
  * colour is passed down as `--type-chip` and mixed into theme tokens in
  * index.css, so one chip reads correctly on all six themes.
  *
@@ -19,7 +19,7 @@ export const TypeChip = ({ type, size = 'md', className = '' }) => {
 
     return (
         <span
-            className={`type-chip ${size === 'sm' ? 'type-chip--sm' : ''} ${className}`}
+            className={`type-chip ${size === 'sm' ? 'type-chip--sm' : ''}  ${className}`}
             style={{ '--type-chip': typeColors[key] || 'var(--color-primary)' }}
         >
             {typeIcons[key] && <img src={typeIcons[key]} alt="" aria-hidden="true" className="type-chip__icon" />}

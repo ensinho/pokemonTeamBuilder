@@ -54,7 +54,7 @@ export function PuzzleShareCard({ puzzle }) {
                     <Puzzle className="w-3.5 h-3.5 text-primary shrink-0" />
                     {title}
                 </h5>
-                <span className={`badge shrink-0 ${puzzle.won ? 'badge-success' : 'badge-outline'}`}>
+                <span className={`badge shrink-0 ${puzzle.won ? 'badge--success' : ''}`}>
                     {puzzleShareScore(puzzle)}
                 </span>
             </div>

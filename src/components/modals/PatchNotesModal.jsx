@@ -33,14 +33,14 @@ const ChampionsDexVisual = ({ language }) => {
                             style={{ imageRendering: 'pixelated' }}
                         />
                         {id === 3 && (
-                            <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-[0.5rem] font-bold uppercase tracking-wide text-white">
+                            <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-2xs font-bold uppercase text-white tracking-[0.06em]">
                                 Mega
                             </span>
                         )}
                     </span>
                 ))}
             </div>
-            <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
+            <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
                 {pt ? '262 Pokémon · 208 espécies' : '262 Pokémon · 208 species'}
             </span>
         </div>
@@ -55,7 +55,7 @@ const PlaythroughVisual = ({ t }) => (
             {[25, 6].map((id) => (
                 <span key={id} className="relative flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
                     <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-10 w-10 object-contain" style={{ imageRendering: 'pixelated' }} />
-                    <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-[0.5rem] font-bold uppercase tracking-wide text-white">
+                    <span className="absolute -bottom-1 rounded-full bg-primary px-1.5 text-2xs font-bold uppercase text-white tracking-[0.06em]">
                         Meta
                     </span>
                 </span>
@@ -67,7 +67,7 @@ const PlaythroughVisual = ({ t }) => (
                 </span>
             ))}
         </div>
-        <span className="rounded-full bg-surface-raised px-2.5 py-1 text-[0.62rem] font-bold text-muted">
+        <span className="rounded-full bg-surface-raised px-2.5 py-1 text-2xs font-bold text-muted">
             {t('builder.playthroughBadge')}
         </span>
     </div>
@@ -98,14 +98,14 @@ const NewGamesVisual = ({ language }) => {
                                 />
                             ))}
                         </div>
-                        <span className="text-[0.68rem] font-bold leading-tight text-fg">{game.label}</span>
-                        <span className="font-mono text-[0.55rem] font-semibold tabular-nums text-muted">
+                        <span className="text-2xs font-bold leading-tight text-fg">{game.label}</span>
+                        <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
                             {game.count} Pokémon
                         </span>
                     </div>
                 ))}
             </div>
-            <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
+            <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
                 {pt ? '2 jogos novos no seletor' : '2 new games in the picker'}
             </span>
         </div>
@@ -118,8 +118,8 @@ const TeraVisual = ({ language }) => {
     const Row = ({ fields, faded }) => (
         <div className={`flex flex-col gap-1 rounded-lg bg-surface-raised p-2 ${faded ? 'opacity-60' : ''}`}>
             {fields.map((f) => (
-                <span key={f.label} className="flex items-baseline justify-between gap-3 text-[0.6rem]">
-                    <span className="font-semibold uppercase tracking-wide text-muted">{f.label}</span>
+                <span key={f.label} className="flex items-baseline justify-between gap-3 text-2xs">
+                    <span className="font-semibold text-muted">{f.label}</span>
                     <span className="font-mono text-fg">{f.value}</span>
                 </span>
             ))}
@@ -148,15 +148,15 @@ const HistoryVisual = ({ language }) => (
                 className={`flex w-full max-w-[13rem] items-center gap-2 rounded-md px-2 py-1 ${index === 0 ? 'bg-primary-soft' : 'bg-surface-raised'}`}
             >
                 <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${index === 0 ? 'bg-primary' : 'bg-muted'}`} />
-                <span className={`font-mono text-[0.62rem] font-bold tabular-nums ${index === 0 ? 'text-primary' : 'text-fg'}`}>
+                <span className={`font-mono text-2xs font-bold tabular-nums ${index === 0 ? 'text-primary' : 'text-fg'}`}>
                     {release.version}
                 </span>
-                <span className="ml-auto truncate text-[0.55rem] text-muted">
+                <span className="ml-auto truncate text-2xs text-muted">
                     {formatReleaseMonth(release.month, language)}
                 </span>
             </div>
         ))}
-        <span className="mt-0.5 text-[0.58rem] font-semibold text-muted">
+        <span className="mt-0.5 text-2xs font-semibold text-muted">
             {language === 'pt' ? 'Histórico completo no modal' : 'Full history in this modal'}
         </span>
     </div>
@@ -169,18 +169,18 @@ const InvitesVisual = ({ t, language }) => {
     return (
         <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
             <div className="flex w-full max-w-[15rem] items-center justify-between gap-2 rounded-lg bg-surface-raised px-2.5 py-2">
-                <span className="flex items-center gap-1.5 text-[0.68rem] font-bold text-fg">
+                <span className="flex items-center gap-1.5 text-2xs font-bold text-fg">
                     <SwordsIcon className="h-3.5 w-3.5 shrink-0 text-primary" />
                     {t('forum.inviteTitle')}
                 </span>
-                <span className="rounded-full bg-primary px-2 py-0.5 text-[0.55rem] font-bold uppercase tracking-wide text-white">
+                <span className="rounded-full bg-primary px-2 py-0.5 text-2xs font-bold uppercase text-white tracking-[0.06em]">
                     {t('forum.inviteAccept')}
                 </span>
             </div>
             <div className="flex items-center gap-3">
                 {[6, 9].map((id, i) => (
                     <React.Fragment key={id}>
-                        {i === 1 && <span className="font-mono text-[0.6rem] font-bold text-muted">VS</span>}
+                        {i === 1 && <span className="font-mono text-2xs font-bold text-muted">VS</span>}
                         <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-surface-raised">
                             <img
                                 src={`${SPRITE_BASE}/${id}.png`}
@@ -192,7 +192,7 @@ const InvitesVisual = ({ t, language }) => {
                     </React.Fragment>
                 ))}
             </div>
-            <span className="font-mono text-[0.58rem] font-semibold tabular-nums text-muted">
+            <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
                 {pt ? 'primeiro a aceitar entra' : 'first to accept takes it'}
             </span>
         </div>
@@ -215,7 +215,7 @@ const LatestVisual = ({ language }) => {
                 <span className="h-1 flex-1 rounded-full bg-primary/50" />
                 <ChevronDownIcon className="h-3 w-3 shrink-0 text-primary" />
             </div>
-            <span className="mt-0.5 font-mono text-[0.58rem] font-semibold text-muted">
+            <span className="mt-0.5 font-mono text-2xs font-semibold text-muted">
                 {pt ? 'abre na mais recente' : 'opens on the newest'}
             </span>
         </div>
@@ -244,7 +244,7 @@ const PuzzleShareVisual = ({ language }) => {
                     </div>
                 ))}
             </div>
-            <span className="font-mono text-[0.6rem] font-semibold tabular-nums text-muted">
+            <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
                 {pt ? '4/8 · sem spoiler' : '4/8 · no spoilers'}
             </span>
         </div>
@@ -262,7 +262,7 @@ const SmogonTiersVisual = ({ language }) => {
                 {['OU', 'Ubers', 'UU', 'RU', 'NU', 'PU', 'ZU', 'LC', 'Doubles', 'Monotype'].map((tier, i) => (
                     <span
                         key={tier}
-                        className={`rounded-full px-2 py-0.5 text-[0.55rem] font-bold ${
+                        className={`rounded-full px-2 py-0.5 text-2xs font-bold ${
                             i === 0 ? 'bg-primary text-white' : 'bg-surface-raised text-muted'
                         }`}
                     >
@@ -274,7 +274,7 @@ const SmogonTiersVisual = ({ language }) => {
                 {['0', '1500', '1695', '1825'].map((band, i) => (
                     <span
                         key={band}
-                        className={`rounded px-1.5 py-0.5 font-mono text-[0.55rem] font-bold tabular-nums ${
+                        className={`rounded px-1.5 py-0.5 font-mono text-2xs font-bold tabular-nums ${
                             i === 2 ? 'bg-primary text-white' : 'text-muted'
                         }`}
                     >
@@ -282,7 +282,7 @@ const SmogonTiersVisual = ({ language }) => {
                     </span>
                 ))}
             </div>
-            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+            <span className="font-mono text-2xs font-semibold text-muted">
                 {pt ? 'dados reais, atualizados todo dia' : 'real data, refreshed daily'}
             </span>
         </div>
@@ -299,7 +299,7 @@ const TierFilterVisual = ({ language }) => {
                 {['OU', 'UU', 'LC'].map((tier, i) => (
                     <span
                         key={tier}
-                        className={`rounded-full px-2.5 py-0.5 text-[0.58rem] font-bold ${
+                        className={`rounded-full px-2.5 py-0.5 text-2xs font-bold ${
                             i === 0 ? 'bg-primary text-white' : 'bg-surface-raised text-muted'
                         }`}
                     >
@@ -322,7 +322,7 @@ const TierFilterVisual = ({ language }) => {
                     </span>
                 ))}
             </div>
-            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+            <span className="font-mono text-2xs font-semibold text-muted">
                 {pt ? 'só o que é legal na tier' : 'only what the tier allows'}
             </span>
         </div>
@@ -365,7 +365,7 @@ const MaterialVisual = ({ language }) => {
                     {step % 3 === 0 && <ShinyBurst key={step} />}
                 </span>
             </span>
-            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+            <span className="font-mono text-2xs font-semibold text-muted">
                 {pt ? 'tudo em mola de verdade' : 'every move on a real spring'}
             </span>
         </div>
@@ -381,16 +381,16 @@ const SearchVisual = () => {
     return (
         <div className="flex h-[9.5rem] flex-col items-center justify-center bg-bg p-3" aria-hidden="true">
             <span className="flex w-[15rem] max-w-full flex-col overflow-hidden rounded-lg bg-surface-raised shadow-sm">
-                <span className="flex items-center gap-2 px-2.5 py-1.5 text-[0.7rem] text-fg">
+                <span className="flex items-center gap-2 px-2.5 py-1.5 text-2xs text-fg">
                     <Search className="h-3 w-3 text-muted" />
                     char
-                    <span className="ml-auto rounded bg-surface px-1 font-mono text-[0.5rem] text-muted">{IS_APPLE ? '⌘K' : 'Ctrl K'}</span>
+                    <span className="ml-auto rounded bg-surface px-1 font-mono text-2xs text-muted">{IS_APPLE ? '⌘K' : 'Ctrl K'}</span>
                 </span>
                 {rows.map(([id, name], index) => (
                     <span key={id} className={`flex items-center gap-2 px-2.5 py-1 ${index === 0 ? 'bg-surface-active' : ''}`}>
                         <img src={`${SPRITE_BASE}/${id}.png`} alt="" className="h-6 w-6 object-contain" style={{ imageRendering: 'pixelated' }} />
-                        <span className="text-[0.65rem] font-semibold text-fg">{name}</span>
-                        <span className="ml-auto font-mono text-[0.55rem] text-muted">#{String(id).padStart(4, '0')}</span>
+                        <span className="text-2xs font-semibold text-fg">{name}</span>
+                        <span className="ml-auto font-mono text-2xs text-muted">#{String(id).padStart(4, '0')}</span>
                     </span>
                 ))}
             </span>
@@ -411,10 +411,10 @@ const DelightVisual = ({ language }) => {
                 <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-soft text-primary">
                     <SwordsIcon className="h-3.5 w-3.5" />
                 </span>
-                <span className="flex-1 text-[0.7rem] font-semibold text-fg">{pt ? 'Equipe limpa' : 'Team cleared'}</span>
-                <span className="rounded-md bg-primary px-2 py-1 text-[0.62rem] font-bold text-on-primary">{pt ? 'Desfazer' : 'Undo'}</span>
+                <span className="flex-1 text-2xs font-semibold text-fg">{pt ? 'Equipe limpa' : 'Team cleared'}</span>
+                <span className="rounded-md bg-primary px-2 py-1 text-2xs font-bold text-on-primary">{pt ? 'Desfazer' : 'Undo'}</span>
             </span>
-            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+            <span className="font-mono text-2xs font-semibold text-muted">
                 {pt ? 'desfazer · deslizar · brilho shiny' : 'undo · swipe · shiny sparkle'}
             </span>
         </div>
@@ -439,11 +439,11 @@ const DockVisual = ({ language }) => {
                         className={`flex w-12 flex-col items-center gap-0.5 rounded-full py-1.5 ${active ? 'bg-primary-soft text-primary' : 'text-muted'}`}
                     >
                         {icon}
-                        <span className="max-w-full truncate px-0.5 font-mono text-[0.5rem] font-semibold">{label}</span>
+                        <span className="max-w-full truncate px-0.5 font-mono text-2xs font-semibold">{label}</span>
                     </span>
                 ))}
             </span>
-            <span className="font-mono text-[0.58rem] font-semibold text-muted">
+            <span className="font-mono text-2xs font-semibold text-muted">
                 {pt ? 'o desafio do dia ao alcance do polegar' : "today's challenge under your thumb"}
             </span>
         </div>
@@ -604,7 +604,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                                     <li key={release.version} className="rounded-lg bg-surface p-3">
                                         <div className="flex items-baseline justify-between gap-3">
                                             <span className="font-mono text-xs font-bold tabular-nums text-fg">{release.version}</span>
-                                            <span className="text-[0.68rem] text-muted">{formatReleaseMonth(release.month, language)}</span>
+                                            <span className="text-2xs text-muted">{formatReleaseMonth(release.month, language)}</span>
                                         </div>
                                         <ul className="mt-1.5 space-y-1">
                                             {release.notes.map((note) => (

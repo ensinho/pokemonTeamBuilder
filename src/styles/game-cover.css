@@ -4,42 +4,33 @@
    =========================================================================== */
 
 /* --- Top-of-page game cover banner ------------------------------------- */
+/* v3: a raised row inside the picker surface, not a card on it. The radial
+   accent gradient, the 4px accent bar, the hover lift and the coloured glow
+   were four decorations doing one job; the game's own logo already says which
+   game it is. Hover is a fill, like every other row. */
 .game-cover {
     position: relative;
     display: flex;
     align-items: center;
     gap: var(--space-4);
     width: 100%;
-    padding: var(--space-3_5) var(--space-4);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    background:
-        radial-gradient(120% 140% at 0% 0%,
-            color-mix(in srgb, var(--cover-accent, var(--color-primary)) 16%, transparent) 0%,
-            transparent 55%),
-        var(--color-surface);
+    padding: var(--space-3) var(--space-4);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
     text-align: left;
     overflow: hidden;
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                transform var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
-.game-cover::after {
-    content: "";
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 4px;
-    background: var(--cover-accent, var(--color-primary));
-    opacity: 0.85;
+.game-cover:hover {
+    background: var(--color-surface-hover);
 }
 
-.game-cover:hover,
 .game-cover:focus-visible {
-    border-color: color-mix(in srgb, var(--cover-accent, var(--color-primary)) 60%, var(--color-border));
-    transform: translateY(-1px);
-    box-shadow: 0 10px 28px -16px color-mix(in srgb, var(--cover-accent, var(--color-primary)) 85%, transparent);
     outline: none;
+    box-shadow: var(--ring-focus);
 }
 
 .game-cover__art {
@@ -59,7 +50,6 @@
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
 }
 
 .game-cover__meta {
@@ -76,7 +66,7 @@
 
 .game-cover__eyebrow {
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -84,15 +74,15 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.95rem;
-    font-weight: 800;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .game-cover__hint {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: color-mix(in srgb, var(--cover-accent, var(--color-primary)) 80%, var(--color-fg));
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    color: var(--color-primary);
 }
 
 /* Replaces the "change game" hint while playthrough mode is on, so the state is
@@ -107,8 +97,8 @@
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -132,7 +122,7 @@
 }
 
 .game-cover--compact .game-cover__label {
-    font-size: 0.85rem;
+    font-size: var(--text-base);
 }
 
 /* Row that fuses the cover into the Pokédex panel header + a count badge. */
@@ -178,8 +168,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.8rem;
-    font-weight: 700;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
@@ -204,14 +194,14 @@
 }
 
 .game-picker__title {
-    font-size: 1.05rem;
-    font-weight: 800;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .game-picker__subtitle {
     margin-top: var(--space-0_5);
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -229,14 +219,14 @@
 }
 
 .game-picker__section-title {
-    font-size: 0.85rem;
-    font-weight: 700;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .game-picker__section-sub {
     margin-top: var(--space-0_5);
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     color: var(--color-muted);
 }
 
@@ -305,16 +295,16 @@
 }
 
 .game-card__label {
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     line-height: 1.2;
     text-align: center;
     color: var(--color-fg);
 }
 
 .game-card__sub {
-    font-size: 0.62rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -328,23 +318,23 @@
     width: 1.15rem;
     height: 1.15rem;
     border-radius: 50%;
-    font-size: 0.65rem;
-    font-weight: 800;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-on-primary);
     background: var(--cover-accent, var(--color-primary));
 }
 
 /* --- Per-type team member effects (subtle) ----------------------------- */
 /* Circular type-tinted disc behind a team member's sprite. */
+/* The two types as a two-tone disc: information, so it stays. The coloured
+   glow under it was decoration on six slots at once and went in v3. */
 .tb-type-disc {
     border-radius: var(--radius-full);
     background:
         linear-gradient(180deg,
-            color-mix(in srgb, var(--type-a, #6390F0) 30%, transparent) 0%,
-            color-mix(in srgb, var(--type-b, var(--type-a, #6390F0)) 28%, transparent) 100%);
-    box-shadow:
-        inset 0 0 0 2px color-mix(in srgb, var(--type-a, #6390F0) 50%, transparent),
-        0 5px 16px -8px color-mix(in srgb, var(--type-a, #6390F0) 80%, transparent);
+            color-mix(in srgb, var(--type-a, #6390F0) 26%, transparent) 0%,
+            color-mix(in srgb, var(--type-b, var(--type-a, #6390F0)) 24%, transparent) 100%);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--type-a, #6390F0) 40%, transparent);
 }
 
 /* Type-tinted ring for the compact mobile team slots. */
@@ -396,8 +386,8 @@
     display: block;
     margin-bottom: var(--space-1_5);
     font-family: var(--font-display);
-    font-size: 0.68rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -420,8 +410,8 @@
     background: var(--color-surface-raised);
     color: var(--color-fg);
     font-family: var(--font-display);
-    font-size: 0.74rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     transition: background-color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth),
                 color var(--duration-fast) var(--ease-smooth);
@@ -442,8 +432,8 @@
 /* Species count — the one number that tells you how big a tier is before you
    commit to it. Muted so the tier name stays the thing being read. */
 .tier-chip__count {
-    font-size: 0.62rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     font-variant-numeric: tabular-nums;
 }
@@ -459,7 +449,7 @@
         height: 3.1rem;
     }
     .game-cover__label {
-        font-size: 0.85rem;
+        font-size: var(--text-base);
     }
     /* Thumb targets: the chip keeps its calm size and grows its hit area. */
     .tier-chip {

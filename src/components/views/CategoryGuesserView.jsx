@@ -646,7 +646,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                                 </div>
                                 <div className="category-guesser__last-find-meta">
                                     <span className="category-guesser__last-find-label">
-                                        {language === 'pt' ? 'ÚLTIMO ENCONTRADO' : 'LAST FOUND'}
+                                        {language === 'pt' ? 'Último encontrado' : 'Last found'}
                                     </span>
                                     <span className="category-guesser__last-find-name">
                                         {lastFind ? formatPokemonDisplayName(lastFind.name) : '---'}
@@ -658,7 +658,7 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                             {/* Category Official Description Box */}
                             <div className="category-guesser__hint-box">
                                 <div className="flex items-center justify-between gap-2 mb-1">
-                                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
                                         <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
                                         <span>{language === 'pt' ? 'Dica da Categoria' : 'Category Hint'}</span>
                                     </span>

@@ -33,7 +33,7 @@ export function SynergySuggestions({ suggestions = [], onAdd, disabled = false }
         <div className="mt-3">
             <div className="mb-2 flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted">{pt ? 'Sinergia' : 'Synergy picks'}</span>
+                <span className="text-2xs font-bold text-muted">{pt ? 'Sinergia' : 'Synergy picks'}</span>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
                 {suggestions.map((s) => {
@@ -59,8 +59,8 @@ export function SynergySuggestions({ suggestions = [], onAdd, disabled = false }
                                 loading="lazy"
                                 className="h-9 w-9 image-pixelated"
                             />
-                            <span className="w-full truncate text-center text-[9px] capitalize text-muted">{pretty(s.name)}</span>
-                            <span className="w-full truncate text-center text-[8px] font-semibold capitalize" style={{ color }}>{s.primary?.label}</span>
+                            <span className="w-full truncate text-center text-2xs capitalize text-muted">{pretty(s.name)}</span>
+                            <span className="w-full truncate text-center text-2xs font-semibold capitalize" style={{ color }}>{s.primary?.label}</span>
                         </button>
                     );
                 })}

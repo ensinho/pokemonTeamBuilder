@@ -30,7 +30,7 @@ export function PokemonGenerationQuizCard({
                 }
             }}
             disabled={!isInteractable || isLoading}
-            className={`generation-quiz-card generation-quiz-card--revealed ${isNew ? 'is-new' : ''} ${!isInteractable ? 'is-locked' : ''}`}
+            className={`generation-quiz-card generation-quiz-card--revealed ${isNew ? 'is-new' : ''}  ${!isInteractable ? 'is-locked' : ''}`}
             aria-label={isInteractable ? `Open details for ${pokemon.displayName}` : `${pokemon.displayName} details unlock after the quiz is complete`}
         >
             <div className="generation-quiz-card__header">

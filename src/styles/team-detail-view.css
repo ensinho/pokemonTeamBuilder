@@ -30,8 +30,8 @@
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-muted);
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth);
 }
@@ -51,8 +51,8 @@
 }
 
 .team-detail-title {
-    font-size: 1.35rem;
-    font-weight: 800;
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.02em;
     color: var(--color-fg);
     line-height: 1.1;
@@ -61,15 +61,15 @@
 
 .team-detail-subtitle {
     margin-top: var(--space-1);
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--color-muted);
 }
 
 .team-detail-active-badge {
     display: inline-flex;
     align-items: center;
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-on-primary);
     background: var(--color-success);
     padding: var(--space-0_5) var(--space-2);
@@ -79,8 +79,8 @@
 .team-detail-pill {
     display: inline-flex;
     align-items: center;
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-accent);
     background: var(--color-accent-soft);
     padding: var(--space-0_5) var(--space-2);
@@ -91,8 +91,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-primary);
     background: color-mix(in srgb, var(--color-primary) 12%, transparent);
     border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
@@ -155,8 +155,8 @@
 }
 
 .team-detail-roster__name {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     text-transform: capitalize;
     text-align: center;
@@ -171,8 +171,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1_5);
-    font-size: 0.8125rem;
-    font-weight: 700;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     padding: var(--space-1) var(--space-2_5);
     border-radius: var(--radius-md);
     border: 1px solid;
@@ -181,15 +181,15 @@
 }
 
 .team-detail-score-badge__value {
-    font-size: 0.95rem;
-    font-weight: 800;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
 }
 
 .team-detail-score-badge__label {
-    font-size: 0.7rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: var(--tracking-caps);
     opacity: 0.9;
 }
 
@@ -224,8 +224,8 @@
 }
 
 .team-detail-metric__value {
-    font-size: 0.95rem;
-    font-weight: 800;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     line-height: 1;
 }
@@ -233,7 +233,7 @@
 .team-detail-metric__label {
     font-size: var(--text-xs);
     color: var(--color-muted);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
 }
 
 /* Coverage — three fixed category columns on wide, stacked on mobile. */
@@ -254,7 +254,7 @@
     align-items: center;
     gap: var(--space-1_5);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     margin-bottom: var(--space-2);
 }
 
@@ -280,8 +280,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    font-size: 0.6rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
     border: 1px solid;
@@ -296,14 +296,14 @@
 }
 
 .team-detail-note {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--color-muted);
 }
 
 /* Members */
 .team-detail-section-title {
-    font-size: 1.05rem;
-    font-weight: 800;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     margin-bottom: var(--space-4);
 }
@@ -338,8 +338,8 @@
 }
 
 .team-detail-member__name {
-    font-size: 1rem;
-    font-weight: 800;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     text-transform: capitalize;
     text-align: left;
@@ -350,8 +350,8 @@
 }
 
 .team-detail-member__id {
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
     color: var(--color-muted);
 }
 
@@ -365,8 +365,8 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     text-transform: capitalize;
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
@@ -376,7 +376,7 @@
 }
 
 .team-detail-build-pill--tera {
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 .team-detail-member__stats {
@@ -392,8 +392,8 @@
 }
 
 .team-detail-move {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     padding: var(--space-0_5) var(--space-2);
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
@@ -402,7 +402,7 @@
 
 .team-detail-member__sub {
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     margin-bottom: var(--space-1_5);
 }
@@ -445,14 +445,14 @@
 
 .team-detail-item__name {
     display: block;
-    font-size: 0.75rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .team-detail-item__reason {
     display: block;
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
     line-height: 1.25;
 }
@@ -482,7 +482,7 @@
 }
 
 .team-detail-partner__name {
-    font-size: 0.6rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
     text-align: center;
     width: 100%;
@@ -493,6 +493,6 @@
 
 @media (max-width: 640px) {
     .team-detail-title {
-        font-size: 1.35rem;
+        font-size: var(--text-xl);
     }
 }

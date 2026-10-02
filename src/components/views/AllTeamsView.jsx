@@ -254,7 +254,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                             onClick={() => onToggleFavorite(team)}
                                             title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
                                             aria-label={team.isFavorite ? (language === 'pt' ? `Desfavoritar ${team.name}` : `Unfavorite ${team.name}`) : (language === 'pt' ? `Favoritar ${team.name}` : `Favorite ${team.name}`)}
-                                            className={`${iconButtonClassName} ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
+                                            className={`${iconButtonClassName}  ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
                                         >
                                             <StarIcon className="h-4 w-4" isFavorite={team.isFavorite} color="currentColor" />
                                         </button>
@@ -375,7 +375,7 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                                 <div className="flex items-center gap-2 flex-wrap">
                                                     <button type="button" onClick={() => viewTeam(team)} className="all-teams-view__list-item-title text-left hover:text-primary transition-colors">{team.name}</button>
                                                     <span className={`badge badge-${statusType}`}>{statusText}</span>
-                                                    {team.isFavorite && <span className="badge badge-accent">{language === 'pt' ? 'Fixado' : 'Pinned'}</span>}
+                                                    {team.isFavorite && <span className="badge badge--accent">{language === 'pt' ? 'Fixado' : 'Pinned'}</span>}
                                                 </div>
                                                 <div className="all-teams-view__list-item-meta mt-1">
                                                     <span>{t('savedTeams.lastUpdated', { date: formatTeamDate(team.updatedAt || team.createdAt, language) })}</span>

@@ -65,7 +65,7 @@ function GymGamePickerModal({ open, onClose, official, hacks, selectedKey, onSel
     const choose = (key) => { onSelect(key); onClose(); };
     const Group = ({ title, items }) => (items.length ? (
         <div className="space-y-2">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-muted px-1">{title}</p>
+            <p className="text-2xs font-bold text-muted px-1">{title}</p>
             <div className="game-picker__grid !p-1 !overflow-visible">
                 {items.map((g) => <GameCard key={g.key} game={g} active={g.key === selectedKey} onClick={() => choose(g.key)} />)}
             </div>
@@ -190,7 +190,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                                 {types.map((tp) => (
                                                     <span
                                                         key={tp}
-                                                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[9px] font-bold capitalize border"
+                                                        className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-2xs font-bold capitalize border"
                                                         style={{
                                                             color: typeColors[tp],
                                                             backgroundColor: `${typeColors[tp]}1a`,
@@ -225,7 +225,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
 
                                     {/* Moves */}
                                     <div>
-                                        <p className="mb-1 text-[9px] font-bold uppercase tracking-wider text-muted">{pt ? 'Ataques' : 'Moves'}</p>
+                                        <p className="mb-1 text-2xs font-bold text-muted">{pt ? 'Ataques' : 'Moves'}</p>
                                         <div className="grid grid-cols-2 gap-1.5">
                                             {Array.isArray(mon.moves) && mon.moves.length > 0 ? (
                                                 mon.moves.map((mv, idx) => {
@@ -237,7 +237,7 @@ function LeaderTeamModal({ open, onClose, leader, resolve, accent, levelCap, sho
                                                             key={`${name}-${idx}`}
                                                             type="button"
                                                             onClick={(e) => { onClose(); goToMove(name, e); }}
-                                                            className="truncate cursor-pointer rounded-md border px-2 py-1 text-center text-[10px] font-medium capitalize flex items-center justify-center gap-1 leading-tight min-h-[22px] transition-opacity hover:opacity-75 focus:outline-none"
+                                                            className="truncate cursor-pointer rounded-md border px-2 py-1 text-center text-2xs font-medium capitalize flex items-center justify-center gap-1 leading-tight min-h-[22px] transition-opacity hover:opacity-75 focus:outline-none"
                                                             style={{
                                                                 color,
                                                                 borderColor: `${color}40`,
@@ -289,7 +289,7 @@ function TrainerAvatar({ sprite, type, order, accent }) {
                     />
                 )}
             </span>
-            <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-surface text-[10px] font-bold text-fg shadow-sm z-10">{order}</span>
+            <span className="absolute -left-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-surface text-2xs font-bold text-fg shadow-sm z-10">{order}</span>
         </span>
     );
 }
@@ -325,7 +325,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
                         loading="lazy"
                     />
                 </div>
-                <span className="absolute -right-1.5 -top-1.5 rounded-md px-1.5 py-0.5 text-[9px] font-bold text-white shadow-sm" style={{ backgroundColor: accent }}>
+                <span className="absolute -right-1.5 -top-1.5 rounded-md px-1.5 py-0.5 text-2xs font-bold text-white shadow-sm" style={{ backgroundColor: accent }}>
                     Lv{mon.level || levelCap || '?'}
                 </span>
             </div>
@@ -336,7 +336,7 @@ function TeamMon({ mon, entry, accent, levelCap, onClick }) {
                     {types.map((tp) => (
                         <span
                             key={tp}
-                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[8px] font-extrabold capitalize border"
+                            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-2xs font-extrabold capitalize border"
                             style={{
                                 color: typeColors[tp],
                                 backgroundColor: `${typeColors[tp]}15`,
@@ -514,7 +514,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             {pt ? 'Ver time completo' : 'View full team'} ➔
                         </span>
                         <span
-                            className="inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-[11px] font-bold capitalize"
+                            className="inline-flex items-center gap-1.5 rounded-xl border px-2.5 py-1 text-2xs font-bold capitalize"
                             style={{
                                 color: isChamp ? '#eab308' : accent,
                                 borderColor: 'currentColor',
@@ -525,10 +525,10 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             {isChamp ? (pt ? 'Campeão' : 'Champion') : cap(leader.type)}
                         </span>
                         {leader.badge && (
-                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{leader.badge}</span>
+                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-bold text-muted">{leader.badge}</span>
                         )}
                         {leader.levelCap && (
-                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-[11px] font-bold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} {leader.levelCap}</span>
+                            <span className="rounded-xl bg-surface-raised px-2.5 py-1 text-2xs font-bold text-muted">{pt ? 'Nível Máx' : 'Lv Cap'} {leader.levelCap}</span>
                         )}
                         {onAddToTeam && (
                             <button
@@ -537,7 +537,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                     e.stopPropagation();
                                     buildTeam(leader);
                                 }}
-                                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-[11px] font-extrabold transition-all duration-200 bg-transparent ${isChamp
+                                className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-2xs font-extrabold transition-all duration-200 bg-transparent ${isChamp
                                         ? 'border-yellow-500/40 text-yellow-500 hover:bg-yellow-500 hover:text-white hover:border-yellow-500'
                                         : 'border-border text-primary hover:bg-primary hover:text-white hover:border-primary'
                                     }`}
@@ -613,7 +613,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                         <nav className="team-builder-panel p-3.5 space-y-4 hidden lg:block">
                             {gymLeaders.length > 0 && (
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-wider text-muted px-2.5 mb-2.5">
+                                    <p className="text-2xs font-bold text-muted px-2.5 mb-2.5">
                                         {pt ? 'Líderes de Ginásio' : 'Gym Leaders'}
                                     </p>
                                     <div className="space-y-1">
@@ -633,7 +633,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                                 >
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <span
-                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-[9px] font-extrabold ${active
+                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-2xs font-extrabold ${active
                                                                     ? 'bg-primary text-white font-black'
                                                                     : 'bg-surface-raised border border-border text-muted font-bold'
                                                                 }`}
@@ -659,7 +659,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
 
                             {eliteFourAndChamp.length > 0 && (
                                 <div>
-                                    <p className="text-[10px] font-bold uppercase tracking-wider text-primary px-2.5 mb-2.5 flex items-center gap-1.5">
+                                    <p className="text-2xs font-bold text-primary px-2.5 mb-2.5 flex items-center gap-1.5">
                                         <Trophy className="h-3.5 w-3.5 text-primary" />
                                         <span>{pt ? 'Liga Pokémon' : 'Pokémon League'}</span>
                                     </p>
@@ -683,7 +683,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                                                 >
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <span
-                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-[9px] font-extrabold ${active
+                                                            className={`flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full text-2xs font-extrabold ${active
                                                                     ? isChamp
                                                                         ? 'bg-yellow-500 text-white font-black'
                                                                         : 'bg-primary text-white font-black'
@@ -723,7 +723,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             {gymLeaders.length > 0 && (
                                 <div className="space-y-4">
                                     <div className="gyms-section-head border-b border-border pb-2">
-                                        <h2 className="text-sm font-bold uppercase tracking-wider text-muted flex items-center gap-2">
+                                        <h2 className="text-sm font-bold text-muted flex items-center gap-2">
                                             <span>{pt ? 'Líderes de Ginásio' : 'Gym Leaders'}</span>
                                             <span className="text-xs font-normal text-muted">({gymLeaders.length})</span>
                                         </h2>
@@ -738,7 +738,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                             {eliteFourAndChamp.length > 0 && (
                                 <div className="space-y-4 pt-4">
                                     <div className="gyms-section-head border-b border-border pb-2">
-                                        <h2 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                                        <h2 className="text-sm font-bold text-primary flex items-center gap-2">
                                             <Trophy className="h-4 w-4 text-primary" />
                                             <span>{pt ? 'Elite dos Quatro & Campeão' : 'Elite Four & Champion'}</span>
                                             <span className="text-xs font-normal text-primary">({eliteFourAndChamp.length})</span>
@@ -753,7 +753,7 @@ export function GymsView({ showDetails, onAddToTeam }) {
                     )}
 
                     {selected?.source && (
-                        <p className="flex items-center gap-1 text-[11px] text-muted">
+                        <p className="flex items-center gap-1 text-2xs text-muted">
                             <ChevronRight className="h-3 w-3" /> {pt ? 'Fonte' : 'Source'}: {selected.source}
                         </p>
                     )}

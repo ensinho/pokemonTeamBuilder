@@ -20,7 +20,7 @@ function MetaPill({ icon, label, value, style, onClick }) {
     return (
         <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-raised px-2.5 py-1 text-xs font-semibold text-fg" style={style}>
             {icon}
-            <span className="text-[10px] uppercase tracking-[0.06em] text-muted">{label}</span>
+            <span className="text-2xs text-muted">{label}</span>
             {onClick
                 ? <button type="button" onClick={onClick} className="capitalize transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded">{value}</button>
                 : <span className="capitalize">{value}</span>}
@@ -70,7 +70,7 @@ function LiveUsageBlock({ pokemonId }) {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                    <h5 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted"><Package className="w-3.5 h-3.5" /> {pt ? 'Itens' : 'Held items'}</h5>
+                    <h5 className="mb-1.5 flex items-center gap-1.5 text-2xs font-bold text-muted"><Package className="w-3.5 h-3.5" /> {pt ? 'Itens' : 'Held items'}</h5>
                     <div className="space-y-1.5">
                         {usage.items.slice(0, 4).map((it) => (
                             <UsageBar
@@ -85,7 +85,7 @@ function LiveUsageBlock({ pokemonId }) {
                     </div>
                 </div>
                 <div>
-                    <h5 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wide text-muted"><Swords className="w-3.5 h-3.5" /> {pt ? 'Golpes' : 'Moves'}</h5>
+                    <h5 className="mb-1.5 flex items-center gap-1.5 text-2xs font-bold text-muted"><Swords className="w-3.5 h-3.5" /> {pt ? 'Golpes' : 'Moves'}</h5>
                     <div className="space-y-1.5">
                         {usage.moves.slice(0, 6).map((mv) => {
                             const mt = typeForMove(mv.name);
@@ -112,7 +112,7 @@ function LiveUsageBlock({ pokemonId }) {
                             key={ab.name}
                             type="button"
                             onClick={(e) => goToAbility(ab.name, e)}
-                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-surface-raised px-2 py-1 text-[11px] font-semibold capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                            className="inline-flex cursor-pointer items-center gap-1 rounded-lg bg-surface-raised px-2 py-1 text-2xs font-semibold capitalize text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         >
                             <Zap className="w-3 h-3 text-accent" /> {pretty(ab.name)} <span className="text-muted">{pctOf(ab.count, n)}%</span>
                         </button>
@@ -120,7 +120,7 @@ function LiveUsageBlock({ pokemonId }) {
                     {usage.tera.slice(0, 3).map((tt) => {
                         const c = typeColors[tt.name?.toLowerCase()] || 'var(--color-muted)';
                         return (
-                            <span key={tt.name} className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-bold capitalize" style={{ color: c, backgroundColor: `${c}1f` }}>
+                            <span key={tt.name} className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-2xs font-bold capitalize" style={{ color: c, backgroundColor: `${c}1f` }}>
                                 <Sparkles className="w-3 h-3" /> {pt ? 'Tera' : 'Tera'} {tt.name} {pctOf(tt.count, n)}%
                             </span>
                         );
@@ -174,8 +174,8 @@ function RecentTournamentTeams({ pokemonId }) {
                             ))}
                         </div>
                         <div className="min-w-0 flex-1">
-                            <p className="truncate text-[12px] font-bold text-fg">{tm.tournament || tm.title}</p>
-                            <p className="truncate text-[11px] text-muted">{[tm.placement, tm.format].filter(Boolean).join(' · ')}</p>
+                            <p className="truncate text-xs font-bold text-fg">{tm.tournament || tm.title}</p>
+                            <p className="truncate text-2xs text-muted">{[tm.placement, tm.format].filter(Boolean).join(' · ')}</p>
                         </div>
                         <ArrowUpRight className="h-4 w-4 shrink-0 text-muted transition-colors group-hover:text-primary" />
                     </Link>
@@ -254,7 +254,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
                                     <header className="flex items-baseline justify-between gap-2">
                                         <h4 className="flex items-baseline gap-2 text-base font-extrabold text-fg">
                                             {set.name}
-                                            {set.source && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-[10px] font-bold text-primary">{set.source}</span>}
+                                            {set.source && <span className="rounded bg-primary/15 px-1.5 py-0.5 text-2xs font-bold text-primary">{set.source}</span>}
                                         </h4>
                                         {set.tera?.length > 0 && (
                                             <span className="inline-flex items-center gap-1 text-xs font-bold capitalize" style={{ color: typeColors[set.tera[0]] }}>
@@ -315,7 +315,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
                         })}
                     </div>
 
-                    <p className="text-[11px] text-muted">
+                    <p className="text-2xs text-muted">
                         {pt
                             ? 'Conjuntos curados pelo Smogon. Use “Aplicar conjunto” no editor de time para preencher movimentos, item e EVs de uma vez.'
                             : 'Sets curated by Smogon. Use “Apply set” in the team editor to fill moves, item, and EVs in one click.'}

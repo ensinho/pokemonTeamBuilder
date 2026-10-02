@@ -7,7 +7,7 @@ import { getPokemonFrontSpriteUrl } from '../../utils/pokemonSprites';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
 import { ClearIcon } from '../icons';
 import { Loader } from '../Loader';
@@ -167,7 +167,7 @@ export function SpeedTiersView({ generations = [] }) {
                                         <button type="button" className="spd-tier__name" onClick={() => navigate(`/pokemon/${main.id}`)}>
                                             {main.name.replace(/-/g, ' ')}
                                             <span className="spd-row__types">
-                                                {main.types?.map((type) => <TypeBadge key={type} type={type} />)}
+                                                {main.types?.map((type) => <TypeChip key={type} type={type} size="sm" />)}
                                             </span>
                                         </button>
                                         {rest.length > 0 && (

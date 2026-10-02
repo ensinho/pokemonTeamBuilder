@@ -13,7 +13,7 @@ import { useSmartBack } from '../../hooks/useEntityNavigate';
 import { titleCaseSlug } from '../../utils/smogonSets';
 import { EmptyState } from '../EmptyState';
 import { PokemonLinkChips } from '../PokemonLinkChips';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { Loader } from '../Loader';
 
 const CATEGORY_CLASS = {
@@ -94,7 +94,7 @@ export function MoveDetailView() {
                         <h1 className="edv-title">{displayName}</h1>
                         {data.effect && <p className="edv-lead">{data.effect}</p>}
                         <div className="edv-badges">
-                            {data.type && <TypeBadge type={data.type} />}
+                            {data.type && <TypeChip type={data.type} />}
                             {data.damage_class && (
                                 <span className={`ref-cat ${CATEGORY_CLASS[data.damage_class] || ''}`}>
                                     {t(`db.${data.damage_class}`)}

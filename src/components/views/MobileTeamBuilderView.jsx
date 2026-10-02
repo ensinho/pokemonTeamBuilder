@@ -6,7 +6,7 @@ import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
 import { BottomSheet } from '../BottomSheet';
 import { Sprite } from '../Sprite';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
 import { Atom, ChevronRight } from 'lucide-react';
@@ -135,7 +135,7 @@ const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
                 <p className="team-builder-mobile-card__name min-w-0 font-bold capitalize">
                     {pokemon.name}
                 </p>
-                <span className="shrink-0 font-mono text-[10px] font-semibold tabular-nums text-muted select-none">
+                <span className="shrink-0 font-mono text-2xs font-semibold tabular-nums text-muted select-none">
                     #{pokemon.id}
                 </span>
             </div>
@@ -164,7 +164,7 @@ const AnalysisTypeIcon = ({ type }) => {
     return icon ? (
         <img src={icon} alt={label} title={label} className="h-5 w-5 shrink-0 object-contain" />
     ) : (
-        <span className="text-[11px] font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
+        <span className="text-2xs font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
     );
 };
 
@@ -235,7 +235,7 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                 onClick={() => setIsOpen((v) => !v)}
                 aria-expanded={isOpen}
                 aria-label={t('builder.analysisTitle')}
-                className="inline-flex items-center gap-2 rounded-full bg-surface-raised px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.14em] text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                className="inline-flex items-center gap-2 rounded-full bg-surface-raised px-3 py-1.5 text-2xs font-bold uppercase text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary tracking-[0.06em]"
                 style={{
                     border: `1px solid ${ratingColor}55`,
                 }}
@@ -262,11 +262,11 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                 }}
             >
                 <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">
+                    <p className="text-2xs font-bold text-muted">
                         {language === 'pt' ? 'Resumo do Time' : 'Team Snapshot'}
                     </p>
                     <span
-                        className="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                        className="rounded-full px-2 py-0.5 text-2xs font-bold"
                         style={{ backgroundColor: `${ratingColor}22`, color: ratingColor }}
                     >
                         {rating}
@@ -274,30 +274,30 @@ const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
                 </div>
 
                 <div className="mb-2">
-                    <p className="mb-1 text-[10px] font-semibold text-success">
+                    <p className="mb-1 text-2xs font-semibold text-success">
                         {language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive Coverage'} ({strengthCount})
                     </p>
                     <div className="flex flex-wrap gap-1">
                         {topStrengths.length > 0 ? topStrengths.map((type) => (
                             <AnalysisTypeIcon key={type} type={type} />
                         )) : (
-                            <span className="text-[11px] text-muted">{language === 'pt' ? 'Sem vantagens ainda.' : 'No advantages yet.'}</span>
+                            <span className="text-2xs text-muted">{language === 'pt' ? 'Sem vantagens ainda.' : 'No advantages yet.'}</span>
                         )}
                     </div>
                 </div>
 
                 <div>
-                    <p className="mb-1 text-[10px] font-semibold text-danger">
+                    <p className="mb-1 text-2xs font-semibold text-danger">
                         {language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive Weaknesses'} ({weaknessCount})
                     </p>
                     <div className="flex flex-wrap items-center gap-1">
                         {topWeaknesses.length > 0 ? topWeaknesses.map(([type, score]) => (
                             <span key={type} className="inline-flex items-center gap-1">
                                 <AnalysisTypeIcon type={type} />
-                                <span className="text-[10px] font-bold text-danger">×{score}</span>
+                                <span className="text-2xs font-bold text-danger">×{score}</span>
                             </span>
                         )) : (
-                            <span className="text-[11px] text-muted">{language === 'pt' ? 'Defesa sólida.' : 'Rock solid defence.'}</span>
+                            <span className="text-2xs text-muted">{language === 'pt' ? 'Defesa sólida.' : 'Rock solid defence.'}</span>
                         )}
                     </div>
                 </div>
@@ -613,12 +613,12 @@ export const MobileTeamBuilderView = ({
                         />
                         {editingTeamId && (
                             editingTeamId === activeTeamId ? (
-                                <span className="home-active-badge flex items-center gap-1 text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0">★ {t('common.active')}</span>
+                                <span className="home-active-badge flex items-center gap-1 text-2xs font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0">★ {t('common.active')}</span>
                             ) : (
                                 <button
                                     type="button"
                                     onClick={() => setActiveTeamId(editingTeamId)}
-                                    className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-[10px] uppercase font-bold tracking-wider shrink-0"
+                                    className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-2xs font-bold shrink-0"
                                     style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
                                 >
                                     {language === 'pt' ? 'Ativar' : 'Set Active'}
@@ -735,12 +735,12 @@ export const MobileTeamBuilderView = ({
                                 onClick={() => setThreatsOpen(true)}
                                 aria-haspopup="dialog"
                                 aria-label={t('builder.threatsTitle')}
-                                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-surface-raised bg-surface-raised px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-surface-raised bg-surface-raised px-3 py-1.5 text-2xs font-bold uppercase text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary tracking-[0.06em]"
                             >
                                 <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden="true" />
                                 <span>{t('builder.threatsShort')}</span>
                                 {teamThreats.length > 0 && (
-                                    <span className="rounded-full bg-danger/15 px-1.5 text-[10px] font-bold text-danger">{teamThreats.length}</span>
+                                    <span className="rounded-full bg-danger/15 px-1.5 text-2xs font-bold text-danger">{teamThreats.length}</span>
                                 )}
                             </button>
                         )}
@@ -772,7 +772,7 @@ export const MobileTeamBuilderView = ({
                     <button
                         type="button"
                         onClick={() => setFiltersExpanded((value) => !value)}
-                        className={`team-builder-mobile__filter-toggle ${filtersExpanded ? 'is-open' : ''} ${activeFilterCount > 0 ? 'has-active' : ''}`}
+                        className={`team-builder-mobile__filter-toggle ${filtersExpanded ? 'is-open' : ''}  ${activeFilterCount > 0 ? 'has-active' : ''}`}
                         aria-expanded={filtersExpanded}
                         aria-label={language === 'pt' ? 'Filtros' : 'Filters'}
                     >
@@ -869,7 +869,7 @@ export const MobileTeamBuilderView = ({
                                                 title={type}
                                             >
                                                 <img src={typeIcons[type]} alt={type} className="w-3.5 h-3.5 object-contain" />
-                                                <span className="text-[10px] font-bold capitalize select-none">{type}</span>
+                                                <span className="text-2xs font-bold capitalize select-none">{type}</span>
                                             </button>
                                         );
                                     })}
@@ -1005,9 +1005,9 @@ export const MobileTeamBuilderView = ({
                             </p>
                             <div className="flex flex-wrap gap-1">
                                 {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().slice(0, 8).map((type) => (
-                                    <TypeBadge key={type} type={type} colors={colors} />
+                                    <TypeChip key={type} type={type} size="sm" />
                                 )) : (
-                                    <span className="text-[11px] text-muted">{language === 'pt' ? 'Nenhuma ainda.' : 'None yet.'}</span>
+                                    <span className="text-2xs text-muted">{language === 'pt' ? 'Nenhuma ainda.' : 'None yet.'}</span>
                                 )}
                             </div>
                         </div>
@@ -1022,11 +1022,11 @@ export const MobileTeamBuilderView = ({
                                     .slice(0, 8)
                                     .map(([type, score]) => (
                                         <span key={type} className="inline-flex items-center gap-0.5">
-                                            <TypeBadge type={type} colors={colors} />
-                                            <span className="text-[10px] font-bold text-danger">×{score}</span>
+                                            <TypeChip type={type} size="sm" />
+                                            <span className="text-2xs font-bold text-danger">×{score}</span>
                                         </span>
                                     )) : (
-                                    <span className="text-[11px] text-muted">{language === 'pt' ? 'Sólido como rocha.' : 'Rock solid.'}</span>
+                                    <span className="text-2xs text-muted">{language === 'pt' ? 'Sólido como rocha.' : 'Rock solid.'}</span>
                                 )}
                             </div>
                         </div>
@@ -1139,7 +1139,7 @@ export const MobileTeamBuilderView = ({
 
             {threatsOpen && (
                 <BottomSheet onClose={() => setThreatsOpen(false)} title={t('builder.threatsTitle')}>
-                    <p className="mb-3 text-[11px] text-muted">{t('builder.threatsSubtitle')}</p>
+                    <p className="mb-3 text-2xs text-muted">{t('builder.threatsSubtitle')}</p>
                     <TeamThreats
                         threats={teamThreats}
                         hasTeam={currentTeam.length > 0}

@@ -193,7 +193,7 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0 }) 
             onFocus={showTooltip}
             onBlur={hideTooltip}
             aria-current={active ? 'page' : undefined}
-            className={`app-shell__nav-link ${active ? 'is-active' : ''} ${collapsed ? 'is-collapsed' : ''}`}
+            className={`app-shell__nav-link ${active ? 'is-active' : ''}  ${collapsed ? 'is-collapsed' : ''}`}
         >
             <span className="app-shell__nav-icon" aria-hidden="true">
                 {icon}
@@ -259,7 +259,7 @@ const MAX_OPEN_NAV_GROUPS = 2;
 // First run opens two. Landing on an empty rail is the failure this whole shape
 // exists to avoid, so the default has to show some of the tail, and these are
 // the two sections whose contents people reach for most.
-const DEFAULT_OPEN_NAV_GROUPS = ['teamBuilding', 'database'];
+const DEFAULT_OPEN_NAV_GROUPS = ['teamBuilding', 'dashboard'];
 
 const readOpenGroups = () => {
     try {
@@ -765,7 +765,7 @@ export default function AppLayout() {
             'abilities': { title: t('nav.abilities'), subtitle: t('db.abilitiesSubtitle') },
             'items': { title: t('nav.items'), subtitle: t('db.itemsSubtitle') },
             'tournaments': { title: t('nav.tournaments'), subtitle: t('tools.tournamentsSubtitle') },
-            'meta': { title: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
+            'meta': { title: language === 'pt' ? 'Meta & uso' : 'Meta & usage', subtitle: language === 'pt' ? 'Uso competitivo, cores e o que os Pokémon estão rodando' : 'Competitive usage, cores & what Pokémon are running' },
             'damageCalc': { title: t('nav.damageCalc'), subtitle: t('tools.damageSubtitle') },
             'speedTiers': { title: t('nav.speedTiers'), subtitle: t('tools.speedSubtitle') },
             'friends': { title: t('nav.friends'), subtitle: language === 'pt' ? 'Seus amigos treinadores e pedidos pendentes' : 'Your trainer friends and pending requests' },
@@ -804,11 +804,16 @@ export default function AppLayout() {
     // one click away and always in the same place — the rail's shape does not
     // change as you move around it. Everything else lives in the folding sections
     // below and is reached in two.
+    //
+    // v3 (2026-10-02) grouped the rail by what the user came to do rather than
+    // by when a feature shipped: the pinned four are the core loop — build, keep,
+    // look up — so "My teams" (your own work) left PokéData, where it sat between
+    // Gyms and Moves, and the forum joined Friends and Battles under Community.
     const primaryNavItems = useMemo(() => ([
         { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
         { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
+        { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <BoxIcon className="w-5 h-5 shrink-0" /> },
         { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
-        { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
     ]), [t]);
 
     // Sections hold the long tail only — a link promoted to `primaryNavItems`
@@ -817,40 +822,45 @@ export default function AppLayout() {
     const navigationGroups = useMemo(() => {
         const groups = [
             {
+                // Competitive: what the meta is, and the tools to answer it.
                 key: 'teamBuilding',
                 title: t('nav.teamBuilding'),
                 items: [
-                    { key: 'meta', label: language === 'pt' ? 'Meta & Uso' : 'Meta & Usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
+                    { key: 'meta', label: language === 'pt' ? 'Meta & uso' : 'Meta & usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
                     { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
                     { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
                     { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
                 ]
             },
             {
+                // PokéData: things you look up.
                 key: 'database',
                 title: t('nav.database'),
                 items: [
-                    { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <BoxIcon className="w-5 h-5 shrink-0" /> },
-                    { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                     { key: 'moves', label: t('nav.moves'), path: '/moves', icon: <ScrollIcon /> },
                     { key: 'abilities', label: t('nav.abilities'), path: '/abilities', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'items', label: t('nav.items'), path: '/items', icon: <BagIcon /> },
+                    { key: 'gyms', label: language === 'pt' ? 'Ginásios' : 'Gyms', path: '/gyms', icon: <Medal className="w-5 h-5 shrink-0" /> },
                 ]
             },
             {
+                // Games: the daily one first — it is the one that is new today.
                 key: 'guessing',
                 title: t('nav.guessing'),
                 items: [
-                    { key: 'pokeroom', label: 'PokéRoom', path: '/pokeroom', icon: <Users className="w-5 h-5 shrink-0" /> },
-                    { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
+                    { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'pokeroom', label: 'PokéRoom', path: '/pokeroom', icon: <Users className="w-5 h-5 shrink-0" /> },
                 ]
             },
             {
+                // Community: everything that involves other trainers. The key stays
+                // 'dashboard' so a stored open/folded preference still applies.
                 key: 'dashboard',
                 title: t('nav.dashboard'),
                 items: [
+                    { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
                     { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <AccountIcon className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
                     { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <SwordsIcon className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
                 ]
@@ -881,19 +891,18 @@ export default function AppLayout() {
         { key: 'pokepuzzle', label: 'Puzzle', icon: <Puzzle className="w-5 h-5 shrink-0" />, path: '/pokepuzzle' },
     ]), [t]);
 
-    // What the Mais sheet lists: the rail's sections minus the tab bar's four,
-    // with the Feed — pinned on the desktop rail, absent from the bar — joining
-    // the social section beside Friends and Battles, where a phone looks for it.
+    // What the Mais sheet lists: the pinned destinations the bar has no room for
+    // (My teams), untitled at the top, then the rail's sections minus the tab
+    // bar's four — so every destination is in exactly one place on a phone.
     const moreSheetSections = useMemo(() => {
         const inTabBar = new Set(mobileTabs.map((tab) => tab.key));
-        const feed = primaryNavItems.find((item) => item.key === 'feed');
-        return navigationGroups
-            .map((group) => ({
-                ...group,
-                items: (group.key === 'dashboard' && feed ? [feed, ...group.items] : group.items)
-                    .filter((item) => !inTabBar.has(item.key)),
-            }))
+        const pinnedExtras = primaryNavItems.filter((item) => !inTabBar.has(item.key));
+        const sections = navigationGroups
+            .map((group) => ({ ...group, items: group.items.filter((item) => !inTabBar.has(item.key)) }))
             .filter((group) => group.items.length > 0);
+        return pinnedExtras.length > 0
+            ? [{ key: 'pinned', title: null, items: pinnedExtras }, ...sections]
+            : sections;
     }, [mobileTabs, primaryNavItems, navigationGroups]);
 
     // Every destination the rail knows, once each — what the global search
@@ -1288,7 +1297,7 @@ export default function AppLayout() {
                     content column), so the old off-canvas drawer, its scrim and
                     its phone-only rows are gone from here. */}
                 {!isMobile && (
-                    <aside className={`app-shell__sidebar ${isRailCollapsed ? 'is-collapsed' : ''} ${isSidebarOpen ? 'is-open' : ''}`}>
+                    <aside className={`app-shell__sidebar ${isRailCollapsed ? 'is-collapsed' : ''}  ${isSidebarOpen ? 'is-open' : ''}`}>
                         <div className="app-shell__sidebar-inner">
                             {/* Top: Gengar Logo + Title */}
                             <div className={`app-shell__brand ${isRailCollapsed ? 'is-collapsed' : ''}`}>

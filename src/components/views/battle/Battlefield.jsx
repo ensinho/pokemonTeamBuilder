@@ -48,7 +48,7 @@ function ActiveMon({ mon, isMine, animated }) {
     const status = statusLabel(mon.status);
 
     return (
-        <div className={`battlefield-slot ${isMine ? 'is-mine' : 'is-theirs'} ${mon.fainted ? 'is-fainted' : ''}`}>
+        <div className={`battlefield-slot ${isMine ? 'is-mine' : 'is-theirs'}  ${mon.fainted ? 'is-fainted' : ''}`}>
             <div className="battlefield-slot__info">
                 <span className="battlefield-slot__name">
                     {mon.nickname || mon.species}

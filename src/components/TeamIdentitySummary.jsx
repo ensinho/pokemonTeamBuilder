@@ -112,33 +112,36 @@ export function TeamIdentitySummary({ team }) {
         return label;
     };
 
+    // One raised strip of three readouts (v3) — the team's numbers in the
+    // instrument voice, the way the Pokédex reads out a Pokémon. It used to be
+    // three pills, each a box with its own fill, centred under the slots.
     return (
-        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3" aria-label="Team identity summary">
-            <Badge
+        <dl className="stat-group stat-group--3 tb-identity" aria-label="Team identity summary">
+            <Stat
                 label="BST"
                 value={stats.avgBst ?? '—'}
                 hint={stats.avgBst !== null ? getBstHint(stats.bstLabel, language) : undefined}
             />
-            <Badge
+            <Stat
                 label={language === 'pt' ? 'Tipos' : 'Types'}
                 value={stats.typeCount}
                 hint={getTypesHint(stats.typeCount >= 5 ? 'Diverse' : stats.typeCount >= 3 ? 'OK' : 'Narrow', language)}
             />
-            <Badge
+            <Stat
                 label={language === 'pt' ? 'Foco' : 'Lean'}
                 value={getLeanHint(stats.leanLabel, language)}
                 hint={`${stats.physical}/${stats.special}/${stats.mixed}`}
             />
-        </div>
+        </dl>
     );
 }
 
-function Badge({ label, value, hint }) {
+function Stat({ label, value, hint }) {
     return (
-        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-surface-raised">
-            <span className="text-[9px] uppercase tracking-wider text-muted font-bold">{label}</span>
-            <span className="font-bold text-fg font-mono">{value}</span>
-            {hint && <span className="text-[9px] text-muted font-mono font-normal">({hint})</span>}
+        <div className="stat stat--sm">
+            <dt className="stat__label">{label}</dt>
+            <dd className="stat__value">{value}</dd>
+            {hint && <dd className="tb-identity__hint">{hint}</dd>}
         </div>
     );
 }

@@ -209,8 +209,8 @@ export function SidebarAccountMenu({
     };
 
     return (
-        <div className={`app-shell__account-menu ${collapsed ? 'is-collapsed' : ''} ${isHeader ? 'is-header' : ''}`}>
-            <div ref={anchorRef} className={`app-shell__account-card ${collapsed ? 'is-collapsed' : ''} ${isHeader ? 'is-header' : ''}`}>
+        <div className={`app-shell__account-menu ${collapsed ? 'is-collapsed' : ''}  ${isHeader ? 'is-header' : ''}`}>
+            <div ref={anchorRef} className={`app-shell__account-card ${collapsed ? 'is-collapsed' : ''}  ${isHeader ? 'is-header' : ''}`}>
                 {renderTrigger()}
             </div>
 
@@ -218,7 +218,7 @@ export function SidebarAccountMenu({
                 isOpen={isOpen}
                 anchorRef={anchorRef}
                 popoverRef={popoverRef}
-                className={`app-shell__account-popover ${collapsed ? 'is-collapsed' : ''} ${isHeader ? 'is-header' : ''}`}
+                className={`app-shell__account-popover ${collapsed ? 'is-collapsed' : ''}  ${isHeader ? 'is-header' : ''}`}
                 style={{
                     backgroundColor: 'var(--color-surface)',
                     border: '1px solid var(--color-border)',

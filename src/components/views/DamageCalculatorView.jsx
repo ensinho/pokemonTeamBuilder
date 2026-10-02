@@ -9,7 +9,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { PokemonPicker } from '../PokemonPicker';
 import { SpriteSelect } from '../SpriteSelect';
 import { useToastStore } from '../../store/useToastStore';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { Switch } from '../Switch';
 import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
@@ -578,8 +578,8 @@ export function DamageCalculatorView() {
 
         return (
             <div key={key} className="flex items-center gap-1.5">
-                <span className="w-7 shrink-0 text-[11px] font-bold uppercase" style={{ color: statColor }}>{STAT_LABELS[key]}</span>
-                <span className="w-6 shrink-0 text-center text-[11px] font-medium text-muted" title="Base">{pState.baseStats?.[key] || 0}</span>
+                <span className="w-7 shrink-0 text-2xs font-bold" style={{ color: statColor }}>{STAT_LABELS[key]}</span>
+                <span className="w-6 shrink-0 text-center text-2xs font-medium text-muted" title="Base">{pState.baseStats?.[key] || 0}</span>
                 <input
                     type="number" min="0" max="31"
                     value={iv}
@@ -588,7 +588,7 @@ export function DamageCalculatorView() {
                         setP(prev => ({ ...prev, ivs: { ...prev.ivs, [key]: val } }));
                     }}
                     aria-label={`${key.replace(/-/g, ' ')} IV`}
-                    className="w-8 shrink-0 text-center bg-bg border border-border rounded text-[11px] py-0.5 font-mono focus:border-primary focus:outline-none"
+                    className="w-8 shrink-0 text-center bg-bg border border-border rounded text-2xs py-0.5 font-mono focus:border-primary focus:outline-none"
                 />
                 <input
                     type="range" min="0" max="252" step="4"
@@ -603,9 +603,9 @@ export function DamageCalculatorView() {
                     value={ev}
                     onChange={(e) => setEv(e.target.value)}
                     aria-label={`${key.replace(/-/g, ' ')} EV value`}
-                    className="w-10 shrink-0 text-center bg-bg border border-border rounded text-[11px] py-0.5 font-mono focus:border-primary focus:outline-none"
+                    className="w-10 shrink-0 text-center bg-bg border border-border rounded text-2xs py-0.5 font-mono focus:border-primary focus:outline-none"
                 />
-                <span className={`w-7 shrink-0 text-right font-bold text-[11px] font-mono ${natureColor}`} title="Total">{calculated}</span>
+                <span className={`w-7 shrink-0 text-right font-bold text-2xs font-mono ${natureColor}`} title="Total">{calculated}</span>
             </div>
         );
     };
@@ -616,12 +616,12 @@ export function DamageCalculatorView() {
         return (
             <div className="dmg-panel bg-surface border border-border rounded-xl p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between border-b border-border pb-2">
-                    <span className="dmg-caps dmg-caps--title text-xs font-extrabold tracking-wider uppercase flex items-center gap-1.5" style={{ color: accent }}>
+                    <span className="dmg-caps dmg-caps--title text-xs font-extrabold flex items-center gap-1.5" style={{ color: accent }}>
                         <span className="h-2 w-2 rounded-full" style={{ backgroundColor: accent }} />
                         {side === 'p1' ? 'Pokémon 1' : 'Pokémon 2'}
-                        {pState.isMega && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-surface-raised text-muted">MEGA</span>}
+                        {pState.isMega && <span className="text-2xs font-bold px-1.5 py-0.5 rounded bg-surface-raised text-muted">MEGA</span>}
                     </span>
-                    <div className="flex gap-1">{(pState.types || []).map(tp => <TypeBadge key={tp} type={tp} />)}</div>
+                    <div className="flex gap-1">{(pState.types || []).map(tp => <TypeChip key={tp} type={tp} size="sm" />)}</div>
                 </div>
 
                 {/* Sprite + picker + level/status */}
@@ -685,7 +685,7 @@ export function DamageCalculatorView() {
                             {NATURE_OPTIONS.map(n => <option key={n.value} value={n.value}>{n.label}</option>)}
                         </select>
                     </div>
-                    <div className="dmg-caps flex items-center gap-1.5 px-0.5 pb-1.5 text-[9px] font-semibold uppercase tracking-wider text-muted">
+                    <div className="dmg-caps flex items-center gap-1.5 px-0.5 pb-1.5 text-2xs font-semibold text-muted">
                         <span className="w-7 shrink-0">Stat</span>
                         <span className="w-6 shrink-0 text-center">Base</span>
                         <span className="w-8 shrink-0 text-center">IV</span>
@@ -742,9 +742,9 @@ export function DamageCalculatorView() {
                                     />
                                 </div>
                                 {m.name && m.power > 0 && (
-                                    <span className="text-[9px] font-extrabold uppercase px-1.5 py-1 rounded bg-surface-raised text-muted font-mono leading-none shrink-0">{m.power}</span>
+                                    <span className="text-2xs font-extrabold uppercase px-1.5 py-1 rounded bg-surface-raised text-muted font-mono leading-none shrink-0 tracking-[0.06em]">{m.power}</span>
                                 )}
-                                {m.name && <TypeBadge type={getEffectiveMoveType(m.type, pState.ability, m.name)} />}
+                                {m.name && <TypeChip type={getEffectiveMoveType(m.type, pState.ability, m.name)} size="sm" />}
                             </div>
                             {m.name && (
                                 <div className="flex items-center gap-4 pl-1">
@@ -758,7 +758,7 @@ export function DamageCalculatorView() {
 
                 {/* Remaining HP (used as the target when the other Pokémon attacks it) */}
                 <div className="dmg-subpanel bg-bg/30 p-2.5 rounded-lg border border-border space-y-1.5">
-                    <div className="flex items-center justify-between text-[11px] font-semibold select-none">
+                    <div className="flex items-center justify-between text-2xs font-semibold select-none">
                         <span className="text-muted">Remaining HP</span>
                         <span className="font-mono text-fg">{pState.currentHp}%</span>
                     </div>
@@ -785,7 +785,7 @@ export function DamageCalculatorView() {
                         onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }}
                     />
                     <span className="text-xs font-bold text-fg truncate capitalize">{prettify(attacker.pokemon.name)}</span>
-                    <span className="text-[10px] text-muted shrink-0">→ {prettify(defender.pokemon.name)}</span>
+                    <span className="text-2xs text-muted shrink-0">→ {prettify(defender.pokemon.name)}</span>
                 </div>
                 {hasMoves ? matrix.map((entry) => {
                     const { move, result: r, index } = entry;
@@ -803,14 +803,14 @@ export function DamageCalculatorView() {
                         >
                             <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-1.5 min-w-0">
-                                    <TypeBadge type={r?.effectiveType || getEffectiveMoveType(move.type, attacker.ability, move.name)} />
+                                    <TypeChip type={r?.effectiveType || getEffectiveMoveType(move.type, attacker.ability, move.name)} size="sm" />
                                     <span className="text-xs font-semibold text-fg truncate capitalize">{prettify(move.name)}</span>
-                                    {eff && <span className={`text-[9px] font-extrabold ${effColor}`}>{eff}</span>}
+                                    {eff && <span className={`text-2xs font-extrabold ${effColor}`}>{eff}</span>}
                                 </div>
                                 {r ? (
                                     <span className="text-xs font-extrabold font-mono shrink-0" style={{ color: accent }}>{r.minPct}–{r.maxPct}%</span>
                                 ) : (
-                                    <span className="text-[10px] font-bold uppercase text-muted shrink-0">{move.category === 'status' ? 'Status' : '—'}</span>
+                                    <span className="text-2xs font-bold text-muted shrink-0">{move.category === 'status' ? 'Status' : '—'}</span>
                                 )}
                             </div>
                             {r && (
@@ -820,8 +820,8 @@ export function DamageCalculatorView() {
                                         <div className="dmg-bar__min" style={{ width: `${Math.min(100, r.minPct)}%` }} />
                                     </div>
                                     <div className="flex items-center justify-between mt-1">
-                                        <span className={`text-[10px] font-bold uppercase ${r.koGuaranteed ? 'text-danger' : 'text-muted'}`}>{r.koText}</span>
-                                        <span className="text-[9px] text-muted font-mono">{r.minDamage}–{r.maxDamage} / {r.defenderHP}</span>
+                                        <span className={`text-2xs font-bold ${r.koGuaranteed ? 'text-danger' : 'text-muted'}`}>{r.koText}</span>
+                                        <span className="text-2xs text-muted font-mono">{r.minDamage}–{r.maxDamage} / {r.defenderHP}</span>
                                     </div>
                                 </>
                             )}
@@ -861,7 +861,7 @@ export function DamageCalculatorView() {
 
                     {/* Weather */}
                     <div className="order-3 flex items-center gap-1.5 w-full min-w-0 sm:order-2 sm:w-auto">
-                        <span className="dmg-caps w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Weather</span>
+                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">Weather</span>
                         <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label="Weather">
                             {WEATHERS.map((w) => (
                                 <button
@@ -879,7 +879,7 @@ export function DamageCalculatorView() {
 
                     {/* Terrain */}
                     <div className="order-4 flex items-center gap-1.5 w-full min-w-0 sm:order-3 sm:w-auto">
-                        <span className="dmg-caps w-14 shrink-0 text-[10px] font-bold uppercase tracking-wider text-muted sm:w-auto">Terrain</span>
+                        <span className="dmg-caps w-14 shrink-0 text-2xs font-bold text-muted sm:w-auto">Terrain</span>
                         <div className="dmg-rail segmented segmented--sm min-w-0 flex-1 overflow-x-auto sm:flex-initial" role="group" aria-label="Terrain">
                             {TERRAINS.map((tr) => (
                                 <button
@@ -921,7 +921,7 @@ export function DamageCalculatorView() {
                 {showField && (
                     <div className="mt-3 pt-3 border-t border-border grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <span className="dmg-caps text-[10px] font-bold text-[#F08030] uppercase tracking-wider">Pokémon 1 side (boosts)</span>
+                            <span className="dmg-caps text-2xs font-bold text-[#F08030]">Pokémon 1 side (boosts)</span>
                             <div className="grid grid-cols-1 gap-1.5">
                                 {[
                                     { key: 'helpingHand', label: 'Helping Hand (×1.5)' },
@@ -941,7 +941,7 @@ export function DamageCalculatorView() {
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <span className="dmg-caps text-[10px] font-bold text-[#6890F0] uppercase tracking-wider">Pokémon 2 side (screens / hazards)</span>
+                            <span className="dmg-caps text-2xs font-bold text-[#6890F0]">Pokémon 2 side (screens / hazards)</span>
                             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                                 {[
                                     { key: 'reflect', label: 'Reflect' },
@@ -961,8 +961,8 @@ export function DamageCalculatorView() {
                                 ))}
                             </div>
                             <div className="flex items-center justify-between pt-1">
-                                <span className="text-[11px] font-semibold text-muted">Spikes</span>
-                                <div className="flex bg-bg p-0.5 rounded border border-border text-[10px] font-bold">
+                                <span className="text-2xs font-semibold text-muted">Spikes</span>
+                                <div className="flex bg-bg p-0.5 rounded border border-border text-2xs font-bold">
                                     {[0, 1, 2, 3].map((v) => (
                                         <button
                                             key={v}
@@ -1006,12 +1006,12 @@ export function DamageCalculatorView() {
                 <div className={`lg:col-span-4 ${activeTab === 'damage' ? 'block' : 'hidden'} lg:block`}>
                     <div className="dmg-panel bg-surface border border-border rounded-xl p-4 shadow-sm space-y-4 lg:sticky lg:top-4">
                         <div className="flex items-center justify-between border-b border-border pb-2">
-                            <span className="dmg-caps dmg-caps--title text-xs font-extrabold tracking-wider uppercase text-fg flex items-center gap-1.5">
+                            <span className="dmg-caps dmg-caps--title text-xs font-extrabold text-fg flex items-center gap-1.5">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z" /></svg>
                                 Live Damage
                             </span>
                             {speedInfo && (
-                                <span className="text-[10px] font-bold" title="Raw Speed stat (paralysis halves it)">
+                                <span className="text-2xs font-bold" title="Raw Speed stat (paralysis halves it)">
                                     {speedInfo.faster === 0
                                         ? <span className="text-muted">Speed tie ({speedInfo.s1})</span>
                                         : <span style={{ color: speedInfo.faster === 1 ? '#F08030' : '#6890F0' }}>⚡ P{speedInfo.faster} first ({speedInfo.s1} / {speedInfo.s2})</span>}
@@ -1024,7 +1024,7 @@ export function DamageCalculatorView() {
                                 {renderMatchupColumn(p1, p2, matrix12, '#F08030', field)}
                                 <div className="border-t border-dashed border-border" />
                                 {renderMatchupColumn(p2, p1, matrix21, '#6890F0', reverseField)}
-                                <p className="text-[10px] text-muted leading-tight pt-1">
+                                <p className="text-2xs text-muted leading-tight pt-1">
                                     Tap any move to copy its calc. The Pokémon 2 → 1 side uses weather / terrain / format only.
                                 </p>
                             </>

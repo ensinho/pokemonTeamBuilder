@@ -85,7 +85,7 @@
 .profile-avatar-choice__label {
     margin: 0 0 var(--space-2);
     font-size: var(--text-xs);
-    font-weight: 600;
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -104,8 +104,8 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     transition: border-color var(--duration-fast) var(--ease-smooth),
                 background-color var(--duration-fast) var(--ease-smooth),
@@ -130,8 +130,8 @@
 }
 
 .profile-avatar-button__initials {
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.04em;
 }
 
@@ -171,8 +171,8 @@
 .profile-overview-stat__label,
 .profile-sync-row__label {
     margin: 0;
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     letter-spacing: 0;
     color: var(--color-muted);
 }
@@ -193,7 +193,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     font-size: clamp(1.5rem, 2.4vw, 2rem);
-    font-weight: 800;
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.04em;
     line-height: 1.1;
 }
@@ -213,7 +213,7 @@
 .profile-hero__email,
 .profile-hero__id {
     color: var(--color-muted);
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
 }
 
 .profile-hero__email {
@@ -230,7 +230,7 @@
 .profile-hero__hint {
     margin: var(--space-0_5) 0 0;
     max-width: 32rem;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     line-height: 1.5;
     color: var(--color-muted);
 }
@@ -243,9 +243,9 @@
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
     padding: var(--space-1) var(--space-2);
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
     color: var(--color-muted);
     white-space: nowrap;
@@ -284,8 +284,8 @@
 
 .profile-streak-card__value {
     margin: var(--space-2) 0 0;
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.05em;
     line-height: 0.95;
     color: var(--color-fg);
@@ -293,8 +293,8 @@
 
 .profile-streak-card__value span {
     margin-left: var(--space-0_5);
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -332,15 +332,15 @@
 
 .profile-overview-stat__value {
     margin: var(--space-2) 0 0;
-    font-size: 1.35rem;
-    font-weight: 800;
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.03em;
     color: var(--color-fg);
 }
 
 .profile-overview-stat__hint {
     margin: var(--space-0_5) 0 0;
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
 }
 
@@ -396,15 +396,15 @@
 
 .profile-card__title {
     margin: 0;
-    font-size: 0.9375rem;
-    font-weight: 600;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
 .profile-card__subtitle,
 .profile-support-copy {
     margin: var(--space-1) 0 0;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     line-height: 1.5;
     color: var(--color-muted);
 }
@@ -421,8 +421,8 @@
     align-items: center;
     gap: var(--space-1_5);
     margin: 0 0 var(--space-2);
-    font-size: 0.8125rem;
-    font-weight: 500;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
     letter-spacing: 0;
     color: var(--color-muted);
 }
@@ -494,8 +494,8 @@
 }
 
 .profile-theme-card__label {
-    font-size: 0.8125rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
@@ -511,7 +511,7 @@
 
 .profile-theme-card__hint {
     margin: var(--space-1_5) 0 0;
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
     line-height: 1.45;
     color: var(--color-muted);
 }
@@ -538,8 +538,8 @@
 
 .profile-account-row__value,
 .profile-sync-row__value {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
@@ -571,8 +571,8 @@
     border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     padding: var(--space-2) var(--space-3);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
@@ -615,8 +615,8 @@
 }
 
 .profile-avatar-preview__fallback {
-    font-size: 1.75rem;
-    font-weight: 800;
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -634,8 +634,8 @@
     border-radius: var(--radius-md);
     background: var(--color-surface);
     padding: var(--space-2) var(--space-3);
-    font-size: 0.9375rem;
-    font-weight: 600;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
 }
 
@@ -678,8 +678,8 @@
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-muted);
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
     cursor: pointer;
 }
@@ -702,8 +702,8 @@
     justify-content: center;
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-full);
-    font-size: 0.65rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     background: var(--color-surface-raised);
     color: inherit;
 }
@@ -817,8 +817,8 @@
 
 .profile-badge-card__name {
     margin: 0;
-    font-size: 0.8125rem;
-    font-weight: 700;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     letter-spacing: -0.01em;
     color: var(--color-fg);
     line-height: 1.2;
@@ -833,9 +833,9 @@
     gap: var(--space-1);
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-full);
-    font-size: 0.575rem;
-    font-weight: 700;
-    letter-spacing: 0.03em;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
     color: var(--color-primary);
     background: var(--color-primary-soft);
@@ -845,8 +845,8 @@
 
 .profile-badge-card__req {
     margin: 0;
-    font-size: 0.6875rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-primary);
     line-height: 1.25;
     overflow: hidden;
@@ -862,8 +862,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    font-size: 0.6rem;
-    font-weight: 700;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     margin-bottom: var(--space-1);
     letter-spacing: 0.03em;
@@ -901,8 +901,8 @@
     gap: var(--space-1_5);
     padding: var(--space-1_5) var(--space-2_5);
     border-radius: var(--radius-sm);
-    font-size: 0.72rem;
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
     cursor: pointer;
 }
@@ -940,8 +940,8 @@
     background: color-mix(in srgb, var(--color-surface) 60%, transparent);
     /* The one line kept in a badge — dashed here genuinely means "locked". */
     border: 1px dashed var(--color-border);
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
@@ -1021,12 +1021,12 @@
     }
 
     .profile-streak-card__value {
-        font-size: 1.5rem;
+        font-size: var(--text-xl);
     }
 
     .profile-streak-card .profile-pill {
         padding: var(--space-0_5) var(--space-1_5);
-        font-size: 0.5rem;
+        font-size: var(--text-2xs);
         letter-spacing: 0.03em;
     }
 
@@ -1037,7 +1037,7 @@
 
     .profile-overview-stat__value {
         margin-top: var(--space-1_5);
-        font-size: 1.3rem;
+        font-size: var(--text-xl);
     }
 
     .profile-overview-stat__hint {
@@ -1116,8 +1116,8 @@
     .profile-overview-stat__value {
         margin: auto 0 0;
         font-family: var(--font-display);
-        font-size: 1.5rem;
-        font-weight: 600;
+        font-size: var(--text-xl);
+        font-weight: var(--weight-semibold);
         letter-spacing: -0.04em;
         line-height: 1;
     }
@@ -1152,7 +1152,7 @@
     .profile-card__title {
         font-family: var(--font-display);
         font-size: var(--text-md);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
         letter-spacing: -0.03em;
     }
 

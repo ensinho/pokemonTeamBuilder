@@ -714,24 +714,24 @@ export function HomeView({
             <div className="min-w-0 flex-1 flex flex-col justify-between h-12">
                 <div className="flex justify-between items-start">
                     <div>
-                        <p className="home-panel__eyebrow text-[9px] leading-none">{t('pokepuzzle.homeTeaserTitle')}</p>
+                        <p className="home-panel__eyebrow text-2xs leading-none">{t('pokepuzzle.homeTeaserTitle')}</p>
                         <h3 className="home-panel__title home-panel__title--daily capitalize text-xs font-semibold truncate mt-1">
                             {dailyPokePuzzleSummary?.solved ? formatPokemonDisplayName(dailyPokePuzzleTarget.name) : '??????'}
                         </h3>
                     </div>
                     {dailyPokePuzzleSummary?.solved ? (
-                        <span className="badge badge-success text-[8px] py-0.5 px-1.5 shrink-0 flex items-center gap-0.5">
+                        <span className="badge badge--success text-2xs py-0.5 px-1.5 shrink-0 flex items-center gap-0.5">
                             <Award className="w-3.5 h-3.5 text-white" />
                             {t('pokepuzzle.dailySolvedBadge')}
                         </span>
                     ) : (
-                        <span className="home-daily__number text-[9px] font-semibold text-muted">
+                        <span className="home-daily__number text-2xs font-semibold text-muted">
                             #{String(dailyPokePuzzleTarget.id).padStart(3, '0')}
                         </span>
                     )}
                 </div>
 
-                <div className="flex justify-between items-center text-[10px]">
+                <div className="flex justify-between items-center text-2xs">
                     <span className="text-muted min-w-0 mr-2">
                         {dailyPokePuzzleSummary?.solved
                             ? t('pokepuzzle.homeTeaserSolved', { attempts: dailyPokePuzzleSummary.attempts })
@@ -776,7 +776,7 @@ export function HomeView({
                                     <button
                                         type="button"
                                         onClick={handleCycleHeroBackground}
-                                        className="touch-target text-[10px] text-muted hover:text-fg font-semibold cursor-pointer bg-black/60 rounded px-1.5 py-0.5 bg-surface/50 transition-colors flex items-center gap-1"
+                                        className="touch-target text-2xs text-muted hover:text-fg font-semibold cursor-pointer bg-black/60 rounded px-1.5 py-0.5 bg-surface/50 transition-colors flex items-center gap-1"
                                         title={language === 'pt' ? 'Mudar Fundo' : 'Change Background'}
                                     >
                                         <Palette className="w-3 h-3 shrink-0" />
@@ -785,7 +785,7 @@ export function HomeView({
                                 )}
                                 <div className="flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
-                                    <span className="text-[10px] uppercase tracking-wider font-semibold">Active</span>
+                                    <span className="text-2xs font-semibold">Active</span>
                                 </div>
                             </div>
                         </div>
@@ -798,11 +798,11 @@ export function HomeView({
                                     {randomMessage}
                                 </p>
                                 <div className="flex items-center gap-2 pt-1.5">
-                                    <span className="home-hero__pill flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono">
+                                    <span className="home-hero__pill flex items-center gap-1 px-2.5 py-0.5 rounded-full text-2xs font-bold font-mono">
                                         <Flame className="w-3 h-3 text-warning shrink-0" />
                                         {streak?.count || 0} {language === 'pt' ? 'Dias Seguidos' : 'Days Streak'}
                                     </span>
-                                    <span className="text-[10px] text-muted-more font-mono">
+                                    <span className="text-2xs text-muted-more font-mono">
                                         {t('home.longestStreak', { count: streak?.longest || 0 })}
                                     </span>
                                 </div>
@@ -948,7 +948,7 @@ export function HomeView({
                                     })}
                                 </div>
 
-                                <div className="pinned-repo-footer flex items-center justify-between border-t border-border pt-3 mt-1 text-[10px] text-muted font-semibold font-mono">
+                                <div className="pinned-repo-footer flex items-center justify-between border-t border-border pt-3 mt-1 text-2xs text-muted font-semibold font-mono">
                                     <div className="flex items-center gap-4">
                                         <div className="flex items-center gap-1.5">
                                             <span className="home-type-dot" style={{ backgroundColor: activeTeam.isFavorite ? 'var(--color-accent)' : 'var(--color-primary)' }} />
@@ -1086,7 +1086,7 @@ export function HomeView({
                             <button
                                 type="button"
                                 onClick={() => navigate('/feed')}
-                                className="home-button home-button--inline text-[10px] py-0.5 px-2"
+                                className="home-button home-button--inline text-2xs py-0.5 px-2"
                             >
                                 <span className="home-forum-chat-header-btn-desktop">
                                     {language === 'pt' ? 'Ver Fórum →' : 'View Forum →'}
@@ -1184,7 +1184,7 @@ export function HomeView({
                                                                 </span>
                                                                 <span>{language === 'pt' ? 'chamou para batalhar:' : 'called for a battle:'}</span>
                                                             </div>
-                                                            <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
+                                                            <span className="text-2xs text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
                                                         </div>
                                                         <div className="github-comment-body p-3">
                                                             {message.text && (
@@ -1213,7 +1213,7 @@ export function HomeView({
                                                                 <span>merged team:</span>
                                                                 <span className="font-mono bg-surface px-1.5 py-0.5 rounded text-primary font-bold">{message.sharedTeam.name}</span>
                                                             </div>
-                                                            <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
+                                                            <span className="text-2xs text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
                                                         </div>
                                                         <div className="github-pr-body mt-2.5 flex items-center justify-between gap-4 flex-wrap">
                                                             <div className="flex gap-[1px] flex-wrap">
@@ -1273,13 +1273,13 @@ export function HomeView({
                                                                     @{message.creatorName}
                                                                 </span>
                                                                 {isMsgAdmin && (
-                                                                    <span className="github-comment-admin-badge text-[8px] uppercase tracking-wider px-1 border border-primary/45 rounded bg-primary-soft text-primary font-bold">
+                                                                    <span className="github-comment-admin-badge text-2xs uppercase px-1 border border-primary/45 rounded bg-primary-soft text-primary font-bold tracking-[0.06em]">
                                                                         {message.creatorName === 'Professor Oak' ? 'System' : 'Admin'}
                                                                     </span>
                                                                 )}
                                                                 <span>commented:</span>
                                                             </div>
-                                                            <span className="text-[9px] text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
+                                                            <span className="text-2xs text-muted-more shrink-0">{formatRelativeTime(message.createdAt, language)}</span>
                                                         </div>
                                                         <div className="github-comment-body p-3">
                                                             <p className="text-xs text-fg leading-relaxed">{message.text}</p>
@@ -1295,7 +1295,7 @@ export function HomeView({
                                                         disabled={!userId}
                                                         aria-pressed={likedByMe}
                                                         title={likedByMe ? (language === 'pt' ? 'Você curtiu' : 'You liked this') : (language === 'pt' ? 'Curtir' : 'Like')}
-                                                        className={`touch-target inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${likedByMe ? 'border-primary bg-primary text-white' : 'border-border bg-surface-raised text-muted hover:text-fg'}`}
+                                                        className={`touch-target inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${likedByMe ? 'border-primary bg-primary text-white' : 'border-border bg-surface-raised text-muted hover:text-fg'}`}
                                                     >
                                                         <HeartIcon className="w-3 h-3 shrink-0" />
                                                         {likeCount > 0 && <span>{likeCount}</span>}
@@ -1304,7 +1304,7 @@ export function HomeView({
                                                         type="button"
                                                         onClick={() => handleStartReply(message)}
                                                         title={language === 'pt' ? 'Responder' : 'Reply'}
-                                                        className="touch-target inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-[10px] font-semibold text-muted transition-colors hover:text-fg"
+                                                        className="touch-target inline-flex items-center gap-1 rounded-full bg-surface-raised px-2 py-0.5 text-2xs font-semibold text-muted transition-colors hover:text-fg"
                                                     >
                                                         <ReplyIcon className="w-3 h-3 shrink-0" />
                                                         <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
@@ -1347,7 +1347,7 @@ export function HomeView({
                             )}
 
                             {attachedTeam && (
-                                <div className="forum-attached-team-preview py-1.5 px-2.5 text-[11px] gap-1.5 flex items-center mb-2 bg-surface-raised rounded-lg">
+                                <div className="forum-attached-team-preview py-1.5 px-2.5 text-2xs gap-1.5 flex items-center mb-2 bg-surface-raised rounded-lg">
                                     <ClipIcon className="w-3 h-3 text-success shrink-0" />
                                     <span className="truncate">{attachedTeam.name}</span>
                                     <button type="button" onClick={() => setAttachedTeam(null)} className="ml-auto hover:text-danger text-muted">
@@ -1368,7 +1368,7 @@ export function HomeView({
                                     </button>
                                     {isAttachDropdownOpen && (
                                         <div className="absolute left-0 bottom-full mb-2 z-50 w-64 bg-surface border border-border rounded-lg shadow-xl p-2 max-h-64 overflow-y-auto">
-                                            <p className="text-[10px] text-muted font-bold px-2 py-1 uppercase tracking-wider mb-1">
+                                            <p className="text-2xs text-muted font-bold px-2 py-1 mb-1">
                                                 {t('forum.inviteSectionLabel')}
                                             </p>
                                             <button
@@ -1388,7 +1388,7 @@ export function HomeView({
                                                 {t('forum.inviteTeamOption')}
                                             </button>
 
-                                            <p className="text-[10px] text-muted font-bold px-2 py-1 mt-1 uppercase tracking-wider mb-1">
+                                            <p className="text-2xs text-muted font-bold px-2 py-1 mt-1 mb-1">
                                                 {language === 'pt' ? 'Seus Times Salvos' : 'Your Saved Teams'}
                                             </p>
                                             {activeRoster.length > 0 && (

@@ -6,7 +6,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { PokemonGenerationQuizAutocomplete } from '../PokemonGenerationQuizAutocomplete';
 import { AvatarSprite } from '../AvatarSprite';
-import { typeIcons } from '../../constants/types';
+import { typeColors, typeIcons } from '../../constants/types';
 import {
     buildQuestionKey,
     parseFreeTextQuestion,
@@ -84,10 +84,10 @@ const CardSlot = ({ icon, label, value, wide = false }) => {
     );
 };
 
-/** A revealed type: canonical color from `type-badge--*`, plus its game icon. */
+/** A revealed type: the standard type chip (icon + label in the type's colour). */
 const RevealedType = ({ type, label }) => (
-    <span className={`pokeroom-tcg__type type-badge--${type}`}>
-        {typeIcons[type] && <img src={typeIcons[type]} alt="" aria-hidden="true" />}
+    <span className="pokeroom-tcg__type type-chip type-chip--sm" style={{ '--type-chip': typeColors[type] }}>
+        {typeIcons[type] && <img src={typeIcons[type]} alt="" aria-hidden="true" className="type-chip__icon" />}
         {label}
     </span>
 );

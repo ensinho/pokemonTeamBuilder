@@ -43,8 +43,8 @@
 }
 
 .category-guesser__title {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg, #ffffff);
     margin: 0;
     letter-spacing: -0.01em;
@@ -129,16 +129,15 @@
 }
 
 .category-guesser__last-find-label {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: 0;
     color: var(--color-muted, #94a3b8);
 }
 
 .category-guesser__last-find-name {
-    font-size: 0.95rem;
-    font-weight: 700;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg, #ffffff);
     line-height: 1.2;
 }
@@ -194,8 +193,8 @@
     border: 1px solid var(--color-border, rgba(255, 255, 255, 0.12));
     background: var(--color-surface-raised, rgba(30, 41, 59, 0.8));
     color: var(--color-fg, #ffffff);
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: transform var(--duration-fast, var(--duration-fast)) var(--ease-smooth), border-color var(--duration-fast, var(--duration-fast)) var(--ease-smooth), background-color var(--duration-fast, var(--duration-fast)) var(--ease-smooth), color var(--duration-fast, var(--duration-fast)) var(--ease-smooth);
     box-sizing: border-box;
@@ -229,8 +228,8 @@
     background: var(--color-surface-raised, rgba(255, 255, 255, 0.06));
     border: 1px solid var(--color-border, rgba(255, 255, 255, 0.1));
     color: var(--color-fg, #ffffff);
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: transform var(--duration-fast, var(--duration-fast)) var(--ease-smooth), border-color var(--duration-fast, var(--duration-fast)) var(--ease-smooth);
 }
@@ -244,10 +243,10 @@
 .category-guesser__history-toggle-badge {
     background: var(--color-primary, #6366f1);
     color: var(--color-on-primary);
-    font-size: 0.72rem;
+    font-size: var(--text-xs);
     padding: var(--space-0_5) var(--space-1_5);
     border-radius: var(--radius-full);
-    font-weight: 700;
+    font-weight: var(--weight-semibold);
 }
 
 /* ==========================================================================
@@ -320,7 +319,7 @@
     .category-guesser__action-btn {
         min-height: 2.35rem;
         padding: var(--space-2) var(--space-2_5);
-        font-size: 0.8rem;
+        font-size: var(--text-sm);
     }
 
     .category-guesser__action-btn svg {
@@ -362,18 +361,11 @@
         background: var(--color-surface-raised);
     }
 
-    /* Set in caps in the markup ("ÚLTIMO ENCONTRADO"); read as a sentence.
-       Block, because ::first-letter only applies to a block box. */
     .category-guesser__last-find-label {
         display: block;
         font-size: var(--text-xs);
-        font-weight: 600;
+        font-weight: var(--weight-semibold);
         letter-spacing: 0;
-        text-transform: lowercase;
-    }
-
-    .category-guesser__last-find-label::first-letter {
-        text-transform: uppercase;
     }
 
     /* The hint's label is utility-styled caps; compound selector so it wins

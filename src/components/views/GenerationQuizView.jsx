@@ -719,7 +719,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                             )}
 
                             <div className="generation-quiz__start-selector mt-4">
-                                <span className="generation-quiz__start-selector-label">{language === 'pt' ? 'SELECIONAR GERAÇÃO' : 'SELECT GENERATION'}</span>
+                                <span className="generation-quiz__start-selector-label">{language === 'pt' ? 'Selecionar geração' : 'Select generation'}</span>
                                 <div className="generation-quiz__start-selector-pills mt-3" role="group" aria-label={language === 'pt' ? 'Selecionar geração' : 'Select generation'}>
                                     <button
                                         type="button"

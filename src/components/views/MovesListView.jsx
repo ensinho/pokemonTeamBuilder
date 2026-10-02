@@ -10,7 +10,7 @@ import { makePokemonRelatedNamesResolver } from '../../utils/referenceRelatedNam
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
-import { TypeBadge } from '../TypeBadge';
+import { TypeChip } from '../TypeChip';
 import { ClearIcon } from '../icons';
 import { Loader } from '../Loader';
 
@@ -41,7 +41,7 @@ const MoveRow = React.memo(function MoveRow({ entry, d, onOpen, t }) {
             <span className="ref-row__name">{prettify(entry.name)}</span>
 
             <span className="ref-type-cell">
-                {d?.type ? <TypeBadge type={d.type} /> : <span className="ref-skeleton" />}
+                {d?.type ? <TypeChip type={d.type} size="sm" /> : <span className="ref-skeleton" />}
             </span>
 
             <span>

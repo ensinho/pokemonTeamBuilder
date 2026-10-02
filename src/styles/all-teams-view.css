@@ -104,7 +104,7 @@
 }
 
 .all-teams-view__card-title {
-    font-size: 0.875rem;
+    font-size: var(--text-base);
 }
 
 .all-teams-view__status,
@@ -113,9 +113,9 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-sm);
-    font-size: 0.625rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-caps);
     text-transform: uppercase;
 }
 
@@ -162,7 +162,7 @@
 }
 
 .all-teams-view__empty-stack {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     line-height: 1.5;
 }
 
@@ -184,7 +184,7 @@
 
 .all-teams-view__empty-copy {
     max-width: 24rem;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     line-height: 1.5;
 }
 
@@ -298,8 +298,8 @@
 
 .all-teams-view__list-item-index {
     font-family: var(--font-display);
-    font-size: 0.675rem;
-    font-weight: 600;
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
     color: var(--color-muted);
     line-height: 1;
     margin-bottom: var(--space-1);
@@ -332,8 +332,8 @@
 
 .all-teams-view__list-item-title {
     margin: 0;
-    font-size: 0.875rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     color: var(--color-fg);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -343,7 +343,7 @@
 .all-teams-view__list-item-meta {
     display: flex;
     align-items: center;
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
 }
 
@@ -378,7 +378,7 @@
 }
 
 .all-teams-view__list-item-sprite-name {
-    font-size: 0.55rem;
+    font-size: var(--text-2xs);
     color: var(--color-muted);
     text-transform: capitalize;
     opacity: 0.55;
