@@ -64,14 +64,13 @@ import {
 } from './icons';
 import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users } from 'lucide-react';
 
-// HomeView stays eager: it's the landing route, so lazy-loading it would only add a
+// The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
 // the initial bundle — the heavy ones (Pokedex, PokePuzzle) dominate it.
-// Views' CSS first, in the barrel's old order (see the module); HomeView's JS
+// Views' CSS first, in the barrel's old order (see the module); the Home's JS
 // directly, so the views barrel — and every other view — stays out of the
 // entry bundle.
 import '../styles/eagerViewStyles';
-import { HomeView } from './views/HomeView';
 import { CozyHomeView } from './views/CozyHomeView';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
@@ -339,15 +338,6 @@ export default function AppLayout() {
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
     const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType, searchShortcut, setSearchShortcut } = useThemeStore();
-    // The 2026-10-06 cozy Home proposal sits beside the classic one until Enzo
-    // picks; the choice is per device ('cozy' unless switched back).
-    const [homeLayout, setHomeLayout] = useState(() => {
-        try { return localStorage.getItem('ptb:homeLayout') === 'classic' ? 'classic' : 'cozy'; } catch { return 'cozy'; }
-    });
-    const chooseHomeLayout = useCallback((layout) => {
-        setHomeLayout(layout);
-        try { localStorage.setItem('ptb:homeLayout', layout); } catch { /* private mode */ }
-    }, []);
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
@@ -692,7 +682,6 @@ export default function AppLayout() {
                     'ptbUiScale',
                     'ptbShowTeraType',
                     'homeWallpaperId',
-                    'ptb:homeLayout',
                     'ptb-sidebar-collapse-pref',
                     'ptb-sidebar-open-groups',
                     'ptb:battleAnimatedSprites',
@@ -1157,11 +1146,6 @@ export default function AppLayout() {
         setEditingTeamMember(pokemon);
     }, [setEditingTeamMember]);
 
-    const handleNavigateWithTypeFilter = useCallback((type) => {
-        pokedex.setPokedexSelectedTypes(new Set([type]));
-        navigate('/pokedex');
-    }, [navigate, pokedex]);
-
     // Splash renderer
     if (showInitialAuthSplash) {
         return (
@@ -1572,7 +1556,7 @@ export default function AppLayout() {
                         <div className={pageFrameClassName}>
                             <Suspense fallback={<RouteFallback />}>
                                 <Routes>
-                                    <Route path="/" element={homeLayout === 'cozy' ? (
+                                    <Route path="/" element={
                                         <CozyHomeView
                                             navigate={navigate}
                                             savedTeams={savedTeams}
@@ -1584,32 +1568,8 @@ export default function AppLayout() {
                                             activeTeamId={activeTeamId}
                                             heroBackgroundId={homeWallpaperId}
                                             onChangeHeroBackground={setHomeWallpaperPreference}
-                                            onUseClassic={() => chooseHomeLayout('classic')}
                                         />
-                                    ) : (
-                                        <HomeView
-                                            onUseCozy={() => chooseHomeLayout('cozy')}
-                                            colors={colors}
-                                            navigate={navigate}
-                                            savedTeams={savedTeams}
-                                            favoritePokemons={favoritePokemons}
-                                            allPokemons={pokedex.pokemons}
-                                            recentTeams={recentTeams}
-                                            showDetails={showDetails}
-                                            onToggleFavoritePokemon={handleToggleFavoritePokemon}
-                                            handleEditTeam={handleEditTeam}
-                                            greetingPokemonId={greetingPokemonId}
-                                            greetingPokemonIsShiny={greetingPokemonIsShiny}
-                                            heroBackgroundId={homeWallpaperId}
-                                            onChangeHeroBackground={setHomeWallpaperPreference}
-                                            onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
-                                            db={db}
-                                            theme={theme}
-                                            onNavigateWithTypeFilter={handleNavigateWithTypeFilter}
-                                            activeTeamId={activeTeamId}
-                                            setActiveTeamId={setActiveTeamId}
-                                        />
-                                    )} />
+                                    } />
                                     <Route path="/feed" element={
                                         <FeedView
                                             colors={colors}

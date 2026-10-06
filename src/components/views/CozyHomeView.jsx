@@ -25,6 +25,7 @@ import {
     trainerIdFromUid,
 } from '../../utils/homeStatus';
 import { PartnerFlare } from '../PartnerFlare';
+import { PcBox } from '../PcBox';
 import { Sprite } from '../Sprite';
 import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
@@ -37,8 +38,8 @@ import '../../styles/cozy-home.css';
  * team in progress stands, the three things that are "today", and the
  * trainer's own story — tinted by the partner Pokémon's type, not by a
  * template's accent. The GitHub-repo metaphor of the classic Home is gone:
- * this reads as a Trainer Card. `onUseClassic` switches back (AppLayout keeps
- * the choice).
+ * this reads as a Trainer Card. It is the only Home since 2026-10-06 — the
+ * classic one and the switch between them are gone.
  */
 
 const PERIOD_PARTNER = { morning: 196, afternoon: 25, evening: 197, night: 197 };
@@ -75,17 +76,30 @@ const Panel = ({ title, meta, action, card = true, children }) => (
     </section>
 );
 
-/** Six Poké Balls, like the party row in battle: a member fills one, an empty slot is dashed. */
-const PartyBalls = ({ size }) => (
-    <span className="cozy-party" aria-hidden="true">
-        {Array.from({ length: TEAM_SIZE }, (_, i) => (
-            <svg key={i} viewBox="0 0 16 16" className={`cozy-party__ball ${i < size ? 'is-filled' : ''}`}>
-                <circle cx="8" cy="8" r="6.5" className="cozy-party__rim" />
-                {i < size && <path d="M1.5 8a6.5 6.5 0 0 1 13 0z" className="cozy-party__top" />}
-                <path d="M1.5 8h13" className="cozy-party__band" />
-                <circle cx="8" cy="8" r="2" className="cozy-party__button" />
-            </svg>
-        ))}
+/**
+ * The party row from the battle HUD, with the team itself in it: a member
+ * stands on its slot, an empty slot is a dashed Poké Ball (dashed means absent,
+ * here as everywhere in this app). Six slots always, so the row's length says
+ * how complete the team is before a single sprite is read.
+ */
+const PartyRow = ({ members, label }) => (
+    <span className="cozy-party" role="img" aria-label={label}>
+        {Array.from({ length: TEAM_SIZE }, (_, i) => {
+            const member = members[i];
+            return member ? (
+                <span key={i} className="cozy-party__slot is-filled" style={{ '--i': i }}>
+                    <Sprite src={getTeamPokemonDisplaySprite(member)} className="cozy-party__sprite" />
+                </span>
+            ) : (
+                <span key={i} className="cozy-party__slot">
+                    <svg viewBox="0 0 16 16" className="cozy-party__ball" aria-hidden="true">
+                        <circle cx="8" cy="8" r="6.5" className="cozy-party__rim" />
+                        <path d="M1.5 8h13" className="cozy-party__band" />
+                        <circle cx="8" cy="8" r="2" className="cozy-party__button" />
+                    </svg>
+                </span>
+            );
+        })}
     </span>
 );
 
@@ -100,7 +114,6 @@ export function CozyHomeView({
     activeTeamId,
     heroBackgroundId,
     onChangeHeroBackground,
-    onUseClassic,
 }) {
     const { t, language } = useTranslation();
     const isPhone = useMediaQuery(maxWidthBelow('lg'));
@@ -369,10 +382,12 @@ export function CozyHomeView({
                         <>
                             {t('cozyHome.team')} <strong>{activeTeam.name}</strong>
                             {activeTeam.updatedAt && <> · {t('cozyHome.saved', { when: whenLabel(activeTeam.updatedAt) })}</>}
-                            <PartyBalls size={summary.size} />
                         </>
                     ) : t('cozyHome.subEmpty')}
                 </p>
+                {activeTeam && (
+                    <PartyRow members={summary.members} label={t('cozyHome.ofSix', { n: summary.size })} />
+                )}
 
                 <div className="cozy-hero__foot">
                     <dl className="cozy-hero__stats">
@@ -418,7 +433,7 @@ export function CozyHomeView({
         >
             <div className="cozy-day">
                 {puzzle.target && (
-                    <button type="button" className="card card--interactive cozy-day__card" style={{ '--day-tone': 'var(--color-primary)' }}
+                    <button type="button" className="card card--interactive cozy-day__card cozy-day__card--feature" style={{ '--day-tone': 'var(--color-primary)' }}
                         onClick={() => navigate('/pokepuzzle')}>
                         <span className="cozy-day__head">
                             <span className="cozy-day__tile" aria-hidden="true">
@@ -441,7 +456,7 @@ export function CozyHomeView({
                     </button>
                 )}
 
-                <button type="button" className="card card--interactive cozy-day__card" style={{ '--day-tone': 'var(--color-warning)' }}
+                <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-warning)' }}
                     onClick={() => navigate('/profile')}>
                     <span className="cozy-day__head">
                         <span className="cozy-day__tile cozy-day__tile--badge" aria-hidden="true">
@@ -465,7 +480,7 @@ export function CozyHomeView({
                 </button>
 
                 {metaLeader && (
-                    <button type="button" className="card card--interactive cozy-day__card"
+                    <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact"
                         style={{ '--day-tone': typeColors[metaLeaderType] }} onClick={() => navigate('/meta')}>
                         <span className="cozy-day__head">
                             <span className="cozy-day__tile" aria-hidden="true">
@@ -524,14 +539,8 @@ export function CozyHomeView({
                         const s = team === activeTeam ? summary : summarizeTeam(team, typesById);
                         return (
                             <li key={team.id}>
-                                <button type="button" className="card card--inset card--interactive card--compact cozy-team" onClick={() => handleEditTeam(team)}>
-                                    <span className="cozy-team__roster" aria-hidden="true">
-                                        {s.members.slice(0, TEAM_SIZE).map((p, i) => (
-                                            <span key={i} className="cozy-team__member" style={{ '--i': i }}>
-                                                <Sprite src={getTeamPokemonDisplaySprite(p)} className="cozy-team__sprite" />
-                                            </span>
-                                        ))}
-                                    </span>
+                                <button type="button" className="card card--inset card--interactive card--compact cozy-team pc-box-host" onClick={() => handleEditTeam(team)}>
+                                    <PcBox members={s.members} size="sm" className="cozy-team__roster" />
                                     <span className="cozy-team__text">
                                         <span className="cozy-team__name">{team.name}</span>
                                         <span className="cozy-team__sub">
@@ -690,12 +699,6 @@ export function CozyHomeView({
                     </aside>
                 )}
             </div>
-
-            {onUseClassic && (
-                <div className="cozy-footer">
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={onUseClassic}>{t('cozyHome.classic')}</button>
-                </div>
-            )}
         </main>
     );
 }

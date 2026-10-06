@@ -5,7 +5,6 @@ export { FavoritePokemonsView } from './FavoritePokemonsView';
 export { FavoritesView } from './FavoritesView';
 export { GenerationQuizView } from './GenerationQuizView';
 export { CategoryGuesserView } from './CategoryGuesserView';
-export { HomeView } from './HomeView';
 export { MobileTeamBuilderView } from './MobileTeamBuilderView';
 export { PokedexView } from './PokedexView';
 export { ProfileView } from './ProfileView';

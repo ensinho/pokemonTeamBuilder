@@ -319,24 +319,51 @@ button.cozy-chip:hover {
     font-weight: var(--weight-semibold);
 }
 
-/* The six-ball party row from the battle HUD. A member fills a ball in the
-   partner's colour; an empty slot is dashed, which here means what dashed
-   means everywhere in this app: absent. */
+/* The party row from the battle HUD, holding the team itself. Each member
+   stands on a soft well tinted by the partner's type; the sprite is larger
+   than its well and overflows upward, like a Pokémon on its platform. An
+   empty slot is a dashed Poké Ball — dashed means absent, here as everywhere. */
 .cozy-party {
-    display: inline-flex;
-    gap: var(--space-0_5);
-    margin-inline-start: var(--space-2);
-    vertical-align: -0.2em;
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-1_5);
+    margin-top: var(--space-3);
+    /* The sprites overflow their wells upward; reserve the room in flow. */
+    padding-top: var(--space-2);
 }
 
-.cozy-party__ball {
-    width: 0.9375rem;
-    height: 0.9375rem;
+.cozy-party__slot {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: var(--radius-full);
     color: var(--color-muted);
 }
 
-.cozy-party__ball.is-filled {
-    color: var(--color-fg);
+.cozy-party__slot.is-filled {
+    background: color-mix(in srgb, var(--hero-type) 22%, transparent);
+}
+
+/* Compound: <Sprite> carries Tailwind's `relative`, which loads after this
+   sheet and would beat a single class. */
+.cozy-party .cozy-party__sprite {
+    position: absolute;
+    left: 50%;
+    bottom: calc(var(--space-1) * -1);
+    width: 3rem;
+    height: 3rem;
+    translate: -50% 0;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+.cozy-party__ball {
+    width: 1.25rem;
+    height: 1.25rem;
 }
 
 .cozy-party__rim,
@@ -348,22 +375,24 @@ button.cozy-chip:hover {
 
 .cozy-party__rim {
     fill: none;
-}
-
-.cozy-party__ball:not(.is-filled) .cozy-party__rim {
     stroke-dasharray: 2 1.6;
 }
 
-.cozy-party__ball:not(.is-filled) .cozy-party__band {
+.cozy-party__band {
     opacity: 0.5;
 }
 
-.cozy-party__top {
-    fill: color-mix(in srgb, var(--hero-type) 80%, var(--color-fg));
+.cozy-party__button {
+    fill: none;
 }
 
-.cozy-party__button {
-    fill: var(--color-surface);
+/* The party menu hop (see .cozy-team below): the row under the pointer
+   alternates two frames, steps not easing, transform only. */
+@media (prefers-reduced-motion: no-preference) {
+    .cozy-hero__card:hover .cozy-party__slot.is-filled .cozy-party__sprite {
+        animation: cozy-party-hop 0.5s steps(1, end) infinite;
+        animation-delay: calc(var(--i, 0) * -0.25s);
+    }
 }
 
 .cozy-hero__foot {
@@ -601,6 +630,134 @@ button.cozy-chip:hover {
     background: var(--color-warning);
 }
 
+/* Featured + compact (2026-10-06). The daily puzzle is the one thing that
+   is only "today"; it gets the large card, its silhouette big on a disc of
+   its tone. The badge and the meta leader stack beside it as rows — tile,
+   lines, action — the same row the phone uses for all three. */
+.cozy-home .cozy-day__card--compact {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--space-3);
+    row-gap: var(--space-0_5);
+    padding: var(--space-3);
+}
+
+.cozy-day__card--compact .cozy-day__head {
+    display: contents;
+}
+
+.cozy-day__card--compact .cozy-day__tile {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    width: 3rem;
+    height: 3rem;
+}
+
+.cozy-day__card--compact .cozy-day__sprite {
+    width: 3rem;
+    height: 3rem;
+}
+
+.cozy-day__card--compact .cozy-day__tile--badge svg {
+    width: 2rem;
+    height: 2rem;
+}
+
+.cozy-day__card--compact .cozy-day__chevron {
+    grid-column: 3;
+    grid-row: 1 / span 4;
+}
+
+.cozy-day__card--compact .cozy-day__eyebrow,
+.cozy-day__card--compact .cozy-day__title,
+.cozy-day__card--compact .cozy-day__sub,
+.cozy-day__card--compact .cozy-case {
+    grid-column: 2;
+}
+
+.cozy-day__card--compact .cozy-day__sub {
+    -webkit-line-clamp: 1;
+}
+
+.cozy-day__card--compact .cozy-case {
+    margin-top: var(--space-1);
+}
+
+@media (min-width: 1024px) {
+    .cozy-day:has(> .cozy-day__card--feature) {
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    }
+
+    .cozy-home .cozy-day__card--feature {
+        position: relative;
+        display: grid;
+        grid-row: span 2;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-rows: auto auto auto 1fr;
+        column-gap: var(--space-4);
+        row-gap: var(--space-1);
+        overflow: hidden;
+        padding: var(--space-5);
+        background: color-mix(in srgb, var(--day-tone) 8%, var(--color-surface));
+    }
+
+    .cozy-day__card--feature .cozy-day__head {
+        display: contents;
+    }
+
+    .cozy-day__card--feature .cozy-day__tile {
+        grid-column: 2;
+        grid-row: 1 / -1;
+        align-self: center;
+        width: 8rem;
+        height: 8rem;
+        overflow: visible;
+        border-radius: var(--radius-full);
+        background: color-mix(in srgb, var(--day-tone) 16%, var(--color-surface-raised));
+    }
+
+    .cozy-day__card--feature .cozy-day__sprite {
+        width: 8.5rem;
+        height: 8.5rem;
+        image-rendering: pixelated;
+    }
+
+    .cozy-day__card--feature .cozy-day__eyebrow { grid-column: 1; grid-row: 1; }
+    .cozy-day__card--feature .cozy-day__title { grid-column: 1; grid-row: 2; }
+    .cozy-day__card--feature .cozy-day__sub { grid-column: 1; grid-row: 3; }
+
+    .cozy-day__card--feature .cozy-day__title {
+        font-family: var(--font-display);
+        font-size: var(--text-xl);
+        letter-spacing: -0.03em;
+    }
+
+    .cozy-day__card--feature .cozy-day__sub {
+        font-size: var(--text-sm);
+    }
+
+    .cozy-home .cozy-day__card--feature .cozy-day__go {
+        grid-column: 1;
+        grid-row: 4;
+        align-self: end;
+        justify-self: start;
+        margin-top: var(--space-3);
+    }
+
+    /* The silhouette leans in under the pointer — the card's one answer. */
+    @media (prefers-reduced-motion: no-preference) {
+        .cozy-day__card--feature .cozy-day__sprite {
+            transition: scale var(--duration-glide) var(--ease-glide), rotate var(--duration-glide) var(--ease-glide);
+        }
+
+        .cozy-day__card--feature:hover .cozy-day__sprite {
+            scale: 1.06;
+            rotate: -4deg;
+        }
+    }
+}
+
 /* ── 4. Panels (section + card) ────────────────────────────────────────── */
 
 .cozy-home .cozy-panel .section-head {
@@ -651,43 +808,18 @@ button.cozy-chip:hover {
 .cozy-team {
     display: grid;
     grid-template-areas: 'roster text status';
-    grid-template-columns: 11rem minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-    gap: var(--space-3);
+    gap: var(--space-4);
     width: 100%;
     color: var(--color-fg);
     font: inherit;
 }
 
+/* The roster is a PC box strip (PcBox, pc-box.css); its hop on hover comes
+   from .pc-box-host on the row. */
 .cozy-team__roster {
     grid-area: roster;
-    display: flex;
-}
-
-.cozy-team__member {
-    display: block;
-    flex-shrink: 0;
-}
-
-.cozy-team__sprite {
-    width: 2.5rem;
-    height: 2.5rem;
-}
-
-.cozy-team__member + .cozy-team__member {
-    margin-inline-start: calc(var(--space-3) * -1);
-}
-
-/* The party menu: in the games the highlighted Pokémon's icon hops between
-   two frames. The row under the pointer does the same with its roster,
-   members alternating — steps, not easing; transform only; one row at a
-   time; gone under reduced motion. */
-@media (prefers-reduced-motion: no-preference) {
-    .cozy-team:hover .cozy-team__member,
-    .cozy-team:focus-visible .cozy-team__member {
-        animation: cozy-party-hop 0.5s steps(1, end) infinite;
-        animation-delay: calc(var(--i, 0) * -0.25s);
-    }
 }
 
 @keyframes cozy-party-hop {
@@ -983,11 +1115,6 @@ button.cozy-journey__row:hover {
     }
 }
 
-.cozy-footer {
-    display: flex;
-    justify-content: center;
-}
-
 /* ── 6. Phones ─────────────────────────────────────────────────────────── */
 
 @media (max-width: 1023px) {
@@ -1035,8 +1162,17 @@ button.cozy-journey__row:hover {
     }
 
     .cozy-party {
-        display: flex;
-        margin: var(--space-2) 0 0;
+        gap: var(--space-1);
+    }
+
+    .cozy-party__slot {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .cozy-party .cozy-party__sprite {
+        width: 2.75rem;
+        height: 2.75rem;
     }
 
     .cozy-hero__foot {

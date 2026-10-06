@@ -457,8 +457,6 @@ export const TRANSLATIONS = {
             changePartner: 'Change partner',
             streakChip: '{{n}} days in a row',
             streakChipOne: '1 day in a row',
-            classic: 'Classic home',
-            tryCozy: 'Try the new home',
             changeWallpaper: 'Change the banner scene (now: {{name}})',
         },
         home: {
@@ -1873,8 +1871,6 @@ export const TRANSLATIONS = {
             changePartner: 'Trocar parceiro',
             streakChip: '{{n}} dias seguidos',
             streakChipOne: '1 dia seguido',
-            classic: 'Home clássica',
-            tryCozy: 'Experimente a nova home',
             changeWallpaper: 'Trocar o cenário do banner (agora: {{name}})',
         },
         home: {
