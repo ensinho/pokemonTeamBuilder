@@ -72,14 +72,21 @@ export function useUsageFormat(formatId, cutoff = null) {
     // catalog was three VGC regulations and is not now: it would render OU's
     // rankings under "Doubles UU" for as long as the fetch took.
     const [loaded, setLoaded] = useState(() => (formatCache.has(formatId) ? { id: formatId, json: formatCache.get(formatId) } : null));
-    const [status, setStatus] = useState(formatCache.has(formatId) ? 'ready' : 'loading');
-    const data = loaded?.id === formatId ? loaded.json : null;
+    // Status is held with its id too. A bare 'ready' left over from the
+    // previous id (often `null`, before the index named the default format)
+    // read as "this format is loaded" for the render before the effect below
+    // ran — and the builder ranked its grid, then re-ranked it a beat later.
+    const [settledFor, setSettledFor] = useState(() => (formatCache.has(formatId) ? formatId : undefined));
+    const status = (!formatId || settledFor === formatId || formatCache.has(formatId)) ? 'ready' : 'loading';
+    // Another screen (the Home's meta card) may already have this format in the
+    // module cache: serve it in this very render rather than one effect later,
+    // or a "ready" status arrives with no data behind it.
+    const data = loaded?.id === formatId ? loaded.json : (formatCache.get(formatId) ?? null);
 
     useEffect(() => {
-        if (!formatId) { setLoaded(null); setStatus('ready'); return undefined; }
-        if (formatCache.has(formatId)) { setLoaded({ id: formatId, json: formatCache.get(formatId) }); setStatus('ready'); return undefined; }
+        if (!formatId) { setLoaded(null); return undefined; }
+        if (formatCache.has(formatId)) { setLoaded({ id: formatId, json: formatCache.get(formatId) }); setSettledFor(formatId); return undefined; }
         let cancelled = false;
-        setStatus('loading');
         (async () => {
             try {
                 const res = await fetch(dataUrl(`usage/${formatId}.json`));
@@ -89,7 +96,7 @@ export function useUsageFormat(formatId, cutoff = null) {
                     if (!cancelled) setLoaded({ id: formatId, json });
                 }
             } catch (_) { /* optional */ } finally {
-                if (!cancelled) setStatus('ready');
+                if (!cancelled) setSettledFor(formatId);
             }
         })();
         return () => { cancelled = true; };

@@ -52,7 +52,9 @@ const fetchForumMessageCount = async (userId) => {
         })
         .catch((err) => {
             Object.assign(forumCountCache, { userId, at: Date.now(), pending: null });
-            console.warn('Forum message count unavailable:', err?.code || err);
+            // Logged whole: a missing index's message carries the console link
+            // that creates it in one click.
+            console.warn('Forum message count unavailable:', err?.code, err?.message || err);
             return forumCountCache.count ?? 0;
         });
     Object.assign(forumCountCache, { userId, pending });

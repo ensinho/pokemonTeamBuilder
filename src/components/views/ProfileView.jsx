@@ -15,11 +15,16 @@ import {
     AccountIcon, EditIcon, StarsIcon, SavedTeamsIcon,
     SunIcon, MoonIcon, SaveIcon, RefreshIcon, GlobeIcon, SparklesIcon,
 } from '../icons';
-import { Flame, Medal, Lock, Check, Sparkles, Bell, Type } from 'lucide-react';
+import { Flame, Medal, Lock, Check, Sparkles, Bell, Type, Keyboard } from 'lucide-react';
 import { TextSizeControl } from '../TextSizeControl';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
+import {
+    DEFAULT_SEARCH_SHORTCUT, formatShortcut, normalizeShortcut, shortcutFromEvent, validateShortcut,
+} from '../../utils/searchShortcut';
+
+const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
 
 const EmailVerifyRow = () => {
     const showToast = useToastStore((state) => state.showToast);
@@ -147,6 +152,96 @@ const NotificationsCard = () => {
     );
 };
 
+/**
+ * The global search's shortcut. Click the keys, press the new ones: the button
+ * itself listens while recording, and stops each keystroke from reaching the
+ * app-wide handler — otherwise pressing the current chord to "re-record" it
+ * would open the palette over the profile.
+ */
+const SearchShortcutCard = ({ shortcut, onChange }) => {
+    const { t } = useTranslation();
+    const showToast = useToastStore((state) => state.showToast);
+    const [recording, setRecording] = useState(false);
+    const [error, setError] = useState(null);
+    const keys = formatShortcut(shortcut, IS_APPLE);
+
+    const stop = () => setRecording(false);
+
+    const handleKeyDown = (event) => {
+        if (!recording) return;
+        event.preventDefault();
+        event.stopPropagation();
+        if (event.key === 'Escape') {
+            stop();
+            setError(null);
+            return;
+        }
+        // Tab still moves focus; a recorder that traps it is a keyboard trap.
+        if (event.key === 'Tab' && !event.ctrlKey && !event.metaKey && !event.altKey) {
+            stop();
+            return;
+        }
+        const next = shortcutFromEvent(event);
+        if (!next) return; // a modifier on its own — keep listening
+        const problem = validateShortcut(next);
+        if (problem) {
+            setError(problem === 'reserved'
+                ? t('profile.shortcutErrReserved', { keys: formatShortcut(next, IS_APPLE) })
+                : t('profile.shortcutErrModifier'));
+            return;
+        }
+        setError(null);
+        stop();
+        if (normalizeShortcut(next) !== shortcut) {
+            onChange(next);
+            showToast?.(t('profile.shortcutSaved', { keys: formatShortcut(next, IS_APPLE) }), 'success');
+        }
+    };
+
+    const isDefault = shortcut === DEFAULT_SEARCH_SHORTCUT;
+
+    return (
+        <SectionCard
+            className="profile-card--shortcut"
+            title={t('profile.sectionShortcut')}
+            subtitle={t('profile.sectionShortcutDesc')}
+            icon={<Keyboard className="w-5 h-5" />}
+        >
+            <div className="profile-account-row">
+                <div className="min-w-0">
+                    <p className="profile-account-row__label">{t('profile.shortcutOpenSearch')}</p>
+                    <p className="profile-shortcut__hint" role={error ? 'alert' : undefined}>
+                        {error || (recording ? t('profile.shortcutRecordingHint') : t('profile.shortcutSlashHint'))}
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => { setError(null); setRecording((on) => !on); }}
+                    onKeyDown={handleKeyDown}
+                    onBlur={stop}
+                    aria-pressed={recording}
+                    aria-label={recording ? t('profile.shortcutRecording') : t('profile.shortcutChangeLabel', { keys })}
+                    className={`profile-shortcut__keys ${recording ? 'is-recording' : ''}`}
+                >
+                    {recording ? t('profile.shortcutRecording') : <kbd>{keys}</kbd>}
+                </button>
+            </div>
+            {!isDefault && (
+                <div className="profile-button-row profile-button-row--tight">
+                    <button
+                        type="button"
+                        onClick={() => { setError(null); onChange(DEFAULT_SEARCH_SHORTCUT); }}
+                        className="profile-button"
+                    >
+                        <RefreshIcon className="w-3.5 h-3.5" />
+                        {t('profile.shortcutReset', { keys: formatShortcut(DEFAULT_SEARCH_SHORTCUT, IS_APPLE) })}
+                    </button>
+                </div>
+            )}
+        </SectionCard>
+    );
+};
+
 const OverviewStat = ({ icon, label, value, hint }) => (
     <div className="profile-overview-stat">
         <div className="profile-overview-stat__top">
@@ -170,6 +265,8 @@ export function ProfileView({
     onChangeLanguage,
     showTeraType,
     onChangeShowTeraType,
+    searchShortcut = DEFAULT_SEARCH_SHORTCUT,
+    onChangeSearchShortcut,
     displayName,
     onChangeDisplayName,
     greetingPokemonId,
@@ -450,6 +547,10 @@ export function ProfileView({
                             label={t('accountMenu.teraTypeSwitch')}
                         />
                     </SectionCard>
+
+                    {onChangeSearchShortcut ? (
+                        <SearchShortcutCard shortcut={searchShortcut} onChange={onChangeSearchShortcut} />
+                    ) : null}
 
                     <NotificationsCard />
 

@@ -306,6 +306,11 @@ export const useAuthStore = create((set, get) => {
                             if (typeof data.showTeraType === 'boolean') {
                                 useThemeStore.getState().setShowTeraType(data.showTeraType);
                             }
+
+                            // 1.4 Global search shortcut — same rule.
+                            if (typeof data.searchShortcut === 'string') {
+                                useThemeStore.getState().setSearchShortcut(data.searchShortcut);
+                            }
                             
                             // 2. Display Name
                             if (typeof data.displayName === 'string') {
@@ -484,12 +489,14 @@ export const useAuthStore = create((set, get) => {
             const theme = useThemeStore.getState().theme;
             const uiScale = useThemeStore.getState().uiScale;
             const showTeraType = useThemeStore.getState().showTeraType;
+            const searchShortcut = useThemeStore.getState().searchShortcut;
             const language = useLanguageStore.getState().language;
 
             const updates = {
                 theme,
                 uiScale,
                 showTeraType,
+                searchShortcut,
                 language,
                 displayName,
                 trainerSprite: trainerSprite || null,

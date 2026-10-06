@@ -219,9 +219,9 @@ export function TeamBuilderView({
     // ~2.6MB of datasets behind it.
     const isPlaythrough = isPlaythroughMode(selectedRegulation);
     const wantsMeta = { enabled: !isPlaythrough };
-    const { popular, synergy } = useTournamentData(wantsMeta);
-    const { byId: smogonById } = useSmogonData(wantsMeta);
-    const { byId: usageById } = useCompetitiveUsage(wantsMeta);
+    const { popular, synergy, status: tournamentStatus } = useTournamentData(wantsMeta);
+    const { byId: smogonById, status: smogonStatus } = useSmogonData(wantsMeta);
+    const { byId: usageById, status: usageStatus } = useCompetitiveUsage(wantsMeta);
     React.useEffect(() => {
         if (typeof window === 'undefined') return;
         if (selectedRegulation) window.localStorage.setItem('tb-regulation', selectedRegulation);
@@ -238,6 +238,7 @@ export function TeamBuilderView({
         isTier: isSmogonTier,
         format: activeFormat,
         formatId: activeRegulationId,
+        status: metaUsageStatus,
     } = useMetaUsage(selectedRegulation);
 
     // Tier legality. A Smogon tier is the one meta choice that also narrows WHO
@@ -288,6 +289,23 @@ export function TeamBuilderView({
     }, [isTierFilterActive, tierLegalIds, pokemonIndex, metaUsageMap, searchInput, selectedTypes, typeMatchMode, showOnlyFavorites, selectedGeneration, favoritePokemons]);
 
     const displayedPokemons = tierRoster || displayedPokemonsSource;
+
+    // The suggestion ranking draws on five sources that land at different
+    // moments; drawing the grid as each arrived painted it three times — dex
+    // order, then suggestions prepended, then re-sorted — and the cards jumped
+    // under the user's finger. Hold the grid's loader until they settle, capped
+    // so a slow connection still gets a usable (if unranked) grid quickly.
+    const metaSettled = isPlaythrough || (
+        pokemonIndex.length > 0
+        && [tournamentStatus, smogonStatus, usageStatus, metaUsageStatus].every((st) => st !== 'loading')
+    );
+    const [metaWaitExpired, setMetaWaitExpired] = React.useState(false);
+    React.useEffect(() => {
+        if (metaSettled) return undefined;
+        const timer = window.setTimeout(() => setMetaWaitExpired(true), 800);
+        return () => window.clearTimeout(timer);
+    }, [metaSettled]);
+    const isGridLoading = isInitialLoading || (!metaSettled && !metaWaitExpired);
 
 
     React.useEffect(() => { fetchPokemonIndex(); }, [fetchPokemonIndex]);
@@ -476,7 +494,7 @@ export function TeamBuilderView({
                     onSelectRegulation={setSelectedRegulation}
                     isPlaythrough={isPlaythrough}
                     generations={generations}
-                    isInitialLoading={isInitialLoading}
+                    isInitialLoading={isGridLoading}
                     displayedPokemons={displayedPokemons}
                     gamePokemonIds={gamePokemonIds}
                     gameDexes={gameDexes}
@@ -882,7 +900,7 @@ export function TeamBuilderView({
 
 
                         <div className="team-builder-results mt-4">
-                            {isInitialLoading ? (
+                            {isGridLoading ? (
                                 <div className="team-builder-spinner-wrap">
                                     <Loader />
                                 </div>
@@ -941,7 +959,7 @@ export function TeamBuilderView({
                                     </div>
                                     {grid.hasMore && <div ref={grid.sentinelRef} className="h-px" aria-hidden="true" />}
                                     {!isGameFilterActive && !isTierFilterActive && isFetchingMore && <div className="team-builder-spinner-wrap py-4"><Loader size="sm" /></div>}
-                                    {((isGameFilterActive && gameVisibleCount === 0 && pokemonIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && !isInitialLoading && (
+                                    {((isGameFilterActive && gameVisibleCount === 0 && pokemonIndex.length > 0) || (!isGameFilterActive && displayedPokemons.length === 0)) && !isGridLoading && (
                                         <div className="px-2 pb-4">
                                             <EmptyState
                                                 compact

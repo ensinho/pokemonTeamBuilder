@@ -12,6 +12,27 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-06 — Home panels: title and content on different left edges, meta row past the panel `dispattern`
+- **Symptom:** on desktop each Home panel's title sat 17px in while its content sat 13px in (the Recent teams cards 8px), the VGC Meta row ran past the panel's right edge at 1440px, and the puzzle teaser stood 29px above the timeline where every other block in the column is 12px apart.
+- **Root cause:** `.hd-panel__head` used `--space-4` inline while `.hd-panel__body` used `--space-3` / `--space-3_5` and `.hd-continue-list` `--space-2`; `repeat(10, 1fr)` floors each column at its min-content, so one long name ("Charizard Mega Y") widened its column; the teaser's `mb-4` from its old main-column slot survived inside the sidebar's gap.
+- **Fix:** head, body and list share `--space-4` inline (the hero, profile card and timeline edge); the grid is `minmax(0, 1fr)` with `min-width: 0` tiles; the sidebar zeroes the teaser's margin.
+- **Correct pattern:** a panel has one inline inset, set once and used by its head and body alike; a fractional grid of text-bearing tiles is `minmax(0, 1fr)`; a block moved into a gap-spaced column loses its own outer margin.
+- **Files:** `src/styles/home-dashboard.css`, `src/styles/home-view.css`
+
+### 2026-10-06 — The builder's picker grid painted three times on the way in `perf`
+- **Symptom:** opening `/builder` on a phone, the grid drew in dex order, then the meta suggestions were prepended, then everything re-sorted ~120ms later — cards jumped under the finger (CLS 0.2 at 390px).
+- **Root cause:** the suggestion ranking reads five async sources (index, tournaments, Smogon, usage, meta usage) and the grid rendered on each arrival. Worse, `useUsageFormat` reported `ready` for a format the Home's meta card had already put in the module cache while its own `data` stayed `null` until its effect ran — a "ready" with nothing behind it, so even a readiness gate saw a ranking with no meta.
+- **Fix:** `useUsageFormat` serves `formatCache.get(id)` in the same render and ties its status to the id it settled for. `TeamBuilderView` holds the grid's loader until the sources settle (`isGridLoading`), capped at 800ms so a slow connection still gets an unranked grid. One paint, CLS 0.
+- **Correct pattern:** a hook's `status` must describe the id it is asked about *now*, never a leftover from the previous one; a list ranked from several async sources renders once they settle, with a cap — not once per source.
+- **Files:** `src/hooks/useUsageStats.js`, `src/components/views/TeamBuilderView.jsx`
+
+### 2026-10-06 — Home threw an unhandled rejection offline and lost its partner Pokémon `bug`
+- **Symptom:** with no greeting Pokémon chosen and PokéAPI unreachable, every Home visit logged two uncaught `TypeError: Failed to fetch` and the hero rendered with no partner.
+- **Root cause:** `getFallbackGreetingPokemon` (and the catch branch's own fallback chain) awaited `getPokemonApiData` with no `catch`; the network is the last resort and the one that fails offline.
+- **Fix:** the network steps `.catch(() => null)`, so the chain falls through to the next source instead of rejecting.
+- **Correct pattern:** in a fallback chain, every step that can reject — the network above all — resolves to `null` on failure; a fallback that throws is not a fallback.
+- **Files:** `src/components/views/HomeView.jsx`
+
 ### 2026-09-24 — The phone builder snapped back to the top while scrolling, once the team had a Pokémon `bug`
 - **Symptom:** in the phone builder with at least one team member, scrolling down the picker grid jumped back to the top every ~50px — the page could not be scrolled past the sticky composer (Enzo, "fica travado"). With an empty team it scrolled normally.
 - **Root cause:** the sticky composer condenses past 56px and leaves the height it gives up behind as a bottom margin (`--composer-collapse`) so the grid does not move. That margin was measured in a layout effect *after* the band had already shrunk: reading `offsetHeight` there forced a layout with the band short and the margin missing, Chromium's **scroll anchoring** compensated for the grid "moving up" by lowering `scrollTop`, and once the lost height exceeded the scroll position (96px with a member — the analysis chip appears — vs 50px empty) it clamped to 0, the band re-expanded at `y < 16`, and the loop repeated. Measured: 9 direction reversals and 20 condense toggles in three drags; with `overflow-anchor: none` injected, none.

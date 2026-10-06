@@ -3,9 +3,11 @@ import { THEMES, applyTheme, applyUiScale } from '../constants/theme';
 import { getBackgroundById } from '../assets/backgrounds';
 import { normalizeUiScale, DEFAULT_UI_SCALE } from '../utils/uiScale';
 import { runThemeTransition } from '../utils/themeTransition';
+import { sanitizeShortcut } from '../utils/searchShortcut';
 
 const UI_SCALE_KEY = 'ptbUiScale';
 const TERA_TYPE_KEY = 'ptbShowTeraType';
+const SEARCH_SHORTCUT_KEY = 'ptbSearchShortcut';
 
 const getInitialTheme = () => {
     if (typeof window === 'undefined') return 'dark';
@@ -39,6 +41,17 @@ const getInitialShowTeraType = () => {
     }
 };
 
+// The global search's key combination (utils/searchShortcut.js). Read before
+// auth so the binding works from the first keystroke.
+const getInitialSearchShortcut = () => {
+    if (typeof window === 'undefined') return sanitizeShortcut(null);
+    try {
+        return sanitizeShortcut(localStorage.getItem(SEARCH_SHORTCUT_KEY));
+    } catch (_) {
+        return sanitizeShortcut(null);
+    }
+};
+
 const getInitialWallpaper = () => {
     if (typeof window === 'undefined') return null;
     try {
@@ -63,6 +76,7 @@ export const useThemeStore = create((set, get) => {
         colors: THEMES[initialTheme],
         uiScale: initialUiScale,
         showTeraType: getInitialShowTeraType(),
+        searchShortcut: getInitialSearchShortcut(),
         homeWallpaperId: getInitialWallpaper(),
 
         // `origin` ({ x, y } in viewport px) is where the new theme spreads from
@@ -107,6 +121,17 @@ export const useThemeStore = create((set, get) => {
                 /* preference is best-effort */
             }
             set({ showTeraType: next });
+        },
+
+        // Mirrored to the signed-in profile by the caller, like Tera type.
+        setSearchShortcut: (shortcut) => {
+            const next = sanitizeShortcut(shortcut);
+            try {
+                localStorage.setItem(SEARCH_SHORTCUT_KEY, next);
+            } catch (_) {
+                /* preference is best-effort */
+            }
+            set({ searchShortcut: next });
         },
 
         setHomeWallpaperPreference: (backgroundId) => {

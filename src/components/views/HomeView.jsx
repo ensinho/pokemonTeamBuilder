@@ -41,7 +41,8 @@ import {
     SuccessToastIcon,
     SwordsIcon,
 } from '../icons';
-import { Download, Edit, Award, Puzzle, GitBranch, GitCommit, FileText, Sparkles, BookOpen, Flame, Folder, User, Palette } from 'lucide-react';
+import { Download, Edit, Award, Puzzle, GitBranch, GitCommit, FileText, Sparkles, BookOpen, Flame, Folder, User, Palette, ArrowRight } from 'lucide-react';
+import { PartnerFlare } from '../PartnerFlare';
 
 const DEFAULT_GREETING_POKEMON = {
     morning: { id: 196, name: 'espeon' },
@@ -221,6 +222,7 @@ export function HomeView({
     db,
     activeTeamId,
     setActiveTeamId,
+    onUseCozy,
 }) {
     const { t, language } = useTranslation();
 
@@ -522,7 +524,9 @@ export function HomeView({
             const staticPokemon = await getStaticPokemonDetail(fallbackConfig.id);
             if (staticPokemon) return staticPokemon;
 
-            const apiPokemon = await getPokemonApiData(fallbackConfig.id);
+            // Last resort is the network; offline it rejects, and an unhandled
+            // rejection here left the hero without a partner at all.
+            const apiPokemon = await getPokemonApiData(fallbackConfig.id).catch(() => null);
             return toGreetingPokemonData(apiPokemon);
         };
 
@@ -565,8 +569,8 @@ export function HomeView({
 
                 const loadedGreetingPokemon = allPokemons.find((pokemon) => pokemon.id === greetingPokemonId);
                 const fallbackPokemon = loadedGreetingPokemon
-                    || await getStaticPokemonDetail(greetingPokemonId)
-                    || toGreetingPokemonData(await getPokemonApiData(greetingPokemonId))
+                    || await getStaticPokemonDetail(greetingPokemonId).catch(() => null)
+                    || toGreetingPokemonData(await getPokemonApiData(greetingPokemonId).catch(() => null))
                     || await getFallbackGreetingPokemon(greeting.period);
 
                 if (!cancelled) {
@@ -806,6 +810,22 @@ export function HomeView({
                                         {t('home.longestStreak', { count: streak?.longest || 0 })}
                                     </span>
                                 </div>
+                                {/* The hero's one action. Desktop only: below xl the
+                                    pinned active-team card is this same door, and at
+                                    xl that card is gone — the page had no way back to
+                                    the team in progress without going through My teams. */}
+                                <div className="home-hero__actions hidden xl:flex">
+                                    <button
+                                        type="button"
+                                        className="btn btn-primary btn-sm"
+                                        onClick={() => (activeTeam ? handleEditTeam(activeTeam) : navigate('/builder'))}
+                                    >
+                                        <span className="home-hero__action-label">
+                                            {activeTeam ? t('home.heroContinue', { name: activeTeam.name }) : t('home.createFirstTeam')}
+                                        </span>
+                                        <ArrowRight aria-hidden="true" />
+                                    </button>
+                                </div>
                             </div>
 
                             {greetingPokemonData && (
@@ -829,6 +849,7 @@ export function HomeView({
                                     </div>
 
                                     <div className="home-partner-card__sprite-container">
+                                        <PartnerFlare />
                                         <img
                                             src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
                                             alt={greetingPokemonData.name}
@@ -1044,25 +1065,32 @@ export function HomeView({
                             </div>
 
                             <div className="home-profile-meta-list mt-3 pt-3 border-t border-border w-full">
+                                {/* Figure + label as two spans, so the wide sidebar can
+                                    set each as a stat tile (figure over label) while the
+                                    narrow layouts keep reading it as one inline line. */}
                                 <div className="home-profile-meta-grid">
-                                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                                    <div className="home-profile-stat">
                                         <Folder className="w-3.5 h-3.5 shrink-0 opacity-70" />
-                                        <span className="truncate">{stats.totalTeams} {t('home.statTeamsMuted')}</span>
+                                        <span className="home-profile-stat__value">{stats.totalTeams}</span>
+                                        <span className="home-profile-stat__label">{t('home.statTeamsMuted')}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                                    <div className="home-profile-stat">
                                         <StarIcon className="w-3.5 h-3.5 shrink-0 opacity-70" isFavorite={true} />
-                                        <span className="truncate">{stats.totalFavoritePokemons} {t('home.statPinnedMuted')}</span>
+                                        <span className="home-profile-stat__value">{stats.totalFavoritePokemons}</span>
+                                        <span className="home-profile-stat__label">{t('home.statPinnedMuted')}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-muted">
+                                    <div className="home-profile-stat">
                                         <Flame className="w-3.5 h-3.5 shrink-0 text-warning opacity-90" />
-                                        <span className="truncate">{streak?.count || 0} {language === 'pt' ? 'dias' : 'days'}</span>
+                                        <span className="home-profile-stat__value">{streak?.count || 0}</span>
+                                        <span className="home-profile-stat__label">{language === 'pt' ? 'dias' : 'days'}</span>
                                     </div>
                                     {stats.favoriteType && (
-                                        <div className="flex items-center gap-1.5 text-xs text-muted">
-                                            <div className="w-3.5 h-3.5 flex items-center justify-center shrink-0" aria-hidden="true">
+                                        <div className="home-profile-stat home-profile-stat--type" style={{ '--stat-type': typeColors[stats.favoriteType] || '#A8A77A' }}>
+                                            <div className="home-profile-stat__dot w-3.5 h-3.5 flex items-center justify-center shrink-0" aria-hidden="true">
                                                 <span className="home-type-dot border border-border" style={{ backgroundColor: typeColors[stats.favoriteType] || '#A8A77A', width: '0.45rem', height: '0.45rem', shrink: 0 }} />
                                             </div>
-                                            <span className="capitalize truncate">{t(`types.${stats.favoriteType}`)}</span>
+                                            <span className="home-profile-stat__value capitalize">{t(`types.${stats.favoriteType}`)}</span>
+                                            <span className="home-profile-stat__label home-profile-stat__label--tile">{language === 'pt' ? 'tipo favorito' : 'favourite type'}</span>
                                         </div>
                                     )}
                                 </div>
@@ -1493,6 +1521,11 @@ export function HomeView({
                     <FriendActionButton targetUserId={selectedProfile.userId} className="w-full justify-center" />
                 )}
             />
+            {onUseCozy && (
+                <div className="flex justify-center mt-6">
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={onUseCozy}>{t('cozyHome.tryCozy')}</button>
+                </div>
+            )}
         </main>
     );
 }

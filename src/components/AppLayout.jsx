@@ -39,6 +39,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useAppUpdate } from '../hooks/useAppUpdate';
 import { useDockCompact } from '../hooks/useDockCompact';
+import { ariaKeyShortcuts, formatShortcut, matchesShortcut } from '../utils/searchShortcut';
 
 import {
     AuthModal,
@@ -71,6 +72,7 @@ import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users } from 'lucide-react'
 // entry bundle.
 import '../styles/eagerViewStyles';
 import { HomeView } from './views/HomeView';
+import { CozyHomeView } from './views/CozyHomeView';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
 // idle prefetch below and React.lazy share one import: the module loader caches
@@ -336,7 +338,16 @@ export default function AppLayout() {
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
-    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType } = useThemeStore();
+    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType, searchShortcut, setSearchShortcut } = useThemeStore();
+    // The 2026-10-06 cozy Home proposal sits beside the classic one until Enzo
+    // picks; the choice is per device ('cozy' unless switched back).
+    const [homeLayout, setHomeLayout] = useState(() => {
+        try { return localStorage.getItem('ptb:homeLayout') === 'classic' ? 'classic' : 'cozy'; } catch { return 'cozy'; }
+    });
+    const chooseHomeLayout = useCallback((layout) => {
+        setHomeLayout(layout);
+        try { localStorage.setItem('ptb:homeLayout', layout); } catch { /* private mode */ }
+    }, []);
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
@@ -376,12 +387,14 @@ export default function AppLayout() {
     // UI Local States
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    // ⌘K / Ctrl+K from anywhere, or "/" when not typing — the palette toggles on
-    // the chord so the same keys that opened it close it again.
+    // The user's shortcut (⌘K / Ctrl+K unless changed on the profile) from
+    // anywhere, or "/" when not typing — the palette toggles on the chord so the
+    // same keys that opened it close it again. The profile's recorder stops
+    // propagation while it listens, so recording never opens the palette.
     useEffect(() => {
         const handleKeyDown = (event) => {
             const key = event.key?.toLowerCase();
-            if ((event.metaKey || event.ctrlKey) && key === 'k') {
+            if (matchesShortcut(event, searchShortcut)) {
                 event.preventDefault();
                 setIsSearchOpen((open) => !open);
             } else if (key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target)) {
@@ -391,7 +404,7 @@ export default function AppLayout() {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [searchShortcut]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -679,6 +692,7 @@ export default function AppLayout() {
                     'ptbUiScale',
                     'ptbShowTeraType',
                     'homeWallpaperId',
+                    'ptb:homeLayout',
                     'ptb-sidebar-collapse-pref',
                     'ptb-sidebar-open-groups',
                     'ptb:battleAnimatedSprites',
@@ -1462,12 +1476,12 @@ export default function AppLayout() {
                                         onClick={() => setIsSearchOpen(true)}
                                         onPointerEnter={() => { loadCommandPalette().catch(() => {}); }}
                                         onFocus={() => { loadCommandPalette().catch(() => {}); }}
-                                        aria-keyshortcuts="Meta+K Control+K"
+                                        aria-keyshortcuts={ariaKeyShortcuts(searchShortcut)}
                                         className="app-shell__search-trigger"
                                     >
                                         <Search aria-hidden="true" />
                                         <span className="app-shell__search-trigger-label">{t('search.placeholder')}</span>
-                                        <kbd>{IS_APPLE ? '⌘K' : 'Ctrl K'}</kbd>
+                                        <kbd>{formatShortcut(searchShortcut, IS_APPLE)}</kbd>
                                     </button>
                                 </div>
                             )}
@@ -1561,8 +1575,23 @@ export default function AppLayout() {
                         <div className={pageFrameClassName}>
                             <Suspense fallback={<RouteFallback />}>
                                 <Routes>
-                                    <Route path="/" element={
+                                    <Route path="/" element={homeLayout === 'cozy' ? (
+                                        <CozyHomeView
+                                            navigate={navigate}
+                                            savedTeams={savedTeams}
+                                            favoritePokemons={favoritePokemons}
+                                            greetingPokemonId={greetingPokemonId}
+                                            greetingPokemonIsShiny={greetingPokemonIsShiny}
+                                            onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                                            handleEditTeam={handleEditTeam}
+                                            activeTeamId={activeTeamId}
+                                            heroBackgroundId={homeWallpaperId}
+                                            onChangeHeroBackground={setHomeWallpaperPreference}
+                                            onUseClassic={() => chooseHomeLayout('classic')}
+                                        />
+                                    ) : (
                                         <HomeView
+                                            onUseCozy={() => chooseHomeLayout('cozy')}
                                             colors={colors}
                                             navigate={navigate}
                                             savedTeams={savedTeams}
@@ -1583,7 +1612,7 @@ export default function AppLayout() {
                                             activeTeamId={activeTeamId}
                                             setActiveTeamId={setActiveTeamId}
                                         />
-                                    } />
+                                    )} />
                                     <Route path="/feed" element={
                                         <FeedView
                                             colors={colors}
@@ -1793,6 +1822,11 @@ export default function AppLayout() {
                                             onChangeShowTeraType={(show) => {
                                                 setShowTeraType(show);
                                                 useAuthStore.getState().savePreferences({ showTeraType: show });
+                                            }}
+                                            searchShortcut={searchShortcut}
+                                            onChangeSearchShortcut={(shortcut) => {
+                                                setSearchShortcut(shortcut);
+                                                useAuthStore.getState().savePreferences({ searchShortcut: useThemeStore.getState().searchShortcut });
                                             }}
                                             displayName={displayName}
                                             onChangeDisplayName={setDisplayName}
