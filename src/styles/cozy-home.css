@@ -1,0 +1,1123 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   Cozy Home (2026-10-06 proposal) — CozyHomeView.jsx
+
+   A Trainer Card, not a repository page. The one colour of the page is the
+   partner Pokémon's type (`--hero-type`, canon, mixed into theme tokens as
+   the .type-chip rule does); everything else is surface, ink and muted. Ink
+   (`--color-fg` fill) carries the actions, so the type colour never has to
+   share the stage with the theme's primary.
+
+   Built on the v3 primitives — .section/.section-head, .card (+ --inset,
+   --interactive, --compact), .stat, .badge, .data-list, TypeChip, EmptyState,
+   Loader. This file only adds what they do not cover: the hero, the party
+   balls, the badge case, the journey line, the layout. It is ordered the way
+   the page renders: toolbar → hero → your day → panels → layout → phones.
+
+   This file loads before index.css (docs/wounds.md, cascade order), so every
+   rule that changes a primitive's own property is compound (`.cozy-home .x`).
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.cozy-home {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-block: var(--space-2) var(--space-8);
+}
+
+/* ── Ink: the action voice of this page ────────────────────────────────── */
+
+.cozy-home .cozy-ink {
+    border-color: transparent;
+    border-radius: var(--radius-full);
+    background: var(--color-fg);
+    color: var(--color-bg);
+}
+
+.cozy-home .cozy-ink:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-fg) 86%, var(--color-bg));
+}
+
+.cozy-home .cozy-ink svg,
+.cozy-home .cozy-round svg,
+.cozy-home .section-action .btn svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.cozy-home .cozy-round {
+    border-radius: var(--radius-full);
+}
+
+/* ── Sprites ───────────────────────────────────────────────────────────
+   Every sprite is the Pokédex's: <Sprite> with the pixel front sprite (96×96,
+   the Pokémon centred, pixels kept square by .sprite-img). Each use only
+   sizes its box. */
+
+/* ── 1. Toolbar/* ── 1. Toolbar: status chips + section tabs ───────────────────────────── */
+
+.cozy-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.cozy-chips {
+    display: flex;
+    gap: var(--space-2);
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+}
+
+.cozy-chips::-webkit-scrollbar {
+    display: none;
+}
+
+/* A chip is a .badge that sits on the page instead of inside a card: same
+   tone mixes, a control's height and a pill's corners. */
+.cozy-chip {
+    --chip-tone: var(--color-fg);
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1_5);
+    height: var(--control-h-sm);
+    padding-inline: var(--space-3);
+    border: none;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--chip-tone) 4%, var(--color-surface));
+    color: var(--color-fg);
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+button.cozy-chip {
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+button.cozy-chip:hover {
+    background: var(--color-surface-hover);
+}
+
+.cozy-chip--mono {
+    font-family: var(--font-mono);
+}
+
+.cozy-chip--streak {
+    --chip-tone: var(--color-warning);
+    background: color-mix(in srgb, var(--chip-tone) 22%, var(--color-surface));
+    color: color-mix(in srgb, var(--chip-tone) 30%, var(--color-fg));
+}
+
+.cozy-chip__dot {
+    width: 0.375rem;
+    height: 0.375rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.cozy-chip__avatar {
+    display: grid;
+    place-items: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-inline-start: calc(var(--space-2) * -1);
+    border-radius: 50%;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--chip-type, var(--color-primary)) 35%, var(--color-surface));
+}
+
+.cozy-chip__avatar .cozy-chip__sprite {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+}
+
+.cozy-chip__badge {
+    width: 1rem;
+    height: 1rem;
+}
+
+.cozy-home .cozy-tabs {
+    background: var(--color-surface);
+    border-radius: var(--radius-full);
+}
+
+.cozy-home .cozy-tabs > .segmented__item {
+    border-radius: var(--radius-full);
+}
+
+/* The thumb is ink, like the actions: the chosen section reads at a glance
+   on every theme, where an elevated-white thumb on a white track did not. */
+.cozy-home .cozy-tabs > .segmented__item[aria-pressed='true'] {
+    background: var(--color-fg);
+    color: var(--color-bg);
+    box-shadow: none;
+}
+
+@supports (anchor-scope: all) {
+    .cozy-home .cozy-tabs::before {
+        border-radius: var(--radius-full);
+        background: var(--color-fg);
+        box-shadow: none;
+    }
+
+    .cozy-home .cozy-tabs > .segmented__item[aria-pressed='true'] {
+        background: transparent;
+    }
+}
+
+/* ── 2. Hero: the trainer card ─────────────────────────────────────────── */
+
+.cozy-hero {
+    position: relative;
+    isolation: isolate;
+    padding: calc(var(--control-h-sm) + var(--space-6)) var(--space-3) var(--space-3);
+    border-radius: var(--radius-xl);
+    background: color-mix(in srgb, var(--hero-type) 62%, var(--color-surface));
+}
+
+/* The scene: the user's wallpaper, drained to its light and shade by
+   `luminosity` so it takes the partner's colour from the band beneath —
+   Lapras' sea or Lugia's sky, printed in psychic pink or electric yellow.
+   Static paint; it fades in only when the user changes it (`is-changed`). */
+.cozy-hero__scene {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    border-radius: inherit;
+    background-position: center;
+    background-size: cover;
+    mix-blend-mode: luminosity;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.cozy-hero__scene.is-changed {
+    animation: cozy-scene-in var(--duration-entrance) var(--ease-out);
+}
+
+@keyframes cozy-scene-in {
+    from { opacity: 0; }
+}
+
+.cozy-hero__top {
+    position: absolute;
+    z-index: 3;
+    top: var(--space-3);
+    left: var(--space-3);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.cozy-hero__pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    height: var(--control-h-sm);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+.cozy-hero__pill svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.cozy-hero__id {
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-weight: var(--weight-medium);
+}
+
+.cozy-hero__id::before {
+    content: '·';
+    margin-inline-end: var(--space-1_5);
+}
+
+.cozy-home .cozy-hero__wallpaper {
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-fg);
+}
+
+.cozy-home .cozy-hero__wallpaper:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+}
+
+.cozy-home .cozy-hero__wallpaper svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.cozy-hero__card {
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
+    /* 90% opaque: the scene shows through as a hint, the copy stays on a
+       surface it was measured against. */
+    background: color-mix(in srgb, color-mix(in srgb, var(--hero-type) 16%, var(--color-surface)) 90%, transparent);
+    color: var(--color-fg);
+}
+
+.cozy-hero__watermark {
+    position: absolute;
+    right: calc(var(--space-12) * -1);
+    bottom: calc(var(--space-12) * -1);
+    width: 12rem;
+    height: 12rem;
+    opacity: 0.08;
+    pointer-events: none;
+}
+
+/* Only the text yields to the partner; the foot below runs full width.
+   (The cap is a measure, not a spacing step: the partner's own width.) */
+.cozy-hero__clock,
+.cozy-home .cozy-hero__title,
+.cozy-hero__sub {
+    padding-inline-end: min(38%, 18rem);
+}
+
+.cozy-hero__clock {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--hero-type) 45%, var(--color-fg));
+}
+
+.cozy-home .cozy-hero__title {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-3xl);
+    font-weight: var(--weight-semibold);
+    line-height: 1.05;
+    letter-spacing: -0.045em;
+}
+
+.cozy-hero__sub {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-base);
+    color: var(--color-muted);
+}
+
+.cozy-hero__sub strong {
+    color: var(--color-fg);
+    font-weight: var(--weight-semibold);
+}
+
+/* The six-ball party row from the battle HUD. A member fills a ball in the
+   partner's colour; an empty slot is dashed, which here means what dashed
+   means everywhere in this app: absent. */
+.cozy-party {
+    display: inline-flex;
+    gap: var(--space-0_5);
+    margin-inline-start: var(--space-2);
+    vertical-align: -0.2em;
+}
+
+.cozy-party__ball {
+    width: 0.9375rem;
+    height: 0.9375rem;
+    color: var(--color-muted);
+}
+
+.cozy-party__ball.is-filled {
+    color: var(--color-fg);
+}
+
+.cozy-party__rim,
+.cozy-party__band,
+.cozy-party__button {
+    stroke: currentColor;
+    stroke-width: 1.25;
+}
+
+.cozy-party__rim {
+    fill: none;
+}
+
+.cozy-party__ball:not(.is-filled) .cozy-party__rim {
+    stroke-dasharray: 2 1.6;
+}
+
+.cozy-party__ball:not(.is-filled) .cozy-party__band {
+    opacity: 0.5;
+}
+
+.cozy-party__top {
+    fill: color-mix(in srgb, var(--hero-type) 80%, var(--color-fg));
+}
+
+.cozy-party__button {
+    fill: var(--color-surface);
+}
+
+.cozy-hero__foot {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+}
+
+/* A group of .stat on one fill — the design system's rule for stats: gap
+   between them, a fill under the group, never a bordered tile each. */
+.cozy-hero__stats {
+    display: grid;
+    flex: 1 1 auto;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    max-inline-size: 36rem;
+    margin: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-surface) 70%, transparent);
+}
+
+.cozy-home .cozy-hero .stat__value {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    white-space: nowrap;
+}
+
+/* The next step is a sentence, not a figure: body face, and it may be long. */
+.cozy-home .cozy-hero__action .stat__value {
+    display: block;
+    font-family: var(--font-body);
+    text-overflow: ellipsis;
+}
+
+.cozy-home .cozy-hero__cta {
+    flex-shrink: 0;
+    margin-inline-start: auto;
+}
+
+/* The partner steps out of the card, as the Pokédex shows it: its pixel
+   sprite, at a whole multiple of the 96px frame (2× here, so every pixel is
+   the same size), standing on the elliptical pad a Pokémon stands on in
+   battle. It idles like a party-menu icon: two frames, a one-pixel hop, no
+   easing between them. PartnerFlare glints on top. */
+.cozy-hero__partner {
+    --frame: 12rem;
+    position: absolute;
+    z-index: 2;
+    top: calc(var(--space-6) * -1);
+    right: var(--space-6);
+    width: var(--frame);
+    height: var(--frame);
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: scale var(--duration-press) var(--ease-out);
+}
+
+.cozy-hero__partner:active {
+    scale: var(--press-scale);
+}
+
+.cozy-hero__partner:focus-visible {
+    outline: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--ring-primary);
+}
+
+/* The battle pad: a flat ellipse under the feet, a lighter rim on top. */
+.cozy-hero__platform {
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 8%;
+    height: 18%;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--hero-type) 55%, var(--color-fg));
+    opacity: 0.28;
+    box-shadow: inset 0 calc(var(--frame) / 96 * 2) 0 color-mix(in srgb, var(--color-surface) 60%, transparent);
+}
+
+.cozy-hero__idle {
+    position: absolute;
+    inset: 0;
+    display: block;
+}
+
+.cozy-hero__art {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .cozy-hero__idle {
+        animation: cozy-idle 1.2s steps(1, end) infinite;
+    }
+}
+
+/* One frame up by one source pixel (frame / 96 × 2 at 2×), then back. */
+@keyframes cozy-idle {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(calc(var(--frame) / -48)); }
+}
+
+.cozy-hero__partner .partner-flare {
+    z-index: 2;
+}
+
+/* On the pixel partner only the four-point glints stay — the shiny
+   sparkle's vocabulary. The brush arcs read as a generic swoosh here. */
+.cozy-hero__partner .partner-flare__strokes {
+    display: none;
+}
+
+/* ── 3. Your day: bento cards ─────────────────────────────────────────── */
+
+.cozy-day {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: var(--space-3);
+}
+
+/* Each card carries its own art — the puzzle's silhouette, the next badge,
+   the meta leader's sprite — stepping out of the bottom-right corner on a
+   disc of the card's tone (`--day-tone`), the same gesture as the partner
+   leaving the banner. The text keeps the left; the art never sits under it. */
+.cozy-day__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    width: 100%;
+    color: var(--color-fg);
+    font: inherit;
+}
+
+.cozy-day__card:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.cozy-day__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-2);
+}
+
+/* The sprite on a raised tile, as a Pokédex grid card shows it. */
+.cozy-day__tile {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.cozy-day__sprite {
+    width: 3.5rem;
+    height: 3.5rem;
+}
+
+.cozy-day__tile--badge svg {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.cozy-day__eyebrow {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: color-mix(in srgb, var(--day-tone) 45%, var(--color-fg));
+}
+
+/* "Play" is drawn as a button but the whole card is the control. */
+.cozy-home .cozy-day__go {
+    pointer-events: none;
+}
+
+.cozy-day__chevron {
+    display: grid;
+    place-items: center;
+    width: var(--control-h-sm);
+    height: var(--control-h-sm);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+}
+
+.cozy-day__chevron svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.cozy-day__title {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+.cozy-day__sub {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+/* The badge case: one slot per step toward the next badge (ten at most), lit
+   in gold as they are earned. */
+.cozy-case {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+}
+
+.cozy-case i {
+    height: 0.375rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+}
+
+.cozy-case i.is-on {
+    background: var(--color-warning);
+}
+
+/* ── 4. Panels (section + card) ────────────────────────────────────────── */
+
+.cozy-home .cozy-panel .section-head {
+    align-items: center;
+}
+
+/* The columns' flex gap is the rhythm here; the primitive's stacking margin
+   (.section + .section) would double it. */
+.cozy-home .section + .section {
+    margin-top: 0;
+}
+
+.cozy-home .cozy-panel__more {
+    align-self: flex-start;
+}
+
+.cozy-teams,
+.cozy-journey,
+.cozy-posts,
+.cozy-meta {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.cozy-teams,
+.cozy-posts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+/* Rows inside a card are .card--inset (fill, no line). Their hover mixes
+   toward the ink from the raised fill, as the skill prescribes for children
+   of a bordered panel. */
+.cozy-home .cozy-team:hover,
+.cozy-home .cozy-post:hover {
+    background: color-mix(in srgb, var(--color-fg) 7%, var(--color-surface-raised));
+}
+
+.cozy-home .cozy-team:focus-visible,
+.cozy-home .cozy-post:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+/* Teams */
+.cozy-team {
+    display: grid;
+    grid-template-areas: 'roster text status';
+    grid-template-columns: 11rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    color: var(--color-fg);
+    font: inherit;
+}
+
+.cozy-team__roster {
+    grid-area: roster;
+    display: flex;
+}
+
+.cozy-team__member {
+    display: block;
+    flex-shrink: 0;
+}
+
+.cozy-team__sprite {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.cozy-team__member + .cozy-team__member {
+    margin-inline-start: calc(var(--space-3) * -1);
+}
+
+/* The party menu: in the games the highlighted Pokémon's icon hops between
+   two frames. The row under the pointer does the same with its roster,
+   members alternating — steps, not easing; transform only; one row at a
+   time; gone under reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+    .cozy-team:hover .cozy-team__member,
+    .cozy-team:focus-visible .cozy-team__member {
+        animation: cozy-party-hop 0.5s steps(1, end) infinite;
+        animation-delay: calc(var(--i, 0) * -0.25s);
+    }
+}
+
+@keyframes cozy-party-hop {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(calc(2.5rem / -48)); }
+}
+
+.cozy-team__text {
+    grid-area: text;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cozy-team__name {
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cozy-team__sub {
+    overflow: hidden;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cozy-status {
+    grid-area: status;
+}
+
+/* The tally: three .stat on one raised fill. */
+.cozy-tally {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.cozy-home .cozy-tally .stat__value {
+    margin: 0;
+}
+
+/* Journey: a timeline in ink. The line runs through the node column and
+   stops at the last item; each node wears a ring of the card's surface so
+   the line reads as passing behind it. */
+.cozy-journey {
+    --when-w: 3.75rem;
+    --node: 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.cozy-journey li {
+    position: relative;
+}
+
+.cozy-journey li:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: calc(var(--space-2) + var(--node));
+    bottom: calc(var(--space-2) * -1);
+    left: calc(var(--space-2) + var(--when-w) + var(--space-3) + var(--node) / 2 - 1px);
+    width: 2px;
+    background: var(--color-fg);
+    pointer-events: none;
+}
+
+.cozy-journey__row {
+    display: grid;
+    grid-template-columns: var(--when-w) var(--node) minmax(0, 1fr);
+    align-items: start;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-2);
+    border: none;
+    border-radius: var(--radius-md);
+    background: none;
+    color: var(--color-fg);
+    font: inherit;
+    text-align: left;
+}
+
+button.cozy-journey__row {
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+button.cozy-journey__row:hover {
+    background: var(--color-surface-hover);
+}
+
+.cozy-journey__when {
+    padding-top: var(--space-1_5);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.cozy-journey__node {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: var(--node);
+    height: var(--node);
+    overflow: hidden;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px var(--color-surface);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+}
+
+.cozy-journey__node svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.cozy-journey__sprite {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex-shrink: 0;
+}
+
+/* The badge tones, as fills: same --*-tone mixes as .badge, stronger. */
+.cozy-journey__node--warning {
+    background: color-mix(in srgb, var(--color-warning) 30%, var(--color-surface));
+    color: color-mix(in srgb, var(--color-warning) 35%, var(--color-fg));
+}
+
+.cozy-journey__node--success {
+    background: color-mix(in srgb, var(--color-success) 26%, var(--color-surface));
+    color: color-mix(in srgb, var(--color-success) 45%, var(--color-fg));
+}
+
+.cozy-journey__node--accent {
+    background: color-mix(in srgb, var(--color-primary) 22%, var(--color-surface));
+    color: color-mix(in srgb, var(--color-primary) 55%, var(--color-fg));
+}
+
+.cozy-journey__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding-top: var(--space-1);
+}
+
+.cozy-journey__title {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+}
+
+.cozy-journey__sub {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+/* Community */
+.cozy-post {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: var(--space-3);
+    width: 100%;
+    color: var(--color-fg);
+    font: inherit;
+}
+
+.cozy-post__avatar {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    overflow: hidden;
+    border-radius: 50%;
+    background: var(--color-surface);
+}
+
+.cozy-post__sprite {
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+}
+
+.cozy-post__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.cozy-post__meta {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.cozy-post__meta strong {
+    color: var(--color-fg);
+    font-weight: var(--weight-semibold);
+}
+
+.cozy-post__text {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+/* Meta: a .data-list; the bar encodes the value, so it may wear the type. */
+.cozy-meta__row {
+    grid-template-columns: 1.25rem 2.5rem minmax(0, 1fr) minmax(4rem, 30%) 2.75rem;
+}
+
+.cozy-meta__rank {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    text-align: left;
+}
+
+.cozy-meta__pct {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.cozy-meta__sprite {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.cozy-meta__name {
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cozy-meta__bar {
+    height: 0.5rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+}
+
+.cozy-meta__bar i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: color-mix(in srgb, var(--row-type) 75%, var(--color-surface));
+}
+
+/* ── 5. Layout ─────────────────────────────────────────────────────────── */
+
+.cozy-layout {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.cozy-main,
+.cozy-rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    min-width: 0;
+}
+
+/* Leaves room for the partner who steps out above the hero. */
+.cozy-main > .cozy-hero:first-child {
+    margin-top: var(--space-8);
+}
+
+@media (min-width: 1280px) {
+    .cozy-layout {
+        grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+        align-items: start;
+    }
+
+    .cozy-rail {
+        position: sticky;
+        top: var(--space-4);
+    }
+
+    /* Level with the hero's top edge, not with the partner stepping out of it. */
+    .cozy-layout:has(> .cozy-main > .cozy-hero:first-child) > .cozy-rail {
+        margin-top: var(--space-8);
+    }
+}
+
+.cozy-footer {
+    display: flex;
+    justify-content: center;
+}
+
+/* ── 6. Phones ─────────────────────────────────────────────────────────── */
+
+@media (max-width: 1023px) {
+    .cozy-home,
+    .cozy-main {
+        gap: var(--space-3);
+    }
+
+    .cozy-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .cozy-home .cozy-tabs > .segmented__item {
+        padding-inline: var(--space-1);
+    }
+
+    .cozy-main > .cozy-hero:first-child {
+        margin-top: var(--space-6);
+    }
+
+    /* Below the status row, so the trainer ID stays readable. */
+    .cozy-hero__partner {
+        --frame: 9rem;
+        top: calc(var(--space-4) * -1);
+        right: 0;
+    }
+
+    .cozy-hero__card {
+        padding: var(--space-4);
+    }
+
+    .cozy-hero__clock,
+    .cozy-home .cozy-hero__title {
+        padding-inline-end: 34%;
+    }
+
+    .cozy-hero__sub {
+        padding-inline-end: 0;
+    }
+
+    .cozy-hero__date,
+    .cozy-hero__id {
+        display: none;
+    }
+
+    .cozy-party {
+        display: flex;
+        margin: var(--space-2) 0 0;
+    }
+
+    .cozy-hero__foot {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-3);
+    }
+
+    .cozy-home .cozy-hero__cta {
+        margin-inline-start: 0;
+    }
+
+    .cozy-hero__stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-inline-size: none;
+    }
+
+    .cozy-home .cozy-hero__action {
+        display: none;
+    }
+
+    /* A card placed straight on the page: surface fill, no edge. */
+    .cozy-home .cozy-panel.card,
+    .cozy-home .cozy-day__card {
+        border-color: transparent;
+    }
+
+    .cozy-day {
+        grid-template-columns: minmax(0, 1fr);
+        gap: var(--space-2);
+    }
+
+    /* One row per card on a phone: tile, the lines, the action. */
+    .cozy-home .cozy-day__card {
+        display: grid;
+        grid-template-columns: 3.5rem minmax(0, 1fr) auto;
+        align-items: center;
+        column-gap: var(--space-3);
+        row-gap: var(--space-0_5);
+        padding: var(--space-3);
+    }
+
+    .cozy-day__head {
+        display: contents;
+    }
+
+    .cozy-day__tile {
+        grid-column: 1;
+        grid-row: 1 / span 3;
+    }
+
+    .cozy-day__go,
+    .cozy-day__chevron {
+        grid-column: 3;
+        grid-row: 1 / span 3;
+    }
+
+    .cozy-day__eyebrow,
+    .cozy-day__title,
+    .cozy-day__sub,
+    .cozy-case {
+        grid-column: 2;
+    }
+
+    .cozy-team {
+        grid-template-areas:
+            'text status'
+            'roster status';
+        grid-template-columns: minmax(0, 1fr) auto;
+        row-gap: var(--space-1);
+    }
+
+    .cozy-journey {
+        --when-w: 3rem;
+    }
+
+    .cozy-meta__row {
+        grid-template-columns: 1.25rem 2.5rem minmax(0, 1fr) 2.75rem;
+    }
+
+    .cozy-meta__bar {
+        display: none;
+    }
+}

@@ -72,6 +72,7 @@ import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users } from 'lucide-react'
 // entry bundle.
 import '../styles/eagerViewStyles';
 import { HomeView } from './views/HomeView';
+import { CozyHomeView } from './views/CozyHomeView';
 
 // The phone's tab destinations, plus the screen the Pokédex opens. Named so the
 // idle prefetch below and React.lazy share one import: the module loader caches
@@ -338,6 +339,15 @@ export default function AppLayout() {
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
     const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType, searchShortcut, setSearchShortcut } = useThemeStore();
+    // The 2026-10-06 cozy Home proposal sits beside the classic one until Enzo
+    // picks; the choice is per device ('cozy' unless switched back).
+    const [homeLayout, setHomeLayout] = useState(() => {
+        try { return localStorage.getItem('ptb:homeLayout') === 'classic' ? 'classic' : 'cozy'; } catch { return 'cozy'; }
+    });
+    const chooseHomeLayout = useCallback((layout) => {
+        setHomeLayout(layout);
+        try { localStorage.setItem('ptb:homeLayout', layout); } catch { /* private mode */ }
+    }, []);
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
@@ -682,6 +692,7 @@ export default function AppLayout() {
                     'ptbUiScale',
                     'ptbShowTeraType',
                     'homeWallpaperId',
+                    'ptb:homeLayout',
                     'ptb-sidebar-collapse-pref',
                     'ptb-sidebar-open-groups',
                     'ptb:battleAnimatedSprites',
@@ -1564,8 +1575,23 @@ export default function AppLayout() {
                         <div className={pageFrameClassName}>
                             <Suspense fallback={<RouteFallback />}>
                                 <Routes>
-                                    <Route path="/" element={
+                                    <Route path="/" element={homeLayout === 'cozy' ? (
+                                        <CozyHomeView
+                                            navigate={navigate}
+                                            savedTeams={savedTeams}
+                                            favoritePokemons={favoritePokemons}
+                                            greetingPokemonId={greetingPokemonId}
+                                            greetingPokemonIsShiny={greetingPokemonIsShiny}
+                                            onOpenPokemonSelector={() => setShowGreetingPokemonSelector(true)}
+                                            handleEditTeam={handleEditTeam}
+                                            activeTeamId={activeTeamId}
+                                            heroBackgroundId={homeWallpaperId}
+                                            onChangeHeroBackground={setHomeWallpaperPreference}
+                                            onUseClassic={() => chooseHomeLayout('classic')}
+                                        />
+                                    ) : (
                                         <HomeView
+                                            onUseCozy={() => chooseHomeLayout('cozy')}
                                             colors={colors}
                                             navigate={navigate}
                                             savedTeams={savedTeams}
@@ -1586,7 +1612,7 @@ export default function AppLayout() {
                                             activeTeamId={activeTeamId}
                                             setActiveTeamId={setActiveTeamId}
                                         />
-                                    } />
+                                    )} />
                                     <Route path="/feed" element={
                                         <FeedView
                                             colors={colors}

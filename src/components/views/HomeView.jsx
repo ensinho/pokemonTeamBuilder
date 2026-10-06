@@ -222,6 +222,7 @@ export function HomeView({
     db,
     activeTeamId,
     setActiveTeamId,
+    onUseCozy,
 }) {
     const { t, language } = useTranslation();
 
@@ -1520,6 +1521,11 @@ export function HomeView({
                     <FriendActionButton targetUserId={selectedProfile.userId} className="w-full justify-center" />
                 )}
             />
+            {onUseCozy && (
+                <div className="flex justify-center mt-6">
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={onUseCozy}>{t('cozyHome.tryCozy')}</button>
+                </div>
+            )}
         </main>
     );
 }
