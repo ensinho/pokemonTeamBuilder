@@ -726,6 +726,8 @@ export function ProfileView({
                                             <button
                                                 type="button"
                                                 onClick={() => toggleEquip(badge.id)}
+                                                aria-pressed={isEquipped}
+                                                aria-label={`${isEquipped ? t('profile.badgeEquippedBtn') : t('profile.badgeEquipBtn')}: ${badgeName}`}
                                                 className={`profile-badge-btn ${isEquipped ? 'profile-badge-btn--equipped' : 'profile-badge-btn--equip'}`}
                                             >
                                                 {isEquipped ? (

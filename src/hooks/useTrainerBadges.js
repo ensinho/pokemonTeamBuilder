@@ -1,10 +1,11 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, collectionGroup, getCountFromServer, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { useAuthStore } from '../store/useAuthStore';
 import { useQuizRunsStore } from '../store/useQuizRunsStore';
 import { useCategoryGuesserStore } from '../store/useCategoryGuesserStore';
+import { useFirestoreTeamsStore } from '../store/useFirestoreTeamsStore';
 import { BADGES_LIST, BADGES_BY_ID, getBadgeById } from '../constants/badges';
 
 const CELEBRATED_BADGES_KEY = 'ptb:celebratedBadges';
@@ -25,6 +26,37 @@ const markBadgeCelebrated = (badgeId) => {
         set.add(badgeId);
         localStorage.setItem(CELEBRATED_BADGES_KEY, JSON.stringify(Array.from(set)));
     } catch (_) { /* ignore */ }
+};
+
+// The user's own forum messages, counted on the server (an aggregation is one
+// read per 1000 docs, never a download). Cached per user for a minute so the
+// several views that mount this hook don't each re-ask. Needs the
+// `{path=**}/messages` collection-group rule and the `createdBy` index in
+// firestore.rules / firestore.indexes.json; until those are deployed the
+// count fails quietly and the forum badges read 0.
+const FORUM_COUNT_TTL_MS = 60 * 1000;
+const forumCountCache = { userId: null, count: null, at: 0, pending: null };
+
+const fetchForumMessageCount = async (userId) => {
+    const fresh = forumCountCache.userId === userId && Date.now() - forumCountCache.at < FORUM_COUNT_TTL_MS;
+    if (fresh && forumCountCache.count !== null) return forumCountCache.count;
+    if (forumCountCache.userId === userId && forumCountCache.pending) return forumCountCache.pending;
+
+    const pending = getCountFromServer(
+        query(collectionGroup(db, 'messages'), where('createdBy', '==', userId))
+    )
+        .then((snap) => {
+            const count = snap.data().count || 0;
+            Object.assign(forumCountCache, { userId, count, at: Date.now(), pending: null });
+            return count;
+        })
+        .catch((err) => {
+            Object.assign(forumCountCache, { userId, at: Date.now(), pending: null });
+            console.warn('Forum message count unavailable:', err?.code || err);
+            return forumCountCache.count ?? 0;
+        });
+    Object.assign(forumCountCache, { userId, pending });
+    return pending;
 };
 
 /**
@@ -76,6 +108,10 @@ export const getLocalWonPuzzleKeys = () => {
 export function useTrainerBadges(extraStats = {}) {
     const userId = useAuthStore((s) => s.userId);
     const streak = useAuthStore((s) => s.streak);
+    const activeDays = useAuthStore((s) => s.activeDays);
+    const teamsCount = useFirestoreTeamsStore((s) => s.savedTeams?.length || 0);
+    const favoritesCount = useFirestoreTeamsStore((s) => s.favoritePokemons?.size || 0);
+    const [forumMessages, setForumMessages] = useState(0);
     const selectedBadgeId = useAuthStore((s) => s.selectedBadgeId);
     const setSelectedBadgeId = useAuthStore((s) => s.setSelectedBadgeId);
     const setNewlyUnlockedBadge = useAuthStore((s) => s.setNewlyUnlockedBadge);
@@ -122,6 +158,18 @@ export function useTrainerBadges(extraStats = {}) {
         return () => unsub();
     }, [userId]);
 
+    useEffect(() => {
+        if (!db || !userId) {
+            setForumMessages(0);
+            return undefined;
+        }
+        let cancelled = false;
+        fetchForumMessageCount(userId).then((count) => {
+            if (!cancelled) setForumMessages(count);
+        });
+        return () => { cancelled = true; };
+    }, [userId]);
+
     // Aggregate all won PokéPuzzles (Firestore + LocalStorage deduplicated by puzzle day/id)
     const totalPokepuzzleWins = useMemo(() => {
         const localWon = getLocalWonPuzzleKeys();
@@ -157,8 +205,12 @@ export function useTrainerBadges(extraStats = {}) {
         perfectQuizzesCount,
         currentStreak: streak?.count || 0,
         bestStreak: Math.max(streak?.longest || 0, streak?.count || 0),
+        activeDays: activeDays?.count || 0,
+        teamsCount,
+        favoritesCount,
+        forumMessages,
         ...extraStats,
-    }), [totalPokepuzzleWins, completedQuizzesCount, perfectQuizzesCount, streak, extraStats]);
+    }), [totalPokepuzzleWins, completedQuizzesCount, perfectQuizzesCount, streak, activeDays, teamsCount, favoritesCount, forumMessages, extraStats]);
 
     // Badges mapped with current progress and unlock status
     const badges = useMemo(() => {

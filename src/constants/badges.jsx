@@ -459,6 +459,103 @@ export const FlameStreakBadgeSvg = ({ className = 'w-6 h-6', ...props }) => (
     </svg>
 );
 
+// 11+. EMBLEMS — the activity badges (days active, teams, forum, collection).
+// One parametric enamel pin instead of a hand-drawn SVG each: a bezel shape,
+// a two-stop face and a white glyph. Gradient ids are namespaced by `id`, so
+// two emblems on one screen never resolve each other's fills.
+const EMBLEM_SHAPES = {
+    circle: {
+        outer: (p) => <circle cx="50" cy="50" r="44" {...p} />,
+        inner: (p) => <circle cx="50" cy="50" r="34" {...p} />,
+    },
+    hexagon: {
+        outer: (p) => <polygon points="50,5 89,27.5 89,72.5 50,95 11,72.5 11,27.5" strokeLinejoin="round" {...p} />,
+        inner: (p) => <polygon points="50,15 80,32.5 80,67.5 50,85 20,67.5 20,32.5" strokeLinejoin="round" {...p} />,
+    },
+    shield: {
+        outer: (p) => <path d="M50 5 L88 18 V48 C88 72 70 88 50 95 C30 88 12 72 12 48 V18 Z" strokeLinejoin="round" {...p} />,
+        inner: (p) => <path d="M50 14 L79 24 V48 C79 66 66 79 50 85 C34 79 21 66 21 48 V24 Z" strokeLinejoin="round" {...p} />,
+    },
+    diamond: {
+        outer: (p) => <polygon points="50,4 96,50 50,96 4,50" strokeLinejoin="round" {...p} />,
+        inner: (p) => <polygon points="50,15 85,50 50,85 15,50" strokeLinejoin="round" {...p} />,
+    },
+};
+
+const EMBLEM_GLYPHS = {
+    calendar: (rim) => (
+        <g stroke={rim} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="31" y="35" width="38" height="33" rx="5" fill="#ffffff" />
+            <path d="M31 45 H69" />
+            <path d="M40 29 V39 M60 29 V39" />
+            <path d="M41 56 L47 62 L59 50" fill="none" />
+        </g>
+    ),
+    pokeball: (rim) => (
+        <g stroke={rim} strokeWidth="3">
+            <circle cx="50" cy="50" r="19" fill="#ffffff" />
+            <path d="M31 50 H69" />
+            <circle cx="50" cy="50" r="6" fill="#ffffff" />
+        </g>
+    ),
+    speech: (rim) => (
+        <g stroke={rim} strokeWidth="3" strokeLinejoin="round">
+            <path d="M31 33 H69 A6 6 0 0 1 75 39 V58 A6 6 0 0 1 69 64 H48 L38 73 V64 H31 A6 6 0 0 1 25 58 V39 A6 6 0 0 1 31 33 Z" fill="#ffffff" />
+            <circle cx="40" cy="48.5" r="2.5" fill={rim} stroke="none" />
+            <circle cx="50" cy="48.5" r="2.5" fill={rim} stroke="none" />
+            <circle cx="60" cy="48.5" r="2.5" fill={rim} stroke="none" />
+        </g>
+    ),
+    heart: (rim) => (
+        <path d="M50 70 C30 56 26 46 32 39 C37 33 46 34 50 41 C54 34 63 33 68 39 C74 46 70 56 50 70 Z" fill="#ffffff" stroke={rim} strokeWidth="3" strokeLinejoin="round" />
+    ),
+    star: (rim) => (
+        <polygon points="50,30 55,43.1 69,43.8 58.1,52.6 61.8,66.2 50,58.5 38.2,66.2 41.9,52.6 31,43.8 45,43.1" fill="#ffffff" stroke={rim} strokeWidth="3" strokeLinejoin="round" />
+    ),
+    flame: (rim) => (
+        <path d="M50 28 C54 39 66 45 66 57 C66 66 59 72 50 72 C41 72 34 66 34 57 C34 49 40 45 43 49 C43 41 47 34 50 28 Z" fill="#ffffff" stroke={rim} strokeWidth="3" strokeLinejoin="round" />
+    ),
+};
+
+const createEmblemSvg = ({ id, shape, from, to, rim, glyph }) => {
+    const Shape = EMBLEM_SHAPES[shape];
+    const Glyph = EMBLEM_GLYPHS[glyph];
+    const EmblemSvg = ({ className = 'w-6 h-6', ...props }) => (
+        <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
+            <defs>
+                <linearGradient id={`${id}Bezel`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={to} />
+                    <stop offset="100%" stopColor={rim} />
+                </linearGradient>
+                <linearGradient id={`${id}Face`} x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={from} />
+                    <stop offset="100%" stopColor={to} />
+                </linearGradient>
+                <filter id={`${id}Glow`} x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="2" floodColor="#000" floodOpacity="0.4" />
+                </filter>
+            </defs>
+            <g filter={`url(#${id}Glow)`}>
+                {Shape.outer({ fill: `url(#${id}Bezel)`, stroke: rim, strokeWidth: 3 })}
+                {Shape.inner({ fill: `url(#${id}Face)` })}
+                {Glyph(rim)}
+            </g>
+        </svg>
+    );
+    EmblemSvg.displayName = `EmblemSvg(${id})`;
+    return EmblemSvg;
+};
+
+// A badge earned by reaching `target` on one counter in the stats object.
+const countBadge = (statKey, target) => ({
+    targetCount: target,
+    getProgress: (stats) => {
+        const current = stats[statKey] || 0;
+        return { current: Math.min(current, target), target, percent: Math.min(100, Math.round((current / target) * 100)) };
+    },
+    checkUnlocked: (stats) => (stats[statKey] || 0) >= target,
+});
+
 /**
  * Registry of all available Trainer Badges with requirements and criteria.
  */
@@ -659,6 +756,184 @@ export const BADGES_LIST = [
         checkUnlocked: (stats) => Math.max(stats.currentStreak || 0, stats.bestStreak || 0) >= 7,
         Icon: FlameStreakBadgeSvg,
         accentColor: '#f97316',
+    },
+    // ── Days active (distinct days the app was opened — useAuthStore.activeDays)
+    {
+        id: 'badge_days_3',
+        key: 'days_3',
+        nameEn: 'Rookie Trainer',
+        namePt: 'Treinador Novato',
+        descEn: 'Every journey starts with a few steps. Earned by visiting on 3 different days.',
+        descPt: 'Toda jornada começa com alguns passos. Conquistada ao visitar em 3 dias diferentes.',
+        reqEn: '3 days active',
+        reqPt: '3 dias ativos',
+        category: 'activity',
+        ...countBadge('activeDays', 3),
+        Icon: createEmblemSvg({ id: 'emDays3', shape: 'circle', from: '#7dd3fc', to: '#0ea5e9', rim: '#0c4a6e', glyph: 'calendar' }),
+        accentColor: '#0ea5e9',
+    },
+    {
+        id: 'badge_days_10',
+        key: 'days_10',
+        nameEn: 'Regular Trainer',
+        namePt: 'Treinador Assíduo',
+        descEn: 'A familiar face around the region. Earned by visiting on 10 different days.',
+        descPt: 'Um rosto conhecido na região. Conquistada ao visitar em 10 dias diferentes.',
+        reqEn: '10 days active',
+        reqPt: '10 dias ativos',
+        category: 'activity',
+        ...countBadge('activeDays', 10),
+        Icon: createEmblemSvg({ id: 'emDays10', shape: 'hexagon', from: '#5eead4', to: '#0d9488', rim: '#134e4a', glyph: 'calendar' }),
+        accentColor: '#14b8a6',
+    },
+    {
+        id: 'badge_days_30',
+        key: 'days_30',
+        nameEn: 'Veteran Trainer',
+        namePt: 'Treinador Veterano',
+        descEn: 'A month of dedication to the craft. Earned by visiting on 30 different days.',
+        descPt: 'Um mês de dedicação ao ofício. Conquistada ao visitar em 30 dias diferentes.',
+        reqEn: '30 days active',
+        reqPt: '30 dias ativos',
+        category: 'activity',
+        ...countBadge('activeDays', 30),
+        Icon: createEmblemSvg({ id: 'emDays30', shape: 'shield', from: '#a5b4fc', to: '#6366f1', rim: '#312e81', glyph: 'calendar' }),
+        accentColor: '#6366f1',
+    },
+    {
+        id: 'badge_days_100',
+        key: 'days_100',
+        nameEn: 'Regional Legend',
+        namePt: 'Lenda da Região',
+        descEn: 'They tell stories about you in every town. Earned by visiting on 100 different days.',
+        descPt: 'Contam histórias sobre você em cada cidade. Conquistada ao visitar em 100 dias diferentes.',
+        reqEn: '100 days active',
+        reqPt: '100 dias ativos',
+        category: 'activity',
+        ...countBadge('activeDays', 100),
+        Icon: createEmblemSvg({ id: 'emDays100', shape: 'diamond', from: '#fde68a', to: '#d97706', rim: '#78350f', glyph: 'star' }),
+        accentColor: '#f59e0b',
+    },
+    // ── Streak, the long tier
+    {
+        id: 'badge_streak_30',
+        key: 'streak_30',
+        nameEn: 'Eternal Flame',
+        namePt: 'Chama Eterna',
+        descEn: 'A fire that never goes out. Earned by reaching a 30-day Trainer streak.',
+        descPt: 'Um fogo que nunca se apaga. Conquistada ao atingir uma sequência de 30 dias.',
+        reqEn: '30-day Streak',
+        reqPt: 'Sequência de 30 dias',
+        category: 'streak',
+        targetCount: 30,
+        getProgress: (stats) => {
+            const streak = Math.max(stats.currentStreak || 0, stats.bestStreak || 0);
+            return { current: Math.min(streak, 30), target: 30, percent: Math.min(100, Math.round((streak / 30) * 100)) };
+        },
+        checkUnlocked: (stats) => Math.max(stats.currentStreak || 0, stats.bestStreak || 0) >= 30,
+        Icon: createEmblemSvg({ id: 'emStreak30', shape: 'shield', from: '#fca5a5', to: '#dc2626', rim: '#7f1d1d', glyph: 'flame' }),
+        accentColor: '#dc2626',
+    },
+    // ── Teams saved (useFirestoreTeamsStore.savedTeams)
+    {
+        id: 'badge_teams_1',
+        key: 'teams_1',
+        nameEn: 'First Squad',
+        namePt: 'Primeira Equipe',
+        descEn: 'Six partners, one plan. Earned by saving your first team.',
+        descPt: 'Seis parceiros, um plano. Conquistada ao salvar seu primeiro time.',
+        reqEn: '1 saved team',
+        reqPt: '1 time salvo',
+        category: 'teams',
+        ...countBadge('teamsCount', 1),
+        Icon: createEmblemSvg({ id: 'emTeams1', shape: 'circle', from: '#fca5a5', to: '#ef4444', rim: '#7f1d1d', glyph: 'pokeball' }),
+        accentColor: '#ef4444',
+    },
+    {
+        id: 'badge_teams_5',
+        key: 'teams_5',
+        nameEn: 'Strategist',
+        namePt: 'Estrategista',
+        descEn: 'A plan for every matchup. Earned by keeping 5 saved teams.',
+        descPt: 'Um plano para cada confronto. Conquistada ao manter 5 times salvos.',
+        reqEn: '5 saved teams',
+        reqPt: '5 times salvos',
+        category: 'teams',
+        ...countBadge('teamsCount', 5),
+        Icon: createEmblemSvg({ id: 'emTeams5', shape: 'hexagon', from: '#93c5fd', to: '#2563eb', rim: '#1e3a8a', glyph: 'pokeball' }),
+        accentColor: '#2563eb',
+    },
+    {
+        id: 'badge_teams_15',
+        key: 'teams_15',
+        nameEn: 'Team Architect',
+        namePt: 'Arquiteto de Times',
+        descEn: 'A whole box of battle-ready squads. Earned by keeping 15 saved teams.',
+        descPt: 'Uma caixa inteira de times prontos para batalha. Conquistada ao manter 15 times salvos.',
+        reqEn: '15 saved teams',
+        reqPt: '15 times salvos',
+        category: 'teams',
+        ...countBadge('teamsCount', 15),
+        Icon: createEmblemSvg({ id: 'emTeams15', shape: 'shield', from: '#d8b4fe', to: '#9333ea', rim: '#4c1d95', glyph: 'pokeball' }),
+        accentColor: '#9333ea',
+    },
+    // ── Forum messages (own posts, counted server-side)
+    {
+        id: 'badge_forum_1',
+        key: 'forum_1',
+        nameEn: 'First Words',
+        namePt: 'Primeiras Palavras',
+        descEn: 'Hello, region! Earned by posting your first message on the forum.',
+        descPt: 'Olá, região! Conquistada ao publicar sua primeira mensagem no fórum.',
+        reqEn: '1 forum message',
+        reqPt: '1 mensagem no fórum',
+        category: 'forum',
+        ...countBadge('forumMessages', 1),
+        Icon: createEmblemSvg({ id: 'emForum1', shape: 'circle', from: '#86efac', to: '#16a34a', rim: '#14532d', glyph: 'speech' }),
+        accentColor: '#22c55e',
+    },
+    {
+        id: 'badge_forum_10',
+        key: 'forum_10',
+        nameEn: 'Community Voice',
+        namePt: 'Voz da Comunidade',
+        descEn: 'Your takes are part of the meta now. Earned by posting 10 forum messages.',
+        descPt: 'Suas opiniões já fazem parte do meta. Conquistada ao publicar 10 mensagens no fórum.',
+        reqEn: '10 forum messages',
+        reqPt: '10 mensagens no fórum',
+        category: 'forum',
+        ...countBadge('forumMessages', 10),
+        Icon: createEmblemSvg({ id: 'emForum10', shape: 'hexagon', from: '#67e8f9', to: '#0891b2', rim: '#164e63', glyph: 'speech' }),
+        accentColor: '#06b6d4',
+    },
+    {
+        id: 'badge_forum_50',
+        key: 'forum_50',
+        nameEn: 'League Orator',
+        namePt: 'Orador da Liga',
+        descEn: 'When you speak, the whole League listens. Earned by posting 50 forum messages.',
+        descPt: 'Quando você fala, a Liga inteira escuta. Conquistada ao publicar 50 mensagens no fórum.',
+        reqEn: '50 forum messages',
+        reqPt: '50 mensagens no fórum',
+        category: 'forum',
+        ...countBadge('forumMessages', 50),
+        Icon: createEmblemSvg({ id: 'emForum50', shape: 'diamond', from: '#f9a8d4', to: '#db2777', rim: '#831843', glyph: 'speech' }),
+        accentColor: '#ec4899',
+    },
+    // ── Favourites (useFirestoreTeamsStore.favoritePokemons)
+    {
+        id: 'badge_favorites_25',
+        key: 'favorites_25',
+        nameEn: 'Collector',
+        namePt: 'Colecionador',
+        descEn: 'A Pokédex full of personal picks. Earned by favouriting 25 Pokémon.',
+        descPt: 'Uma Pokédex cheia de escolhas pessoais. Conquistada ao favoritar 25 Pokémon.',
+        reqEn: '25 favourite Pokémon',
+        reqPt: '25 Pokémon favoritos',
+        category: 'collection',
+        ...countBadge('favoritesCount', 25),
+        Icon: createEmblemSvg({ id: 'emFav25', shape: 'circle', from: '#fbcfe8', to: '#e11d48', rim: '#881337', glyph: 'heart' }),
+        accentColor: '#e11d48',
     },
 ];
 

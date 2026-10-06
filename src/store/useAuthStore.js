@@ -135,9 +135,41 @@ const getInitialGreeting = () => {
     return { id: null, isShiny: false };
 };
 
+// Distinct days the app was opened, for the "days active" badges. Unlike the
+// streak, a gap never resets it. `lastDay` is the user's LOCAL calendar day,
+// so a late-night visit counts for the day the user is actually living.
+const ACTIVE_DAYS_KEY = 'trainerActiveDays';
+
+const localDayKey = (date = new Date()) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
+
+const getInitialActiveDays = () => {
+    if (typeof window === 'undefined') return { count: 0, lastDay: null };
+    try {
+        const raw = localStorage.getItem(ACTIVE_DAYS_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            return {
+                count: Number.isFinite(parsed?.count) ? parsed.count : 0,
+                lastDay: typeof parsed?.lastDay === 'string' ? parsed.lastDay : null,
+            };
+        }
+    } catch (_) { /* ignore */ }
+    return { count: 0, lastDay: null };
+};
+
+const writeActiveDays = (activeDays) => {
+    try {
+        localStorage.setItem(ACTIVE_DAYS_KEY, JSON.stringify(activeDays));
+    } catch (_) { /* ignore */ }
+};
+
 export const useAuthStore = create((set, get) => {
     let authUnsubscribe = null;
     let syncNudgeTimer = null;
+    let detachActiveDayListener = null;
     let profileHydratedFromFirestore = false;
 
     // Read once at store creation. If present, the app boots as "ready" with
@@ -213,6 +245,7 @@ export const useAuthStore = create((set, get) => {
         greetingPokemonId: getInitialGreeting().id,
         greetingPokemonIsShiny: getInitialGreeting().isShiny,
         streak: getInitialStreak(),
+        activeDays: getInitialActiveDays(),
         selectedBadgeId: typeof window !== 'undefined' ? localStorage.getItem('selectedBadgeId') || null : null,
         newlyUnlockedBadge: null,
         showSyncPrompt: false,
@@ -339,6 +372,19 @@ export const useAuthStore = create((set, get) => {
                             // PLAYED, not app visits — it is bumped from the game
                             // (bumpPokePuzzleStreak), never on app open. Just load it.
                             set({ streak: mergedStreak });
+
+                            // 5.1 Days active: the larger count wins, and it is
+                            // never below the longest streak — every streak day
+                            // was a day active, so a veteran doesn't start at 0.
+                            const localDays = get().activeDays || getInitialActiveDays();
+                            const remoteDays = data.activeDays && typeof data.activeDays === 'object' ? data.activeDays : {};
+                            const remoteLastDay = typeof remoteDays.lastDay === 'string' ? remoteDays.lastDay : null;
+                            const mergedDays = {
+                                count: Math.max(localDays.count || 0, remoteDays.count || 0, mergedStreak.longest || 0),
+                                lastDay: [localDays.lastDay, remoteLastDay].filter(Boolean).sort().pop() || null,
+                            };
+                            writeActiveDays(mergedDays);
+                            set({ activeDays: mergedDays });
                         } else {
                             set({ streak: getInitialStreak() });
                         }
@@ -346,6 +392,17 @@ export const useAuthStore = create((set, get) => {
                         set({ streak: getInitialStreak() });
                     } finally {
                         profileHydratedFromFirestore = true;
+
+                        // Count today, then keep counting while the app stays
+                        // open across midnight (an installed PWA rarely reloads).
+                        get().bumpActiveDay();
+                        if (!detachActiveDayListener && typeof document !== 'undefined') {
+                            const onVisible = () => {
+                                if (document.visibilityState === 'visible') get().bumpActiveDay();
+                            };
+                            document.addEventListener('visibilitychange', onVisible);
+                            detachActiveDayListener = () => document.removeEventListener('visibilitychange', onVisible);
+                        }
 
                         // Push preferences state to Firestore to ensure sync
                         await get().syncPreferencesToFirestore();
@@ -398,6 +455,10 @@ export const useAuthStore = create((set, get) => {
                 clearTimeout(syncNudgeTimer);
                 syncNudgeTimer = null;
             }
+            if (detachActiveDayListener) {
+                detachActiveDayListener();
+                detachActiveDayListener = null;
+            }
         },
 
         savePreferences: async (updates) => {
@@ -416,7 +477,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, selectedBadgeId, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, selectedBadgeId, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -438,6 +499,7 @@ export const useAuthStore = create((set, get) => {
                 greetingPokemonIsShiny,
                 homeWallpaperId: homeWallpaperId || null,
                 streak,
+                activeDays,
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
                 isAnonymous,
@@ -445,6 +507,17 @@ export const useAuthStore = create((set, get) => {
             };
 
             await get().savePreferences(updates);
+        },
+
+        // Count today as a day active. Idempotent per local day.
+        bumpActiveDay: () => {
+            const current = get().activeDays || getInitialActiveDays();
+            const today = localDayKey();
+            if (current.lastDay === today) return;
+            const next = { count: (current.count || 0) + 1, lastDay: today };
+            writeActiveDays(next);
+            set({ activeDays: next });
+            get().savePreferences({ activeDays: next });
         },
 
         // Advance the trainer streak because a daily PokePuzzle was played

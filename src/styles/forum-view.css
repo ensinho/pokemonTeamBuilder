@@ -2976,3 +2976,58 @@
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.25; }
 }
+
+/* ==========================================================================
+   Thread detail on a phone — the page is the panel.
+   Below 1024px the thread was a bordered box inside the shell's gutter, its
+   header, scroller and composer each padded again inside it, and every
+   comment a bordered card inside that: three insets (~30px a side on a 390px
+   screen) and three boxes before a line of text. The shell's gutter is the
+   only gutter now; the thread reads as one continuous column, the comments
+   keep their fill, and the header and composer are bands separated by a
+   single rule. Desktop is untouched. (Declared after the base rules so equal
+   specificity wins by order.)
+   ========================================================================== */
+@media (max-width: 1023px) {
+    .thread-detail {
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .thread-detail__header-dock .thread-header {
+        padding: 0 0 var(--space-2);
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .thread-messages-scroll {
+        padding: var(--space-3) 0;
+    }
+
+    .thread-composer-dock {
+        padding: var(--space-2) 0 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    /* On the page, a card takes the surface fill and no line of its own. */
+    .thread-op-card,
+    .comment-item__body {
+        border: none;
+        box-shadow: none;
+        background: var(--color-surface);
+    }
+
+    /* A reply sits inside its parent's fill, so it steps up one surface. */
+    .comment-item--nested .comment-item__body {
+        background: var(--color-surface-raised);
+    }
+
+    .comment-item__nested-replies {
+        margin-left: 0;
+        padding-left: var(--space-2);
+    }
+}

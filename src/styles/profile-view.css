@@ -1231,25 +1231,124 @@
         color: var(--color-fg);
     }
 
-    /* Badges: compact, and a locked one does not end in a disabled "Bloqueada"
-       pill — its muted icon and its 0/30 already say it. The pill stays where
-       it is a real control (equip / equipped). */
+    /* Badges: a wall of small tiles — icon, name, progress — not a column of
+       full cards. With 20+ badges the card list ran ~12 screens; the
+       requirement copy and the "Equip" pill were what made each card tall.
+       The requirement stays on the desktop card; here the progress bar says
+       how close a badge is. The whole tile is the control: the equip button
+       is stretched over it, invisible, so a tap anywhere equips/unequips, and
+       the equipped tile is the one with the ring and the check. */
     .profile-badges-grid {
+        grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
         gap: var(--space-2);
     }
 
     .profile-badge-card {
-        padding: var(--space-3);
+        align-items: center;
+        justify-content: flex-start;
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-2) var(--space-2_5);
+        text-align: center;
+    }
+
+    .profile-badge-card__top {
+        flex-direction: column;
+        gap: var(--space-2);
+        width: 100%;
     }
 
     .profile-badge-card__icon-wrap {
-        width: 2.5rem;
-        height: 2.5rem;
+        width: 2.75rem;
+        height: 2.75rem;
         background: var(--color-surface-raised);
+    }
+
+    .profile-badge-card:hover .profile-badge-card__icon-wrap {
+        transform: none;
+    }
+
+    .profile-badge-card__info {
+        width: 100%;
+    }
+
+    .profile-badge-card__title-row {
+        justify-content: center;
+        margin-bottom: 0;
+    }
+
+    .profile-badge-card__name {
+        font-size: var(--text-2xs);
+        line-height: 1.25;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        min-height: 2.5em;
+    }
+
+    .profile-badge-card__req,
+    .profile-badge-progress-info {
+        display: none;
+    }
+
+    /* The "Equipado" pill becomes a check in the tile's corner. */
+    .profile-badge-tag-equipped {
+        position: absolute;
+        top: var(--space-1_5);
+        right: var(--space-1_5);
+        padding: var(--space-0_5);
+        border: none;
+        background: var(--color-primary);
+        color: var(--color-on-primary);
+    }
+
+    .profile-badge-tag-equipped > span {
+        display: none;
+    }
+
+    .profile-badge-progress-wrap {
+        width: 100%;
+        margin: 0;
+        margin-top: auto;
+    }
+
+    .profile-badge-card__action {
+        margin: 0;
     }
 
     .profile-badge-card.is-locked .profile-badge-card__action {
         display: none;
+    }
+
+    .profile-badge-btn,
+    .profile-badge-btn--equip,
+    .profile-badge-btn--equipped,
+    .profile-badge-btn--equip:hover,
+    .profile-badge-btn--equipped:hover {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        width: auto;
+        padding: 0;
+        border: none;
+        border-radius: inherit;
+        background: transparent;
+        color: transparent;
+        font-size: 0;
+    }
+
+    .profile-badge-btn > * {
+        display: none;
+    }
+
+    .profile-badge-btn:focus-visible {
+        outline: none;
+        box-shadow: var(--ring-primary);
+    }
+
+    .profile-badge-card:has(.profile-badge-btn:active) {
+        background: var(--color-surface-active);
     }
 
     /* The account pitch ran six lines deep in half the width beside its two
