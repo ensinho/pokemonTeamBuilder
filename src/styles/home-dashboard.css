@@ -438,6 +438,31 @@
     font-variant-numeric: tabular-nums;
 }
 
+/* Status pill: ready vs still missing members. Tinted with the same three
+   mixes as .type-chip (minus the outline — the card it sits on is a fill),
+   so the label holds 4.5:1 in all six themes. */
+.hd-team-row__meta.is-ready,
+.hd-team-row__meta.is-open {
+    justify-self: end;
+    align-self: center;
+    padding: var(--space-0_5) var(--space-2);
+    border-radius: var(--radius-full);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+.hd-team-row__meta.is-ready {
+    background: color-mix(in srgb, var(--color-success) 14%, transparent);
+    color: color-mix(in srgb, var(--color-success) 45%, var(--color-fg));
+}
+
+.hd-team-row__meta.is-open {
+    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+    color: color-mix(in srgb, var(--color-warning) 45%, var(--color-fg));
+}
+
 /* ── Empty state: nothing to continue, so point outward ──────────────── */
 .hd-continue-start {
     display: flex;

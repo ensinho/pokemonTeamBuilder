@@ -2218,6 +2218,43 @@
     width: 100%;
 }
 
+/* One stat: icon, figure, label — inline here, a tile in the wide sidebar. */
+.home-profile-stat {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.home-profile-stat__value,
+.home-profile-stat__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.home-profile-stat__label--tile {
+    display: none;
+}
+
+.home-hero__actions {
+    padding-top: var(--space-2);
+}
+
+.home-hero__actions .btn {
+    max-width: 100%;
+}
+
+.home-hero__action-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Shortcuts / Pinned Repos Widget */
 .home-shortcuts-sidebar-card {
     border: 1px solid var(--color-border);
@@ -2408,15 +2445,60 @@
         justify-content: space-between !important;
     }
 
+    /* No rule above the stats: the tiles' own fill separates them from the
+       name, and a divider inside a bordered card is a box inside a box. */
     .home-profile-sidebar-card .home-profile-meta-list {
-        margin-top: var(--space-2) !important;
-        padding-top: var(--space-2) !important;
+        margin-top: var(--space-3) !important;
+        padding-top: 0 !important;
+        border-top: 0 !important;
     }
 
+    /* The type gets the widest share — four equal
+       tiles cut "Electric" to "Ele…" in a 379px column. */
     .home-profile-sidebar-card .home-profile-meta-grid {
-        grid-template-columns: repeat(4, auto) !important;
-        justify-content: space-between !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.2fr) !important;
         gap: var(--space-2) !important;
+    }
+
+    /* Stat tiles: figure over label, mono figure (the figure voice). */
+    .home-profile-sidebar-card .home-profile-stat {
+        flex-wrap: wrap;
+        column-gap: var(--space-1_5);
+        row-gap: var(--space-0_5);
+        padding: var(--space-2);
+        border-radius: var(--radius-md);
+        background: var(--color-surface-raised);
+    }
+
+    /* The favourite type wears its colour, with .type-chip's mixes, so the
+       tile itself says which type — the dot that did it inline goes. */
+    .home-profile-sidebar-card .home-profile-stat--type {
+        background: color-mix(in srgb, var(--stat-type) 14%, var(--color-surface-raised));
+    }
+
+    .home-profile-sidebar-card .home-profile-stat--type .home-profile-stat__value {
+        color: color-mix(in srgb, var(--stat-type) 45%, var(--color-fg));
+    }
+
+    .home-profile-sidebar-card .home-profile-stat__dot {
+        display: none !important;
+    }
+
+    .home-profile-sidebar-card .home-profile-stat__value {
+        flex: 1 1 0;
+        font-family: var(--font-display);
+        font-size: var(--text-sm);
+        font-weight: var(--weight-semibold);
+        color: var(--color-fg);
+    }
+
+    .home-profile-sidebar-card .home-profile-stat__label {
+        flex: 1 0 100%;
+        font-size: var(--text-2xs);
+    }
+
+    .home-profile-sidebar-card .home-profile-stat__label--tile {
+        display: block;
     }
 
     /* Daily Guess Card adjustments */

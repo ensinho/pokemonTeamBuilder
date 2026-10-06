@@ -136,11 +136,13 @@ export function HomeDashboard({ navigate, puzzleCard }) {
                                             ))}
                                         </span>
                                         <span className="hd-team-row__name">{team.name}</span>
-                                        {/* The count rides the right edge as a
-                                            figure, not a sentence — the row is
-                                            one line and the word is in the
+                                        {/* Status, not a figure: a ready team and one
+                                            still missing members read apart at a
+                                            glance; the exact count stays in the
                                             button's label for screen readers. */}
-                                        <span className="hd-team-row__meta" aria-hidden="true">{members.length}/6</span>
+                                        <span className={`hd-team-row__meta ${members.length >= 6 ? 'is-ready' : 'is-open'}`} aria-hidden="true">
+                                            {members.length >= 6 ? t('home.teamReady') : t('home.teamMissing', { count: 6 - members.length })}
+                                        </span>
                                     </button>
                                 </li>
                             );
