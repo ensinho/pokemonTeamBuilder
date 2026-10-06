@@ -39,6 +39,7 @@ import { useTranslation } from '../hooks/useTranslation';
 import { useLanguageStore } from '../store/useLanguageStore';
 import { useAppUpdate } from '../hooks/useAppUpdate';
 import { useDockCompact } from '../hooks/useDockCompact';
+import { ariaKeyShortcuts, formatShortcut, matchesShortcut } from '../utils/searchShortcut';
 
 import {
     AuthModal,
@@ -336,7 +337,7 @@ export default function AppLayout() {
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
-    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType } = useThemeStore();
+    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType, searchShortcut, setSearchShortcut } = useThemeStore();
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
@@ -376,12 +377,14 @@ export default function AppLayout() {
     // UI Local States
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    // ⌘K / Ctrl+K from anywhere, or "/" when not typing — the palette toggles on
-    // the chord so the same keys that opened it close it again.
+    // The user's shortcut (⌘K / Ctrl+K unless changed on the profile) from
+    // anywhere, or "/" when not typing — the palette toggles on the chord so the
+    // same keys that opened it close it again. The profile's recorder stops
+    // propagation while it listens, so recording never opens the palette.
     useEffect(() => {
         const handleKeyDown = (event) => {
             const key = event.key?.toLowerCase();
-            if ((event.metaKey || event.ctrlKey) && key === 'k') {
+            if (matchesShortcut(event, searchShortcut)) {
                 event.preventDefault();
                 setIsSearchOpen((open) => !open);
             } else if (key === '/' && !event.metaKey && !event.ctrlKey && !event.altKey && !isTypingTarget(event.target)) {
@@ -391,7 +394,7 @@ export default function AppLayout() {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [searchShortcut]);
 
     const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -1462,12 +1465,12 @@ export default function AppLayout() {
                                         onClick={() => setIsSearchOpen(true)}
                                         onPointerEnter={() => { loadCommandPalette().catch(() => {}); }}
                                         onFocus={() => { loadCommandPalette().catch(() => {}); }}
-                                        aria-keyshortcuts="Meta+K Control+K"
+                                        aria-keyshortcuts={ariaKeyShortcuts(searchShortcut)}
                                         className="app-shell__search-trigger"
                                     >
                                         <Search aria-hidden="true" />
                                         <span className="app-shell__search-trigger-label">{t('search.placeholder')}</span>
-                                        <kbd>{IS_APPLE ? '⌘K' : 'Ctrl K'}</kbd>
+                                        <kbd>{formatShortcut(searchShortcut, IS_APPLE)}</kbd>
                                     </button>
                                 </div>
                             )}
@@ -1793,6 +1796,11 @@ export default function AppLayout() {
                                             onChangeShowTeraType={(show) => {
                                                 setShowTeraType(show);
                                                 useAuthStore.getState().savePreferences({ showTeraType: show });
+                                            }}
+                                            searchShortcut={searchShortcut}
+                                            onChangeSearchShortcut={(shortcut) => {
+                                                setSearchShortcut(shortcut);
+                                                useAuthStore.getState().savePreferences({ searchShortcut: useThemeStore.getState().searchShortcut });
                                             }}
                                             displayName={displayName}
                                             onChangeDisplayName={setDisplayName}

@@ -522,7 +522,9 @@ export function HomeView({
             const staticPokemon = await getStaticPokemonDetail(fallbackConfig.id);
             if (staticPokemon) return staticPokemon;
 
-            const apiPokemon = await getPokemonApiData(fallbackConfig.id);
+            // Last resort is the network; offline it rejects, and an unhandled
+            // rejection here left the hero without a partner at all.
+            const apiPokemon = await getPokemonApiData(fallbackConfig.id).catch(() => null);
             return toGreetingPokemonData(apiPokemon);
         };
 
@@ -565,8 +567,8 @@ export function HomeView({
 
                 const loadedGreetingPokemon = allPokemons.find((pokemon) => pokemon.id === greetingPokemonId);
                 const fallbackPokemon = loadedGreetingPokemon
-                    || await getStaticPokemonDetail(greetingPokemonId)
-                    || toGreetingPokemonData(await getPokemonApiData(greetingPokemonId))
+                    || await getStaticPokemonDetail(greetingPokemonId).catch(() => null)
+                    || toGreetingPokemonData(await getPokemonApiData(greetingPokemonId).catch(() => null))
                     || await getFallbackGreetingPokemon(greeting.period);
 
                 if (!cancelled) {
