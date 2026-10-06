@@ -8,6 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { ShareIcon, ShowdownIcon, StarIcon, TrashIcon } from '../icons';
 import { EmptyState } from '../EmptyState';
 import { Eye, Pencil, Check, ExternalLink, Copy } from 'lucide-react';
+import { PcBox } from '../PcBox';
 
 const timestampToDate = (value) => {
     if (!value) return null;
@@ -260,21 +261,17 @@ export function AllTeamsView({ teams, onEdit, onExport, onShare, onDuplicate, re
                                         </button>
                                     </div>
 
-                                    <div className="all-teams-view__preview">
-                                        <div className="team-builder-sprite-stack all-teams-view__sprite-stack" aria-label={language === 'pt' ? `Pré-visualização do time ${team.name}` : `${team.name} team preview`}>
-                                            {team.pokemons.length > 0 ? team.pokemons.map((pokemon) => (
-                                                <img
-                                                    key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
-                                                    src={getTeamPokemonDisplaySprite(pokemon)}
-                                                    onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                                    alt={pokemon.name}
-                                                    className="team-builder-sprite-stack__item all-teams-view__sprite-item"
-                                                />
-                                            )) : (
-                                                <span className="all-teams-view__empty-stack">{language === 'pt' ? 'Nenhum Pokémon salvo neste time ainda.' : 'No Pokémon saved in this lineup yet.'}</span>
-                                            )}
-                                        </div>
-                                    </div>
+                                    <button
+                                        type="button"
+                                        className="all-teams-view__preview pc-box-host"
+                                        onClick={() => viewTeam(team)}
+                                        aria-label={language === 'pt' ? `Abrir ${team.name}` : `Open ${team.name}`}
+                                    >
+                                        <PcBox members={team.pokemons} columns={3} size="lg" className="pc-box--wide" />
+                                        {team.pokemons.length === 0 && (
+                                            <span className="all-teams-view__empty-stack">{language === 'pt' ? 'Nenhum Pokémon salvo neste time ainda.' : 'No Pokémon saved in this lineup yet.'}</span>
+                                        )}
+                                    </button>
 
                                      <div className="all-teams-view__actions">
                                          <div className="flex items-center gap-1.5">

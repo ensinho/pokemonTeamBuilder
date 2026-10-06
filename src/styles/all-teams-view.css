@@ -133,26 +133,41 @@
     color: var(--color-muted);
 }
 
+/* The team's PC box (PcBox, pc-box.css): the box's wallpaper is the preview's
+   own fill, so the card keeps the only line. The whole box opens the team. */
 .all-teams-view__preview {
+    position: relative;
     display: flex;
     flex: 1;
     flex-direction: column;
     justify-content: center;
-    border: 1px solid var(--color-border);
+    width: 100%;
+    padding: 0;
+    border: none;
     border-radius: var(--radius-md);
-    background: var(--color-bg);
-    padding: var(--space-3);
-    min-height: 5rem;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
 }
 
-.all-teams-view__sprite-stack {
-    min-height: 2.5rem;
+.all-teams-view__preview:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
 }
 
-.all-teams-view__sprite-item {
-    width: 2.35rem;
-    height: 2.35rem;
-    margin-left: calc(var(--space-1) * -1);
+/* An empty team: the six dashed cells say "empty" already; the sentence sits
+   on a surface pill in front of them so it never reads through the dashes. */
+.all-teams-view__preview .all-teams-view__empty-stack {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    max-width: calc(100% - var(--space-8));
+    translate: -50% -50%;
+    padding: var(--space-1_5) var(--space-3);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    text-align: center;
 }
 
 .all-teams-view__empty-stack,
@@ -233,10 +248,11 @@
         gap: var(--space-2);
     }
 
-    /* Shorter sprite preview so the card reads at a glance. */
-    .all-teams-view__preview {
-        min-height: 3.5rem;
-        padding: var(--space-2);
+    /* A phone card is full width: the box becomes one six-cell strip, so the
+       card stays short enough to read a list of them at a glance. */
+    .all-teams-view__preview .pc-box {
+        --pc-box-columns: 6 !important; /* PcBox sets the count inline */
+        --pc-box-cell: 2.5rem;
     }
 
     /* Actions as two balanced rows of full-width icon buttons — thumb-friendly,
