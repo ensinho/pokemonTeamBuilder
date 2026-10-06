@@ -1,6 +1,6 @@
 .profile-view {
     width: 100%;
-    max-width: 72rem;
+    max-width: 112rem;
     margin: 0 auto;
     padding: var(--space-1) 0 var(--space-8);
 }
@@ -75,11 +75,10 @@
     image-rendering: pixelated;
 }
 
-/* Pick which avatar is the public-facing one. */
+/* Pick which avatar is the public-facing one: a .segmented control whose
+   items carry the two faces. Whitespace separates it from the pair above. */
 .profile-avatar-choice {
     margin-top: var(--space-3);
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--color-border);
 }
 
 .profile-avatar-choice__label {
@@ -89,44 +88,14 @@
     color: var(--color-muted);
 }
 
-.profile-avatar-choice__options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-2);
-}
-
 .profile-avatar-choice__option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-2);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-    transition: border-color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth),
-                color var(--duration-fast) var(--ease-smooth);
+    gap: var(--space-1_5);
 }
 
 .profile-avatar-choice__option img {
-    width: 40px;
-    height: 40px;
+    width: 1.5rem;
+    height: 1.5rem;
     object-fit: contain;
-}
-
-.profile-avatar-choice__option:hover {
-    border-color: var(--color-border-hover);
-    color: var(--color-fg);
-}
-
-.profile-avatar-choice__option.is-active {
-    border-color: var(--color-primary);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
 }
 
 .profile-avatar-button__initials {
@@ -590,28 +559,76 @@
     width: 100%;
 }
 
+.profile-avatar-pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
 .profile-avatar-card {
     display: flex;
     align-items: center;
     gap: var(--space-3);
-}
-
-.profile-avatar-preview {
-    display: inline-flex;
-    width: 5rem;
-    height: 5rem;
-    flex-shrink: 0;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
+    min-width: 0;
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
     background: var(--color-surface-raised);
 }
 
-.profile-avatar-preview__sprite {
+/* The preview is the control too: it opens the same picker as the button. */
+.profile-avatar-preview {
+    display: inline-flex;
     width: 4rem;
     height: 4rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.profile-avatar-preview:hover {
+    background: var(--color-surface-hover);
+}
+
+.profile-avatar-preview:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-primary);
+}
+
+.profile-avatar-preview__sprite {
+    width: 3.5rem;
+    height: 3.5rem;
     object-fit: contain;
+}
+
+.profile-avatar-card .profile-avatar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    min-width: 0;
+}
+
+.profile-avatar-actions__label {
+    margin: 0;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-muted);
+}
+
+.profile-avatar-actions__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1_5);
+}
+
+.profile-avatar-actions__buttons .profile-button {
+    min-height: var(--control-h-sm);
+    padding: var(--space-1) var(--space-2_5);
 }
 
 .profile-avatar-preview__fallback {
@@ -729,6 +746,12 @@
 @media (min-width: 1440px) {
     .profile-badges-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1680px) {
+    .profile-badges-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
 
@@ -952,14 +975,58 @@
     }
 }
 
+/* Desktop (2026-10-06): the page used to scroll three screens. The hero is
+   one band — who you are at the left, the three figures in a row at the
+   right — and the settings run in three columns, each card where its
+   neighbours make sense: how it looks, who you are, how it reaches you. */
 @media (min-width: 1024px) {
     .profile-hero {
-        grid-template-columns: minmax(0, 1.5fr) minmax(16rem, 0.85fr);
-        padding: var(--space-5);
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: var(--space-6);
+        padding: var(--space-4) var(--space-5);
+    }
+
+    .profile-avatar-button {
+        width: 4.5rem;
+        height: 4.5rem;
+    }
+
+    .profile-avatar-button__sprite {
+        width: 3.75rem;
+        height: 3.75rem;
+    }
+
+    .profile-hero__side {
+        grid-template-columns: repeat(3, minmax(9rem, 1fr));
+        gap: var(--space-2);
+    }
+
+    .profile-overview-grid {
+        display: contents;
+    }
+
+    .profile-streak-card,
+    .profile-overview-stat {
+        padding: var(--space-3);
+    }
+
+    .profile-streak-card__value,
+    .profile-overview-stat__value {
+        margin-top: var(--space-2);
+        font-size: var(--text-xl);
     }
 
     .profile-layout {
-        grid-template-columns: 7fr 5fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+    }
+
+    /* Two columns: the third column's cards share a row under them. */
+    .profile-layout__column:nth-child(3) {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: start;
     }
 }
@@ -967,6 +1034,48 @@
 @media (min-width: 1280px) {
     .profile-theme-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .profile-layout {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .profile-layout__column:nth-child(3) {
+        grid-column: auto;
+        display: flex;
+    }
+
+    /* A third of the page is narrow for a 3-line theme card: the hint and the
+       mode glyph go — the group label above already says dark or light. */
+    .profile-theme-card {
+        padding: var(--space-2_5);
+    }
+
+    .profile-theme-card__hint,
+    .profile-theme-card__icon {
+        display: none;
+    }
+
+    .profile-theme-card__label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* One face per row: preview, then its name over its buttons. Side by side
+       left each button a third of a column and wrapped its label. */
+    .profile-avatar-pair {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* Sync rows: the label over its state, so a two-word label is not split
+       across three lines beside it. */
+    .profile-sync-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-0_5);
+        padding: var(--space-2) var(--space-2_5);
     }
 }
 
@@ -1159,8 +1268,7 @@
     /* On the page now, so the controls inside take the surface fill — raised
        on the page is #f6f6f7 on #f2f2f3 on the light themes, i.e. nothing. */
     .profile-avatar-button,
-    .profile-avatar-choice__option,
-    .profile-avatar-preview,
+    .profile-avatar-card,
     .profile-sync-row,
     .profile-button:not(.profile-button--primary):not(.profile-button--danger),
     .profile-badge-card:not(.is-equipped) {
@@ -1213,10 +1321,14 @@
         align-items: center;
     }
 
+    .profile-avatar-pair {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .profile-avatar-preview {
         width: 3.5rem;
         height: 3.5rem;
-        border-color: transparent;
+        background: var(--color-surface-raised);
     }
 
     .profile-avatar-actions {
