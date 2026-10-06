@@ -1229,11 +1229,8 @@ export default function AppLayout() {
                 <GreetingPokemonSelectorModal
                     onClose={() => setShowGreetingPokemonSelector(false)}
                     onSelect={setGreetingPokemon}
-                    allPokemons={pokedex.pokemons}
                     currentPokemonId={greetingPokemonId}
                     currentPokemonIsShiny={greetingPokemonIsShiny}
-                    colors={colors}
-                    db={db}
                 />
             )}
             {showTrainerSpriteSelector && (
