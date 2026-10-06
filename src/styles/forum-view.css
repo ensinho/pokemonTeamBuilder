@@ -2976,3 +2976,185 @@
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.25; }
 }
+
+/* ==========================================================================
+   Thread detail on a phone — the page is the panel.
+   Below 1024px the thread was a bordered box inside the shell's gutter, its
+   header, scroller and composer each padded again inside it, and every
+   comment a bordered card inside that: three insets (~30px a side on a 390px
+   screen) and three boxes before a line of text. The shell's gutter is the
+   only gutter now; the thread reads as one continuous column, the comments
+   keep their fill, and the header and composer are bands separated by a
+   single rule. Desktop is untouched. (Declared after the base rules so equal
+   specificity wins by order.)
+   ========================================================================== */
+@media (max-width: 1023px) {
+    .thread-detail {
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .thread-detail__header-dock .thread-header {
+        padding: 0 0 var(--space-2);
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .thread-messages-scroll {
+        padding: var(--space-3) 0;
+    }
+
+    .thread-composer-dock {
+        padding: var(--space-2) 0 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    /* On the page, a card takes the surface fill and no line of its own. */
+    .thread-op-card,
+    .comment-item__body {
+        border: none;
+        box-shadow: none;
+        background: var(--color-surface);
+    }
+
+    /* A reply sits inside its parent's fill, so it steps up one surface. */
+    .comment-item--nested .comment-item__body {
+        background: var(--color-surface-raised);
+    }
+
+    .comment-item__nested-replies {
+        margin-left: 0;
+        padding-left: var(--space-2);
+    }
+}
+
+/* Thread header on a phone: two lines, not four. The desktop bands (nav row,
+   title row) wrapped into Back / chips / title / byline on a 390px screen —
+   four lines of chrome above the first post, the title alone on its own line
+   under a Back button with room to spare beside it. The bands dissolve
+   (`display: contents`, markup untouched) and their items re-flow:
+     line 1  ‹  Title of the thread               [share] [delete]
+     line 2  (avatar) @author OP · date      [category] [n messages]
+   The `::after` is the line break — a zero-height item at 100% basis. */
+@media (max-width: 639px) {
+    .thread-detail .thread-header {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        column-gap: var(--space-2);
+        row-gap: var(--space-2);
+    }
+
+    .thread-detail .thread-header::after {
+        content: "";
+        order: 5;
+        flex-basis: 100%;
+        height: 0;
+    }
+
+    .thread-header__top-row,
+    .thread-header__title-row,
+    .thread-header__actions {
+        display: contents;
+    }
+
+    .thread-header__top-row > :first-child {
+        order: 1;
+    }
+
+    /* Back is an icon here; its label stays as the aria-label. */
+    .thread-header__back-btn {
+        justify-content: center;
+        width: 2rem;
+        min-height: 2rem;
+        padding: 0;
+    }
+
+    .thread-header__back-btn > span {
+        display: none;
+    }
+
+    .thread-header__title {
+        order: 2;
+        flex: 1 1 0;
+        min-width: 0;
+        font-size: var(--text-base);
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        overflow: hidden;
+    }
+
+    .thread-header__actions > .thread-header__action-btn {
+        order: 3;
+        justify-content: center;
+        width: 2rem;
+        min-height: 2rem;
+        padding: 0;
+    }
+
+    /* Delete, or its confirm pair, closes the first line. */
+    .thread-header__actions > .thread-header__action-btn--danger,
+    .thread-header__actions > div {
+        order: 4;
+    }
+
+    .thread-header__author {
+        order: 6;
+        flex: 1 1 0;
+        min-width: 0;
+    }
+
+    /* The byline holds one line and gives way before the chips do: the date
+       truncates first, then the name. Compound selector: the element carries
+       Tailwind's `flex-wrap`, which loads after this file. */
+    .thread-detail .thread-header__author > div {
+        flex-wrap: nowrap;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    /* The topic's author is its OP by definition — the tag earns its place on
+       a reply, not on the byline of the post it is naming. */
+    .thread-header__op-tag {
+        display: none;
+    }
+
+    .thread-header__admin-tag {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
+    .thread-header__author-name,
+    .thread-header__time {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .thread-header__author-name {
+        flex-shrink: 1;
+    }
+
+    .thread-header__time {
+        flex-shrink: 100;
+    }
+
+    .thread-header__actions > .thread-card__badge {
+        order: 7;
+        white-space: nowrap;
+    }
+
+    /* The message count is the one chip a 390px byline cannot carry next to
+       the author, the Official tag and the category — with it the name
+       collapsed to "@…". The thread under the header is the count. */
+    .thread-header__stat-pill {
+        display: none;
+    }
+}

@@ -25,6 +25,15 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
+    // Collection-group read for the forum badges: a trainer may count (list)
+    // their OWN forum messages across every topic — the query must filter on
+    // `createdBy == uid` or it is refused. Forum messages are world-readable
+    // through their own path already; this exposes nothing new, and no other
+    // collection in this database is named `messages`.
+    match /{path=**}/messages/{messageId} {
+      allow list: if isSignedIn() && resource.data.createdBy == request.auth.uid;
+    }
+
     match /artifacts/{appId} {
 
       match /users/{userId}/{document=**} {
