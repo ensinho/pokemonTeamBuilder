@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-06 — Home panels: title and content on different left edges, meta row past the panel `dispattern`
+- **Symptom:** on desktop each Home panel's title sat 17px in while its content sat 13px in (the Recent teams cards 8px), the VGC Meta row ran past the panel's right edge at 1440px, and the puzzle teaser stood 29px above the timeline where every other block in the column is 12px apart.
+- **Root cause:** `.hd-panel__head` used `--space-4` inline while `.hd-panel__body` used `--space-3` / `--space-3_5` and `.hd-continue-list` `--space-2`; `repeat(10, 1fr)` floors each column at its min-content, so one long name ("Charizard Mega Y") widened its column; the teaser's `mb-4` from its old main-column slot survived inside the sidebar's gap.
+- **Fix:** head, body and list share `--space-4` inline (the hero, profile card and timeline edge); the grid is `minmax(0, 1fr)` with `min-width: 0` tiles; the sidebar zeroes the teaser's margin.
+- **Correct pattern:** a panel has one inline inset, set once and used by its head and body alike; a fractional grid of text-bearing tiles is `minmax(0, 1fr)`; a block moved into a gap-spaced column loses its own outer margin.
+- **Files:** `src/styles/home-dashboard.css`, `src/styles/home-view.css`
+
 ### 2026-10-06 — The builder's picker grid painted three times on the way in `perf`
 - **Symptom:** opening `/builder` on a phone, the grid drew in dex order, then the meta suggestions were prepended, then everything re-sorted ~120ms later — cards jumped under the finger (CLS 0.2 at 390px).
 - **Root cause:** the suggestion ranking reads five async sources (index, tournaments, Smogon, usage, meta usage) and the grid rendered on each arrival. Worse, `useUsageFormat` reported `ready` for a format the Home's meta card had already put in the module cache while its own `data` stayed `null` until its effect ran — a "ready" with nothing behind it, so even a readiness gate saw a ranking with no meta.

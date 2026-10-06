@@ -42,6 +42,7 @@ import {
     SwordsIcon,
 } from '../icons';
 import { Download, Edit, Award, Puzzle, GitBranch, GitCommit, FileText, Sparkles, BookOpen, Flame, Folder, User, Palette } from 'lucide-react';
+import { PartnerFlare } from '../PartnerFlare';
 
 const DEFAULT_GREETING_POKEMON = {
     morning: { id: 196, name: 'espeon' },
@@ -831,6 +832,7 @@ export function HomeView({
                                     </div>
 
                                     <div className="home-partner-card__sprite-container">
+                                        <PartnerFlare />
                                         <img
                                             src={getPokemonDisplaySprite(greetingPokemonData, { shiny: greetingPokemonIsShiny, animated: true })}
                                             alt={greetingPokemonData.name}

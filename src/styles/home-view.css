@@ -304,6 +304,7 @@
 }
 
 .home-partner-card__sprite-container {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2499,6 +2500,13 @@
         flex: 0 0 auto !important;
     }
 
+    /* The teaser carries mb-4 for its old place in the main column; here the
+       column's own gap spaces it, and the margin on top of it left the timeline
+       29px below it while every other block in the column sits 12px apart. */
+    .home-sidebar .home-sidebar-section--daily {
+        margin-bottom: 0;
+    }
+
     .home-sidebar .home-forum-chat-card-wrapper {
         flex: 1 1 auto !important;
         min-height: 0 !important;
@@ -2923,4 +2931,107 @@
 
 @keyframes home-daily-breathe {
     to { opacity: 1; }
+}
+
+
+/* ---- Partner flare (PartnerFlare.jsx) --------------------------------------
+   An anime-style sparkle around the Home's partner: glints twinkle and two
+   brush strokes flick in, then the sprite rests for most of the cycle. White
+   tinted by the partner's type rather than a theme token on purpose: it sits on
+   the partner card's dark glass over the hero wallpaper in every theme, the
+   one place where light-on-dark is fixed (the photography-scrim exception).
+   One element, one screen; transform and opacity only, so a phone can afford
+   the loop; reduced motion removes it. */
+.partner-flare {
+    --flare-ink: color-mix(in srgb, var(--partner-type-color, var(--color-primary)) 25%, white);
+    position: absolute;
+    inset: calc(var(--space-2) * -1);
+    pointer-events: none;
+}
+
+.partner-flare__glint {
+    --glint: 0.75rem;
+    position: absolute;
+    width: var(--glint);
+    height: var(--glint);
+    background: var(--flare-ink);
+    clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+    opacity: 0;
+    animation: partner-glint 4.2s var(--ease-smooth) infinite;
+}
+
+.partner-flare__glint--a { --glint: 1rem; top: 2%; right: 4%; }
+.partner-flare__glint--b { --glint: 0.5625rem; bottom: 14%; left: 0; animation-delay: 1.4s; }
+.partner-flare__glint--c { --glint: 0.375rem; top: 20%; left: 12%; animation-delay: 2.6s; }
+
+/* The lens cross behind the big glint: two hairlines that open with it. */
+.partner-flare__rays {
+    position: absolute;
+    top: calc(2% + 0.5rem);
+    right: calc(4% + 0.5rem);
+    width: 0;
+    height: 0;
+    opacity: 0;
+    animation: partner-rays 4.2s var(--ease-smooth) infinite;
+}
+
+.partner-flare__rays::before,
+.partner-flare__rays::after {
+    content: '';
+    position: absolute;
+    left: -1.5rem;
+    top: 0;
+    width: 3rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--flare-ink), transparent);
+}
+
+.partner-flare__rays::after {
+    transform: rotate(90deg);
+}
+
+.partner-flare__strokes {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.partner-flare__stroke {
+    fill: none;
+    stroke: var(--flare-ink);
+    stroke-width: 3;
+    stroke-linecap: round;
+    vector-effect: non-scaling-stroke;
+    transform-box: fill-box;
+    transform-origin: center;
+    opacity: 0;
+    animation: partner-stroke 4.2s var(--ease-out) infinite;
+}
+
+.partner-flare__stroke--b { animation-delay: 2.1s; }
+
+@keyframes partner-glint {
+    0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+    12%      { opacity: 1; transform: scale(1) rotate(30deg); }
+    30%      { opacity: 0; transform: scale(0.6) rotate(70deg); }
+}
+
+@keyframes partner-rays {
+    0%, 100% { opacity: 0; transform: scale(0.4); }
+    12%      { opacity: 0.9; transform: scale(1); }
+    30%      { opacity: 0; transform: scale(1.15); }
+}
+
+@keyframes partner-stroke {
+    0%, 100% { opacity: 0; transform: scale(0.7); }
+    10%      { opacity: 1; transform: scale(1); }
+    28%      { opacity: 0; transform: scale(1.06); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .partner-flare {
+        display: none;
+    }
 }

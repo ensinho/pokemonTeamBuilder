@@ -74,7 +74,9 @@
     white-space: nowrap;
 }
 .hd-panel__link:hover { color: var(--color-muted); }
-.hd-panel__body { padding: var(--space-3_5); }
+/* Head and body share one inline inset, so a panel's title, its content and
+   the hero / profile / timeline edges beside it all start on the same line. */
+.hd-panel__body { padding: var(--space-3_5) var(--space-4); }
 
 /* Loading skeleton — shown while the tournament + Pokémon data load. Mirrors
    the real popular row so there is no shift when it arrives. */
@@ -99,13 +101,17 @@
 /* Fused Tournament Meta Section Grid */
 .hd-meta-mons-grid {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
+    /* minmax(0, …): a bare 1fr floors at the tile's min-content, so one long
+       name ("Charizard Mega Y") widened its column and pushed the last tile
+       past the panel edge. Names ellipsize instead. */
+    grid-template-columns: repeat(10, minmax(0, 1fr));
     gap: var(--space-2);
 }
 
 /* Borderless fill — ten of these in a row inside an already-bordered panel was
    ten more boxes competing with the panel that contains them. */
 .hd-meta-mon-btn {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -209,7 +215,7 @@
    rules at the exact breakpoint pixel. */
 @media (max-width: 1023px) {
             .hd-meta-mons-grid {
-        grid-template-columns: repeat(5, 1fr);
+        grid-template-columns: repeat(5, minmax(0, 1fr));
     }
 }
 
@@ -669,7 +675,7 @@
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: var(--space-2);
-        padding: var(--space-2);
+        padding: var(--space-2) var(--space-4) var(--space-4);
     }
 
     .hd-continue-list > li {
@@ -746,7 +752,7 @@
     .hd-team-row__meta   { grid-area: meta; }
 
     .hd-panel__body {
-        padding: var(--space-3);
+        padding: var(--space-3) var(--space-4);
     }
 
     /* 2.75rem tiles around a 2.5rem sprite, ten across a 730px column: the
