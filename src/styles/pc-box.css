@@ -1,0 +1,94 @@
+/* PcBox (src/components/PcBox.jsx) — a team as a box in Bill's PC.
+
+   The wallpaper is the one place a pattern is allowed on a team surface: a
+   faint dot grid in the lead type's tone, the box's own texture in the games.
+   It is low contrast on purpose — it says "box", it does not decorate. The
+   cells are fills on the wallpaper (no lines), an empty one is dashed. */
+
+.pc-box {
+    --pc-box-cell: 2.5rem;
+    display: grid;
+    grid-template-columns: repeat(var(--pc-box-columns, 6), var(--pc-box-cell));
+    gap: var(--space-1);
+    width: max-content;
+    padding: var(--space-1_5);
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, var(--pc-box-tone) 14%, var(--color-surface-raised));
+    background-image: radial-gradient(
+        color-mix(in srgb, var(--pc-box-tone) 30%, transparent) 1px,
+        transparent 1.5px
+    );
+    background-size: var(--space-2) var(--space-2);
+}
+
+.pc-box--sm { --pc-box-cell: 2rem; }
+.pc-box--lg { --pc-box-cell: 3.75rem; }
+
+.pc-box__cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--pc-box-cell);
+    height: var(--pc-box-cell);
+    border-radius: var(--radius-sm);
+}
+
+.pc-box__cell.is-filled {
+    background: color-mix(in srgb, var(--color-surface) 55%, transparent);
+}
+
+.pc-box__cell:not(.is-filled) {
+    outline: 1px dashed color-mix(in srgb, var(--pc-box-tone) 35%, var(--color-border-strong));
+    outline-offset: -1px;
+}
+
+/* A little larger than the cell: pixel sprites carry their own margin. */
+.pc-box__sprite {
+    width: calc(var(--pc-box-cell) * 1.2);
+    height: calc(var(--pc-box-cell) * 1.2);
+    max-width: none;
+    image-rendering: pixelated;
+    pointer-events: none;
+}
+
+/* The box under the pointer: its members hop between two frames, like the
+   highlighted icon in the games' party menu — steps, transform only, one
+   box at a time, gone under reduced motion. The host opts in by putting
+   .pc-box-host on the element the pointer is over. */
+@media (prefers-reduced-motion: no-preference) {
+    .pc-box-host:hover .pc-box__cell.is-filled .pc-box__sprite,
+    .pc-box-host:focus-visible .pc-box__cell.is-filled .pc-box__sprite {
+        animation: pc-box-hop 0.5s steps(1, end) infinite;
+        animation-delay: calc(var(--i, 0) * -0.25s);
+    }
+}
+
+@keyframes pc-box-hop {
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-4%); }
+}
+
+/* A fluid box: cells share the width it is given (cards, phone rows). */
+.pc-box--fluid {
+    width: 100%;
+    grid-template-columns: repeat(var(--pc-box-columns, 6), minmax(0, 1fr));
+}
+
+.pc-box--fluid .pc-box__cell {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1;
+}
+
+.pc-box--fluid .pc-box__sprite {
+    width: 120%;
+    height: 120%;
+}
+
+/* The wallpaper fills its container; the cells stay their size, centred —
+   the box on a card, with room either side like the games' box screen. */
+.pc-box--wide {
+    width: 100%;
+    justify-content: center;
+    padding-block: var(--space-3);
+}

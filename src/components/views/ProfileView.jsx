@@ -531,6 +531,118 @@ export function ProfileView({
                         </div>
                     </SectionCard>
 
+                </div>
+
+                <div className="profile-layout__column">
+                    {/* One card for both faces: the partner and the trainer side by
+                        side, and — once both exist — which one is public. Two cards
+                        and a block of tiles used to stack ~600px for this. */}
+                    <SectionCard
+                        className="profile-card--avatar"
+                        title={t('profile.sectionAvatar')}
+                        subtitle={t('profile.sectionAvatarDesc')}
+                        icon={<StarsIcon className="w-5 h-5" />}
+                    >
+                        <div className="profile-avatar-pair">
+                            <div className="profile-avatar-card">
+                                <button
+                                    type="button"
+                                    className="profile-avatar-preview"
+                                    onClick={onOpenPokemonSelector}
+                                    aria-label={greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
+                                >
+                                    {greetingPokemonId ? (
+                                        <Sprite
+                                            src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
+                                            alt=""
+                                            className="profile-avatar-preview__sprite"
+                                        />
+                                    ) : (
+                                        <span className="profile-avatar-preview__fallback">?</span>
+                                    )}
+                                </button>
+                                <div className="profile-avatar-actions">
+                                    <p className="profile-avatar-actions__label">{t('profile.avatarChoicePokemon')}</p>
+                                    <div className="profile-avatar-actions__buttons">
+                                        <button type="button" onClick={onOpenPokemonSelector} className="profile-button profile-button--primary">
+                                            {greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
+                                        </button>
+                                        {greetingPokemonId && (
+                                            <button type="button" onClick={onClearLocalGreeting} className="profile-button">
+                                                {t('profile.removeAvatarBtn')}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="profile-avatar-card">
+                                <button
+                                    type="button"
+                                    className="profile-avatar-preview"
+                                    onClick={onOpenTrainerSelector}
+                                    aria-label={trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
+                                    title={t('profile.sectionTrainerDesc')}
+                                >
+                                    {trainerSprite ? (
+                                        <Sprite
+                                            src={trainerSpriteUrl(trainerSprite)}
+                                            alt=""
+                                            className="profile-avatar-preview__sprite profile-avatar-preview__sprite--pixel"
+                                        />
+                                    ) : (
+                                        <span className="profile-avatar-preview__fallback">?</span>
+                                    )}
+                                </button>
+                                <div className="profile-avatar-actions">
+                                    <p className="profile-avatar-actions__label">{t('profile.avatarChoiceTrainer')}</p>
+                                    <div className="profile-avatar-actions__buttons">
+                                        <button type="button" onClick={onOpenTrainerSelector} className="profile-button profile-button--primary">
+                                            {trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Which of the two avatars is the public one. Only worth
+                            asking once both exist. */}
+                        {trainerSprite && greetingPokemonId && (
+                            <div className="profile-avatar-choice">
+                                <p className="profile-avatar-choice__label">{t('profile.avatarChoiceLabel')}</p>
+                                <div className="segmented segmented--block profile-avatar-choice__options" role="group" aria-label={t('profile.avatarChoiceLabel')}>
+                                    <button
+                                        type="button"
+                                        onClick={() => onChangeAvatarPreference('pokemon')}
+                                        aria-pressed={avatarPreference !== 'trainer'}
+                                        className="segmented__item profile-avatar-choice__option"
+                                    >
+                                        <img
+                                            src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
+                                            alt=""
+                                            aria-hidden="true"
+                                        />
+                                        <span>{t('profile.avatarChoicePokemon')}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => onChangeAvatarPreference('trainer')}
+                                        aria-pressed={avatarPreference === 'trainer'}
+                                        className="segmented__item profile-avatar-choice__option"
+                                    >
+                                        <img
+                                            src={trainerSpriteUrl(trainerSprite)}
+                                            alt=""
+                                            aria-hidden="true"
+                                            className="profile-avatar-choice__pixel"
+                                        />
+                                        <span>{t('profile.avatarChoiceTrainer')}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </SectionCard>
+
                     <SectionCard
                         className="profile-card--gameplay"
                         title={t('profile.sectionTeraTitle')}
@@ -552,6 +664,9 @@ export function ProfileView({
                         <SearchShortcutCard shortcut={searchShortcut} onChange={onChangeSearchShortcut} />
                     ) : null}
 
+                </div>
+
+                <div className="profile-layout__column">
                     <NotificationsCard />
 
                     <SectionCard
@@ -592,115 +707,6 @@ export function ProfileView({
                             </button>
                         </div>
                     </SectionCard>
-                </div>
-
-                <div className="profile-layout__column">
-                    <SectionCard
-                        className="profile-card--avatar"
-                        title={t('profile.sectionAvatar')}
-                        subtitle={t('profile.sectionAvatarDesc')}
-                        icon={<StarsIcon className="w-5 h-5" />}
-                    >
-                        <div className="profile-avatar-card">
-                            <div className="profile-avatar-preview">
-                                {greetingPokemonId ? (
-                                    <Sprite
-                                        src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
-                                        alt="Greeting Pokémon"
-                                        className="profile-avatar-preview__sprite"
-                                    />
-                                ) : (
-                                    <span className="profile-avatar-preview__fallback">?</span>
-                                )}
-                            </div>
-                            <div className="profile-avatar-actions">
-                                <button
-                                    type="button"
-                                    onClick={onOpenPokemonSelector}
-                                    className="profile-button profile-button--primary"
-                                >
-                                    {greetingPokemonId ? t('profile.changeAvatarBtn') : t('profile.pickAvatarBtn')}
-                                </button>
-                                {greetingPokemonId && (
-                                    <button
-                                        type="button"
-                                        onClick={onClearLocalGreeting}
-                                        className="profile-button"
-                                    >
-                                        {t('profile.removeAvatarBtn')}
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </SectionCard>
-
-                    <SectionCard
-                        className="profile-card--avatar"
-                        title={t('profile.sectionTrainer')}
-                        subtitle={t('profile.sectionTrainerDesc')}
-                        icon={<AccountIcon className="w-5 h-5" />}
-                    >
-                        <div className="profile-avatar-card">
-                            <div className="profile-avatar-preview">
-                                {trainerSprite ? (
-                                    <Sprite
-                                        src={trainerSpriteUrl(trainerSprite)}
-                                        alt="Trainer sprite"
-                                        className="profile-avatar-preview__sprite profile-avatar-preview__sprite--pixel"
-                                    />
-                                ) : (
-                                    <span className="profile-avatar-preview__fallback">?</span>
-                                )}
-                            </div>
-                            <div className="profile-avatar-actions">
-                                <button
-                                    type="button"
-                                    onClick={onOpenTrainerSelector}
-                                    className="profile-button profile-button--primary"
-                                >
-                                    {trainerSprite ? t('profile.changeTrainerBtn') : t('profile.pickTrainerBtn')}
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Which of the two avatars is the public one. Only worth
-                            asking once both exist. */}
-                        {trainerSprite && greetingPokemonId && (
-                            <div className="profile-avatar-choice">
-                                <p className="profile-avatar-choice__label">{t('profile.avatarChoiceLabel')}</p>
-                                <div className="profile-avatar-choice__options" role="group" aria-label={t('profile.avatarChoiceLabel')}>
-                                    <button
-                                        type="button"
-                                        onClick={() => onChangeAvatarPreference('pokemon')}
-                                        aria-pressed={avatarPreference !== 'trainer'}
-                                        className={`profile-avatar-choice__option ${avatarPreference !== 'trainer' ? 'is-active' : ''}`}
-                                    >
-                                        <img
-                                            src={getPokemonArtworkSpriteUrl(greetingPokemonId, { shiny: greetingPokemonIsShiny })}
-                                            alt=""
-                                            aria-hidden="true"
-                                        />
-                                        <span>{t('profile.avatarChoicePokemon')}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => onChangeAvatarPreference('trainer')}
-                                        aria-pressed={avatarPreference === 'trainer'}
-                                        className={`profile-avatar-choice__option ${avatarPreference === 'trainer' ? 'is-active' : ''}`}
-                                    >
-                                        <img
-                                            src={trainerSpriteUrl(trainerSprite)}
-                                            alt=""
-                                            aria-hidden="true"
-                                            className="profile-avatar-choice__pixel"
-                                        />
-                                        <span>{t('profile.avatarChoiceTrainer')}</span>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </SectionCard>
-
                     <SectionCard
                         className="profile-card--account"
                         meta={<span className="profile-pill">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>}

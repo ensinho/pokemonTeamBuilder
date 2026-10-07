@@ -21,7 +21,7 @@ npm run lint 2>&1 | tail -2    # compare the TOTAL to the baseline, not to zero
 npx eslint <touched files>     # nothing new in what you edited
 ```
 
-Lint baseline: **91 problems (60 errors, 31 warnings) on 2026-09-24** (update it when a change lowers it). A change
+Lint baseline: **76 problems (46 errors, 30 warnings) on 2026-10-06** (update it when a change lowers it). A change
 may lower it, never raise it. Watch for `react-refresh/only-export-components`
 (a hook and a component in one file) and `no-undef` after moving code.
 

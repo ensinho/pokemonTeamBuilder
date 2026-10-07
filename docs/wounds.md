@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-06 — The partner picker paged Firestore for a list the static index already had `perf`
+- **Symptom:** the "Select partner Pokémon" modal showed "Browsing 200 loaded Pokémon", needed a "Load more" button to reach later generations, and searched with a Firestore name-prefix query per keystroke (debounced). Tapping a tile applied the choice at once, with no way to look before committing.
+- **Root cause:** `GreetingPokemonSelectorModal` predated `pokemon-index.json` and kept its own `getDocs` pagination over `artifacts/pokemonTeamBuilder/pokemons` — the same perf wound the Pokédex list already paid for.
+- **Fix:** the list is `loadPokemonIndex()` (1025 base Pokémon, forms excluded), filtered by name/dex number and type on the client; tiles render 120 at a time behind an `IntersectionObserver` sentinel, with `content-visibility: auto`. The choice is staged — tap marks, **Save** (footer, bottom-left) commits, double-click does both — and shiny is a `<Switch>` that fires `useShinyBurst` on the footer preview.
+- **Correct pattern:** any Pokémon picker lists from the static index (`loadPokemonIndex`), never from Firestore; Firestore is for one Pokémon's full doc, on demand.
+- **Files:** `src/components/modals/GreetingPokemonSelectorModal.jsx`, `src/styles/greeting-selector-modal.css`, `src/components/AppLayout.jsx`, `src/constants/translations.js`
+
 ### 2026-10-06 — Home panels: title and content on different left edges, meta row past the panel `dispattern`
 - **Symptom:** on desktop each Home panel's title sat 17px in while its content sat 13px in (the Recent teams cards 8px), the VGC Meta row ran past the panel's right edge at 1440px, and the puzzle teaser stood 29px above the timeline where every other block in the column is 12px apart.
 - **Root cause:** `.hd-panel__head` used `--space-4` inline while `.hd-panel__body` used `--space-3` / `--space-3_5` and `.hd-continue-list` `--space-2`; `repeat(10, 1fr)` floors each column at its min-content, so one long name ("Charizard Mega Y") widened its column; the teaser's `mb-4` from its old main-column slot survived inside the sidebar's gap.
