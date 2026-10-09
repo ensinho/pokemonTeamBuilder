@@ -257,6 +257,12 @@ items' internal padding, never fall between.
 
 ## Sizing must scale
 
+**Desktop density (2026-10-09):** from 1024 to 1919px the root runs at 90%
+(`--ui-density` × 0.9 in `index.css`) — automatic browser-zoom-90% for laptops
+and medium monitors; 1920+ gets the full baseline. Because of this, anything
+sized in `px` is 11% larger than its neighbours in that band. One more reason
+the rule below has no exceptions.
+
 Size type and spacing in `rem`/`em`, never `px`. The interface-scale control
 (`--ui-scale`) works by scaling the root font-size — `px` values silently opt out
 and break the layout at non-100% scale. The one exception is the iOS zoom guard

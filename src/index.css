@@ -604,6 +604,24 @@ html {
     font-size: calc(100% * var(--ui-density) * var(--ui-scale, 1));
 }
 
+/* Laptops and medium monitors run the app at 90% (2026-10-09, Enzo: "nesses
+   monitores menores ainda ficou bem apertado… zoom automático para entre
+   1280 e 1919, 90%"). Exactly what browser zoom 90% does — type, spacing,
+   controls and the rail all shrink together, since everything is rem — but
+   automatic, and without touching the user's own --ui-scale (the stepper
+   still reads 100%, and it multiplies on top of this).
+
+   From 1024, not 1280: the desktop layout starts at 1024, and a narrower
+   window must never get *bigger* type than a wider one. At 1920 and up the
+   page has the room, so it returns to the full baseline. Media queries are
+   measured in CSS px, never in rem, so changing the root size here cannot
+   move any breakpoint. */
+@media (min-width: 1024px) and (max-width: 1919px) {
+    html {
+        --ui-density: calc(1.06 * 0.9);
+    }
+}
+
 html, body {
     font-family: var(--font-body);
     -webkit-text-size-adjust: 100%;
