@@ -1082,14 +1082,14 @@ button.cozy-journey__row:hover {
 
 .cozy-layout {
     display: grid;
-    gap: var(--space-4);
+    gap: var(--page-gap);
 }
 
 .cozy-main,
 .cozy-rail {
     display: flex;
     flex-direction: column;
-    gap: var(--space-4);
+    gap: var(--page-gap);
     min-width: 0;
 }
 
@@ -1100,7 +1100,7 @@ button.cozy-journey__row:hover {
 
 @media (min-width: 1280px) {
     .cozy-layout {
-        grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+        grid-template-columns: minmax(0, 1fr) var(--page-rail-width);
         align-items: start;
     }
 
@@ -1112,6 +1112,18 @@ button.cozy-journey__row:hover {
     /* Level with the hero's top edge, not with the partner stepping out of it. */
     .cozy-layout:has(> .cozy-main > .cozy-hero:first-child) > .cozy-rail {
         margin-top: var(--space-8);
+    }
+}
+
+/* 1024–1279: the rail drops under the main column. Stacked, each of its
+   cards spanned the whole page for a few lines of content; side by side they
+   fill the row they sit on. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+    .cozy-rail {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+        gap: var(--page-gap);
     }
 }
 

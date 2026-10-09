@@ -767,9 +767,12 @@
    analysis, and a bordered tray round the slots inside the team box).
    ============================================================ */
 /* The composer column has a floor: at 3/12 of a 1440 window it was 254px and
-   "Ameaças do meta" ran out of its own tab strip. */
+   "Ameaças do meta" ran out of its own tab strip. It is the shell's rail
+   (17rem floor, growing with the monitor) so the team panel gains room on a
+   1920 screen instead of the picker taking every extra pixel. */
 .tb-desk {
-    grid-template-columns: minmax(17rem, 20rem) minmax(0, 1fr);
+    grid-template-columns: var(--page-rail-width) minmax(0, 1fr);
+    gap: var(--page-gap);
 }
 
 .tb-desk__composer {

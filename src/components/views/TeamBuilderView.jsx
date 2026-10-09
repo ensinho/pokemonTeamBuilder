@@ -520,7 +520,7 @@ export function TeamBuilderView({
                 />
             ) : null}
 
-            {isDesktopLayout ? <main className="team-builder tb-desk grid gap-6 xl:gap-8">
+            {isDesktopLayout ? <main className="team-builder tb-desk grid">
                 {/* The composer: one surface for the team you are building — its
                     name, its six slots, what it adds up to and what you can do
                     with it. v3 folded the meta-core and guide boxes that sat

@@ -60,6 +60,25 @@ Underscores (not dots) in token names: `--space-0_5`, not `--space-0.5`. A dot i
 a custom-property name is legal CSS but breaks Tailwind's arbitrary-value parser
 and several editor tools.
 
+### Page rhythm (desktop layout tokens, 2026-10-09)
+
+A view's *layout* — the gutter around the page, the gap between its columns,
+the width of a side column — reads three variables set on `.app-shell`
+(`app-shell.css`), never its own numbers:
+
+| Token | Phone | Desktop (fluid 1280 → 1920) |
+|---|---|---|
+| `--page-gutter` | `clamp(1rem, …, 2rem)` | `--space-5` → `--space-10` |
+| `--page-gap` | `--space-4` | `--space-4` → `--space-6` |
+| `--page-rail-width` | 19rem | 17rem → 22rem |
+
+Home's rail, the forum's rail and the builder's team column all use
+`--page-rail-width`, so side columns line up across pages and grow on a
+larger monitor. A new two-column view does the same:
+`grid-template-columns: minmax(0, 1fr) var(--page-rail-width); gap: var(--page-gap)`.
+Pick breakpoints for the medium monitors people actually use (1280–1600, minus
+the 15.5rem nav): a third column that only fits from 1440 starts at 1440.
+
 ## Radius
 
 `--radius-sm` 6px (badges/chips) · `--radius-md` 10px (buttons/inputs) ·

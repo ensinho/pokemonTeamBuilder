@@ -17,6 +17,14 @@
        portal to <body> sit outside .app-shell and still need to reserve the
        bar's band. */
     --app-shell-top-band-height: 3.75rem;
+    /* Page rhythm, one set of values every view reads (2026-10-09). They were
+       restated per view — a 19rem rail here, an 18–22rem one there, a 10px gap
+       beside a 16px one — so two pages side by side never shared an edge, and
+       none of them grew with the monitor. Phones keep the fixed defaults; the
+       desktop block below makes them fluid. */
+    --page-gutter: clamp(1rem, 0.6rem + 1.2vw, 2rem);
+    --page-gap: var(--space-4);
+    --page-rail-width: 19rem;
     display: flex;
     /* Pinned to the viewport, not measured against it. Both viewport units
        failed on a real phone: `100vh` is the *large* viewport in mobile Safari
@@ -1455,12 +1463,12 @@
 }
 
 .app-shell__body {
-    /* Fluid horizontal gutter: 1rem on phones, scaling to 2rem on wide screens
-       so the 1024–1536 laptop band breathes without a hard breakpoint snap. The
-       clamp is the one legitimate non-token spacing here; its endpoints are
-       --space-4 and --space-8. */
+    /* Fluid horizontal gutter (--page-gutter on .app-shell): 1rem on phones,
+       growing with the window on desktop so a medium monitor breathes without
+       a hard breakpoint snap. The header and footer read the same variable, so
+       the title, the content and the credit share one left edge. */
     padding-block: var(--space-6) var(--space-10);
-    padding-inline: clamp(1rem, 0.6rem + 1.2vw, 2rem);
+    padding-inline: var(--page-gutter);
 }
 
 /* The page column. Deliberately unconstrained: a max-width was tried here on
@@ -1618,6 +1626,15 @@
     .app-shell {
         --app-shell-gutter: var(--space-3);
         --app-shell-top-band-height: 3.5rem;
+        /* Fluid between a 1280 laptop and a 1920 monitor, so the medium screens
+           most people use (1366–1600) land between the two ends instead of on
+           a breakpoint's edge. Endpoints are grid tokens: gutter --space-5 →
+           --space-10, gap --space-4 → --space-6. The rail is the one side
+           column every two-column view uses (Home, forum, builder): ~17.6rem
+           at 1280, ~18.7rem at 1536, ~20.4rem at 1920, capped at 22rem. */
+        --page-gutter: clamp(var(--space-5), 0.25rem + 1.6vw, var(--space-10));
+        --page-gap: clamp(var(--space-4), 0.25rem + 1.2vw, var(--space-6));
+        --page-rail-width: clamp(17rem, 12rem + 7vw, 22rem);
     }
 
     /* `transform: none`, not `translateX(0)`. The rail is a drawer only below
@@ -1649,14 +1666,14 @@
        left edge as the content under it. */
     .app-shell__header {
         padding-block: 0;
-        padding-inline: clamp(1rem, 0.6rem + 1.2vw, 2rem);
+        padding-inline: var(--page-gutter);
     }
 
     /* Body gutter is handled fluidly on .app-shell__body itself; keep the footer
        aligned to the same fluid gutter. */
     .app-shell__footer {
-        padding-left: clamp(1rem, 0.6rem + 1.2vw, 2rem);
-        padding-right: clamp(1rem, 0.6rem + 1.2vw, 2rem);
+        padding-left: var(--page-gutter);
+        padding-right: var(--page-gutter);
     }
 }
 

@@ -1031,7 +1031,10 @@
     }
 }
 
-@media (min-width: 1280px) {
+/* Three columns from 1440, not 1280 (2026-10-09). A 1280–1366 monitor less
+   the 15.5rem rail left each column ~300px, and the theme names ran out
+   ("Eclip…", "Mid…") — two columns are what a medium screen actually fits. */
+@media (min-width: 1440px) {
     .profile-theme-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
