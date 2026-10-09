@@ -207,6 +207,7 @@ export const TRANSLATIONS = {
             signIn: 'Sign in',
             signOut: 'Sign out',
             feed: 'Forum feed',
+            forum: 'Forum',
             friends: 'Friends',
             battles: 'Battles',
             pokepuzzle: 'PokéPuzzle',
@@ -219,7 +220,10 @@ export const TRANSLATIONS = {
             items: 'Items',
             tournaments: 'Tournaments',
             damageCalc: 'Damage calculator',
-            speedTiers: 'Speed tiers'
+            speedTiers: 'Speed tiers',
+            // Rail labels: the full names above stay the page titles.
+            damageCalcShort: 'Calculator',
+            speedTiersShort: 'Speeds'
         },
         db: {
             movesSubtitle: 'Every move, with power, accuracy and effect',
@@ -1621,6 +1625,7 @@ export const TRANSLATIONS = {
             signIn: 'Entrar',
             signOut: 'Sair',
             feed: 'Feed e fórum',
+            forum: 'Fórum',
             friends: 'Amigos',
             battles: 'Batalhas',
             pokepuzzle: 'PokéPuzzle',
@@ -1633,7 +1638,10 @@ export const TRANSLATIONS = {
             items: 'Itens',
             tournaments: 'Torneios',
             damageCalc: 'Calculadora de dano',
-            speedTiers: 'Tiers de velocidade'
+            speedTiers: 'Tiers de velocidade',
+            // Rótulos da sidebar: os nomes completos acima seguem como título da página.
+            damageCalcShort: 'Calculadora',
+            speedTiersShort: 'Velocidades'
         },
         db: {
             movesSubtitle: 'Todos os movimentos, com poder, precisão e efeito',

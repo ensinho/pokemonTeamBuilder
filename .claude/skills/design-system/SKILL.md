@@ -60,6 +60,25 @@ Underscores (not dots) in token names: `--space-0_5`, not `--space-0.5`. A dot i
 a custom-property name is legal CSS but breaks Tailwind's arbitrary-value parser
 and several editor tools.
 
+### Page rhythm (desktop layout tokens, 2026-10-09)
+
+A view's *layout* — the gutter around the page, the gap between its columns,
+the width of a side column — reads three variables set on `.app-shell`
+(`app-shell.css`), never its own numbers:
+
+| Token | Phone | Desktop (fluid 1280 → 1920) |
+|---|---|---|
+| `--page-gutter` | `clamp(1rem, …, 2rem)` | `--space-5` → `--space-10` |
+| `--page-gap` | `--space-4` | `--space-4` → `--space-6` |
+| `--page-rail-width` | 19rem | 17rem → 22rem |
+
+Home's rail, the forum's rail and the builder's team column all use
+`--page-rail-width`, so side columns line up across pages and grow on a
+larger monitor. A new two-column view does the same:
+`grid-template-columns: minmax(0, 1fr) var(--page-rail-width); gap: var(--page-gap)`.
+Pick breakpoints for the medium monitors people actually use (1280–1600, minus
+the 12.5rem nav): a third column that only fits from 1440 starts at 1440.
+
 ## Radius
 
 `--radius-sm` 6px (badges/chips) · `--radius-md` 10px (buttons/inputs) ·
@@ -88,6 +107,30 @@ highlight on the dark themes, `--shadow-sm` on the light ones. It is applied in
 one zero-specificity `:where()` list in `index.css` (desktop), plus the phone
 home in `home-dashboard.css`. Add a new view's top-level panel to that list
 rather than writing the highlight inline.
+
+**`--card-sheen`** (2026-10-09) is the material of a *card*: on the dark themes
+a 1px lit top edge, a soft wash of light entering from the top (an inset shadow
+offset downward, so it paints only the top band), and `--elevation-1`;
+`--card-sheen-hover` brightens it for a clickable card. Light themes: `none`.
+Depth on a near-black page has to come from light — a black drop shadow on
+`#09090b` is invisible, which is why every card read "chapado". It is applied
+in one zero-specificity `:where()` list in `index.css`; add a new card class
+there, and never write the highlight inline. It is a shadow, not a gradient,
+because a card's own `background:` shorthand would erase a background-image.
+`--canvas-light` is the faint pool of the theme's primary at the top of the
+page on dark themes (desktop, `.app-shell__content`, scrolls away) — the room
+the cards stand in. Neither one animates.
+
+**The page's ground** (2026-10-09, Enzo): behind the page — never behind the
+rail — a dot grid (`--canvas-dots`, every `--canvas-dot-gap`) and four hairline
+shapes (`--canvas-shapes`: two concentric rings top-right, an arc and a faint
+pool bottom-left), all mixed from `--color-fg` / `--color-primary`, so they
+follow every theme. They are backgrounds on `.app-shell__content` with
+attachment `scroll` (they stay put while the page moves over them), desktop
+only. Opaque cards are what make it work: keep it to these layers, keep it
+static, and never put the pattern inside a card or panel. `--canvas-shapes` is
+exactly four layers — `app-shell.css` lists sizes and attachments by position,
+so adding a shape means updating both lists.
 
 Prefer a border over a shadow. Most surfaces need `1px solid var(--color-border)`
 and nothing else. Reserve shadow for things that genuinely float: modals,

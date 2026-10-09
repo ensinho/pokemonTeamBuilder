@@ -802,7 +802,7 @@ export default function AppLayout() {
     // put in the header — see the note at its render site.
     const hasActiveTeamMembers = (activeTeam?.pokemons?.length ?? 0) > 0;
 
-    // The four destinations that carry the app. They sit unlabelled at the top of
+    // The five destinations that carry the app. They sit unlabelled at the top of
     // the rail and never fold, so the things people actually came for are always
     // one click away and always in the same place — the rail's shape does not
     // change as you move around it. Everything else lives in the folding sections
@@ -811,12 +811,17 @@ export default function AppLayout() {
     // v3 (2026-10-02) grouped the rail by what the user came to do rather than
     // by when a feature shipped: the pinned four are the core loop — build, keep,
     // look up — so "My teams" (your own work) left PokéData, where it sat between
-    // Gyms and Moves, and the forum joined Friends and Battles under Community.
+    // Gyms and Moves.
+    //
+    // 2026-10-09 (Enzo): the forum is pinned too, between Pokédex and My teams —
+    // it is where people go every day, and two clicks through Community hid it.
+    // The pinned label is the short "Fórum"; the page title keeps "Feed e fórum".
     const primaryNavItems = useMemo(() => ([
         { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
         { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
-        { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <BoxIcon className="w-5 h-5 shrink-0" /> },
         { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
+        { key: 'feed', label: t('nav.forum'), path: '/feed', icon: <MessageIcon /> },
+        { key: 'favorites', label: t('nav.favorites'), path: '/favorites', icon: <BoxIcon className="w-5 h-5 shrink-0" /> },
     ]), [t]);
 
     // Sections hold the long tail only — a link promoted to `primaryNavItems`
@@ -831,8 +836,10 @@ export default function AppLayout() {
                 items: [
                     { key: 'meta', label: language === 'pt' ? 'Meta & uso' : 'Meta & usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
                     { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
-                    { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
-                    { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
+                    // Short in the rail so it can stay narrow; the search keeps the
+                    // full name, so "dano" / "tiers" still find them.
+                    { key: 'damageCalc', label: t('nav.damageCalcShort'), searchLabel: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
+                    { key: 'speedTiers', label: t('nav.speedTiersShort'), searchLabel: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
                 ]
             },
             {
@@ -858,12 +865,12 @@ export default function AppLayout() {
                 ]
             },
             {
-                // Community: everything that involves other trainers. The key stays
-                // 'dashboard' so a stored open/folded preference still applies.
+                // Community: the other trainers — the forum itself is pinned above.
+                // The key stays 'dashboard' so a stored open/folded preference
+                // still applies.
                 key: 'dashboard',
                 title: t('nav.dashboard'),
                 items: [
-                    { key: 'feed', label: t('nav.feed'), path: '/feed', icon: <MessageIcon /> },
                     { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <AccountIcon className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
                     { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <SwordsIcon className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
                 ]
@@ -914,7 +921,7 @@ export default function AppLayout() {
         const seen = new Set();
         return [...primaryNavItems, ...navigationGroups.flatMap((group) => group.items)]
             .filter((item) => item.path && !seen.has(item.key) && seen.add(item.key))
-            .map(({ key, label, path, icon }) => ({ key, label, path, icon }));
+            .map(({ key, label, searchLabel, path, icon }) => ({ key, label: searchLabel || label, path, icon }));
     }, [primaryNavItems, navigationGroups]);
 
     // Landing on a page that lives inside a folded section unfolds it, so "where
@@ -925,7 +932,7 @@ export default function AppLayout() {
     // Returns `previous` untouched when the section is already open — the effect
     // runs on every route change, and a fresh array each time would rewrite
     // localStorage and re-render the rail for nothing. Navigating to one of the
-    // pinned primary links leaves the sections alone: those four are in no
+    // pinned primary links leaves the sections alone: those five are in no
     // section, so there is nothing to reveal, and re-folding the rail on every
     // trip Home would just make it flicker.
     useEffect(() => {

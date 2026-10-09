@@ -3158,3 +3158,174 @@
         display: none;
     }
 }
+
+/* ==========================================================================
+   Desktop breathing room (2026-10-09)
+   On a medium monitor the forum read as cramped (Enzo): 8–10px between
+   every card, a thread header packing back, breadcrumb, badges, count,
+   share and author into two tight rows, and each comment a bordered box
+   inside the bordered thread — box in a box, 186 times. This block
+   re-spaces, swaps the inner borders for fills, and gives the cards the
+   shared material (--card-sheen, index.css); phones keep their layer above.
+   ========================================================================== */
+@media (min-width: 1024px) {
+    /* The rail is the shell's, so the forum's side column lines up with
+       Home's and the builder's instead of being its own 19rem. */
+    .forum-hub-layout,
+    .forum-hub-layout--detail {
+        grid-template-columns: minmax(0, 1fr) var(--page-rail-width);
+        gap: var(--page-gap);
+    }
+
+    .forum-sidebar-right {
+        gap: var(--space-3);
+    }
+
+    .forum-sidebar-card {
+        padding: var(--space-4);
+        box-shadow: var(--card-sheen);
+    }
+
+    .forum-sidebar-card__header {
+        margin-bottom: var(--space-3);
+    }
+
+    /* — Topic list — */
+    .forum-header {
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+        padding: var(--space-4) var(--space-5);
+        box-shadow: var(--surface-sheen);
+    }
+
+    .forum-thread-feed {
+        gap: var(--space-3);
+    }
+
+    /* No lift on hover: a list of large cards that rise under the pointer is
+       the page wobbling. The fill and edge carry the hover. */
+    .thread-card {
+        gap: var(--space-4);
+        padding: var(--space-4) var(--space-5);
+        box-shadow: var(--card-sheen);
+    }
+
+    .thread-card:hover {
+        transform: none;
+        box-shadow: var(--card-sheen-hover);
+    }
+
+    .thread-card__header-row {
+        margin-bottom: var(--space-1);
+    }
+
+    .thread-card__title {
+        margin: var(--space-1) 0 var(--space-1_5);
+    }
+
+    /* — Thread — */
+    .thread-detail {
+        box-shadow: var(--surface-sheen);
+    }
+
+    .thread-detail__header-dock .thread-header {
+        gap: var(--space-3);
+        padding: var(--space-4) var(--space-6);
+    }
+
+    .thread-header__title {
+        font-size: var(--text-lg);
+    }
+
+    .thread-messages-scroll {
+        padding: var(--space-5) var(--space-6) var(--space-6);
+    }
+
+    /* Inside the thread's border, everything separates by fill. */
+    .thread-op-card {
+        border: none;
+        box-shadow: var(--card-sheen);
+        padding: var(--space-4) var(--space-5);
+        margin-bottom: var(--space-6);
+    }
+
+    .thread-op-card__actions {
+        border-top: none;
+        padding-top: 0;
+        margin-top: var(--space-3);
+    }
+
+    .thread-comments-section__header {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: var(--space-4);
+    }
+
+    .comment-list {
+        gap: var(--space-4);
+    }
+
+    .comment-item {
+        gap: var(--space-3);
+    }
+
+    /* The thread line runs through the wider gap to the next avatar. */
+    .comment-item__guide {
+        bottom: calc(-1 * var(--space-4));
+    }
+
+    .comment-item__body {
+        border: none;
+        box-shadow: var(--card-sheen);
+        border-radius: var(--radius-lg);
+        padding: var(--space-3) var(--space-4);
+    }
+
+    .comment-item__body:hover {
+        background: var(--color-surface-hover);
+    }
+
+    .comment-item__header {
+        margin-bottom: var(--space-1_5);
+    }
+
+    .comment-item__quote {
+        margin-bottom: var(--space-2);
+        padding: var(--space-1_5) var(--space-2_5);
+    }
+
+    .comment-item__text {
+        line-height: 1.55;
+    }
+
+    .comment-item__actions {
+        border-top: none;
+        padding-top: 0;
+        margin-top: var(--space-2);
+        gap: var(--space-2);
+    }
+
+    /* The border-top already separates the composer from the scroll; the
+       dark drop-shadow above it was a second edge (and a raw rgba that was
+       wrong on the light themes). */
+    .thread-composer-dock {
+        padding: var(--space-3) var(--space-6) var(--space-4);
+        box-shadow: none;
+    }
+
+    .comment-composer__textarea {
+        min-height: 3rem;
+        padding: var(--space-2_5) var(--space-3_5);
+        line-height: 1.5;
+    }
+
+    .comment-composer__toolbar {
+        margin-top: var(--space-2_5);
+    }
+
+    .comment-composer__quote-banner,
+    .comment-composer__team-banner {
+        padding: var(--space-1_5) var(--space-3);
+        margin-bottom: var(--space-2);
+    }
+}
