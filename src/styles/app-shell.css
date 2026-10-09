@@ -1622,6 +1622,18 @@
     height: 1rem;
 }
 
+/* The canvas light (index.css) scrolls with the page — `local` pins it to the
+   top of the content, not the window — so it greets the top of every view and
+   leaves the reading area flat. Desktop only: below 1024px the page is the
+   panel and the light would sit under the header band. */
+@media (min-width: 1024px) {
+    .app-shell__content {
+        background-image: var(--canvas-light);
+        background-repeat: no-repeat;
+        background-attachment: local;
+    }
+}
+
 @media (min-width: 1024px) {
     .app-shell {
         --app-shell-gutter: var(--space-3);

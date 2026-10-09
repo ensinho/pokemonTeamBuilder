@@ -108,6 +108,19 @@ one zero-specificity `:where()` list in `index.css` (desktop), plus the phone
 home in `home-dashboard.css`. Add a new view's top-level panel to that list
 rather than writing the highlight inline.
 
+**`--card-sheen`** (2026-10-09) is the material of a *card*: on the dark themes
+a 1px lit top edge, a soft wash of light entering from the top (an inset shadow
+offset downward, so it paints only the top band), and `--elevation-1`;
+`--card-sheen-hover` brightens it for a clickable card. Light themes: `none`.
+Depth on a near-black page has to come from light — a black drop shadow on
+`#09090b` is invisible, which is why every card read "chapado". It is applied
+in one zero-specificity `:where()` list in `index.css`; add a new card class
+there, and never write the highlight inline. It is a shadow, not a gradient,
+because a card's own `background:` shorthand would erase a background-image.
+`--canvas-light` is the faint pool of the theme's primary at the top of the
+page on dark themes (desktop, `.app-shell__content`, scrolls away) — the room
+the cards stand in. Neither one animates.
+
 Prefer a border over a shadow. Most surfaces need `1px solid var(--color-border)`
 and nothing else. Reserve shadow for things that genuinely float: modals,
 dropdowns, drag states. Never both on the same element.
