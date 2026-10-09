@@ -1,9 +1,11 @@
 .app-shell {
-    /* 13rem left Portuguese labels like "Calculadora de Dano" wrapping onto two
-       lines once the group children were indented. 15.5rem clears the longest
-       label in both languages *and* the "Pokémon Team Builder" wordmark beside
-       the logo, and matches the reference this design follows. */
-    --app-shell-sidebar-width: 15.5rem;
+    /* 13.5rem (2026-10-09, Enzo: a little narrower, so the page gets the
+       width). Measured in pt and en with its section open: the longest
+       label, "Calculadora de dano", first wraps at 12.5rem; 13rem is the edge
+       and 13.5rem keeps a margin over it. The wordmark wraps to two lines
+       beside the logo, as it already did. It was 15.5rem; 13rem once wrapped
+       that label, back when group children were indented. */
+    --app-shell-sidebar-width: 13.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;
     --app-shell-gutter: var(--space-3);
     /* Inline inset shared by a nav row and the section label above it. They must

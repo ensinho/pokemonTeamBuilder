@@ -77,7 +77,7 @@ Home's rail, the forum's rail and the builder's team column all use
 larger monitor. A new two-column view does the same:
 `grid-template-columns: minmax(0, 1fr) var(--page-rail-width); gap: var(--page-gap)`.
 Pick breakpoints for the medium monitors people actually use (1280–1600, minus
-the 15.5rem nav): a third column that only fits from 1440 starts at 1440.
+the 13.5rem nav): a third column that only fits from 1440 starts at 1440.
 
 ## Radius
 
