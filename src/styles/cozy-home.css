@@ -1098,6 +1098,69 @@ button.cozy-journey__row:hover {
     margin-top: var(--space-8);
 }
 
+/* Desktop hero (2026-10-09, Enzo, from a photo of a 1366 monitor): less air
+   above the card, the headline on one line in pt, and a partner sized to the
+   space it stands in.
+
+   - Air: the partner now steps out by --space-3, so the hero needs only
+     --space-4 of room above it (was --space-8 — 32px of band under the chips).
+     The sprite's 96px frame is mostly transparent at the top, so the frame may
+     reach into the gap without the Pokémon touching the chips.
+   - Headline: "Pronto para a batalha" wrapped to two lines and made the card
+     tall. The size is now fitted to the card: the card is a size container,
+     and the title is sized so the longest headline ("Monte seu primeiro time",
+     23 mono characters ≈ 12.8em at this tracking) fits the width left of the
+     partner. Capped at --text-3xl, floored at --text-xl; wrapping is still
+     allowed below the floor, so nothing overflows.
+   - Partner: 15rem instead of 12rem (2.5× the 96px frame), which fills the
+     corner it used to float in. 3× was tried: with the headline on one line
+     the card got shorter and the battle pad landed on the CTA. 2.5× is not a
+     whole multiple, but on the 125% displays this is tuned for, 2× was not
+     whole device pixels either. The text reserve matches the frame. */
+@media (min-width: 1024px) {
+    .cozy-main > .cozy-hero:first-child {
+        margin-top: var(--space-4);
+    }
+
+    /* The floor is the partner's: its pad must end above the stats and CTA
+       row. A team's party row already makes the card that tall; the empty
+       state ("Monte seu primeiro time") has no party row and put the pad on
+       the CTA. A measure tied to the 15rem frame, not a spacing step. */
+    .cozy-hero__card {
+        container-type: inline-size;
+        min-height: 15rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* The foot sinks to the bottom of a card taller than its content; the
+       --space-4 it always had moves to its upper neighbour, because an auto
+       margin would otherwise collapse to 0 when the card is not taller. */
+    .cozy-hero__card > .cozy-hero__foot {
+        margin-top: auto;
+    }
+
+    .cozy-hero__card > :has(+ .cozy-hero__foot) {
+        margin-bottom: var(--space-4);
+    }
+
+    .cozy-hero__partner {
+        --frame: 15rem;
+        top: calc(var(--space-3) * -1);
+        right: var(--space-4);
+    }
+
+    .cozy-hero__clock,
+    .cozy-home .cozy-hero__title,
+    .cozy-hero__sub {
+        padding-inline-end: min(38%, 15rem);
+    }
+
+    .cozy-home .cozy-hero__title {
+        font-size: clamp(var(--text-xl), (100cqi - min(38cqi, 15rem)) / 13, var(--text-3xl));
+    }
+}
+
 @media (min-width: 1280px) {
     .cozy-layout {
         grid-template-columns: minmax(0, 1fr) var(--page-rail-width);
@@ -1111,7 +1174,7 @@ button.cozy-journey__row:hover {
 
     /* Level with the hero's top edge, not with the partner stepping out of it. */
     .cozy-layout:has(> .cozy-main > .cozy-hero:first-child) > .cozy-rail {
-        margin-top: var(--space-8);
+        margin-top: var(--space-4);
     }
 }
 
