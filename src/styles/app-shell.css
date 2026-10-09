@@ -1,11 +1,13 @@
 .app-shell {
-    /* 13.5rem (2026-10-09, Enzo: a little narrower, so the page gets the
-       width). Measured in pt and en with its section open: the longest
-       label, "Calculadora de dano", first wraps at 12.5rem; 13rem is the edge
-       and 13.5rem keeps a margin over it. The wordmark wraps to two lines
-       beside the logo, as it already did. It was 15.5rem; 13rem once wrapped
-       that label, back when group children were indented. */
-    --app-shell-sidebar-width: 13.5rem;
+    /* 12.5rem (2026-10-09, Enzo: narrower, so the page gets the width; it
+       was 15.5rem). What sets the floor now is the wordmark, not a nav label:
+       "Calculadora de dano" / "Tiers de velocidade" became "Calculadora" /
+       "Velocidades" in the rail (nav.*Short — the page titles keep the full
+       names), and with that every label in pt and en fits down to 11rem.
+       "Pokémon Team Builder" beside the logo holds two lines down to 12.5rem
+       and breaks into three at 12rem — so a longer label, or a wider
+       wordmark, means measuring this again. */
+    --app-shell-sidebar-width: 12.5rem;
     --app-shell-sidebar-collapsed-width: 3.75rem;
     --app-shell-gutter: var(--space-3);
     /* Inline inset shared by a nav row and the section label above it. They must

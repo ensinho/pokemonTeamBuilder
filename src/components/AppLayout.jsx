@@ -836,8 +836,10 @@ export default function AppLayout() {
                 items: [
                     { key: 'meta', label: language === 'pt' ? 'Meta & uso' : 'Meta & usage', path: '/meta', icon: <TrendingUp className="w-5 h-5 shrink-0" /> },
                     { key: 'tournaments', label: t('nav.tournaments'), path: '/tournaments', icon: <TrophyIcon /> },
-                    { key: 'damageCalc', label: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
-                    { key: 'speedTiers', label: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
+                    // Short in the rail so it can stay narrow; the search keeps the
+                    // full name, so "dano" / "tiers" still find them.
+                    { key: 'damageCalc', label: t('nav.damageCalcShort'), searchLabel: t('nav.damageCalc'), path: '/damage-calculator', icon: <CalculatorIcon /> },
+                    { key: 'speedTiers', label: t('nav.speedTiersShort'), searchLabel: t('nav.speedTiers'), path: '/speed-tiers', icon: <GaugeIcon /> },
                 ]
             },
             {
@@ -919,7 +921,7 @@ export default function AppLayout() {
         const seen = new Set();
         return [...primaryNavItems, ...navigationGroups.flatMap((group) => group.items)]
             .filter((item) => item.path && !seen.has(item.key) && seen.add(item.key))
-            .map(({ key, label, path, icon }) => ({ key, label, path, icon }));
+            .map(({ key, label, searchLabel, path, icon }) => ({ key, label: searchLabel || label, path, icon }));
     }, [primaryNavItems, navigationGroups]);
 
     // Landing on a page that lives inside a folded section unfolds it, so "where
