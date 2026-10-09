@@ -1622,15 +1622,19 @@
     height: 1rem;
 }
 
-/* The canvas light (index.css) scrolls with the page — `local` pins it to the
-   top of the content, not the window — so it greets the top of every view and
-   leaves the reading area flat. Desktop only: below 1024px the page is the
-   panel and the light would sit under the header band. */
+/* The page's ground, back to front: the dot grid, four hairline shapes, and
+   the canvas light (all in index.css). The dots and shapes use attachment
+   `scroll` — on a scroll container that means they stay put while the page
+   moves over them; the light is `local`, pinned to the top of the content, so
+   it greets the top of every view and scrolls away. The sidebar is outside
+   this element, so it stays a plain surface. Desktop only: below 1024px the
+   page is the panel, and a pattern under a thumb-scrolled list is noise. */
 @media (min-width: 1024px) {
     .app-shell__content {
-        background-image: var(--canvas-light);
-        background-repeat: no-repeat;
-        background-attachment: local;
+        background-image: var(--canvas-light), var(--canvas-shapes), var(--canvas-dots);
+        background-repeat: no-repeat, no-repeat, no-repeat, no-repeat, no-repeat, repeat;
+        background-size: auto, auto, auto, auto, auto, var(--canvas-dot-gap) var(--canvas-dot-gap);
+        background-attachment: local, scroll, scroll, scroll, scroll, scroll;
     }
 }
 

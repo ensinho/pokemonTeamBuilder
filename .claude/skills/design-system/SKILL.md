@@ -121,6 +121,17 @@ because a card's own `background:` shorthand would erase a background-image.
 page on dark themes (desktop, `.app-shell__content`, scrolls away) — the room
 the cards stand in. Neither one animates.
 
+**The page's ground** (2026-10-09, Enzo): behind the page — never behind the
+rail — a dot grid (`--canvas-dots`, every `--canvas-dot-gap`) and four hairline
+shapes (`--canvas-shapes`: two concentric rings top-right, an arc and a faint
+pool bottom-left), all mixed from `--color-fg` / `--color-primary`, so they
+follow every theme. They are backgrounds on `.app-shell__content` with
+attachment `scroll` (they stay put while the page moves over them), desktop
+only. Opaque cards are what make it work: keep it to these layers, keep it
+static, and never put the pattern inside a card or panel. `--canvas-shapes` is
+exactly four layers — `app-shell.css` lists sizes and attachments by position,
+so adding a shape means updating both lists.
+
 Prefer a border over a shadow. Most surfaces need `1px solid var(--color-border)`
 and nothing else. Reserve shadow for things that genuinely float: modals,
 dropdowns, drag states. Never both on the same element.

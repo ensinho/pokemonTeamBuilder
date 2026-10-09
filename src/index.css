@@ -449,6 +449,25 @@
        Light themes: none. */
     --canvas-light: radial-gradient(64rem 30rem at 50% -8rem, color-mix(in srgb, var(--color-primary) 9%, transparent), transparent 72%);
 
+    /* The page's ground (2026-10-09, Enzo: "fundo levemente pontilhado com
+       elementos geométricos suaves… assim os componentes ficam bem mais à
+       frente"). A dot grid and a few hairline rings sit *behind* the page —
+       never behind the rail — so every opaque card reads as standing in front
+       of something. Both are mixed from theme tokens, so they follow all six
+       themes, and both stay in place while the page scrolls (attachment
+       `scroll` on the scroller), like a surface under glass. Static: nothing
+       here animates. Exactly four shape layers — .app-shell__content lists
+       their sizes and attachments by position. */
+    --canvas-dots: radial-gradient(circle, color-mix(in srgb, var(--color-fg) 9%, transparent) 0.0625rem, transparent 0.09375rem);
+    --canvas-dot-gap: 1.5rem;
+    --canvas-ring: color-mix(in srgb, var(--color-primary) 16%, transparent);
+    --canvas-ring-quiet: color-mix(in srgb, var(--color-fg) 7%, transparent);
+    --canvas-shapes:
+        radial-gradient(circle 15rem at calc(100% - 5rem) 9rem, transparent calc(100% - 1.5px), var(--canvas-ring) calc(100% - 1px), var(--canvas-ring) calc(100% - 0.5px), transparent 100%),
+        radial-gradient(circle 9.5rem at calc(100% - 5rem) 9rem, transparent calc(100% - 1.5px), var(--canvas-ring-quiet) calc(100% - 1px), var(--canvas-ring-quiet) calc(100% - 0.5px), transparent 100%),
+        radial-gradient(circle 20rem at 3rem calc(100% + 4rem), transparent calc(100% - 1.5px), var(--canvas-ring-quiet) calc(100% - 1px), var(--canvas-ring-quiet) calc(100% - 0.5px), transparent 100%),
+        radial-gradient(circle 26rem at 3rem calc(100% + 4rem), color-mix(in srgb, var(--color-primary) 6%, transparent), transparent 70%);
+
     --card-sheen-hover:
         inset 0 1px 0 0 color-mix(in srgb, var(--color-fg) 15%, transparent),
         inset 0 3rem 3rem 0 color-mix(in srgb, var(--color-fg) 6%, transparent),
