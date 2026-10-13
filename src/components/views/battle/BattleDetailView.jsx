@@ -11,6 +11,7 @@ import { useAuthStore } from '../../../store/useAuthStore';
 import { useTranslation } from '../../../hooks/useTranslation';
 import { useDocumentMeta } from '../../../hooks/useDocumentMeta';
 import { useMoveTypes } from '../../../hooks/useMoveTypes';
+import { useBattleDex } from '../../../hooks/useBattleDex';
 import { AvatarSprite } from '../../AvatarSprite';
 import { EmptyState } from '../../EmptyState';
 import { PokeballIcon } from '../../icons';
@@ -176,6 +177,7 @@ export function BattleDetailView() {
     const { t, language } = useTranslation();
     const { battleId } = useParams();
     const navigate = useNavigate();
+    useBattleDex(); // warm the tooltip data before the first hover
 
     const userId = useAuthStore((state) => state.userId);
     const { battles } = useBattles();

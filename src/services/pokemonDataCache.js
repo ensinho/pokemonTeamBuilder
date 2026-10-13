@@ -293,6 +293,10 @@ export const loadGames = async () => {
         .filter((g) => g && g.key && Array.isArray(g.pokemonIds));
 };
 
+// Move + species fields for the battle tooltips (scripts/build-battle-dex.mjs).
+// Replaces a client-side @pkmn/sim import that cost 1 MB gzip.
+export const loadBattleDex = () => fetchLargeStaticJson('battle-dex.json');
+
 export const loadPokemonIndex = async () => {
     const staticPokemonIndex = await fetchLargeStaticJson('pokemon-index.json');
     return normalizeResourceList(staticPokemonIndex, 'pokemons')
