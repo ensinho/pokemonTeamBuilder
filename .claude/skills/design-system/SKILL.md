@@ -104,8 +104,7 @@ the six themes — a shadow tuned on `dark` is invisible on `solar` and muddy on
 
 **`--surface-sheen`** is the material of a top-level region panel: a 1px top
 highlight on the dark themes, `--shadow-sm` on the light ones. It is applied in
-one zero-specificity `:where()` list in `index.css` (desktop), plus the phone
-home in `home-dashboard.css`. Add a new view's top-level panel to that list
+one zero-specificity `:where()` list in `index.css` (desktop). Add a new view's top-level panel to that list
 rather than writing the highlight inline.
 
 **`--card-sheen`** (2026-10-09) is the material of a *card*: on the dark themes

@@ -552,8 +552,7 @@
    any panel that sets its own box-shadow (a selection ring, a focus ring, a
    floating menu) keeps it — this only fills the gap where there was none.
    Desktop only for the general list: below 1024px most of these panels *are*
-   the page (no fill, no border), and a highlight on nothing is a stray line.
-   The phone home, whose panels stay surfaces, opts in in home-dashboard.css. */
+   the page (no fill, no border), and a highlight on nothing is a stray line. */
 @media (min-width: 1024px) {
     :where(
         .hd-panel, .hd-quick-rail,
