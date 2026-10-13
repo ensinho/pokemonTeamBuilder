@@ -2169,3 +2169,22 @@
     font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
+
+/* Boot splash: invisible for its first 300ms, so a boot that is ready by then
+   never shows it — the page just paints. The delay must equal
+   SPLASH_REVEAL_MS in src/utils/bootSplash.js, which times the hold from the
+   moment the splash could first have been seen (2026-10-06). */
+.boot-splash {
+    animation: boot-splash-in var(--duration-slow) var(--ease-smooth) 300ms both;
+}
+
+/* Same idea for a lazy route's loader: under ~200ms nobody needs to be told
+   something is loading, and a loader that flashes reads as a glitch. */
+.route-fallback {
+    animation: boot-splash-in var(--duration-slow) var(--ease-smooth) 200ms both;
+}
+
+@keyframes boot-splash-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}

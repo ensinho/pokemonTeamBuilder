@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef, Suspense, lazy } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { createPortal } from 'react-dom';
 import { Routes, Route, useNavigate, useLocation, Navigate, useSearchParams } from 'react-router-dom';
 import { useToastStore } from '../store/useToastStore';
@@ -21,7 +22,6 @@ import { DrawerAboutSection } from './DrawerAboutSection';
 import { SidebarAccountMenu } from './SidebarAccountMenu';
 import { ShellNavGroup } from './ShellNavGroup';
 import ToastStack from './ToastStack';
-import { TextSizeControl } from './TextSizeControl';
 import { ThemeToggle } from './ThemeToggle';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
@@ -41,19 +41,13 @@ import { useAppUpdate } from '../hooks/useAppUpdate';
 import { useDockCompact } from '../hooks/useDockCompact';
 import { ariaKeyShortcuts, formatShortcut, matchesShortcut } from '../utils/searchShortcut';
 
-import {
-    AuthModal,
-    ConfirmDialog,
-    ConfirmHost,
-    GreetingPokemonSelectorModal,
-    TrainerSpriteSelectorModal,
-    PatchNotesModal,
-    ShareSnippetModal,
-    SyncPromptModal,
-    TeamPokemonEditorModal,
-    VersionUpdateModal,
-    BadgeUnlockModal
-} from './modals';
+// Direct imports, not the modals barrel: the barrel re-exports every dialog,
+// and the ones with side effects (stylesheets) would ride into the entry bundle
+// even though the lazy() loaders below are their only real users.
+import { ConfirmDialog } from './modals/ConfirmDialog';
+import { ConfirmHost } from './modals/ConfirmHost';
+import { SyncPromptModal } from './modals/SyncPromptModal';
+import { VersionUpdateModal } from './modals/VersionUpdateModal';
 
 import {
     GithubIcon, LinkedinIcon, CollapseLeftIcon, CollapseRightIcon,
@@ -62,7 +56,10 @@ import {
     MapPinIcon, MessageIcon,
     ScrollIcon, BagIcon, TrophyIcon, CalculatorIcon, GaugeIcon, SparklesIcon
 } from './icons';
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users } from 'lucide-react';
+// Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
+// Batalhas/Construtor used to share one each, which made the Mais grid harder to
+// scan than its labels (2026-10-06).
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users, Settings, Brain, HeartHandshake, ShieldHalf } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -92,7 +89,42 @@ const MobileMoreSheet = lazy(() => loadMobileMoreSheet().then((m) => ({ default:
 // only way in.
 const loadCommandPalette = () => import('./CommandPalette');
 const CommandPalette = lazy(() => loadCommandPalette().then((m) => ({ default: m.CommandPalette })));
-const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet, loadCommandPalette];
+// Dialogs that only open from a click. They were ~90 KB of the entry bundle
+// (the share composer alone is 25 KB) paid by every visitor before first paint;
+// as chunks they cost nothing until wanted, and the idle warm-up below fetches
+// the likely ones so the first click still opens instantly.
+const loadTeamPokemonEditorModal = () => import('./modals/TeamPokemonEditorModal');
+const loadShareSnippetModal = () => import('./modals/ShareSnippetModal');
+const loadAuthModal = () => import('./modals/AuthModal');
+const TeamPokemonEditorModal = lazy(() => loadTeamPokemonEditorModal().then((m) => ({ default: m.TeamPokemonEditorModal })));
+const ShareSnippetModal = lazy(() => loadShareSnippetModal().then((m) => ({ default: m.ShareSnippetModal })));
+const AuthModal = lazy(() => loadAuthModal().then((m) => ({ default: m.AuthModal })));
+// Mounted only while a badge is waiting to be shown (newlyUnlockedBadge).
+const BadgeUnlockModal = lazy(() => import('./modals/BadgeUnlockModal').then((m) => ({ default: m.BadgeUnlockModal })));
+const PatchNotesModal = lazy(() => import('./modals/PatchNotesModal').then((m) => ({ default: m.PatchNotesModal })));
+const GreetingPokemonSelectorModal = lazy(() => import('./modals/GreetingPokemonSelectorModal').then((m) => ({ default: m.GreetingPokemonSelectorModal })));
+const TrainerSpriteSelectorModal = lazy(() => import('./modals/TrainerSpriteSelectorModal').then((m) => ({ default: m.TrainerSpriteSelectorModal })));
+
+const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadPokePuzzleView, loadMobileMoreSheet, loadCommandPalette, loadTeamPokemonEditorModal, loadAuthModal];
+// Desktop had no warm-up at all, so the first click on Construtor downloaded a
+// 107 KB chunk behind the route fallback. Same idea, the rail's main entries.
+// Hovering or focusing a rail entry fetches its chunk: the half second between
+// pointing and clicking is usually enough for the download, so the long tail
+// the idle warm-up skips still opens without the route fallback. Same import()
+// specifiers as the lazy() calls below, so the module cache is shared.
+const ROUTE_CHUNKS = {
+    builder: loadTeamBuilderView, pokedex: loadPokedexView, pokepuzzle: loadPokePuzzleView, meta: loadMetaUsageView,
+    feed: () => import('./views/FeedView'), favorites: () => import('./views/FavoritesView'),
+    tournaments: () => import('./views/TournamentsView'), damageCalc: () => import('./views/DamageCalculatorView'),
+    speedTiers: () => import('./views/SpeedTiersView'), moves: () => import('./views/MovesListView'),
+    abilities: () => import('./views/AbilitiesListView'), items: () => import('./views/ItemsListView'),
+    gyms: () => import('./views/GymsView'), generationQuiz: () => import('./views/GenerationQuizView'),
+    categoryGuesser: () => import('./views/CategoryGuesserView'), pokeroom: () => import('./views/SecretRoomGuesserView'),
+    friends: () => import('./views/FriendsView'), battles: () => import('./views/battle/BattleListView'),
+    profile: () => import('./views/ProfileView'), admin: () => import('./views/AdminDashboardView'),
+};
+const prefetchRoute = (key) => { ROUTE_CHUNKS[key]?.().catch(() => {}); };
+const DESKTOP_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetailView, loadCommandPalette, loadMetaUsageView, loadTeamPokemonEditorModal, loadShareSnippetModal, loadAuthModal];
 
 const IS_APPLE = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '');
 
@@ -134,14 +166,15 @@ const NotFoundView = lazy(() => import('./views/NotFoundView').then((m) => ({ de
 import '../styles/app-shell.css';
 import '../styles/toast.css';
 
+// Fades in after a beat (.route-fallback, app-shell.css): a chunk that lands
+// in under ~200ms swaps straight to the view instead of flashing the loader.
 const RouteFallback = () => (
-    <div
-        className="flex items-center justify-center w-full"
-        style={{ minHeight: '60vh' }}
-    >
+    <div className="route-fallback flex items-center justify-center w-full py-16">
         <GengarPresence variant="loading" size={96} />
     </div>
 );
+
+const SettingsGlyph = () => <Settings className="w-5 h-5 shrink-0" />;
 
 const TrainerAvatar = ({ pokemonId, isShiny = false, trainerSprite = null, size = 24, color = 'currentColor', className = '' }) => {
     if (trainerSprite || pokemonId) {
@@ -171,7 +204,7 @@ const TrainerAvatar = ({ pokemonId, isShiny = false, trainerSprite = null, size 
     return <AccountIcon color={color} className={`shrink-0 ${className}`} />;
 };
 
-const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0 }) => {
+const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0, onIntent }) => {
     const buttonRef = useRef(null);
     // Styled hover tooltip for the collapsed rail. Rendered via a portal with
     // fixed positioning so it escapes the sidebar's `overflow: hidden` clip.
@@ -189,9 +222,9 @@ const ShellNavButton = ({ active, collapsed, label, onClick, icon, badge = 0 }) 
             ref={buttonRef}
             type="button"
             onClick={onClick}
-            onMouseEnter={showTooltip}
+            onMouseEnter={() => { showTooltip(); onIntent?.(); }}
             onMouseLeave={hideTooltip}
-            onFocus={showTooltip}
+            onFocus={() => { showTooltip(); onIntent?.(); }}
             onBlur={hideTooltip}
             aria-current={active ? 'page' : undefined}
             className={`app-shell__nav-link ${active ? 'is-active' : ''}  ${collapsed ? 'is-collapsed' : ''}`}
@@ -337,14 +370,31 @@ export default function AppLayout() {
     // Zustand Stores
     const showToast = useToastStore((state) => state.showToast);
     const dismissToast = useToastStore((state) => state.dismissToast);
-    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType, searchShortcut, setSearchShortcut } = useThemeStore();
+    // Selected with useShallow, never the whole store: a bare useAuthStore()
+    // re-rendered this entire shell on every change to any field of the store.
+    const { theme, colors, homeWallpaperId, setHomeWallpaperPreference, showTeraType, setShowTeraType, searchShortcut, setSearchShortcut } = useThemeStore(useShallow((s) => ({
+        theme: s.theme, colors: s.colors, homeWallpaperId: s.homeWallpaperId,
+        setHomeWallpaperPreference: s.setHomeWallpaperPreference, showTeraType: s.showTeraType,
+        setShowTeraType: s.setShowTeraType, searchShortcut: s.searchShortcut, setSearchShortcut: s.setSearchShortcut,
+    })));
     const {
         userId, userEmail, isAnonymous, isAdmin, displayName, setDisplayName,
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
         trainerSprite, setTrainerSprite, avatarPreference, setAvatarPreference,
         handleResetSyncPrompt, showSyncPrompt, handleDismissSyncPrompt,
-        handleSignIn, handleSignUp, handleSignOut, isAuthReady, isAuthReconciled
-    } = useAuthStore();
+        handleSignIn, handleSignUp, handleSignOut, isAuthReady, isAuthReconciled, isNewVisitor
+    } = useAuthStore(useShallow((s) => ({
+        userId: s.userId, userEmail: s.userEmail, isAnonymous: s.isAnonymous, isAdmin: s.isAdmin,
+        displayName: s.displayName, setDisplayName: s.setDisplayName,
+        greetingPokemonId: s.greetingPokemonId, greetingPokemonIsShiny: s.greetingPokemonIsShiny,
+        setGreetingPokemon: s.setGreetingPokemon, streak: s.streak,
+        trainerSprite: s.trainerSprite, setTrainerSprite: s.setTrainerSprite,
+        avatarPreference: s.avatarPreference, setAvatarPreference: s.setAvatarPreference,
+        handleResetSyncPrompt: s.handleResetSyncPrompt, showSyncPrompt: s.showSyncPrompt,
+        handleDismissSyncPrompt: s.handleDismissSyncPrompt,
+        handleSignIn: s.handleSignIn, handleSignUp: s.handleSignUp, handleSignOut: s.handleSignOut,
+        isAuthReady: s.isAuthReady, isAuthReconciled: s.isAuthReconciled, isNewVisitor: s.isNewVisitor,
+    })));
 
     const {
         currentTeam, teamName, setTeamName, editingTeamId, handleRemoveFromTeam,
@@ -366,7 +416,10 @@ export default function AppLayout() {
         return savedTeams.find(t => t.id === activeTeamId) || savedTeams[0];
     }, [savedTeams, activeTeamId]);
 
-    const { generations, items, natures, games } = useReferenceStore();
+    const newlyUnlockedBadge = useAuthStore((s) => s.newlyUnlockedBadge);
+    const { generations, items, natures, games } = useReferenceStore(useShallow((s) => ({
+        generations: s.generations, items: s.items, natures: s.natures, games: s.games,
+    })));
 
     // Pokedex logic hook
     const pokedex = usePokedex();
@@ -564,15 +617,20 @@ export default function AppLayout() {
     // "Boot settled" = the identity on screen is the real one (not the boot
     // snapshot) and the reference data every view reads is in the store. Only
     // the mobile splash waits on this; see src/utils/bootSplash.js.
-    const isBootSettled = isAuthReady && isAuthReconciled && generations.length > 0;
+    // A first visit (isNewVisitor) has no identity to reconcile, so it counts
+    // as settled once the reference data is in.
+    const isBootSettled = ((isAuthReady && isAuthReconciled) || isNewVisitor) && generations.length > 0;
+    const canLeaveSplash = isAuthReady || isNewVisitor;
 
-    // Phones: once boot has settled and the main thread is idle, fetch the tab
-    // bar's destinations so the first tap on each is a render, not a download.
-    // Waiting for boot keeps these chunks out of the way of the requests the
-    // splash is holding for; a failed prefetch is harmless (lazy() retries).
+    // Once boot has settled and the main thread is idle, fetch the main
+    // destinations (the tab bar's on a phone, the rail's on desktop) so the
+    // first tap on each is a render, not a download. Waiting for boot keeps
+    // these chunks out of the way of the requests the splash is holding for; a
+    // failed prefetch is harmless (lazy() retries). Data Saver opts out.
     useEffect(() => {
-        if (!isMobile || !isBootSettled) return undefined;
-        const warm = () => MOBILE_PREFETCH.forEach((load) => { load().catch(() => {}); });
+        if (!isBootSettled || navigator.connection?.saveData) return undefined;
+        const list = isMobile ? MOBILE_PREFETCH : DESKTOP_PREFETCH;
+        const warm = () => list.forEach((load) => { load().catch(() => {}); });
         if ('requestIdleCallback' in window) {
             const handle = window.requestIdleCallback(warm, { timeout: 4000 });
             return () => window.cancelIdleCallback(handle);
@@ -599,7 +657,7 @@ export default function AppLayout() {
     // mobile it stretches until boot settles (capped), so the app doesn't paint
     // mid-request and then visibly re-render into the reconciled user.
     useEffect(() => {
-        if (!isAuthReady || !showInitialAuthSplash) return;
+        if (!canLeaveSplash || !showInitialAuthSplash) return;
         const remainingMs = splashHoldMs({
             isMobile,
             elapsedMs: Date.now() - initialBootTimeRef.current,
@@ -609,7 +667,7 @@ export default function AppLayout() {
             setShowInitialAuthSplash(false);
         }, remainingMs);
         return () => clearTimeout(timer);
-    }, [isAuthReady, showInitialAuthSplash, isMobile, isBootSettled]);
+    }, [canLeaveSplash, showInitialAuthSplash, isMobile, isBootSettled]);
 
     // Keep the bar honest about the wait: on mobile it creeps to 90% over the
     // floor and only closes the last 10% once boot has actually settled.
@@ -785,7 +843,7 @@ export default function AppLayout() {
                     ? 'Salas privadas para adivinhar Pokémon com amigos'
                     : 'Private rooms to guess Pokémon with friends',
             },
-            'notFound': { title: '404', subtitle: '' },
+            'notFound': { title: t('layout.notFoundPageTitle'), subtitle: '' },
         };
         // Falling back to the Home entry made a missing key look like a working
         // header — /gyms and /pokeroom both shipped showing "Início" for exactly
@@ -860,7 +918,7 @@ export default function AppLayout() {
                 items: [
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
-                    { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <SparklesIcon className="w-5 h-5 shrink-0" /> },
+                    { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <Brain className="w-5 h-5 shrink-0" /> },
                     { key: 'pokeroom', label: 'PokéRoom', path: '/pokeroom', icon: <Users className="w-5 h-5 shrink-0" /> },
                 ]
             },
@@ -871,8 +929,8 @@ export default function AppLayout() {
                 key: 'dashboard',
                 title: t('nav.dashboard'),
                 items: [
-                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <AccountIcon className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
-                    { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <SwordsIcon className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
+                    { key: 'friends', label: t('nav.friends'), path: '/friends', icon: <HeartHandshake className="w-5 h-5 shrink-0" />, badge: pendingFriendRequests },
+                    { key: 'battles', label: t('nav.battles'), path: '/battles', icon: <ShieldHalf className="w-5 h-5 shrink-0" />, badge: battlesAwaitingMe },
                 ]
             },
         ];
@@ -917,12 +975,19 @@ export default function AppLayout() {
 
     // Every destination the rail knows, once each — what the global search
     // offers as "Pages" and, with an empty query, as its jump-to list.
+    // Profile and favourite Pokémon are in no section, so before 2026-10-06 a
+    // guest had no way to find them at all (preferences, language, notifications
+    // lived only behind a Home card); the search is where "where is X" goes.
     const searchDestinations = useMemo(() => {
         const seen = new Set();
-        return [...primaryNavItems, ...navigationGroups.flatMap((group) => group.items)]
+        const extras = [
+            { key: 'favoritePokemon', label: t('favorites.title'), path: '/favorites?tab=pokemon', icon: <StarsIcon className="w-5 h-5 shrink-0" /> },
+            { key: 'profile', label: t('nav.profile'), path: '/profile', icon: <AccountIcon className="w-5 h-5 shrink-0" /> },
+        ];
+        return [...primaryNavItems, ...navigationGroups.flatMap((group) => group.items), ...extras]
             .filter((item) => item.path && !seen.has(item.key) && seen.add(item.key))
             .map(({ key, label, searchLabel, path, icon }) => ({ key, label: searchLabel || label, path, icon }));
-    }, [primaryNavItems, navigationGroups]);
+    }, [primaryNavItems, navigationGroups, t]);
 
     // Landing on a page that lives inside a folded section unfolds it, so "where
     // am I" is answered by the rail itself rather than only by a dot on a folded
@@ -1130,24 +1195,13 @@ export default function AppLayout() {
         await shareTeamByData(team?.pokemons || [], team?.name || 'Unnamed Team');
     }, [shareTeamByData]);
 
-    const handleExportSavedTeamToShowdown = useCallback(async (team) => {
-        const teamMembers = team?.pokemons || [];
-        if (teamMembers.length === 0) return showToast(t('layout.emptySavedTeamWarning'), 'warning');
-        const exportText = useActiveTeamStore.getState().buildShowdownExportText(teamMembers);
-        
-        const teamNameText = team?.name ? ` "${team.name}"` : '';
-        const msg = language === 'pt'
-            ? `Time${teamNameText} copiado! Redirecionando para o Pokémon Showdown em 2 segundos...`
-            : `Team${teamNameText} copied! Redirecting to Pokémon Showdown in 2 seconds...`;
-        showToast(msg, 'success');
-
-        await useActiveTeamStore.getState().copyTextToClipboard(exportText, null);
-
-        // Redirect after a 2 second delay so user sees the toast on the page
-        setTimeout(() => {
-            window.open('https://play.pokemonshowdown.com/teambuilder', '_blank');
-        }, 2000);
-    }, [showToast, t, language]);
+    // Saved teams export through the same action as the builder (the store's
+    // exportTeamToShowdown): the toast waits for the clipboard, and Showdown
+    // opens from its action — a click, so iOS allows the new tab.
+    const handleExportSavedTeamToShowdown = useCallback(
+        (team) => useActiveTeamStore.getState().exportTeamToShowdown(team?.pokemons || [], team?.name),
+        [],
+    );
 
     const handleEditTeamMember = useCallback((pokemon) => {
         setEditingTeamMember(pokemon);
@@ -1157,9 +1211,9 @@ export default function AppLayout() {
     if (showInitialAuthSplash) {
         return (
             <div className="min-h-screen flex items-center justify-center px-6" style={{ backgroundColor: colors.background }}>
-                <div className="w-full max-w-xs text-center">
+                <div className="boot-splash w-full max-w-xs text-center">
                     <img
-                        src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'}
+                        src={import.meta.env.BASE_URL + 'logo-mark.webp'}
                         alt="Pokémon Team Builder"
                         className="mx-auto w-28 h-auto"
                     />
@@ -1187,8 +1241,10 @@ export default function AppLayout() {
 
     return (
         <div className="min-h-screen font-sans" style={{ backgroundColor: colors.background, color: colors.text }}>
-            {/* Modal Components */}
+            {/* Modal Components — most are lazy chunks, each behind its own
+                boundary so one loading never blanks another that is open. */}
             {editingTeamMember && (
+                <Suspense fallback={null}>
                 <TeamPokemonEditorModal
                     pokemon={editingTeamMember}
                     onClose={() => setEditingTeamMember(null)}
@@ -1199,8 +1255,10 @@ export default function AppLayout() {
                     moveDetailsCache={moveDetailsCache}
                     setMoveDetailsCache={setMoveDetailsCache}
                 />
+                </Suspense>
             )}
             {showPatchNotes && (
+                <Suspense fallback={null}>
                 <PatchNotesModal
                     onClose={handleClosePatchNotes}
                     colors={colors}
@@ -1209,6 +1267,7 @@ export default function AppLayout() {
                     onInstall={handleInstall}
                     onOpenSearch={() => setIsSearchOpen(true)}
                 />
+                </Suspense>
             )}
             {updateAvailable && (
                 <VersionUpdateModal
@@ -1217,14 +1276,17 @@ export default function AppLayout() {
                 />
             )}
             {showGreetingPokemonSelector && (
+                <Suspense fallback={null}>
                 <GreetingPokemonSelectorModal
                     onClose={() => setShowGreetingPokemonSelector(false)}
                     onSelect={setGreetingPokemon}
                     currentPokemonId={greetingPokemonId}
                     currentPokemonIsShiny={greetingPokemonIsShiny}
                 />
+                </Suspense>
             )}
             {showTrainerSpriteSelector && (
+                <Suspense fallback={null}>
                 <TrainerSpriteSelectorModal
                     onClose={() => setShowTrainerSpriteSelector(false)}
                     onSelect={(spriteId) => {
@@ -1234,8 +1296,11 @@ export default function AppLayout() {
                     currentSpriteId={trainerSprite}
                     colors={colors}
                 />
+                </Suspense>
             )}
 
+            {shareModal.isOpen && (
+            <Suspense fallback={null}>
             <ShareSnippetModal
                 isOpen={shareModal.isOpen}
                 onClose={closeShareModal}
@@ -1245,8 +1310,11 @@ export default function AppLayout() {
                 colors={colors}
                 showToast={showToast}
             />
+            </Suspense>
+            )}
 
             {authModal.open && (
+                <Suspense fallback={null}>
                 <AuthModal
                     mode={authModal.mode}
                     canLink={isAnonymous}
@@ -1255,6 +1323,7 @@ export default function AppLayout() {
                     onClose={() => setAuthModal({ open: false, mode: authModal.mode })}
                     colors={colors}
                 />
+                </Suspense>
             )}
 
             {showSyncPrompt && isAnonymous && (
@@ -1266,7 +1335,11 @@ export default function AppLayout() {
                 />
             )}
 
-            <BadgeUnlockModal />
+            {newlyUnlockedBadge && (
+                <Suspense fallback={null}>
+                    <BadgeUnlockModal />
+                </Suspense>
+            )}
 
             <ConfirmDialog
                 isOpen={deleteConfirmation.isOpen}
@@ -1305,7 +1378,7 @@ export default function AppLayout() {
                             <div className={`app-shell__brand ${isRailCollapsed ? 'is-collapsed' : ''}`}>
                                 <div className="app-shell__brand-main">
                                     <img
-                                        src={import.meta.env.BASE_URL + 'LogoCuteGengarRounded.png'}
+                                        src={import.meta.env.BASE_URL + 'logo-mark.webp'}
                                         alt="Pokémon Team Builder Logo"
                                         className="app-shell__brand-logo cursor-pointer"
                                         onClick={() => navigate('/')}
@@ -1347,6 +1420,7 @@ export default function AppLayout() {
                                                 label={item.label}
                                                 icon={item.icon}
                                                 badge={item.badge || 0}
+                                                onIntent={() => prefetchRoute(item.key)}
                                                 onClick={() => {
                                                     navigate(item.path);
                                                     setIsSidebarOpen(false);
@@ -1375,6 +1449,7 @@ export default function AppLayout() {
                                                         label={item.label}
                                                         icon={item.icon}
                                                         badge={item.badge || 0}
+                                                        onIntent={() => prefetchRoute(item.key)}
                                                         onClick={() => {
                                                             navigate(item.path);
                                                             setIsSidebarOpen(false);
@@ -1391,16 +1466,29 @@ export default function AppLayout() {
                             <div className="app-shell__sidebar-bottom">
                                 <div className={`app-shell__account ${isRailCollapsed ? 'is-collapsed' : ''}`}>
                                     {isAnonymous ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
-                                            aria-label={t('nav.signIn')}
-                                            title={t('nav.signIn')}
-                                            className={`app-shell__nav-link ${isRailCollapsed ? 'is-collapsed' : ''}`}
-                                        >
-                                            <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
-                                            <span className={`app-shell__nav-text ${isRailCollapsed ? 'is-hidden' : ''}`}>{t('nav.signIn')}</span>
-                                        </button>
+                                        <>
+                                            {/* A guest's preferences (language, notifications,
+                                                text size) live on /profile, which had no entry
+                                                in the rail until 2026-10-06. */}
+                                            <ShellNavButton
+                                                active={currentPage === 'profile'}
+                                                collapsed={isRailCollapsed}
+                                                label={t('nav.profile')}
+                                                icon={<SettingsGlyph />}
+                                                onIntent={() => prefetchRoute('profile')}
+                                                onClick={() => navigate('/profile')}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
+                                                aria-label={t('nav.signIn')}
+                                                title={t('nav.signIn')}
+                                                className={`app-shell__nav-link ${isRailCollapsed ? 'is-collapsed' : ''}`}
+                                            >
+                                                <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
+                                                <span className={`app-shell__nav-text ${isRailCollapsed ? 'is-hidden' : ''}`}>{t('nav.signIn')}</span>
+                                            </button>
+                                        </>
                                     ) : (
                                         <SidebarAccountMenu
                                             collapsed={isRailCollapsed}
@@ -1434,7 +1522,7 @@ export default function AppLayout() {
                                     title — the same edge as the page under it. */}
                                 <div className="app-shell__header-copy">
                                     <div className="app-shell__header-title-row">
-                                        <h1 className="app-shell__header-title">{(isMobile && pageInfo.shortTitle) || pageInfo.title}</h1>
+                                        <h1 className="app-shell__header-title">{pageInfo.shortTitle || pageInfo.title}</h1>
                                         {pageGuideTips[currentPage] && (
                                             <PageGuide
                                                 colors={colors}
@@ -1447,7 +1535,10 @@ export default function AppLayout() {
                                             />
                                         )}
                                     </div>
-                                    <p className="app-shell__header-subtitle">{pageInfo.subtitle}</p>
+                                    {/* No subtitle line (2026-10-06): every page already
+                                        introduces itself under the header, so the header's
+                                        tagline was the same sentence twice ("Gerencie seus
+                                        times…" right above "Reveja e gerencie…"). */}
                                 </div>
                             </div>
 
@@ -1823,7 +1914,7 @@ export default function AppLayout() {
                                             />
                                         } />
                                     )}
-                                    <Route path="*" element={<NotFoundView colors={colors} navigate={navigate} theme={theme} />} />
+                                    <Route path="*" element={<NotFoundView colors={colors} navigate={navigate} theme={theme} onOpenSearch={() => setIsSearchOpen(true)} />} />
                                 </Routes>
                             </Suspense>
                         </div>
@@ -1848,9 +1939,9 @@ export default function AppLayout() {
                                 </div>
 
                                 <div className="app-shell__footer-links">
-                                    {/* Also in the account menu — but the footer is the one place a
-                                        signed-out visitor can reach it. */}
-                                    <TextSizeControl variant="compact" />
+                                    {/* Text size left the footer on 2026-10-06: it lives in
+                                        Profile, which guests now reach from the rail
+                                        ("Perfil e preferências"), and in the account menu. */}
                                     <a href="https://github.com/ensinho/pokemonTeamBuilder" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><GithubIcon /></a>
                                     <a href="https://www.linkedin.com/in/enzoesmeraldo/" target="_blank" rel="noopener noreferrer" className="app-shell__footer-link"><LinkedinIcon /></a>
                                 </div>
@@ -1865,7 +1956,11 @@ export default function AppLayout() {
                             const tabActive = (key) => currentPage === key || (key === 'pokedex' && currentPage === 'pokemonDetail');
                             // "Mais" answers "where am I" for every page it leads to: with
                             // no tab lit on /gyms, the bar said nothing about location.
-                            const moreActive = !mobileTabs.some((tab) => tabActive(tab.key));
+                            // Only for pages the sheet actually lists — it used to light up
+                            // on /404 and on a signed-in /profile, which it does not contain.
+                            const moreKeys = new Set(moreSheetSections.flatMap((section) => section.items.map((item) => item.key)));
+                            if (isAnonymous) moreKeys.add('profile');
+                            const moreActive = !mobileTabs.some((tab) => tabActive(tab.key)) && moreKeys.has(currentPage);
                             return [
                                 ...mobileTabs.map((tab) => ({ ...tab, active: tabActive(tab.key) })),
                                 { key: 'more', label: t('nav.more'), icon: <MenuIcon />, action: () => setIsSidebarOpen(true), active: moreActive },
@@ -1892,6 +1987,7 @@ export default function AppLayout() {
                         onClose={() => setIsSidebarOpen(false)}
                         sections={moreSheetSections}
                         currentPage={currentPage}
+                        onIntent={prefetchRoute}
                         onNavigate={(path) => {
                             setIsSidebarOpen(false);
                             navigate(path);
@@ -1932,6 +2028,19 @@ export default function AppLayout() {
                                         />
                                     )}
                                 </li>
+                                {isAnonymous && (
+                                    <li>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setIsSidebarOpen(false); navigate('/profile'); }}
+                                            className="app-shell__nav-link"
+                                            aria-current={currentPage === 'profile' ? 'page' : undefined}
+                                        >
+                                            <span className="app-shell__nav-icon" aria-hidden="true"><SettingsGlyph /></span>
+                                            <span className="app-shell__nav-text">{t('nav.profileAndSettings')}</span>
+                                        </button>
+                                    </li>
+                                )}
                             </ul>
                         }
                     >

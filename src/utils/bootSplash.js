@@ -1,33 +1,42 @@
 /**
  * Boot-splash timing.
  *
- * Desktop keeps the original behaviour: the splash is a ~900 ms courtesy beat
- * over an auth state that the snapshot already resolved optimistically.
- *
  * Phones are the problem case. `isAuthReady` flips true the moment the
  * stale-while-revalidate snapshot is read (see useAuthStore), so on a slow
  * mobile connection the splash used to leave while the real
  * `onAuthStateChanged` round-trip and the reference-data fetch were still in
  * flight — the app painted with the cached identity and then visibly
  * re-rendered into the reconciled one, with half-empty lists in between.
- *
  * So on mobile the splash holds until boot is actually *settled* (auth
- * reconciled against Firebase, reference data in the store), with a floor so
- * the hand-off never flickers and a ceiling so a failed or stalled request can
- * never strand the user on the splash.
+ * reconciled against Firebase, reference data in the store), with a ceiling so
+ * a failed or stalled request can never strand the user on the splash.
+ * Desktop waits only on `isAuthReady`, as it always has.
+ *
+ * What changed on 2026-10-06 is the floor. It used to be a fixed hold —
+ * 900 ms on desktop, 1800 ms on a phone — counted from boot, so a warm start
+ * that was ready in 200 ms still stared at a logo for up to 1.8 s on every
+ * open. A floor exists only to stop a flicker, and a flicker needs the splash
+ * to have been *seen*. So the splash now fades in after SPLASH_REVEAL_MS (the
+ * `.boot-splash` animation delay in app-shell.css — keep the two equal): a
+ * boot that settles before then never shows it at all, and one that runs past
+ * it keeps the splash up for at least SPLASH_MIN_VISIBLE_MS so it can't blink.
  */
 
-/** Desktop hold: unchanged. */
-export const SPLASH_MIN_MS = 900;
+/** The splash is invisible until this point (CSS animation delay). */
+export const SPLASH_REVEAL_MS = 300;
 
-/** Mobile floor: the splash is visible at least this long. */
-export const SPLASH_MOBILE_MIN_MS = 1800;
+/** Once revealed, the splash stays at least this long, so it never blinks. */
+export const SPLASH_MIN_VISIBLE_MS = 450;
 
 /** Mobile ceiling: hard dismiss even if boot never settles. */
 export const SPLASH_MOBILE_MAX_MS = 6000;
 
+/** The earliest a splash that has been seen may leave, counted from boot. */
+const SEEN_FLOOR_MS = SPLASH_REVEAL_MS + SPLASH_MIN_VISIBLE_MS;
+
 /**
- * How much longer the splash should stay up.
+ * How much longer the splash should stay up, given that the boot gate for this
+ * device has opened (desktop: `isAuthReady`; mobile: also `isBootSettled`).
  *
  * @param {object} opts
  * @param {boolean} opts.isMobile     phone/tablet viewport
@@ -38,13 +47,14 @@ export const SPLASH_MOBILE_MAX_MS = 6000;
 export function splashHoldMs({ isMobile, elapsedMs, isBootSettled }) {
     const elapsed = Number.isFinite(elapsedMs) ? Math.max(0, elapsedMs) : 0;
 
-    if (!isMobile) return Math.max(0, SPLASH_MIN_MS - elapsed);
-
     // Not settled yet: wait out the ceiling. The caller re-runs this when
-    // `isBootSettled` flips, which collapses the wait down to the floor.
-    if (!isBootSettled) return Math.max(0, SPLASH_MOBILE_MAX_MS - elapsed);
+    // `isBootSettled` flips, which collapses the wait.
+    if (isMobile && !isBootSettled) return Math.max(0, SPLASH_MOBILE_MAX_MS - elapsed);
 
-    return Math.max(0, SPLASH_MOBILE_MIN_MS - elapsed);
+    // Ready before the splash faded in: leave without ever showing it.
+    if (elapsed < SPLASH_REVEAL_MS) return 0;
+
+    return Math.max(0, SEEN_FLOOR_MS - elapsed);
 }
 
 /**
@@ -54,7 +64,6 @@ export function splashHoldMs({ isMobile, elapsedMs, isBootSettled }) {
  * @returns {{ width: number, durationMs: number }}
  */
 export function splashProgress({ isMobile, isBootSettled }) {
-    if (!isMobile) return { width: 100, durationMs: SPLASH_MIN_MS };
-    if (!isBootSettled) return { width: 90, durationMs: SPLASH_MOBILE_MIN_MS };
-    return { width: 100, durationMs: 320 };
+    if (isMobile && !isBootSettled) return { width: 90, durationMs: 1800 };
+    return { width: 100, durationMs: SPLASH_MIN_VISIBLE_MS };
 }
