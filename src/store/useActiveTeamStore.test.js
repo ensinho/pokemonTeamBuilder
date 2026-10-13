@@ -116,3 +116,88 @@ describe('handleClearTeam', () => {
         expect(toast.info).not.toHaveBeenCalled();
     });
 });
+
+describe('handleRemoveFromTeam', () => {
+    it('removes at once and the undo puts the member back in its slot', async () => {
+        for (const id of [7, 8, 9]) store.getState().handleAddPokemon(entry(id, `mon${id}`));
+        const before = store.getState().currentTeam;
+        store.getState().handleRemoveFromTeam(before[1].instanceId);
+        expect(store.getState().currentTeam.map((m) => m.id)).toEqual([7, 9]);
+
+        const [, options] = toast.info.mock.calls.at(-1);
+        options.actions[0].onClick();
+        expect(store.getState().currentTeam.map((m) => m.id)).toEqual([7, 8, 9]);
+        // A second undo (double tap) must not duplicate the member.
+        options.actions[0].onClick();
+        expect(store.getState().currentTeam).toHaveLength(3);
+    });
+});
+
+describe('handleUpdateTeamMember', () => {
+    it('keeps the edit and offers an undo that restores the previous build', () => {
+        store.getState().handleAddPokemon(entry(7, 'squirtle'));
+        const [{ instanceId, customization }] = store.getState().currentTeam;
+        expect(store.getState().handleUpdateTeamMember(instanceId, { ...customization, item: 'leftovers' })).toBe(true);
+        expect(store.getState().currentTeam[0].customization.item).toBe('leftovers');
+
+        const [, options] = toast.info.mock.calls.at(-1);
+        options.actions[0].onClick();
+        expect(store.getState().currentTeam[0].customization).toEqual(customization);
+    });
+
+    it('does nothing (and says nothing) when the build did not change', () => {
+        store.getState().handleAddPokemon(entry(7, 'squirtle'));
+        const [{ instanceId, customization }] = store.getState().currentTeam;
+        expect(store.getState().handleUpdateTeamMember(instanceId, { ...customization })).toBe(false);
+        expect(toast.info).not.toHaveBeenCalled();
+    });
+});
+
+describe('defaultTeamName and the unsaved-changes baseline', () => {
+    it('names an unnamed team after its first member, numbered when taken', async () => {
+        const { defaultTeamName } = await import('./useActiveTeamStore');
+        const team = [entry(25, 'pikachu')];
+        expect(defaultTeamName([], [])).toBe('');
+        expect(defaultTeamName(team, [])).toMatch(/Pikachu/);
+        const first = defaultTeamName(team, []);
+        expect(defaultTeamName(team, [{ id: 'a', name: first }])).toBe(`${first} 2`);
+        // The team being edited does not collide with its own saved name.
+        expect(defaultTeamName(team, [{ id: 'a', name: first }], 'a')).toBe(first);
+    });
+
+    it('is dirty only after a loaded team changes', async () => {
+        const { selectIsTeamDirty } = await import('./useActiveTeamStore');
+        store.getState().handleAddPokemon(entry(7, 'squirtle'));
+        store.setState({ teamName: 'Rain' });
+        expect(selectIsTeamDirty(store.getState())).toBe(false);
+        store.getState().setEditingTeamId('team-1');
+        expect(selectIsTeamDirty(store.getState())).toBe(false);
+        store.getState().setTeamName('Rain 2');
+        expect(selectIsTeamDirty(store.getState())).toBe(true);
+        store.getState().setTeamName('Rain');
+        expect(selectIsTeamDirty(store.getState())).toBe(false);
+    });
+});
+
+describe('exportTeamToShowdown', () => {
+    it('waits for the clipboard and offers Showdown as the toast action', async () => {
+        const writeText = vi.fn(() => Promise.resolve());
+        vi.stubGlobal('navigator', { clipboard: { writeText } });
+        const open = vi.fn();
+        vi.stubGlobal('window', { open, location: { pathname: '/builder' } });
+        store.setState({ buildShowdownExportText: () => 'Squirtle' });
+        const ok = await store.getState().exportTeamToShowdown([entry(7, 'squirtle')], 'Rain');
+        expect(ok).toBe(true);
+        expect(writeText).toHaveBeenCalledWith('Squirtle');
+        expect(open).not.toHaveBeenCalled();
+        const [, options] = toast.success.mock.calls.at(-1);
+        options.actions[0].onClick();
+        expect(open).toHaveBeenCalledWith(expect.stringContaining('pokemonshowdown.com'), '_blank', 'noopener,noreferrer');
+        vi.unstubAllGlobals();
+    });
+
+    it('warns instead of copying an empty team', async () => {
+        expect(await store.getState().exportTeamToShowdown([], '')).toBe(false);
+        expect(toast.warning).toHaveBeenCalled();
+    });
+});

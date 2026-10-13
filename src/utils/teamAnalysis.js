@@ -80,3 +80,42 @@ export const analyzeTeam = (currentTeam = [], pokemonsList = []) => {
         suggestedPokemonIds: suggestions,
     };
 };
+
+/**
+ * One rating for a team, used everywhere a team is graded (phone analysis
+ * chip, desktop identity strip, saved-team detail). Three formulas used to
+ * disagree on the same roster — "Risky" on the phone, "Strong" on desktop, 72
+ * on the detail page — so this is the only one.
+ *
+ * Score 0–100: a neutral 50, plus offensive breadth (2 per type hit
+ * super-effectively) and resistance depth (1.5 per resisted type), minus 7.5
+ * per team-wide weakness, plus 5 for a full six. Clamped to 5..100 so a bad
+ * team still reads as a number, not as nothing.
+ *
+ * @param {{ strengths?: Set<string>|string[], weaknesses?: Object, defensiveCoverage?: Object }} analysis - `teamAnalysis` from analyzeTeam
+ * @param {number} teamSize
+ * @returns {{ score: number, grade: 'building'|'weak'|'fair'|'solid'|'excellent' }}
+ */
+export const rateTeam = (analysis = {}, teamSize = 0) => {
+    if (!teamSize) return { score: 0, grade: 'building' };
+    const strengths = analysis?.strengths;
+    const offense = strengths instanceof Set ? strengths.size : (Array.isArray(strengths) ? strengths.length : 0);
+    const resist = Object.keys(analysis?.defensiveCoverage || {}).length;
+    const weak = Object.keys(analysis?.weaknesses || {}).length;
+    const raw = 50 + offense * 2 + resist * 1.5 - weak * 7.5 + (teamSize >= 6 ? 5 : 0);
+    const score = Math.round(Math.max(5, Math.min(100, raw)));
+    let grade = 'weak';
+    if (score >= 82) grade = 'excellent';
+    else if (score >= 66) grade = 'solid';
+    else if (score >= 44) grade = 'fair';
+    return { score, grade };
+};
+
+/** Semantic colour token per grade (`var(--color-<tone>)`). */
+export const RATING_TONE = {
+    building: 'muted',
+    weak: 'danger',
+    fair: 'warning',
+    solid: 'primary',
+    excellent: 'success',
+};
