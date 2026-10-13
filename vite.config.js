@@ -21,8 +21,22 @@ export default defineConfig({
       // Use the existing site.webmanifest — only add the service worker
       manifest: false,
       workbox: {
-        maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Every precached byte is downloaded by every first-time visitor, in
+        // the background, whether or not they ever open the route that uses it.
+        // This was 8 MB to let a client-side @pkmn/sim chunk (6.5 MB) through;
+        // the precache was 13.7 MB. Keep the ceiling low so a file that big
+        // fails the build instead of quietly riding along (2026-10-06).
+        maximumFileSizeToCacheInBytes: 1.5 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,ico,png,webp,svg,woff2}'],
+        // Share-card / OG / install-icon art: fetched by crawlers, the canvas
+        // share and the OS installer — never needed to render the app offline.
+        globIgnores: [
+          '**/LogoCuteGengarRounded.png',
+          '**/og-image.png',
+          '**/pokepuzzle-og.png',
+          '**/android-chrome-512x512.png',
+          '**/logoLogin*.png',
+        ],
         // Web Push lives in the *generated* worker rather than a second
         // registration of its own — a second service worker is what caused the
         // double update prompt (docs/wounds.md, 2026-09-14). The path is
@@ -80,7 +94,11 @@ export default defineConfig({
           const normalizedId = id.replaceAll('\\', '/')
           if (!normalizedId.includes('/node_modules/')) return undefined
           if (normalizedId.includes('/firebase/') || normalizedId.includes('/@firebase/')) return 'firebase'
-          if (normalizedId.includes('/react/') || normalizedId.includes('/react-dom/') || normalizedId.includes('/scheduler/')) return 'react-vendor'
+          // Anchored to node_modules: a bare '/react/' also matched subpaths like
+          // zustand/esm/react/shallow.mjs, which pulled it into react-vendor while
+          // the rest of zustand sat in vendor — a chunk cycle that left React
+          // undefined at boot (blank app) the day useShallow was first imported.
+          if (/\/node_modules\/(react|react-dom|scheduler)\//.test(normalizedId)) return 'react-vendor'
           // Battle sprites (@pkmn/img) are only ever needed by the battle route.
           // Left in `vendor` they rode along in the eager boot bundle, costing
           // every visitor ~40 KB gz for a feature most never open. Their own chunk
