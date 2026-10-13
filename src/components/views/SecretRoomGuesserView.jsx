@@ -132,7 +132,8 @@ export function SecretRoomGuesserView() {
     const favoritePokemons = useFirestoreTeamsStore((state) => state.favoritePokemons);
 
     const [joinCodeInput, setJoinCodeInput] = useState('');
-    const [selectedMode, setSelectedMode] = useState('secret-pokemon');
+    // One mode today; kept as a value so a second mode only needs a picker.
+    const selectedMode = 'secret-pokemon';
     const [selectedMaxRounds, setSelectedMaxRounds] = useState(5);
     const [copiedCode, setCopiedCode] = useState(false);
     const [showInviteModal, setShowInviteModal] = useState(false);
@@ -571,9 +572,7 @@ export function SecretRoomGuesserView() {
                             {!currentRoom && <span className="pokeroom__badge">Multiplayer</span>}
                         </h1>
                         {!currentRoom && (
-                            <p className="pokeroom__subtitle">
-                                Adivinhe o Pokémon secreto em salas em tempo real com seus amigos.
-                            </p>
+                            <p className="pokeroom__subtitle">{t('games.pokeroomSubtitle')}</p>
                         )}
                     </div>
                 </div>
@@ -659,12 +658,10 @@ export function SecretRoomGuesserView() {
                 <div className="pokeroom__panel">
                     <div className="pokeroom__result">
                         <Loader />
-                        <h2 className="pokeroom__result-title">Conectando à sala {roomId}…</h2>
-                        <p className="pokeroom__hint">
-                            Se a sala já foi encerrada, volte ao lobby e crie uma nova.
-                        </p>
+                        <h2 className="pokeroom__result-title">{t('games.pokeroomConnecting', { id: roomId })}</h2>
+                        <p className="pokeroom__hint">{t('games.pokeroomConnectingHint')}</p>
                         <button type="button" onClick={() => navigate('/pokeroom')} className="btn btn-outline">
-                            Voltar ao lobby
+                            {t('games.pokeroomBackToLobby')}
                         </button>
                     </div>
                 </div>
@@ -677,48 +674,31 @@ export function SecretRoomGuesserView() {
                         <section className="pokeroom__panel">
                             <h2 className="pokeroom__panel-title">
                                 <SparklesIcon />
-                                Criar nova sala
+                                {t('games.pokeroomCreate')}
                             </h2>
+                            {/* There is one mode. A picker with a single, already
+                                chosen card was a decision that wasn't one; the
+                                mode is a line of description instead. */}
+                            <p className="pokeroom__hint">{t('games.pokeroomModeDesc')}</p>
                             <form onSubmit={handleCreateRoom} className="pokeroom__form">
                                 <div>
-                                    <span className="pokeroom__field-label">Modo de jogo</span>
-                                    <div className="pokeroom__option-grid">
-                                        <button
-                                            type="button"
-                                            aria-pressed={selectedMode === 'secret-pokemon'}
-                                            onClick={() => setSelectedMode('secret-pokemon')}
-                                            className="pokeroom__option"
-                                        >
-                                            <span className="pokeroom__option-head">
-                                                <PokeballIcon />
-                                                {selectedMode === 'secret-pokemon' && <Check />}
-                                            </span>
-                                            <span className="pokeroom__option-title">
-                                                {GAME_MODES['secret-pokemon'].name}
-                                            </span>
-                                            <span className="pokeroom__option-desc">
-                                                {GAME_MODES['secret-pokemon'].desc}
-                                            </span>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Segmented control: three short options do not need
-                                    three cards, and this reads as one decision. */}
-                                <div>
-                                    <span className="pokeroom__field-label">Número de rodadas</span>
-                                    <div className="pokeroom__segmented" role="group" aria-label="Número de rodadas">
+                                    <span className="pokeroom__field-label" id="pokeroom-rounds-label">{t('games.pokeroomRounds')}</span>
+                                    <div
+                                        className="segmented segmented--lg segmented--block pokeroom__rounds"
+                                        role="group"
+                                        aria-labelledby="pokeroom-rounds-label"
+                                    >
                                         {[
-                                            { rounds: 3, desc: 'Rápida' },
-                                            { rounds: 5, desc: 'Padrão' },
-                                            { rounds: 10, desc: 'Longa' },
+                                            { rounds: 3, desc: t('games.pokeroomQuick') },
+                                            { rounds: 5, desc: t('games.pokeroomStandard') },
+                                            { rounds: 10, desc: t('games.pokeroomLong') },
                                         ].map(({ rounds, desc }) => (
                                             <button
                                                 key={rounds}
                                                 type="button"
                                                 aria-pressed={selectedMaxRounds === rounds}
                                                 onClick={() => setSelectedMaxRounds(rounds)}
-                                                className="pokeroom__segment"
+                                                className="segmented__item"
                                             >
                                                 <strong>{rounds}</strong>
                                                 <span>{desc}</span>
@@ -728,18 +708,9 @@ export function SecretRoomGuesserView() {
                                 </div>
 
                                 <div className="pokeroom__form-footer">
-                                    {/* Live echo of the two choices, so the button is never a leap */}
-                                    <p className="pokeroom__summary">
-                                        <Sparkles />
-                                        <span>
-                                            <strong>{GAME_MODES[selectedMode].name}</strong>
-                                            {' · '}
-                                            {selectedMaxRounds} rodadas
-                                        </span>
-                                    </p>
                                     <button type="submit" className="btn btn-primary pokeroom__btn-block">
                                         <Play />
-                                        Criar sala
+                                        {t('games.pokeroomCreateBtn')}
                                     </button>
                                 </div>
                             </form>
@@ -748,19 +719,23 @@ export function SecretRoomGuesserView() {
                         <section className="pokeroom__panel pokeroom__panel--join">
                             <h2 className="pokeroom__panel-title">
                                 <SwordsIcon />
-                                Entrar com código
+                                {t('games.pokeroomJoin')}
                             </h2>
                             <form onSubmit={handleJoinRoom} className="pokeroom__form">
                                 <div>
-                                    <span className="pokeroom__field-label">Código da sala</span>
+                                    <label className="pokeroom__field-label" htmlFor="pokeroom-join-code">{t('games.pokeroomCode')}</label>
                                     <div className="pokeroom__join-row">
                                         <input
+                                            id="pokeroom-join-code"
                                             type="text"
                                             className="input-clean pokeroom__code-input"
                                             placeholder="PKMN-XXXX"
                                             value={joinCodeInput}
                                             onChange={(event) => setJoinCodeInput(event.target.value)}
                                             maxLength={9}
+                                            autoCapitalize="characters"
+                                            autoComplete="off"
+                                            spellCheck={false}
                                             required
                                         />
                                         <button
@@ -768,40 +743,38 @@ export function SecretRoomGuesserView() {
                                             className="btn btn-primary"
                                             disabled={!joinCodeInput.trim()}
                                         >
-                                            Entrar
+                                            {t('games.pokeroomJoinBtn')}
                                         </button>
                                     </div>
                                 </div>
-                                <p className="pokeroom__hint">
-                                    Peça o código a quem criou a sala, ou aceite um convite pela notificação.
-                                </p>
+                                <p className="pokeroom__hint">{t('games.pokeroomJoinHint')}</p>
                             </form>
                         </section>
                     </div>
 
-                    <div className="pokeroom__steps">
-                        <div className="pokeroom__step">
+                    <ol className="pokeroom__steps">
+                        <li className="pokeroom__step">
                             <span className="pokeroom__step-num">1</span>
                             <span className="pokeroom__step-text">
-                                <strong>Crie e convide</strong>
-                                Compartilhe o código com seus amigos.
+                                <strong>{t('games.pokeroomStep1Title')}</strong>
+                                {t('games.pokeroomStep1')}
                             </span>
-                        </div>
-                        <div className="pokeroom__step">
+                        </li>
+                        <li className="pokeroom__step">
                             <span className="pokeroom__step-num">2</span>
                             <span className="pokeroom__step-text">
-                                <strong>Pergunte no seu turno</strong>
-                                Tipo, geração, porte, evolução — tudo em texto livre.
+                                <strong>{t('games.pokeroomStep2Title')}</strong>
+                                {t('games.pokeroomStep2')}
                             </span>
-                        </div>
-                        <div className="pokeroom__step">
+                        </li>
+                        <li className="pokeroom__step">
                             <span className="pokeroom__step-num">3</span>
                             <span className="pokeroom__step-text">
-                                <strong>Arrisque o palpite</strong>
-                                Digite o nome do Pokémon e ganhe 100 pontos.
+                                <strong>{t('games.pokeroomStep3Title')}</strong>
+                                {t('games.pokeroomStep3')}
                             </span>
-                        </div>
-                    </div>
+                        </li>
+                    </ol>
                 </>
             )}
 

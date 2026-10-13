@@ -20,7 +20,6 @@ import {
     Heart,
     HelpCircle,
     History,
-    Info,
     LayoutGrid,
     Leaf,
     Lightbulb,
@@ -51,9 +50,12 @@ import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../../util
 import { PokemonGenerationQuizAutocomplete } from '../PokemonGenerationQuizAutocomplete';
 import { PokemonGenerationQuizCard } from '../PokemonGenerationQuizCard';
 import { CloseIcon, PokeballIcon } from '../icons';
-import { QuizCelebrationModal } from '../modals';
+// Direct, not through the modals barrel (which drags every dialog along).
+import { QuizCelebrationModal } from '../modals/QuizCelebrationModal';
+import { GameHistoryDialog } from '../GameHistoryDialog';
 import { Loader } from '../Loader';
-import { confirmAction } from '../../store/useConfirmStore';
+import { useDeferredDelete } from '../../hooks/useDeferredDelete';
+import { toast } from '../../store/useToastStore';
 
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
 const MIN_AUTOCOMPLETE_CHARACTERS = 5;
@@ -92,7 +94,7 @@ const LUCIDE_ICONS = {
     Zap,
 };
 
-const renderCategoryIcon = (iconName, className = 'w-5 h-5 text-indigo-400') => {
+const renderCategoryIcon = (iconName, className = 'w-5 h-5 text-primary') => {
     const IconComponent = LUCIDE_ICONS[iconName] || Sparkles;
     return <IconComponent className={className} aria-hidden="true" />;
 };
@@ -150,7 +152,7 @@ const buildQuizHintText = (name, language) => {
         : `Tip: '${prefix}…' (${displayName.length} letters)!`;
 };
 
-export function CategoryGuesserView({ showDetails, showToast }) {
+export function CategoryGuesserView({ showDetails }) {
     const inputRef = useRef(null);
     const detailCacheRef = useRef({});
     const { t, language } = useTranslation();
@@ -166,17 +168,18 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     const [answerInput, setAnswerInput] = useState('');
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [manualHint, setManualHint] = useState('');
-    const [hintTargetName, setHintTargetName] = useState(null);
     const [hintsUsed, setHintsUsed] = useState(0);
     const [feedback, setFeedback] = useState({ tone: 'muted', message: language === 'pt' ? 'Adivinhe os Pokémon da lista!' : 'Guess the Pokémon in the category!' });
     const [newlyFoundId, setNewlyFoundId] = useState(null);
     const [loadingDetailId, setLoadingDetailId] = useState(null);
     const [gridFilter, setGridFilter] = useState('all');
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(5);
-    const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
+    const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(10);
     const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
     const [celebrationPokemon, setCelebrationPokemon] = useState(null);
+    const runDeletes = useDeferredDelete();
+    const celebrateTimerRef = useRef(0);
+    useEffect(() => () => clearTimeout(celebrateTimerRef.current), []);
 
     const {
         quizRuns,
@@ -190,22 +193,17 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         rerunRun,
     } = useCategoryGuesser();
 
+    // Older runs appear as the list nears its end — at once, they are local.
     const handleHistoryScroll = useCallback((e) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.target;
-        if (scrollHeight - scrollTop - clientHeight < 20) {
-            if (!isHistoryLoadingMore && visibleHistoryLimit < quizRuns.length) {
-                setIsHistoryLoadingMore(true);
-                setTimeout(() => {
-                    setVisibleHistoryLimit((prev) => Math.min(prev + 5, quizRuns.length));
-                    setIsHistoryLoadingMore(false);
-                }, 400);
-            }
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop - clientHeight < 40 && visibleHistoryLimit < quizRuns.length) {
+            setVisibleHistoryLimit((prev) => Math.min(prev + 10, quizRuns.length));
         }
-    }, [isHistoryLoadingMore, visibleHistoryLimit, quizRuns.length]);
+    }, [visibleHistoryLimit, quizRuns.length]);
 
     useEffect(() => {
         if (!isHistoryOpen) {
-            setVisibleHistoryLimit(5);
+            setVisibleHistoryLimit(10);
         }
     }, [isHistoryOpen]);
 
@@ -311,7 +309,6 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     // Dynamic reactive hint: clear hint automatically when a guess is made or challenge changes
     useEffect(() => {
         setManualHint('');
-        setHintTargetName(null);
         if (foundCount === 0) {
             setHintsUsed(0);
         }
@@ -345,6 +342,21 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         return activePokemonList.filter((pokemon) => !foundNames.has(pokemon.name));
     }, [activePokemonList, foundNames]);
 
+    // The last correct guess ends the run: celebrate from that event. The old
+    // effect on `isComplete` also opened for a run that loaded finished.
+    const celebrate = useCallback(() => {
+        setFeedback({
+            tone: 'success',
+            message: language === 'pt' ? 'Quiz concluído! Todos os Pokémon desta lista foram encontrados.' : 'Quiz complete! Every Pokémon in this category has been found.',
+        });
+        if (activePokemonList.length > 0) {
+            const randomPokemon = activePokemonList[Math.floor(Math.random() * activePokemonList.length)];
+            setCelebrationPokemon({ id: randomPokemon.id, displayName: randomPokemon.displayName, spriteUrl: randomPokemon.artworkUrl });
+        }
+        clearTimeout(celebrateTimerRef.current);
+        celebrateTimerRef.current = window.setTimeout(() => setIsCelebrationOpen(true), 750);
+    }, [activePokemonList, language]);
+
     const deferredInput = useDeferredValue(answerInput);
     const normalizedInput = useMemo(() => normalizePokemonQuizInput(deferredInput), [deferredInput]);
 
@@ -371,28 +383,8 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         });
         setAnswerInput('');
         setActiveSuggestionIndex(0);
-    }, [answerLookup, foundNames, normalizedInput, activeRun, pokemonById, updateActiveRunProgress, language]);
-
-    useEffect(() => {
-        if (!isComplete) return undefined;
-
-        setFeedback({
-            tone: 'success',
-            message: language === 'pt' ? 'Quiz concluído! Todos os Pokémon desta lista foram encontrados.' : 'Quiz complete! Every Pokémon in this category has been found.',
-        });
-
-        if (activePokemonList.length > 0) {
-            const randomPokemon = activePokemonList[Math.floor(Math.random() * activePokemonList.length)];
-            setCelebrationPokemon({
-                id: randomPokemon.id,
-                displayName: randomPokemon.displayName,
-                spriteUrl: randomPokemon.artworkUrl,
-            });
-        }
-
-        const timer = setTimeout(() => setIsCelebrationOpen(true), 750);
-        return () => clearTimeout(timer);
-    }, [isComplete, activePokemonList, language]);
+        if (nextFoundArray.length === activeRun.totalCount) celebrate();
+    }, [answerLookup, foundNames, normalizedInput, activeRun, pokemonById, updateActiveRunProgress, language, celebrate]);
 
     const suggestions = useMemo(() => {
         if (!normalizedInput || normalizedInput.length < MIN_AUTOCOMPLETE_CHARACTERS) return [];
@@ -434,7 +426,8 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         });
         setAnswerInput('');
         setActiveSuggestionIndex(0);
-    }, [activeRun, foundNames, pokemonById, updateActiveRunProgress, language]);
+        if (nextFoundArray.length === activeRun.totalCount) celebrate();
+    }, [activeRun, foundNames, pokemonById, updateActiveRunProgress, language, celebrate]);
 
     const handleSelectSuggestion = useCallback((pokemonId) => {
         commitFoundPokemon(pokemonId);
@@ -480,25 +473,32 @@ export function CategoryGuesserView({ showDetails, showToast }) {
         }
     }, [suggestions, activeSuggestionIndex, answerInput, answerLookup, foundNames, handleSelectSuggestion, activeRun, pokemonById, updateActiveRunProgress, language]);
 
-    const handleRerollChallenge = useCallback(() => {
+    // A new challenge is reversible: the run it replaces stays in the store
+    // (runs are keyed by list), so Undo simply makes it the active one again.
+    // It used to sit next to Hint, twice on the page, with no way back.
+    const handleRerollChallenge = useCallback(({ undoable = true } = {}) => {
+        const previousId = activeRun?.id || null;
+        const previousHadProgress = (activeRun?.foundNames?.length || 0) > 0;
         const nextId = getRandomUnplayedListId();
         const nextObj = categoryListMap.get(nextId) || CATEGORY_LISTS[0];
         startNewRun(nextObj.id, nextObj.pokemonNames);
         setAnswerInput('');
         setManualHint('');
-        setHintTargetName(null);
         setHintsUsed(0);
-        setFeedback({ tone: 'info', message: language === 'pt' ? `Novo desafio: ${nextObj.title.pt}` : `New challenge: ${nextObj.title.en}` });
-        if (showToast) {
-            showToast(language === 'pt' ? 'Novo desafio sorteado!' : 'New challenge drawn!', 'info');
+        const title = language === 'pt' ? nextObj.title.pt : nextObj.title.en;
+        setFeedback({ tone: 'info', message: t('games.challengeDrawn', { title }) });
+        if (undoable && previousId && previousHadProgress) {
+            toast.info(t('games.challengeDrawn', { title }), {
+                key: 'pokequiz-reroll',
+                actions: [{ label: t('toast.undo'), onClick: () => resumeRun(previousId) }],
+            });
         }
-    }, [getRandomUnplayedListId, categoryListMap, startNewRun, showToast, language]);
+    }, [activeRun, getRandomUnplayedListId, categoryListMap, startNewRun, resumeRun, language, t]);
 
     const handleManualHint = useCallback(() => {
         if (availableHints <= 0 || remainingPokemon.length === 0) return;
         const randomPokemon = remainingPokemon[Math.floor(Math.random() * remainingPokemon.length)];
         setManualHint(buildQuizHintText(randomPokemon.name, language));
-        setHintTargetName(randomPokemon.name);
         setHintsUsed((count) => count + 1);
     }, [availableHints, remainingPokemon, language]);
 
@@ -554,58 +554,32 @@ export function CategoryGuesserView({ showDetails, showToast }) {
     const lastFindName = activeRun?.foundOrder?.[activeRun.foundOrder.length - 1];
     const lastFind = lastFindName ? pokemonByName.get(lastFindName) : null;
 
+    const visibleRuns = quizRuns.filter((run) => !runDeletes.hidden.has(run.id));
+
+    const deleteRunWithUndo = (run) => {
+        runDeletes.schedule(run.id, () => deleteRun(run.id));
+        toast.info(t('games.runDeleted'), {
+            key: `pokequiz-delete-${run.id}`,
+            actions: [{ label: t('toast.undo'), onClick: () => runDeletes.undo(run.id) }],
+        });
+    };
+
     return (
         <main className="category-guesser">
-            {/* View Title & Quick Actions */}
-            <div className="category-guesser__header">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-indigo-400" />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-bold text-white flex items-center gap-2 m-0 leading-snug">
-                            PokéQuiz
-                        </h1>
-                        <p className="text-xs text-slate-400 m-0">
-                            {language === 'pt'
-                                ? 'Adivinhe os 20 Pokémon sorteados nesta característica oficial!'
-                                : 'Guess the 20 drawn Pokémon of this official characteristic!'}
-                        </p>
-                    </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={handleRerollChallenge}
-                        className="generation-quiz__compact-reset-btn"
-                        title={language === 'pt' ? 'Sortear outro desafio' : 'Draw another challenge'}
-                    >
-                        <RefreshCw className="w-4 h-4" />
-                        <span>{language === 'pt' ? 'Novo Desafio' : 'New Challenge'}</span>
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => setIsHistoryOpen(true)}
-                        className="category-guesser__history-toggle"
-                    >
-                        <History className="w-4 h-4" />
-                        <span>{language === 'pt' ? 'Histórico' : 'History'}</span>
-                        {quizRuns.length > 0 && (
-                            <span className="category-guesser__history-toggle-badge">{quizRuns.length}</span>
-                        )}
-                    </button>
-                </div>
-            </div>
-
-            <section className="category-guesser__panel">
+            <section className="category-guesser__panel" aria-labelledby="category-guesser-title">
+                {/* One header for the page: the category, its count, the grid
+                    filter, and the two page actions — at every width. History
+                    used to live in a top banner that phones hid outright, and
+                    "New challenge" appeared twice, once right beside Hint. */}
                 <div className="category-guesser__panel-header">
                     <div className="category-guesser__panel-title-group">
-                        {renderCategoryIcon(activeCategory.iconName, 'w-5 h-5 text-indigo-400 flex-shrink-0')}
-                        <h2 className="category-guesser__title">
-                            {language === 'pt' ? activeCategory.title.pt : activeCategory.title.en}
-                        </h2>
+                        {renderCategoryIcon(activeCategory.iconName, 'w-5 h-5 text-primary flex-shrink-0')}
+                        <div className="category-guesser__title-stack">
+                            <h2 id="category-guesser-title" className="category-guesser__title">
+                                {language === 'pt' ? activeCategory.title.pt : activeCategory.title.en}
+                            </h2>
+                            <p className="category-guesser__intro">{t('games.guesserIntro')}</p>
+                        </div>
                         <span className="team-builder-panel__meta team-builder-panel__meta--compact">
                             {foundCount}/{totalCount}
                         </span>
@@ -626,6 +600,28 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                             </button>
                         ))}
                     </div>
+
+                    <div className="category-guesser__page-actions">
+                        <button
+                            type="button"
+                            onClick={() => handleRerollChallenge()}
+                            className="btn btn-ghost btn-sm"
+                            aria-label={t('games.newChallenge')}
+                            title={language === 'pt' ? 'Sortear outro desafio' : 'Draw another challenge'}
+                        >
+                            <RefreshCw aria-hidden="true" />
+                            <span className="category-guesser__action-label">{t('games.newChallenge')}</span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setIsHistoryOpen(true)}
+                            className="btn btn-secondary btn-sm btn-icon"
+                            aria-label={t('games.guesserHistory')}
+                            title={t('games.guesserHistory')}
+                        >
+                            <History aria-hidden="true" />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="category-guesser__divider" />
@@ -639,42 +635,40 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                             <div className="category-guesser__last-find-bar" key={lastFind ? lastFind.id : 'empty'}>
                                 <div className="category-guesser__last-find-thumb" title={lastFind ? formatPokemonDisplayName(lastFind.name) : undefined}>
                                     {lastFind ? (
-                                        <img src={getPokemonFrontSpriteUrl(lastFind.id)} alt={lastFind.name} className="image-pixelated" />
+                                        <img src={getPokemonFrontSpriteUrl(lastFind.id)} alt={lastFind.name} width="36" height="36" className="image-pixelated" />
                                     ) : (
                                         <PokeballIcon />
                                     )}
                                 </div>
                                 <div className="category-guesser__last-find-meta">
-                                    <span className="category-guesser__last-find-label">
-                                        {language === 'pt' ? 'Último encontrado' : 'Last found'}
-                                    </span>
+                                    <span className="category-guesser__last-find-label">{t('games.lastFound')}</span>
                                     <span className="category-guesser__last-find-name">
                                         {lastFind ? formatPokemonDisplayName(lastFind.name) : '---'}
                                     </span>
-                                    {lastFind && <span className="text-xs text-slate-400">#{lastFind.id}</span>}
+                                    {lastFind && <span className="text-xs text-muted">#{lastFind.id}</span>}
                                 </div>
                             </div>
 
                             {/* Category Official Description Box */}
                             <div className="category-guesser__hint-box">
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                    <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
-                                        <Lightbulb className="w-3.5 h-3.5 text-amber-400" />
-                                        <span>{language === 'pt' ? 'Dica da Categoria' : 'Category Hint'}</span>
+                                <div className="category-guesser__hint-head">
+                                    <span className="category-guesser__hint-label">
+                                        <Lightbulb className="w-3.5 h-3.5 text-accent" aria-hidden="true" />
+                                        {t('games.categoryHint')}
                                     </span>
                                     {activeCategory.wikiRef && (
                                         <a
                                             href={activeCategory.wikiRef}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                                            className="category-guesser__wiki-link"
                                         >
                                             <span>Bulbapedia</span>
-                                            <ExternalLink className="w-3 h-3" />
+                                            <ExternalLink className="w-3 h-3" aria-hidden="true" />
                                         </a>
                                     )}
                                 </div>
-                                <p className="text-xs text-slate-300 m-0 leading-relaxed">
+                                <p className="category-guesser__hint-text">
                                     {language === 'pt' ? activeCategory.hint.pt : activeCategory.hint.en}
                                 </p>
                             </div>
@@ -704,35 +698,22 @@ export function CategoryGuesserView({ showDetails, showToast }) {
 
                             {manualHint && (
                                 <div className="generation-quiz__tip-banner">
-                                    <HelpCircle className="w-4 h-4 text-amber-400" />
+                                    <HelpCircle className="w-4 h-4 text-accent" aria-hidden="true" />
                                     <span className="generation-quiz__tip-text">{manualHint}</span>
                                 </div>
                             )}
 
-                            {/* Symmetrical Action Buttons (50% / 50%) */}
-                            <div className="category-guesser__console-actions">
-                                <button
-                                    type="button"
-                                    onClick={handleRerollChallenge}
-                                    className="category-guesser__action-btn"
-                                    title={language === 'pt' ? 'Sortear outro desafio' : 'Draw another challenge'}
-                                >
-                                    <RefreshCw className="w-4 h-4 text-indigo-400 flex-shrink-0" />
-                                    <span>{language === 'pt' ? 'Novo Desafio' : 'New Challenge'}</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={handleManualHint}
-                                    className="category-guesser__action-btn"
-                                    disabled={availableHints <= 0 || remainingPokemon.length === 0 || isComplete}
-                                    title={language === 'pt' ? `Ganhe 1 dica a cada 20% de acertos (${hintInterval} Pokémon)` : `Earn 1 hint every 20% of catches (${hintInterval} Pokémon)`}
-                                >
-                                    <Sparkles className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                                    <span>{language === 'pt' ? 'Dica' : 'Hint'}</span>
-                                    <span className="generation-quiz__hint-count">{availableHints}</span>
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                onClick={handleManualHint}
+                                className="btn btn-secondary btn-block"
+                                disabled={availableHints <= 0 || remainingPokemon.length === 0 || isComplete}
+                                title={t('games.hintEarn', { count: hintInterval })}
+                            >
+                                <Sparkles className="text-accent" aria-hidden="true" />
+                                <span>{language === 'pt' ? 'Dica' : 'Hint'}</span>
+                                <span className="count-badge">{availableHints}</span>
+                            </button>
                         </section>
                     </aside>
 
@@ -766,13 +747,8 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                 <QuizCelebrationModal
                     isOpen={isCelebrationOpen}
                     onClose={() => setIsCelebrationOpen(false)}
-                    onTryAnother={() => {
-                        setIsCelebrationOpen(false);
-                        handleRerollChallenge();
-                    }}
-                    onCloseQuiz={() => {
-                        setIsCelebrationOpen(false);
-                    }}
+                    onPlayAgain={() => handleRerollChallenge({ undoable: false })}
+                    playAgainText={t('games.newChallenge')}
                     mode="category"
                     categoryLabel={language === 'pt' ? activeCategory.title.pt : activeCategory.title.en}
                     totalCount={totalCount}
@@ -781,54 +757,24 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                 />
             )}
 
-            {/* History Drawer Overlay */}
-            <div
-                className={`generation-quiz__history-overlay ${isHistoryOpen ? 'is-open' : ''}`}
-                onClick={() => setIsHistoryOpen(false)}
-            />
-
-            {/* History Drawer Sidebar */}
-            <div className={`generation-quiz__history-sidebar ${isHistoryOpen ? 'is-open' : ''}`}>
-                <div className="generation-quiz__history-sidebar-header">
-                    <h3 className="generation-quiz__history-sidebar-title">
-                        <HistoryIcon /> {language === 'pt' ? 'Histórico do PokéQuiz' : 'PokéQuiz History'}
-                    </h3>
-                    <button
-                        type="button"
-                        className="generation-quiz__history-sidebar-close"
-                        onClick={() => setIsHistoryOpen(false)}
-                        title={language === 'pt' ? 'Fechar Histórico' : 'Close History'}
-                    >
-                        <CloseIcon />
-                    </button>
-                </div>
-
-                <div
-                    className="generation-quiz__history-sidebar-scroll"
+            {isHistoryOpen && (
+                <GameHistoryDialog
+                    title={t('games.guesserHistory')}
+                    onClose={() => setIsHistoryOpen(false)}
                     onScroll={handleHistoryScroll}
                 >
-                    {quizRuns.length === 0 ? (
-                        <div className="generation-quiz__history-sidebar-empty">
-                            <div className="generation-quiz__history-sidebar-empty-icon">
-                                <HistoryIcon />
-                            </div>
-                            <p className="generation-quiz__history-sidebar-empty-text">
-                                {language === 'pt' ? (
-                                    <>
-                                        Nenhuma partida gravada ainda.<br />
-                                        Jogue um desafio para registrar seu histórico!
-                                    </>
-                                ) : (
-                                    <>
-                                        No quiz runs recorded yet.<br />
-                                        Play a challenge to record your history!
-                                    </>
-                                )}
+                    {visibleRuns.length === 0 ? (
+                        <div className="game-history__empty">
+                            <HistoryIcon />
+                            <p className="m-0">
+                                {language === 'pt'
+                                    ? 'Nenhuma partida gravada ainda. Jogue um desafio para registrar seu histórico!'
+                                    : 'No quiz runs recorded yet. Play a challenge to record your history!'}
                             </p>
                         </div>
                     ) : (
-                        <>
-                            {quizRuns
+                        <ul className="game-history__list">
+                            {visibleRuns
                                 .slice()
                                 .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
                                 .slice(0, visibleHistoryLimit)
@@ -839,21 +785,20 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                                     const runAccuracy = run.bestAccuracy !== undefined ? run.bestAccuracy : 100;
 
                                     return (
-                                        <div key={run.id} className="generation-quiz-history__item">
-                                            <div className="generation-quiz-history__info">
-                                                <span className="generation-quiz-history__gens">{titleStr}</span>
-                                                <div className="generation-quiz-history__stats">
-                                                    <span>{language === 'pt' ? 'Progresso:' : 'Progress:'} <strong>{run.foundNames ? run.foundNames.length : 0}/{run.totalCount}</strong></span>
-                                                    <span>{language === 'pt' ? 'Precisão:' : 'Accuracy:'} <strong>{runAccuracy}%</strong></span>
-                                                    {run.bestFound > 0 && (
-                                                        <span>{language === 'pt' ? 'Melhor:' : 'Best:'} <strong>{run.bestFound}/{run.totalCount}</strong></span>
-                                                    )}
-                                                    <span className={`generation-quiz-history__badge ${isRunComplete ? 'generation-quiz-history__badge--complete' : 'generation-quiz-history__badge--progress'}`}>
-                                                        {isRunComplete ? (language === 'pt' ? 'Concluído' : 'Completed') : (language === 'pt' ? 'Em Progresso' : 'In Progress')}
+                                        <li key={run.id} className="game-history__item game-history__item--wrap">
+                                            <div className="game-history__main">
+                                                <div className="game-history__heading">
+                                                    <span className="game-history__title">{titleStr}</span>
+                                                    <span className={`game-history__badge ${isRunComplete ? 'is-complete' : 'is-progress'}`}>
+                                                        {isRunComplete ? t('games.statusCompleted') : t('games.statusInProgress')}
                                                     </span>
                                                 </div>
+                                                <span className="game-history__meta">
+                                                    {run.foundNames ? run.foundNames.length : 0}/{run.totalCount} · {runAccuracy}%
+                                                    {run.bestFound > 0 && ` · ${language === 'pt' ? 'Melhor' : 'Best'} ${run.bestFound}/${run.totalCount}`}
+                                                </span>
                                             </div>
-                                            <div className="generation-quiz-history__actions">
+                                            <div className="game-history__actions">
                                                 {!isRunComplete && (
                                                     <button
                                                         type="button"
@@ -862,9 +807,9 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                                                             setIsHistoryOpen(false);
                                                             setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida retomada. Boa sorte!' : 'Run resumed. Good luck!' });
                                                         }}
-                                                        className="generation-quiz-history__btn generation-quiz-history__btn--continue"
+                                                        className="btn btn-secondary btn-sm"
                                                     >
-                                                        {language === 'pt' ? 'Continuar' : 'Continue'}
+                                                        {t('games.continue')}
                                                     </button>
                                                 )}
                                                 <button
@@ -875,41 +820,27 @@ export function CategoryGuesserView({ showDetails, showToast }) {
                                                         setIsHistoryOpen(false);
                                                         setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida reiniciada do zero.' : 'Run restarted from scratch.' });
                                                     }}
-                                                    className="generation-quiz-history__btn generation-quiz-history__btn--rerun"
+                                                    className="btn btn-ghost btn-sm"
                                                 >
-                                                    {isRunComplete ? (language === 'pt' ? 'Jogar Novamente' : 'Play Again') : (language === 'pt' ? 'Recomeçar' : 'Restart')}
+                                                    {isRunComplete ? t('games.playAgain') : t('games.restart')}
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={async () => {
-                                                        const confirmed = await confirmAction({
-                                                            title: t('dialogs.deleteRunTitle'),
-                                                            message: t('dialogs.deleteRunMsg'),
-                                                            confirmText: t('common.delete'),
-                                                        });
-                                                        if (confirmed) deleteRun(run.id);
-                                                    }}
-                                                    className="generation-quiz-history__btn generation-quiz-history__btn--delete"
-                                                    title={language === 'pt' ? 'Deletar Partida' : 'Delete Run'}
+                                                    onClick={() => deleteRunWithUndo(run)}
+                                                    className="btn btn-ghost btn-muted btn-sm btn-icon"
+                                                    aria-label={t('games.deleteRun')}
+                                                    title={t('games.deleteRun')}
                                                 >
                                                     <CloseIcon />
                                                 </button>
                                             </div>
-                                        </div>
+                                        </li>
                                     );
                                 })}
-
-                            {isHistoryLoadingMore && (
-                                <div className="generation-quiz__history-loading">
-                                    <Loader size="xs" />
-                                    <span>{language === 'pt' ? 'Carregando partidas antigas...' : 'Loading older runs...'}</span>
-                                </div>
-                            )}
-                        </>
+                        </ul>
                     )}
-                </div>
-            </div>
+                </GameHistoryDialog>
+            )}
         </main>
     );
 }
-

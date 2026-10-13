@@ -1,0 +1,137 @@
+/* ============================================================
+   GAME HISTORY — the run/day list of PokéPuzzle, the Generation Quiz and
+   PokéQuiz, inside the shared dialog (GameHistoryDialog). The panel owns the
+   only border; each entry is a fill (never a box in a box), its actions are
+   the shared .btn voices.
+   ============================================================ */
+
+.game-history {
+    /* Sized by its list, up to the scrim; the body scrolls past that. */
+    max-height: min(40rem, 100%);
+}
+
+.game-history__body {
+    padding-inline: var(--space-4);
+}
+
+.game-history__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.game-history__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-raised);
+}
+
+.game-history__sprite {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    object-fit: contain;
+}
+
+/* An unplayed day keeps its Pokémon a secret: a silhouette, outlined in the
+   theme's muted ink so it reads on the dark themes as well as the light. */
+.game-history__sprite.is-mystery {
+    filter: brightness(0) drop-shadow(0 0 0.0625rem var(--color-muted));
+    opacity: 0.75;
+}
+
+.game-history__main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+.game-history__heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.game-history__title {
+    font-family: var(--font-body);
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+    overflow-wrap: anywhere;
+}
+
+.game-history__meta {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.game-history__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-0_5) var(--space-1_5);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+}
+
+.game-history__badge.is-complete {
+    background: color-mix(in srgb, var(--color-success) 14%, transparent);
+    color: color-mix(in srgb, var(--color-success) 55%, var(--color-fg));
+}
+
+.game-history__badge.is-progress {
+    background: color-mix(in srgb, var(--color-warning) 14%, transparent);
+    color: color-mix(in srgb, var(--color-warning) 55%, var(--color-fg));
+}
+
+/* A secondary button sits on the row's raised fill: lift it to the surface,
+   or on the light themes it has no edge at all. */
+.game-history__item .btn-secondary {
+    background: var(--color-surface);
+}
+
+.game-history__item .btn-secondary:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+}
+
+.game-history__actions {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1);
+}
+
+/* A run with three actions wraps them under its text on a phone. */
+@media (max-width: 479px) {
+    .game-history__item--wrap {
+        flex-wrap: wrap;
+    }
+
+    .game-history__item--wrap .game-history__actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+
+.game-history__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+    font-size: var(--text-base);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
