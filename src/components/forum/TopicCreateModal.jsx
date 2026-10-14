@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CloseIcon, ClipIcon, StarIcon } from '../icons';
 import { getCategoryMeta } from '../../utils/forumTime';
+import { AttachMenuPopover } from './AttachMenuPopover';
 
 export function TopicCreateModal({
     isOpen,
@@ -18,6 +19,8 @@ export function TopicCreateModal({
     const [text, setText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
     const [isAttachOpen, setIsAttachOpen] = useState(false);
+    const attachButtonRef = useRef(null);
+    const closeAttach = useCallback(() => setIsAttachOpen(false), []);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
@@ -153,18 +156,25 @@ export function TopicCreateModal({
 
                     {/* Actions Row */}
                     <div className="topic-create-modal__actions">
-                        <div className="relative">
+                        <div>
                             <button
+                                ref={attachButtonRef}
                                 type="button"
-                                onClick={() => setIsAttachOpen(!isAttachOpen)}
+                                aria-haspopup="dialog"
+                                aria-expanded={isAttachOpen}
+                                onClick={() => setIsAttachOpen((open) => !open)}
                                 className="btn btn-secondary h-8 text-xs font-semibold"
                             >
                                 <ClipIcon className="w-3.5 h-3.5 mr-1" />
                                 {language === 'pt' ? 'Anexar Time' : 'Attach Team'}
                             </button>
 
-                            {isAttachOpen && (
-                                <div className="comment-composer__attach-menu bottom-full mb-1">
+                            <AttachMenuPopover
+                                isOpen={isAttachOpen}
+                                onClose={closeAttach}
+                                anchorRef={attachButtonRef}
+                                ariaLabel={language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                            >
                                     <p className="comment-composer__menu-label">
                                         {language === 'pt' ? 'Seus times salvos' : 'Your saved teams'}
                                     </p>
@@ -194,8 +204,12 @@ export function TopicCreateModal({
                                             <span className="truncate">{team.name}</span>
                                         </button>
                                     ))}
-                                </div>
-                            )}
+                                    {savedTeams.length === 0 && currentTeam.length === 0 && (
+                                        <p className="px-3 py-1.5 text-xs text-muted">
+                                            {language === 'pt' ? 'Nenhum time salvo ainda.' : 'No saved teams yet.'}
+                                        </p>
+                                    )}
+                            </AttachMenuPopover>
                         </div>
 
                         <div className="flex items-center gap-2">

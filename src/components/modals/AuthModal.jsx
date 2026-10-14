@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { CloseIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useModalA11y } from '../../hooks/useModalA11y';
+import { prettifyAuthError } from '../../utils/authErrors';
 
-export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onClose }) {
+export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSignIn, onSignUp, onResetPassword, onClose }) {
     const { t } = useTranslation();
     const randomLoginPokemons = ['pikachu', 'eevee', 'charmander', 'gengar', 'squirtle', 'togepi', 'piplup', 'snivy'];
     const randomSelected = randomLoginPokemons[Math.floor(Math.random() * randomLoginPokemons.length)];
@@ -13,6 +14,7 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
+    const [notice, setNotice] = useState('');
     const dialogRef = useModalA11y(onClose);
 
     const isSignUp = mode === 'signUp';
@@ -21,6 +23,22 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
         if (!/^\S+@\S+\.\S+$/.test(email.trim())) return t('modals.authValidationErrorEmail');
         if (password.length < 6) return t('modals.authValidationErrorPassword');
         return '';
+    };
+
+    // Firebase answers the same whether or not the address has an account, so
+    // the notice can't confirm one exists — it says where to look if it does.
+    const handleForgotPassword = async () => {
+        if (!/^\S+@\S+\.\S+$/.test(email.trim())) { setNotice(''); setError(t('modals.authResetNeedsEmail')); return; }
+        setError('');
+        setBusy(true);
+        try {
+            await onResetPassword(email.trim());
+            setNotice(t('modals.authResetSent', { email: email.trim() }));
+        } catch (err) {
+            setError(prettifyAuthError(err, t));
+        } finally {
+            setBusy(false);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -130,6 +148,11 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             {error}
                         </p>
                     )}
+                    {notice && !error && (
+                        <p className="text-sm text-muted" role="status">
+                            {notice}
+                        </p>
+                    )}
 
                     <div className="flex flex-col gap-2">
                         <button
@@ -140,9 +163,20 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
                             {busy ? t('modals.authPleaseWait') : isSignUp ? t('modals.authSignUpBtn') : t('modals.authSignInBtn')}
                         </button>
 
+                        {!isSignUp && onResetPassword && (
+                            <button
+                                type="button"
+                                onClick={handleForgotPassword}
+                                disabled={busy}
+                                className="btn btn-ghost btn-block"
+                            >
+                                {t('modals.authForgotPassword')}
+                            </button>
+                        )}
+
                         <button
                             type="button"
-                            onClick={() => { setError(''); setMode(isSignUp ? 'signIn' : 'signUp'); }}
+                            onClick={() => { setError(''); setNotice(''); setMode(isSignUp ? 'signIn' : 'signUp'); }}
                             className="btn btn-ghost btn-block"
                         >
                             {isSignUp ? t('modals.authAlreadyHaveAccount') : t('modals.authDontHaveAccount')}
@@ -154,20 +188,3 @@ export function AuthModal({ mode: initialMode = 'signIn', canLink = false, onSig
     );
 }
 
-
-function prettifyAuthError(err, t) {
-    const code = err?.code || '';
-    switch (code) {
-        case 'auth/invalid-email': return t('modals.authErrorInvalidEmail');
-        case 'auth/email-already-in-use': return t('modals.authErrorEmailInUse');
-        case 'auth/weak-password': return t('modals.authValidationErrorPassword');
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential':
-        case 'auth/invalid-login-credentials': return t('modals.authErrorWrongPassword');
-        case 'auth/user-not-found': return t('modals.authErrorUserNotFound');
-        case 'auth/network-request-failed': return t('modals.authErrorNetwork');
-        case 'auth/too-many-requests': return t('modals.authErrorTooManyRequests');
-        case 'auth/credential-already-in-use': return t('modals.authErrorCredentialInUse');
-        default: return err?.message || t('modals.authErrorDefault');
-    }
-}

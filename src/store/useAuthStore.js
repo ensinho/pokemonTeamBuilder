@@ -9,6 +9,10 @@ import {
     EmailAuthProvider,
     linkWithCredential,
     signOut,
+    reauthenticateWithCredential,
+    updatePassword,
+    sendPasswordResetEmail,
+    deleteUser,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { appId, ADMIN_EMAILS } from '../constants/firebase';
@@ -20,6 +24,8 @@ import { useLanguageStore } from './useLanguageStore';
 import { migrateLocalProgress, listLocalSuffixesForUid, ppLocalKey, pickBestState } from '../utils/pokePuzzleMigration';
 import { resolveAvatar } from '../utils/avatar';
 import { promptSignIn } from '../utils/navigation';
+import { deleteUserData } from '../services/accountDeletion';
+import { disablePush } from '../services/pushNotifications';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -763,6 +769,41 @@ export const useAuthStore = create((set, get) => {
             });
             toast.success(t('toast.signedIn', { email: result.user.email || email }));
             set({ showSyncPrompt: false });
+        },
+
+        // Proves the person at the keyboard knows the password before anything
+        // sensitive — and refreshes the sign-in, which Firebase demands anyway
+        // (auth/requires-recent-login) for a password change or a deletion.
+        reauthenticate: async (currentPassword) => {
+            const user = auth.currentUser;
+            if (!user || user.isAnonymous || !user.email) throw Object.assign(new Error('No account'), { code: 'auth/no-current-user' });
+            await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, currentPassword));
+            return user;
+        },
+
+        changePassword: async (currentPassword, newPassword) => {
+            const user = await get().reauthenticate(currentPassword);
+            await updatePassword(user, newPassword);
+            toast.success(t('toast.passwordChanged'));
+        },
+
+        sendPasswordReset: async (email) => {
+            await sendPasswordResetEmail(auth, email);
+        },
+
+        // Data first, auth record last: once the user is gone the rules no longer
+        // let anyone delete what they owned. Reauthenticating up front means the
+        // final deleteUser can't fail on a stale sign-in after the data is gone.
+        deleteAccount: async (currentPassword) => {
+            const user = await get().reauthenticate(currentPassword);
+            await disablePush({ userId: user.uid });
+            await deleteUserData(user.uid);
+            clearAuthSnapshot();
+            await deleteUser(user);
+            try {
+                localStorage.removeItem('ptbActiveTeamId');
+            } catch (_) { /* ignore */ }
+            toast.info(t('toast.accountDeleted'));
         },
 
         handleSignOut: async () => {
