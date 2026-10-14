@@ -1,9 +1,26 @@
 {
-  "generatedAt": "2026-09-15T23:26:49.847Z",
-  "month": "2026-08",
-  "source": "https://www.smogon.com/stats/2026-08/",
-  "default": "gen9championsvgc2026regmb",
+  "generatedAt": "2026-10-14T18:11:58.282Z",
+  "month": "2026-09",
+  "source": "https://www.smogon.com/stats/2026-09/",
+  "default": "gen9championsvgc2026regmc",
   "formats": [
+    {
+      "id": "gen9championsvgc2026regmc",
+      "label": "VGC Reg M-C",
+      "group": "Pokémon Champions",
+      "kind": "vgc",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 1631943,
+      "species": 123,
+      "file": "usage/gen9championsvgc2026regmc.json",
+      "month": "2026-09"
+    },
     {
       "id": "gen9championsvgc2026regmb",
       "label": "VGC Reg M-B",
@@ -16,9 +33,140 @@
         1630,
         1760
       ],
-      "totalBattles": 1269250,
-      "species": 125,
-      "file": "usage/gen9championsvgc2026regmb.json"
+      "totalBattles": 326464,
+      "species": 126,
+      "file": "usage/gen9championsvgc2026regmb.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9championsvgc2026regma",
+      "label": "VGC Reg M-A",
+      "group": "Pokémon Champions",
+      "kind": "vgc",
+      "cutoff": 1630,
+      "cutoffs": [
+        1630
+      ],
+      "totalBattles": 1479658,
+      "species": 117,
+      "file": "usage/gen9championsvgc2026regma.json",
+      "month": "2026-06"
+    },
+    {
+      "id": "gen9vgc2026regi",
+      "label": "VGC 2026 Reg I",
+      "group": "Scarlet & Violet",
+      "kind": "vgc",
+      "cutoff": 1630,
+      "cutoffs": [
+        1630
+      ],
+      "totalBattles": 77135,
+      "species": 130,
+      "file": "usage/gen9vgc2026regi.json",
+      "month": "2026-06"
+    },
+    {
+      "id": "gen9championsvgc2026regmcbo3",
+      "label": "VGC Reg M-C (Bo3)",
+      "group": "Pokémon Champions",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 223477,
+      "species": 124,
+      "file": "usage/gen9championsvgc2026regmcbo3.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9championsvgc2026regmbbo3",
+      "label": "VGC Reg M-B (Bo3)",
+      "group": "Pokémon Champions",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 38449,
+      "species": 127,
+      "file": "usage/gen9championsvgc2026regmbbo3.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9championsou",
+      "label": "Champions OU",
+      "group": "Champions Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 145642,
+      "species": 124,
+      "file": "usage/gen9championsou.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9championsuu",
+      "label": "Champions UU",
+      "group": "Champions Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 1832,
+      "species": 127,
+      "file": "usage/gen9championsuu.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9championsbssregmc",
+      "label": "Battle Stadium Reg M-C",
+      "group": "Champions Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 69462,
+      "species": 124,
+      "file": "usage/gen9championsbssregmc.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9championsbssregmb",
+      "label": "Battle Stadium Reg M-B",
+      "group": "Champions Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 14242,
+      "species": 124,
+      "file": "usage/gen9championsbssregmb.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9ou",
@@ -32,9 +180,10 @@
         1695,
         1825
       ],
-      "totalBattles": 730502,
+      "totalBattles": 574541,
       "species": 143,
-      "file": "usage/gen9ou.json"
+      "file": "usage/gen9ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9ubers",
@@ -48,9 +197,10 @@
         1630,
         1760
       ],
-      "totalBattles": 78012,
-      "species": 124,
-      "file": "usage/gen9ubers.json"
+      "totalBattles": 67302,
+      "species": 129,
+      "file": "usage/gen9ubers.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9ubersuu",
@@ -66,7 +216,8 @@
       ],
       "totalBattles": 24,
       "species": 16,
-      "file": "usage/gen9ubersuu.json"
+      "file": "usage/gen9ubersuu.json",
+      "month": "2026-08"
     },
     {
       "id": "gen9uu",
@@ -80,9 +231,10 @@
         1630,
         1760
       ],
-      "totalBattles": 41550,
+      "totalBattles": 33671,
       "species": 145,
-      "file": "usage/gen9uu.json"
+      "file": "usage/gen9uu.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9ru",
@@ -96,9 +248,10 @@
         1630,
         1760
       ],
-      "totalBattles": 21932,
-      "species": 143,
-      "file": "usage/gen9ru.json"
+      "totalBattles": 20763,
+      "species": 144,
+      "file": "usage/gen9ru.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9nu",
@@ -112,9 +265,10 @@
         1630,
         1760
       ],
-      "totalBattles": 7821,
-      "species": 140,
-      "file": "usage/gen9nu.json"
+      "totalBattles": 6316,
+      "species": 142,
+      "file": "usage/gen9nu.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9pu",
@@ -128,9 +282,10 @@
         1630,
         1760
       ],
-      "totalBattles": 13302,
-      "species": 139,
-      "file": "usage/gen9pu.json"
+      "totalBattles": 9176,
+      "species": 143,
+      "file": "usage/gen9pu.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9zu",
@@ -144,9 +299,10 @@
         1630,
         1760
       ],
-      "totalBattles": 4877,
+      "totalBattles": 4897,
       "species": 142,
-      "file": "usage/gen9zu.json"
+      "file": "usage/gen9zu.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9lc",
@@ -160,9 +316,27 @@
         1630,
         1760
       ],
-      "totalBattles": 9289,
-      "species": 142,
-      "file": "usage/gen9lc.json"
+      "totalBattles": 7479,
+      "species": 143,
+      "file": "usage/gen9lc.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9nfe",
+      "label": "NFE",
+      "group": "SV Singles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 835,
+      "species": 133,
+      "file": "usage/gen9nfe.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9monotype",
@@ -176,9 +350,10 @@
         1630,
         1760
       ],
-      "totalBattles": 69666,
-      "species": 143,
-      "file": "usage/gen9monotype.json"
+      "totalBattles": 63572,
+      "species": 140,
+      "file": "usage/gen9monotype.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9anythinggoes",
@@ -192,9 +367,10 @@
         1630,
         1760
       ],
-      "totalBattles": 134990,
-      "species": 133,
-      "file": "usage/gen9anythinggoes.json"
+      "totalBattles": 125234,
+      "species": 135,
+      "file": "usage/gen9anythinggoes.json",
+      "month": "2026-09"
     },
     {
       "id": "gen91v1",
@@ -208,9 +384,10 @@
         1630,
         1760
       ],
-      "totalBattles": 19261,
+      "totalBattles": 23054,
       "species": 140,
-      "file": "usage/gen91v1.json"
+      "file": "usage/gen91v1.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9cap",
@@ -224,9 +401,10 @@
         1630,
         1760
       ],
-      "totalBattles": 1042,
-      "species": 89,
-      "file": "usage/gen9cap.json"
+      "totalBattles": 1235,
+      "species": 102,
+      "file": "usage/gen9cap.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9doublesou",
@@ -240,9 +418,27 @@
         1695,
         1825
       ],
-      "totalBattles": 203650,
-      "species": 143,
-      "file": "usage/gen9doublesou.json"
+      "totalBattles": 196031,
+      "species": 141,
+      "file": "usage/gen9doublesou.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9doublesubers",
+      "label": "Doubles Ubers",
+      "group": "SV Doubles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 65323,
+      "species": 132,
+      "file": "usage/gen9doublesubers.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9doublesuu",
@@ -256,9 +452,44 @@
         1630,
         1760
       ],
-      "totalBattles": 14145,
-      "species": 145,
-      "file": "usage/gen9doublesuu.json"
+      "totalBattles": 16917,
+      "species": 144,
+      "file": "usage/gen9doublesuu.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen92v2doubles",
+      "label": "2v2 Doubles",
+      "group": "SV Doubles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 3510,
+      "species": 140,
+      "file": "usage/gen92v2doubles.json",
+      "month": "2026-09"
+    },
+    {
+      "id": "gen9vgc2024regg",
+      "label": "VGC 2024 Reg G",
+      "group": "SV Doubles",
+      "kind": "tier",
+      "cutoff": 1630,
+      "cutoffs": [
+        0,
+        1500,
+        1630,
+        1760
+      ],
+      "totalBattles": 9911,
+      "species": 140,
+      "file": "usage/gen9vgc2024regg.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9nationaldex",
@@ -272,9 +503,10 @@
         1630,
         1760
       ],
-      "totalBattles": 445542,
-      "species": 139,
-      "file": "usage/gen9nationaldex.json"
+      "totalBattles": 426601,
+      "species": 140,
+      "file": "usage/gen9nationaldex.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9nationaldexubers",
@@ -288,9 +520,10 @@
         1630,
         1760
       ],
-      "totalBattles": 117671,
-      "species": 128,
-      "file": "usage/gen9nationaldexubers.json"
+      "totalBattles": 108337,
+      "species": 127,
+      "file": "usage/gen9nationaldexubers.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9nationaldexuu",
@@ -304,9 +537,10 @@
         1630,
         1760
       ],
-      "totalBattles": 4044,
-      "species": 143,
-      "file": "usage/gen9nationaldexuu.json"
+      "totalBattles": 4298,
+      "species": 142,
+      "file": "usage/gen9nationaldexuu.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9nationaldexmonotype",
@@ -320,9 +554,10 @@
         1630,
         1760
       ],
-      "totalBattles": 18150,
+      "totalBattles": 18750,
       "species": 140,
-      "file": "usage/gen9nationaldexmonotype.json"
+      "file": "usage/gen9nationaldexmonotype.json",
+      "month": "2026-09"
     },
     {
       "id": "gen9nationaldexdoubles",
@@ -336,9 +571,10 @@
         1630,
         1760
       ],
-      "totalBattles": 115173,
-      "species": 139,
-      "file": "usage/gen9nationaldexdoubles.json"
+      "totalBattles": 112776,
+      "species": 133,
+      "file": "usage/gen9nationaldexdoubles.json",
+      "month": "2026-09"
     },
     {
       "id": "gen8ou",
@@ -352,9 +588,10 @@
         1630,
         1760
       ],
-      "totalBattles": 8876,
+      "totalBattles": 6726,
       "species": 144,
-      "file": "usage/gen8ou.json"
+      "file": "usage/gen8ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen8ubers",
@@ -370,7 +607,8 @@
       ],
       "totalBattles": 39,
       "species": 25,
-      "file": "usage/gen8ubers.json"
+      "file": "usage/gen8ubers.json",
+      "month": "2026-08"
     },
     {
       "id": "gen8doublesou",
@@ -384,9 +622,10 @@
         1630,
         1760
       ],
-      "totalBattles": 513,
-      "species": 146,
-      "file": "usage/gen8doublesou.json"
+      "totalBattles": 297,
+      "species": 127,
+      "file": "usage/gen8doublesou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen7ou",
@@ -400,9 +639,10 @@
         1630,
         1760
       ],
-      "totalBattles": 63174,
-      "species": 134,
-      "file": "usage/gen7ou.json"
+      "totalBattles": 51532,
+      "species": 136,
+      "file": "usage/gen7ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen6ou",
@@ -416,9 +656,10 @@
         1630,
         1760
       ],
-      "totalBattles": 21976,
-      "species": 133,
-      "file": "usage/gen6ou.json"
+      "totalBattles": 39219,
+      "species": 135,
+      "file": "usage/gen6ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen5ou",
@@ -432,9 +673,10 @@
         1630,
         1760
       ],
-      "totalBattles": 28215,
-      "species": 146,
-      "file": "usage/gen5ou.json"
+      "totalBattles": 25560,
+      "species": 148,
+      "file": "usage/gen5ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen4ou",
@@ -448,9 +690,10 @@
         1630,
         1760
       ],
-      "totalBattles": 61518,
-      "species": 138,
-      "file": "usage/gen4ou.json"
+      "totalBattles": 57675,
+      "species": 137,
+      "file": "usage/gen4ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen3ou",
@@ -464,9 +707,10 @@
         1630,
         1760
       ],
-      "totalBattles": 217140,
-      "species": 133,
-      "file": "usage/gen3ou.json"
+      "totalBattles": 195470,
+      "species": 141,
+      "file": "usage/gen3ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen2ou",
@@ -480,9 +724,10 @@
         1630,
         1760
       ],
-      "totalBattles": 4560,
-      "species": 107,
-      "file": "usage/gen2ou.json"
+      "totalBattles": 4433,
+      "species": 76,
+      "file": "usage/gen2ou.json",
+      "month": "2026-09"
     },
     {
       "id": "gen1ou",
@@ -496,9 +741,10 @@
         1630,
         1760
       ],
-      "totalBattles": 14136,
-      "species": 75,
-      "file": "usage/gen1ou.json"
+      "totalBattles": 11702,
+      "species": 77,
+      "file": "usage/gen1ou.json",
+      "month": "2026-09"
     }
   ]
 }
