@@ -9,7 +9,7 @@ import { normalizeUiScale } from '../utils/uiScale';
 // ============================================================
 
 // Bump this when the patch-notes screen has new content to surface.
-export const PATCH_NOTES_VERSION = '1.14.0';
+export const PATCH_NOTES_VERSION = '1.15.0';
 // Local, not hotlinked: the old pixilart URL answers 403 / NotSameOrigin, so
 // every empty slot and every sprite fallback rendered a broken-image glyph
 // (2026-10-06). A neutral grey reads on all six themes; callers dim it.

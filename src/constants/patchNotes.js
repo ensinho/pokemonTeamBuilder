@@ -12,9 +12,55 @@ import { PATCH_NOTES_VERSION } from './theme';
 // `month` is 'YYYY-MM'; it is formatted per language at render time, so a new
 // release needs no new date copy. `visual` and `icon` are looked up in
 // PatchNotesModal — the ledger stays data, not JSX.
+//
+// The current release lays out side by side: the note marked `featured` is the
+// large card on the left, the others stack at equal height on the right (one
+// column on a phone, featured first). Keep it to one featured note and three
+// side notes — the right column divides its height evenly between them.
 export const RELEASES = [
     {
         version: PATCH_NOTES_VERSION,
+        month: '2026-10',
+        thanks: 'patchNotes.metaThanks',
+        notes: [
+            {
+                key: 'reg-mc',
+                featured: true,
+                icon: 'trophy',
+                visual: 'regMc',
+                title: 'patchNotes.regMcTitle',
+                description: 'patchNotes.regMcDesc',
+                cta: 'patchNotes.regMcCta',
+                path: '/meta?fmt=gen9championsvgc2026regmc',
+            },
+            {
+                key: 'tournament-win-rates',
+                icon: 'swords',
+                title: 'patchNotes.tourTitle',
+                description: 'patchNotes.tourDesc',
+                cta: 'patchNotes.tourCta',
+                path: '/meta?fmt=gen9championsvgc2026regmc&cut=tour',
+            },
+            {
+                key: 'champions-sets',
+                icon: 'sparkles',
+                title: 'patchNotes.champSetsTitle',
+                description: 'patchNotes.champSetsDesc',
+                cta: 'patchNotes.champSetsCta',
+                path: '/meta/rillaboom',
+            },
+            {
+                key: 'balanced-suggestions',
+                icon: 'scale',
+                title: 'patchNotes.balanceTitle',
+                description: 'patchNotes.balanceDesc',
+                cta: 'patchNotes.balanceCta',
+                path: '/builder',
+            },
+        ],
+    },
+    {
+        version: '1.14.0',
         month: '2026-10',
         notes: [
             {
