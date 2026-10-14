@@ -150,11 +150,27 @@ Cada variante guarda o texto Showdown completo e a fonte (wiki ou jogo).
 Função pura `championTeamFor(dayKey)` em `api/_lib/championRotation.js`:
 
 1. `seed = hash('champion:' + dayKey)`, usando o `PRNG` do próprio sim.
-2. Sorteia o **primeiro Pokémon** entre os frequentes, com peso maior para Spiritomb (o primeiro clássico).
-3. Sorteia mais 4 espécies sem repetição: no mínimo 3 frequentes e no máximo 1 ocasional.
-4. Garchomp fecha o time.
-5. Escolhe a variante de cada espécie conforme a **dificuldade do dia** (abaixo).
-6. **Anti-repetição:** a composição de hoje não pode ser igual à de nenhum dos últimos 7 dias. Se for, sorteia de novo com `seed+1`. Isso é determinístico, porque calcular os 7 dias anteriores é só aritmética.
+**Composição fixa (cláusula decidida em 2026-10-14): 1 ás + 3 frequentes + 1 ocasional + 1 curinga competitivo.**
+
+| Vaga | Quantos | De onde |
+|---|---|---|
+| Ás | 1 | Garchomp, sempre o último |
+| Frequentes | **exatamente 3** | Spiritomb, Lucario, Milotic, Togekiss, Roserade |
+| Ocasional | **exatamente 1** | Gastrodon, Glaceon, Eelektross, Braviary |
+| **Curinga** | **exatamente 1** | Qualquer Pokémon com set competitivo do gerador de random battle (`@pkmn/randoms`, `gen9randombattle`) |
+
+2. Sorteia 3 frequentes sem repetição. O **primeiro Pokémon** sai entre eles, com peso maior para Spiritomb.
+3. Sorteia 1 ocasional.
+4. **Curinga:** gera um set competitivo com a semente `hash('wildcard:' + dayKey)`, tentando de novo (semente +1) até passar nos filtros:
+   - não pode ser uma espécie do pool dela, nem repetir espécie do time;
+   - sem lendários restritos e míticos (lista `Restricted Legendary`/`Mythical` das tags do sim), para não decidir a partida sozinho;
+   - totalmente evoluído;
+   - no máximo 1 tipo repetido com o resto do time, para ela não ficar com 3 fraquezas iguais.
+5. **Ordem:** o primeiro (frequente) abre; ocasional e curinga ocupam posições sorteadas entre a 2ª e a 5ª; Garchomp fecha.
+6. **Sets:** frequentes e ocasional usam a variante da **dificuldade do dia** (abaixo). O curinga usa **sempre** o set competitivo gerado, no nível 50; nos dias fáceis, a IA continua no perfil fácil.
+7. **Anti-repetição:** a composição de hoje não pode ser igual à de nenhum dos últimos 7 dias. Se for, sorteia de novo com `seed+1`. Isso é determinístico, porque calcular os 7 dias anteriores é só aritmética.
+
+No Pokétch, a silhueta do curinga aparece como **"?"** até ele entrar, porque é a surpresa do dia.
 
 ### 4.3 Dificuldade pelo dia da semana
 
@@ -412,7 +428,7 @@ F1 e F2 sozinhas já entregam um desafio jogável. F3 e F4 trazem o "uau".
 ## 12. Testes e verificação
 
 **Unitários (Vitest):**
-- `championRotation`: mesmo `dayKey` → mesmo time; Garchomp sempre por último; 6 espécies distintas; nenhuma repetição em 7 dias; dificuldade por dia da semana.
+- `championRotation`: mesmo `dayKey` → mesmo time; Garchomp sempre por último; 6 espécies distintas; sempre 3 frequentes + 1 ocasional + 1 curinga fora do pool; nenhuma repetição em 7 dias; dificuldade por dia da semana.
 - `cynthiaAI`, por cenário:
   - escolhe o golpe que nocauteia;
   - usa prioridade para fechar;
