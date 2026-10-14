@@ -1,7 +1,8 @@
 # Plano — Desafio da Campeã (batalha diária contra a Cynthia)
 
-> Status: **proposta, aguardando alinhamento** (fluxo `/feature`, etapa 2). Nenhum código
-> produtivo foi alterado. As decisões em aberto estão na seção 14.
+> Status: **alinhado** (fluxo `/feature`, etapa 2 concluída). As decisões da seção 14
+> foram respondidas pelo Enzo em 2026-10-14. Próximo passo: F1 (motor + IA).
+> Nenhum código produtivo foi alterado ainda.
 > Data: 2026-10-14.
 
 ## 0. Resumo
@@ -115,7 +116,7 @@ A regra `match /users/{userId}/{document=**} { allow read, write: if isOwner(use
 - **Formato:** simples, 6×6, `gen9customgame` com Sleep Clause Mod, Species Clause, OHKO Clause, Evasion Moves Clause e **Terastal Clause**. A tela não tem botão de Tera, e o DPPt também não tinha.
 - **Nível:** todos no 50, inclusive a Cynthia, como na Battle Tower. O `showdownExport` já emite `Level: 50`.
 - **Itens:** sem itens de bolsa; itens segurados valem.
-- **Restrições ao time próprio:** decisão em aberto (§14.4).
+- **Restrições ao time próprio:** nenhuma. Lendários e Ubers são liberados. A partida é marcada com o tier do time (`tier-legality.json`), e o ranking "justo" da F6 é o do Time do dia (§14.4).
 
 ### 3.6 Renderização em DOM + CSS, na resolução do DS
 - Cada tela tem coordenadas internas de **256×192** (resolução nativa do DS).
@@ -355,9 +356,18 @@ Ela segue o padrão de `battle-turn.js`:
 **Desktop:** `1–4` escolhem golpes, `S` troca, `Esc` volta.
 
 ### 8.5 Arte e fontes
-- **Arte original** (sem ripar arquivos do DS): tileset da sala, sprite do jogador andando (4 direções × 3 quadros) e sprite de costas do jogador na batalha.
+- **Arte original desenhada no estilo DS** (decidido em §14.3; nenhum arquivo extraído do jogo): tileset da sala, sprite do jogador andando (4 direções × 3 quadros) e sprite de costas do jogador na batalha.
   - PNG-8 em resolução nativa, ampliado por CSS com `image-rendering: pixelated`. Para pixel art, a regra "WebP em 2× do tamanho exibido" não se aplica; fica registrado como exceção.
   - Orçamento total ≤ 60 KB.
+- **Animações leves de interatividade** (pedido do Enzo). Todas animam só `transform`/`opacity` (regra de celular do `design-system`), e todas param com `prefers-reduced-motion`:
+
+| Onde | Animação |
+|---|---|
+| Arena | Jogador e Cynthia "respiram" parados (2 quadros, ~1 s); luminárias pulsam a opacidade do brilho; o anel da Poké Ball pulsa devagar |
+| Encontro | Balão "!" salta (`scale` com mola); seta da caixa de texto pisca quando há mais texto |
+| Batalha | Pokémon ativos balançam de leve parados, como no DPPt; a linha de Poké Balls entra uma a uma |
+| Controles | D-pad, A/B e botões de comando afundam ao toque (`translateY` + sombra pintada uma vez); o botão vermelho do Pokétch afunda e a tela pisca ao trocar de app |
+| Pokétch | Barras de HP drenam com `scaleX`; silhueta revelada na Ficha da Campeã ganha um flash curto |
 - **Cynthia** (`cynthia-gen4`) e **Pokémon** vêm dos sprites do Showdown e do PokéAPI que o app já usa, com cache no service worker.
 - **Fonte de pixel** do Google Fonts (sugestão: *Pixelify Sans*), carregada só nesta rota. O texto continua sendo texto real.
 
@@ -440,7 +450,7 @@ Cada fase termina com lint (zero warnings), `npm test` e `npm run build` verdes.
 
 | Fase | Entrega | Pronto quando |
 |---|---|---|
-| **F0 — Alinhamento e arte** | Respostas da §14; tileset, sprite do jogador e fonte escolhidos | Arte original aprovada; pool da Cynthia conferido nas wikis (Glaceon, Eelektross, Braviary) |
+| **F0 — Alinhamento e arte** | ~~Respostas da §14~~ (feito em 2026-10-14); tileset, sprite do jogador e fonte escolhidos | Arte original estilo DS aprovada; pool da Cynthia conferido nas wikis (Glaceon, Eelektross, Braviary) |
 | **F1 — Motor + IA** | `challengeEngine`, `cynthiaAI`, `championPool`, `championRotation`, `api/challenge.js`, regras | Batalha completa pelo handler no teste; fuzz de 200 batalhas sem `\|error\|`; os 6 invariantes da §6.1 com teste; rotação determinística sem repetir 7 dias; 8/12 funções |
 | **F2 — Jogável** | Store, hook, `TeamPicker`, uma cena de batalha simples (com os leitores existentes) | Dá para vencer e perder no navegador; escolha ilegal mostra erro; "pensando…" otimista; partida retomada depois de recarregar |
 | **F3 — Console DS** | `ConsoleShell`, cena DPPt, HP, linha de Poké Balls, `battleTimeline` + animações, `CommandPanel`, Pokétch | `/verify-ui` em 1440 e 390 px, escuro e claro; quadros no meio da animação; *reduced motion* |
@@ -496,7 +506,7 @@ F1 e F2 sozinhas já entregam um desafio jogável. F3 e F4 trazem o "uau".
 
 | Risco | Mitigação |
 |---|---|
-| Direitos sobre a arte do DS | Arte original "inspirada em"; só os sprites que o app já usa (Showdown/PokéAPI) |
+| Direitos sobre a arte do DS | Decidido: arte original no estilo DS; só os sprites que o app já usa (Showdown/PokéAPI) |
 | Partida a frio do Vercel (cerca de 32 MB de sim + firebase-admin) | Ping ao entrar na arena; a caminhada esconde a espera; caixa de texto honesta |
 | Limite de 12 funções | Uma função só, com `action`; ficam 4 vagas |
 | IA fácil ou difícil demais | Dificuldade por dia; `AI_VERSION` permite ajustar sem quebrar partidas em andamento; F6 mede a taxa de vitória por dia |
@@ -506,13 +516,15 @@ F1 e F2 sozinhas já entregam um desafio jogável. F3 e F4 trazem o "uau".
 
 ---
 
-## 14. Dúvidas em aberto (decisões para o Enzo)
+## 14. Decisões (respondidas pelo Enzo em 2026-10-14)
 
-1. **"Time diário".** O plano entende que é um **time de aluguel do dia, igual para todos**, gerado pelo servidor. Se a ideia for outra (por exemplo, o último time editado), a §5 muda.
-2. **Tentativas.** Recomendação: **1 tentativa oficial por dia**, que conta para a sequência e o ranking, mais **revanches de treino ilimitadas** depois. A alternativa é tentativas ilimitadas em que só a primeira vitória conta.
-3. **Arte.** Recomendação: **arte original** no estilo DPPt para a sala e o boneco. Usar arquivos ripados do jogo seria mais fiel, porém arriscado.
-4. **Restrições do time próprio.** Liberar lendários e Ubers? Recomendação: liberar tudo e marcar a partida com o tier (`tier-legality.json`). O ranking "justo" é o do Time do dia.
-5. **Ranking** já no lançamento ou só na F6? Recomendação: F6.
+| # | Pergunta | Decisão |
+|---|---|---|
+| 1 | O que é o "time diário" | **Time de aluguel do dia, igual para todos**, gerado pelo servidor (§5) |
+| 2 | Tentativas | **1 tentativa oficial por dia** (conta para a sequência e, na F6, para o ranking) + **revanches de treino ilimitadas** depois |
+| 3 | Arte | **Arte original desenhada no estilo DS**, com **animações leves** para dar interatividade (§8.5) |
+| 4 | Restrições do time próprio | **Tudo liberado**, incluindo lendários e Ubers; a partida é marcada com o tier, e o ranking justo é o do Time do dia (§3.5) |
+| 5 | Ranking | **Só depois**, na F6 |
 
 ---
 
