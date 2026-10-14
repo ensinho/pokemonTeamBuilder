@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-14 — A dialog opened from inside a card rendered squeezed into the card `bug`
+- **Symptom:** the new change-password / delete-account dialogs, opened from Profile's account card, drew inside the card's bounds (a 26rem-wide sliver at the bottom of the page) instead of over the screen.
+- **Root cause:** `.modal-scrim` is `position: fixed`, but a fixed element resolves against the nearest ancestor that establishes a containing block (transform / filter / contain / container queries) — the profile card is one, so the "full-screen" scrim was card-sized. The old small modal had the same bug and hid it by being small.
+- **Fix:** `AuthDialogShell` renders through `createPortal(…, document.body)`.
+- **Correct pattern:** a dialog that can be opened from inside a card or panel is portalled to `<body>`. Never assume `position: fixed` means "the viewport" inside this app's cards.
+- **Files:** `src/components/modals/auth/AuthDialogShell.jsx`
+
 ### 2026-10-14 — Forum "Anexar" opened its menu off-screen `bug`
 - **Symptom:** the Attach button in the thread composer (and in the new-topic modal) did nothing visible.
 - **Root cause:** `.comment-composer__attach-menu` was an absolute child with `top: 100%` — it opened *below* the button, but both buttons sit at the bottom of a clipped container (the thread's composer dock, the topic modal's actions row), so the menu rendered outside the visible area. In `TopicCreateModal` the Tailwind `bottom-full` added on top of the CSS `top: 100%` collapsed it to zero height.

@@ -46,6 +46,8 @@ import { ariaKeyShortcuts, formatShortcut, matchesShortcut } from '../utils/sear
 // even though the lazy() loaders below are their only real users.
 import { ConfirmDialog } from './modals/ConfirmDialog';
 import { ConfirmHost } from './modals/ConfirmHost';
+import { SessionTransition } from './SessionTransition';
+import { GuestAccountCard } from './GuestAccountCard';
 import { SyncPromptModal } from './modals/SyncPromptModal';
 import { VersionUpdateModal } from './modals/VersionUpdateModal';
 
@@ -1391,6 +1393,7 @@ export default function AppLayout() {
 
             {/* Answers confirmAction() from anywhere in the app. */}
             <ConfirmHost />
+            <SessionTransition />
 
             <ToastStack />
 
@@ -1507,16 +1510,21 @@ export default function AppLayout() {
                                                 onIntent={() => prefetchRoute('profile')}
                                                 onClick={() => navigate('/profile')}
                                             />
-                                            <button
-                                                type="button"
-                                                onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
-                                                aria-label={t('nav.signIn')}
-                                                title={t('nav.signIn')}
-                                                className={`app-shell__nav-link ${isRailCollapsed ? 'is-collapsed' : ''}`}
-                                            >
-                                                <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
-                                                <span className={`app-shell__nav-text ${isRailCollapsed ? 'is-hidden' : ''}`}>{t('nav.signIn')}</span>
-                                            </button>
+                                            {/* Expanded: the guest's trainer card, the same object as
+                                                the sign-in dialog it opens. Collapsed: just the icon. */}
+                                            {isRailCollapsed ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setAuthModal({ open: true, mode: 'signIn' })}
+                                                    aria-label={t('nav.signIn')}
+                                                    title={t('nav.signIn')}
+                                                    className="app-shell__nav-link is-collapsed"
+                                                >
+                                                    <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
+                                                </button>
+                                            ) : (
+                                                <GuestAccountCard variant="rail" />
+                                            )}
                                         </>
                                     ) : (
                                         <SidebarAccountMenu
@@ -2025,20 +2033,10 @@ export default function AppLayout() {
                             <ul className="more-sheet__list more-sheet__account">
                                 <li>
                                     {isAnonymous ? (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                // Close first: the auth dialog and this sheet share
-                                                // --z-modal, and a portal opened earlier paints under
-                                                // one opened later (docs/wounds.md, 2026-09-09).
-                                                setIsSidebarOpen(false);
-                                                setAuthModal({ open: true, mode: 'signIn' });
-                                            }}
-                                            className="app-shell__nav-link"
-                                        >
-                                            <span className="app-shell__nav-icon" aria-hidden="true"><AccountIcon /></span>
-                                            <span className="app-shell__nav-text">{t('nav.signIn')}</span>
-                                        </button>
+                                        // Close the sheet first: the auth dialog and this sheet
+                                        // share --z-modal, and a portal opened earlier paints
+                                        // under one opened later (docs/wounds.md, 2026-09-09).
+                                        <GuestAccountCard variant="sheet" onBeforeOpen={() => setIsSidebarOpen(false)} />
                                     ) : (
                                         <SidebarAccountMenu
                                             isMobile

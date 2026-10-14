@@ -1543,3 +1543,44 @@
         display: none;
     }
 }
+
+/* ---- Tabs (2026-10-14) -------------------------------------------------------
+   One tab's cards at a time. Every card kept its column; the columns a tab
+   leaves empty collapse, and the rest share the row evenly (auto-fit), so a
+   tab with two columns reads as two halves and one with a single card runs
+   full width. Compound selectors: the column-count rules above are
+   breakpoint-scoped `.profile-layout` rules this must beat. */
+.profile-tabs {
+    margin-top: var(--space-4);
+}
+
+.profile-layout.profile-layout--tabbed {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    align-items: start;
+}
+
+.profile-layout--tabbed .profile-layout__column:empty {
+    display: none;
+}
+
+.profile-layout.profile-layout--tabbed .profile-layout__column:nth-child(3):not(:empty) {
+    grid-column: auto;
+    display: flex;
+}
+
+/* Account: sync and the account card both live in the third column — side by
+   side, as the two halves of the tab. */
+.profile-layout.profile-layout--tab-account .profile-layout__column:nth-child(3):not(:empty) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    align-items: start;
+}
+
+.profile-layout--tabbed .profile-card--fullwidth {
+    margin-top: 0;
+}
+
+/* Trainer: the avatar pair runs the full row above the badge wall. */
+.profile-layout.profile-layout--tab-trainer .profile-layout__column:not(:empty) {
+    grid-column: 1 / -1;
+}

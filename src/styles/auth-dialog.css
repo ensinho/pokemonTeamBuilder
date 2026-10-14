@@ -1,0 +1,741 @@
+/* ==========================================================================
+   Account dialogs — sign in, change password, delete account, and the
+   full-screen hand-off between sessions.
+
+   One layout, three places. Each dialog is a hero (what you are doing, said
+   big) beside the form (doing it). The place is set by one token,
+   `--auth-accent`, drawn from the theme's semantic colours so all six themes
+   follow:
+     .auth-dialog--account   the trainer card       → primary
+     .auth-dialog--password  Bill's PC, the vault   → info
+     .auth-dialog--delete    releasing a Pokémon    → danger
+   The panel owns the one border; inside, hero and body separate by fill.
+   ========================================================================== */
+
+.auth-dialog--account { --auth-accent: var(--color-primary); }
+.auth-dialog--password { --auth-accent: var(--color-info); }
+.auth-dialog--delete { --auth-accent: var(--color-danger); }
+
+.auth-dialog {
+    /* Ink in the accent, mixed toward fg so it reads on light and dark alike
+       (the same 45% rule as .type-chip). */
+    --auth-ink: color-mix(in srgb, var(--auth-accent) 55%, var(--color-fg));
+    --auth-wash: color-mix(in srgb, var(--auth-accent) 9%, var(--color-surface-raised));
+}
+
+.auth-dialog__grid {
+    display: grid;
+    /* Two equal halves, the same breathing room on both: the dialog reads as
+       one balanced object, not a sidebar with a form attached. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* The vault's primary action wears the vault's colour. (Sign-in already is
+   primary; deletion uses .btn-danger.) */
+.auth-dialog--password .btn-primary {
+    background: var(--auth-accent);
+    color: var(--color-on-primary);
+}
+
+.auth-dialog--password .btn-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--auth-accent) 88%, var(--color-fg));
+}
+
+/* ---- Hero ---------------------------------------------------------------- */
+
+.auth-dialog__hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-12) var(--space-8);
+    text-align: center;
+    background: var(--auth-wash);
+}
+
+/* The Poké Ball line drawing in the corner — the app's own mark, drawn once
+   per dialog, never animated. */
+.auth-dialog__motif {
+    position: absolute;
+    right: -4rem;
+    bottom: -4rem;
+    width: 15rem;
+    height: 15rem;
+    color: var(--auth-accent);
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.auth-dialog__eyebrow {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--auth-ink);
+}
+
+.auth-dialog__title {
+    margin: 0;
+    font-size: var(--text-2xl);
+    line-height: 1.15;
+    color: var(--color-fg);
+}
+
+.auth-dialog__lead {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--color-muted);
+}
+
+/* A battle platform: the ellipse every Pokémon stands on in the games. */
+.auth-dialog__stage {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 7.5rem;
+}
+
+.auth-dialog__stage::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 9rem;
+    height: 1.75rem;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--auth-accent) 22%, var(--color-surface));
+}
+
+.auth-dialog__sprite {
+    position: relative;
+    width: 6rem;
+    height: 6rem;
+    margin-bottom: var(--space-2);
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+/* Released — the Pokémon is still there, already a little further away. */
+.auth-dialog--delete .auth-dialog__sprite {
+    filter: grayscale(0.85);
+    opacity: 0.75;
+}
+
+.auth-dialog__emblem {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    margin: var(--space-2) 0;
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--auth-accent) 18%, var(--color-surface));
+    color: var(--auth-ink);
+}
+
+.auth-dialog__emblem svg {
+    width: 2.5rem;
+    height: 2.5rem;
+}
+
+.auth-dialog__emblem.is-done svg {
+    animation: auth-pop var(--duration-pop) var(--ease-pop) both;
+}
+
+.auth-dialog__points {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin: var(--space-2) 0 0;
+    text-align: left;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-dialog__point {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    color: var(--color-fg);
+}
+
+.auth-dialog__point svg {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+    margin-top: var(--space-0_5);
+    color: var(--auth-ink);
+}
+
+/* ---- Body ---------------------------------------------------------------- */
+
+.auth-dialog__body {
+    /* Not positioned: the close button anchors to the whole panel, so on a
+       phone it sits in the hero band's corner instead of over the form. */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-5);
+    min-height: 32rem;
+    padding: var(--space-12) var(--space-8);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+/* Compound: index.css's .modal-close (negative margins for a header row)
+   may load after this file. */
+.auth-dialog .auth-dialog__close {
+    position: absolute;
+    z-index: 1;
+    top: var(--space-3);
+    right: var(--space-3);
+    margin: 0;
+}
+
+/* The Poké Ball rocks in the dialog's own colour. */
+.auth-dialog .loader {
+    color: var(--auth-ink);
+}
+
+.auth-dialog__heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding-right: var(--space-8);
+}
+
+.auth-dialog__heading h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+    color: var(--color-fg);
+}
+
+.auth-dialog__heading p {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.auth-dialog__form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.auth-dialog__actions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding-top: var(--space-2);
+}
+
+.auth-dialog__message {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.45;
+}
+
+.auth-dialog__message--error { color: var(--color-danger); }
+.auth-dialog__message--info { color: var(--color-muted); }
+
+/* ---- Password field: the eye ---------------------------------------------- */
+
+.auth-password {
+    position: relative;
+}
+
+.auth-password .input-clean {
+    padding-right: var(--space-10);
+}
+
+.auth-password input::-ms-reveal,
+.auth-password input::-ms-clear {
+    display: none; /* Edge's own eye, beside ours */
+}
+
+.auth-password__toggle {
+    position: absolute;
+    top: 50%;
+    right: var(--space-1);
+    translate: 0 -50%;
+}
+
+/* ---- Strength meter + requirements ---------------------------------------- */
+
+.auth-strength {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+}
+
+.auth-strength__bars {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--space-1);
+}
+
+.auth-strength__bar {
+    height: 0.3rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.auth-strength[data-level='weak'] .auth-strength__bar.is-on { background: var(--color-danger); }
+.auth-strength[data-level='fair'] .auth-strength__bar.is-on { background: var(--color-warning); }
+.auth-strength[data-level='good'] .auth-strength__bar.is-on { background: var(--color-info); }
+.auth-strength[data-level='strong'] .auth-strength__bar.is-on { background: var(--color-success); }
+
+.auth-strength__label {
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.auth-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-checklist li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-smooth);
+}
+
+.auth-checklist li svg {
+    flex-shrink: 0;
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.auth-checklist li.is-met {
+    color: var(--color-fg);
+}
+
+.auth-checklist li.is-met svg {
+    color: var(--color-success);
+}
+
+/* ---- Steps ---------------------------------------------------------------- */
+
+.auth-steps {
+    display: grid;
+    grid-template-columns: repeat(var(--auth-steps, 3), minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-steps__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1_5);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.auth-steps__item::before {
+    content: '';
+    height: 0.25rem;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-slow) var(--ease-smooth);
+}
+
+.auth-steps__item.is-current { color: var(--auth-ink); }
+.auth-steps__item.is-current::before,
+.auth-steps__item.is-done::before { background: var(--auth-accent); }
+
+/* ---- Delete: what goes ---------------------------------------------------- */
+
+.auth-ledger {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-ledger__item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.auth-ledger__value {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg);
+}
+
+.auth-ledger__label {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.auth-ledger__note {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.auth-confirm-word {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-semibold);
+    color: var(--auth-ink);
+}
+
+/* ---- Working / done states ------------------------------------------------- */
+
+.auth-dialog__status {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-5);
+    text-align: center;
+}
+
+.auth-dialog__status h3 {
+    margin: 0;
+    font-size: var(--text-lg);
+    color: var(--color-fg);
+}
+
+.auth-dialog__status p {
+    margin: 0;
+    max-width: 22rem;
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--color-muted);
+}
+
+.auth-progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2_5);
+    width: 100%;
+    max-width: 18rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+}
+
+.auth-progress li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2_5);
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.auth-progress li svg {
+    flex-shrink: 0;
+    width: 1rem;
+    height: 1rem;
+}
+
+.auth-progress li.is-active { color: var(--color-fg); }
+.auth-progress li.is-done { color: var(--color-fg); }
+.auth-progress li.is-done svg { color: var(--color-success); }
+
+@keyframes auth-pop {
+    from { scale: 0.4; opacity: 0; }
+    to { scale: 1; opacity: 1; }
+}
+
+/* ---- Session hand-off (sign out, account deleted) ------------------------- */
+
+.session-transition {
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-tooltip);
+    display: grid;
+    place-items: center;
+    background: var(--color-bg);
+    animation: session-in var(--duration-slow) var(--ease-smooth) both;
+}
+
+.session-transition__card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    text-align: center;
+}
+
+.session-transition__title {
+    margin: 0;
+    font-size: var(--text-xl);
+    color: var(--color-fg);
+}
+
+.session-transition__text {
+    margin: 0;
+    max-width: 20rem;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+@keyframes session-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .auth-dialog__emblem.is-done svg,
+    .session-transition {
+        animation: none;
+    }
+}
+
+/* ---- Phones / narrow ------------------------------------------------------- */
+
+@media (max-width: 767px) {
+    .auth-dialog__grid {
+        grid-template-columns: minmax(0, 1fr);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    /* The hero becomes a band: art beside the title, the extras go. */
+    .auth-dialog__hero {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: var(--space-1) var(--space-4);
+        padding: var(--space-6) var(--space-10) var(--space-4) var(--space-4);
+        text-align: left;
+    }
+
+    .auth-dialog__hero > .auth-dialog__art {
+        grid-row: 1 / span 3;
+    }
+
+    .auth-dialog__stage {
+        width: 5rem;
+        height: 4.5rem;
+    }
+
+    .auth-dialog__stage::before {
+        width: 4.5rem;
+        height: 1rem;
+    }
+
+    .auth-dialog__sprite {
+        width: 4rem;
+        height: 4rem;
+        margin-bottom: var(--space-1);
+    }
+
+    .auth-dialog__emblem {
+        width: 3.5rem;
+        height: 3.5rem;
+        margin: 0;
+    }
+
+    .auth-dialog__emblem svg {
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+
+    .auth-dialog__title {
+        font-size: var(--text-lg);
+    }
+
+    .auth-dialog__lead {
+        font-size: var(--text-xs);
+    }
+
+    .auth-dialog__points,
+    .auth-dialog__motif {
+        display: none;
+    }
+
+    .auth-dialog__body {
+        justify-content: flex-start;
+        min-height: 0;
+        padding: var(--space-5) var(--space-4) var(--space-6);
+        overflow: visible;
+    }
+}
+
+/* ---- Guest trainer card (rail, "Mais" sheet, Home) -------------------------
+   The sign-in hero in miniature: same wash, same platform, same mark, so the
+   card and the dialog it opens read as one object. A fill, never a border —
+   it sits inside the rail and inside cards that already own one. */
+
+.guest-card {
+    --auth-accent: var(--color-primary);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: color-mix(in srgb, var(--auth-accent) 10%, var(--color-surface-raised));
+}
+
+.guest-card__motif {
+    position: absolute;
+    right: -2rem;
+    bottom: -2rem;
+    width: 6.5rem;
+    height: 6.5rem;
+    color: var(--auth-accent);
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.guest-card__top {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.guest-card__stage {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+    align-items: flex-end;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+}
+
+.guest-card__stage::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 2.75rem;
+    height: 0.75rem;
+    translate: -50% 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--auth-accent) 22%, var(--color-surface));
+}
+
+.guest-card__stage img {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.guest-card__copy {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.guest-card__title {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.25;
+    color: var(--color-fg);
+}
+
+.guest-card__text {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    color: var(--color-muted);
+}
+
+.guest-card__actions {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-2);
+}
+
+.guest-card .guest-card__dismiss {
+    grid-row: 1;
+    grid-column: 3;
+    align-self: center;
+    margin: 0;
+}
+
+/* Home and the phone sheet are wider than the rail: the card gets room. */
+.guest-card--home,
+.guest-card--sheet {
+    padding: var(--space-4);
+}
+
+.guest-card--home .guest-card__title,
+.guest-card--sheet .guest-card__title {
+    font-size: var(--text-md);
+}
+
+.guest-card--home .guest-card__text,
+.guest-card--sheet .guest-card__text {
+    font-size: var(--text-sm);
+}
+
+/* On a phone the page is the panel (design system): a card placed straight on
+   it takes the surface, tinted. */
+@media (max-width: 1023px) {
+    .guest-card--home {
+        background: color-mix(in srgb, var(--auth-accent) 10%, var(--color-surface));
+    }
+}
+
+/* Sprite and title share the first line (with the dismiss X on Home); the
+   sentence runs full width under them — at rail width (~11rem) a column of
+   text beside the sprite was four words wide. */
+.guest-card .guest-card__top {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: var(--space-2) var(--space-3);
+}
+
+.guest-card .guest-card__copy {
+    display: contents;
+}
+
+.guest-card .guest-card__text {
+    grid-column: 1 / -1;
+}
+
+.guest-card--rail .guest-card__top {
+    column-gap: var(--space-2);
+}
+
+.guest-card--rail .guest-card__actions {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-1);
+}

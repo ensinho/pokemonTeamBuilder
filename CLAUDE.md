@@ -68,7 +68,9 @@ All documents are namespaced under `artifacts/${appId}/` (`appId` from `VITE_APP
 - `users/{userId}/teams`, `users/{userId}/quizRuns` — per-user private data.
 - `public/data/teams`, `public/data/forumTopics/{topicId}/messages` — shared/forum content.
 
-Account deletion (Profile → Excluir conta) erases the user's data client-side via `src/services/accountDeletion.js`. **A new collection under `users/{uid}/` must be added to its `USER_COLLECTIONS`**, or deleting an account leaves it behind.
+Leaving a session (sign out, account deleted) goes through `leaveSession()` in `useAuthStore`: it shows the full-screen `SessionTransition`, waits for the work, and lands on Home — never sign out from a component with a bare `signOut(auth)`. The account dialogs (sign in, change password, delete) share `src/components/modals/auth/AuthDialogShell.jsx`, one accent token per dialog (`src/styles/auth-dialog.css`).
+
+Account deletion (Profile → Conta → Excluir conta) erases the user's data client-side via `src/services/accountDeletion.js`. **A new collection under `users/{uid}/` must be added to its `USER_COLLECTIONS`**, or deleting an account leaves it behind.
 
 ### i18n
 Custom, no library. All copy lives in `src/constants/translations.js`; `useLanguageStore` holds the active language and `useTranslation()` (`src/hooks/`) resolves keys. Add new user-facing strings there, not inline.

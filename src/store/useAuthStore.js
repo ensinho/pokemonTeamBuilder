@@ -23,7 +23,7 @@ import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { migrateLocalProgress, listLocalSuffixesForUid, ppLocalKey, pickBestState } from '../utils/pokePuzzleMigration';
 import { resolveAvatar } from '../utils/avatar';
-import { promptSignIn } from '../utils/navigation';
+import { promptSignIn, navigateTo } from '../utils/navigation';
 import { deleteUserData } from '../services/accountDeletion';
 import { disablePush } from '../services/pushNotifications';
 
@@ -781,29 +781,56 @@ export const useAuthStore = create((set, get) => {
             return user;
         },
 
-        changePassword: async (currentPassword, newPassword) => {
-            const user = await get().reauthenticate(currentPassword);
+        // Step 2 of the password flow; step 1 was `reauthenticate`, which is
+        // what makes Firebase accept this (auth/requires-recent-login otherwise).
+        setNewPassword: async (newPassword) => {
+            const user = auth.currentUser;
+            if (!user || user.isAnonymous) throw Object.assign(new Error('No account'), { code: 'auth/no-current-user' });
             await updatePassword(user, newPassword);
-            toast.success(t('toast.passwordChanged'));
         },
 
         sendPasswordReset: async (email) => {
             await sendPasswordResetEmail(auth, email);
         },
 
+        // The full-screen hand-off between sessions (SessionTransition in
+        // AppLayout): leaving an account is a change of place, so it reads as
+        // one — a moment on the Poké Ball, then Home — instead of the profile
+        // silently re-rendering as a guest's.
+        sessionTransition: null,
+
         // Data first, auth record last: once the user is gone the rules no longer
         // let anyone delete what they owned. Reauthenticating up front means the
         // final deleteUser can't fail on a stale sign-in after the data is gone.
-        deleteAccount: async (currentPassword) => {
+        // `onStage` lets the dialog show each step as it happens.
+        deleteAccount: async (currentPassword, onStage = () => {}) => {
+            onStage('verify');
             const user = await get().reauthenticate(currentPassword);
+            onStage('data');
             await disablePush({ userId: user.uid });
             await deleteUserData(user.uid);
+            onStage('account');
             clearAuthSnapshot();
             await deleteUser(user);
             try {
                 localStorage.removeItem('ptbActiveTeamId');
             } catch (_) { /* ignore */ }
+            onStage('done');
+            await get().leaveSession('deleted');
             toast.info(t('toast.accountDeleted'));
+        },
+
+        // Shows the transition, holds it long enough to be read, lands on Home.
+        leaveSession: async (kind, work) => {
+            set({ sessionTransition: { kind } });
+            const minimum = new Promise((resolve) => setTimeout(resolve, 900));
+            try {
+                await Promise.all([work?.(), minimum]);
+                navigateTo('/');
+            } finally {
+                // One more beat so Home has painted under the cover before it lifts.
+                setTimeout(() => set({ sessionTransition: null }), 250);
+            }
         },
 
         handleSignOut: async () => {
@@ -812,7 +839,7 @@ export const useAuthStore = create((set, get) => {
                 // can't briefly boot as the logged-in user. onAuthStateChanged
                 // will then write a fresh anonymous snapshot.
                 clearAuthSnapshot();
-                await signOut(auth);
+                await get().leaveSession('signOut', () => signOut(auth));
                 toast.info(t('toast.signedOut'));
             } catch (e) {
                 toast.error(t('toast.signOutError'), {
