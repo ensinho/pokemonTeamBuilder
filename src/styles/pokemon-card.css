@@ -291,3 +291,49 @@
         animation: none;
     }
 }
+
+/* Builder picker (addOnClick). The whole card adds; the bar at the bottom is
+   the cue, not a separate target (it used to be the only add target, 30px
+   tall, while the card body opened the details). Details move to a small info
+   button in the top bar. The Pokédex never sets addOnClick, so none of this
+   reaches it. */
+.pokemon-card__info {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: calc(var(--space-1) * -1) 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.pokemon-card__info svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.pokemon-card__info:hover {
+    background: color-mix(in srgb, var(--color-fg) 8%, transparent);
+    color: var(--color-fg);
+}
+
+.pokemon-card__info:active {
+    scale: 0.88;
+}
+
+.pokemon-card__info:focus-visible {
+    outline: none;
+    box-shadow: var(--ring-focus);
+}
+
+.pokemon-card--picker:hover .pokemon-card__action {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}

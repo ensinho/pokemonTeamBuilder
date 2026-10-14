@@ -1,4 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+// Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
+// the whole Home on every forum message and every unrelated store tick.
+import { useShallow } from 'zustand/react/shallow';
 import { Check, ChevronRight, Hourglass, Palette, Pencil, Plus, Shield, Sparkles, Swords } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useForumStore } from '../../store/useForumStore';
@@ -123,7 +126,7 @@ export function CozyHomeView({
     const now = useNow();
     const [tab, setTab] = useState('today');
 
-    const { userId, streak } = useAuthStore();
+    const { userId, streak } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak })));
     const { badges, equippedBadge } = useTrainerBadges();
     const { ranked: metaRanked, format: metaFormat, status: metaStatus } = useMetaUsage();
     const puzzle = useDailyPuzzle(userId);
@@ -141,7 +144,9 @@ export function CozyHomeView({
     const typesById = useMemo(() => new Map([...indexById].map(([id, p]) => [id, p.types || []])), [indexById]);
 
     // Forum: the same "Teams" topic the classic Home mirrors.
-    const { topics, messages, initTopicsListener, setCurrentTopicId } = useForumStore();
+    const { topics, messages, initTopicsListener, setCurrentTopicId } = useForumStore(useShallow((s) => ({
+        topics: s.topics, messages: s.messages, initTopicsListener: s.initTopicsListener, setCurrentTopicId: s.setCurrentTopicId,
+    })));
     const teamsTopicId = useMemo(() => {
         const byTitle = topics.find((tp) => (tp.title || '').trim().toLowerCase() === 'teams');
         return byTitle?.id || topics.find((tp) => tp.category === 'teams')?.id || null;
@@ -214,7 +219,10 @@ export function CozyHomeView({
                 ? t('cozyHome.actionCover', { type: typeName(summary.weakness.type) })
                 : t('cozyHome.actionBattle');
 
-    const { currentTeam, editingTeamId, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore();
+    const { currentTeam, editingTeamId, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore(useShallow((s) => ({
+        currentTeam: s.currentTeam, editingTeamId: s.editingTeamId, setCurrentTeam: s.setCurrentTeam,
+        setTeamName: s.setTeamName, setEditingTeamId: s.setEditingTeamId,
+    })));
     const startNewTeam = () => {
         // Keep an unsaved draft in the builder; start clean over a saved team.
         if (currentTeam.length === 0 || editingTeamId) {

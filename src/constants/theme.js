@@ -1,3 +1,4 @@
+import pokeballPlaceholderUrl from '../assets/pokeball-placeholder.svg';
 import { normalizeUiScale } from '../utils/uiScale';
 
 // ============================================================
@@ -9,7 +10,10 @@ import { normalizeUiScale } from '../utils/uiScale';
 
 // Bump this when the patch-notes screen has new content to surface.
 export const PATCH_NOTES_VERSION = '1.13.0';
-export const POKEBALL_PLACEHOLDER_URL = 'https://art.pixilart.com/sr2a947c8f967b8.png';
+// Local, not hotlinked: the old pixilart URL answers 403 / NotSameOrigin, so
+// every empty slot and every sprite fallback rendered a broken-image glyph
+// (2026-10-06). A neutral grey reads on all six themes; callers dim it.
+export const POKEBALL_PLACEHOLDER_URL = pokeballPlaceholderUrl;
 
 // JS-side mirror of the CSS variables. Components that still
 // pass a `colors` prop read from here.

@@ -19,6 +19,7 @@ import { t } from '../utils/translate';
 import { useLanguageStore } from './useLanguageStore';
 import { migrateLocalProgress, listLocalSuffixesForUid, ppLocalKey, pickBestState } from '../utils/pokePuzzleMigration';
 import { resolveAvatar } from '../utils/avatar';
+import { promptSignIn } from '../utils/navigation';
 
 // Re-exported so components can keep importing it from the store they already use.
 export { resolveAvatar };
@@ -208,17 +209,14 @@ export const useAuthStore = create((set, get) => {
         return next;
     };
 
-    // Helper to trigger sync nudge prompt timer
+    // The sync nudge used to be a modal on a 30 s timer: it interrupted every
+    // guest mid-task, whatever they were doing, before they had anything worth
+    // syncing. It now rides on the first team save (nudgeSyncAfterSave), as a
+    // toast — the moment losing the account starts to cost something
+    // (2026-10-06). This only clears a timer a previous build may have set.
     const startSyncNudgeTimer = () => {
         if (syncNudgeTimer) clearTimeout(syncNudgeTimer);
-        if (localStorage.getItem('syncPromptDismissed') === '1') return;
-
-        syncNudgeTimer = setTimeout(() => {
-            const state = get();
-            if (state.isAnonymous && state.isAuthReady) {
-                set({ showSyncPrompt: true });
-            }
-        }, 30000);
+        syncNudgeTimer = null;
     };
 
     return {
@@ -233,6 +231,13 @@ export const useAuthStore = create((set, get) => {
         // this so the app can't paint with the cached identity and then
         // re-render into the reconciled one.
         isAuthReconciled: false,
+        // True once Firebase has answered "no saved session": a first visit.
+        // There is no identity to get wrong, so the splash need not wait for
+        // the anonymous sign-up + Firestore round-trips (~3 s on 4G, measured
+        // 2026-10-06) — the app paints the signed-out defaults while they run.
+        // Splash-only: anything that reads Firestore still waits on
+        // isAuthReady, which this does not touch.
+        isNewVisitor: false,
         // Never seeded from cache — a privileged flag must come from the token.
         isAdmin: false,
         displayName: '',
@@ -429,7 +434,10 @@ export const useAuthStore = create((set, get) => {
                         });
                     }
                 } else {
-                    // Sign in anonymously if no user
+                    // Sign in anonymously if no user. Before the first sign-in
+                    // of this browser there is nothing to hydrate, so let the
+                    // shell paint now (see isNewVisitor).
+                    if (!get().userId) set({ isNewVisitor: true });
                     try {
                         const token = typeof window.__initial_auth_token !== 'undefined' ? window.__initial_auth_token : null;
                         if (token) {
@@ -656,6 +664,21 @@ export const useAuthStore = create((set, get) => {
                 greetingPokemonIsShiny: Boolean(nextId) && nextIsShiny,
             });
             get().syncPublicProfile();
+        },
+
+        // Called right after a guest's team save lands. Once per device (the
+        // same flag the old modal's "don't remind me" set), so saving ten teams
+        // doesn't mean ten nudges; "Ativar lembretes" in Profile clears it.
+        nudgeSyncAfterSave: () => {
+            if (!get().isAnonymous) return;
+            try {
+                if (localStorage.getItem('syncPromptDismissed') === '1') return;
+                localStorage.setItem('syncPromptDismissed', '1');
+            } catch (_) { return; }
+            toast.info(t('modals.syncPromptTitle'), {
+                description: t('modals.syncPromptDesc'),
+                actions: [{ label: t('modals.syncPromptRegister'), onClick: () => promptSignIn('signUp') }],
+            });
         },
 
         handleDismissSyncPrompt: () => {

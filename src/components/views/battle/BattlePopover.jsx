@@ -1,56 +1,53 @@
 import React, { useState } from 'react';
-import { Dex } from '@pkmn/sim';
+import { useBattleDex, getBattleDex } from '../../../hooks/useBattleDex';
 import { typeColors, typeIcons } from '../../../constants/types';
 import { Shield, Zap, Target, Heart, Crosshair, Award, Package } from 'lucide-react';
 
+const toID = (text) => String(text || '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+
 /**
- * Get cached/resolved move details from Showdown Dex
+ * Move details for the tooltip, from public/data/battle-dex.json (built from
+ * the sim by scripts/build-battle-dex.mjs — the sim itself never ships here).
  */
-export function getMoveInfo(moveName) {
-    if (!moveName) return null;
-    try {
-        const move = Dex.moves.get(moveName);
-        if (!move || !move.exists) return null;
-        return {
-            name: move.name,
-            type: move.type ? move.type.toLowerCase() : 'normal',
-            category: move.category || 'Status',
-            basePower: move.basePower || 0,
-            accuracy: move.accuracy === true ? '100%' : (move.accuracy ? `${move.accuracy}%` : '—'),
-            pp: move.pp || 0,
-            desc: move.shortDesc || move.desc || 'No description available.',
-        };
-    } catch (_) {
-        return null;
-    }
+export function getMoveInfo(moveName, dex = getBattleDex()) {
+    const row = moveName && dex?.moves?.[toID(moveName)];
+    if (!row) return null;
+    const [name, type, category, basePower, accuracy, pp, desc] = row;
+    return {
+        name,
+        type: type || 'normal',
+        category: category || 'Status',
+        basePower: basePower || 0,
+        accuracy: accuracy === true ? '100%' : (accuracy ? `${accuracy}%` : '—'),
+        pp: pp || 0,
+        desc: desc || 'No description available.',
+    };
 }
 
 /**
- * Get cached/resolved species details from Showdown Dex
+ * Species details for the tooltip, from the same file.
  */
-export function getSpeciesInfo(speciesName) {
-    if (!speciesName) return null;
-    try {
-        const spec = Dex.species.get(speciesName);
-        if (!spec || !spec.exists) return null;
-        return {
-            name: spec.name,
-            types: (spec.types || []).map((t) => t.toLowerCase()),
-            baseStats: spec.baseStats || { hp: 0, atk: 0, def: 0, spa: 0, spd: 0, spe: 0 },
-            abilities: Object.values(spec.abilities || {}).filter(Boolean),
-            heightm: spec.heightm,
-            weightkg: spec.weightkg,
-        };
-    } catch (_) {
-        return null;
-    }
+export function getSpeciesInfo(speciesName, dex = getBattleDex()) {
+    const row = speciesName && dex?.species?.[toID(speciesName)];
+    if (!row) return null;
+    const [name, types, stats, abilities, heightm, weightkg] = row;
+    const [hp, atk, def, spa, spd, spe] = stats || [];
+    return {
+        name,
+        types: types || [],
+        baseStats: { hp: hp || 0, atk: atk || 0, def: def || 0, spa: spa || 0, spd: spd || 0, spe: spe || 0 },
+        abilities: abilities || [],
+        heightm,
+        weightkg,
+    };
 }
 
 /**
  * Move Tooltip Mini-Card
  */
 export function MoveTooltipCard({ moveName, currentPP, maxPP }) {
-    const info = getMoveInfo(moveName);
+    const dex = useBattleDex();
+    const info = getMoveInfo(moveName, dex);
     if (!info) return null;
 
     const tColor = typeColors[info.type] || '#A8A77A';
@@ -100,7 +97,8 @@ export function MoveTooltipCard({ moveName, currentPP, maxPP }) {
  * Pokémon Tooltip Mini-Card
  */
 export function MonTooltipCard({ speciesName, level = 50, hpCondition, status, item, ability, isMine = false, stats }) {
-    const spec = getSpeciesInfo(speciesName);
+    const dex = useBattleDex();
+    const spec = getSpeciesInfo(speciesName, dex);
     if (!spec) return null;
 
     // Calculate neutral level 50 benchmark stats if exact stats not provided

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeTeam } from './teamAnalysis';
+import { analyzeTeam, rateTeam } from './teamAnalysis';
 
 // Minimal pokémon factory — only `id` and `types` matter to the engine.
 const mon = (id, types) => ({ id, types });
@@ -77,5 +77,37 @@ describe('analyzeTeam', () => {
     it('ignores pokémon without a types array when suggesting', () => {
         const { suggestedPokemonIds } = analyzeTeam([mon(4, ['fire'])], [{ id: 999 }]);
         expect(suggestedPokemonIds.has(999)).toBe(false);
+    });
+});
+
+describe('rateTeam', () => {
+    it('grades an empty team as still building', () => {
+        expect(rateTeam(analyzeTeam([], []).teamAnalysis, 0)).toEqual({ score: 0, grade: 'building' });
+    });
+
+    it('is one number for one roster, whatever renders it', () => {
+        const team = [mon(4, ['fire'])];
+        const { teamAnalysis } = analyzeTeam(team, []);
+        // 50 + 4 offence * 2 + 6 resists * 1.5 - 3 weaknesses * 7.5 = 44.5
+        expect(rateTeam(teamAnalysis, team.length)).toEqual({ score: 45, grade: 'fair' });
+    });
+
+    it('rewards a full six and clamps to 5..100', () => {
+        const letters = (s) => s.split('');
+        const bad = { strengths: new Set(), weaknesses: Object.fromEntries(letters('abcdefgh').map((k) => [k, 1])), defensiveCoverage: {} };
+        expect(rateTeam(bad, 3).score).toBe(5);
+        const strong = {
+            strengths: new Set(letters('abcdefghijklmnop')),
+            weaknesses: {},
+            defensiveCoverage: Object.fromEntries(letters('abcdefghijklmnopq').map((k) => [k, 2])),
+        };
+        expect(rateTeam(strong, 6)).toEqual({ score: 100, grade: 'excellent' });
+        const mid = { strengths: new Set(['a', 'b']), weaknesses: {}, defensiveCoverage: { a: 1, b: 1 } };
+        expect(rateTeam(mid, 5).score).toBe(57);
+        expect(rateTeam(mid, 6).score).toBe(62);
+    });
+
+    it('accepts strengths as an array too', () => {
+        expect(rateTeam({ strengths: ['a', 'b'], weaknesses: {}, defensiveCoverage: {} }, 1).score).toBe(54);
     });
 });

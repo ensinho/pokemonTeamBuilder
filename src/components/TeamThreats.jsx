@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShieldAlert } from 'lucide-react';
-import { typeColors, typeIcons } from '../constants/types';
+import { typeIcons } from '../constants/types';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl } from '../utils/pokemonSprites';
 import { Sprite } from './Sprite';
 import { useTranslation } from '../hooks/useTranslation';
@@ -10,13 +10,12 @@ import { useTranslation } from '../hooks/useTranslation';
 function ThreatTypeChip({ type }) {
     const { t } = useTranslation();
     const lower = String(type).toLowerCase();
-    const color = typeColors[lower] || '#777';
     const icon = typeIcons[lower];
     const label = t(`types.${lower}`, { defaultValue: type });
     return icon ? (
         <img src={icon} alt={label} title={label} className="h-4 w-4 shrink-0 object-contain" />
     ) : (
-        <span className="text-2xs font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
+        <span className="text-2xs font-bold leading-none text-muted" title={label}>{label.slice(0, 1)}</span>
     );
 }
 
@@ -49,7 +48,7 @@ export function TeamThreats({ threats = [], hasTeam = false, onOpenDetail, bare 
                                 tabIndex={open ? 0 : undefined}
                                 onClick={open}
                                 onKeyDown={open ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } } : undefined}
-                                className={`flex items-center gap-2.5 rounded-xl border border-border bg-surface/60 px-2 py-1.5${open ? ' cursor-pointer transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''}`}
+                                className={`flex items-center gap-2.5 rounded-xl bg-surface-raised px-2 py-1.5${open ? ' cursor-pointer transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary' : ''}`}
                             >
                                 <Sprite
                                     src={getPokemonFrontSpriteUrl(thr.id)}

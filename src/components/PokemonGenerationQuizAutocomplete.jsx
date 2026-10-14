@@ -1,4 +1,5 @@
 import React, { useId, useState } from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 
 export function PokemonGenerationQuizAutocomplete({
     value = '',
@@ -13,6 +14,7 @@ export function PokemonGenerationQuizAutocomplete({
     placeholder = '',
     minCharacters = 2,
 }) {
+    const { t } = useTranslation();
     const listboxId = useId();
     const [isInputArmed, setIsInputArmed] = useState(false);
     const safeValue = String(value || '');
@@ -27,7 +29,7 @@ export function PokemonGenerationQuizAutocomplete({
                 <input tabIndex={-1} type="password" autoComplete="new-password" className="generation-quiz-autocomplete__decoy" />
             </div>
             <label className="generation-quiz__field" htmlFor="generation-quiz-answer">
-                <span className="sr-only">Pokémon name</span>
+                <span className="sr-only">{t('games.guessInput')}</span>
                 <div className="generation-quiz-autocomplete__input-wrap">
                     <input
                         ref={inputRef}
@@ -43,7 +45,7 @@ export function PokemonGenerationQuizAutocomplete({
                         data-form-type="other"
                         data-lpignore="true"
                         data-1p-ignore="true"
-                        placeholder={placeholder || 'Type a Pokémon name'}
+                        placeholder={placeholder || t('games.guessInput')}
                         value={value}
                         onChange={(event) => onChange(event.target.value)}
                         onKeyDown={onKeyDown}

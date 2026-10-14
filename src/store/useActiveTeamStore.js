@@ -13,9 +13,39 @@ import { t } from '../utils/translate';
 import { navigateTo } from '../utils/navigation';
 import { usePokedexStore } from './usePokedexStore';
 import { useFirestoreTeamsStore } from './useFirestoreTeamsStore';
-import { useLanguageStore } from './useLanguageStore';
 import { useThemeStore } from './useThemeStore';
 import { megaDisplayName } from '../hooks/useMegaStones';
+import { teamSignature, buildSignature, prettyPokemonName, uniqueTeamName } from '../utils/teamDraft';
+
+export const SHOWDOWN_TEAMBUILDER_URL = 'https://play.pokemonshowdown.com/teambuilder';
+
+// A toast action that takes the user to the builder is noise when they are
+// already on it ("Abrir construtor" while looking at the builder).
+const isOnBuilder = () => typeof window !== 'undefined' && /\/builder\/?$/.test(window.location.pathname);
+const openBuilderAction = () => (isOnBuilder() ? [] : [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }]);
+
+// Clipboard write with the execCommand fallback (older Safari, insecure
+// contexts). Resolves true on success — callers decide what to say.
+const writeClipboard = async (text) => {
+    try {
+        await navigator.clipboard.writeText(text);
+        return true;
+    } catch {
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            const ok = document.execCommand('copy');
+            ta.remove();
+            return ok !== false;
+        } catch {
+            return false;
+        }
+    }
+};
 
 // Monotonic counter so instanceIds stay unique even when several members are
 // created within the same millisecond (e.g. the randomizer building 6 at once).
@@ -106,12 +136,21 @@ export const useActiveTeamStore = create((set, get) => ({
     suggestedPokemonIds: new Set(),
     editingTeamMember: null,
     isRandomizing: false,
+    // teamSignature() of the team as it was last saved or loaded for editing.
+    // The builder compares against it to say whether there is anything to
+    // save ("Atualizar" used to be enabled with nothing changed).
+    savedSignature: null,
 
     // Share Modal state
     shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' },
 
     setTeamName: (name) => set({ teamName: name }),
-    setEditingTeamId: (id) => set({ editingTeamId: id }),
+    // Loading a saved team ends with this call (after the roster and the name),
+    // so that is the moment its baseline is taken.
+    setEditingTeamId: (id) => set((state) => ({
+        editingTeamId: id,
+        savedSignature: id ? teamSignature(state.teamName, state.currentTeam) : null,
+    })),
     setEditingTeamMember: (member) => set({ editingTeamMember: member }),
     closeShareModal: () => set({ shareModal: { isOpen: false, shareUrl: '', pokemons: [], defaultTitle: '' } }),
 
@@ -130,7 +169,7 @@ export const useActiveTeamStore = create((set, get) => ({
         if (get().currentTeam.length >= 6) {
             toast.warning(t('toast.teamFull'), {
                 description: t('toast.teamFullDesc'),
-                actions: [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }],
+                actions: openBuilderAction(),
             });
             return;
         }
@@ -245,7 +284,7 @@ export const useActiveTeamStore = create((set, get) => ({
             set({ currentTeam: resolved, editingTeamId: null });
             get().recalculateAnalysis();
             toast.success(t('toast.teamRandomized', { count: resolved.length }), {
-                actions: [{ label: t('toast.openBuilder'), onClick: () => navigateTo('/builder') }],
+                actions: openBuilderAction(),
             });
         } catch (_) {
             toast.error(t('toast.teamRandomizeError'), {
@@ -256,11 +295,35 @@ export const useActiveTeamStore = create((set, get) => ({
         }
     },
 
+    // Removing a member took its moves, EVs and item with it and could not be
+    // taken back. It is reversible, so it acts at once and offers an undo that
+    // puts the member back in the same slot — never a confirm.
     handleRemoveFromTeam: (instanceId) => {
+        const index = get().currentTeam.findIndex((p) => p.instanceId === instanceId);
+        if (index < 0) return;
+        const member = get().currentTeam[index];
         set((state) => ({
-            currentTeam: state.currentTeam.filter(p => p.instanceId !== instanceId)
+            currentTeam: state.currentTeam.filter((p) => p.instanceId !== instanceId),
+            editingTeamMember: state.editingTeamMember?.instanceId === instanceId ? null : state.editingTeamMember,
         }));
         get().recalculateAnalysis();
+
+        toast.info(t('builder.memberRemoved', { name: prettyPokemonName(member.name) }), {
+            key: `member-removed-${instanceId}`,
+            actions: [{
+                label: t('toast.undo'),
+                onClick: () => {
+                    set((state) => {
+                        if (state.currentTeam.length >= 6) return {};
+                        if (state.currentTeam.some((p) => p.instanceId === instanceId)) return {};
+                        const next = state.currentTeam.slice();
+                        next.splice(Math.min(index, next.length), 0, member);
+                        return { currentTeam: next };
+                    });
+                    get().recalculateAnalysis();
+                },
+            }],
+        });
     },
 
     handleReorderTeam: (fromIndex, toIndex) => {
@@ -297,18 +360,44 @@ export const useActiveTeamStore = create((set, get) => ({
         });
     },
 
+    // The member editor commits on every way out — Done, ×, Escape, the scrim,
+    // a phone's drag-down — because each of those used to throw the edits away
+    // without a word. Keeping them is the safe default; the undo toast is the
+    // way back for the times closing meant "never mind".
     handleUpdateTeamMember: (instanceId, newCustomization) => {
+        const member = get().currentTeam.find((p) => p.instanceId === instanceId);
+        if (!member) return false;
+        const previous = member.customization;
+        if (buildSignature(previous) === buildSignature(newCustomization)) return false;
         set((state) => ({
-            currentTeam: state.currentTeam.map(member =>
-                member.instanceId === instanceId ? { ...member, customization: newCustomization } : member
-            )
+            currentTeam: state.currentTeam.map((p) =>
+                p.instanceId === instanceId ? { ...p, customization: newCustomization } : p
+            ),
         }));
         get().recalculateAnalysis();
+
+        toast.info(t('builder.memberUpdated', { name: prettyPokemonName(member.name) }), {
+            // One shared key: a new edit refreshes this toast in place rather
+            // than stacking one per edit (three would queue the export toast).
+            key: 'member-edited',
+            actions: [{
+                label: t('toast.undo'),
+                onClick: () => {
+                    set((state) => ({
+                        currentTeam: state.currentTeam.map((p) =>
+                            p.instanceId === instanceId ? { ...p, customization: previous } : p
+                        ),
+                    }));
+                    get().recalculateAnalysis();
+                },
+            }],
+        });
+        return true;
     },
 
     handleSaveTeam: async (savedTeams) => {
         if (pendingAdds.size) await Promise.allSettled([...pendingAdds]);
-        const { currentTeam, teamName, editingTeamId } = get();
+        const { currentTeam, teamName: typedName, editingTeamId } = get();
         const userId = useAuthStore.getState().userId;
 
         if (!db || !userId) {
@@ -319,10 +408,16 @@ export const useActiveTeamStore = create((set, get) => ({
             toast.warning(t('toast.teamEmpty'), { description: t('toast.teamEmptyDesc') });
             return;
         }
-        if (!teamName.trim()) {
-            toast.warning(t('toast.teamNameRequired'));
-            return;
+
+        // An unnamed team gets a name instead of a warning: "Pikachu team",
+        // numbered if that is taken. The field shows the same name as its
+        // placeholder, so nothing here is a surprise.
+        let name = typedName.trim();
+        if (!name) {
+            name = defaultTeamName(currentTeam, savedTeams, editingTeamId);
+            set({ teamName: name });
         }
+        const teamName = name;
 
         if (savedTeams && savedTeams.some(team => team.name === teamName && team.id !== editingTeamId)) {
             toast.warning(t('toast.teamNameTaken'));
@@ -348,8 +443,12 @@ export const useActiveTeamStore = create((set, get) => ({
             });
             useFirestoreTeamsStore.getState().setActiveTeamId(teamId);
             // Keep the roster on screen so the save doesn't feel like the team vanished.
-            // Switch into edit mode for the just-saved team (button becomes "Update team").
-            set({ editingTeamId: teamId });
+            // Switch into edit mode for the just-saved team (button becomes "Update team"),
+            // with what was written as the new baseline for "unsaved changes".
+            set({ editingTeamId: teamId, savedSignature: teamSignature(teamName, currentTeam) });
+            // A guest's first save is when losing the anonymous account starts
+            // to cost something — the moment to suggest one (once per device).
+            useAuthStore.getState().nudgeSyncAfterSave?.();
         } catch (e) {
             toast.error(t('toast.teamSaveError'), {
                 actions: [{ label: t('toast.retry'), onClick: () => get().handleSaveTeam(savedTeams) }],
@@ -362,52 +461,45 @@ export const useActiveTeamStore = create((set, get) => ({
     }),
 
     copyTextToClipboard: async (text, successMessage) => {
-        try {
-            await navigator.clipboard.writeText(text);
-            if (successMessage) {
-                toast.success(successMessage);
-            }
-        } catch {
-            try {
-                const ta = document.createElement('textarea');
-                ta.value = text;
-                ta.style.position = 'fixed';
-                ta.style.opacity = '0';
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                ta.remove();
-                if (successMessage) {
-                    toast.success(successMessage);
-                }
-            } catch {
-                toast.error(t('toast.teamCopyError'));
-            }
-        }
+        const ok = await writeClipboard(text);
+        if (!ok) toast.error(t('toast.teamCopyError'));
+        else if (successMessage) toast.success(successMessage);
+        return ok;
     },
 
-    handleExportToShowdown: async () => {
-        const { currentTeam, buildShowdownExportText, copyTextToClipboard, teamName } = get();
-        if (currentTeam.length === 0) {
+    // The one Showdown export (builder and saved teams alike). The success
+    // toast waits for the clipboard to answer, and opening Showdown is the
+    // toast's action: a click is a user gesture, so iOS lets the tab open —
+    // the old window.open inside a 2s setTimeout had none and was blocked, and
+    // its "copied!" toast fired before the copy had happened (or failed).
+    exportTeamToShowdown: async (teamMembers, name = '') => {
+        const members = Array.isArray(teamMembers) ? teamMembers : [];
+        if (members.length === 0) {
             toast.warning(t('toast.teamEmpty'), { description: t('toast.teamEmptyDesc') });
-            return;
+            return false;
         }
-        const exportText = buildShowdownExportText(currentTeam);
-        
-        // Show redirecting toast first
-        const lang = useLanguageStore.getState().language;
-        const teamNameText = teamName ? ` "${teamName}"` : '';
-        const msg = lang === 'pt'
-            ? `Time${teamNameText} copiado! Redirecionando para o Pokémon Showdown em 2 segundos...`
-            : `Team${teamNameText} copied! Redirecting to Pokémon Showdown in 2 seconds...`;
-        toast.success(msg);
+        const ok = await writeClipboard(get().buildShowdownExportText(members));
+        if (!ok) {
+            toast.error(t('toast.teamCopyError'), {
+                actions: [{ label: t('toast.retry'), onClick: () => get().exportTeamToShowdown(members, name) }],
+            });
+            return false;
+        }
+        const trimmed = String(name || '').trim();
+        toast.success(trimmed ? t('builder.exportCopiedNamed', { name: trimmed }) : t('builder.exportCopied'), {
+            key: 'showdown-export',
+            description: t('builder.exportCopiedDesc'),
+            actions: [{
+                label: t('builder.openShowdown'),
+                onClick: () => window.open(SHOWDOWN_TEAMBUILDER_URL, '_blank', 'noopener,noreferrer'),
+            }],
+        });
+        return true;
+    },
 
-        await copyTextToClipboard(exportText, null);
-
-        // Redirect after a 2 second delay so user sees the toast on the page
-        setTimeout(() => {
-            window.open('https://play.pokemonshowdown.com/teambuilder', '_blank');
-        }, 2000);
+    handleExportToShowdown: () => {
+        const { currentTeam, teamName, exportTeamToShowdown } = get();
+        return exportTeamToShowdown(currentTeam, teamName);
     },
 
     shareTeamByData: async (teamMembers, providedName = 'Unnamed Team') => {
@@ -475,3 +567,21 @@ export const useActiveTeamStore = create((set, get) => ({
         await shareTeamByData(currentTeam, teamName || 'Unnamed Team');
     }
 }));
+
+/** Showdown export for any roster (saved teams included). See the store action. */
+export const exportTeamToShowdown = (teamMembers, name) => useActiveTeamStore.getState().exportTeamToShowdown(teamMembers, name);
+
+/**
+ * The name an unnamed team is saved under ("Pikachu team", numbered when that
+ * is taken). The builder shows it as the name field's placeholder, so what the
+ * save writes is never a surprise. Empty for an empty team.
+ */
+export function defaultTeamName(members = [], savedTeams = [], editingTeamId = null) {
+    if (!members?.length) return '';
+    const taken = (savedTeams || []).filter((team) => team.id !== editingTeamId).map((team) => team.name);
+    return uniqueTeamName(t('builder.defaultTeamName', { name: prettyPokemonName(members[0].name) }), taken);
+}
+
+/** True when the team loaded for editing differs from what was last saved. */
+export const selectIsTeamDirty = (state) => Boolean(state.editingTeamId)
+    && teamSignature(state.teamName, state.currentTeam) !== state.savedSignature;

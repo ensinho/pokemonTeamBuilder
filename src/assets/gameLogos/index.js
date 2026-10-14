@@ -1,20 +1,22 @@
 // Game logo "cover" art for the Team Builder game picker.
 //
 // PATTERN — adding/replacing a logo:
-//   Drop a `<game-key>.png` (transparent, ~480px wide) in this folder. It is
+//   Drop a `<game-key>.webp` (transparent, 480px wide) in this folder. It is
 //   auto-registered below via Vite's import.meta.glob — no edits needed here.
-//   `_pokemon.png` is the generic franchise logo used for "All games" and as
+//   WebP, not PNG: the PNGs were 3.3 MB of precache for covers drawn at 480px
+//   (one was 2340px wide); the same art as WebP is 0.7 MB (2026-10-06).
+//   `_pokemon.webp` is the generic franchise logo used for "All games" and as
 //   the fallback when a specific game's logo is missing.
 //
 // Keys must match the `key` field in public/data/games.json (see
 // scripts/build-games.mjs), e.g. "scarlet-violet", "red-blue-yellow".
 
-const modules = import.meta.glob('./*.png', { eager: true, import: 'default' });
+const modules = import.meta.glob('./*.webp', { eager: true, import: 'default' });
 
 const LOGOS = {};
 let pokemonLogo = '';
 for (const [path, url] of Object.entries(modules)) {
-    const name = path.replace(/^\.\//, '').replace(/\.png$/i, '');
+    const name = path.replace(/^\.\//, '').replace(/\.webp$/i, '');
     if (name === '_pokemon') pokemonLogo = url;
     else LOGOS[name] = url;
 }

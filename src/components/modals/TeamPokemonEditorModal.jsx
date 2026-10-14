@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Sparkles, Package, Swords, Zap, TrendingUp, ArrowUpRight, Plus, Check } from 'lucide-react';
+import { Sparkles, Package, Swords, Zap, TrendingUp, ArrowUpRight, Plus, Check, RotateCcw, Trash2 } from 'lucide-react';
 
+// Styles (.editor-*) live in team-builder-view.css, loaded with the shell.
 import { typeColors, typeIcons } from '../../constants/types';
-import { getMoveDetails } from '../../services/pokemonDataCache';
 import { getPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
 import { useModalA11y } from '../../hooks/useModalA11y';
@@ -14,6 +14,7 @@ import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useBattleItems } from '../../hooks/useBattleItems';
 import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
 import { EV_MAX_PER_STAT, EV_TOTAL_BUDGET, applyEvChange, maxEvFor, remainingEvs } from '../../utils/evBudget';
+import { buildSignature } from '../../utils/teamDraft';
 import { natureLabel, ALL_NATURES } from '../../constants/natures';
 import { UsageBar, pctOf, pretty, RegulationSelect } from '../views/metaShared';
 import { SpriteSelect } from '../SpriteSelect';
@@ -21,10 +22,11 @@ import { Switch } from '../Switch';
 import { RollingNumber } from '../RollingNumber';
 import { useShinyBurst } from '../../hooks/useShinyBurst';
 import { TypeChip } from '../TypeChip';
-import { CloseIcon, SaveIcon } from '../icons';
+import { CloseIcon } from '../icons';
 import { getPokemonWeaknessEntries, WeaknessBadge } from './pokemonModalShared';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useThemeStore } from '../../store/useThemeStore';
+import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 
 // Slugify a display name ("Rock Slide" → "rock-slide") to match the slugs used
 // by the move/ability selects and the Showdown export.
@@ -48,8 +50,28 @@ const STAT_COLOR_VAR = {
     speed: '--stat-spe',
 };
 const STAT_ABBR = { hp: 'HP', attack: 'Atk', defense: 'Def', 'special-attack': 'SpA', 'special-defense': 'SpD', speed: 'Spe' };
+const STAT_NAMES = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+const ZERO_EVS = { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 };
 
-export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures, moveDetailsCache = {}, setMoveDetailsCache = () => { } }) {
+// Moves shown before "show more". A learnset runs 50–120 moves; listed whole
+// inside the dialog it made the phone editor 2.4 screens long, and the four
+// moves people actually pick are the first dozen once ranked by usage.
+const MOVES_PREVIEW = 12;
+
+/**
+ * The member editor.
+ *
+ * Every way out keeps the edits — Done, ×, Escape, the scrim, a phone's
+ * drag-down. Until 2026-10 only "Save changes" kept them and all the others
+ * dropped them silently, which is the exit most people take on a phone. The
+ * store answers a kept edit with an undo toast, so closing to mean "never
+ * mind" is one tap away from undone.
+ *
+ * Move types come from the baked move → type map (`useMoveTypes`). The old
+ * per-move fetch loop wrote one entry per move into a cache that lived in the
+ * app shell, re-rendering the whole shell ~60 times each time this opened.
+ */
+export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items, natures }) {
     const { t, language } = useTranslation();
     // Tera Type is gen IX only — hidden entirely when the user has it switched off.
     const showTeraType = useThemeStore((state) => state.showTeraType);
@@ -79,30 +101,36 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     );
     const [customization, setCustomization] = useState(pokemon.customization);
     const [moveSearch, setMoveSearch] = useState('');
+    const [showAllMoves, setShowAllMoves] = useState(false);
     const [activeTab, setActiveTab] = useState('build');
-    const dialogRef = useModalA11y(onClose);
-    const statNames = ['hp', 'attack', 'defense', 'special-attack', 'special-defense', 'speed'];
+    const [evNotice, setEvNotice] = useState(null);
     const pokemonWeaknesses = useMemo(() => getPokemonWeaknessEntries(pokemon?.types || []), [pokemon]);
 
-    const fetchMoveDetails = useCallback(async (moveUrl, moveName) => {
-        if (moveDetailsCache[moveName] !== undefined) {
-            return moveDetailsCache[moveName];
-        }
-        try {
-            const moveData = await getMoveDetails(moveUrl, moveName);
-            setMoveDetailsCache((prev) => ({ ...prev, [moveName]: moveData || null }));
-            return moveData;
-        } catch (error) {
-            console.error(`Failed to fetch details for move: ${moveName}`, error);
-            return null;
-        }
-    }, [moveDetailsCache, setMoveDetailsCache]);
+    // What the editor opened with. Only a difference from this is an edit: a
+    // member opened while its record was still resolving gets its preset build
+    // patched in underneath, and closing without touching anything must not
+    // write the empty placeholder build back over it.
+    const openedWithRef = useRef(pokemon.customization);
+    const customizationRef = useRef(customization);
+    customizationRef.current = customization;
 
     useEffect(() => {
+        openedWithRef.current = pokemon.customization;
         setCustomization(pokemon.customization);
         setMoveSearch('');
+        setShowAllMoves(false);
         setActiveTab('build');
+        setEvNotice(null);
     }, [pokemon]);
+
+    const closeKeepingEdits = () => {
+        const next = customizationRef.current;
+        if (buildSignature(next) !== buildSignature(openedWithRef.current)) {
+            onSave(pokemon.instanceId, next);
+        }
+        onClose();
+    };
+    const dialogRef = useModalA11y(closeKeepingEdits);
 
     // Derived, not stored: a `useState` + `useEffect` pair lagged one render
     // behind a drag, so mid-gesture events were validated against a stale
@@ -113,25 +141,41 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
     // the game's own way of saying "this one is shiny".
     const shinyBurst = useShinyBurst();
 
-    // Clamp, never reject. The old handler bailed out entirely when a value
-    // broke the 510 budget, which froze the slider under the user's finger and
-    // made the leftover EVs unspendable. Now the thumb travels as far as the
-    // budget allows and stops on the real cap. (See docs/wounds.md 2026-09-21.)
+    // Clamp, never reject — and say so. The thumb travels as far as the budget
+    // allows and stops on the real cap (docs/wounds.md 2026-09-21); the line
+    // under the budget bar names the stop, because a slider that halts short of
+    // where it was dragged reads as broken when nothing explains it.
     const handleEvChange = (stat, value) => {
+        const requested = Math.floor(Number(value));
+        const cap = maxEvFor(customization.evs, stat);
+        if (Number.isFinite(requested) && requested > cap) {
+            setEvNotice({ stat, value: cap, reason: cap >= EV_MAX_PER_STAT ? 'stat' : 'budget' });
+        } else if (evNotice) {
+            setEvNotice(null);
+        }
         setCustomization((prev) => ({ ...prev, evs: applyEvChange(prev.evs, stat, value) }));
+    };
+
+    const resetEvs = () => {
+        setEvNotice(null);
+        setCustomization((prev) => ({ ...prev, evs: { ...ZERO_EVS } }));
     };
 
     const handleCustomizationChange = (field, value) => {
         setCustomization((prev) => ({ ...prev, [field]: value }));
     };
 
+    // Compared by slug: a preset can carry a display-cased name ("Sucker Punch")
+    // for a learnset slug ("sucker-punch"), and a strict match listed it as
+    // unpicked — one tap away from picking it twice.
+    const hasMove = (moves, name) => moves.some((m) => toSlug(m) === toSlug(name));
     const handleMoveToggle = (moveName) => {
         setCustomization((prev) => {
             const currentMoves = prev.moves;
-            const isAdding = !currentMoves.includes(moveName);
+            const isAdding = !hasMove(currentMoves, moveName);
             const newMoves = isAdding
                 ? [...currentMoves, moveName]
-                : currentMoves.filter((move) => move !== moveName);
+                : currentMoves.filter((move) => toSlug(move) !== toSlug(moveName));
 
             if (newMoves.length > 4) return prev;
             if (isAdding) {
@@ -164,25 +208,39 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         return Math.floor(Math.floor(base * 2 + 31 + Math.floor(ev / 4)) + 5);
     };
 
-    const filteredMoves = useMemo(() => {
-        const moves = pokemon.moves || [];
-        if (!moveSearch) return moves;
-        return moves.filter((move) => move.name.toLowerCase().includes(moveSearch.toLowerCase()));
-    }, [moveSearch, pokemon.moves]);
-
-    useEffect(() => {
-        filteredMoves.forEach((move) => {
-            if (moveDetailsCache[move.name] === undefined) {
-                fetchMoveDetails(move.url, move.name);
-            }
-        });
-    }, [filteredMoves, moveDetailsCache, fetchMoveDetails]);
-
-    if (!pokemon) return null;
-
     // Competitive usage (what tournament teams actually run). EVs in this dataset
     // are unreliable, so Tera falls back to the Smogon sets' Tera types.
     const usageN = usage?.n || 0;
+
+    // Usage share per move slug, when this Pokémon has data in the format.
+    const movePctBySlug = useMemo(() => {
+        const map = new Map();
+        if (!usageN) return map;
+        for (const mv of usage?.moves || []) map.set(toSlug(mv.name), pctOf(mv.count, usageN));
+        return map;
+    }, [usage, usageN]);
+
+    // Most-used first (with the share on the row), then A–Z. The learnset
+    // arrives in level-up order, which is the order nobody builds in.
+    const sortedMoves = useMemo(() => {
+        const moves = [...(pokemon.moves || [])];
+        return moves.sort((a, b) => {
+            const pa = movePctBySlug.get(toSlug(a.name)) || 0;
+            const pb = movePctBySlug.get(toSlug(b.name)) || 0;
+            return pb - pa || a.name.localeCompare(b.name);
+        });
+    }, [pokemon.moves, movePctBySlug]);
+
+    const filteredMoves = useMemo(() => {
+        if (!moveSearch) return sortedMoves;
+        const q = moveSearch.toLowerCase().replace(/\s+/g, '-');
+        return sortedMoves.filter((move) => move.name.toLowerCase().includes(q) || move.name.toLowerCase().replace(/-/g, ' ').includes(moveSearch.toLowerCase()));
+    }, [moveSearch, sortedMoves]);
+    const isMovePreview = !moveSearch && !showAllMoves && filteredMoves.length > MOVES_PREVIEW;
+    const visibleMoves = isMovePreview ? filteredMoves.slice(0, MOVES_PREVIEW) : filteredMoves;
+
+    if (!pokemon) return null;
+
     const hasUsage = usageN > 0 || formats.length > 0;
     const usageNatures = natureBreakdown(usage?.spreads);
     const teraList = usage?.tera?.length
@@ -194,16 +252,17 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
         })();
 
     const tabs = [
-        { id: 'build', label: t('modals.editorModalTabBuild') },
-        { id: 'stats', label: t('modals.editorModalTabStats') },
-        ...(hasUsage ? [{ id: 'usage', label: pt ? 'Uso competitivo' : 'Competitive usage' }] : []),
+        { id: 'build', label: t('builder.editor.tabBuild') },
+        { id: 'stats', label: t('builder.editor.tabEvs') },
+        ...(hasUsage ? [{ id: 'usage', label: t('builder.editor.tabUsage') }] : []),
     ];
 
     const controlClassName = 'w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-sm capitalize text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary';
-    const fieldLabelClassName = 'mb-1 block text-2xs font-bold uppercase tracking-[0.06em] text-muted';
+    const fieldLabelClassName = 'field-label mb-1 block';
+    const removeMember = () => useActiveTeamStore.getState().handleRemoveFromTeam(pokemon.instanceId);
 
     return (
-        <div className="modal-scrim" onClick={onClose} role="presentation">
+        <div className="modal-scrim" onClick={closeKeepingEdits} role="presentation">
             <div
                 ref={dialogRef}
                 role="dialog"
@@ -239,15 +298,13 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         <span className="text-xs text-muted">{t('common.none')}</span>
                                     )}
                                     {pokemonWeaknesses.length > 4 && (
-                                        <span className="rounded-full bg-surface-raised px-2 py-1 text-2xs font-bold text-muted">
-                                            +{pokemonWeaknesses.length - 4}
-                                        </span>
+                                        <span className="count-badge">+{pokemonWeaknesses.length - 4}</span>
                                     )}
                                 </div>
                             </div>
                         </div>
                         <button
-                            onClick={onClose}
+                            onClick={closeKeepingEdits}
                             type="button"
                             className="modal-close"
                             aria-label={t('modals.editorModalCloseAria')}
@@ -256,7 +313,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                         </button>
                     </div>
 
-                    <div role="tablist" aria-label="Editor sections" className="tabs mt-3">
+                    {/* Short labels in a full-width track: "Uso competitivo" was
+                        cut off as the third tab on a phone. */}
+                    <div role="tablist" aria-label={t('builder.editor.sectionsAria')} className="segmented segmented--block mt-3">
                         {tabs.map((tab) => (
                             <button
                                 key={tab.id}
@@ -266,7 +325,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 aria-selected={activeTab === tab.id}
                                 aria-controls={`panel-${tab.id}`}
                                 onClick={() => setActiveTab(tab.id)}
-                                className="tabs__item"
+                                className="segmented__item"
                             >
                                 {tab.label}
                             </button>
@@ -274,24 +333,19 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                     </div>
                 </header>
 
-                <div
-                    className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6"
-                    style={{
-                        '--scrollbar-track-color': colors.card,
-                        '--scrollbar-thumb-color': colors.primary,
-                        '--scrollbar-thumb-border-color': colors.card,
-                    }}
-                >
+                {/* The dialog's one scroller. The move grid used to scroll on
+                    its own inside it (max-h-72), a scroller in a scroller. */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6">
                     {activeTab === 'build' && (
                         <div role="tabpanel" id="panel-build" aria-labelledby="tab-build" className="space-y-5">
                             {smogonEntry?.sets?.length > 0 && (
-                                <div className="rounded-xl border border-border bg-primary/5 p-3">
+                                <div className="rounded-xl bg-primary/5 p-3">
                                     <div className="mb-2 flex flex-wrap items-center gap-2">
                                         <Sparkles className="h-4 w-4 text-primary" />
-                                        <h3 className="text-sm font-bold text-fg">{pt ? 'Conjuntos Smogon' : 'Smogon sets'}</h3>
-                                        <span className="text-2xs text-muted">{pt ? 'um clique preenche tudo' : 'one click fills everything'}</span>
+                                        <h3 className="text-sm font-bold text-fg">{t('builder.editor.smogonSets')}</h3>
+                                        <span className="text-2xs text-muted">{t('builder.editor.smogonSetsHint')}</span>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                    <div className="editor-sets">
                                         {smogonEntry.sets.map((set, i) => {
                                             const spread = formatEvSpread(set.evs);
                                             return (
@@ -299,15 +353,15 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                     key={`${set.name}-${i}`}
                                                     type="button"
                                                     onClick={() => setCustomization((prev) => applySmogonSet(set, prev))}
-                                                    className="w-full rounded-lg border border-border bg-surface-raised px-3 py-2 text-left transition-colors hover:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                                    title={pt ? `Aplicar conjunto ${set.name}` : `Apply the ${set.name} set`}
+                                                    className="w-full rounded-lg bg-surface-raised px-3 py-2 text-left transition-colors hover:bg-surface-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                                    title={t('builder.editor.applySet', { name: set.name })}
                                                 >
                                                     <span className="flex items-center justify-between gap-1">
                                                         <span className="truncate text-sm font-bold text-fg">{set.name}</span>
                                                         {set.source && <span className="shrink-0 rounded bg-primary/15 px-1 text-2xs font-bold text-primary">{set.source}</span>}
                                                     </span>
                                                     <span className="block truncate text-2xs capitalize text-muted">
-                                                        {set.item ? set.item.replace(/-/g, ' ') : (pt ? 'sem item' : 'no item')}
+                                                        {set.item ? set.item.replace(/-/g, ' ') : t('builder.editor.noItem')}
                                                         {set.tera?.[0] ? ` · Tera ${set.tera[0].replace(/-/g, ' ')}` : ''}
                                                     </span>
                                                     {spread && <span className="mt-0.5 block truncate font-mono text-2xs text-muted">{spread}</span>}
@@ -318,7 +372,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 </div>
                             )}
 
-                            <div className="grid grid-cols-1 gap-x-4 gap-y-3 sm:grid-cols-4">
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
                                 <div>
                                     <span className={fieldLabelClassName}>{t('modals.editorModalItemLabel')}</span>
                                     <SpriteSelect
@@ -328,7 +382,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                         getSprite={itemSpriteUrl}
                                         placeholder={t('common.none')}
                                         noneLabel={t('common.none')}
-                                        searchPlaceholder={pt ? 'Buscar item…' : 'Search item…'}
+                                        searchPlaceholder={t('builder.editor.searchItem')}
                                     />
                                 </div>
                                 <div>
@@ -365,36 +419,44 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 className="w-fit"
                             />
 
-                            <div className="border-t border-surface-raised pt-5">
+                            <div className="pt-1">
                                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                                     <div className="flex items-center gap-2">
                                         <h3 className="text-base font-bold text-fg">{t('modals.editorModalMovesHeading')}</h3>
-                                        <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${customization.moves.length === 4 ? 'bg-success/15 text-success' : 'bg-surface-raised text-muted'}`}>
+                                        <span className={`count-badge ${customization.moves.length === 4 ? 'text-success' : ''}`}>
                                             {customization.moves.length}/4
                                         </span>
                                     </div>
-                                    <span className="text-xs text-muted">{t('modals.editorModalMovesHint')}</span>
+                                    <span className="text-xs text-muted">
+                                        {movePctBySlug.size > 0 ? t('builder.editor.mostUsedFirst') : t('modals.editorModalMovesHint')}
+                                    </span>
                                 </div>
 
+                                {/* The picked moves, each removable, whatever the grid
+                                    below lists: a preset move missing from this
+                                    Pokémon's learnset data (a set from another format,
+                                    an old save, a gap in the data) stays visible here
+                                    and can be taken off. It is not flagged — the
+                                    learnset data has gaps, and Kingambit's Sucker
+                                    Punch read as illegal. */}
                                 <div className="mb-3 flex min-h-[2.25rem] flex-wrap items-center gap-2">
                                     {customization.moves.length === 0 && (
-                                        <span className="text-sm italic text-muted">{t('modals.editorModalNoMovesYet')}</span>
+                                        <span className="text-sm text-muted">{t('modals.editorModalNoMovesYet')}</span>
                                     )}
                                     {customization.moves.map((moveName) => {
-                                        const moveType = moveDetailsCache[moveName]?.type;
-                                        const tint = moveType ? typeColors[moveType] : colors.primary;
+                                        const moveType = typeForMove(moveName);
                                         return (
                                             <button
                                                 key={moveName}
                                                 type="button"
                                                 onClick={() => handleMoveToggle(moveName)}
                                                 aria-label={t('modals.editorModalRemoveMove', { move: moveName.replace(/-/g, ' ') })}
-                                                className="group inline-flex items-center gap-1.5 rounded-full border py-1 pl-1.5 pr-2.5 text-sm font-semibold capitalize text-fg transition-transform hover:scale-[1.03] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                                style={{ borderColor: tint, backgroundColor: `color-mix(in srgb, ${tint} 22%, var(--color-surface))` }}
+                                                className="type-chip editor-move-chip"
+                                                style={{ '--type-chip': moveType ? typeColors[moveType] : 'var(--color-muted)' }}
                                             >
-                                                {moveType && <img src={typeIcons[moveType]} alt="" className="h-4 w-4 flex-shrink-0" />}
-                                                {moveName.replace(/-/g, ' ')}
-                                                <CloseIcon className="h-3 w-3 opacity-60 transition-opacity group-hover:opacity-100" />
+                                                {moveType && <img src={typeIcons[moveType]} alt="" aria-hidden="true" className="type-chip__icon" />}
+                                                <span className="capitalize">{moveName.replace(/-/g, ' ')}</span>
+                                                <CloseIcon className="h-3 w-3" />
                                             </button>
                                         );
                                     })}
@@ -405,22 +467,19 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     placeholder={t('modals.editorModalSearchMoves')}
                                     value={moveSearch}
                                     onChange={(event) => setMoveSearch(event.target.value)}
-                                    className="mb-3 w-full rounded-lg bg-surface-raised p-2 text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                    className="input-clean mb-3 w-full"
                                     aria-label={t('modals.editorModalSearchMoves')}
                                 />
 
-                                <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto custom-scrollbar pr-1 sm:grid-cols-3" style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}>
+                                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                                     {filteredMoves.length === 0 ? (
                                         <p className="col-span-full py-6 text-center text-sm text-muted">{t('modals.editorModalNoMovesFound')}</p>
-                                    ) : filteredMoves.map((move) => {
-                                        const moveType = moveDetailsCache[move.name]?.type;
-                                        const tint = moveType ? typeColors[moveType] : colors.primary;
-                                        const isSelected = customization.moves.includes(move.name);
+                                    ) : visibleMoves.map((move) => {
+                                        const moveType = typeForMove(move.name);
+                                        const isSelected = hasMove(customization.moves, move.name);
                                         const isFull = customization.moves.length >= 4;
                                         const isDisabled = !isSelected && isFull;
-                                        const style = isSelected
-                                            ? { borderColor: tint, backgroundColor: `color-mix(in srgb, ${tint} 20%, var(--color-surface))` }
-                                            : undefined;
+                                        const pct = movePctBySlug.get(toSlug(move.name));
 
                                         return (
                                             <button
@@ -429,34 +488,56 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 disabled={isDisabled}
                                                 onClick={() => handleMoveToggle(move.name)}
                                                 aria-pressed={isSelected}
-                                                className={`flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm capitalize text-fg transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isSelected ? 'font-semibold' : 'border-border bg-surface-raised hover:border-border-hover'}  ${isDisabled ? 'cursor-not-allowed opacity-40 hover:border-border' : ''}`}
-                                                style={style}
+                                                className={`editor-move ${isSelected ? 'is-selected' : ''}`}
+                                                style={moveType ? { '--type-chip': typeColors[moveType] } : undefined}
                                             >
                                                 {moveType ? (
                                                     <img src={typeIcons[moveType]} alt="" className="h-4 w-4 flex-shrink-0" />
                                                 ) : (
-                                                    <span className="h-4 w-4 flex-shrink-0 animate-pulse rounded-full bg-surface-raised" aria-hidden="true" />
+                                                    <span className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
                                                 )}
-                                                <span className="truncate">{move.name.replace(/-/g, ' ')}</span>
+                                                <span className="min-w-0 flex-1 truncate capitalize">{move.name.replace(/-/g, ' ')}</span>
+                                                {pct > 0 && <span className="count-badge shrink-0">{pct}%</span>}
                                             </button>
                                         );
                                     })}
                                 </div>
+                                {isMovePreview && (
+                                    <button type="button" className="btn btn-ghost btn-sm btn-block mt-2" onClick={() => setShowAllMoves(true)}>
+                                        {t('common.showMore', { count: filteredMoves.length - MOVES_PREVIEW })}
+                                    </button>
+                                )}
                             </div>
                         </div>
                     )}
 
                     {activeTab === 'stats' && (
                         <div role="tabpanel" id="panel-stats" aria-labelledby="tab-stats" className="space-y-5">
-                            <div className="flex items-baseline justify-between">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
                                 <h3 className="text-lg font-bold text-fg">{t('modals.editorModalEffortValues')}</h3>
-                                <p className="text-sm text-muted">
-                                    {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}><RollingNumber value={remainingEVs} /></span> / {EV_TOTAL_BUDGET}
-                                </p>
+                                <div className="flex items-center gap-3">
+                                    <p className="text-sm text-muted">
+                                        {t('modals.editorModalRemaining')}: <span className={`text-lg font-bold ${remainingEVs === 0 ? 'text-success' : 'text-primary'}`}><RollingNumber value={remainingEVs} /></span> / {EV_TOTAL_BUDGET}
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={resetEvs}
+                                        disabled={remainingEVs === EV_TOTAL_BUDGET}
+                                        className="btn btn-ghost btn-sm"
+                                    >
+                                        <RotateCcw aria-hidden="true" /> {t('builder.editor.resetEvs')}
+                                    </button>
+                                </div>
                             </div>
                             <div className="h-2 w-full overflow-hidden rounded-full bg-surface-raised">
                                 <div className="h-full w-full origin-left bg-primary transition-transform duration-200 ease-out" style={{ transform: `scaleX(${(EV_TOTAL_BUDGET - remainingEVs) / EV_TOTAL_BUDGET})` }} />
                             </div>
+                            {/* Reserved line, so the rows do not jump when it fills. */}
+                            <p className="editor-ev-notice" role="status" aria-live="polite">
+                                {evNotice
+                                    ? t(evNotice.reason === 'stat' ? 'builder.editor.evCapStat' : 'builder.editor.evCapBudget', { stat: STAT_ABBR[evNotice.stat], value: evNotice.value })
+                                    : ''}
+                            </p>
 
                             {/* The EV column is typable, so it gets a header — otherwise two
                                 bare number columns sit side by side with nothing naming them. */}
@@ -464,11 +545,11 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                 <span className="w-10 shrink-0" />
                                 <span className="min-w-0 flex-1" />
                                 <span className="w-14 shrink-0 text-center">EV</span>
-                                <span className="w-9 shrink-0 text-right">{pt ? 'Total' : 'Stat'}</span>
+                                <span className="w-9 shrink-0 text-right">{t('builder.editor.statTotal')}</span>
                             </div>
 
                             <div className="space-y-4">
-                                {statNames.map((statName, index) => {
+                                {STAT_NAMES.map((statName, index) => {
                                     const baseStat = pokemon.stats?.[index]?.base_stat ?? 0;
                                     const ev = Number(customization.evs?.[statName]) || 0;
                                     const totalStat = calculateStat(baseStat, ev, statName);
@@ -509,9 +590,9 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                 onFocus={(event) => event.target.select()}
                                                 className="w-14 shrink-0 rounded-md border border-border bg-surface-raised px-1 py-1 text-center font-mono text-xs tabular-nums text-fg transition-colors focus:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary"
                                                 aria-label={`${statLabel} EV value`}
-                                                title={pt ? `Máximo disponível agora: ${affordable}` : `Most you can spend here right now: ${affordable}`}
+                                                title={t('builder.editor.maxHere', { count: affordable })}
                                             />
-                                            <span className="w-9 shrink-0 text-right font-mono text-sm font-bold tabular-nums text-fg" title={pt ? 'Total' : 'Total stat'}>{totalStat}</span>
+                                            <span className="w-9 shrink-0 text-right font-mono text-sm font-bold tabular-nums text-fg">{totalStat}</span>
                                         </div>
                                     );
                                 })}
@@ -539,8 +620,8 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     )}
                                     <button
                                         type="button"
-                                        onClick={() => { onClose(); navigate(fmtId ? `/meta/${pokemon.id}?fmt=${fmtId}` : `/meta/${pokemon.id}`, { state: linkState }); }}
-                                        className="inline-flex items-center gap-1 rounded-lg bg-surface-raised px-2.5 py-1 text-2xs font-semibold text-fg transition-colors hover:text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary h-8"
+                                        onClick={() => { closeKeepingEdits(); navigate(fmtId ? `/meta/${pokemon.id}?fmt=${fmtId}` : `/meta/${pokemon.id}`, { state: linkState }); }}
+                                        className="btn btn-secondary btn-sm"
                                     >
                                         <TrendingUp className="h-3.5 w-3.5" /> {pt ? 'Página completa' : 'Full usage page'} <ArrowUpRight className="h-3 w-3" />
                                     </button>
@@ -550,7 +631,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             {fmtStatus === 'loading' ? (
                                 <p className="text-sm text-muted">{pt ? 'Carregando dados de uso…' : 'Loading usage data…'}</p>
                             ) : !usage ? (
-                                <div className="rounded-xl border border-border bg-bg px-4 py-3 text-sm text-muted">
+                                <div className="rounded-xl bg-bg px-4 py-3 text-sm text-muted">
                                     {pt
                                         ? `Sem dados de uso para ${pokemon.name} em ${format?.label || 'este regulamento'}. Tente outro regulamento acima.`
                                         : `No ${format?.label || 'this regulation'} usage data for ${pretty(pokemon.name)}. Try another regulation above.`}
@@ -558,7 +639,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                             ) : (
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                     {usage?.items?.length > 0 && (
-                                        <section className="rounded-xl border border-border bg-bg p-3">
+                                        <section className="rounded-xl bg-bg p-3">
                                             <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
                                                 <Package className="h-3.5 w-3.5 text-primary" /> {pt ? 'Itens' : 'Held items'}
                                             </h3>
@@ -584,16 +665,15 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     )}
 
                                     {usage?.moves?.length > 0 && (
-                                        <section className="rounded-xl border border-border bg-bg p-3">
+                                        <section className="rounded-xl bg-bg p-3">
                                             <h3 className="mb-2 flex items-center justify-between gap-1.5 text-xs font-bold text-muted">
                                                 <span className="flex items-center gap-1.5"><Swords className="h-3.5 w-3.5 text-primary" /> {pt ? 'Golpes' : 'Moves'}</span>
-                                                <span className={`rounded-full px-2 py-0.5 text-2xs font-bold ${customization.moves.length === 4 ? 'bg-success/15 text-success' : 'bg-surface-raised text-muted'}`}>{customization.moves.length}/4</span>
+                                                <span className={`count-badge ${customization.moves.length === 4 ? 'text-success' : ''}`}>{customization.moves.length}/4</span>
                                             </h3>
                                             <div className="space-y-1.5">
                                                 {usage.moves.slice(0, 10).map((mv) => {
                                                     const mt = typeForMove(mv.name);
-                                                    const active = customization.moves.some((m) => toSlug(m) === toSlug(mv.name));
-                                                    const full = customization.moves.length >= 4;
+                                                    const active = hasMove(customization.moves, mv.name);
                                                     return (
                                                         <UsageBar
                                                             key={mv.name}
@@ -603,7 +683,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                                             count={mv.count}
                                                             color={mt ? (typeColors[mt] || 'var(--color-success)') : 'var(--color-success)'}
                                                             active={active}
-                                                            trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className={`h-3.5 w-3.5 ${full ? 'text-muted' : 'text-muted'}`} />}
+                                                            trailing={active ? <Check className="h-3.5 w-3.5 text-primary" /> : <Plus className="h-3.5 w-3.5 text-muted" />}
                                                             onClick={() => applyMoveName(mv.name)}
                                                             title={active ? (pt ? 'Remover golpe' : 'Remove move') : (pt ? 'Adicionar golpe' : 'Add move')}
                                                         />
@@ -614,7 +694,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     )}
 
                                     {(usage?.abilities?.length > 0 || usageNatures.length > 0) && (
-                                        <section className="rounded-xl border border-border bg-bg p-3">
+                                        <section className="rounded-xl bg-bg p-3">
                                             <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
                                                 <Zap className="h-3.5 w-3.5 text-primary" /> {pt ? 'Habilidades' : 'Abilities'}
                                             </h3>
@@ -641,25 +721,25 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     )}
 
                                     {showTeraType && teraList.length > 0 && (
-                                        <section className="rounded-xl border border-border bg-bg p-3">
+                                        <section className="rounded-xl bg-bg p-3">
                                             <h3 className="mb-2 flex items-center gap-1.5 text-xs font-bold text-muted">
                                                 <Sparkles className="h-3.5 w-3.5 text-primary" /> {pt ? 'Tipo Tera' : 'Tera type'}
                                             </h3>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {teraList.slice(0, 8).map((tt) => {
                                                     const slug = tt.name?.toLowerCase();
-                                                    const c = typeColors[slug] || 'var(--color-muted)';
                                                     const active = customization.teraType === slug;
                                                     return (
                                                         <button
                                                             key={tt.name}
                                                             type="button"
                                                             onClick={() => applyTeraSlug(slug)}
-                                                            className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-2xs font-bold capitalize transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${active ? 'ring-1 ring-primary' : ''}`}
-                                                            style={{ color: c, backgroundColor: `${c}1f`, borderColor: active ? c : `${c}55` }}
+                                                            aria-pressed={active}
+                                                            className={`type-chip type-chip--sm editor-tera-chip ${active ? 'is-selected' : ''}`}
+                                                            style={{ '--type-chip': typeColors[slug] || 'var(--color-muted)' }}
                                                         >
-                                                            {typeIcons[slug] && <img src={typeIcons[slug]} alt="" className="h-3 w-3" />}
-                                                            {tt.name}
+                                                            {typeIcons[slug] && <img src={typeIcons[slug]} alt="" aria-hidden="true" className="type-chip__icon" />}
+                                                            <span className="capitalize">{tt.name}</span>
                                                             {active && <Check className="h-3 w-3" />}
                                                         </button>
                                                     );
@@ -675,24 +755,23 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                 </div>
 
                 {/* The one line kept: it separates content that scrolls from actions
-                    that do not. */}
-                <footer className="modal-footer modal-footer--ruled">
+                    that do not. Done is the only commit — every way out keeps the
+                    edits — and removing the member lives here, where it is
+                    deliberate, instead of as six red discs over the phone's slots. */}
+                <footer className="modal-footer modal-footer--ruled editor-footer">
                     <button
                         type="button"
-                        onClick={onClose}
-                        className="btn btn-ghost"
+                        onClick={removeMember}
+                        className="btn btn-ghost editor-remove"
                     >
-                        {t('common.cancel')}
+                        <Trash2 aria-hidden="true" /> {t('builder.removeFromTeam')}
                     </button>
                     <button
                         type="button"
-                        onClick={() => {
-                            onSave(pokemon.instanceId, customization);
-                            onClose();
-                        }}
+                        onClick={closeKeepingEdits}
                         className="btn btn-primary"
                     >
-                        <SaveIcon /> {t('modals.editorModalSave')}
+                        <Check aria-hidden="true" /> {t('builder.done')}
                     </button>
                 </footer>
             </div>

@@ -4,14 +4,14 @@
     gap: var(--space-5);
 }
 
+/* Title + count on the left, "Novo time" on the right. No divider: a header
+   inside a card does not need a line under it. */
 .all-teams-view__header {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: var(--space-3) var(--space-5);
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: var(--space-3_5);
 }
 
 .all-teams-view__heading-row {
@@ -113,10 +113,8 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-sm);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    letter-spacing: var(--tracking-caps);
-    text-transform: uppercase;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
 }
 
 .all-teams-view__status {
@@ -126,10 +124,9 @@
     color: var(--color-accent);
 }
 
+/* Sentence case, no box: muted text is the de-emphasis (a bordered caps pill
+   inside the bordered card was a box in a box, and the loudest thing on it). */
 .all-teams-view__meta-pill {
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    padding: var(--space-0_5) var(--space-1_5);
     color: var(--color-muted);
 }
 

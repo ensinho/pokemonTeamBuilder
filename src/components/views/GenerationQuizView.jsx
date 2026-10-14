@@ -1,5 +1,4 @@
 import React, { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, HelpCircle, LayoutGrid } from 'lucide-react';
 
 import '../../styles/generation-quiz-view.css';
@@ -19,18 +18,19 @@ import { EmptyState } from '../EmptyState';
 import { PokemonGenerationQuizAutocomplete } from '../PokemonGenerationQuizAutocomplete';
 import { PokemonGenerationQuizCard } from '../PokemonGenerationQuizCard';
 import {
-    ChartColumnIcon,
     CloseIcon,
     PokeballIcon,
     RefreshIcon,
     SparklesIcon,
-    SuccessToastIcon,
 } from '../icons';
-import { ConfirmDialog, QuizCelebrationModal } from '../modals';
+// Direct, not through the modals barrel (which drags every dialog along).
+import { QuizCelebrationModal } from '../modals/QuizCelebrationModal';
+import { GameHistoryDialog } from '../GameHistoryDialog';
 import { useQuizRuns } from '../../hooks/useQuizRuns';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
+import { useDeferredDelete } from '../../hooks/useDeferredDelete';
 import { Loader } from '../Loader';
-import { confirmAction } from '../../store/useConfirmStore';
+import { toast } from '../../store/useToastStore';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
 const MAX_AUTOCOMPLETE_SUGGESTIONS = 5;
@@ -105,13 +105,17 @@ const buildSelectionSignature = (generationKeys) => {
 };
 
 export function GenerationQuizView({ showDetails, showToast }) {
-    const navigate = useNavigate();
     const inputRef = useRef(null);
     const consoleCellRef = useRef(null);
     const [consoleWidth, setConsoleWidth] = useState(0);
     const detailCacheRef = useRef({});
     const { t, language } = useTranslation();
     const { checkBadgeCelebration } = useTrainerBadges();
+    // A badge earned by finishing waits for the celebration to close (it used
+    // to open on top of it); by then the stats have moved on, so call the
+    // latest check rather than the one captured at completion.
+    const checkBadgeRef = useRef(checkBadgeCelebration);
+    useEffect(() => { checkBadgeRef.current = checkBadgeCelebration; }, [checkBadgeCelebration]);
     useDocumentMeta({
         title: 'Generation Quiz',
         description: 'Guess which generation a Pokémon is from and test your Pokédex knowledge.',
@@ -134,9 +138,10 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const [loadingDetailId, setLoadingDetailId] = useState(null);
     const [gridFilter, setGridFilter] = useState('all'); // 'all', 'guessed', 'missing'
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-    const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(5);
-    const [isHistoryLoadingMore, setIsHistoryLoadingMore] = useState(false);
-    const [isExitConfirmOpen, setIsExitConfirmOpen] = useState(false);
+    const [visibleHistoryLimit, setVisibleHistoryLimit] = useState(10);
+    const runDeletes = useDeferredDelete();
+    const celebrateTimerRef = useRef(0);
+    useEffect(() => () => clearTimeout(celebrateTimerRef.current), []);
 
     useEffect(() => {
         if (feedback.message === 'Choose generations.' || feedback.message === 'Escolha as gerações.') {
@@ -158,13 +163,11 @@ export function GenerationQuizView({ showDetails, showToast }) {
     const quizStarted = activeRun !== null;
     const isComplete = quizStarted && activeRun.totalCount > 0 && activeRun.foundIds.length === activeRun.totalCount;
 
+    // Back to the generation picker. The run is kept and listed in History,
+    // so there is nothing to confirm (the old dialog said exactly that).
     const handleExitQuizClick = useCallback(() => {
-        if (quizStarted && !isComplete) {
-            setIsExitConfirmOpen(true);
-        } else {
-            setActiveRunId(null);
-        }
-    }, [quizStarted, isComplete, setActiveRunId]);
+        setActiveRunId(null);
+    }, [setActiveRunId]);
 
     useEffect(() => {
         if (!quizStarted) return undefined;
@@ -212,22 +215,17 @@ export function GenerationQuizView({ showDetails, showToast }) {
         };
     }, [quizStarted, isComplete]);
 
+    // Older runs appear as the list nears its end — at once, they are local.
     const handleHistoryScroll = useCallback((e) => {
-        const { scrollTop, scrollHeight, clientHeight } = e.target;
-        if (scrollHeight - scrollTop - clientHeight < 20) {
-            if (!isHistoryLoadingMore && visibleHistoryLimit < quizRuns.length) {
-                setIsHistoryLoadingMore(true);
-                setTimeout(() => {
-                    setVisibleHistoryLimit((prev) => Math.min(prev + 5, quizRuns.length));
-                    setIsHistoryLoadingMore(false);
-                }, 400);
-            }
+        const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+        if (scrollHeight - scrollTop - clientHeight < 40 && visibleHistoryLimit < quizRuns.length) {
+            setVisibleHistoryLimit((prev) => Math.min(prev + 10, quizRuns.length));
         }
-    }, [isHistoryLoadingMore, visibleHistoryLimit, quizRuns.length]);
+    }, [visibleHistoryLimit, quizRuns.length]);
 
     useEffect(() => {
         if (!isHistoryOpen) {
-            setVisibleHistoryLimit(5);
+            setVisibleHistoryLimit(10);
         }
     }, [isHistoryOpen]);
 
@@ -402,6 +400,22 @@ export function GenerationQuizView({ showDetails, showToast }) {
         return null;
     }, [quizRuns, selectionSignature]);
 
+    // The last correct guess ends the run: celebrate from that event, not
+    // from an effect watching `isComplete` — that one also fired for a run
+    // that loaded already finished, and re-ran (re-opening the dialog) every
+    // time the badge stats or the language changed.
+    const celebrate = useCallback(() => {
+        setAnnouncement(language === 'pt' ? 'Quiz de Gerações concluído.' : 'Generation Quiz complete.');
+        setFeedback({ tone: 'success', message: language === 'pt' ? 'Quiz concluído. Todos os Pokémon selecionados foram encontrados!' : 'Quiz complete. Every selected Pokémon has been found.' });
+        setCelebrationPokemon(activeEntries.length > 0
+            ? activeEntries[Math.floor(Math.random() * activeEntries.length)]
+            : null);
+        // A beat of delay: the last guess commits while the user is still
+        // typing, and their trailing Enter must not land on the dialog.
+        clearTimeout(celebrateTimerRef.current);
+        celebrateTimerRef.current = window.setTimeout(() => setIsCelebrationOpen(true), 750);
+    }, [activeEntries, language]);
+
     useEffect(() => {
         if (!quizStarted || !normalizedAnswerInput || !activeRun) return;
 
@@ -428,31 +442,8 @@ export function GenerationQuizView({ showDetails, showToast }) {
         });
         setAnswerInput('');
         setActiveSuggestionIndex(0);
-    }, [answerLookup, foundIds, normalizedAnswerInput, pokemonById, quizStarted, totalCount, activeRun, updateActiveRunProgress, language]);
-
-    useEffect(() => {
-        if (!quizStarted || !isComplete) return undefined;
-
-        setAnnouncement(language === 'pt' ? 'Quiz de Gerações concluído.' : 'Generation Quiz complete.');
-        setFeedback({ tone: 'success', message: language === 'pt' ? 'Quiz concluído. Todos os Pokémon selecionados foram encontrados!' : 'Quiz complete. Every selected Pokémon has been found.' });
-        showToast?.(language === 'pt' ? 'Quiz de Gerações concluído!' : 'Generation Quiz complete!', 'success');
-
-        if (activeEntries.length > 0) {
-            const randomIndex = Math.floor(Math.random() * activeEntries.length);
-            setCelebrationPokemon(activeEntries[randomIndex]);
-        } else {
-            setCelebrationPokemon(null);
-        }
-
-        // Open with a beat of delay: the last guess commits while the user is
-        // still typing, and an immediate open lets their trailing Enter press
-        // land on the modal's focused action button (closing it instantly).
-        const timer = window.setTimeout(() => {
-            setIsCelebrationOpen(true);
-            checkBadgeCelebration();
-        }, 750);
-        return () => window.clearTimeout(timer);
-    }, [isComplete, quizStarted, showToast, activeEntries, language, checkBadgeCelebration]);
+        if (nextFoundIdsArray.length === activeRun.totalCount) celebrate();
+    }, [answerLookup, foundIds, normalizedAnswerInput, pokemonById, quizStarted, totalCount, activeRun, updateActiveRunProgress, language, celebrate]);
 
     useEffect(() => {
         if (!quizStarted) return;
@@ -537,6 +528,41 @@ export function GenerationQuizView({ showDetails, showToast }) {
         setFeedback({ tone: 'info', message: language === 'pt' ? `${previewEntries.length} Pokémon prontos.` : `${previewEntries.length} Pokémon ready.` });
     }, [previewEntries.length, selectedGenerationList, startNewRun, language]);
 
+    // Restart is reversible: it happens at once, and the toast can put every
+    // catch back (the store keeps the run's id, so undo re-applies its progress).
+    const restartRun = useCallback(() => {
+        if (!activeRun) return;
+        const snapshot = {
+            id: activeRun.id,
+            foundIds: activeRun.foundIds,
+            foundOrder: activeRun.foundOrder,
+            invalidGuesses: activeRun.invalidGuesses,
+            consecutiveMisses: activeRun.consecutiveMisses,
+        };
+        rerunRun(activeRun.id);
+        setAnswerInput('');
+        setGridFilter('all');
+        setActiveSuggestionIndex(0);
+        setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida reiniciada do zero.' : 'Run restarted from scratch.' });
+        inputRef.current?.focus();
+        if (snapshot.foundIds.length === 0) return;
+        toast.info(t('games.runRestarted'), {
+            key: `quiz-restart-${snapshot.id}`,
+            actions: [{
+                label: t('toast.undo'),
+                onClick: () => {
+                    resumeRun(snapshot.id);
+                    updateActiveRunProgress(snapshot.foundIds, snapshot.foundOrder, snapshot.invalidGuesses, snapshot.consecutiveMisses);
+                },
+            }],
+        });
+    }, [activeRun, rerunRun, resumeRun, updateActiveRunProgress, language, t]);
+
+    const closeCelebration = useCallback(() => {
+        setIsCelebrationOpen(false);
+        checkBadgeRef.current?.();
+    }, []);
+
     const commitFoundPokemon = useCallback((pokemonId) => {
         const pokemon = pokemonById.get(pokemonId);
         if (!pokemon || !activeRun || foundIds.has(pokemonId)) return;
@@ -558,7 +584,8 @@ export function GenerationQuizView({ showDetails, showToast }) {
         });
         setAnswerInput('');
         setActiveSuggestionIndex(0);
-    }, [activeRun, foundIds, pokemonById, totalCount, updateActiveRunProgress, language]);
+        if (nextFoundIdsArray.length === activeRun.totalCount) celebrate();
+    }, [activeRun, foundIds, pokemonById, totalCount, updateActiveRunProgress, language, celebrate]);
 
     const handleSelectSuggestion = useCallback((pokemonId) => {
         commitFoundPokemon(pokemonId);
@@ -664,31 +691,42 @@ export function GenerationQuizView({ showDetails, showToast }) {
         { key: 'missing', icon: <HelpCircle aria-hidden="true" />, label: language === 'pt' ? 'Faltando' : 'Missing', count: remainingCount },
     ];
 
+    const visibleRuns = quizRuns.filter((run) => !runDeletes.hidden.has(run.id));
+
     const historyButton = (
         <button
             type="button"
             onClick={() => setIsHistoryOpen(true)}
-            className="generation-quiz__history-toggle"
-            title={language === 'pt' ? 'Ver Histórico de Partidas' : 'View Quiz Run History'}
+            className="btn btn-secondary btn-sm generation-quiz__history-toggle"
+            aria-label={t('games.quizHistory')}
+            title={t('games.quizHistory')}
         >
             <HistoryIcon />
-            <span>{language === 'pt' ? 'Histórico' : 'History'}</span>
-            {quizRuns.length > 0 && (
-                <span className="generation-quiz__history-toggle-badge">
-                    {quizRuns.length}
-                </span>
+            <span className="generation-quiz__history-toggle-label">{t('games.history')}</span>
+            {visibleRuns.length > 0 && (
+                <span className="count-badge">{visibleRuns.length}</span>
             )}
         </button>
     );
 
+    const deleteRunWithUndo = (run) => {
+        runDeletes.schedule(run.id, () => deleteRun(run.id));
+        toast.info(t('games.runDeleted'), {
+            key: `quiz-delete-${run.id}`,
+            actions: [{ label: t('toast.undo'), onClick: () => runDeletes.undo(run.id) }],
+        });
+    };
+
     return (
         <main className={`generation-quiz ${quizStarted ? 'generation-quiz--running' : ''}`}>
             {!quizStarted ? (
-                <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel">
+                <section className="generation-quiz__panel team-builder-panel generation-quiz__grid-panel" aria-labelledby="generation-quiz-title">
+                    {/* The shell's header already names the page; the panel says
+                        what to do instead of repeating "Quiz" a second and third
+                        time (with a decorative logo between them). */}
                     <div className="generation-quiz__panel-header">
-                        <div className="generation-quiz__panel-title-group">
-                            <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('quiz.title')}</h2>
-                        </div>
+                        <h2 id="generation-quiz-title" className="sr-only">{t('quiz.title')}</h2>
+                        <p className="generation-quiz__start-subtitle">{t('games.quizIntro')}</p>
                         {historyButton}
                     </div>
 
@@ -698,18 +736,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
                         </div>
                     ) : (
                         <div className="generation-quiz__start-card">
-                            <div className="generation-quiz__start-icon-wrap">
-                                <img
-                                    src={import.meta.env.BASE_URL + "LogoCuteGengarRounded.png"}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="generation-quiz__start-icon select-none"
-                                />
-                            </div>
-                            <h3 className="generation-quiz__start-title">{t('quiz.title')}</h3>
-                            <p className="generation-quiz__start-subtitle">
-                                {language === 'pt' ? 'Selecione uma geração abaixo para testar sua memória. Seu objetivo é nomear todos os Pokémon da região!' : 'Select a generation below to test your memory. Your goal is to name all Pokémon in that region!'}
-                            </p>
 
                             {bestRun && (
                                 <div className="generation-quiz__start-best-run-pill">
@@ -750,7 +776,7 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                 type="button"
                                 onClick={startQuiz}
                                 disabled={isLoadingIndex || previewEntries.length === 0}
-                                className="generation-quiz__start-card-btn mt-6"
+                                className="btn btn-primary btn-lg generation-quiz__start-card-btn"
                             >
                                 <PokeballIcon />
                                 {language === 'pt' ? `Começar Quiz (${previewEntries.length} Pokémon)` : `Start Quiz (${previewEntries.length} Pokémon)`}
@@ -878,16 +904,6 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                     </div>
                                 )}
 
-                                {isComplete && (
-                                    <div className="generation-quiz__celebration">
-                                        <SuccessToastIcon />
-                                        <div>
-                                            <strong>{language === 'pt' ? 'Parabéns!' : 'Congratulations!'}</strong>
-                                            <p>{language === 'pt' ? `Você adivinhou todos os Pokémon selecionados com ${accuracyPercent}% de precisão.` : `You guessed every selected Pokémon with ${accuracyPercent}% accuracy.`}</p>
-                                        </div>
-                                    </div>
-                                )}
-
                                 <div className="generation-quiz__console-actions">
                                     <button
                                         type="button"
@@ -899,16 +915,16 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         <SparklesIcon /> {language === 'pt' ? 'Dica' : 'Hint'}
                                         <span className="generation-quiz__hint-count">{availableHints}</span>
                                     </button>
-                                    <button type="button" onClick={startQuiz} className="generation-quiz__compact-reset-btn">
-                                        <RefreshIcon /> {language === 'pt' ? 'Recomeçar' : 'Restart'}
+                                    <button type="button" onClick={restartRun} className="generation-quiz__compact-reset-btn">
+                                        <RefreshIcon /> {t('games.restart')}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={handleExitQuizClick}
                                         className="generation-quiz__compact-reset-btn"
-                                        title={language === 'pt' ? 'Retornar à tela inicial para mudar as gerações' : 'Return to start screen to change generations'}
+                                        title={t('games.changeGensTitle')}
                                     >
-                                        {language === 'pt' ? 'Gerações' : 'Change Gens'}
+                                        {t('games.changeGens')}
                                     </button>
                                 </div>
                             </section>
@@ -942,86 +958,42 @@ export function GenerationQuizView({ showDetails, showToast }) {
             {isCelebrationOpen && (
                 <QuizCelebrationModal
                     isOpen={isCelebrationOpen}
-                    onClose={() => setIsCelebrationOpen(false)}
-                    onTryAnother={() => {
-                        setActiveRunId(null);
-                        setIsCelebrationOpen(false);
+                    onClose={closeCelebration}
+                    // Same generations, from zero, at once — the old "Try
+                    // another" dropped the user back on the setup screen.
+                    onPlayAgain={() => {
+                        if (!activeRun) return;
+                        rerunRun(activeRun.id);
+                        setAnswerInput('');
+                        setGridFilter('all');
+                        setFeedback({ tone: 'info', message: language === 'pt' ? `${totalCount} Pokémon prontos.` : `${totalCount} Pokémon ready.` });
+                        window.setTimeout(() => inputRef.current?.focus(), 0);
                     }}
-                    onCloseQuiz={() => {
-                        setActiveRunId(null);
-                        setIsCelebrationOpen(false);
-                        navigate('/');
-                    }}
+                    playAgainText={t('games.playAgain')}
                     pokemon={celebrationPokemon}
                     accuracy={accuracyPercent}
                     totalCount={totalCount}
                 />
             )}
-            {isExitConfirmOpen && (
-                <ConfirmDialog
-                    isOpen={isExitConfirmOpen}
-                    onClose={() => setIsExitConfirmOpen(false)}
-                    onConfirm={() => {
-                        setActiveRunId(null);
-                        setIsExitConfirmOpen(false);
-                    }}
-                    title={language === 'pt' ? 'Sair do Quiz?' : 'Exit Quiz?'}
-                    message={
-                        language === 'pt'
-                            ? 'Tem certeza que deseja voltar para a seleção de gerações? Seu progresso atual não será perdido e você poderá continuar depois.'
-                            : "Are you sure you want to return to generation selection? Your current progress won't be lost and you can resume later."
-                    }
-                    confirmText={language === 'pt' ? 'Sim, sair' : 'Yes, exit'}
-                />
-            )}
-            {/* History Drawer Overlay */}
-            <div
-                className={`generation-quiz__history-overlay ${isHistoryOpen ? 'is-open' : ''}`}
-                onClick={() => setIsHistoryOpen(false)}
-            />
 
-            {/* History Drawer Sidebar */}
-            <div className={`generation-quiz__history-sidebar ${isHistoryOpen ? 'is-open' : ''}`}>
-                <div className="generation-quiz__history-sidebar-header">
-                    <h3 className="generation-quiz__history-sidebar-title">
-                        <HistoryIcon /> {language === 'pt' ? 'Histórico do Quiz' : 'Quiz History'}
-                    </h3>
-                    <button
-                        type="button"
-                        className="generation-quiz__history-sidebar-close"
-                        onClick={() => setIsHistoryOpen(false)}
-                        title={language === 'pt' ? 'Fechar Histórico' : 'Close History'}
-                    >
-                        <CloseIcon />
-                    </button>
-                </div>
-
-                <div
-                    className="generation-quiz__history-sidebar-scroll"
+            {isHistoryOpen && (
+                <GameHistoryDialog
+                    title={t('games.quizHistory')}
+                    onClose={() => setIsHistoryOpen(false)}
                     onScroll={handleHistoryScroll}
                 >
-                    {quizRuns.length === 0 ? (
-                        <div className="generation-quiz__history-sidebar-empty">
-                            <div className="generation-quiz__history-sidebar-empty-icon">
-                                <HistoryIcon />
-                            </div>
-                            <p className="generation-quiz__history-sidebar-empty-text">
-                                {language === 'pt' ? (
-                                    <>
-                                        Nenhuma partida gravada ainda.<br />
-                                        Selecione uma geração acima e comece a jogar!
-                                    </>
-                                ) : (
-                                    <>
-                                        No quiz runs recorded yet.<br />
-                                        Select a generation above and start playing!
-                                    </>
-                                )}
+                    {visibleRuns.length === 0 ? (
+                        <div className="game-history__empty">
+                            <HistoryIcon />
+                            <p className="m-0">
+                                {language === 'pt'
+                                    ? 'Nenhuma partida gravada ainda. Escolha uma geração e comece a jogar!'
+                                    : 'No quiz runs recorded yet. Pick a generation and start playing!'}
                             </p>
                         </div>
                     ) : (
-                        <>
-                            {quizRuns
+                        <ul className="game-history__list">
+                            {visibleRuns
                                 .slice()
                                 .sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0))
                                 .slice(0, visibleHistoryLimit)
@@ -1033,21 +1005,20 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                         : 100;
 
                                     return (
-                                        <div key={run.id} className="generation-quiz-history__item">
-                                            <div className="generation-quiz-history__info">
-                                                <span className="generation-quiz-history__gens">{runGens}</span>
-                                                <div className="generation-quiz-history__stats">
-                                                    <span>{language === 'pt' ? 'Progresso:' : 'Progress:'} <strong>{run.foundIds.length}/{run.totalCount}</strong></span>
-                                                    <span>{language === 'pt' ? 'Precisão:' : 'Accuracy:'} <strong>{runAccuracy}%</strong></span>
-                                                    {run.bestFound > 0 && (
-                                                        <span>{language === 'pt' ? 'Melhor:' : 'Best:'} <strong>{run.bestFound}/{run.totalCount}</strong></span>
-                                                    )}
-                                                    <span className={`generation-quiz-history__badge ${isRunComplete ? 'generation-quiz-history__badge--complete' : 'generation-quiz-history__badge--progress'}`}>
-                                                        {isRunComplete ? (language === 'pt' ? 'Concluído' : 'Completed') : (language === 'pt' ? 'Em Progresso' : 'In Progress')}
+                                        <li key={run.id} className="game-history__item game-history__item--wrap">
+                                            <div className="game-history__main">
+                                                <div className="game-history__heading">
+                                                    <span className="game-history__title">{runGens}</span>
+                                                    <span className={`game-history__badge ${isRunComplete ? 'is-complete' : 'is-progress'}`}>
+                                                        {isRunComplete ? t('games.statusCompleted') : t('games.statusInProgress')}
                                                     </span>
                                                 </div>
+                                                <span className="game-history__meta">
+                                                    {run.foundIds.length}/{run.totalCount} · {runAccuracy}%
+                                                    {run.bestFound > 0 && ` · ${language === 'pt' ? 'Melhor' : 'Best'} ${run.bestFound}/${run.totalCount}`}
+                                                </span>
                                             </div>
-                                            <div className="generation-quiz-history__actions">
+                                            <div className="game-history__actions">
                                                 {!isRunComplete && (
                                                     <button
                                                         type="button"
@@ -1057,9 +1028,9 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                                             setIsHistoryOpen(false);
                                                             setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida retomada. Boa sorte!' : 'Run resumed. Good luck!' });
                                                         }}
-                                                        className="generation-quiz-history__btn generation-quiz-history__btn--continue"
+                                                        className="btn btn-secondary btn-sm"
                                                     >
-                                                        {language === 'pt' ? 'Continuar' : 'Continue'}
+                                                        {t('games.continue')}
                                                     </button>
                                                 )}
                                                 <button
@@ -1070,40 +1041,27 @@ export function GenerationQuizView({ showDetails, showToast }) {
                                                         setIsHistoryOpen(false);
                                                         setFeedback({ tone: 'info', message: language === 'pt' ? 'Partida reiniciada do zero.' : 'Run restarted from scratch.' });
                                                     }}
-                                                    className="generation-quiz-history__btn generation-quiz-history__btn--rerun"
+                                                    className="btn btn-ghost btn-sm"
                                                 >
-                                                    {isRunComplete ? (language === 'pt' ? 'Jogar Novamente' : 'Play Again') : (language === 'pt' ? 'Recomeçar' : 'Restart')}
+                                                    {isRunComplete ? t('games.playAgain') : t('games.restart')}
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={async () => {
-                                                        const confirmed = await confirmAction({
-                                                            title: t('dialogs.deleteRunTitle'),
-                                                            message: t('dialogs.deleteRunMsg'),
-                                                            confirmText: t('common.delete'),
-                                                        });
-                                                        if (confirmed) deleteRun(run.id);
-                                                    }}
-                                                    className="generation-quiz-history__btn generation-quiz-history__btn--delete"
-                                                    title={language === 'pt' ? 'Deletar Partida' : 'Delete Run'}
+                                                    onClick={() => deleteRunWithUndo(run)}
+                                                    className="btn btn-ghost btn-muted btn-sm btn-icon"
+                                                    aria-label={t('games.deleteRun')}
+                                                    title={t('games.deleteRun')}
                                                 >
                                                     <CloseIcon />
                                                 </button>
                                             </div>
-                                        </div>
+                                        </li>
                                     );
                                 })}
-
-                            {isHistoryLoadingMore && (
-                                <div className="generation-quiz__history-loading">
-                                    <Loader size="xs" />
-                                    <span>{language === 'pt' ? 'Carregando partidas antigas...' : 'Loading older runs...'}</span>
-                                </div>
-                            )}
-                        </>
+                        </ul>
                     )}
-                </div>
-            </div>
+                </GameHistoryDialog>
+            )}
         </main>
     );
 }

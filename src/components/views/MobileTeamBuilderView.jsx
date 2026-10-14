@@ -1,18 +1,20 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeIcons, typeColors } from '../../constants/types';
-import { Dices, Trophy, ShieldCheck, ShieldAlert, Sparkles, SlidersHorizontal, Search, HelpCircle } from 'lucide-react';
+import {
+    Dices, Trophy, ShieldCheck, Sparkles, SlidersHorizontal, Search, HelpCircle, Info,
+    Atom, ChevronRight, ChevronDown, MoreHorizontal, Save, SaveAll, Check, Share2, Trash2,
+} from 'lucide-react';
 import { GameFilterChip, GamePickerModal } from '../GameCover';
 import { EmptyState } from '../EmptyState';
 import { BottomSheet } from '../BottomSheet';
 import { Sprite } from '../Sprite';
 import { TypeChip } from '../TypeChip';
-import { AnchoredPopover } from '../AnchoredPopover';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
-import { Atom, ChevronRight } from 'lucide-react';
 import { coreIconFor } from '../coreIcons';
-// SynergySuggestions strip removed — synergy picks now appear in-grid
+import { TeamRatingBadge } from '../TeamIdentitySummary';
 import { detectTeamCores } from '../../utils/metaCores';
+import { rateTeam } from '../../utils/teamAnalysis';
 import { buildGameSections } from '../../utils/gameDex';
 import { matchesTypeFilter } from '../../utils/typeFilter';
 import { TeamThreats } from '../TeamThreats';
@@ -23,23 +25,13 @@ import { getPokemonDisplaySprite, getTeamPokemonDisplaySprite, getPokemonArtwork
 import { useMegaStones, megaFormFor, megaDisplayName } from '../../hooks/useMegaStones';
 import { useTranslation } from '../../hooks/useTranslation';
 import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
-import {
-    ClearIcon,
-    InfoIcon,
-    SaveIcon,
-    ShareIcon,
-    ShowdownIcon,
-    StarIcon,
-    TrashIcon,
-    TrophyIcon,
-} from '../icons';
-import { Save, SaveAll } from 'lucide-react';
+import { ShowdownIcon, StarIcon } from '../icons';
 import { Loader } from '../Loader';
 
 // Inline CSS custom properties for the per-type ring/tint behind a sprite.
 const typeVars = (pokemon) => {
     const types = pokemon?.types || [];
-    const a = typeColors[types[0]] || '#6390F0';
+    const a = typeColors[types[0]] || 'var(--color-primary)';
     const b = typeColors[types[1]] || a;
     return { '--type-a': a, '--type-b': b };
 };
@@ -48,7 +40,7 @@ const typeVars = (pokemon) => {
 const REASON_VISUALS = {
     ability: (r) => ({ Icon: coreIconFor(r.coreId), color: r.accent || 'var(--color-primary)' }),
     partner: () => ({ Icon: Trophy, color: 'var(--color-primary)' }),
-    type:    () => ({ Icon: ShieldCheck, color: '#38bdf8' }),
+    type:    () => ({ Icon: ShieldCheck, color: 'var(--color-info)' }),
     meta:    () => ({ Icon: Sparkles, color: 'var(--color-primary)' }),
 };
 function reasonVisual(reason) {
@@ -62,18 +54,20 @@ function reasonVisual(reason) {
 const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
     pokemon,
     onAddToTeam,
+    onShowDetails,
     isSuggested,
     synergyReason,
     isFavorite,
     onToggleFavorite,
     lastRef,
 }) {
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
     const handleCardClick = () => {
         onAddToTeam?.(pokemon);
     };
 
     const handleKeyDown = (event) => {
+        if (event.target !== event.currentTarget) return;
         if (event.key === 'Enter' || event.key === ' ') {
             event.preventDefault();
             onAddToTeam?.(pokemon);
@@ -85,22 +79,24 @@ const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
         onToggleFavorite?.(pokemon.id);
     };
 
+    const handleInfoClick = (event) => {
+        event.stopPropagation();
+        onShowDetails?.(pokemon);
+    };
+
     const hasSynergy = !!synergyReason;
     const { Icon: ReasonIcon, color: reasonColor } = hasSynergy ? reasonVisual(synergyReason) : {};
 
     // Same anatomy as the Pokédex card (MobilePokedexPokemonCard) — types on top,
     // the star on the sprite's corner, name left and number right — so the two
-    // grids a phone user moves between read as one object. A suggestion says so
-    // once, as a line of text with its reason's icon: it used to be a tinted
-    // fill, an inset ring, a corner badge and a 7px label all at once, and with
-    // an empty team every card on the first page is a suggestion, so the ring
-    // was on everything and meant nothing.
+    // grids a phone user moves between read as one object. A tap adds; the
+    // details are the small info button in the top row.
     return (
         <article
             ref={lastRef}
             role="button"
             tabIndex={0}
-            aria-label={`${language === 'pt' ? 'Adicionar' : 'Add'} ${pokemon.name} ${language === 'pt' ? 'ao time' : 'to team'}`}
+            aria-label={t('builder.addToTeamAria', { name: pokemon.name })}
             onClick={handleCardClick}
             onKeyDown={handleKeyDown}
             className={`team-builder-mobile-card ${hasSynergy ? 'is-synergy' : isSuggested ? 'is-suggested' : ''}`}
@@ -115,14 +111,24 @@ const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
                         className="h-4 w-4 rounded-full"
                     />
                 ))}
+                {onShowDetails && (
+                    <button
+                        type="button"
+                        onClick={handleInfoClick}
+                        className="team-builder-mobile-card__info touch-target"
+                        aria-label={t('builder.detailsAria', { name: pokemon.name })}
+                    >
+                        <Info aria-hidden="true" />
+                    </button>
+                )}
             </div>
 
             <div className="team-builder-mobile-card__media tb-type-tint" style={typeVars(pokemon)}>
                 <button
+                    type="button"
                     onClick={handleFavoriteClick}
                     className={`team-builder-mobile-card__favorite team-builder-mobile-card__favorite--overlay ${isFavorite ? 'is-active' : ''}`}
-                    aria-label={isFavorite ? `Remove ${pokemon.name} from favorites` : `Add ${pokemon.name} to favorites`}
-                    title={isFavorite ? t('common.remove') : (language === 'pt' ? 'Adicionar aos favoritos' : 'Add to favorites')}
+                    aria-label={isFavorite ? t('builder.unfavoriteAria', { name: pokemon.name }) : t('builder.favoriteAria', { name: pokemon.name })}
                 >
                     <StarIcon className="w-3.5 h-3.5" isFavorite={isFavorite} color="currentColor" />
                 </button>
@@ -146,216 +152,139 @@ const MobilePokemonPickerCard = React.memo(function MobilePokemonPickerCard({
                 </span>
             ) : !hasSynergy && isSuggested ? (
                 <span className="team-builder-mobile-card__reason-label is-suggested">
-                    {language === 'pt' ? 'Novo' : 'New'}
+                    {t('builder.newPick')}
                 </span>
             ) : null}
         </article>
     );
 });
 
-// Compact, borderless icon-only type mark for the analysis popover (saves space
-// vs the full type name). Type name kept as the tooltip / accessible label.
-const AnalysisTypeIcon = ({ type }) => {
-    const { t } = useTranslation();
-    const lower = String(type).toLowerCase();
-    const color = typeColors[lower] || '#777';
-    const icon = typeIcons[lower];
-    const label = t(`types.${lower}`, { defaultValue: type });
-    return icon ? (
-        <img src={icon} alt={label} title={label} className="h-5 w-5 shrink-0 object-contain" />
-    ) : (
-        <span className="text-2xs font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
-    );
-};
-
 // ---------------------------------------------------------------------------
-// TeamAnalysisChip — condensed indicator that lives under the team slots.
-// Tap toggles a small popover with the breakdown so users on mobile can
-// glance at the team rating without scrolling to the full analysis section.
+// The analysis, whole. The phone used to show a chip whose popover cut each
+// list at six types while its label promised all of them ("Fraquezas (14)"),
+// plus a second copy of the analysis at the bottom of the page — under a grid
+// that never ends, so nobody reached it. Now the chip opens this sheet, and the
+// sheet holds every type; meta threats are its second segment instead of a
+// chip of their own.
 // ---------------------------------------------------------------------------
-const TeamAnalysisChip = ({ teamAnalysis, teamSize, colors }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const triggerRef = useRef(null);
-    const popoverRef = useRef(null);
-    const { t, language } = useTranslation();
-
-    const { rating, ratingColor, strengthCount, weaknessCount, topStrengths, topWeaknesses } = useMemo(() => {
-        const sCount = teamAnalysis?.strengths?.size || 0;
-        const wEntries = Object.entries(teamAnalysis?.weaknesses || {});
-        const wCount = wEntries.length;
-        // Score ranges roughly -12..+18; coarse bucketing keeps the chip
-        // language honest without pretending to be a deep tier list.
-        const score = sCount * 2 - wEntries.reduce((sum, [, v]) => sum + Math.max(0, v), 0);
-        let label = language === 'pt' ? 'Montando' : 'Building';
-        let color = colors.textMuted;
-        if (teamSize >= 1) {
-            if (score >= 8) { label = language === 'pt' ? 'Excelente' : 'Excellent'; color = colors.success; }
-            else if (score >= 3) { label = language === 'pt' ? 'Forte' : 'Strong'; color = colors.success; }
-            else if (score >= -2) { label = language === 'pt' ? 'Equilibrado' : 'Balanced'; color = colors.info || colors.primary; }
-            else { label = language === 'pt' ? 'Arriscado' : 'Risky'; color = colors.danger; }
-        }
-        return {
-            rating: label,
-            ratingColor: color,
-            strengthCount: sCount,
-            weaknessCount: wCount,
-            topStrengths: Array.from(teamAnalysis?.strengths || []).sort().slice(0, 6),
-            topWeaknesses: wEntries.sort(([, a], [, b]) => b - a).slice(0, 6),
-        };
-    }, [teamAnalysis, teamSize, colors, language]);
-
-    useEffect(() => {
-        if (!isOpen) return undefined;
-        const onDocClick = (event) => {
-            if (triggerRef.current?.contains(event.target) || popoverRef.current?.contains(event.target)) {
-                return;
-            }
-            if (triggerRef.current || popoverRef.current) {
-                setIsOpen(false);
-            }
-        };
-        const onKey = (event) => { if (event.key === 'Escape') setIsOpen(false); };
-        document.addEventListener('mousedown', onDocClick);
-        document.addEventListener('touchstart', onDocClick);
-        document.addEventListener('keydown', onKey);
-        return () => {
-            document.removeEventListener('mousedown', onDocClick);
-            document.removeEventListener('touchstart', onDocClick);
-            document.removeEventListener('keydown', onKey);
-        };
-    }, [isOpen]);
-
-    if (teamSize === 0) return null;
-
+function TypeList({ entries, empty, showCount = false }) {
+    if (!entries.length) return <p className="team-builder-mobile__analysis-empty">{empty}</p>;
     return (
-        <div className="mt-2.5 flex justify-center">
-            <button
-                ref={triggerRef}
-                type="button"
-                onClick={() => setIsOpen((v) => !v)}
-                aria-expanded={isOpen}
-                aria-label={t('builder.analysisTitle')}
-                className="inline-flex items-center gap-2 rounded-full bg-surface-raised px-3 py-1.5 text-2xs font-bold uppercase text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary tracking-[0.06em]"
-                style={{
-                    border: `1px solid ${ratingColor}55`,
-                }}
-            >
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: ratingColor }} aria-hidden="true" />
-                <span style={{ color: ratingColor }}>{rating}</span>
-                <span className="opacity-70">·</span>
-                <span className="text-success">{strengthCount}↑</span>
-                <span className="text-danger">{weaknessCount}↓</span>
-                <InfoIcon />
-            </button>
-
-            <AnchoredPopover
-                isOpen={isOpen}
-                anchorRef={triggerRef}
-                popoverRef={popoverRef}
-                role="dialog"
-                ariaLabel={t('builder.analysisTitle')}
-                className="w-[min(20rem,calc(100vw-2rem))] rounded-2xl border border-surface-raised bg-surface p-3 shadow-2xl"
-                arrowStyle={{
-                    backgroundColor: colors.card,
-                    borderTop: `1px solid ${colors.cardLight}`,
-                    borderLeft: `1px solid ${colors.cardLight}`,
-                }}
-            >
-                <div className="mb-2 flex items-center justify-between gap-2">
-                    <p className="text-2xs font-bold text-muted">
-                        {language === 'pt' ? 'Resumo do Time' : 'Team Snapshot'}
-                    </p>
-                    <span
-                        className="rounded-full px-2 py-0.5 text-2xs font-bold"
-                        style={{ backgroundColor: `${ratingColor}22`, color: ratingColor }}
-                    >
-                        {rating}
-                    </span>
-                </div>
-
-                <div className="mb-2">
-                    <p className="mb-1 text-2xs font-semibold text-success">
-                        {language === 'pt' ? 'Cobertura Ofensiva' : 'Offensive Coverage'} ({strengthCount})
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                        {topStrengths.length > 0 ? topStrengths.map((type) => (
-                            <AnalysisTypeIcon key={type} type={type} />
-                        )) : (
-                            <span className="text-2xs text-muted">{language === 'pt' ? 'Sem vantagens ainda.' : 'No advantages yet.'}</span>
-                        )}
-                    </div>
-                </div>
-
-                <div>
-                    <p className="mb-1 text-2xs font-semibold text-danger">
-                        {language === 'pt' ? 'Fraquezas Defensivas' : 'Defensive Weaknesses'} ({weaknessCount})
-                    </p>
-                    <div className="flex flex-wrap items-center gap-1">
-                        {topWeaknesses.length > 0 ? topWeaknesses.map(([type, score]) => (
-                            <span key={type} className="inline-flex items-center gap-1">
-                                <AnalysisTypeIcon type={type} />
-                                <span className="text-2xs font-bold text-danger">×{score}</span>
-                            </span>
-                        )) : (
-                            <span className="text-2xs text-muted">{language === 'pt' ? 'Defesa sólida.' : 'Rock solid defence.'}</span>
-                        )}
-                    </div>
-                </div>
-            </AnchoredPopover>
+        <div className="team-builder-mobile__analysis-types">
+            {entries.map(([type, count]) => (
+                <span key={type} className="team-builder-mobile__analysis-type">
+                    <TypeChip type={type} size="sm" />
+                    {showCount && count > 1 && <span className="count-badge">×{count}</span>}
+                </span>
+            ))}
         </div>
     );
-};
+}
 
-const MobileTeamSlot = ({ pokemon, index, onEdit, onRemove }) => {
+function TeamAnalysisSheet({ teamAnalysis, teamSize, teamThreats, isPlaythrough, onClose, onOpenDetail }) {
+    const { t } = useTranslation();
+    const [tab, setTab] = React.useState('coverage');
+    const { score, grade } = rateTeam(teamAnalysis, teamSize);
+    const weaknesses = Object.entries(teamAnalysis?.weaknesses || {}).sort(([, a], [, b]) => b - a);
+    const resists = Object.entries(teamAnalysis?.defensiveCoverage || {}).sort(([, a], [, b]) => b - a);
+    const offense = Array.from(teamAnalysis?.strengths || []).sort().map((type) => [type, 1]);
+
+    return (
+        <BottomSheet onClose={onClose} title={t('builder.analysisTitle')}>
+            <div className="team-builder-mobile__analysis-sheet">
+                <div className="flex items-center justify-between gap-2">
+                    <TeamRatingBadge score={score} grade={grade} />
+                </div>
+                {!isPlaythrough && (
+                    <div className="segmented segmented--block" role="group" aria-label={t('builder.analysisTitle')}>
+                        <button type="button" className="segmented__item" aria-pressed={tab === 'coverage'} onClick={() => setTab('coverage')}>
+                            {t('builder.coverageTab')}
+                        </button>
+                        <button type="button" className="segmented__item" aria-pressed={tab === 'threats'} onClick={() => setTab('threats')}>
+                            {t('builder.threatsShort')}
+                            {teamThreats.length > 0 && <span className="count-badge">{teamThreats.length}</span>}
+                        </button>
+                    </div>
+                )}
+
+                {tab === 'coverage' || isPlaythrough ? (
+                    <>
+                        <section className="team-builder-mobile__analysis-group">
+                            <h3 className="team-builder-mobile__analysis-title">
+                                <span className="tb-analysis__mark tb-analysis__mark--bad" aria-hidden="true" />
+                                {t('builder.analysisWeaknesses')}
+                                <span className="count-badge">{weaknesses.length}</span>
+                            </h3>
+                            <TypeList entries={weaknesses} empty={t('builder.noWeaknesses')} showCount />
+                        </section>
+                        <section className="team-builder-mobile__analysis-group">
+                            <h3 className="team-builder-mobile__analysis-title">
+                                <span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />
+                                {t('builder.defensiveCoverage')}
+                                <span className="count-badge">{resists.length}</span>
+                            </h3>
+                            <TypeList entries={resists} empty={t('builder.noResistances')} showCount />
+                        </section>
+                        <section className="team-builder-mobile__analysis-group">
+                            <h3 className="team-builder-mobile__analysis-title">
+                                <span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />
+                                {t('builder.offensiveCoverage')}
+                                <span className="count-badge">{offense.length}</span>
+                            </h3>
+                            <TypeList entries={offense} empty={t('builder.noOffense')} />
+                        </section>
+                    </>
+                ) : (
+                    <>
+                        <p className="text-xs text-muted">{t('builder.threatsSubtitle')}</p>
+                        <TeamThreats threats={teamThreats} hasTeam={teamSize > 0} onOpenDetail={onOpenDetail} bare />
+                    </>
+                )}
+            </div>
+        </BottomSheet>
+    );
+}
+
+const MobileTeamSlot = ({ pokemon, index, onEdit }) => {
     const { t } = useTranslation();
     const megaStones = useMegaStones();
     const mega = pokemon ? megaFormFor(pokemon, megaStones) : null;
     const displayName = mega ? megaDisplayName(mega.form) : pokemon?.name;
+    // Removing lives in the editor's footer ("Remover do time", with undo):
+    // six 19px red discs over the slots were the loudest thing on the screen
+    // and sat a thumb's width from the tap that edits.
     return (
-        <div className="relative min-w-0">
-            <button
-                type="button"
-                onClick={() => pokemon && onEdit?.(pokemon)}
-                className={`team-builder-mobile-slot ${pokemon ? 'is-filled tb-type-ring' : 'is-empty'}`}
-                style={pokemon ? typeVars(mega ? { types: mega.types } : pokemon) : undefined}
-                aria-label={pokemon ? `${t('common.edit')} ${displayName}` : `Empty team slot ${index + 1}`}
-                title={pokemon ? displayName : `Empty slot ${index + 1}`}
-            >
-                {pokemon ? (
-                    <Sprite src={mega ? getPokemonFrontSpriteUrl(mega.spriteId) : getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(mega ? mega.spriteId : pokemon.id)} alt={displayName} className="h-9 w-9" />
-                ) : (
-                    <img
-                        src={POKEBALL_PLACEHOLDER_URL}
-                        alt=""
-                        className="h-8 w-8 opacity-35"
-                        aria-hidden="true"
-                    />
-                )}
-            </button>
-
-            {pokemon && (
-                <button
-                    type="button"
-                    onClick={(event) => {
-                        event.stopPropagation();
-                        onRemove?.(pokemon.instanceId);
-                    }}
-                    className="team-builder-mobile-slot__remove"
-                    aria-label={`${t('common.remove')} ${pokemon.name}`}
-                    title="Remove from team"
-                >
-                    <TrashIcon />
-                </button>
+        <button
+            type="button"
+            onClick={() => pokemon && onEdit?.(pokemon)}
+            className={`team-builder-mobile-slot ${pokemon ? 'is-filled tb-type-ring' : 'is-empty'}`}
+            style={pokemon ? typeVars(mega ? { types: mega.types } : pokemon) : undefined}
+            aria-label={pokemon ? t('builder.editAria', { name: displayName }) : t('builder.emptySlotAria', { slot: index + 1 })}
+            disabled={!pokemon}
+        >
+            {pokemon ? (
+                <Sprite src={mega ? getPokemonFrontSpriteUrl(mega.spriteId) : getTeamPokemonDisplaySprite(pokemon, { animated: true })} artworkSrc={getPokemonArtworkSpriteUrl(mega ? mega.spriteId : pokemon.id)} alt={displayName} className="h-9 w-9" />
+            ) : (
+                <img
+                    src={POKEBALL_PLACEHOLDER_URL}
+                    alt=""
+                    className="h-8 w-8 opacity-35"
+                    aria-hidden="true"
+                />
             )}
-        </div>
+        </button>
     );
 };
+
+// A suggestion of kind "meta" says the same thing on every card ("Top meta
+// pick" ×30 with an empty team), so the group gets one heading instead.
+const META_REASON = { kind: 'meta' };
+const quietReason = (reason) => (reason?.kind === 'meta' ? META_REASON : reason);
 
 export const MobileTeamBuilderView = ({
     currentTeam,
     teamName,
     setTeamName,
-    handleRemoveFromTeam,
     handleSaveTeam,
     editingTeamId,
     activeTeamId,
@@ -383,13 +312,16 @@ export const MobileTeamBuilderView = ({
     selectedRegulation,
     isPlaythrough = false,
     onSelectRegulation,
+    formatLabel = '',
+    totalCount = 0,
+    defaultName = '',
+    isDirty = false,
     generations,
     isInitialLoading,
     displayedPokemons,
     gamePokemonIds,
     gameDexes,
     synergySuggestions = [],
-    addSuggestion,
     handleAddPokemonToTeam,
     handleRandomizeTeam,
     isRandomizing,
@@ -398,8 +330,6 @@ export const MobileTeamBuilderView = ({
     selectedTypes,
     handleTypeSelection,
     typeMatchMode,
-    suggestedPokemonIds,
-    colors,
     onEditTeamPokemon,
     showDetails,
     favoritePokemons,
@@ -408,12 +338,13 @@ export const MobileTeamBuilderView = ({
     setShowOnlyFavorites,
     onOpenOnboarding,
 }) => {
-    const { t, language } = useTranslation();
+    const { t } = useTranslation();
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
     const [filtersExpanded, setFiltersExpanded] = React.useState(false);
     const [savedTeamsOpen, setSavedTeamsOpen] = React.useState(false);
-    const [threatsOpen, setThreatsOpen] = React.useState(false);
+    const [analysisOpen, setAnalysisOpen] = React.useState(false);
+    const [actionsOpen, setActionsOpen] = React.useState(false);
     // Sticky composer condenses to a 2-row header once the user scrolls past
     // the top, then re-expands near the top. Hysteresis (56/16) keeps it from
     // flickering right at the threshold. The scroll surface is the app shell's
@@ -446,7 +377,7 @@ export const MobileTeamBuilderView = ({
         sync();
         if (typeof ResizeObserver !== 'function') return undefined;
         // The rows, not the fold: while folded the fold is 0 tall whatever its
-        // rows do, and the analysis chip comes and goes with the team.
+        // rows do, and the analysis row swaps its hint for the chip with the team.
         const observer = new ResizeObserver(sync);
         Array.from(fold.children).forEach((row) => observer.observe(row));
         return () => observer.disconnect();
@@ -497,33 +428,28 @@ export const MobileTeamBuilderView = ({
     }, [synergySuggestions, displayedPokemons, selectedTypes, typeMatchMode, selectedGeneration, showOnlyFavorites, favoritePokemons, searchInput]);
 
     const synergyReasonById = React.useMemo(
-        () => new Map(activeFilteredSuggestions.map((s) => [s.id, s.primary])),
+        () => new Map(activeFilteredSuggestions.map((s) => [s.id, quietReason(s.primary)])),
         [activeFilteredSuggestions]
     );
 
     // Synergy-only picks not in the displayed list, prepended to grid.
     const displayedIdSet = React.useMemo(() => new Set(displayedPokemons.map((p) => p.id)), [displayedPokemons]);
-    const pokemonIndexById = React.useMemo(() => {
-        const m = new Map();
-        // displayedPokemons itself is the best source for index data
-        for (const p of displayedPokemons) m.set(p.id, p);
-        return m;
-    }, [displayedPokemons]);
     const synergyOnlyCards = React.useMemo(() => {
         // While searching, show the matching Pokémon first (no synergy prepend).
         if (searchInput.trim() || !activeFilteredSuggestions.length) return [];
         return activeFilteredSuggestions
             .filter((s) => !displayedIdSet.has(s.id))
-            .map((s) => ({ ...s, _synergyOnly: true }));
+            .map((s) => ({ ...s, primary: quietReason(s.primary), _synergyOnly: true }));
     }, [activeFilteredSuggestions, displayedIdSet, searchInput]);
+    const suggestionHeading = synergyOnlyCards.length > 0
+        ? (synergyOnlyCards.every((c) => c.primary?.kind === 'meta') ? t('builder.metaPicksHeading') : t('builder.suggestionsHeading'))
+        : null;
 
     React.useEffect(() => {
         if (selectedTypes.size <= 1) return;
         const [, ...extraTypes] = Array.from(selectedTypes);
         extraTypes.forEach((type) => handleTypeSelection(type));
     }, [selectedTypes, handleTypeSelection]);
-
-    const selectedTypeValue = selectedTypes.size > 0 ? Array.from(selectedTypes)[0] : 'all';
 
     const handleTypeSelectChange = (nextType) => {
         const activeTypes = Array.from(selectedTypes);
@@ -543,7 +469,6 @@ export const MobileTeamBuilderView = ({
     const selectedGameObj = React.useMemo(() => {
         return isGameFilterActive ? games.find((g) => g.key === selectedGame) : null;
     }, [games, selectedGame, isGameFilterActive]);
-    const gameLabel = selectedGameObj ? selectedGameObj.label : selectedGame;
 
     // How many of the collapsible filters are currently narrowing the list —
     // surfaced as a badge on the toggle so users know filters are active even
@@ -591,15 +516,35 @@ export const MobileTeamBuilderView = ({
         },
     });
 
+    const teamSize = currentTeam.length;
+    const isTeamFull = teamSize >= 6;
+    const rating = useMemo(() => rateTeam(teamAnalysis, teamSize), [teamAnalysis, teamSize]);
+    const weaknessCount = Object.keys(teamAnalysis?.weaknesses || {}).length;
+    const coveredCount = teamAnalysis?.strengths?.size || 0;
+
+    // Save says what saving would do: nothing to save on a loaded team that has
+    // not changed ("Salvo"), an update when it has, a first save otherwise. The
+    // dot marks unsaved work.
+    const isSavedClean = Boolean(editingTeamId) && !isDirty;
+    const hasUnsaved = teamSize > 0 && !isSavedClean;
+    const saveLabel = isSavedClean ? t('builder.saved') : (editingTeamId ? t('builder.update') : t('builder.save'));
+    const SaveGlyph = isSavedClean ? Check : Save;
+
+    const gameName = selectedGameObj ? selectedGameObj.label : t('builder.allFormats');
+    const formatChipLabel = formatLabel ? `${gameName} · ${formatLabel}` : gameName;
+
+    const runAction = (fn) => () => { setActionsOpen(false); fn?.(); };
+
     return (
         <div className="team-builder-mobile space-y-3">
             <div ref={stickyRef} className={`team-builder-mobile__sticky ${isComposerCondensed ? 'is-condensed' : ''}`}>
                 <section className={`team-builder-panel team-builder-mobile__composer p-3.5 ${isComposerCondensed ? 'is-condensed' : ''}`}>
-                    {/* Row 1: team name + (count ⇄ compact Save) */}
+                    {/* Row 1: team name (+ active state) and, condensed, a compact Save */}
                     <div className="team-builder-mobile__composer-top">
                         {/* A team name is a title, so it capitalises; "done"
                             dismisses the keyboard rather than offering a
-                            newline this single-line field cannot take. */}
+                            newline this single-line field cannot take. The
+                            placeholder is the name a save would use. */}
                         <input
                             type="text"
                             enterKeyHint="done"
@@ -607,39 +552,35 @@ export const MobileTeamBuilderView = ({
                             autoCorrect="off"
                             value={teamName}
                             onChange={(event) => setTeamName(event.target.value)}
-                            placeholder={t('builder.teamNamePlaceholder')}
+                            placeholder={defaultName || t('builder.teamNamePlaceholder')}
                             className="team-builder-field min-w-0 flex-1"
-                            aria-label={t('builder.teamNamePlaceholder')}
+                            aria-label={t('builder.teamNameAria')}
                         />
                         {editingTeamId && (
                             editingTeamId === activeTeamId ? (
-                                <span className="home-active-badge flex items-center gap-1 text-2xs font-bold text-primary px-2 py-0.5 rounded-full bg-primary-soft border border-primary-border shrink-0">★ {t('common.active')}</span>
+                                <span className="badge badge--primary shrink-0">★ {t('common.active')}</span>
                             ) : (
                                 <button
                                     type="button"
                                     onClick={() => setActiveTeamId(editingTeamId)}
-                                    className="team-builder-button team-builder-button--inline team-builder-button--inline-compact text-2xs font-bold shrink-0"
-                                    style={{ padding: '0.15rem 0.5rem', minHeight: 'auto', borderRadius: '4px' }}
+                                    className="btn btn-ghost btn-sm shrink-0"
                                 >
-                                    {language === 'pt' ? 'Ativar' : 'Set Active'}
+                                    {t('builder.setActive')}
                                 </button>
                             )
                         )}
-                        {/* Count and the compact Save share one grid cell so they
-                           cross-fade in place as the header condenses. */}
-                        <div className="team-builder-mobile__composer-corner shrink-0">
-                            <span className="team-builder-panel__meta team-builder-mobile__composer-count">{currentTeam.length}/6</span>
+                        {isComposerCondensed && (
                             <button
                                 type="button"
                                 onClick={handleSaveTeam}
-                                className="team-builder-button team-builder-button--primary team-builder-mobile__save-compact"
-                                aria-label={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
-                                title={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
-                                tabIndex={isComposerCondensed ? 0 : -1}
+                                className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} btn-sm btn-icon team-builder-mobile__save-compact shrink-0`}
+                                aria-label={saveLabel}
+                                title={saveLabel}
                             >
-                                <Save className="h-4 w-4" />
+                                <SaveGlyph aria-hidden="true" />
+                                {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
                             </button>
-                        </div>
+                        )}
                     </div>
 
                     {/* Row 2: team slots */}
@@ -649,9 +590,7 @@ export const MobileTeamBuilderView = ({
                                 key={currentTeam[index]?.instanceId ?? `mobile-slot-${index}`}
                                 pokemon={currentTeam[index]}
                                 index={index}
-                                colors={colors}
                                 onEdit={onEditTeamPokemon}
-                                onRemove={handleRemoveFromTeam}
                             />
                         ))}
                     </div>
@@ -659,92 +598,72 @@ export const MobileTeamBuilderView = ({
                     {/* The fold: everything that tucks away when the band
                         condenses. One element, so its height is one number —
                         see the --composer-collapse comment above. `inert`
-                        while folded: invisible controls must not take focus. */}
+                        while folded: invisible controls must not take focus.
+                        Its two rows are always rendered (the ResizeObserver
+                        watches them); what is inside them changes. */}
                     <div ref={foldRef} className="team-builder-mobile__composer-fold" inert={isComposerCondensed}>
-                    {/* Row 3: Salvar (primary) + actions filling the remaining width */}
-                    <div className="team-builder-mobile__composer-actions mt-2.5">
-                        <button
-                            type="button"
-                            onClick={handleSaveTeam}
-                            className="team-builder-button team-builder-button--primary team-builder-mobile__save"
-                            aria-label={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
-                            title={editingTeamId ? t('builder.updateTeam') : t('builder.saveTeam')}
-                        >
-                            <Save className="h-4 w-4" />
-                            <span>{editingTeamId ? (language === 'pt' ? 'Atualizar' : 'Update') : (language === 'pt' ? 'Salvar' : 'Save')}</span>
-                        </button>
-                        <div className="team-builder-mobile__composer-icons">
+                        {/* Row 3: Save · Export · more. Five icon-only buttons
+                            (one a Showdown glyph nobody could read) became the
+                            two things people came to do, labelled, and a sheet
+                            for the rest. */}
+                        <div className="team-builder-mobile__composer-actions mt-2.5">
                             <button
                                 type="button"
-                                onClick={() => handleRandomizeTeam?.(displayedPokemons)}
-                                disabled={isRandomizing || displayedPokemons.length === 0}
-                                className="team-builder-icon-button"
-                                aria-label={t('builder.randomizeTeam')}
-                                title={t('builder.randomizeTeam')}
+                                onClick={handleSaveTeam}
+                                className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} team-builder-mobile__save`}
+                                aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
                             >
-                                <Dices className="h-4 w-4" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleShareTeam}
-                                className="team-builder-icon-button"
-                                aria-label={t('builder.shareTeam')}
-                                title={t('builder.shareTeam')}
-                            >
-                                <ShareIcon />
+                                <SaveGlyph aria-hidden="true" />
+                                <span>{saveLabel}</span>
+                                {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
                             </button>
                             <button
                                 type="button"
                                 onClick={handleExportToShowdown}
-                                className="team-builder-icon-button"
+                                className="btn btn-secondary team-builder-mobile__export"
                                 aria-label={t('builder.exportShowdown')}
-                                title={t('builder.exportShowdown')}
                             >
-                                <ShowdownIcon />
+                                <ShowdownIcon className="h-4 w-4" />
+                                <span>{t('builder.exportShort')}</span>
                             </button>
                             <button
                                 type="button"
-                                onClick={onOpenOnboarding}
-                                className="team-builder-icon-button"
-                                aria-label={language === 'pt' ? 'Como funciona' : 'How it works'}
-                                title={language === 'pt' ? 'Como funciona' : 'How it works'}
+                                onClick={() => setActionsOpen(true)}
+                                className="btn btn-secondary btn-icon shrink-0"
+                                aria-haspopup="dialog"
+                                aria-label={t('builder.moreActions')}
                             >
-                                <HelpCircle className="h-4 w-4 text-primary" />
-                            </button>
-                            <button
-                                type="button"
-                                onClick={handleClearTeam}
-                                className="team-builder-icon-button team-builder-icon-button--danger"
-                                aria-label={t('builder.clearTeam')}
-                                title={t('builder.clearTeam')}
-                            >
-                                <ClearIcon />
+                                <MoreHorizontal aria-hidden="true" />
                             </button>
                         </div>
-                    </div>
 
-                    <div className="team-builder-mobile__composer-analysis flex flex-wrap items-center justify-center gap-2">
-                        <TeamAnalysisChip
-                            teamAnalysis={teamAnalysis}
-                            teamSize={currentTeam.length}
-                            colors={colors}
-                        />
-                        {currentTeam.length > 0 && !isPlaythrough && (
-                            <button
-                                type="button"
-                                onClick={() => setThreatsOpen(true)}
-                                aria-haspopup="dialog"
-                                aria-label={t('builder.threatsTitle')}
-                                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-surface-raised bg-surface-raised px-3 py-1.5 text-2xs font-bold uppercase text-fg transition-transform duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary tracking-[0.06em]"
-                            >
-                                <ShieldAlert className="h-3.5 w-3.5 shrink-0 text-muted" aria-hidden="true" />
-                                <span>{t('builder.threatsShort')}</span>
-                                {teamThreats.length > 0 && (
-                                    <span className="rounded-full bg-danger/15 px-1.5 text-2xs font-bold text-danger">{teamThreats.length}</span>
-                                )}
-                            </button>
-                        )}
-                    </div>
+                        <div className="team-builder-mobile__composer-analysis">
+                            {teamSize === 0 ? (
+                                // The onboarding, inline: what to do here, said once
+                                // where the team will be — instead of a modal that
+                                // opened itself on the first visit.
+                                <p className="tb-empty-hint">
+                                    {t('builder.emptyHint')}{' '}
+                                    <button type="button" className="btn-link tb-empty-hint__link" onClick={onOpenOnboarding}>
+                                        {t('builder.howItWorks')}
+                                    </button>
+                                </p>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setAnalysisOpen(true)}
+                                    aria-haspopup="dialog"
+                                    className="team-builder-mobile__analysis-chip"
+                                    aria-label={`${t('builder.analysisTitle')}: ${t(`builder.grade.${rating.grade}`)} ${rating.score}, ${t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}`}
+                                >
+                                    <TeamRatingBadge score={rating.score} grade={rating.grade} compact />
+                                    <span className="team-builder-mobile__analysis-chip-counts">
+                                        {t('builder.analysisChipCounts', { weak: weaknessCount, covered: coveredCount })}
+                                    </span>
+                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </section>
             </div>
@@ -774,7 +693,7 @@ export const MobileTeamBuilderView = ({
                         onClick={() => setFiltersExpanded((value) => !value)}
                         className={`team-builder-mobile__filter-toggle ${filtersExpanded ? 'is-open' : ''}  ${activeFilterCount > 0 ? 'has-active' : ''}`}
                         aria-expanded={filtersExpanded}
-                        aria-label={language === 'pt' ? 'Filtros' : 'Filters'}
+                        aria-label={t('builder.filters')}
                     >
                         <SlidersHorizontal className="h-4 w-4 shrink-0" />
                         {activeFilterCount > 0 && (
@@ -784,7 +703,7 @@ export const MobileTeamBuilderView = ({
                 </div>
 
                 {filtersExpanded && (
-                    <BottomSheet onClose={() => setFiltersExpanded(false)} title={language === 'pt' ? 'Filtros' : 'Filters'}>
+                    <BottomSheet onClose={() => setFiltersExpanded(false)} title={t('builder.filters')}>
                         <div className="team-builder-mobile__filters">
                             {games.length > 0 && setSelectedGame && (
                                 <div className="team-builder-mobile__filter-block">
@@ -800,9 +719,7 @@ export const MobileTeamBuilderView = ({
 
                             <div className="team-builder-mobile__filter-block">
                                 <span className="team-builder-control__label">
-                                    {isPlaythrough
-                                        ? (language === 'pt' ? 'Favoritos' : 'Favorites')
-                                        : (language === 'pt' ? 'Core do Meta' : 'Meta Core')}
+                                    {isPlaythrough ? t('builder.favoritesOnly') : t('builder.metaCore')}
                                 </span>
                                 <div className="team-builder-mobile__filter-row">
                                     {!isPlaythrough && <button
@@ -813,9 +730,7 @@ export const MobileTeamBuilderView = ({
                                         <span className="flex min-w-0 items-center gap-2">
                                             <Atom className="h-4 w-4 shrink-0 text-primary" />
                                             <span className="truncate">
-                                                {teamCores.length > 0
-                                                    ? (language === 'pt' ? `${teamCores.length} core montado${teamCores.length > 1 ? 's' : ''}` : `${teamCores.length} core${teamCores.length > 1 ? 's' : ''} built`)
-                                                    : (language === 'pt' ? 'Montar um core' : 'Build a core')}
+                                                {teamCores.length > 0 ? t('builder.coresBuilt', { count: teamCores.length }) : t('builder.buildCore')}
                                             </span>
                                         </span>
                                         <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
@@ -825,8 +740,7 @@ export const MobileTeamBuilderView = ({
                                         onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
                                         className={`team-builder-mobile__fav-icon ${showOnlyFavorites ? 'is-active' : ''}`}
                                         aria-pressed={showOnlyFavorites}
-                                        aria-label={language === 'pt' ? 'Somente favoritos' : 'Favorites only'}
-                                        title={language === 'pt' ? 'Somente favoritos' : 'Favorites only'}
+                                        aria-label={t('builder.favoritesOnly')}
                                     >
                                         <StarIcon className="w-4 h-4" isFavorite={showOnlyFavorites} color="currentColor" />
                                     </button>
@@ -860,16 +774,11 @@ export const MobileTeamBuilderView = ({
                                                 type="button"
                                                 onClick={() => handleTypeSelectChange(isActive ? 'all' : type)}
                                                 className={`pokedex-mobile-type-badge ${isActive ? 'is-active' : ''}`}
-                                                style={{
-                                                    '--type-color': typeColors[type],
-                                                    backgroundColor: isActive ? typeColors[type] : 'var(--color-surface-raised)',
-                                                    borderColor: isActive ? typeColors[type] : 'var(--color-border)',
-                                                    color: isActive ? '#fff' : 'var(--color-fg)'
-                                                }}
-                                                title={type}
+                                                style={{ '--type-color': typeColors[type] }}
+                                                aria-pressed={isActive}
                                             >
-                                                <img src={typeIcons[type]} alt={type} className="w-3.5 h-3.5 object-contain" />
-                                                <span className="text-2xs font-bold capitalize select-none">{type}</span>
+                                                <img src={typeIcons[type]} alt="" className="w-3.5 h-3.5 object-contain" />
+                                                <span className="text-2xs font-bold capitalize select-none">{t(`types.${type}`, { defaultValue: type })}</span>
                                             </button>
                                         );
                                     })}
@@ -881,24 +790,36 @@ export const MobileTeamBuilderView = ({
                             className="btn btn-primary w-full"
                             onClick={() => setFiltersExpanded(false)}
                         >
-                            {language === 'pt' ? 'Ver resultados' : 'Show results'}
+                            {t('builder.showResults')}
                         </button>
                     </BottomSheet>
                 )}
             </section>
 
             <section className="team-builder-panel p-3.5">
-                {/* Game & Core live in the Filtros sheet — this row keeps a light
-                   result count plus the saved-teams caller (top-right), which
-                   opens the saved-teams bottom sheet. */}
+                {/* The result row says what the list is: the game and format
+                    the builder is paired with (one tap changes it — it used to
+                    be three taps deep and never shown), the real number of
+                    matches (it said "50 Pokémon", the loaded page size), and
+                    the saved-teams caller. */}
                 <div className="team-builder-mobile__result-head mb-2.5">
-                    <span className="team-builder-mobile__result-count">{displayedPokemons.length} Pokémon</span>
+                    <button
+                        type="button"
+                        onClick={() => setIsGamePickerOpen(true)}
+                        className="team-builder-mobile__format-chip"
+                        aria-haspopup="dialog"
+                        aria-label={t('builder.formatAria', { label: formatChipLabel })}
+                    >
+                        <span className="truncate">{formatChipLabel}</span>
+                        <ChevronDown className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    </button>
+                    <span className="team-builder-mobile__result-count">{t('builder.resultCount', { count: totalCount })}</span>
                     <button
                         type="button"
                         onClick={() => setSavedTeamsOpen(true)}
-                        className="team-builder-mobile__saved-icon"
-                        aria-label={language === 'pt' ? 'Times salvos' : 'Saved teams'}
-                        title={language === 'pt' ? 'Times salvos' : 'Saved teams'}
+                        className="team-builder-mobile__saved-icon touch-target"
+                        aria-label={t('builder.savedTeams')}
+                        title={t('builder.savedTeams')}
                     >
                         <SaveAll className="h-4 w-4" />
                         {recentTeams.length > 0 && (
@@ -907,7 +828,9 @@ export const MobileTeamBuilderView = ({
                     </button>
                 </div>
 
-                <div className="team-builder-mobile__available mt-2">
+                {isTeamFull && <p className="tb-full-note">{t('builder.teamFullNote')}</p>}
+
+                <div className={`team-builder-mobile__available mt-2 ${isTeamFull ? 'is-team-full' : ''}`}>
                     {isInitialLoading ? (
                         <div className="team-builder-spinner-wrap h-full">
                             <Loader />
@@ -927,6 +850,7 @@ export const MobileTeamBuilderView = ({
                                                         key={pokemon.id}
                                                         pokemon={pokemon}
                                                         onAddToTeam={handleAddPokemonToTeam}
+                                                        onShowDetails={showDetails}
                                                         synergyReason={synergyReasonById.get(pokemon.id)}
                                                         isSuggested={synergyReasonById.has(pokemon.id)}
                                                         isFavorite={favoritePokemons.has(pokemon.id)}
@@ -937,22 +861,30 @@ export const MobileTeamBuilderView = ({
                                         ))
                                     ) : (
                                         <>
+                                            {suggestionHeading && (
+                                                <h4 className="pokedex-section-title pokedex-section-title--mobile tb-grid-heading">{suggestionHeading}</h4>
+                                            )}
                                             {/* Synergy-only picks (not in current filtered list) */}
                                             {synergyOnlyCards.map((pokemon) => (
                                                 <MobilePokemonPickerCard
                                                     key={`syn-${pokemon.id}`}
                                                     pokemon={pokemon}
                                                     onAddToTeam={handleAddPokemonToTeam}
+                                                    onShowDetails={showDetails}
                                                     synergyReason={pokemon.primary}
                                                     isFavorite={favoritePokemons.has(pokemon.id)}
                                                     onToggleFavorite={onToggleFavoritePokemon}
                                                 />
                                             ))}
+                                            {suggestionHeading && (
+                                                <h4 className="pokedex-section-title pokedex-section-title--mobile pokedex-section-title--national">{t('builder.allPokemonHeading')}</h4>
+                                            )}
                                             {grid.visibleList.map((pokemon, index) => (
                                                 <MobilePokemonPickerCard
                                                     key={pokemon.id}
                                                     pokemon={pokemon}
                                                     onAddToTeam={handleAddPokemonToTeam}
+                                                    onShowDetails={showDetails}
                                                     synergyReason={synergyReasonById.get(pokemon.id)}
                                                     isSuggested={synergyReasonById.has(pokemon.id)}
                                                     isFavorite={favoritePokemons.has(pokemon.id)}
@@ -976,7 +908,7 @@ export const MobileTeamBuilderView = ({
                                         <EmptyState
                                             compact
                                             title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
-                                            message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
+                                            message={t('favorites.noMatchesDesc')}
                                         />
                                     </div>
                                 )}
@@ -986,125 +918,112 @@ export const MobileTeamBuilderView = ({
                 </div>
             </section>
 
-            {currentTeam.length > 0 && (
-                <section className="team-builder-panel p-3.5 animate-fade-in" aria-label="Team analysis">
-                    {/* One heading, one hint under it. An "Análise" eyebrow over
-                        "Análise do Time" said it twice, and the hint was squeezed
-                        into 10px beside the title. */}
-                    <div className="mb-3">
-                        <h3 className="team-builder-panel__title team-builder-panel__title--small">{t('builder.analysisTitle')}</h3>
-                        <p className="mt-1 text-xs text-muted">
-                            {language === 'pt' ? 'toque no botão acima para detalhes' : 'tap chip above for details'}
-                        </p>
-                    </div>
+            {analysisOpen && (
+                <TeamAnalysisSheet
+                    teamAnalysis={teamAnalysis}
+                    teamSize={teamSize}
+                    teamThreats={teamThreats}
+                    isPlaythrough={isPlaythrough}
+                    onClose={() => setAnalysisOpen(false)}
+                    onOpenDetail={showDetails ? (mon) => { setAnalysisOpen(false); showDetails(mon); } : undefined}
+                />
+            )}
 
-                    <div className="team-builder-analysis-grid">
-                        <div className="team-builder-analysis-card">
-                            <p className="mb-1.5 text-xs font-semibold text-success">
-                                {language === 'pt' ? 'Vantagens' : 'Strengths'} · {teamAnalysis.strengths.size}
-                            </p>
-                            <div className="flex flex-wrap gap-1">
-                                {teamAnalysis.strengths.size > 0 ? Array.from(teamAnalysis.strengths).sort().slice(0, 8).map((type) => (
-                                    <TypeChip key={type} type={type} size="sm" />
-                                )) : (
-                                    <span className="text-2xs text-muted">{language === 'pt' ? 'Nenhuma ainda.' : 'None yet.'}</span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="team-builder-analysis-card">
-                            <p className="mb-1.5 text-xs font-semibold text-danger">
-                                {language === 'pt' ? 'Fraquezas' : 'Weaknesses'} · {Object.keys(teamAnalysis.weaknesses).length}
-                            </p>
-                            <div className="flex flex-wrap items-center gap-1">
-                                {Object.keys(teamAnalysis.weaknesses).length > 0 ? Object.entries(teamAnalysis.weaknesses)
-                                    .sort(([, a], [, b]) => b - a)
-                                    .slice(0, 8)
-                                    .map(([type, score]) => (
-                                        <span key={type} className="inline-flex items-center gap-0.5">
-                                            <TypeChip type={type} size="sm" />
-                                            <span className="text-2xs font-bold text-danger">×{score}</span>
-                                        </span>
-                                    )) : (
-                                    <span className="text-2xs text-muted">{language === 'pt' ? 'Sólido como rocha.' : 'Rock solid.'}</span>
-                                )}
-                            </div>
-                        </div>
+            {actionsOpen && (
+                <BottomSheet onClose={() => setActionsOpen(false)} title={t('builder.moreActions')}>
+                    <div className="tb-actions-sheet">
+                        <button
+                            type="button"
+                            className="menu-item"
+                            onClick={runAction(() => handleRandomizeTeam?.(displayedPokemons))}
+                            disabled={isRandomizing || displayedPokemons.length === 0}
+                        >
+                            <Dices aria-hidden="true" /> {t('builder.randomizeTeam')}
+                        </button>
+                        <button type="button" className="menu-item" onClick={runAction(handleShareTeam)}>
+                            <Share2 aria-hidden="true" /> {t('builder.shareTeam')}
+                        </button>
+                        {teamSize > 0 && (
+                            <button type="button" className="menu-item" onClick={runAction(onOpenOnboarding)}>
+                                <HelpCircle aria-hidden="true" /> {t('builder.howItWorks')}
+                            </button>
+                        )}
+                        <hr className="menu-separator" />
+                        <button type="button" className="menu-item menu-item--danger" onClick={runAction(handleClearTeam)} disabled={teamSize === 0 && !teamName}>
+                            <Trash2 aria-hidden="true" /> {t('builder.clearTeam')}
+                        </button>
                     </div>
-                </section>
+                </BottomSheet>
             )}
 
             {savedTeamsOpen && (
-                <BottomSheet onClose={() => setSavedTeamsOpen(false)} title={language === 'pt' ? 'Times salvos' : 'Saved teams'}>
+                <BottomSheet onClose={() => setSavedTeamsOpen(false)} title={t('builder.savedTeams')}>
                     <div className="space-y-2.5">
-                        {recentTeams.length > 0 ? recentTeams.map((team) => (
-                        <div
-                            key={team.id}
-                            className="team-builder-mobile__recent-card"
-                        >
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="min-w-0 flex-1">
-                                    <p className="truncate text-base font-bold text-fg">
-                                        {team.name}
-                                    </p>
-                                    <div className="mt-2 flex">
-                                        {team.pokemons.map((pokemon) => (
-                                            <img
-                                                key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
-                                                src={getTeamPokemonDisplaySprite(pokemon)}
-                                                alt={pokemon.name}
-                                                className="-ml-2 h-9 w-9 rounded-full border-2 border-bg bg-surface first:ml-0"
-                                                onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                            />
-                                        ))}
+                        {recentTeams.length > 0 ? recentTeams.map((team) => {
+                            const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
+                            return (
+                                <div key={team.id} className="team-builder-mobile__recent-card">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate text-base font-bold text-fg">
+                                                {team.name}
+                                            </p>
+                                            <div className="mt-2 flex">
+                                                {team.pokemons.map((pokemon) => (
+                                                    <img
+                                                        key={pokemon.instanceId || `${team.id}-${pokemon.id}`}
+                                                        src={getTeamPokemonDisplaySprite(pokemon)}
+                                                        alt={pokemon.name}
+                                                        className="-ml-2 h-9 w-9 rounded-full border-2 border-bg bg-surface first:ml-0"
+                                                        onError={(event) => { event.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                                    />
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => handleToggleFavorite(team)}
+                                            className={`btn btn-ghost btn-icon btn-sm touch-target ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
+                                            aria-pressed={!!team.isFavorite}
+                                            aria-label={team.isFavorite ? t('builder.unfavoriteTeam', { name: team.name }) : t('builder.favoriteTeam', { name: team.name })}
+                                        >
+                                            <StarIcon isFavorite={team.isFavorite} color="currentColor" />
+                                        </button>
                                     </div>
-                                </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => handleToggleFavorite(team)}
-                                    className={`team-builder-icon-button ${team.isFavorite ? 'team-builder-icon-button--accent' : ''}`}
-                                    aria-label={team.isFavorite ? (language === 'pt' ? `Remover ${team.name} dos favoritos` : `Remove ${team.name} from favorites`) : (language === 'pt' ? `Favoritar ${team.name}` : `Favorite ${team.name}`)}
-                                >
-                                    <StarIcon isFavorite={team.isFavorite} color="currentColor" />
-                                </button>
-                            </div>
-
-                            <div className="mt-3 flex gap-2">
-                                {(() => {
-                                    const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
-                                    return (
+                                    <div className="mt-3 flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleEditTeam(team)}
+                                            className="btn btn-secondary btn-sm flex-1"
+                                        >
+                                            {t('common.edit')}
+                                        </button>
                                         <button
                                             type="button"
                                             onClick={() => setActiveTeamId(isActive ? null : team.id)}
-                                            className={`team-builder-button team-builder-button--grow ${isActive ? 'team-builder-button--primary' : 'team-builder-button--secondary'} text-xs`}
-                                            style={isActive ? { backgroundColor: 'var(--color-success)', borderColor: 'var(--color-success)', color: '#fff' } : undefined}
+                                            aria-pressed={isActive}
+                                            className="btn btn-ghost btn-sm flex-1 tb-recent-card__active"
                                         >
-                                            {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set Active')}
+                                            {isActive ? `★ ${t('common.active')}` : t('builder.setActive')}
                                         </button>
-                                    );
-                                })()}
-                                <button
-                                    type="button"
-                                    onClick={() => handleEditTeam(team)}
-                                    className="team-builder-button team-builder-button--secondary team-builder-button--grow"
-                                >
-                                    {t('common.edit')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => requestDeleteTeam(team.id, team.name)}
-                                    className="team-builder-button team-builder-button--secondary !text-danger"
-                                >
-                                    {t('common.delete')}
-                                </button>
-                            </div>
-                        </div>
-                    )) : (
-                        <p className="team-builder-empty-note text-sm">
-                            {language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}
-                        </p>
-                    )}
+                                        <button
+                                            type="button"
+                                            onClick={() => requestDeleteTeam(team.id, team.name)}
+                                            className="btn btn-ghost btn-sm btn-icon team-builder-icon-button--danger"
+                                            aria-label={t('builder.deleteTeamAria', { name: team.name })}
+                                        >
+                                            <Trash2 aria-hidden="true" />
+                                        </button>
+                                    </div>
+                                </div>
+                            );
+                        }) : (
+                            <p className="team-builder-empty-note text-sm">
+                                {t('builder.noRecentTeams')}
+                            </p>
+                        )}
                     </div>
                     <button
                         type="button"
@@ -1135,18 +1054,6 @@ export const MobileTeamBuilderView = ({
                     currentTeam={currentTeam}
                     onAddToTeam={handleAddPokemonToTeam}
                 />
-            )}
-
-            {threatsOpen && (
-                <BottomSheet onClose={() => setThreatsOpen(false)} title={t('builder.threatsTitle')}>
-                    <p className="mb-3 text-2xs text-muted">{t('builder.threatsSubtitle')}</p>
-                    <TeamThreats
-                        threats={teamThreats}
-                        hasTeam={currentTeam.length > 0}
-                        onOpenDetail={showDetails ? (mon) => { setThreatsOpen(false); showDetails(mon); } : undefined}
-                        bare
-                    />
-                </BottomSheet>
             )}
         </div>
     );

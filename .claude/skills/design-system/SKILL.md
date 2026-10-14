@@ -104,8 +104,7 @@ the six themes — a shadow tuned on `dark` is invisible on `solar` and muddy on
 
 **`--surface-sheen`** is the material of a top-level region panel: a 1px top
 highlight on the dark themes, `--shadow-sm` on the light ones. It is applied in
-one zero-specificity `:where()` list in `index.css` (desktop), plus the phone
-home in `home-dashboard.css`. Add a new view's top-level panel to that list
+one zero-specificity `:where()` list in `index.css` (desktop). Add a new view's top-level panel to that list
 rather than writing the highlight inline.
 
 **`--card-sheen`** (2026-10-09) is the material of a *card*: on the dark themes
@@ -256,6 +255,12 @@ Sibling cards get identical padding. A grid's `gap` should equal or exceed its
 items' internal padding, never fall between.
 
 ## Sizing must scale
+
+**Desktop density (2026-10-09):** from 1024 to 1919px the root runs at 90%
+(`--ui-density` × 0.9 in `index.css`) — automatic browser-zoom-90% for laptops
+and medium monitors; 1920+ gets the full baseline. Because of this, anything
+sized in `px` is 11% larger than its neighbours in that band. One more reason
+the rule below has no exceptions.
 
 Size type and spacing in `rem`/`em`, never `px`. The interface-scale control
 (`--ui-scale`) works by scaling the root font-size — `px` values silently opt out

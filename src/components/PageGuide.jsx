@@ -109,7 +109,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
                 onClick={() => setIsOpen((value) => !value)}
                 aria-label={ariaLabelText}
                 aria-expanded={isOpen}
-                className={`inline-flex h-7 w-7 items-center justify-center rounded-full transition-all duration-200 hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isOpen ? 'bg-primary-soft text-primary' : 'bg-transparent text-muted'}`}
+                className={`touch-target inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-surface-hover hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isOpen ? 'bg-primary-soft text-primary' : 'bg-transparent text-muted'}`}
             >
                 <InfoIcon />
             </button>
@@ -186,7 +186,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
                                     <button
                                         type="submit"
                                         disabled={!suggestionText.trim() || !isSuggestionEmailValid || isSending || !db || !userId}
-                                        className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-white transition-all hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                                        className="btn btn-primary btn-sm"
                                     >
                                         {isSending ? t('guide.sendingBtn') : t('guide.sendBtn')}
                                     </button>

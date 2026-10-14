@@ -65,15 +65,10 @@
     color: var(--color-muted);
 }
 
-.team-detail-active-badge {
-    display: inline-flex;
-    align-items: center;
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-on-primary);
-    background: var(--color-success);
-    padding: var(--space-0_5) var(--space-2);
-    border-radius: var(--radius-full);
+/* The one active control: a toggle (aria-pressed), success-tinted when on. */
+.team-detail-active-toggle[aria-pressed='true'] {
+    background: color-mix(in srgb, var(--color-success) 16%, var(--color-surface-raised));
+    color: color-mix(in srgb, var(--color-success) 60%, var(--color-fg));
 }
 
 .team-detail-pill {
@@ -109,14 +104,9 @@
     flex-wrap: wrap;
 }
 
-/* Roster + report share one row below the title. */
-.team-detail-headline-row {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    margin-top: var(--space-3);
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--color-border);
+/* The roster sits under the title; no divider, the gap groups it. */
+.team-detail-header .team-detail-roster {
+    margin-top: var(--space-4);
 }
 
 /* Roster is the hero of the header: large sprites, tight spacing. */
@@ -138,14 +128,14 @@
     min-width: 4.75rem;
     padding: var(--space-2) var(--space-1) var(--space-1_5);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    background: var(--color-bg);
-    transition: transform var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth);
+    /* A fill inside the bordered header, not a second border. */
+    border: none;
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
 .team-detail-roster__chip:hover {
-    transform: translateY(-3px);
-    border-color: var(--color-primary);
+    background: var(--color-surface-hover);
 }
 
 .team-detail-roster__sprite {
@@ -164,76 +154,6 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-/* Title score badge */
-.team-detail-score-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    padding: var(--space-1) var(--space-2_5);
-    border-radius: var(--radius-md);
-    border: 1px solid;
-    line-height: 1;
-    transition: background-color var(--duration-fast) var(--ease-smooth), border-color var(--duration-fast) var(--ease-smooth), color var(--duration-fast) var(--ease-smooth), box-shadow var(--duration-fast) var(--ease-smooth), opacity var(--duration-fast) var(--ease-smooth), transform var(--duration-fast) var(--ease-smooth);
-}
-
-.team-detail-score-badge__value {
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-}
-
-.team-detail-score-badge__label {
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--tracking-caps);
-    opacity: 0.9;
-}
-
-/* Metrics are a secondary, compact strip beneath the roster hero. */
-.team-detail-metrics {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1_5);
-    width: 100%;
-}
-
-.team-detail-metric {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2);
-    border: 1px solid var(--color-border);
-    border-left: 3px solid var(--metric-color, var(--color-border));
-    border-radius: var(--radius-md);
-    background: var(--color-bg);
-    transition: border-color var(--duration-fast) var(--ease-smooth), background var(--duration-fast) var(--ease-smooth);
-}
-
-.team-detail-metric:hover {
-    background: var(--color-bg-soft, var(--color-bg));
-    border-color: var(--metric-color, var(--color-primary-soft));
-}
-
-.team-detail-metric__icon {
-    color: var(--metric-color, var(--color-muted));
-    display: inline-flex;
-}
-
-.team-detail-metric__value {
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-    line-height: 1;
-}
-
-.team-detail-metric__label {
-    font-size: var(--text-xs);
-    color: var(--color-muted);
-    font-weight: var(--weight-semibold);
 }
 
 /* Coverage — three fixed category columns on wide, stacked on mobile. */
@@ -276,23 +196,10 @@
     gap: var(--space-1);
 }
 
-.team-detail-chip {
+.team-detail-chip-wrap {
     display: inline-flex;
     align-items: center;
     gap: var(--space-1);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-sm);
-    border: 1px solid;
-}
-
-.team-detail-chip__score {
-    color: var(--color-muted);
-}
-
-.team-detail-chip__score--danger {
-    color: var(--color-danger);
 }
 
 .team-detail-note {
@@ -319,9 +226,10 @@
     flex-direction: column;
     gap: var(--space-3);
     padding: var(--space-4);
-    border: 1px solid var(--color-border);
+    /* Inside a bordered panel: a fill, not a second border. */
+    border: none;
     border-radius: var(--radius-lg);
-    background: var(--color-bg);
+    background: var(--color-surface-raised);
 }
 
 .team-detail-member__head {
@@ -370,13 +278,15 @@
     text-transform: capitalize;
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
+    border: none;
+    background: var(--color-surface);
     color: var(--color-fg);
 }
 
+/* Tera: the canon colour mixed into the ink, never used raw. */
 .team-detail-build-pill--tera {
-    font-weight: var(--weight-semibold);
+    background: color-mix(in srgb, var(--type-chip, var(--color-primary)) 14%, var(--color-surface));
+    color: color-mix(in srgb, var(--type-chip, var(--color-primary)) 45%, var(--color-fg));
 }
 
 .team-detail-member__stats {
@@ -494,5 +404,45 @@
 @media (max-width: 640px) {
     .team-detail-title {
         font-size: var(--text-xl);
+    }
+}
+
+/* Phones: the page ran 5.8 screens. The team-level coverage panel already
+   lists every weakness, so each member card drops its own, and shows its
+   best item pick rather than three. */
+@media (max-width: 640px) {
+    .team-detail-member {
+        gap: var(--space-2_5);
+        padding: var(--space-3);
+    }
+
+    .team-detail-member__weak {
+        display: none;
+    }
+
+    /* The roster as one row of six: the names are on the member cards below. */
+    .team-detail-roster {
+        flex-wrap: nowrap;
+        gap: var(--space-1_5);
+    }
+
+    .team-detail-roster__chip {
+        flex: 1 1 0;
+        min-width: 0;
+        max-width: none;
+        padding: var(--space-1);
+    }
+
+    .team-detail-roster__sprite {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .team-detail-roster__name {
+        display: none;
+    }
+
+    .team-detail-item-list > :nth-child(n + 2) {
+        display: none;
     }
 }

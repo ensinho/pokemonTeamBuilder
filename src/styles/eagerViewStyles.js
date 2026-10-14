@@ -28,7 +28,6 @@ import './generation-quiz-view.css';
 import './category-guesser-view.css';
 import './home-view.css';
 import './forum-view.css';
-import './home-dashboard.css';
 import './game-cover.css';
 import './bottom-sheet.css';
 import './profile-view.css';

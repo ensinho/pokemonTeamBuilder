@@ -20,6 +20,9 @@ import { TextSizeControl } from '../TextSizeControl';
 import { useNotificationSettings } from '../../hooks/useNotificationSettings';
 import { originFromEvent } from '../../utils/themeTransition';
 import { Switch } from '../Switch';
+import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
+import { ShowMoreButton } from '../ShowMoreButton';
 import {
     DEFAULT_SEARCH_SHORTCUT, formatShortcut, normalizeShortcut, shortcutFromEvent, validateShortcut,
 } from '../../utils/searchShortcut';
@@ -290,7 +293,19 @@ export function ProfileView({
     db,
 }) {
     const { t } = useTranslation();
+    useDocumentMeta({ title: t('nav.profile') });
     const { badges, unlockedCount, totalBadgesCount, selectedBadgeId, toggleEquip } = useTrainerBadges();
+    // Earned first, then the closest to earning: 22 cards in catalogue order put
+    // a wall of locked badges between a guest and everything below (2026-10-06).
+    const orderedBadges = useMemo(() => [...badges].sort((a, b) => (
+        Number(b.isEquipped) - Number(a.isEquipped)
+        || Number(b.isUnlocked) - Number(a.isUnlocked)
+        || (b.progress?.percent || 0) - (a.progress?.percent || 0)
+    )), [badges]);
+    const badgeReveal = useProgressiveReveal(orderedBadges.length, {
+        initial: Math.max(4, Math.min(orderedBadges.length, unlockedCount + 4)),
+        step: orderedBadges.length,
+    });
     const [nameDraft, setNameDraft] = useState(displayName || '');
     const [editingName, setEditingName] = useState(false);
 
@@ -316,7 +331,6 @@ export function ProfileView({
     const streakCount = streak?.count || 0;
     const streakLongest = Math.max(streak?.longest || 0, streakCount);
     const activeTheme = THEME_META.find((entry) => entry.id === theme) || THEME_META[0];
-    const syncLabel = isAnonymous ? t('profile.sectionAccountGuestDesc') : t('profile.syncedPill');
 
     const streakHint = useMemo(() => {
         if (streakCount === 0) return t('profile.streakHint0');
@@ -408,6 +422,18 @@ export function ProfileView({
                             )}
                         </div>
                         <p className="profile-hero__hint">{streakHint}</p>
+                        {/* A guest's one real next step, where they land — it used
+                            to sit in the last card of the third column. */}
+                        {isAnonymous && (
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                <button type="button" onClick={onOpenSignUp} className="btn btn-primary btn-sm">
+                                    {t('profile.createAccountBtn')}
+                                </button>
+                                <button type="button" onClick={onOpenSignIn} className="btn btn-ghost btn-sm">
+                                    {t('profile.signInBtn')}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -671,29 +697,35 @@ export function ProfileView({
 
                     <SectionCard
                         className="profile-card--sync"
-                        meta={<span className="profile-pill">{db ? 'Cloud' : 'Offline'}</span>}
+                        meta={<span className="profile-pill">{isAnonymous ? t('profile.guestPill') : (db ? 'Cloud' : 'Offline')}</span>}
                         title={t('profile.sectionSync')}
-                        subtitle={db ? t('profile.sectionSyncConnected') : t('profile.sectionSyncOffline')}
+                        subtitle={isAnonymous ? undefined : (db ? t('profile.sectionSyncConnected') : t('profile.sectionSyncOffline'))}
                         icon={<SaveIcon className="w-5 h-5" />}
                     >
+                        {isAnonymous ? (
+                            // Four tiles that all said "Convidado", under a subtitle
+                            // claiming a cloud connection, told a guest nothing true.
+                            <p className="profile-support-copy">{t('profile.guestLocalOnly')}</p>
+                        ) : (
                         <div className="profile-sync-list">
-                            <div className="profile-sync-row">
-                                <span className="profile-sync-row__label">{t('profile.syncItemTheme')}</span>
-                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                                <div className="profile-sync-row">
+                                    <span className="profile-sync-row__label">{t('profile.syncItemTheme')}</span>
+                                    <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                                </div>
+                                <div className="profile-sync-row">
+                                    <span className="profile-sync-row__label">{t('profile.syncItemWallpaper')}</span>
+                                    <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                                </div>
+                                <div className="profile-sync-row">
+                                    <span className="profile-sync-row__label">{t('profile.syncItemTrainer')}</span>
+                                    <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                                </div>
+                                <div className="profile-sync-row">
+                                    <span className="profile-sync-row__label">{t('profile.syncItemStreak')}</span>
+                                    <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
+                                </div>
                             </div>
-                            <div className="profile-sync-row">
-                                <span className="profile-sync-row__label">{t('profile.syncItemWallpaper')}</span>
-                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                            </div>
-                            <div className="profile-sync-row">
-                                <span className="profile-sync-row__label">{t('profile.syncItemTrainer')}</span>
-                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                            </div>
-                            <div className="profile-sync-row">
-                                <span className="profile-sync-row__label">{t('profile.syncItemStreak')}</span>
-                                <span className="profile-sync-row__value">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>
-                            </div>
-                        </div>
+                        )}
 
                         <div className="profile-button-row profile-button-row--tight">
                             <button
@@ -707,6 +739,9 @@ export function ProfileView({
                             </button>
                         </div>
                     </SectionCard>
+                    {/* Guests get these two actions in the hero; the card is
+                        account management, so it is for accounts. */}
+                    {!isAnonymous && (
                     <SectionCard
                         className="profile-card--account"
                         meta={<span className="profile-pill">{isAnonymous ? t('profile.guestPill') : t('profile.syncedPill')}</span>}
@@ -758,6 +793,7 @@ export function ProfileView({
                             </div>
                         )}
                     </SectionCard>
+                    )}
                 </div>
 
                 {/* Trainer Badges & Achievements Section */}
@@ -774,7 +810,7 @@ export function ProfileView({
                     icon={<Medal className="w-5 h-5" />}
                 >
                     <div className="profile-badges-grid">
-                        {badges.map((badge) => {
+                        {orderedBadges.slice(0, badgeReveal.limit).map((badge) => {
                             const BadgeIcon = badge.Icon;
                             const badgeName = language === 'pt' ? badge.namePt : badge.nameEn;
                             const badgeReq = language === 'pt' ? badge.reqPt : badge.reqEn;
@@ -846,17 +882,15 @@ export function ProfileView({
                                                     <span>{t('profile.badgeEquipBtn')}</span>
                                                 )}
                                             </button>
-                                        ) : (
-                                            <div className="profile-badge-locked-state">
-                                                <Lock className="w-3 h-3 text-muted shrink-0" />
-                                                <span>{t('profile.badgeLockedBtn')}</span>
-                                            </div>
-                                        )}
+                                        ) : null /* locked: the grey icon and 0% already say so */}
                                     </div>
                                 </div>
                             );
                         })}
                     </div>
+                    {badgeReveal.hasMore && (
+                        <ShowMoreButton remaining={badgeReveal.remaining} onClick={badgeReveal.showMore} className="mt-3" />
+                    )}
                 </SectionCard>
             </div>
         </div>

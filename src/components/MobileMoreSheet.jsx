@@ -28,7 +28,7 @@ import '../styles/more-sheet.css';
  * `children` carries the rows that are not destinations (account, install, the
  * About section); they keep the shell's own nav-row styling.
  */
-export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, header = null, children = null }) {
+export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, onIntent, header = null, children = null }) {
     const { t } = useTranslation();
 
     return (
@@ -54,6 +54,7 @@ export function MobileMoreSheet({ onClose, sections, currentPage, onNavigate, he
                                                 type="button"
                                                 className={`more-tile ${active ? 'is-active' : ''}`}
                                                 aria-current={active ? 'page' : undefined}
+                                                onPointerDown={() => onIntent?.(item.key)}
                                                 onClick={() => onNavigate(item.path)}
                                             >
                                                 <span className="more-tile__icon">

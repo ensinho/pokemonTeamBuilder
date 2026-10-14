@@ -2,25 +2,36 @@ import { describe, it, expect } from 'vitest';
 import {
     splashHoldMs,
     splashProgress,
-    SPLASH_MIN_MS,
-    SPLASH_MOBILE_MIN_MS,
+    SPLASH_REVEAL_MS,
+    SPLASH_MIN_VISIBLE_MS,
     SPLASH_MOBILE_MAX_MS,
 } from './bootSplash';
 
+const SEEN_FLOOR = SPLASH_REVEAL_MS + SPLASH_MIN_VISIBLE_MS;
+
 describe('splashHoldMs', () => {
     describe('desktop', () => {
-        it('holds out the remainder of the 900ms beat', () => {
-            expect(splashHoldMs({ isMobile: false, elapsedMs: 200, isBootSettled: false }))
-                .toBe(SPLASH_MIN_MS - 200);
+        it('never shows the splash to a boot that was ready before it faded in', () => {
+            expect(splashHoldMs({ isMobile: false, elapsedMs: 0, isBootSettled: false })).toBe(0);
+            expect(splashHoldMs({ isMobile: false, elapsedMs: SPLASH_REVEAL_MS - 1, isBootSettled: false })).toBe(0);
         });
 
-        it('dismisses immediately once the beat has already passed', () => {
+        it('keeps a splash that has been seen up for the minimum visible time', () => {
+            expect(splashHoldMs({ isMobile: false, elapsedMs: SPLASH_REVEAL_MS, isBootSettled: false }))
+                .toBe(SPLASH_MIN_VISIBLE_MS);
+            expect(splashHoldMs({ isMobile: false, elapsedMs: 500, isBootSettled: false }))
+                .toBe(SEEN_FLOOR - 500);
+        });
+
+        it('dismisses immediately once the floor has passed', () => {
             expect(splashHoldMs({ isMobile: false, elapsedMs: 5000, isBootSettled: false })).toBe(0);
         });
 
-        it('ignores boot-settled state — desktop behaviour is unchanged', () => {
-            expect(splashHoldMs({ isMobile: false, elapsedMs: 100, isBootSettled: true }))
-                .toBe(splashHoldMs({ isMobile: false, elapsedMs: 100, isBootSettled: false }));
+        it('ignores boot-settled state', () => {
+            for (const elapsedMs of [100, 400, 900]) {
+                expect(splashHoldMs({ isMobile: false, elapsedMs, isBootSettled: true }))
+                    .toBe(splashHoldMs({ isMobile: false, elapsedMs, isBootSettled: false }));
+            }
         });
     });
 
@@ -30,15 +41,13 @@ describe('splashHoldMs', () => {
                 .toBe(SPLASH_MOBILE_MAX_MS - 1000);
         });
 
-        it('collapses to the floor once boot settles', () => {
-            expect(splashHoldMs({ isMobile: true, elapsedMs: 300, isBootSettled: true }))
-                .toBe(SPLASH_MOBILE_MIN_MS - 300);
+        it('a fast settled boot never shows the splash', () => {
+            expect(splashHoldMs({ isMobile: true, elapsedMs: 150, isBootSettled: true })).toBe(0);
         });
 
-        it('holds longer than desktop for the same elapsed time', () => {
-            const elapsedMs = 400;
-            expect(splashHoldMs({ isMobile: true, elapsedMs, isBootSettled: true }))
-                .toBeGreaterThan(splashHoldMs({ isMobile: false, elapsedMs, isBootSettled: true }));
+        it('a slower settled boot keeps the seen splash up for the minimum', () => {
+            expect(splashHoldMs({ isMobile: true, elapsedMs: 400, isBootSettled: true }))
+                .toBe(SEEN_FLOOR - 400);
         });
 
         it('never strands the user: the ceiling releases an unsettled boot', () => {
@@ -47,11 +56,11 @@ describe('splashHoldMs', () => {
         });
 
         it('dismisses at once when a settled boot took longer than the floor', () => {
-            expect(splashHoldMs({ isMobile: true, elapsedMs: SPLASH_MOBILE_MIN_MS + 1, isBootSettled: true })).toBe(0);
+            expect(splashHoldMs({ isMobile: true, elapsedMs: SEEN_FLOOR + 1, isBootSettled: true })).toBe(0);
         });
 
         it('keeps the ceiling above the floor, so settling can only shorten the wait', () => {
-            for (const elapsedMs of [0, 500, 1799, 1800, 3000, 5999]) {
+            for (const elapsedMs of [0, 299, 300, 500, 1800, 3000, 5999]) {
                 expect(splashHoldMs({ isMobile: true, elapsedMs, isBootSettled: false }))
                     .toBeGreaterThanOrEqual(splashHoldMs({ isMobile: true, elapsedMs, isBootSettled: true }));
             }
@@ -59,28 +68,26 @@ describe('splashHoldMs', () => {
     });
 
     it('treats a missing or bogus elapsed time as zero', () => {
-        expect(splashHoldMs({ isMobile: false, elapsedMs: undefined, isBootSettled: false })).toBe(SPLASH_MIN_MS);
-        expect(splashHoldMs({ isMobile: false, elapsedMs: NaN, isBootSettled: false })).toBe(SPLASH_MIN_MS);
-        expect(splashHoldMs({ isMobile: true, elapsedMs: -500, isBootSettled: true })).toBe(SPLASH_MOBILE_MIN_MS);
+        expect(splashHoldMs({ isMobile: false, elapsedMs: undefined, isBootSettled: false })).toBe(0);
+        expect(splashHoldMs({ isMobile: false, elapsedMs: NaN, isBootSettled: false })).toBe(0);
+        expect(splashHoldMs({ isMobile: true, elapsedMs: -500, isBootSettled: false })).toBe(SPLASH_MOBILE_MAX_MS);
     });
 });
 
 describe('splashProgress', () => {
-    it('runs the desktop bar straight to full over the desktop beat', () => {
-        expect(splashProgress({ isMobile: false, isBootSettled: false }))
-            .toEqual({ width: 100, durationMs: SPLASH_MIN_MS });
+    it('runs the desktop bar straight to full', () => {
+        expect(splashProgress({ isMobile: false, isBootSettled: false }).width).toBe(100);
     });
 
     it('parks the mobile bar short of full while boot is pending', () => {
-        const bar = splashProgress({ isMobile: true, isBootSettled: false });
-        expect(bar.width).toBeLessThan(100);
-        expect(bar.durationMs).toBe(SPLASH_MOBILE_MIN_MS);
+        expect(splashProgress({ isMobile: true, isBootSettled: false }).width).toBeLessThan(100);
     });
 
     it('closes the mobile bar quickly once boot settles', () => {
-        const bar = splashProgress({ isMobile: true, isBootSettled: true });
-        expect(bar.width).toBe(100);
-        expect(bar.durationMs).toBeLessThan(SPLASH_MOBILE_MIN_MS);
+        const pending = splashProgress({ isMobile: true, isBootSettled: false });
+        const settled = splashProgress({ isMobile: true, isBootSettled: true });
+        expect(settled.width).toBe(100);
+        expect(settled.durationMs).toBeLessThan(pending.durationMs);
     });
 
     it('never moves the bar backwards when boot settles', () => {

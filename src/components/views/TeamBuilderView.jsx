@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown, ChevronRight, MoreHorizontal, Check, Save, Share2, Trash2, Dices, HelpCircle, Atom } from 'lucide-react';
 import '../../styles/team-builder-view.css';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { typeColors, typeIcons } from '../../constants/types';
@@ -8,7 +8,6 @@ import { EmptyState } from '../EmptyState';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { MobileTeamBuilderView } from './MobileTeamBuilderView';
 import { GameCoverBanner, GameFilterChip, GamePickerModal } from '../GameCover';
-import { Dices, HelpCircle } from 'lucide-react';
 import { PokemonDetailModal } from '../modals/PokemonDetailModal';
 import { TeamBuilderOnboardingModal } from '../modals/TeamBuilderOnboardingModal';
 import { PokemonCard } from '../PokemonCard';
@@ -16,7 +15,6 @@ import { usePickerGridWindow } from '../../hooks/usePickerGridWindow';
 import { Sprite } from '../Sprite';
 import { TeamIdentitySummary } from '../TeamIdentitySummary';
 import { MetaCoresModal } from '../modals/MetaCoresModal';
-import { Atom } from 'lucide-react';
 import { coreIconFor } from '../coreIcons';
 import { detectTeamCores } from '../../utils/metaCores';
 import { buildSynergySuggestions } from '../../utils/synergySuggestions';
@@ -38,15 +36,16 @@ import { useTierLegality } from '../../hooks/useTierLegality';
 import {
     ClearIcon,
     EditIcon,
-    SaveIcon,
-    ShareIcon,
     ShowdownIcon,
     StarIcon,
     TrashIcon,
-    TrophyIcon,
     PokeballIcon,
 } from '../icons';
 import { Loader } from '../Loader';
+import { AnchoredPopover } from '../AnchoredPopover';
+import { useActiveTeamStore, selectIsTeamDirty, defaultTeamName } from '../../store/useActiveTeamStore';
+import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
+import { usePokedexStore } from '../../store/usePokedexStore';
 
 // Inline CSS custom properties driving the per-type disc/ring behind a team
 // member's sprite. Falls back to a single colour for mono-type Pokémon.
@@ -62,14 +61,87 @@ export function typeDiscStyle(pokemon) {
 function AnalysisTypeBadge({ type }) {
     const { t } = useTranslation();
     const typeLower = type.toLowerCase();
-    const color = typeColors[typeLower] || '#777';
     const icon = typeIcons[typeLower];
     const label = t(`types.${typeLower}`, { defaultValue: type });
 
     return icon ? (
         <img src={icon} alt={label} title={label} className="w-5 h-5 shrink-0 object-contain" />
     ) : (
-        <span className="text-2xs font-bold leading-none" style={{ color }} title={label}>{label.slice(0, 1)}</span>
+        <span className="text-2xs font-bold leading-none text-muted" title={label}>{label.slice(0, 1)}</span>
+    );
+}
+
+// A suggestion of kind "meta" says the same words on every card ("Top meta
+// pick" ×30 with an empty team), so the group carries one heading instead.
+const META_REASON = { kind: 'meta' };
+const quietReason = (reason) => (reason?.kind === 'meta' ? META_REASON : reason);
+
+// The composer's secondary actions (desktop). Save and Export are the two
+// things people come to do, so they are labelled buttons; the rest — randomise,
+// share, clear — wait one click away instead of crowding a 17rem column.
+function ComposerMoreMenu({ items }) {
+    const { t } = useTranslation();
+    const [isOpen, setIsOpen] = React.useState(false);
+    const anchorRef = React.useRef(null);
+    const popoverRef = React.useRef(null);
+
+    React.useEffect(() => {
+        if (!isOpen) return undefined;
+        const onDown = (event) => {
+            if (anchorRef.current?.contains(event.target) || popoverRef.current?.contains(event.target)) return;
+            setIsOpen(false);
+        };
+        const onKey = (event) => {
+            if (event.key === 'Escape') { setIsOpen(false); anchorRef.current?.focus(); }
+        };
+        document.addEventListener('mousedown', onDown);
+        document.addEventListener('keydown', onKey);
+        return () => {
+            document.removeEventListener('mousedown', onDown);
+            document.removeEventListener('keydown', onKey);
+        };
+    }, [isOpen]);
+
+    return (
+        <>
+            <button
+                ref={anchorRef}
+                type="button"
+                onClick={() => setIsOpen((v) => !v)}
+                className="btn btn-secondary btn-icon shrink-0"
+                aria-haspopup="menu"
+                aria-expanded={isOpen}
+                aria-label={t('builder.moreActions')}
+                title={t('builder.moreActions')}
+            >
+                <MoreHorizontal aria-hidden="true" />
+            </button>
+            <AnchoredPopover
+                isOpen={isOpen}
+                anchorRef={anchorRef}
+                popoverRef={popoverRef}
+                role="menu"
+                ariaLabel={t('builder.moreActions')}
+                offset={6}
+                className="menu-surface tb-more-menu"
+            >
+                {items.map((item) => (item.separator ? (
+                    <hr key={item.id} className="menu-separator" />
+                ) : (
+                    <button
+                        key={item.id}
+                        type="button"
+                        role="menuitem"
+                        disabled={item.disabled}
+                        className={`menu-item ${item.danger ? 'menu-item--danger' : ''}`}
+                        onClick={() => { setIsOpen(false); item.onClick?.(); }}
+                    >
+                        {item.icon}
+                        {item.label}
+                    </button>
+                )))}
+            </AnchoredPopover>
+        </>
     );
 }
 
@@ -113,7 +185,6 @@ export function TeamBuilderView({
     handleTypeSelection,
     typeMatchMode,
     setTypeMatchMode,
-    suggestedPokemonIds,
     colors,
     onEditTeamPokemon,
     favoritePokemons,
@@ -138,13 +209,10 @@ export function TeamBuilderView({
     const [dragIndex, setDragIndex] = React.useState(null);
     const [isGamePickerOpen, setIsGamePickerOpen] = React.useState(false);
     const [isCoresOpen, setIsCoresOpen] = React.useState(false);
+    // The guide opens on request only. It used to open itself on the first
+    // visit, in front of the very screen it describes; the empty composer now
+    // says what to do inline and links here ("Como funciona").
     const [isOnboardingOpen, setIsOnboardingOpen] = React.useState(false);
-
-    React.useEffect(() => {
-        if (typeof window !== 'undefined' && window.localStorage.getItem('tb-onboarding-seen') !== '1') {
-            setIsOnboardingOpen(true);
-        }
-    }, []);
     // Analysis panel tab: type-coverage analysis vs meta threats (same card).
     const [analysisTab, setAnalysisTab] = React.useState('analysis');
     const [isDesktopLayout, setIsDesktopLayout] = React.useState(() => {
@@ -348,10 +416,6 @@ export function TeamBuilderView({
     }, [currentTeam, pokemonIndex, synergy, smogonById, usageById, popular, metaRanked, metaUsageMap, selectedGame, gamePokemonIds, tierLegalIds, isPlaythrough]);
 
     const suggestionIndexById = React.useMemo(() => new Map(pokemonIndex.map((p) => [p.id, p])), [pokemonIndex]);
-    const addSuggestion = React.useCallback(
-        (s) => handleAddPokemonWithClear(suggestionIndexById.get(s.id) || s),
-        [handleAddPokemonWithClear, suggestionIndexById]
-    );
 
     // Meta threats: the most-used / best-winning meta Pokémon (for the selected
     // regulation) that pressure the current team. Join usage/win-rate from the
@@ -383,7 +447,7 @@ export function TeamBuilderView({
 
     // Map synergy id → primary reason for in-grid border/icon rendering.
     const synergyReasonById = React.useMemo(
-        () => new Map(activeFilteredSuggestions.map((s) => [s.id, s.primary])),
+        () => new Map(activeFilteredSuggestions.map((s) => [s.id, quietReason(s.primary)])),
         [activeFilteredSuggestions]
     );
 
@@ -396,8 +460,11 @@ export function TeamBuilderView({
         if (searchInput.trim() || !activeFilteredSuggestions.length) return [];
         return activeFilteredSuggestions
             .filter((s) => !displayedIdSet.has(s.id) && suggestionIndexById.has(s.id))
-            .map((s) => ({ ...suggestionIndexById.get(s.id), ...s, _synergyOnly: true }));
+            .map((s) => ({ ...suggestionIndexById.get(s.id), ...s, primary: quietReason(s.primary), _synergyOnly: true }));
     }, [activeFilteredSuggestions, displayedIdSet, suggestionIndexById, searchInput]);
+    const suggestionHeading = synergyOnlyCards.length > 0
+        ? (synergyOnlyCards.every((c) => c.primary?.kind === 'meta') ? t('builder.metaPicksHeading') : t('builder.suggestionsHeading'))
+        : null;
 
     const megaStones = useMegaStones();
 
@@ -445,6 +512,35 @@ export function TeamBuilderView({
         },
     });
 
+    // The real number of matches. `displayedPokemons` is the page the store has
+    // revealed so far (50 at a time), and both builders printed that as if it
+    // were the total.
+    const filteredPokemons = usePokedexStore((s) => s.filteredPokemons);
+    const totalCount = React.useMemo(() => {
+        if (isGameFilterActive) return gameVisibleCount;
+        if (tierRoster) return tierRoster.length;
+        const teamIds = new Set(currentTeam.map((p) => p.id));
+        return filteredPokemons.reduce((n, p) => n + (teamIds.has(p.id) ? 0 : 1), 0);
+    }, [isGameFilterActive, gameVisibleCount, tierRoster, filteredPokemons, currentTeam]);
+
+    // What a save would call this team if the field stays empty — shown as the
+    // field's placeholder so the name it gets is never a surprise.
+    const savedTeams = useFirestoreTeamsStore((s) => s.savedTeams);
+    const defaultName = React.useMemo(
+        () => defaultTeamName(currentTeam, savedTeams, editingTeamId),
+        // language: the name is a translated template.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [currentTeam, savedTeams, editingTeamId, language],
+    );
+    const isDirty = useActiveTeamStore(selectIsTeamDirty);
+    const isSavedClean = Boolean(editingTeamId) && !isDirty;
+    const hasUnsaved = currentTeam.length > 0 && !isSavedClean;
+    const saveLabel = isSavedClean ? t('builder.saved') : (editingTeamId ? t('builder.update') : t('builder.save'));
+    const isTeamFull = currentTeam.length >= 6;
+
+    // The meta the builder is paired with, as words (the phone never showed it).
+    const formatLabel = isPlaythrough ? t('builder.playthroughBadge') : (activeFormat?.label || '');
+
     // Picker cards open a detail MODAL (not the fullscreen page). Show immediately
     // with the list data, then enrich with full stats/abilities once they resolve.
     const [detailPokemon, setDetailPokemon] = React.useState(null);
@@ -465,7 +561,6 @@ export function TeamBuilderView({
                     currentTeam={currentTeam}
                     teamName={teamName}
                     setTeamName={setTeamName}
-                    handleRemoveFromTeam={handleRemoveFromTeam}
                     handleSaveTeam={handleSaveTeam}
                     editingTeamId={editingTeamId}
                     activeTeamId={activeTeamId}
@@ -493,13 +588,16 @@ export function TeamBuilderView({
                     selectedRegulation={activeRegulationId}
                     onSelectRegulation={setSelectedRegulation}
                     isPlaythrough={isPlaythrough}
+                    formatLabel={formatLabel}
+                    totalCount={totalCount}
+                    defaultName={defaultName}
+                    isDirty={isDirty}
                     generations={generations}
                     isInitialLoading={isGridLoading}
                     displayedPokemons={displayedPokemons}
                     gamePokemonIds={gamePokemonIds}
                     gameDexes={gameDexes}
                     synergySuggestions={synergySuggestions}
-                    addSuggestion={addSuggestion}
                     handleAddPokemonToTeam={handleAddPokemonWithClear}
                     handleRandomizeTeam={handleRandomizeTeam}
                     isRandomizing={isRandomizing}
@@ -510,8 +608,6 @@ export function TeamBuilderView({
                     handleTypeSelection={handleTypeSelection}
                     typeMatchMode={typeMatchMode}
                     showDetails={openDetailModal}
-                    suggestedPokemonIds={suggestedPokemonIds}
-                    colors={colors}
                     onEditTeamPokemon={onEditTeamPokemon}
                     favoritePokemons={favoritePokemons}
                     showOnlyFavorites={showOnlyFavorites}
@@ -527,16 +623,16 @@ export function TeamBuilderView({
                     above it into its footer: three boxes stacked in a 300px
                     column read as three things to look at, not one team. */}
                 <div className="tb-desk__composer lg:sticky lg:top-6 lg:self-start">
-                    <section className="card tb-team" aria-label={language === 'pt' ? 'Time atual' : 'Current team'}>
+                    <section className="card tb-team" aria-label={t('builder.currentTeamAria')}>
                         <div className="tb-team__head">
                             <input
                                 id="team-builder-name"
                                 type="text"
                                 value={teamName}
                                 onChange={(e) => setTeamName(e.target.value)}
-                                placeholder={t('builder.teamNamePlaceholder')}
+                                placeholder={defaultName || t('builder.teamNamePlaceholder')}
                                 className="tb-team__name"
-                                aria-label={language === 'pt' ? 'Nome do time' : 'Team name'}
+                                aria-label={t('builder.teamNameAria')}
                             />
                             {editingTeamId && (
                                 editingTeamId === activeTeamId ? (
@@ -547,14 +643,14 @@ export function TeamBuilderView({
                                         onClick={() => setActiveTeamId(editingTeamId)}
                                         className="btn btn-ghost btn-sm shrink-0"
                                     >
-                                        {language === 'pt' ? 'Ativar' : 'Set active'}
+                                        {t('builder.setActive')}
                                     </button>
                                 )
                             )}
                             <span className="badge badge--figure shrink-0" aria-label={`${currentTeam.length} / 6`}>{currentTeam.length}/6</span>
                         </div>
 
-                        <div className="team-builder-slots" aria-label="Current team slots">
+                        <div className="team-builder-slots" aria-label={t('builder.teamSlotsAria')}>
                             {currentTeam.map((pokemon, idx) => {
                                 // A held mega stone morphs the slot into its Mega form (sprite/name/types).
                                 const mega = megaFormFor(pokemon, megaStones);
@@ -565,7 +661,7 @@ export function TeamBuilderView({
                                     draggable
                                     tabIndex={0}
                                     role="button"
-                                    aria-label={`${pokemon.name}, slot ${idx + 1} of ${currentTeam.length}. Drag to reorder, or hold Alt and press Arrow keys.`}
+                                    aria-label={t('builder.slotAria', { name: pokemon.name, slot: idx + 1, total: currentTeam.length })}
                                     onClick={() => onEditTeamPokemon(pokemon)}
                                     onKeyDown={(e) => {
                                         if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowUp')) {
@@ -612,7 +708,7 @@ export function TeamBuilderView({
                                             e.stopPropagation();
                                             onEditTeamPokemon(pokemon);
                                         }}
-                                        aria-label={`Edit ${pokemon.name}`}
+                                        aria-label={t('builder.editAria', { name: pokemon.name })}
                                         className="team-builder-slot__control team-builder-slot__control--edit"
                                     >
                                         <EditIcon />
@@ -624,7 +720,7 @@ export function TeamBuilderView({
                                             e.stopPropagation();
                                             handleRemoveFromTeam(pokemon.instanceId);
                                         }}
-                                        aria-label={`${t('common.remove')} ${pokemon.name}`}
+                                        aria-label={t('builder.removeAria', { name: pokemon.name })}
                                         className="team-builder-slot__control team-builder-slot__control--remove"
                                     >
                                         <TrashIcon />
@@ -640,38 +736,65 @@ export function TeamBuilderView({
                             ))}
                         </div>
 
-                        <TeamIdentitySummary team={currentTeam} />
+                        {currentTeam.length === 0 ? (
+                            // The onboarding, inline: what to do, said once where
+                            // the team will be — not a modal that opened itself.
+                            <p className="tb-empty-hint">
+                                {t('builder.emptyHint')}{' '}
+                                <button type="button" className="btn-link tb-empty-hint__link" onClick={() => setIsOnboardingOpen(true)}>
+                                    {t('builder.howItWorks')}
+                                </button>
+                            </p>
+                        ) : (
+                            <TeamIdentitySummary team={currentTeam} analysis={teamAnalysis} />
+                        )}
 
+                        {/* Save says what saving would do — nothing ("Salvo") on a
+                            loaded team that has not changed, an update when it has;
+                            the dot marks unsaved work. Export is the other thing
+                            people came to do, so it is a labelled button, not a
+                            Showdown glyph among four others. */}
                         <div className="tb-team__actions">
-                            <button type="button" onClick={handleSaveTeam} className="btn btn-primary tb-team__save">
-                                <SaveIcon />
-                                {editingTeamId ? t('builder.update') : t('builder.save')}
+                            <button
+                                type="button"
+                                onClick={handleSaveTeam}
+                                className={`btn ${isSavedClean ? 'btn-secondary' : 'btn-primary'} tb-team__save`}
+                                aria-label={hasUnsaved ? `${saveLabel} — ${t('builder.unsavedChanges')}` : saveLabel}
+                            >
+                                {isSavedClean ? <Check aria-hidden="true" /> : <Save aria-hidden="true" />}
+                                {saveLabel}
+                                {hasUnsaved && <span className="tb-unsaved-dot" aria-hidden="true" />}
                             </button>
                             <button
                                 type="button"
-                                onClick={() => handleRandomizeTeam?.(displayedPokemons)}
-                                disabled={isRandomizing || displayedPokemons.length === 0}
-                                className="btn btn-ghost btn-icon btn-muted"
-                                aria-label={t('builder.randomizeTeam')}
-                                title={t('builder.randomizeTeam')}
+                                onClick={handleExportToShowdown}
+                                className={`btn ${isTeamFull && isSavedClean ? 'btn-primary' : 'btn-secondary'} tb-team__export`}
+                                aria-label={t('builder.exportShowdown')}
+                                title={t('builder.exportShowdown')}
                             >
-                                <Dices />
+                                <ShowdownIcon />
+                                {t('builder.exportShort')}
                             </button>
-                            <button onClick={handleExportToShowdown} type="button" aria-label="Export team to Pokémon Showdown" className="btn btn-ghost btn-icon btn-muted" title={t('builder.exportShowdown')}><ShowdownIcon /></button>
-                            <button onClick={handleShareTeam} type="button" aria-label="Share team" className="btn btn-ghost btn-icon btn-muted" title={t('builder.shareTeam')}><ShareIcon /></button>
-                            <button onClick={handleClearTeam} type="button" aria-label="Clear team" className="btn btn-ghost btn-icon btn-muted tb-team__clear" title={t('builder.clearTeam')}><ClearIcon /></button>
+                            <ComposerMoreMenu
+                                items={[
+                                    { id: 'random', label: t('builder.randomizeTeam'), icon: <Dices aria-hidden="true" />, onClick: () => handleRandomizeTeam?.(displayedPokemons), disabled: isRandomizing || displayedPokemons.length === 0 },
+                                    { id: 'share', label: t('builder.shareTeam'), icon: <Share2 aria-hidden="true" />, onClick: handleShareTeam },
+                                    { id: 'sep', separator: true },
+                                    { id: 'clear', label: t('builder.clearTeam'), icon: <Trash2 aria-hidden="true" />, onClick: handleClearTeam, danger: true, disabled: currentTeam.length === 0 && !teamName },
+                                ]}
+                            />
                         </div>
 
-                        <div className="tb-team__tools">
+                        {(!isPlaythrough || currentTeam.length > 0) && <div className="tb-team__tools">
                             {!isPlaythrough && (
                                 <button
                                     type="button"
                                     onClick={() => setIsCoresOpen(true)}
                                     className="tb-core-row"
-                                    title={language === 'pt' ? 'Montar a partir de um core do meta' : 'Build around a meta core'}
+                                    title={t('builder.metaCoreHint')}
                                 >
                                     <Atom className="tb-core-row__icon" aria-hidden="true" />
-                                    <span className="tb-core-row__label">{language === 'pt' ? 'Core do meta' : 'Meta core'}</span>
+                                    <span className="tb-core-row__label">{t('builder.metaCore')}</span>
                                     <span className="tb-core-row__value">
                                         {teamCores.length > 0 ? (
                                             <>
@@ -686,22 +809,26 @@ export function TeamBuilderView({
                                                 {teamCores.length > 2 && <span className="tb-core-row__more">+{teamCores.length - 2}</span>}
                                             </>
                                         ) : (
-                                            <span className="tb-core-row__empty">{language === 'pt' ? 'Nenhum ainda' : 'None yet'}</span>
+                                            <span className="tb-core-row__empty">{t('builder.metaCoreNone')}</span>
                                         )}
                                     </span>
                                     <ChevronRight className="tb-core-row__chevron" aria-hidden="true" />
                                 </button>
                             )}
-                            <button
-                                type="button"
-                                onClick={() => setIsOnboardingOpen(true)}
-                                className="btn btn-ghost btn-icon btn-sm btn-muted"
-                                title={language === 'pt' ? 'Como funciona a montagem automática e Megas' : 'How auto building & Megas work'}
-                                aria-label={language === 'pt' ? 'Guia do construtor' : 'Builder guide'}
-                            >
-                                <HelpCircle />
-                            </button>
-                        </div>
+                            {/* One help entry at a time: the empty composer's inline
+                                hint links the guide; once the team has members, this. */}
+                            {currentTeam.length > 0 && (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsOnboardingOpen(true)}
+                                    className="btn btn-ghost btn-icon btn-sm btn-muted touch-target"
+                                    title={t('builder.howItWorks')}
+                                    aria-label={t('builder.howItWorks')}
+                                >
+                                    <HelpCircle />
+                                </button>
+                            )}
+                        </div>}
                     </section>
 
                     <section className="card tb-analysis">
@@ -709,7 +836,7 @@ export function TeamBuilderView({
                             {[
                                 { id: 'analysis', label: t('builder.analysisTitle') },
                                 // Meta threats are ranked by competitive usage — no tab in playthrough mode.
-                                ...(isPlaythrough ? [] : [{ id: 'threats', label: t('builder.threatsTitle') }]),
+                                ...(isPlaythrough ? [] : [{ id: 'threats', label: t('builder.threatsTitle'), count: currentTeam.length > 0 ? teamThreats.length : 0 }]),
                             ].map((tb) => (
                                 <button
                                     key={tb.id}
@@ -720,57 +847,60 @@ export function TeamBuilderView({
                                     className="tabs__item"
                                 >
                                     {tb.label}
+                                    {tb.count > 0 && <span className="count-badge">{tb.count}</span>}
                                 </button>
                             ))}
                         </div>
 
                         {(analysisTab === 'analysis' || isPlaythrough) ? (
-                            <div className="tb-analysis__groups">
-                                <div className="tb-analysis__group">
-                                    <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />{language === 'pt' ? 'Cobertura ofensiva' : 'Offensive coverage'}</h3>
-                                    <div className="tb-analysis__types">
-                                        {currentTeam.length > 0
-                                            ? (teamAnalysis.strengths.size > 0
-                                                ? Array.from(teamAnalysis.strengths).sort().map((type) => <AnalysisTypeBadge key={type} type={type} colors={colors} />)
-                                                : <p className="tb-analysis__empty">{language === 'pt' ? 'Nenhuma vantagem de tipo encontrada.' : 'No type advantages found.'}</p>)
-                                            : <p className="tb-analysis__empty">{language === 'pt' ? 'Adicione Pokémon para ver a cobertura.' : 'Add Pokemon to preview your coverage.'}</p>}
+                            currentTeam.length === 0 ? (
+                                // One line, not three groups each saying "after
+                                // the first pick".
+                                <p className="tb-analysis__empty">{t('builder.analysisEmpty')}</p>
+                            ) : (
+                                // Exposure first: a weakness is what the next pick
+                                // should fix, so it leads; coverage follows.
+                                <div className="tb-analysis__groups">
+                                    <div className="tb-analysis__group">
+                                        <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--bad" aria-hidden="true" />{t('builder.analysisWeaknesses')}</h3>
+                                        <div className="tb-analysis__types">
+                                            {Object.keys(teamAnalysis.weaknesses).length > 0
+                                                ? Object.entries(teamAnalysis.weaknesses).sort(([, a], [, b]) => b - a).map(([type, score]) => (
+                                                    <div key={type} className="flex items-center gap-1">
+                                                        <AnalysisTypeBadge type={type} />
+                                                        <span className="team-builder-analysis-score">({score}x)</span>
+                                                    </div>
+                                                ))
+                                                : <p className="tb-analysis__empty">{t('builder.noWeaknesses')}</p>}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="tb-analysis__group">
-                                    <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />{language === 'pt' ? 'Cobertura defensiva' : 'Defensive coverage'}</h3>
-                                    <div className="tb-analysis__types">
-                                        {currentTeam.length > 0
-                                            ? (teamAnalysis.defensiveCoverage && Object.keys(teamAnalysis.defensiveCoverage).length > 0
+                                    <div className="tb-analysis__group">
+                                        <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />{t('builder.defensiveCoverage')}</h3>
+                                        <div className="tb-analysis__types">
+                                            {teamAnalysis.defensiveCoverage && Object.keys(teamAnalysis.defensiveCoverage).length > 0
                                                 ? Object.entries(teamAnalysis.defensiveCoverage).sort(([, a], [, b]) => b - a).map(([type, count]) => (
                                                     <div key={type} className="flex items-center gap-1">
-                                                        <AnalysisTypeBadge type={type} colors={colors} />
+                                                        <AnalysisTypeBadge type={type} />
                                                         {count > 1 && (
                                                             <span className="team-builder-analysis-score team-builder-analysis-score--success">({count}x)</span>
                                                         )}
                                                     </div>
                                                 ))
-                                                : <p className="tb-analysis__empty">{language === 'pt' ? 'Nenhuma cobertura defensiva.' : 'No defensive coverage.'}</p>)
-                                            : <p className="tb-analysis__empty">{language === 'pt' ? 'Cobertura defensiva aparece após a primeira escolha.' : 'Defensive coverage appears after the first pick.'}</p>}
+                                                : <p className="tb-analysis__empty">{t('builder.noResistances')}</p>}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="tb-analysis__group">
-                                    <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--bad" aria-hidden="true" />{language === 'pt' ? 'Fraquezas defensivas' : 'Defensive weaknesses'}</h3>
-                                    <div className="tb-analysis__types">
-                                        {currentTeam.length > 0
-                                            ? (Object.keys(teamAnalysis.weaknesses).length > 0
-                                                ? Object.entries(teamAnalysis.weaknesses).sort(([, a], [, b]) => b - a).map(([type, score]) => (
-                                                    <div key={type} className="flex items-center gap-1">
-                                                        <AnalysisTypeBadge type={type} colors={colors} />
-                                                        <span className="team-builder-analysis-score">({score}x)</span>
-                                                    </div>
-                                                ))
-                                                : <p className="tb-analysis__empty">{language === 'pt' ? 'Seu time é sólido como rocha.' : 'Your team is rock solid.'}</p>)
-                                            : <p className="tb-analysis__empty">{language === 'pt' ? 'Fraquezas aparecem após a primeira escolha.' : 'Weaknesses appear after the first pick.'}</p>}
+                                    <div className="tb-analysis__group">
+                                        <h3 className="tb-analysis__title"><span className="tb-analysis__mark tb-analysis__mark--good" aria-hidden="true" />{t('builder.offensiveCoverage')}</h3>
+                                        <div className="tb-analysis__types">
+                                            {teamAnalysis.strengths.size > 0
+                                                ? Array.from(teamAnalysis.strengths).sort().map((type) => <AnalysisTypeBadge key={type} type={type} />)
+                                                : <p className="tb-analysis__empty">{t('builder.noOffense')}</p>}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )
                         ) : (
                             <div className="tb-analysis__threats">
                                 <TeamThreats threats={teamThreats} hasTeam={currentTeam.length > 0} onOpenDetail={openDetailModal} bare />
@@ -789,13 +919,13 @@ export function TeamBuilderView({
                                 // just a ranking, so the banner says which one is
                                 // narrowing the list — otherwise a short list
                                 // reads as missing data.
-                                note={isPlaythrough
-                                    ? t('builder.playthroughBadge')
-                                    : (isTierFilterActive ? activeFormat?.label || null : null)}
+                                note={formatLabel || null}
                                 onOpen={() => setIsGamePickerOpen(true)}
                                 className="game-cover--compact"
                             />
-                            <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0">{isGameFilterActive ? gameVisibleCount : displayedPokemons.length}</span>
+                            {/* The real number of matches — it showed the loaded
+                                page (50) as if it were the total. */}
+                            <span className="team-builder-panel__meta team-builder-panel__meta--compact shrink-0" title={t('builder.resultCount', { count: totalCount })}>{totalCount}</span>
                         </div>
 
                         <div className="team-builder-filterbar mt-3">
@@ -824,7 +954,7 @@ export function TeamBuilderView({
                                 )}
                             </div>
 
-                            <div className="team-builder-type-grid team-builder-type-grid--compact" role="group" aria-label="Type focus">
+                            <div className="team-builder-type-grid team-builder-type-grid--compact" role="group" aria-label={t('builder.typeFocusAria')}>
                                 {Object.keys(typeColors).map((type) => (
                                     <button
                                         key={type}
@@ -844,12 +974,8 @@ export function TeamBuilderView({
                                 onClick={() => setFiltersExpanded((v) => !v)}
                                 className={`team-builder-filter-toggle ${filtersExpanded ? 'is-open' : ''}`}
                                 aria-expanded={filtersExpanded}
-                                aria-label={filtersExpanded
-                                    ? t('builder.fewerFilters', { defaultValue: language === 'pt' ? 'Menos filtros' : 'Fewer filters' })
-                                    : t('builder.moreFilters', { defaultValue: language === 'pt' ? 'Mais filtros' : 'More filters' })}
-                                title={filtersExpanded
-                                    ? t('builder.fewerFilters', { defaultValue: language === 'pt' ? 'Menos filtros' : 'Fewer filters' })
-                                    : t('builder.moreFilters', { defaultValue: language === 'pt' ? 'Mais filtros' : 'More filters' })}
+                                aria-label={filtersExpanded ? t('builder.fewerFilters') : t('builder.moreFilters')}
+                                title={filtersExpanded ? t('builder.fewerFilters') : t('builder.moreFilters')}
                             >
                                 <ChevronDown className="team-builder-filter-toggle__chevron w-4 h-4" />
                                 {!filtersExpanded && hasActiveFilters && <span className="team-builder-filter-toggle__dot" aria-hidden="true" />}
@@ -899,7 +1025,11 @@ export function TeamBuilderView({
 
 
 
-                        <div className="team-builder-results mt-4">
+                        {/* A full team: the picker steps back (dimmed, one line
+                            saying why) and the composer's Save/Export lead. */}
+                        {isTeamFull && <p className="tb-full-note mt-3">{t('builder.teamFullNote')}</p>}
+
+                        <div className={`team-builder-results mt-4 ${isTeamFull ? 'is-team-full' : ''}`}>
                             {isGridLoading ? (
                                 <div className="team-builder-spinner-wrap">
                                     <Loader />
@@ -917,6 +1047,7 @@ export function TeamBuilderView({
                                                         <PokemonCard
                                                             key={pokemon.id}
                                                             details={pokemon}
+                                                            addOnClick
                                                             onCardClick={openDetailModal}
                                                             onAddToTeam={handleAddPokemonWithClear}
                                                             synergyReason={synergyReasonById.get(pokemon.id)}
@@ -929,11 +1060,13 @@ export function TeamBuilderView({
                                             ))
                                         ) : (
                                             <>
+                                                {suggestionHeading && <h4 className="pokedex-section-title tb-grid-heading">{suggestionHeading}</h4>}
                                                 {/* Synergy-only picks (not in the current filtered list) */}
                                                 {synergyOnlyCards.map((pokemon) => (
                                                     <PokemonCard
                                                         key={`syn-${pokemon.id}`}
                                                         details={pokemon}
+                                                        addOnClick
                                                         onCardClick={openDetailModal}
                                                         onAddToTeam={handleAddPokemonWithClear}
                                                         synergyReason={pokemon.primary}
@@ -941,10 +1074,12 @@ export function TeamBuilderView({
                                                         onToggleFavorite={onToggleFavoritePokemon}
                                                     />
                                                 ))}
+                                                {suggestionHeading && <h4 className="pokedex-section-title pokedex-section-title--national">{t('builder.allPokemonHeading')}</h4>}
                                                 {grid.visibleList.map((pokemon, index) => (
                                                     <PokemonCard
                                                         key={pokemon.id}
                                                         details={pokemon}
+                                                        addOnClick
                                                         onCardClick={openDetailModal}
                                                         onAddToTeam={handleAddPokemonWithClear}
                                                         lastRef={!isTierFilterActive && index === displayedPokemons.length - 1 ? lastPokemonElementRef : null}
@@ -964,7 +1099,7 @@ export function TeamBuilderView({
                                             <EmptyState
                                                 compact
                                                 title={showOnlyFavorites ? t('favorites.noMatchesTitle') : t('pokedex.noPokemonFound')}
-                                                message={showOnlyFavorites ? t('favorites.noMatchesDesc') : t('favorites.noMatchesDesc')}
+                                                message={t('favorites.noMatchesDesc')}
                                             />
                                         </div>
                                     )}
@@ -975,15 +1110,16 @@ export function TeamBuilderView({
 
                     <section className="section tb-recent">
                         <div className="section-head">
-                            <h2 className="section-title">{language === 'pt' ? 'Times recentes' : 'Recent teams'}</h2>
+                            <h2 className="section-title">{t('builder.recentTeams')}</h2>
                             {recentTeams.length > 0 && <span className="section-meta">{recentTeams.length}</span>}
-                            <button type="button" onClick={onNavigateToTeams} className="section-action btn btn-link">{language === 'pt' ? 'Ver todos' : 'View all'}</button>
+                            <button type="button" onClick={onNavigateToTeams} className="section-action btn btn-link">{t('builder.viewAll')}</button>
                         </div>
 
                         {recentTeams.length > 0 ? (
                             <div className="tb-recent__grid">
                                 {recentTeams.map((team) => {
                                     const isActive = team.id === activeTeamId || (activeTeamId === null && recentTeams[0]?.id === team.id);
+                                    const favLabel = team.isFavorite ? t('builder.unfavoriteTeam', { name: team.name }) : t('builder.favoriteTeam', { name: team.name });
                                     return (
                                         <article key={team.id} className="card card--compact tb-recent-card">
                                             <div className="tb-recent-card__head">
@@ -991,8 +1127,8 @@ export function TeamBuilderView({
                                                 <button
                                                     type="button"
                                                     onClick={() => handleToggleFavorite(team)}
-                                                    title={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
-                                                    aria-label={team.isFavorite ? (language === 'pt' ? 'Desfavoritar time' : 'Unfavorite team') : (language === 'pt' ? 'Favoritar time' : 'Favorite team')}
+                                                    title={favLabel}
+                                                    aria-label={favLabel}
                                                     aria-pressed={!!team.isFavorite}
                                                     className={`btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__star ${team.isFavorite ? 'is-on' : ''}`}
                                                 >
@@ -1017,17 +1153,17 @@ export function TeamBuilderView({
                                                     aria-pressed={isActive}
                                                     className="btn btn-secondary btn-sm tb-recent-card__active"
                                                 >
-                                                    {isActive ? `★ ${t('common.active')}` : (language === 'pt' ? 'Ativar' : 'Set active')}
+                                                    {isActive ? `★ ${t('common.active')}` : t('builder.setActive')}
                                                 </button>
                                                 <button type="button" onClick={() => handleEditTeam(team)} className="btn btn-secondary btn-sm tb-recent-card__edit">{t('common.edit')}</button>
-                                                <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__delete" aria-label={`Delete ${team.name}`}><TrashIcon /></button>
+                                                <button type="button" onClick={() => requestDeleteTeam(team.id, team.name)} className="btn btn-ghost btn-icon btn-sm btn-muted tb-recent-card__delete" aria-label={t('builder.deleteTeamAria', { name: team.name })}><TrashIcon /></button>
                                             </div>
                                         </article>
                                     );
                                 })}
                             </div>
                         ) : (
-                            <p className="tb-recent__empty">{language === 'pt' ? 'Nenhum time recente ainda.' : 'No recent teams yet.'}</p>
+                            <p className="tb-recent__empty">{t('builder.noRecentTeams')}</p>
                         )}
                     </section>
                 </div>
