@@ -1,9 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
 import {
+    TOUR_BAND,
     cutoffLabel,
     filterRows,
     groupFormats,
+    hasTournamentBand,
     isRegulation,
     ladderPairs,
     regulationsOf,
@@ -217,5 +219,42 @@ describe('filterRows', () => {
 
     it('combines search and type', () => {
         expect(filterRows(rows, { query: 'tusk', types: ['flying'], typesById })).toEqual([]);
+    });
+});
+
+describe('tournament band', () => {
+    const merged = {
+        ...DATA,
+        tournament: {
+            teamsAnalyzed: 2000,
+            byId: {
+                812: { name: 'Rillaboom', usage: 35, rawCount: 700, winRate: 52 },
+                984: { name: 'Great Tusk', usage: 20, rawCount: 400, winRate: 49 },
+            },
+        },
+    };
+
+    it('is offered only when the file carries a tournament ranking', () => {
+        expect(hasTournamentBand(merged)).toBe(true);
+        expect(hasTournamentBand(DATA)).toBe(false);
+        expect(hasTournamentBand({ tournament: { teamsAnalyzed: 10 } })).toBe(false); // tournament-only legacy file
+    });
+
+    it('resolves when requested and published, never by default', () => {
+        expect(resolveCutoff(TOUR_BAND, [0, 1695, TOUR_BAND], 1695)).toBe(TOUR_BAND);
+        expect(resolveCutoff(TOUR_BAND, [0, 1695], 1695)).toBe(1695);
+        expect(resolveCutoff(null, [0, 1695, TOUR_BAND], null)).toBe(1695);
+    });
+
+    it('ranks by tournament usage with the tournament win rate', () => {
+        const rows = usageRows(merged, TOUR_BAND);
+        expect(rows.map((r) => r.id)).toEqual([812, 984]);
+        expect(rows[1]).toMatchObject({ usage: 20, rawCount: 400, winRate: 49, hasDetail: true });
+        expect(rows[0].hasDetail).toBe(false);
+    });
+
+    it('has a label in both languages', () => {
+        expect(cutoffLabel(TOUR_BAND)).toBe('Tournaments');
+        expect(cutoffLabel(TOUR_BAND, true)).toBe('Torneios');
     });
 });

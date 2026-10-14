@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { regulationsOf, resolveCutoff } from '../utils/metaFormats';
+import { TOUR_BAND, hasTournamentBand, regulationsOf, resolveCutoff } from '../utils/metaFormats';
 
 // Loads the precise, per-format Smogon usage stats baked by
 // scripts/build-usage-stats.mjs. `useUsageIndex` returns the format catalog (for
@@ -106,9 +106,12 @@ export function useUsageFormat(formatId, cutoff = null) {
 
     // Every band the file carries, ascending. Files baked before cutoffs existed
     // have none, and the whole cutoff UI simply does not render for them.
+    // A file merged with Limitless tournament results adds one more option after
+    // the rating bands: ranking by what was registered at tournaments.
     const cutoffs = useMemo(() => {
         const list = data?.format?.cutoffs || Object.keys(data?.cutoffs || {}).map(Number);
-        return [...new Set(list)].filter((c) => Number.isFinite(c)).sort((a, b) => a - b);
+        const numeric = [...new Set(list)].filter((c) => Number.isFinite(c)).sort((a, b) => a - b);
+        return hasTournamentBand(data) ? [...numeric, TOUR_BAND] : numeric;
     }, [data]);
 
     const detailCutoff = data?.detailCutoff ?? data?.format?.cutoff ?? null;
@@ -128,6 +131,8 @@ export function useUsageFormat(formatId, cutoff = null) {
         usageFor,
         format: data?.format || null,
         totalBattles: (activeCutoff === detailCutoff ? data?.totalBattles : bandBattles) || data?.totalBattles || 0,
+        // { teamsAnalyzed, tournaments, from, to } when Limitless results are merged in.
+        tournament: data?.tournament || null,
         cutoffs,
         detailCutoff,
         activeCutoff,

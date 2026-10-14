@@ -17,6 +17,17 @@
 
 export const TIER_KIND = 'tier';
 
+/**
+ * The "band" that ranks by tournament results instead of a ladder rating.
+ * A VGC file merged with Limitless (scripts/lib/limitlessMerge.mjs) carries a
+ * `tournament` ranking beside its rating bands; the Meta list offers it as one
+ * more option in the same selector, after the numeric cutoffs.
+ */
+export const TOUR_BAND = 'tour';
+
+/** True when a baked file has a tournament ranking to switch to. */
+export const hasTournamentBand = (data) => Object.keys(data?.tournament?.byId || {}).length > 0;
+
 /** True for the VGC regulations the Team Builder offers as a ruleset. */
 export const isRegulation = (format) => Boolean(format) && format.kind !== TIER_KIND;
 
@@ -59,15 +70,18 @@ export function resolveCutoff(requested, cutoffs = [], detailCutoff = null) {
     // `Number(null)` and `Number('')` are both 0 — a real band — so "nothing was
     // requested" has to be ruled out before coercing, or a URL with no ?cut
     // silently lands on the unrated ladder instead of the default one.
+    if (requested === TOUR_BAND && cutoffs.includes(TOUR_BAND)) return TOUR_BAND;
     const asked = requested === null || requested === undefined || requested === '' ? NaN : Number(requested);
     if (Number.isFinite(asked) && cutoffs.includes(asked)) return asked;
     if (Number.isFinite(detailCutoff) && cutoffs.includes(detailCutoff)) return detailCutoff;
     if (Number.isFinite(detailCutoff)) return detailCutoff;
-    return cutoffs.length ? Math.max(...cutoffs) : null;
+    const numeric = cutoffs.filter(Number.isFinite);
+    return numeric.length ? Math.max(...numeric) : null;
 }
 
 /** "1630" → "1630+", and the unrated band → "All ratings" / "Todos os ratings". */
 export const cutoffLabel = (cutoff, pt = false) => {
+    if (cutoff === TOUR_BAND) return pt ? 'Torneios' : 'Tournaments';
     if (!Number.isFinite(Number(cutoff))) return '';
     return Number(cutoff) > 0 ? `${cutoff}+` : (pt ? 'Todos' : 'All');
 };
@@ -85,7 +99,9 @@ export const cutoffLabel = (cutoff, pt = false) => {
 export function usageRows(data, cutoff = null) {
     if (!data) return [];
     const detail = data.byId || {};
-    const band = cutoff == null ? null : data.cutoffs?.[String(cutoff)] || data.cutoffs?.[cutoff] || null;
+    const band = cutoff == null ? null
+        : cutoff === TOUR_BAND ? data.tournament || null
+            : data.cutoffs?.[String(cutoff)] || data.cutoffs?.[cutoff] || null;
     const source = band?.byId || detail;
 
     return Object.entries(source)
@@ -96,7 +112,9 @@ export function usageRows(data, cutoff = null) {
                 name: e.name || d?.name || '',
                 usage: e.usage ?? 0,
                 rawCount: e.rawCount ?? e.teams ?? 0,
-                winRate: Number.isFinite(d?.winRate) ? d.winRate : null,
+                // The tournament ranking carries its own win rate, which covers
+                // species the ladder detail never reached.
+                winRate: Number.isFinite(e.winRate) ? e.winRate : Number.isFinite(d?.winRate) ? d.winRate : null,
                 // The breakdown (items / moves / spreads) only exists for the
                 // species the chaos download covered. The list dims the rest
                 // rather than promising a detail page that has nothing on it.
