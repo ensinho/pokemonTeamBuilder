@@ -169,7 +169,14 @@ async function bootPass(browser) {
         const ctx = await newContext(browser, vp);
         const page = await ctx.newPage();
         await throttle(ctx, page);
-        if (scenario === 'returning') { await page.goto(BASE + '/'); await page.waitForSelector('.app-shell', { timeout: 30000 }); await page.waitForTimeout(1500); }
+        if (scenario === 'returning') {
+          // A returning visitor comes back after the first visit finished signing
+          // in. The new boot paints before that, so wait for the auth snapshot the
+          // finished sign-in writes, or 'returning' measures a reload mid-sign-up.
+          await page.goto(BASE + '/'); await page.waitForSelector('.app-shell', { timeout: 30000 });
+          await page.waitForFunction(() => !!localStorage.getItem('ptb:authSnapshot'), null, { timeout: 30000 }).catch(() => {});
+          await page.waitForTimeout(1000);
+        }
         let bytes = 0, reqs = 0;
         page.on('response', async (r) => { reqs++; try { bytes += Number(await r.headerValue('content-length')) || 0; } catch { /* */ } });
         const t0 = Date.now();
