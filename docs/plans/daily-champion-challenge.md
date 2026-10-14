@@ -3,6 +3,7 @@
 > Status: **alinhado** (fluxo `/feature`, etapa 2 concluída). As decisões da seção 14
 > foram respondidas pelo Enzo em 2026-10-14. Próximo passo: F1 (motor + IA).
 > Nenhum código produtivo foi alterado ainda.
+> Documentos irmãos: [especificação técnica](./daily-champion-challenge-tech.md) (arquivos, contratos, dados, estados, tarefas) e [IA de batalha](./daily-champion-challenge-ai.md).
 > Data: 2026-10-14.
 
 ## 0. Resumo
@@ -106,11 +107,11 @@ A regra `match /users/{userId}/{document=**} { allow read, write: if isOwner(use
 - **Estatísticas:** `artifacts/{appId}/challengeStats/{uid}` (sequência, recordes). Só o servidor escreve.
 - **Exclusão de conta:** `accountDeletion.js` precisa apagar esses dois caminhos (consulta por `uid`). A regra do `CLAUDE.md` sobre `USER_COLLECTIONS` cobre só `users/`, então este caso vira item explícito do plano.
 
-### 3.4 O "dia" é o dia local, como no PokéPuzzle
-- O cliente envia `dayKey` (`YYYY-M-D`, o mesmo formato de `useDailyPuzzle.js:21`) e o fuso.
-- O servidor só aceita um `dayKey` que seja "hoje" em algum fuso válido (UTC−12 a UTC+14 em relação ao relógio do servidor).
-- O cálculo do dia hoje está duplicado em 3 lugares. O plano extrai um `localDayKey()` compartilhado em `src/utils/dayKey.js`, e o desafio passa a usá-lo.
-- **Achado paralelo, fora do escopo:** `advanceStreak` em `useAuthStore.js` usa `toISOString()` (data UTC). Para quem está em UTC−3 e joga depois das 21h, a sequência do PokéPuzzle conta no dia seguinte. Vale uma correção separada com `/log-wound`.
+### 3.4 O "dia" vira à meia-noite de Brasília, para todos
+- Decidido em 2026-10-14 (§14). O **servidor** decide o dia com `America/Sao_Paulo`; o cliente não envia data.
+- Todos enfrentam o mesmo time ao mesmo tempo. O ranking da F6 fica justo, e ninguém num fuso adiantado vê o time antes.
+- O cliente tem um espelho do cálculo (`src/utils/challengeDay.js`) só para a contagem regressiva. Um teste compara as duas cópias.
+- **Achado paralelo, fora do escopo:** `advanceStreak` em `useAuthStore.js` usa `toISOString()` (data UTC), enquanto o PokéPuzzle usa o dia local. Para quem está em UTC−3 e joga depois das 21h, a sequência do puzzle conta no dia seguinte. Vale uma correção separada com `/log-wound`.
 
 ### 3.5 Regras da batalha
 - **Formato:** simples, 6×6, `gen9customgame` com Sleep Clause Mod, Species Clause, OHKO Clause, Evasion Moves Clause e **Terastal Clause**. A tela não tem botão de Tera, e o DPPt também não tinha.
@@ -185,6 +186,8 @@ O seletor abre na tela de baixo, com duas abas:
 
 ## 6. A IA da Cynthia
 
+> Resumo de produto. **A organização completa (arquivos, fórmulas, perfis, calibragem e testes) está no [documento da IA](./daily-champion-challenge-ai.md).**
+
 Arquivo: `api/_lib/cynthiaAI.js`. Exporta uma função pura:
 `decide({ battle, request, history, rng, difficulty }) → 'move 2' | 'switch 4' | 'default'`.
 
@@ -236,42 +239,18 @@ Falas reativas aparecem na caixa de texto: início, primeiro nocaute sofrido, en
 
 ## 7. Endpoint e dados
 
-**Função nova:** `api/challenge.js`. Passa de 7 para 8 das 12 funções do plano Hobby; conferir com `find api -name '*.js' ! -name '*.test.js' ! -path 'api/_lib/*'`.
+> **A fonte de verdade é a [especificação técnica](./daily-champion-challenge-tech.md)**: §2 (servidor, contrato da API, erros), §4 (documentos e regras do Firestore). Aqui fica só o resumo.
 
-Ela segue o padrão de `battle-turn.js`:
-- imports estáticos só de builtins, `httpBasics` e `runtimeGuards`;
-- o resto carrega em `loadDeps()`;
-- `?ping=1` responde antes de carregar qualquer coisa;
-- o `GET` sem parâmetros é um self-check que inclui um turno real de IA.
+- **Uma função nova:** `api/challenge.js` (8 de 12). Ações `ensureDay`, `start`, `choose` e `forfeit`, mais `?ping=1` e o self-check no `GET`. Segue o padrão de `battle-turn.js` (imports leves, `loadDeps()`, tudo aguardado).
+- **Leitura direto do Firestore, ação pela função.** A tela e a Home leem:
+  - o documento público do dia (`public/data/challengeDays/{dia}`, com escalação e Time do dia);
+  - a partida e as rodadas do jogador.
 
-`POST /api/challenge` exige `Authorization: Bearer <ID token>`. Contas anônimas também têm token.
-
-| `action` | Entrada | Saída |
-|---|---|---|
-| `today` | `dayKey`, `tz` | `{dayKey, challengeName, difficulty, cynthia: {species: [ids]}, dailyTeam, run}`. As espécies servem para as silhuetas do Pokétch; os sets continuam ocultos |
-| `start` | `dayKey`, `team: {source: 'saved', showdownText, teamId} \| {source: 'daily'}`, `practice?` | `{runId, log, request}` (perspectiva p1, até o primeiro pedido) |
-| `choose` | `runId`, `turn`, `choice` | `{logDelta, request, status, result?}`. Uma escolha ilegal volta 400 com a mensagem do sim |
-| `forfeit` | `runId` | `{status: 'lost', result}` |
-
-**Fluxo de `choose`** (dentro de uma transação):
-1. Carrega a partida e confere dono, `status: 'active'` e `turn`. Se o turno já avançou, devolve o delta guardado (idempotência).
-2. Faz o replay a partir de `seed` + `teams` + `choices`.
-3. Faz a cópia para a IA.
-4. Aplica a escolha do p1. Se for ilegal, responde 400.
-5. Enquanto o p2 dever escolha (`owesChoice`), pede a decisão à IA e aplica. Isso cobre a substituição após desmaio sem esperar o p1 (wound 2026-07-27).
-6. Grava as escolhas, o delta do log do p1 e o novo pedido.
-7. Se a batalha acabou, grava o resultado, atualiza `challengeStats` (sequência pelo `dayKey` local) e, na fase 6, a entrada do ranking.
-
-**Documento da partida** em `challengeRuns/{uid}_{dayKey}`; treinos usam `…_{dayKey}_p{n}`:
-`{uid, dayKey, practice, teamSource, teamName, playerTeam (texto Showdown), logRounds, turn, status: 'active'|'won'|'lost', result: {turns, remaining, hpPct}, engineVersion, aiVersion, createdAt, updatedAt}`.
-- O cliente **não** pode ler o set da Cynthia, nem `seed` e `choices`: com eles, daria para refazer a batalha e prever o RNG.
-- Por isso o time da Cynthia, `seed` e `choices` ficam numa subcoleção `challengeRuns/{id}/secret/state` com `allow read: if false`. Só o servidor lê, com o Admin SDK.
-
-**Regras novas em `firestore.rules`:**
-- `challengeRuns/{id}`: o dono lê (`resource.data.uid == request.auth.uid`); `create, update: if false`; `delete: if isOwner(...)`.
-- `challengeRuns/{id}/secret/{doc}`: `allow read, write: if false`.
-- `challengeStats/{uid}`: o dono lê; o servidor escreve.
-- Fase 6: `public/data/challengeBoards/{dayKey}/entries/{uid}`, com leitura pública e escrita só do servidor.
+  Assim, abrir a tela ou a Home nunca acorda a função.
+- **Partidas fora de `users/`:** `challengeRuns/{uid}_{dia}`. O dono lê; só o servidor escreve.
+  - O que permitiria trapacear (seed, histórico de escolhas, time da Cynthia, trace da IA) fica em `secret/state`, que ninguém lê pelo cliente.
+  - As estatísticas ficam em `challengeStats/{uid}`.
+- **Cada turno:** replay síncrono (~64 ms numa partida longa) → snapshot → jogada do jogador → decisão da IA no snapshot → grava tudo numa transação → devolve as linhas novas e as falas.
 
 ---
 
@@ -368,7 +347,8 @@ Ela segue o padrão de `battle-turn.js`:
 | Batalha | Pokémon ativos balançam de leve parados, como no DPPt; a linha de Poké Balls entra uma a uma |
 | Controles | D-pad, A/B e botões de comando afundam ao toque (`translateY` + sombra pintada uma vez); o botão vermelho do Pokétch afunda e a tela pisca ao trocar de app |
 | Pokétch | Barras de HP drenam com `scaleX`; silhueta revelada na Ficha da Campeã ganha um flash curto |
-- **Cynthia** (`cynthia-gen4`) e **Pokémon** vêm dos sprites do Showdown e do PokéAPI que o app já usa, com cache no service worker.
+- **Cynthia na batalha:** sprite real `cynthia-gen4` do Showdown (pesquisado; o id consta em `trainer-sprites.json`). **Cynthia na arena:** desenhada em código com a paleta desse sprite, porque não há sprite de mapa hospedado e liberado para uso. **Pokémon:** sprites do Showdown e do PokéAPI que o app já usa, com cache no service worker.
+- **Pipeline da arte em código:** grades de caracteres em `scripts/challenge-art/*.txt` → `scripts/build-challenge-art.mjs` → PNG-8 em `public/challenge/` (especificação técnica §3.11).
 - **Fonte de pixel** do Google Fonts (sugestão: *Pixelify Sans*), carregada só nesta rota. O texto continua sendo texto real.
 
 ### 8.6 Acessibilidade
@@ -397,50 +377,16 @@ Ela segue o padrão de `battle-turn.js`:
 
 ## 10. Alterações propostas
 
-**Servidor**
-- `[NEW]` [api/challenge.js](../../api/challenge.js): endpoint (`today`/`start`/`choose`/`forfeit`, `?ping`, self-check).
-- `[NEW]` [api/_lib/challengeEngine.js](../../api/_lib/challengeEngine.js): replay síncrono, log por perspectiva, `owesChoice`, validação.
-- `[NEW]` [api/_lib/cynthiaAI.js](../../api/_lib/cynthiaAI.js): decisão da IA (§6).
-- `[NEW]` [api/_lib/championPool.js](../../api/_lib/championPool.js): espécies, variantes e fontes (ocultos).
-- `[NEW]` [api/_lib/championRotation.js](../../api/_lib/championRotation.js): `championTeamFor(dayKey)`, `dailyTeamFor(dayKey)`, `difficultyFor(dayKey)`, `isPlausibleDayKey()`.
-- `[NEW]` testes: `api/challenge.test.js` (handler + Firestore em memória), `api/challenge.deps.test.js` (imports estáticos), `api/_lib/cynthiaAI.test.js` (cenários + fuzz), `api/_lib/championRotation.test.js`.
-- `[MODIFY]` [firestore.rules](../../firestore.rules): `challengeRuns`, `challengeRuns/*/secret`, `challengeStats`.
-- `[MODIFY]` [vercel.json](../../vercel.json): `memory`/`maxDuration` da função nova, iguais aos de `battle-turn`.
+> **A lista completa, arquivo por arquivo, está na [especificação técnica](./daily-champion-challenge-tech.md)**: §2.1 (servidor), §3.1 (cliente), §5.1 (integração com linhas exatas). A organização da IA está no [documento da IA](./daily-champion-challenge-ai.md), §2.
 
-**Cliente: estado e lógica pura**
-- `[NEW]` [src/store/useChampionChallengeStore.js](../../src/store/useChampionChallengeStore.js): `today`, `run`, `hasLoadedRun` (wound 2026-09-21: lista vazia ≠ "ainda não respondeu"), escolha pendente otimista, configurações.
-- `[NEW]` [src/hooks/useChampionChallenge.js](../../src/hooks/useChampionChallenge.js).
-- `[NEW]` [src/utils/dayKey.js](../../src/utils/dayKey.js) + teste: `localDayKey()` compartilhado.
-- `[NEW]` [src/utils/battleTimeline.js](../../src/utils/battleTimeline.js) + teste: log → fila de animação.
-- `[NEW]` [src/utils/arenaMap.js](../../src/utils/arenaMap.js) + teste: mapa, colisão, BFS.
-- `[MODIFY]` [src/utils/battleSprites.js](../../src/utils/battleSprites.js): opção `style: 'gen4'` com fallback.
-- `[MODIFY]` [src/services/accountDeletion.js](../../src/services/accountDeletion.js): apagar `challengeRuns` (por `uid`) e `challengeStats/{uid}`.
-- `[MODIFY]` [src/hooks/useDailyPuzzle.js](../../src/hooks/useDailyPuzzle.js), [src/hooks/useSessionGame.js](../../src/hooks/useSessionGame.js), [src/components/views/PokePuzzleView.jsx](../../src/components/views/PokePuzzleView.jsx): passar a usar `localDayKey()` (só refatoração, mesmo formato).
+Resumo:
 
-**Cliente: interface**
-- `[NEW]` `src/components/views/challenge/`:
-  - `ChampionChallengeView.jsx`: orquestra as fases arena → seletor → batalha → resultado;
-  - `ConsoleShell.jsx`: moldura DS, layout horizontal/vertical, cálculo de `--px`;
-  - `ArenaScreen.jsx` + `useArenaMovement.js`;
-  - `BattleScene.jsx` + `useTimelinePlayer.js`;
-  - `HpBox.jsx`, `TextBox.jsx`;
-  - `CommandPanel.jsx`: LUTAR, POKÉMON, DESISTIR;
-  - `PoketchPanel.jsx`: os apps Equipe, Relógio, Contador e Ficha;
-  - `TeamPicker.jsx`: Meus times e Time do dia;
-  - `DPad.jsx`;
-  - `ResultScreen.jsx`.
-- `[NEW]` [src/styles/champion-challenge.css](../../src/styles/champion-challenge.css): tokens `--ds-*`, `--px`, keyframes da cena.
-- `[NEW]` `public/challenge/`: tileset e sprites originais (PNG-8).
-- `[MODIFY]` [src/components/AppLayout.jsx](../../src/components/AppLayout.jsx): rota, `currentPage`, item de navegação, chunk.
-- `[MODIFY]` [src/components/views/CozyHomeView.jsx](../../src/components/views/CozyHomeView.jsx) + [src/styles/cozy-home.css](../../src/styles/cozy-home.css): card de status e item no `journey`.
-- `[MODIFY]` [api/render-meta.js](../../api/render-meta.js): ramo `/challenge`.
-- `[MODIFY]` [src/constants/translations.js](../../src/constants/translations.js): `challenge.*`, `nav.challenge`, `guide.challenge`, `cozyHome.challenge*`.
-- `[MODIFY]` [src/constants/theme.js](../../src/constants/theme.js): `PATCH_NOTES_VERSION`.
-
-**Docs**
-- `[NEW]` `docs/modules/daily_challenge.md`.
-- `[MODIFY]` [docs/index.md](../index.md).
-- `[MODIFY]` [.claude/skills/design-system/SKILL.md](../../.claude/skills/design-system/SKILL.md): a exceção `.ds-screen`.
+| Área | Novo | Alterado |
+|---|---|---|
+| Servidor | `api/challenge.js`, `api/_lib/challenge/*` (9 módulos), `api/_lib/ai/*` (IA), Firestore falso compartilhado, `scripts/ai-arena.mjs` | `firestore.rules`, `vercel.json`, `package.json` (scripts), `battle-turn.test.js` |
+| Cliente | Store + hook, `services/challengeApi.js`, `services/apiClient.js`, 5 utils puros com teste, ~25 componentes em `views/challenge/`, 2 folhas de estilo | `AppLayout.jsx`, `CozyHomeView.jsx`, `useBattlesStore.js`, `accountDeletion.js`, `translations.js`, `theme.js`, `PageGuide.jsx`, `render-meta.js` |
+| Arte | `scripts/challenge-art/*.txt` → `scripts/build-challenge-art.mjs` → `public/challenge/*.png` | — |
+| Docs | `docs/modules/daily_challenge.md` | `docs/index.md`, skill `design-system` (exceção `.ds-screen`) |
 
 ---
 
@@ -525,6 +471,12 @@ F1 e F2 sozinhas já entregam um desafio jogável. F3 e F4 trazem o "uau".
 | 3 | Arte | **Arte original desenhada no estilo DS**, com **animações leves** para dar interatividade (§8.5) |
 | 4 | Restrições do time próprio | **Tudo liberado**, incluindo lendários e Ubers; a partida é marcada com o tier, e o ranking justo é o do Time do dia (§3.5) |
 | 5 | Ranking | **Só depois**, na F6 |
+| 6 | Quem produz a arte | **Claude cria em código** (cenário e boneco do jogador). Para a Cynthia, **sprites reais pesquisados**: `cynthia-gen4` do Showdown na batalha; na arena, desenhada com a paleta desse sprite (§8.5) |
+| 7 | Animações de golpe | **3 moldes genéricos** (físico, especial, status) na cor do tipo **+ 12 golpes-assinatura** (especificação técnica §3.9) |
+| 8 | Som | **Efeitos sintetizados em WebAudio**, sem arquivos e sem música; mudo lembrado (especificação técnica §3.12) |
+| 9 | Virada do dia | **Meia-noite de Brasília para todos** (§3.4) |
+
+Premissas assumidas sem pergunta (mecânica Gen 9, definição de sequência, convidados, partida abandonada…) estão na §0 da [especificação técnica](./daily-champion-challenge-tech.md).
 
 ---
 
