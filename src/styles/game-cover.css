@@ -184,6 +184,20 @@
     overflow: hidden;
 }
 
+/* The builder/Pokédex picker (not the gyms one): one column width shared by
+   the game cards, the regulation cards and the tier tiles, so every grid in it
+   lands on the same columns — four on desktop, two on a phone. */
+.game-picker--catalog {
+    --picker-col: 9.5rem;
+}
+
+/* With tabs, the dialog keeps one height whichever tab is showing, so switching
+   from the short Games grid to the long Metas list never resizes the panel
+   under the pointer. Same cap as max-height above. */
+.game-picker--tabbed {
+    height: min(82dvh, 720px, 100%);
+}
+
 .game-picker__head {
     display: flex;
     align-items: flex-start;
@@ -191,6 +205,22 @@
     gap: var(--space-4);
     padding: var(--space-4) var(--space-5) var(--space-3_5);
     border-bottom: 1px solid var(--color-border);
+}
+
+/* The tab bar sits under the title and takes over the head's rule. */
+.game-picker__head--tabbed {
+    padding-bottom: var(--space-3);
+    border-bottom: none;
+}
+
+.game-picker__tabbar {
+    padding: 0 var(--space-5) var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* One tab's content. Sections inside it are separated by whitespace, not rules. */
+.game-picker__panel > section + section {
+    margin-top: var(--space-6);
 }
 
 .game-picker__title {
@@ -232,7 +262,7 @@
 
 .game-picker__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--picker-col, 8.5rem), 1fr));
     gap: var(--space-3);
     padding: var(--space-4) var(--space-5);
     overflow-y: auto;
@@ -370,48 +400,62 @@
     cursor: progress;
 }
 
-/* --- Smogon tier chips -------------------------------------------------- */
-/* The VGC regulations are three cards with real cover art; the Smogon ladder is
+/* --- Smogon tier tiles -------------------------------------------------- */
+/* The VGC regulations are a few cards with real cover art; the Smogon ladder is
    thirty-odd entries whose only distinguishing mark is a two-letter name. Cards
-   would be thirty identical plates, so the tiers are chips instead — dense,
-   grouped, scannable — inside the same section the regulations live in. */
+   would be thirty identical plates, so the tiers are compact tiles instead —
+   on the same --picker-col grid as the cards above them, so the Metas tab is
+   one aligned table rather than rows of chips that each end somewhere else. */
 
 .tier-groups {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
 }
 
 .tier-group__label {
     display: block;
-    margin-bottom: var(--space-1_5);
+    margin-bottom: var(--space-2);
     font-family: var(--font-display);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     color: var(--color-muted);
 }
 
-.tier-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1_5);
+.tier-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--picker-col, 9.5rem), 1fr));
+    column-gap: var(--space-3);
+    row-gap: var(--space-2);
 }
 
 /* No border: these sit inside the bordered picker panel, so they separate
    themselves with fill. Selected is an inset ring, which does not resize the
-   chip and so never nudges its neighbours as the selection moves. */
+   tile and so never nudges its neighbours as the selection moves. Name left,
+   count right: every tile in a column puts both in the same place. */
 .tier-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    padding: var(--space-1_5) var(--space-2_5);
+    /* A grid rather than flex: the row is centred in the tile (align-content)
+       while name and count share a baseline (align-items) — centring each on
+       its own left the smaller count riding above the name. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-content: center;
+    align-items: baseline;
+    gap: var(--space-2);
+    min-width: 0;
+    height: var(--control-h-md);
+    padding: 0 var(--space-3);
     border: none;
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-md);
     background: var(--color-surface-raised);
     color: var(--color-fg);
     font-family: var(--font-display);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
+    /* The display face's small-size tracking (see the design-system skill):
+       mono is wide, and untracked it pushed the longest name out of its tile. */
+    letter-spacing: -0.03em;
+    text-align: left;
     transition: background-color var(--duration-fast) var(--ease-smooth),
                 box-shadow var(--duration-fast) var(--ease-smooth),
                 color var(--duration-fast) var(--ease-smooth);
@@ -429,9 +473,17 @@
     color: var(--color-primary);
 }
 
+.tier-chip__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* Species count — the one number that tells you how big a tier is before you
    commit to it. Muted so the tier name stays the thing being read. */
 .tier-chip__count {
+    flex-shrink: 0;
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
     color: var(--color-muted);
@@ -440,7 +492,6 @@
 
 .tier-chip.is-active .tier-chip__count {
     color: inherit;
-    opacity: 0.75;
 }
 
 @media (max-width: 1023px) {
@@ -451,8 +502,11 @@
     .game-cover__label {
         font-size: var(--text-base);
     }
-    /* Thumb targets: the chip keeps its calm size and grows its hit area. */
+    /* Thumb height on touch; the grid keeps the tiles aligned. One step less
+       inline padding so the longest name ("Gen 8 Doubles OU") still fits a
+       two-column tile at 390px. */
     .tier-chip {
-        padding: var(--space-2) var(--space-3);
+        height: var(--control-h-lg);
+        padding: 0 var(--space-2_5);
     }
 }
