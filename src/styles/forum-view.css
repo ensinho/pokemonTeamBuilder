@@ -2757,20 +2757,15 @@
     border-color: var(--color-primary);
 }
 
+/* Placed by AnchoredPopover (fixed, portalled, above the button) — position
+   and max-height come from there, so the menu can never open off-screen. */
 .comment-composer__attach-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    margin-top: var(--space-1);
     width: 16rem;
-    max-height: 18rem;
-    overflow-y: auto;
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--elevation-3);
     padding: var(--space-2);
-    z-index: 50;
 }
 
 .comment-composer__menu-label {

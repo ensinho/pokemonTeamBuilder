@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-14 — Forum "Anexar" opened its menu off-screen `bug`
+- **Symptom:** the Attach button in the thread composer (and in the new-topic modal) did nothing visible.
+- **Root cause:** `.comment-composer__attach-menu` was an absolute child with `top: 100%` — it opened *below* the button, but both buttons sit at the bottom of a clipped container (the thread's composer dock, the topic modal's actions row), so the menu rendered outside the visible area. In `TopicCreateModal` the Tailwind `bottom-full` added on top of the CSS `top: 100%` collapsed it to zero height.
+- **Fix:** `AttachMenuPopover` (portalled `AnchoredPopover`, `placement="top"`, closes on outside pointerdown and on Escape without closing the modal around it); the CSS lost its positioning. Verified at 1440/390 × dark/light: menu inside the viewport in both places.
+- **Correct pattern:** a menu opened from anything docked at the bottom of a scroller, dock or modal is portalled through `AnchoredPopover`, never an absolutely positioned child. Never mix a utility `top/bottom` with a class that already sets the other edge.
+- **Files:** `src/components/forum/AttachMenuPopover.jsx`, `src/components/forum/CommentComposer.jsx`, `src/components/forum/TopicCreateModal.jsx`, `src/styles/forum-view.css`
+
 ### 2026-10-14 — A test script posted to the real forum `dispattern`
 - **Symptom:** two "teste de composer" replies from "@Guest Trainer" appeared in the live "Team Showcase" topic during a UX audit (2026-10-06); they need an admin to delete.
 - **Root cause:** the dev server and `vite preview` talk to the production Firebase project, and the audit script drove the forum composer with no write guard.

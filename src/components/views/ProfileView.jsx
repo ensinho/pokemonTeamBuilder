@@ -23,6 +23,7 @@ import { Switch } from '../Switch';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { useProgressiveReveal } from '../../hooks/useProgressiveReveal';
 import { ShowMoreButton } from '../ShowMoreButton';
+import { AccountSecurityModal } from '../modals/AccountSecurityModal';
 import {
     DEFAULT_SEARCH_SHORTCUT, formatShortcut, normalizeShortcut, shortcutFromEvent, validateShortcut,
 } from '../../utils/searchShortcut';
@@ -308,6 +309,8 @@ export function ProfileView({
     });
     const [nameDraft, setNameDraft] = useState(displayName || '');
     const [editingName, setEditingName] = useState(false);
+    // 'password' | 'delete' | null — which AccountSecurityModal is open.
+    const [securityModal, setSecurityModal] = useState(null);
 
     // Sync draft when external prop changes (e.g. firestore hydration).
     React.useEffect(() => {
@@ -790,6 +793,25 @@ export function ProfileView({
                                 >
                                     {t('profile.signOutBtn')}
                                 </button>
+                                <div className="profile-button-row profile-account-actions">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSecurityModal('password')}
+                                        className="profile-button"
+                                    >
+                                        {t('profile.changePasswordBtn')}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setSecurityModal('delete')}
+                                        className="profile-button profile-button--danger"
+                                    >
+                                        {t('profile.deleteAccountBtn')}
+                                    </button>
+                                </div>
+                                {securityModal && (
+                                    <AccountSecurityModal mode={securityModal} onClose={() => setSecurityModal(null)} />
+                                )}
                             </div>
                         )}
                     </SectionCard>

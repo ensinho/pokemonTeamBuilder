@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { analyzeTeam, rateTeam } from './teamAnalysis';
+import { analyzeTeam, rateTeam, typesForEra, LEGACY_TYPE_CHART, isPreFairyGeneration } from './teamAnalysis';
 
 // Minimal pokémon factory — only `id` and `types` matter to the engine.
 const mon = (id, types) => ({ id, types });
@@ -109,5 +109,58 @@ describe('rateTeam', () => {
 
     it('accepts strengths as an array too', () => {
         expect(rateTeam({ strengths: ['a', 'b'], weaknesses: {}, defensiveCoverage: {} }, 1).score).toBe(54);
+    });
+});
+
+describe('pre-Fairy (Gen 2–5) mode', () => {
+    it('restores the typings every Fairy Pokémon had before Gen 6', () => {
+        expect(typesForEra(['water', 'fairy'], true)).toEqual(['water']); // Azumarill
+        expect(typesForEra(['normal', 'fairy'], true)).toEqual(['normal']); // Jigglypuff, Azurill
+        expect(typesForEra(['psychic', 'fairy'], true)).toEqual(['psychic']); // Gardevoir, Mr. Mime
+        expect(typesForEra(['fairy'], true)).toEqual(['normal']); // Clefairy, Togepi, Snubbull
+        expect(typesForEra(['fairy', 'flying'], true)).toEqual(['normal', 'flying']); // Togekiss
+    });
+
+    it('knows which game generations predate Fairy', () => {
+        expect(isPreFairyGeneration('generation-iii')).toBe(true);
+        expect(isPreFairyGeneration('generation-v')).toBe(true);
+        expect(isPreFairyGeneration('generation-vi')).toBe(false);
+        expect(isPreFairyGeneration('generation-ix')).toBe(false);
+        expect(isPreFairyGeneration(4)).toBe(true);
+        expect(isPreFairyGeneration(undefined)).toBe(false);
+    });
+
+    it('leaves typings alone outside the mode', () => {
+        expect(typesForEra(['water', 'fairy'], false)).toEqual(['water', 'fairy']);
+        expect(typesForEra(['fire'], true)).toEqual(['fire']);
+    });
+
+    it('drops Fairy from the chart and gives Steel back its Ghost/Dark resists', () => {
+        expect(LEGACY_TYPE_CHART).not.toHaveProperty('fairy');
+        Object.values(LEGACY_TYPE_CHART).forEach(({ damageTaken, damageDealt }) => {
+            expect(damageTaken).not.toHaveProperty('Fairy');
+            expect(damageDealt).not.toHaveProperty('Fairy');
+        });
+        expect(LEGACY_TYPE_CHART.steel.damageTaken).toMatchObject({ Ghost: 0.5, Dark: 0.5 });
+    });
+
+    it('analyses Azumarill as the pure Water type it was in Gen 3', () => {
+        const azumarill = mon(184, ['water', 'fairy']);
+        const modern = analyzeTeam([azumarill], []).teamAnalysis;
+        const legacy = analyzeTeam([azumarill], [], { legacyTypes: true }).teamAnalysis;
+
+        expect(modern.weaknesses).toHaveProperty('poison');
+        expect(modern.defensiveCoverage).toHaveProperty('dragon');
+        expect(legacy.weaknesses).not.toHaveProperty('poison');
+        expect(legacy.defensiveCoverage).not.toHaveProperty('dragon');
+        expect(legacy.weaknesses).toHaveProperty('grass');
+    });
+
+    it('never reports Fairy as a weakness, resist or target', () => {
+        const team = [mon(149, ['dragon', 'flying']), mon(248, ['rock', 'dark'])];
+        const { teamAnalysis } = analyzeTeam(team, [], { legacyTypes: true });
+        expect(teamAnalysis.weaknesses).not.toHaveProperty('fairy');
+        expect(teamAnalysis.defensiveCoverage).not.toHaveProperty('fairy');
+        expect(teamAnalysis.strengths.has('fairy')).toBe(false);
     });
 });

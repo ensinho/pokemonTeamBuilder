@@ -24,6 +24,9 @@ import { buildGameSections } from '../../utils/gameDex';
 import { matchesTypeFilter } from '../../utils/typeFilter';
 import { TypeMatchToggle } from '../TypeMatchToggle';
 import { isPlaythroughMode } from '../../constants/regulations';
+import { isPreFairyGeneration } from '../../utils/teamAnalysis';
+import { LegacyTypesSwitch } from '../LegacyTypesSwitch';
+import { toast } from '../../store/useToastStore';
 // SynergySuggestions strip removed — synergy picks now appear in-grid
 import { useSmogonData } from '../../hooks/useSmogonData';
 import { useCompetitiveUsage } from '../../hooks/useCompetitiveUsage';
@@ -286,6 +289,21 @@ export function TeamBuilderView({
     // Water resist) — what goes is everything ranked by competitive usage, and the
     // ~2.6MB of datasets behind it.
     const isPlaythrough = isPlaythroughMode(selectedRegulation);
+    // Picking a game sets the type chart it was played with — Azumarill is pure
+    // Water in Emerald. Only on an actual change, so a manual override of the
+    // switch survives a reload; "all games" leaves the switch where it is.
+    const setLegacyTypes = useActiveTeamStore((s) => s.setLegacyTypes);
+    const lastGameRef = React.useRef(selectedGame);
+    React.useEffect(() => {
+        if (lastGameRef.current === selectedGame) return;
+        lastGameRef.current = selectedGame;
+        const game = games.find((g) => g.key === selectedGame);
+        if (!game) return;
+        const legacy = isPreFairyGeneration(game.generation);
+        if (legacy === useActiveTeamStore.getState().legacyTypes) return;
+        setLegacyTypes(legacy);
+        toast.info(t(legacy ? 'builder.legacyTypesAutoOn' : 'builder.legacyTypesAutoOff'));
+    }, [selectedGame, games, setLegacyTypes, t]);
     const wantsMeta = { enabled: !isPlaythrough };
     const { popular, synergy, status: tournamentStatus } = useTournamentData(wantsMeta);
     const { byId: smogonById, status: smogonStatus } = useSmogonData(wantsMeta);
@@ -906,6 +924,8 @@ export function TeamBuilderView({
                                 <TeamThreats threats={teamThreats} hasTeam={currentTeam.length > 0} onOpenDetail={openDetailModal} bare />
                             </div>
                         )}
+                        {/* Under the groups it changes, so the setting reads as part of the analysis. */}
+                        {(analysisTab === 'analysis' || isPlaythrough) && <LegacyTypesSwitch />}
                     </section>
                 </div>
 

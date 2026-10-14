@@ -15,48 +15,36 @@ import { PATCH_NOTES_VERSION } from './theme';
 export const RELEASES = [
     {
         version: PATCH_NOTES_VERSION,
-        month: '2026-09',
-        // Optional per-release opening line, in place of the standing thanks —
-        // this release came from us rather than from a suggestion, and says why.
-        thanks: 'patchNotes.visualThanks',
+        month: '2026-10',
         notes: [
             {
-                key: 'material-layer',
-                icon: 'sparkles',
-                visual: 'material',
-                title: 'patchNotes.materialTitle',
-                description: 'patchNotes.materialDesc',
-                cta: 'patchNotes.materialCta',
+                key: 'pre-fairy-chart',
+                icon: 'flower',
+                visual: 'preFairy',
+                title: 'patchNotes.preFairyTitle',
+                description: 'patchNotes.preFairyDesc',
+                cta: 'patchNotes.preFairyCta',
+                path: '/builder',
+            },
+            {
+                key: 'account-security',
+                icon: 'key',
+                visual: 'account',
+                title: 'patchNotes.accountTitle',
+                description: 'patchNotes.accountDesc',
+                cta: 'patchNotes.accountCta',
                 path: '/profile',
             },
-            {
-                // `action` instead of `path`: the modal opens the search itself.
-                key: 'global-search',
-                icon: 'search',
-                visual: 'search',
-                title: 'patchNotes.searchTitle',
-                description: 'patchNotes.searchDesc',
-                cta: 'patchNotes.searchCta',
-                action: 'search',
-            },
-            {
-                key: 'small-moments',
-                icon: 'heart',
-                visual: 'delight',
-                title: 'patchNotes.delightTitle',
-                description: 'patchNotes.delightDesc',
-                cta: 'patchNotes.delightCta',
-                path: '/pokedex',
-            },
-            {
-                key: 'puzzle-tab',
-                icon: 'puzzle',
-                visual: 'dock',
-                title: 'patchNotes.dockTitle',
-                description: 'patchNotes.dockDesc',
-                cta: 'patchNotes.dockCta',
-                path: '/pokepuzzle',
-            },
+        ],
+    },
+    {
+        version: '1.13.0',
+        month: '2026-09',
+        notes: [
+            { key: 'material-layer', title: 'patchNotes.materialTitle' },
+            { key: 'global-search', title: 'patchNotes.searchTitle' },
+            { key: 'small-moments', title: 'patchNotes.delightTitle' },
+            { key: 'puzzle-tab', title: 'patchNotes.dockTitle' },
         ],
     },
     {

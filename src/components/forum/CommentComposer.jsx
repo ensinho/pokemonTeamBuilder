@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CloseIcon, SwordsIcon, ClipIcon, StarIcon, ReplyIcon } from '../icons';
+import { AttachMenuPopover } from './AttachMenuPopover';
 
 export const CommentComposer = React.forwardRef(function CommentComposer({
     replyText,
@@ -19,6 +20,8 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
     t,
 }, ref) {
     const [isAttachOpen, setIsAttachOpen] = useState(false);
+    const attachButtonRef = useRef(null);
+    const closeAttach = React.useCallback(() => setIsAttachOpen(false), []);
 
     // Auto-grow textarea
     const handleTextChange = (e) => {
@@ -110,11 +113,14 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                 />
 
                 <div className="comment-composer__toolbar">
-                    <div className="flex items-center gap-1.5 relative">
+                    <div className="flex items-center gap-1.5">
                         {/* Attach Dropdown Button */}
                         <button
+                            ref={attachButtonRef}
                             type="button"
-                            onClick={() => setIsAttachOpen(!isAttachOpen)}
+                            aria-haspopup="dialog"
+                            aria-expanded={isAttachOpen}
+                            onClick={() => setIsAttachOpen((open) => !open)}
                             className={`btn-ghost comment-composer__tool-btn ${attachedTeam ? 'is-active' : ''}`}
                             title={language === 'pt' ? 'Anexar Time ou Batalha' : 'Attach Team or Battle'}
                         >
@@ -125,8 +131,12 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                         </button>
 
                         {/* Attach Dropdown Menu */}
-                        {isAttachOpen && (
-                            <div className="comment-composer__attach-menu">
+                        <AttachMenuPopover
+                            isOpen={isAttachOpen}
+                            onClose={closeAttach}
+                            anchorRef={attachButtonRef}
+                            ariaLabel={language === 'pt' ? 'Anexar Time ou Batalha' : 'Attach Team or Battle'}
+                        >
                                 <p className="comment-composer__menu-label">
                                     {language === 'pt' ? 'Desafiar Fórum para Batalha' : 'Invite forum to battle'}
                                 </p>
@@ -190,8 +200,7 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
                                         </button>
                                     ))
                                 )}
-                            </div>
-                        )}
+                        </AttachMenuPopover>
                     </div>
 
                     <div className="flex items-center gap-2">

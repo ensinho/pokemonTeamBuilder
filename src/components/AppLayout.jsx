@@ -382,7 +382,7 @@ export default function AppLayout() {
         greetingPokemonId, greetingPokemonIsShiny, setGreetingPokemon, streak,
         trainerSprite, setTrainerSprite, avatarPreference, setAvatarPreference,
         handleResetSyncPrompt, showSyncPrompt, handleDismissSyncPrompt,
-        handleSignIn, handleSignUp, handleSignOut, isAuthReady, isAuthReconciled, isNewVisitor
+        handleSignIn, handleSignUp, handleSignOut, sendPasswordReset, isAuthReady, isAuthReconciled, isNewVisitor
     } = useAuthStore(useShallow((s) => ({
         userId: s.userId, userEmail: s.userEmail, isAnonymous: s.isAnonymous, isAdmin: s.isAdmin,
         displayName: s.displayName, setDisplayName: s.setDisplayName,
@@ -393,6 +393,7 @@ export default function AppLayout() {
         handleResetSyncPrompt: s.handleResetSyncPrompt, showSyncPrompt: s.showSyncPrompt,
         handleDismissSyncPrompt: s.handleDismissSyncPrompt,
         handleSignIn: s.handleSignIn, handleSignUp: s.handleSignUp, handleSignOut: s.handleSignOut,
+        sendPasswordReset: s.sendPasswordReset,
         isAuthReady: s.isAuthReady, isAuthReconciled: s.isAuthReconciled, isNewVisitor: s.isNewVisitor,
     })));
 
@@ -1347,6 +1348,7 @@ export default function AppLayout() {
                     canLink={isAnonymous}
                     onSignIn={handleSignIn}
                     onSignUp={handleSignUp}
+                    onResetPassword={sendPasswordReset}
                     onClose={() => setAuthModal({ open: false, mode: authModal.mode })}
                     colors={colors}
                 />

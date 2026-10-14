@@ -15,6 +15,7 @@ import { coreIconFor } from '../coreIcons';
 import { TeamRatingBadge } from '../TeamIdentitySummary';
 import { detectTeamCores } from '../../utils/metaCores';
 import { rateTeam } from '../../utils/teamAnalysis';
+import { LegacyTypesSwitch } from '../LegacyTypesSwitch';
 import { buildGameSections } from '../../utils/gameDex';
 import { matchesTypeFilter } from '../../utils/typeFilter';
 import { TeamThreats } from '../TeamThreats';
@@ -233,6 +234,7 @@ function TeamAnalysisSheet({ teamAnalysis, teamSize, teamThreats, isPlaythrough,
                             </h3>
                             <TypeList entries={offense} empty={t('builder.noOffense')} />
                         </section>
+                        <LegacyTypesSwitch />
                     </>
                 ) : (
                     <>
