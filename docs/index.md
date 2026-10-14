@@ -21,6 +21,7 @@
 | [Handoff: Friends & battles](./plans/HANDOFF-friends-and-battles.md) | **Start here** for this feature — status, blockers, traps, next steps |
 | [How friends & battles work](./plans/ARCHITECTURE-friends-and-battles.md) | The running system — data flow, turn loop, security model, invariants |
 | [Plan: Friends & async battles](./plans/friends-and-async-battles.md) | The decisions and the measured research behind them, phase by phase |
+| [Plan: Daily champion challenge](./plans/daily-champion-challenge.md) | Proposed (not built): daily single-player battle vs a Cynthia AI — server-side AI, DS-style console UI, daily rotation |
 
 ---
 
