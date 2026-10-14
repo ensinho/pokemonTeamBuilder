@@ -14,6 +14,7 @@ import { PokeballIcon, CloseIcon, SwordsIcon } from '../icons';
 import { ChallengeModal } from '../modals/ChallengeModal';
 import '../../styles/friends-view.css';
 import { Loader } from '../Loader';
+import { promptSignIn } from '../../utils/navigation';
 
 const TABS = ['friends', 'requests', 'find'];
 
@@ -149,9 +150,12 @@ export function FriendsView() {
     if (isAnonymous) {
         return (
             <div className="friends-view">
+                {/* The gate used to be a dead end: no button, and on a phone no
+                    sign-in control anywhere on the page (2026-10-14). */}
                 <EmptyState
                     title={t('friends.guestTitle')}
                     message={t('friends.guestMessage')}
+                    action={{ label: t('profile.createAccountBtn'), onClick: () => promptSignIn('signUp') }}
                 />
             </div>
         );

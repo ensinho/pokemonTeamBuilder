@@ -33,8 +33,13 @@ export const CommentComposer = React.forwardRef(function CommentComposer({
         }
     }, [replyText, ref]);
 
+    // Enter sends only where there is a physical keyboard; on a phone the
+    // Return key is the only way to start a new line, so it must not send
+    // (the send button is right there). Ctrl/⌘+Enter sends everywhere.
     const handleKeyDown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key !== 'Enter' || e.nativeEvent?.isComposing) return;
+        const finePointer = typeof window !== 'undefined' && window.matchMedia?.('(pointer: fine)').matches;
+        if ((e.metaKey || e.ctrlKey) || (finePointer && !e.shiftKey)) {
             e.preventDefault();
             if (replyText.trim() || attachedTeam) {
                 onSubmit(e);

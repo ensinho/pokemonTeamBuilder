@@ -289,7 +289,7 @@ export function CozyHomeView({
                 spriteId: latestShare.creatorAvatar || 25,
                 title: t('cozyHome.jShared', { name: latestShare.creatorName || 'Trainer', team: latestShare.sharedTeam.name || '—' }),
                 sub: t('cozyHome.jSharedSub'),
-                onClick: () => navigate('/feed'),
+                onClick: () => navigate(teamsTopicId ? `/feed?topic=${encodeURIComponent(teamsTopicId)}` : '/feed'),
             });
         }
         return items;
@@ -622,7 +622,7 @@ export function CozyHomeView({
                     <ul className="cozy-posts">
                         {list.map((m) => (
                             <li key={m.id}>
-                                <button type="button" className="card card--inset card--interactive card--compact cozy-post" onClick={() => navigate('/feed')}>
+                                <button type="button" className="card card--inset card--interactive card--compact cozy-post" onClick={() => navigate(teamsTopicId ? `/feed?topic=${encodeURIComponent(teamsTopicId)}` : '/feed')}>
                                     <span className="cozy-post__avatar" aria-hidden="true">
                                         <Sprite src={dexSprite(m.creatorAvatar || 25, Boolean(m.creatorAvatarIsShiny))} className="cozy-post__sprite" />
                                     </span>

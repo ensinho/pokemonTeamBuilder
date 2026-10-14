@@ -14,6 +14,7 @@ import { PokeballIcon, SwordsIcon } from '../../icons';
 import { ChallengeModal } from '../../modals/ChallengeModal';
 import '../../../styles/battle-view.css';
 import { Loader } from '../../Loader';
+import { promptSignIn } from '../../../utils/navigation';
 import { confirmAction } from '../../../store/useConfirmStore';
 import { Switch } from '../../Switch';
 
@@ -69,7 +70,11 @@ export function BattleListView() {
     if (isAnonymous) {
         return (
             <div className="battle-view">
-                <EmptyState title={t('battle.guestTitle')} message={t('battle.guestMessage')} />
+                <EmptyState
+                    title={t('battle.guestTitle')}
+                    message={t('battle.guestMessage')}
+                    action={{ label: t('profile.createAccountBtn'), onClick: () => promptSignIn('signUp') }}
+                />
             </div>
         );
     }
