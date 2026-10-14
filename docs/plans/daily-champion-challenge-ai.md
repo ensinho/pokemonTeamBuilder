@@ -3,6 +3,8 @@
 > Par do plano [daily-champion-challenge.md](./daily-champion-challenge.md) e da especificação
 > [daily-champion-challenge-tech.md](./daily-champion-challenge-tech.md).
 > Todo o código desta IA vive em `api/_lib/ai/` e roda **só no servidor**.
+> A parte **aprendida** (regressão logística: chance de vitória, previsão da jogada, calibragem) está em
+> [daily-champion-challenge-ml.md](./daily-champion-challenge-ml.md).
 > Data: 2026-10-14. Números medidos em `@pkmn/sim@0.10.11`, Node local.
 
 ## 0. O que é uma IA "de qualidade" aqui
@@ -43,7 +45,10 @@ api/_lib/ai/
   view.js               buildView(snapshot, request, p2Lines) → BattleView (só leitura)
   knowledge.js          knowledgeFrom(p2Lines) → o que foi revelado + crenças sobre o resto
   fog.js                fogClone(snapshot, knowledge) → Battle com o lado do jogador "embaçado"
-  estimate.js           damageRange, koChance, actsFirst, threatOf, bestMoveAgainst
+  estimate.js           damageRange, koChance, actsFirst, threatOf, bestMoveAgainst (com try/catch; ver §6)
+  features.js           variáveis dos modelos (fonte única: jogo, coleta e treino) — documento de ML
+  model.js              predictWin / predictActions — documento de ML
+  models/               winprob-v1.js, foe-v0.js (pesos versionados)
   options.js            legalOptions(request) → [{choice, kind, moveId?, slot?}]
   memory.js             memoryFrom(p2Lines) → perfil do jogador nesta partida
   foeModel.js           predictFoe(view, knowledge, memory, est) → {moves: [{id, p}], pSwitch}
@@ -157,6 +162,8 @@ Validado no spike desta sessão. No mesmo Stone Edge do Garchomp contra um Togek
 
 Medido no spike: Garchomp `getActionSpeed()` = 169 e Togekiss = 100; Extreme Speed tem prioridade 2.
 
+**Robustez (achado do spike):** `getDamage` fora de uma jogada real **lança erro** em golpes que dependem do contexto de execução (Beat Up: `move.allies` indefinido; 19 vezes em ~7 mil turnos). Toda chamada fica em `try/catch`; no erro, a estimativa cai para o poder base × efetividade × STAB e o `trace` marca `estimateFallback`. Um teste passa **todo golpe do dex** pelo estimador.
+
 ---
 
 ## 7. Opções legais (`options.js`)
@@ -191,6 +198,7 @@ Os pesos (60, 20, 35…) são o ponto de partida. Cada perfil pode multiplicá-l
 
 ## 9. Previsão do jogador (`foeModel.js`)
 - **Golpes:** `p(m) ∝ exp(E[d(m → meu ativo)] / 15)` sobre os golpes revelados e acreditados. Ganha +30% de peso o golpe repetido nos últimos 2 turnos (memória).
+- **Isso já é o modelo M2** (softmax linear) com pesos de mão (`models/foe-v0.js`). Na F6, os pesos aprendidos com batalhas humanas anônimas substituem os de mão, sem mudar o código (documento de ML, §1).
 - **Troca:** `pSwitch = clamp(0,10 + 0,4·taxaDeTroca, 0, 0,5)`. Sobe +0,15 se o meu ativo nocauteia o dele antes de ele agir.
 - **Usos:**
   - `threatOf` esperado;
@@ -206,7 +214,7 @@ Só nos perfis `rematch` e `world`. Dá precisão onde a heurística erra: habil
 1. Candidatos = top-K pela heurística (K = 3 em `rematch`, 4 em `world`).
 2. Respostas do jogador = top-3 golpes de `foeModel` (com probabilidade). **Sem trocas do p1 na simulação**, porque o banco dele é desconhecido.
 3. Para cada par, S = 2 amostras num clone do `fogged`, com `prng = new PRNG(hashSeed(seed, turn, i, j, s))`, e `choose` dos dois lados.
-4. `Δ = (HP% que o jogador perdeu + 100·[desmaiou]) − (HP% que eu perdi + 100·[desmaiei]) + 15·[status novo no jogador]`.
+4. **`Δ = P(depois) − P(antes)`**, com P = chance de vitória do modelo **M1** (`models/winprob-v1.js`), calculada no clone com neblina. Sem modelo carregado, cai para a fórmula manual: `(HP% que o jogador perdeu + 100·[desmaiou]) − (HP% que eu perdi + 100·[desmaiei]) + 15·[status novo no jogador]`.
 5. `sim(candidato) = Σ p(resposta) × média(Δ)`, e `final = (1 − w)·heurística + w·sim`, com `w` do perfil.
 
 **Custo medido:** clonar ~1,3 ms; clonar + simular um turno ~1,1 ms. Com K = 4, 3 respostas e 2 amostras, são 24 simulações ≈ 30 ms. Cabe no orçamento.
@@ -246,11 +254,12 @@ Derivada do log do p2 a cada replay. Não há estado extra, então I3 e I4 conti
    - **Ás:** Garchomp nunca sai por troca voluntária e entra por último na substituição.
    - **Primeiro Pokémon:** vem da rotação (Spiritomb tem peso maior); a IA não reordena.
    - **Frieza:** com vantagem de 2+ Pokémon, evita golpes com recoil e prefere os precisos.
-3. **Escolha:**
+3. **Modo de risco** (modelo M1): com `P < 0,25`, soma `+0,5 × desvio das amostras` à nota, aceitando golpes arriscados; com `P > 0,75`, subtrai. Jogar seguro numa partida perdida perde do mesmo jeito.
+4. **Escolha:**
    - softmax sobre os top-N com temperatura `T` do perfil;
    - `T ≤ 0,5` vira argmax;
    - o sorteio usa `rngFor(seed, turn, 'ai')`.
-4. **Saída:** `{choice: 'move 2' | 'switch 4', trace}`.
+5. **Saída:** `{choice: 'move 2' | 'switch 4', trace}`.
 
 ## 13. Substituição após desmaio (`replacement.js`)
 - Nota de cada reserva: `M(x)` (§8) + 50 se age primeiro **e** nocauteia o ativo do jogador (revenge kill).
@@ -275,7 +284,7 @@ Derivada do log do p2 a cada replay. Não há estado extra, então I3 e I4 conti
 ---
 
 ## 15. Explicabilidade
-- **`trace`** de cada decisão: `{aiVersion, turn, profile, candidates: [{choice, label, heuristic, parts: {attack: 41, setup: 0, …}, sim, final}], foe: {moves: [{id, p}], pSwitch}, chosen, roll, ms}`.
+- **`trace`** de cada decisão: `{aiVersion, modelVersion, winProb, turn, profile, candidates: [{choice, label, heuristic, parts: {attack: 41, setup: 0, …}, sim, final}], foe: {moves: [{id, p}], pSwitch}, chosen, roll, ms}`.
 - Gravado em `secret/state.aiTrace` (últimas 10 decisões), nunca enviado a jogadores comuns.
 - **Painel de admin** (F3, opcional): `POST {action: 'trace', runId}` só para e-mails de `ADMIN_EMAILS`, com a mesma checagem de `send-admin-reply.js`. Uma sobreposição na batalha mostra as notas da última decisão, para calibrar jogando.
 - **`AI_VERSION`** em semver, gravado na partida, no documento do dia e no `trace`:
@@ -348,6 +357,8 @@ expect(decide(s.input).choice).toBe('move 2');   // Stone Edge nocauteia
 16. Lê a troca (`rematch`) depois de o jogador trocar 3 vezes.
 17. Haze (Milotic) contra quem prepara.
 18. Leaf Storm não é usado duas vezes seguidas sem nocaute.
+19. Com P baixa (M1), escolhe o golpe arriscado que pode virar; com P alta, o seguro.
+20. Todo golpe do dex passa pelo estimador sem lançar erro (Beat Up incluído).
 
 **Propriedades:**
 - I1 a I8 (§1);
@@ -357,6 +368,6 @@ expect(decide(s.input).choice).toBe('move 2');   // Stone Edge nocauteia
 
 ## 18. Evoluções futuras (fora do escopo atual)
 - Lookahead de 2 turnos no perfil `world`, se o orçamento permitir.
-- Pesos ajustados com os dados da F6 (vitórias por dia × padrões dos jogadores).
+- Pesos dos avaliadores (§8) ajustados por regressão sobre os dados da F6, em vez de calibrados à mão (documento de ML).
 - Outros campeões: um arquivo em `personality/` + pool + rotação, com o mesmo motor (premissa A5).
 - Tera da Cynthia num "evento de domingo" (exige botão de Tera para o jogador também).

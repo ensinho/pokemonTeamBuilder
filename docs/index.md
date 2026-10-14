@@ -24,6 +24,7 @@
 | [Plan: Daily champion challenge](./plans/daily-champion-challenge.md) | Approved, not built yet: daily single-player battle vs a Cynthia AI — product plan and decisions (§14) |
 | [Spec: Daily champion challenge](./plans/daily-champion-challenge-tech.md) | Files, API contract, Firestore model and rules, client store and state machine, tests and per-phase tasks |
 | [Spec: Cynthia battle AI](./plans/daily-champion-challenge-ai.md) | AI module layout, fairness (fog), evaluators, lookahead, difficulty profiles, self-play calibration |
+| [Spec: Challenge prediction models](./plans/daily-champion-challenge-ml.md) | Logistic regression: win chance (measured 77.7% on self-play), player-move prediction, difficulty calibration; anonymous training data |
 
 ---
 

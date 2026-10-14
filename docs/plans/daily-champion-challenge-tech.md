@@ -1,7 +1,8 @@
 # Especificação técnica — Desafio da Campeã
 
 > Par do plano de produto [daily-champion-challenge.md](./daily-champion-challenge.md) (o quê e por quê)
-> e do documento da IA [daily-champion-challenge-ai.md](./daily-champion-challenge-ai.md) (como a Cynthia decide).
+> e dos documentos da IA: [daily-champion-challenge-ai.md](./daily-champion-challenge-ai.md) (como a Cynthia decide)
+> e [daily-champion-challenge-ml.md](./daily-champion-challenge-ml.md) (modelos de previsão por regressão).
 > Este arquivo é o **como**: arquivos, contratos, dados, estados, testes e tarefas por fase.
 > Data: 2026-10-14. Base: `main` em `10cb419`.
 
@@ -13,7 +14,7 @@ Estas premissas não foram perguntadas por terem um padrão claro. Se discordar 
 |---|---|---|
 | A1 | **Mecânica de Gen 9** (`gen9customgame`), com visual de DS | Os times salvos têm Pokémon de todas as gerações; a mecânica de Gen 4 barraria tudo acima do #493 |
 | A2 | **Sequência** = dias seguidos com **vitória na tentativa oficial**. "Dias jogados" é contado à parte | É o número que dá orgulho; jogar e perder não deveria manter a sequência |
-| A3 | **Convidados (anônimos) jogam.** O progresso continua ao criar conta | `linkWithCredential` mantém o `uid` (`useAuthStore.js:709-713`) |
+| A3 | ~~Convidados jogam~~ → **substituída pela decisão "login obrigatório"** (abaixo) | — |
 | A4 | Partida oficial abandonada pode ser **retomada até a virada do dia**. Depois vira `expired`, que não conta como vitória e quebra a sequência | A regra mais simples que não deixa "segurar" uma partida perdida |
 | A5 | **O motor é genérico por campeão** (`championId`), mas só a Cynthia é lançada | Custa quase nada agora e abre espaço para Lance, Steven e outros |
 | A6 | Nome: **Desafio da Campeã** / **Champion Challenge**; rota `/challenge`; ícone `Crown` (lucide) | O grupo "Jogos" já usa lucide |
@@ -29,6 +30,9 @@ Estas premissas não foram perguntadas por terem um padrão claro. Se discordar 
 | Golpes | 3 moldes genéricos + 12 golpes-assinatura | §6.10 |
 | Som | Efeitos sintetizados em WebAudio, sem música | §6.13 |
 | Virada | **Meia-noite de Brasília** (`America/Sao_Paulo`) para todos | O servidor decide o dia sozinho; o cliente não envia data |
+| Login | **Só contas registradas jogam** (não anônimas) | §2.5: o servidor recusa `start`/`choose`/`forfeit` com 403 `signInRequired`; convidado vê a sala e é convidado a entrar no encontro. Também protege o ranking futuro contra contas anônimas infinitas |
+| Dados para treino | **Gravar batalhas de forma anônima** | Coleção `aiTraining` sem `uid` (documento de ML, §3) |
+| Chance de vitória | **Só no fim, em gráfico** | Curva calculada com informação completa ao fim da partida (documento de ML, §1) |
 
 ---
 
@@ -92,10 +96,13 @@ api/
       runs.js          (+ .test)  [NEW] caminhos e transações do Firestore
       outcome.js       (+ .test)  [NEW] resultado, pontuação, sequência
       dialogue.js      (+ .test)  [NEW] eventos da batalha → chaves de fala
-    ai/                           [NEW] ver o documento da IA, §3
+    ai/                           [NEW] ver o documento da IA, §2 (inclui features.js, model.js, models/ do documento de ML)
 api/battle-turn.test.js           [MODIFY] passa a importar o Firestore falso de _lib/testing
 scripts/ai-arena.mjs              [NEW] autojogo para calibrar a IA (documento da IA, §16)
-package.json                      [MODIFY] scripts "ai:arena" e "ai:bench" (sem dependência nova)
+scripts/ai-dataset.mjs            [NEW] gera/exporta dados de treino (documento de ML, §4)
+scripts/ai-train.mjs              [NEW] treina os modelos e escreve api/_lib/ai/models/*.js
+.gitignore                        [MODIFY] scratch/ai-data/
+package.json                      [MODIFY] scripts "ai:arena", "ai:bench", "ai:dataset", "ai:train" (sem dependência nova)
 vercel.json                       [MODIFY] bloco de "api/challenge.js"
 firestore.rules                   [MODIFY] §4.2
 ```
@@ -176,6 +183,7 @@ Mesmo esqueleto de `battle-turn.js`:
 | 400 | `invalidTeam` | `validateTeam` falhou | `errors[]` |
 | 400 | `invalidChoice` | Regex ou o sim recusou | `simError` (texto do `\|error\|`) |
 | 401 | `unauthenticated` | Token ausente ou inválido | — |
+| 403 | `signInRequired` | Conta anônima em `start`/`choose`/`forfeit` | — |
 | 403 | `notOwner` | A partida é de outro `uid` | — |
 | 403 | `practiceLocked` | Treino antes de terminar a partida oficial | — |
 | 404 | `runNotFound` | — | — |
@@ -184,10 +192,17 @@ Mesmo esqueleto de `battle-turn.js`:
 | 410 | `dayClosed` | Partida de um dia que já virou | `status: 'expired'` |
 | 500 | `internal` / `Failed to load …` | — | — |
 
-**Regras de treino:**
+**Regras das revanches de treino:**
 - Só depois de a oficial terminar.
 - Só um treino ativo por vez; começar outro encerra o anterior como `lost`.
 - O id é `{uid}_{dayKey}_p{n}`.
+
+### 2.5 Login obrigatório
+- `verifyCaller` já devolve `isAnonymous` (`serverAuth.js:62-66`, lido de `firebase.sign_in_provider`). Nenhuma mudança em `serverAuth.js`.
+- **`ensureDay` aceita conta anônima.** Só cria o documento público do dia, para o convidado ver a sala, as silhuetas e o Time do dia.
+- **`start`, `choose` e `forfeit` exigem conta registrada.** Para anônimo: `403 {error: 'signInRequired'}` antes de qualquer leitura.
+- **Token velho depois do cadastro:** quando um convidado cria conta (`linkWithCredential`, mesmo `uid`), o ID token em cache pode ainda dizer `anonymous`. `callAuthedApi` repete **uma vez** com `getIdToken(true)` ao receber `signInRequired` se o store já diz que a conta é registrada. A confirmar na F2; hoje o app nunca força a renovação.
+- Regras do Firestore: nada muda. Partidas só existem para contas registradas, e as leituras já exigem dono.
 
 ---
 
@@ -213,6 +228,8 @@ src/
     ConsoleShell.jsx                     [NEW] moldura DS, layout horizontal/vertical, filtro SVG do LCD
     TextBox.jsx                          [NEW] máquina de escrever, seta piscando, aria-live
     ResultScreen.jsx                     [NEW]
+    WinChanceChart.jsx                   [NEW] curva pós-batalha em SVG próprio (skill dataviz), maior virada destacada
+    SignInGate.jsx                       [NEW] painel "Entre para desafiar a Campeã" (promptSignIn signIn/signUp)
     ChallengeHomeCard.jsx                [NEW] card da Home: leve, sem sim, só Firestore
     arena/ArenaScreen.jsx                [NEW]
     arena/ArenaActor.jsx                 [NEW] sprite de mapa (jogador/Cynthia), quadros, respiração
@@ -270,9 +287,10 @@ public/challenge/*.png                   [NEW] gerados e commitados, como public
 
 | Fase | Tela de cima | Tela de baixo | Sai para |
 |---|---|---|---|
-| `boot` | Logo do console + `<Loader>` (só se passar de 300 ms) | Vazia | `arena`; `battle` se houver partida ativa; `result` se a oficial já terminou |
+| `boot` | Logo do console + `<Loader>` (só se passar de 300 ms) | Vazia | `arena`; `battle` se houver partida ativa; `result` se a oficial já terminou. Convidado sempre cai em `arena` (com uma faixa discreta "Entre para batalhar") |
 | `arena` | Sala, jogador anda | Pokétch + D-pad/A/B | `dialogue` ao chegar na Cynthia |
-| `dialogue` | Balão "!", fala de abertura | Pokétch | `teamPick` (sem time) ou `transition` |
+| `dialogue` | Balão "!", fala de abertura | Pokétch | `signInGate` (convidado), `teamPick` (sem time) ou `transition` |
+| `signInGate` | Cynthia na arena, esmaecida | `SignInGate`: Entrar / Criar conta | `teamPick` quando a conta registrada chega (o store observa `useAuthStore`); B volta para `arena` |
 | `teamPick` | Cynthia na arena, esmaecida | `TeamPicker` | `transition` após `start` com sucesso; erro de time fica no próprio seletor |
 | `transition` | Flash + espiral (~1 s; com *reduced motion*, fade de 150 ms) | Pokétch | `battle.intro` |
 | `battle.intro` | Cynthia desliza, Poké Balls entram, envia o primeiro | Pokétch (equipe) | `battle.command` |
@@ -482,10 +500,14 @@ artifacts/{appId}/
       teamSource: 'saved'|'daily', teamName, teamTier,
       status: 'active'|'won'|'lost'|'expired', turn, roundCount,
       result: {turns, remaining, hpPct, score} | null,
+      winChanceCurve: [0.5, 0.47, …] | null,   // perspectiva do jogador; só gravada no fim
       engineVersion, aiVersion, createdAt, updatedAt, endedAt }
     rounds/{seq}  { seq, turn, lines: [...], createdAt }              // log na visão do p1
     secret/state  { format, seed: [4 ints], teams: {p1, p2}, choices: [{side, choice, turn}],
                     aiTrace: [últimas 10 decisões] }                  // ninguém lê pelo cliente
+
+  aiTraining/{autoId}                  // anônimo: sem uid/nome/time (documento de ML, §3)
+    { schema, aiVersion, engineVersion, featureVersion, week, difficulty, teamSource, outcome, turns: [...] }
 
   challengeStats/{uid}
     { uid, played, wins, losses, streak, bestStreak, lastPlayedDay, lastWonDay,
@@ -517,6 +539,9 @@ match /challengeRuns/{runId} {
 match /challengeStats/{uid} {
   allow read, delete: if isOwner(uid);
   allow create, update: if false;
+}
+match /aiTraining/{docId} {
+  allow read, write: if false;                             // só Admin SDK
 }
 ```
 - Nenhum curinga existente cobre esses caminhos. Conferido: só `users/{userId}/{document=**}` e `/{path=**}/messages/{messageId}`.
@@ -556,7 +581,8 @@ match /challengeStats/{uid} {
   - pronto: silhueta do primeiro Pokémon + nome do desafio;
   - em andamento: "Continuar batalha";
   - vitória: "Vitória! Sequência N";
-  - derrota ou expirada: "Revanche de treino disponível".
+  - derrota ou expirada: "Revanche de treino disponível";
+  - convidado: silhueta + "Entre para desafiar a Campeã" (o toque leva à rota; o login é pedido no encontro).
 
   Sempre com a contagem até a virada.
 - É card de **status**, não lançador (wound 2026-09-04).
@@ -570,7 +596,10 @@ challenge.battle.{fight, pokemon, forfeit, forfeitConfirm, back, thinking, chose
 challenge.result.{won, lost, expired, turns, remaining, streak, practice, home}
 challenge.poketch.{party, clock, counter, dossier, nextIn}
 challenge.cynthia.{intro, firstLoss, ace, lastOne, playerLow, win, lose, superEffective}   // falas originais
-challenge.errors.{invalidTeam, invalidChoice, staleTurn, dayClosed, practiceLocked, offline, server}
+challenge.errors.{invalidTeam, invalidChoice, staleTurn, dayClosed, practiceLocked, signInRequired, offline, server}
+challenge.gate.{title, body, signIn, signUp, banner}
+challenge.privacy.notice
+challenge.result.{chartTitle, chartTurn, chartSwing}
 nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Continue,Won,Lost,NextIn}
 ```
 
@@ -588,7 +617,7 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 | `engine.test.js` | Replay = partida ao vivo (log idêntico); sem `sendUpdates` nada sai (guarda de regressão); jogada ilegal → `{ok: false, error}`; `owes` depois de desmaio (só um lado); log do p1 não contém o item do p2 |
 | `outcome.test.js` | Sequência: vitória seguida, buraco de um dia, derrota zera, treino não conta, `expired` |
 | `dialogue.test.js` | Primeiro nocaute sofrido, ás enviado, último Pokémon — cada fala uma vez por partida |
-| `api/challenge.test.js` | Partida completa pelo handler; `officialAlreadyPlayed`; `practiceLocked`; `staleTurn`; `dayClosed` (relógio falso); `invalidChoice` com `simError`; substituição da IA sem o p1 dever; o documento lido pelo cliente não tem `seed`, `choices` nem o time do p2; `ensureDay` concorrente cria um só documento |
+| `api/challenge.test.js` | Partida completa pelo handler; token anônimo → `signInRequired` em `start`/`choose`/`forfeit` e `ensureDay` liberado; fim de partida grava `aiTraining` sem `uid` e a curva só no fim; `officialAlreadyPlayed`; `practiceLocked`; `staleTurn`; `dayClosed` (relógio falso); `invalidChoice` com `simError`; substituição da IA sem o p1 dever; o documento lido pelo cliente não tem `seed`, `choices` nem o time do p2; `ensureDay` concorrente cria um só documento |
 | `api/challenge.deps.test.js` | Força `@pkmn/sim` a falhar → `GET ?ping=1` responde e `POST` devolve JSON nomeando o módulo |
 | `api/_lib/dependencies.test.js` | [MODIFY] incluir `require('@pkmn/sim')` com `--no-experimental-require-module` |
 | `src/utils/challengeDay.test.js` | Espelho idêntico ao do servidor em 800 datas; `effectiveStreak` |
@@ -596,7 +625,9 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 | `src/utils/arenaMap.test.js` | Colisão; BFS acha o caminho e respeita pilares; `encounterTile` |
 | `src/utils/moveFx.test.js` | As 12 assinaturas; fallback por categoria; tipo desconhecido → cor neutra |
 | `src/utils/challengeSfx.test.js` | Mudo lembrado; `play` antes do `unlock` não lança erro |
-| `src/store/useChampionChallengeStore.test.js` | `pending` some quando o turno avança; `staleTurn` chama `loadRun`; `hasLoadedRun` |
+| `src/store/useChampionChallengeStore.test.js` | `pending` some quando o turno avança; `staleTurn` chama `loadRun`; `hasLoadedRun`; convidado não dispara `start` (vai para `signInGate`); cadastro no meio do fluxo segue para `teamPick` |
+| `src/services/apiClient.test.js` | `signInRequired` com conta registrada → uma nova tentativa com `getIdToken(true)`, nunca duas |
+| Modelos (M1/M2) | Ver o documento de ML, §5 |
 | IA | Ver o documento da IA, §11 |
 
 **Portões em toda entrega:**
@@ -620,6 +651,7 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 - [ ] `_lib/testing/fakeFirestore.js` (extrair) + `battle-turn.test.js` usando o arquivo extraído.
 - [ ] `constants`, `day`, `pool`, `rotation`, `dailyTeam`, `validateTeam`, `engine`, `outcome`, `dialogue` + testes.
 - [ ] `_lib/ai/*` + testes + `scripts/ai-arena.mjs` (documento da IA).
+- [ ] `features.js`, `model.js`, `ai-dataset`, `ai-train`, `winprob-v1.js` treinado em autojogo e aprovado pelos critérios (documento de ML, §4).
 - [ ] `runs.js` + `api/challenge.js` + `challenge.test.js` + `challenge.deps.test.js`.
 - [ ] `firestore.rules`, `vercel.json`, contagem de funções = 8.
 - **Pronto quando:** todos os testes verdes; arena de IA com as metas do documento da IA (§10); self-check local verde.
@@ -628,12 +660,14 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 - [ ] `apiClient`, `challengeApi`, store, hook, `challengeDay` (+ teste do espelho).
 - [ ] `ChampionChallengeView` com cena **simples**: os leitores existentes + `TeamPicker` + `CommandPanel` + `MovePanel` + `PartyPanel` + `ResultScreen`.
 - [ ] Rota, `currentPage` e navegação, para poder testar de verdade.
-- **Pronto quando:** vencer e perder no navegador; retomar depois de recarregar; erro de jogada aparece; duas abas não corrompem a partida.
+- [ ] `SignInGate` + estado `signInGate`; nova tentativa com token renovado no `apiClient`.
+- **Pronto quando:** vencer e perder no navegador; retomar depois de recarregar; erro de jogada aparece; duas abas não corrompem a partida; convidado não consegue jogar, mas consegue entrar e seguir sem recarregar.
 
 ### F3 — Console DS
 - [ ] `ConsoleShell` + `useScreenScale`, `BattleScene`, `HpBox`, `BallRow`, `TextBox`.
 - [ ] `battleTimeline` + `useTimelinePlayer` + `moveFx` + `MoveFxLayer` (3 moldes + 12 assinaturas).
 - [ ] Pokétch e os 4 apps; `challengeSfx`.
+- [ ] `WinChanceChart` na `ResultScreen` (antes de desenhar, carregar a skill `dataviz`).
 - **Pronto quando:** `/verify-ui` completo; *reduced motion*; orçamentos da §3.14 medidos.
 
 ### F4 — Arena
@@ -643,6 +677,7 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 
 ### F5 — Integração
 - [ ] Card da Home + `journey`, `render-meta`, guia, i18n completo, notas de versão, exclusão de conta.
+- [ ] Coleta anônima (`aiTraining`) ligada + aviso `challenge.privacy.notice`; recomendado criar `/privacy`.
 - [ ] `docs/modules/daily_challenge.md`, `docs/index.md`, exceção na skill `design-system`.
 - **Pronto quando:** card nos 5 estados; rota na busca e no "Mais"; excluir uma conta de teste apaga tudo do desafio.
 

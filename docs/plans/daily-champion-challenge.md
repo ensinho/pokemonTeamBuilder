@@ -3,7 +3,7 @@
 > Status: **alinhado** (fluxo `/feature`, etapa 2 concluída). As decisões da seção 14
 > foram respondidas pelo Enzo em 2026-10-14. Próximo passo: F1 (motor + IA).
 > Nenhum código produtivo foi alterado ainda.
-> Documentos irmãos: [especificação técnica](./daily-champion-challenge-tech.md) (arquivos, contratos, dados, estados, tarefas) e [IA de batalha](./daily-champion-challenge-ai.md).
+> Documentos irmãos: [especificação técnica](./daily-champion-challenge-tech.md) (arquivos, contratos, dados, estados, tarefas), [IA de batalha](./daily-champion-challenge-ai.md) e [modelos de previsão](./daily-champion-challenge-ml.md).
 > Data: 2026-10-14.
 
 ## 0. Resumo
@@ -36,6 +36,7 @@ A base técnica já existe: `@pkmn/sim` no servidor, leitores de protocolo no cl
    - Também pode tocar num ponto do chão para o boneco andar sozinho até lá.
    - Enquanto isso, a tela de baixo mostra o **Pokétch** com o time escolhido.
 3. **Encontro.** Ao chegar na frente da Cynthia, aparecem o balão "!" e um diálogo com efeito de máquina de escrever.
+   - **Convidado (sem conta):** a tela de baixo pede login ("Entre para desafiar a Campeã"). Ao entrar, o fluxo segue de onde parou.
    - Se ainda não houver time escolhido, o seletor abre na tela de baixo.
 4. **Transição de batalha.** Flash e espiral (cerca de 1 s; com *reduced motion* vira um fade simples).
 5. **Batalha (tela de cima).** Cenário da imagem de referência: céu claro, chão verde-água e duas plataformas elípticas.
@@ -51,7 +52,7 @@ A base técnica já existe: `@pkmn/sim` no servidor, leitores de protocolo no cl
    - O jogador escolhe; a caixa de texto mostra "Cynthia está pensando…" (feedback otimista, ver wound 2026-07-27).
    - O servidor responde e os eventos do turno são animados em sequência: golpe, dano, efetividade, desmaio, troca.
    - Tocar na caixa de texto, ou apertar A, acelera a sequência.
-8. **Fim.** Tela de vitória ou derrota com turnos, Pokémon restantes e sequência de dias.
+8. **Fim.** Tela de vitória ou derrota com turnos, Pokémon restantes, sequência de dias e o **gráfico da chance de vitória** turno a turno, com a maior virada destacada.
    - Botão **Revanche (treino)**: mesmo time da Cynthia, sem contar para a sequência.
    - Compartilhamento entra na fase 6.
 
@@ -475,6 +476,9 @@ F1 e F2 sozinhas já entregam um desafio jogável. F3 e F4 trazem o "uau".
 | 7 | Animações de golpe | **3 moldes genéricos** (físico, especial, status) na cor do tipo **+ 12 golpes-assinatura** (especificação técnica §3.9) |
 | 8 | Som | **Efeitos sintetizados em WebAudio**, sem arquivos e sem música; mudo lembrado (especificação técnica §3.12) |
 | 9 | Virada do dia | **Meia-noite de Brasília para todos** (§3.4) |
+| 10 | Login | **Obrigatório** (conta registrada, não anônima). Convidado vê a sala e o time do dia; o login é pedido no encontro com a Cynthia |
+| 11 | Modelos de previsão | **Sim, regressão logística** (chance de vitória, próxima jogada, calibragem), com **dados anônimos** das batalhas ([documento de ML](./daily-champion-challenge-ml.md)) |
+| 12 | Mostrar a chance de vitória | **Só no fim**, num gráfico da partida com a maior virada destacada |
 
 Premissas assumidas sem pergunta (mecânica Gen 9, definição de sequência, convidados, partida abandonada…) estão na §0 da [especificação técnica](./daily-champion-challenge-tech.md).
 
