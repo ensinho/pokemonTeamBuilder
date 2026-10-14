@@ -1,8 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useUrlTab } from '../../hooks/useUrlTab';
+
+const DETAIL_TABS = ['data', 'competitive', 'locations', 'moves', 'sprites'];
 import {
     ChevronLeft, ChevronRight, Sparkles, Star, AlertCircle, MapPin, Compass,
-    Footprints, Waves, Fish, Gift, Music, Hammer,
+    Footprints, Waves, Fish, Gift, Music, Hammer, Plus, Check,
 } from 'lucide-react';
 
 import '../../styles/pokemon-detail-mobile.css';
@@ -111,6 +114,8 @@ export function MobilePokemonDetailView({
     indexEntry,
     favoritePokemons,
     onToggleFavoritePokemon,
+    onAdd,
+    currentTeam = [],
     onNavigate,
     onBack,
     db,
@@ -123,7 +128,8 @@ export function MobilePokemonDetailView({
     const location = useLocation();
     const { goToMove } = useEntityNavigate();
 
-    const [activeTab, setActiveTab] = useState('data');
+    // In the URL (?tab=), so Back from a move lands on the tab it came from.
+    const [activeTab, setActiveTab] = useUrlTab(DETAIL_TABS, 'data');
 
     const {
         selectedPokemonDetails,
@@ -551,6 +557,24 @@ export function MobilePokemonDetailView({
                                 <Sparkles className="w-5 h-5" />
                                 {shinyBurst.burst}
                             </button>
+                            {/* Add to team: the phone never received onAdd, so the
+                                Pokédex entry had no way into the builder. */}
+                            {onAdd && (() => {
+                                const onTeam = currentTeam.some((m) => Number(m.id) === Number(identity.id));
+                                const full = currentTeam.length >= 6;
+                                return (
+                                    <button
+                                        type="button"
+                                        onClick={() => onAdd(indexEntry || { id: Number(identity.id), name: identity.name })}
+                                        disabled={onTeam || full}
+                                        className={`pdm__iconbtn ${onTeam ? 'is-active' : ''}`}
+                                        aria-label={onTeam ? t('pdetail.onTeam') : t('pdetail.addToTeam')}
+                                        title={onTeam ? t('pdetail.onTeam') : t('pdetail.addToTeam')}
+                                    >
+                                        {onTeam ? <Check className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                                    </button>
+                                );
+                            })()}
                             {onToggleFavoritePokemon && (
                                 <button
                                     type="button"

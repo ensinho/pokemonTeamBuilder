@@ -13,8 +13,35 @@ import { EmptyState } from '../EmptyState';
 import { TypeChip } from '../TypeChip';
 import { ClearIcon } from '../icons';
 import { Loader } from '../Loader';
+import { useBattleDex, getBattleDex } from '../../hooks/useBattleDex';
 
-const loadDetail = (entry) => getMoveDetails(entry.url, entry.name);
+// Type, category, power, accuracy and PP for every move are already in
+// public/data/battle-dex.json (keyed by Showdown id: "thunder-punch" →
+// "thunderpunch"). Reading them from there answers the whole list at once —
+// /moves used to fire ~41 live PokéAPI requests and show skeleton rows, and
+// its filters could only see the rows that had loaded (2026-10-14).
+const toID = (name = '') => name.toLowerCase().replace(/[^a-z0-9]/g, '');
+// One object per move per dex, so a memoised MoveRow sees the same reference
+// on every render.
+const dexCache = new WeakMap();
+const dexDetail = (dex, name) => {
+    const row = dex?.moves?.[toID(name)];
+    if (!row) return null;
+    let byName = dexCache.get(dex);
+    if (!byName) { byName = new Map(); dexCache.set(dex, byName); }
+    if (byName.has(name)) return byName.get(name);
+    const [, type, category, basePower, accuracy, pp] = row;
+    const detail = {
+        type,
+        damage_class: String(category || '').toLowerCase(),
+        power: basePower || null,
+        accuracy: accuracy === true ? null : (accuracy || null),
+        pp: pp || null,
+    };
+    byName.set(name, detail);
+    return detail;
+};
+const loadDetail = (entry) => dexDetail(getBattleDex(), entry.name) || getMoveDetails(entry.url, entry.name);
 
 const prettify = (name = '') => name.replace(/-/g, ' ');
 
@@ -77,21 +104,26 @@ export function MovesListView() {
         [pokemonIndex],
     );
 
-    const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
-        useReferenceList({ loadIndex: getMovesList, loadDetail, getRelatedNames });
-
-    // Type/category filters operate on already-resolved detail rows; a row whose
-    // detail hasn't loaded yet is kept until we know it doesn't match.
-    const rows = useMemo(() => {
-        if (typeFilter === 'all' && categoryFilter === 'all') return visible;
-        return visible.filter((entry) => {
-            const d = details[entry.name];
-            if (!d) return true;
+    const dex = useBattleDex();
+    // Filters run over the whole index (before paging), from the in-memory dex.
+    // Until the dex lands (one small static file) nothing is filtered out.
+    const filterEntry = useMemo(() => {
+        if (typeFilter === 'all' && categoryFilter === 'all') return null;
+        return (entry) => {
+            const d = dexDetail(dex, entry.name);
+            if (!d) return !dex;
             if (typeFilter !== 'all' && d.type !== typeFilter) return false;
             if (categoryFilter !== 'all' && d.damage_class !== categoryFilter) return false;
             return true;
+        };
+    }, [dex, typeFilter, categoryFilter]);
+
+    const { search, setSearch, isLoadingIndex, total, visible, details, hasMore, sentinelRef } =
+        useReferenceList({
+            loadIndex: getMovesList, loadDetail, getRelatedNames,
+            filterEntry, filterKey: `${typeFilter}|${categoryFilter}|${dex ? 1 : 0}`,
         });
-    }, [visible, details, typeFilter, categoryFilter]);
+    const rows = visible;
 
     // Each row is a link to that move's own page; the origin is stashed so the
     // detail page's back button returns here.
@@ -169,7 +201,7 @@ export function MovesListView() {
                     </div>
 
                     {rows.map((entry) => (
-                        <MoveRow key={entry.name} entry={entry} d={details[entry.name]} onOpen={openDetail} t={t} />
+                        <MoveRow key={entry.name} entry={entry} d={details[entry.name] || dexDetail(dex, entry.name)} onOpen={openDetail} t={t} />
                     ))}
 
                     {hasMore && <div ref={sentinelRef} className="ref-sentinel" aria-hidden="true" />}

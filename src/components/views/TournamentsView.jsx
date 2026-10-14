@@ -120,8 +120,10 @@ export function TournamentsView({ onOpenTeam }) {
     // of scroll and 720 sprites loaded up front. Reveal each section in pages
     // there; desktop's multi-column grid keeps them all. A search starts over.
     const isMobile = useMediaQuery(maxWidthBelow('lg'));
-    const featuredReveal = useProgressiveReveal(featured.length, { initial: 4, step: 10, enabled: isMobile, resetKey: query });
-    const tournamentReveal = useProgressiveReveal(tournament.length, { initial: 6, step: 10, enabled: isMobile, resetKey: query });
+    // Paged on desktop too: all 120 teams at once was 11.5 screens and 720
+    // sprites on first paint (2026-10-14). Desktop pages are just bigger.
+    const featuredReveal = useProgressiveReveal(featured.length, { initial: isMobile ? 4 : 8, step: isMobile ? 10 : 16, resetKey: query });
+    const tournamentReveal = useProgressiveReveal(tournament.length, { initial: isMobile ? 6 : 12, step: isMobile ? 10 : 24, resetKey: query });
 
     if (status === 'loading') {
         return (
@@ -164,7 +166,7 @@ export function TournamentsView({ onOpenTeam }) {
             {featured.length > 0 && (
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.featuredTeams')}</h2>
-                    <div className="trn-grid motion-stagger">
+                    <div className="trn-grid">
                         {featured.slice(0, featuredReveal.limit).map((tm, i) => <TeamCard key={tm.id || `f${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                     {featuredReveal.hasMore && <ShowMoreButton remaining={featuredReveal.remaining} onClick={featuredReveal.showMore} />}
@@ -174,7 +176,7 @@ export function TournamentsView({ onOpenTeam }) {
             {tournament.length > 0 && (
                 <section className="trn-section">
                     <h2 className="trn-section__title"><TrophyIcon className="w-5 h-5" /> {t('tools.tournamentTeams')}</h2>
-                    <div className="trn-grid motion-stagger">
+                    <div className="trn-grid">
                         {tournament.slice(0, tournamentReveal.limit).map((tm, i) => <TeamCard key={tm.id || `t${i}`} team={tm} onOpen={onOpenTeam} navigate={navigate} linkState={linkState} t={t} pt={pt} />)}
                     </div>
                     {tournamentReveal.hasMore && <ShowMoreButton remaining={tournamentReveal.remaining} onClick={tournamentReveal.showMore} />}

@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useUrlTab } from '../../hooks/useUrlTab';
+
+const DETAIL_TABS = ['data', 'competitive', 'locations', 'moves', 'sprites'];
 import {
     MapPin, Star, Sparkles, ChevronRight, Compass, Footprints, Waves, Fish, Gift, Music,
-    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, ChevronLeft, Trophy, ScrollText,
+    Hammer, Activity, AlertCircle, Swords, Image as ImageIcon, Database, Zap, HandFist, Plus, Check, ChevronLeft, Trophy, ScrollText,
 } from 'lucide-react';
 
 import '../../styles/team-builder-view.css';
@@ -64,7 +67,8 @@ export function PokemonDetailPanel({
     const { t, language } = useTranslation();
     const { goToMove } = useEntityNavigate();
 
-    const [activeTab, setActiveTab] = useState('data'); // 'data' | 'competitive' | 'locations' | 'moves' | 'sprites'
+    // In the URL (?tab=): Pikachu → Moves → a move → Back used to land on Data.
+    const [activeTab, setActiveTab] = useUrlTab(DETAIL_TABS, 'data');
     const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 1024);
     // The sparkle a shiny makes, fired by the two buttons that earn it.
     const shinyBurst = useShinyBurst();
@@ -111,7 +115,6 @@ export function PokemonDetailPanel({
 
     // A new Pokémon always opens on Data — the previous one's Moves tab is not
     // where anyone wants to land.
-    useEffect(() => { setActiveTab('data'); }, [pokemonId]);
 
     useEffect(() => {
         const onResize = () => setIsMobile(window.innerWidth < 1024);
@@ -182,6 +185,19 @@ export function PokemonDetailPanel({
                                 <div className="mt-2 flex flex-wrap justify-center gap-1.5">
                                     {selectedPokemonDetails.types?.map((type) => <TypeChip key={type} type={type} />)}
                                 </div>
+                                {/* The builder's core verb, on the page people browse most —
+                                    onAdd/isOnTeam were wired here and never rendered. */}
+                                {onAdd && (
+                                    <button
+                                        type="button"
+                                        className={`btn ${isOnTeam ? 'btn-secondary' : 'btn-primary'} btn-sm mt-3`}
+                                        onClick={() => onAdd({ id: Number(selectedPokemonDetails.id), name: selectedPokemonDetails.name, types: selectedPokemonDetails.types })}
+                                        disabled={isOnTeam || currentTeam.length >= 6}
+                                    >
+                                        {isOnTeam ? <Check className="w-4 h-4" aria-hidden="true" /> : <Plus className="w-4 h-4" aria-hidden="true" />}
+                                        {isOnTeam ? t('pdetail.onTeam') : t('pdetail.addToTeam')}
+                                    </button>
+                                )}
                             </div>
                         </div>
 

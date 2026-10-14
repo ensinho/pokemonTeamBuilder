@@ -92,6 +92,8 @@ export function PokemonDetailView({
                 indexEntry={indexEntry}
                 favoritePokemons={favoritePokemons}
                 onToggleFavoritePokemon={onToggleFavoritePokemon}
+                onAdd={onAdd}
+                currentTeam={currentTeam}
                 onNavigate={handleNavigate}
                 onBack={handleBack}
                 db={db}

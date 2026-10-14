@@ -12,13 +12,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
  * @param {Function} opts.loadIndex  async () => Array<{ name, url, id }>
  * @param {Function} opts.loadDetail async (entry) => detail | null
  * @param {number}   [opts.pageSize] rows revealed per "load more" step
+ * @param {Function} [opts.filterEntry] (entry) => boolean, applied before paging
+ *        so the count and the infinite scroll answer to it (a filter applied to
+ *        the visible page only showed non-matching rows and a wrong total).
+ * @param {string}   [opts.filterKey] changes when filterEntry's criteria change
  * @param {Function} [opts.getRelatedNames] async (normalizedSearch) => string[] | null
  *        When the search term names a Pokémon, returns the index entry names
  *        related to it (e.g. that Pokémon's moves/abilities) so a search for
  *        "pikachu" surfaces "thunderbolt"/"static". Returns null when the term
  *        isn't a Pokémon, leaving the plain name filter in charge.
  */
-export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRelatedNames }) {
+export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRelatedNames, filterEntry = null, filterKey = '' }) {
     const [index, setIndex] = useState([]);
     const [isLoadingIndex, setIsLoadingIndex] = useState(true);
     const [search, setSearch] = useState('');
@@ -75,7 +79,7 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
         return () => { cancelled = true; };
     }, [normalized, getRelatedNames]);
 
-    const filtered = useMemo(() => {
+    const searched = useMemo(() => {
         if (!normalized) return index;
         const byName = index.filter((entry) => entry.name.includes(normalized));
         if (!relatedNames || relatedNames.length === 0) return byName;
@@ -92,8 +96,13 @@ export function useReferenceList({ loadIndex, loadDetail, pageSize = 40, getRela
         return merged;
     }, [index, normalized, relatedNames]);
 
+    const filtered = useMemo(
+        () => (filterEntry ? searched.filter(filterEntry) : searched),
+        [searched, filterEntry],
+    );
+
     // Reset the window whenever the filter changes.
-    useEffect(() => { setVisibleCount(pageSize); }, [normalized, pageSize]);
+    useEffect(() => { setVisibleCount(pageSize); }, [normalized, filterKey, pageSize]);
 
     const visible = useMemo(() => filtered.slice(0, visibleCount), [filtered, visibleCount]);
 
