@@ -7,6 +7,12 @@
 //   • ability  — completes a meta core (e.g. Tyranitar's sand → Excadrill)
 //   • type     — covers a type the team is collectively weak to
 // Reactive: call it with the current team and it re-ranks from scratch.
+//
+// It also knows when to stop. A core reason is worth a lot while a niche is
+// still being built, but Rillaboom + Mega Sceptile is already plenty of Grass:
+// a third Grass "Grassy Terrain abuser" stacks the same weaknesses instead of
+// covering them. So once a type or a weather/terrain niche is saturated, the
+// ranking checks itself and leans toward coverage (see SATURATION).
 
 import { typeChart } from '../constants/types';
 import { buildCores } from './metaCores';
@@ -19,6 +25,18 @@ const defMultiplier = (attacking, defTypes = []) =>
     defTypes.reduce((m, d) => m * (typeChart[d]?.damageTaken?.[capType(attacking)] ?? 1), 1);
 
 const WEIGHTS = { ABILITY: 40, PARTNER_CAP: 30, TYPE_PER: 6, USAGE_FACTOR: 0.5, USAGE_CAP: 30 };
+
+// When the team already leans hard one way:
+//  · TYPE_AT       — this many members sharing a type saturates it; each
+//                    saturated type a candidate shares costs TYPE_PENALTY.
+//  · WEAK_AT       — this many members weak to an attacking type makes it a
+//                    stacked weakness; a candidate also weak to it costs WEAK_PENALTY.
+//  · CORE_DECAY    — once a core has its setter and an abuser on the team, each
+//                    abuser already there divides further abuser weight by
+//                    (1 + CORE_DECAY · abusers): 40 → 10 → ~6.
+//  · COVERAGE_BOOST — and coverage picks count this much more, so the list
+//                    turns to filling holes rather than deepening the niche.
+export const SATURATION = { TYPE_AT: 2, TYPE_PENALTY: 30, WEAK_AT: 2, WEAK_PENALTY: 5, CORE_DECAY: 3, COVERAGE_BOOST: 1.5 };
 // A pure type-coverage pick must be meta-relevant to surface (avoids suggesting
 // a frail early-route mon just because it resists a type).
 const COVERAGE_MIN_BST = 500;
@@ -71,13 +89,19 @@ export function buildSynergySuggestions({
         c.score += reason.weight || 0;
     };
 
-    // 1) ABILITY / core synergy — the highest-signal reason.
+    // 1) ABILITY / core synergy — the highest-signal reason, until the niche is
+    // established: a setter plus an abuser is a working core, and every abuser
+    // past that is depth, not synergy.
     const cores = buildCores({ smogonById, usageById, popular });
+    let nicheEstablished = false;
     for (const core of cores) {
         const hasSetter = core.setters.some((s) => teamIds.has(s.id));
-        const hasAbuser = core.abusers.some((a) => teamIds.has(a.id));
+        const abusersOnTeam = core.abusers.filter((a) => teamIds.has(a.id)).length;
+        const hasAbuser = abusersOnTeam > 0;
         if (hasSetter) {
-            for (const ab of core.abusers) add(ab.id, { kind: 'ability', coreId: core.id, label: `${core.name}: ${ab.tag}`, weight: WEIGHTS.ABILITY });
+            if (hasAbuser) nicheEstablished = true;
+            const weight = WEIGHTS.ABILITY / (1 + SATURATION.CORE_DECAY * abusersOnTeam);
+            for (const ab of core.abusers) add(ab.id, { kind: 'ability', coreId: core.id, label: `${core.name}: ${ab.tag}`, weight });
         } else if (hasAbuser) {
             for (const st of core.setters) add(st.id, { kind: 'ability', coreId: core.id, label: `Sets ${core.name}`, weight: WEIGHTS.ABILITY });
         }
@@ -104,16 +128,26 @@ export function buildSynergySuggestions({
         }
     }
 
+    // How the team already leans: types it repeats, weaknesses it stacks.
+    const memberTypes = team.map((mem) => mem.types || typesOf(mem.id));
+    const typeCount = new Map();
+    for (const types of memberTypes) for (const t of new Set(types)) typeCount.set(t, (typeCount.get(t) || 0) + 1);
+    const saturatedTypes = new Set([...typeCount].filter(([, n]) => n >= SATURATION.TYPE_AT).map(([t]) => t));
+
     // 3) TYPE coverage — partners that resist the team's shared weaknesses.
     const weakTypes = [];
+    const stackedWeak = [];
     for (const atk of TYPES) {
         let weak = 0; let res = 0;
-        for (const mem of team) {
-            const m = defMultiplier(atk, mem.types || typesOf(mem.id));
+        for (const types of memberTypes) {
+            const m = defMultiplier(atk, types);
             if (m > 1) weak += 1; else if (m < 1) res += 1;
         }
         if (weak >= Math.ceil(team.length / 2) && weak > res) weakTypes.push(atk);
+        if (weak >= SATURATION.WEAK_AT) stackedWeak.push(atk);
     }
+    const leaning = saturatedTypes.size > 0 || nicheEstablished;
+    const typePer = WEIGHTS.TYPE_PER * (leaning ? SATURATION.COVERAGE_BOOST : 1);
     if (weakTypes.length) {
         const relevant = new Set([...Object.keys(smogonById).map(Number), ...(usage ? [...usage.keys()] : []), ...popularMap.keys()]);
         for (const id of relevant) {
@@ -123,7 +157,7 @@ export function buildSynergySuggestions({
             if (!isMeta) continue;
             const covered = weakTypes.filter((t) => defMultiplier(t, entry.types || []) < 1);
             if (covered.length) {
-                add(id, { kind: 'type', label: `Covers ${capType(covered[0])}${covered.length > 1 ? ` +${covered.length - 1}` : ''}`, weight: covered.length * WEIGHTS.TYPE_PER });
+                add(id, { kind: 'type', label: `Covers ${capType(covered[0])}${covered.length > 1 ? ` +${covered.length - 1}` : ''}`, weight: covered.length * typePer });
             }
         }
     }
@@ -134,6 +168,12 @@ export function buildSynergySuggestions({
         const usageCount = (popularMap.get(id) || 0) + (usageById[id]?.n || 0);
         c.score += Math.min(usageCount, WEIGHTS.USAGE_CAP) * WEIGHTS.USAGE_FACTOR;
         c.score += Math.min(bstOf(indexById.get(id)) / 120, 5);
+
+        // The check: more of what the team already has costs, whatever the reason.
+        const types = typesOf(id);
+        const sharedSaturated = types.filter((t) => saturatedTypes.has(t)).length;
+        const sharedWeak = stackedWeak.filter((atk) => defMultiplier(atk, types) > 1).length;
+        c.score -= sharedSaturated * SATURATION.TYPE_PENALTY + sharedWeak * SATURATION.WEAK_PENALTY;
     }
 
     return [...cand.entries()]
