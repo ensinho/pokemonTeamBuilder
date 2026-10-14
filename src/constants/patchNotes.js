@@ -33,7 +33,7 @@ export const RELEASES = [
                 title: 'patchNotes.accountTitle',
                 description: 'patchNotes.accountDesc',
                 cta: 'patchNotes.accountCta',
-                path: '/profile',
+                path: '/profile?tab=account',
             },
         ],
     },
