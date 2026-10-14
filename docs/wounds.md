@@ -12,6 +12,62 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-14 — A test script posted to the real forum `dispattern`
+- **Symptom:** two "teste de composer" replies from "@Guest Trainer" appeared in the live "Team Showcase" topic during a UX audit (2026-10-06); they need an admin to delete.
+- **Root cause:** the dev server and `vite preview` talk to the production Firebase project, and the audit script drove the forum composer with no write guard.
+- **Fix:** every script in the UX pass and `.claude/skills/ux/bench/*` aborts Firestore Write/commit requests whose body names a `public/` path. Blocking *all* writes is wrong too: the old boot awaited the visitor's own preferences write and never left the splash.
+- **Correct pattern:** before scripting any flow, add `page.route(/firestore\.googleapis\.com.*(\/Write\/|:commit)/, r => /public(%2F|\/)/i.test(r.request().postData() || '') ? r.abort() : r.continue())`. Never submit a composer, topic, friend request or public team from a script.
+- **Files:** `.claude/skills/ux/SKILL.md`, `.claude/skills/ux/bench/ux-bench.mjs`
+
+### 2026-10-14 — Forum: topic links were /feed, and a thread rendered every message `bug`
+- **Symptom:** "copy topic link" copied plain `/feed`; Back left the forum instead of closing the thread; arriving from Home opened whatever topic the Home preview had selected. A 178-message thread mounted ~1,500 nodes plus six sprites per attached team.
+- **Root cause:** the open topic lived only in `useForumStore.currentTopicId` (the Home sets it to drive its preview), and the messages listener had no limit.
+- **Fix:** the open topic is `/feed?topic=<id>` (FeedView follows the URL; opening pushes, the in-app back pops). The store subscribes to the opening post (`limit(1)`) plus the latest 40 (`limitToLast`), and "Carregar respostas anteriores" widens the window without clearing the screen. The reply count reads `topic.messageCount`.
+- **Correct pattern:** shareable UI state goes in the URL; never treat a store field another view also writes as navigation. `ThreadDetail` reads `messages[0]` as the OP — keep the OP in any window.
+- **Files:** `src/components/views/FeedView.jsx`, `src/store/useForumStore.js`, `src/components/forum/ThreadDetail.jsx`, `src/components/views/CozyHomeView.jsx`
+
+### 2026-10-14 — Moves list: filters only saw loaded rows, count stuck at 937 `bug`
+- **Symptom:** with "Fogo" selected, rows 7+ were Giga Drain, Rollout, Swagger… as skeletons; the count always read 937; /moves fired ~41 live PokéAPI requests.
+- **Root cause:** type/category lived in per-row details fetched lazily, and the filter ran on the visible page after pagination.
+- **Fix:** details come from `public/data/battle-dex.json` in memory (PokéAPI only as a fallback), and `useReferenceList` takes a `filterEntry` applied before paging, so the count and infinite scroll answer to it.
+- **Correct pattern:** filter the whole index, then page; never filter the page.
+- **Files:** `src/components/views/MovesListView.jsx`, `src/hooks/useReferenceList.js`
+
+### 2026-10-13 — PokéPuzzle: on-screen Enter submitted one letter short; the game swallowed typing app-wide `bug`
+- **Symptom:** C-H-A-R-I-Z-A-R-D + on-screen ↵ said "must be exactly 9 letters"; with Ctrl+K open, typing filled the puzzle tiles instead of the search.
+- **Root cause:** `handleKeyClick` was a useCallback with stale deps calling a `submitCurrentGuess` that closed over an old `inputValue`; the window keydown handler `preventDefault`ed every letter regardless of target.
+- **Fix:** one set of handlers reading the current guess through a ref; the window listener ignores modifier keys, other editable targets, dialogs and keyboard-focused buttons.
+- **Correct pattern:** a window-level key handler must check `event.target` and open dialogs before acting; callbacks that read state on submit read it through a ref or list it in deps.
+- **Files:** `src/components/views/PokePuzzleView.jsx`
+
+### 2026-10-13 — Member editor threw edits away on dismiss; it re-rendered the shell once per move `bug`
+- **Symptom:** Escape, a scrim tap, × or the phone drag-down silently discarded moves/EVs; opening the editor for Kingambit re-rendered the whole app shell 58 times.
+- **Root cause:** every exit path meant Cancel; a per-move fetch loop called `setMoveDetailsCache` (state held in AppLayout) once per learnset move.
+- **Fix:** every exit keeps the edits when something changed, with an undo toast; types come from `useMoveTypes`; the cache state and its props are gone.
+- **Correct pattern:** a reversible edit is kept and undoable, never confirmed or silently dropped; never hold per-item fetch caches in the shell.
+- **Files:** `src/components/modals/TeamPokemonEditorModal.jsx`, `src/store/useActiveTeamStore.js`, `src/components/AppLayout.jsx`
+
+### 2026-10-13 — A first visit waited ~3 s for sign-up + Firestore before painting `perf`
+- **Symptom:** at 4× CPU + ~Fast 4G, a new visitor's JS was done at 0.8 s but the shell painted at 4.4 s; warm phone starts still held a 1.8 s splash. On the old build, if the preferences write hung (bad network), the desktop splash never left.
+- **Root cause:** the splash waited on `isAuthReady`, which for a new visitor is set only after anonymous sign-up, lookup and the Firestore hydration; the splash floor was counted from boot (900 ms desktop / 1800 ms phone), not from when it could be seen.
+- **Fix:** `isNewVisitor` (Firebase answered "no session") releases the splash — nothing identity-dependent to wait for; Firestore reads still wait on `isAuthReady`. The splash fades in at 300 ms (`.boot-splash`) and, once seen, stays ≥ 450 ms (`utils/bootSplash.js`). Measured: first visit 4.6 → 2.0 s desktop, 4.4 → 2.2 s phone; returning phone 2.7 → 0.8 s.
+- **Correct pattern:** never gate first paint on a round-trip that has nothing to show; count a loader's floor from its reveal.
+- **Files:** `src/store/useAuthStore.js`, `src/utils/bootSplash.js`, `src/components/AppLayout.jsx`, `src/styles/app-shell.css`
+
+### 2026-10-13 — manualChunks matched '/react/' as a substring and blanked the app `bug`
+- **Symptom:** the production build rendered nothing: "Cannot read properties of undefined (reading 'createContext')" in `vendor-*.js`. The dev server was fine.
+- **Root cause:** `normalizedId.includes('/react/')` matched `zustand/esm/react/shallow.mjs`, putting it in `react-vendor` while the rest of zustand sat in `vendor` — a chunk cycle that left React undefined at init. It surfaced the first time `useShallow` was imported.
+- **Fix:** anchor the match: `/\/node_modules\/(react|react-dom|scheduler)\//`.
+- **Correct pattern:** manualChunks match packages, not substrings; boot the *production* build after any import change.
+- **Files:** `vite.config.js`
+
+### 2026-10-13 — The browser shipped @pkmn/sim; the precache was 13.7 MB `perf`
+- **Symptom:** a 6.5 MB `pkmn` chunk (1 MB gzip) precached by the service worker for every visitor; `maximumFileSizeToCacheInBytes` had been raised to 8 MB to let it through. Game covers were 3.3 MB of PNG (one 2340 px wide for a 480 px slot), the 32 px logo a 738 KB PNG, and the sprite placeholder hotlinked a pixilart URL that answers 403 (broken-image glyph in every empty slot).
+- **Root cause:** `BattlePopover` imported `Dex` from `@pkmn/sim` for a few tooltip fields; assets were added at source size; the placeholder was never checked.
+- **Fix:** `scripts/build-battle-dex.mjs` bakes those fields into `public/data/battle-dex.json` (64 KB gzip, lazy); covers are 480 px WebP (0.7 MB); `public/logo-mark.webp` (7 KB) for in-app use; a bundled SVG placeholder; precache ceiling 1.5 MB. Precache 13.7 → 3.7 MB.
+- **Correct pattern:** nothing from `api/`'s world (sim, dex, randoms) is imported by `src/`; raster art is WebP at display size ×2; the precache ceiling is a guard, not a dial.
+- **Files:** `src/components/views/battle/BattlePopover.jsx`, `scripts/build-battle-dex.mjs`, `src/hooks/useBattleDex.js`, `src/assets/gameLogos/*`, `src/constants/theme.js`, `vite.config.js`
+
 ### 2026-10-06 — The partner picker paged Firestore for a list the static index already had `perf`
 - **Symptom:** the "Select partner Pokémon" modal showed "Browsing 200 loaded Pokémon", needed a "Load more" button to reach later generations, and searched with a Firestore name-prefix query per keystroke (debounced). Tapping a tile applied the choice at once, with no way to look before committing.
 - **Root cause:** `GreetingPokemonSelectorModal` predated `pokemon-index.json` and kept its own `getDocs` pagination over `artifacts/pokemonTeamBuilder/pokemons` — the same perf wound the Pokédex list already paid for.

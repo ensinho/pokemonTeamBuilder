@@ -411,7 +411,7 @@ export function MetaUsageView() {
                     {visible.length === 0 ? (
                         <EmptyState compact title={pt ? 'Nenhum resultado' : 'No matches'} message={pt ? 'Tente outra busca ou limpe os filtros.' : 'Try another search, or clear the filters.'} />
                     ) : (
-                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 motion-stagger">
+                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
                             {visible.slice(0, reveal.limit).map((mon) => {
                                 // The mon's standing on the ladder, never its
                                 // position in this list — a filtered or A–Z list

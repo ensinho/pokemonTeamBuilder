@@ -111,13 +111,6 @@ export function ForumSidebar({
                     <span>{language === 'pt' ? 'Tópicos criados:' : 'Total Topics:'}</span>
                     <span className="font-bold text-fg">{totalTopics}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs py-1 text-muted border-t border-border mt-1">
-                    <span>{language === 'pt' ? 'Status do servidor:' : 'Server status:'}</span>
-                    <span className="inline-flex items-center gap-1.5 font-semibold text-fg">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                        {language === 'pt' ? 'Online' : 'Online'}
-                    </span>
-                </div>
             </div>
         </aside>
     );

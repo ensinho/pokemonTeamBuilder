@@ -285,6 +285,7 @@ export const TRANSLATIONS = {
             weaknesses: 'Weaknesses',
             resistances: 'Resistances',
             addToTeam: 'Add to team',
+            onTeam: 'On your team',
             backToList: 'Back to Pokédex',
             notFound: 'Pokémon not found',
             notFoundDesc: 'We could not load that Pokémon. It may not exist yet.',
@@ -1075,6 +1076,7 @@ export const TRANSLATIONS = {
         // Forum-side copy. The feed still inlines most of its strings; new copy
         // goes here per docs/index.md §7.
         forum: {
+            loadEarlier: 'Load earlier replies ({{count}})',
             inviteTitle: 'Battle invite',
             inviteHint: 'Open invite — the first trainer to accept takes it.',
             inviteModeRandom: 'Random teams',
@@ -1904,6 +1906,7 @@ export const TRANSLATIONS = {
             weaknesses: 'Fraquezas',
             resistances: 'Resistências',
             addToTeam: 'Adicionar ao time',
+            onTeam: 'No seu time',
             backToList: 'Voltar à Pokédex',
             notFound: 'Pokémon não encontrado',
             notFoundDesc: 'Não foi possível carregar esse Pokémon. Talvez ele ainda não exista.',
@@ -2692,6 +2695,7 @@ export const TRANSLATIONS = {
             appearsIn: 'Em {{count}} times de torneio',
         },
         forum: {
+            loadEarlier: 'Carregar respostas anteriores ({{count}})',
             inviteTitle: 'Convite de batalha',
             inviteHint: 'Convite aberto — o primeiro a aceitar entra na batalha.',
             inviteModeRandom: 'Times aleatórios',

@@ -27,6 +27,8 @@ export function ThreadDetail({
     messageActions,
     confirmingDeleteId,
     showToast,
+    hasOlder = false,
+    onLoadOlder,
 }) {
     // The first message is the Original Post (OP), subsequent messages are comments
     const opMessage = messages.length > 0 ? messages[0] : null;
@@ -184,9 +186,17 @@ export function ThreadDetail({
                 <div className="thread-comments-section__header">
                     <h3 className="thread-comments-section__title">
                         {language === 'pt' ? 'Comentários e Respostas' : 'Comments & Replies'}
-                        <span className="thread-comments-section__count">({comments.length})</span>
+                        {/* The thread is windowed (latest replies + the OP), so the
+                            topic's own counter is the true total. */}
+                        <span className="thread-comments-section__count">({Math.max(comments.length, (topic.messageCount || 1) - 1)})</span>
                     </h3>
                 </div>
+
+                {hasOlder && onLoadOlder && (
+                    <button type="button" className="btn btn-secondary btn-block" onClick={onLoadOlder}>
+                        {t('forum.loadEarlier', { count: Math.max(0, (topic.messageCount || 0) - messages.length) })}
+                    </button>
+                )}
 
                 {/* Comments List (with replies counters & collapsible branches) */}
                 <CommentList

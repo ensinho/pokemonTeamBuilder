@@ -12,7 +12,9 @@ import {
     increment,
     arrayUnion,
     arrayRemove,
-    getDoc
+    getDoc,
+    limit,
+    limitToLast
 } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { useAuthStore } from './useAuthStore';
@@ -24,6 +26,13 @@ import { megaDisplayName } from '../hooks/useMegaStones';
 
 let topicsUnsubscribe = null;
 let messagesUnsubscribe = null;
+let opUnsubscribe = null;
+
+// A thread loads its opening post plus the latest MESSAGES_PAGE replies; older
+// replies come in pages on request. Before 2026-10-14 every message streamed
+// at once: a 178-message thread mounted ~1,500 nodes and every attached team's
+// six sprites, on a phone, to show the bottom of the conversation.
+const MESSAGES_PAGE = 40;
 
 // Canonical, always-present topics the app seeds automatically. `general` backs
 // the forum chat. Authored by 'system' (Professor Oak).
@@ -81,6 +90,8 @@ export const useForumStore = create((set, get) => ({
     messages: [],
     isInitialLoadingTopics: false,
     isInitialLoadingMessages: false,
+    messagesWindow: MESSAGES_PAGE,
+    hasOlderMessages: false,
 
     setCurrentTopicId: (topicId) => {
         set({ currentTopicId: topicId });
@@ -146,20 +157,48 @@ export const useForumStore = create((set, get) => ({
 
     initMessagesListener: (topicId) => {
         if (!db) return;
+        set({ isInitialLoadingMessages: true, messages: [], messagesWindow: MESSAGES_PAGE, hasOlderMessages: false });
+        get().subscribeMessages(topicId, MESSAGES_PAGE);
+    },
+
+    // The opening post (ThreadDetail reads messages[0] as the OP) and the
+    // latest `windowSize` messages, merged. Re-subscribing to a wider window
+    // keeps the current messages on screen until the new snapshot lands.
+    subscribeMessages: (topicId, windowSize) => {
         get().cleanupMessagesListener();
-
-        set({ isInitialLoadingMessages: true, messages: [] });
-
         const messagesRef = collection(db, `artifacts/${appId}/public/data/forumTopics/${topicId}/messages`);
-        const q = query(messagesRef, orderBy('createdAt', 'asc'));
-
-        messagesUnsubscribe = onSnapshot(q, (snapshot) => {
-            const msgList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            set({ messages: msgList, isInitialLoadingMessages: false });
-        }, (error) => {
+        let op;
+        let tail = null;
+        const publish = () => {
+            if (tail === null || op === undefined) return;
+            const opInTail = !op || tail.some((m) => m.id === op.id);
+            set({
+                messages: opInTail ? tail : [op, ...tail],
+                hasOlderMessages: !opInTail && tail.length >= windowSize,
+                isInitialLoadingMessages: false,
+            });
+        };
+        const onError = (error) => {
             console.error(`Error loading messages for topic ${topicId}:`, error);
             set({ isInitialLoadingMessages: false });
-        });
+        };
+        opUnsubscribe = onSnapshot(query(messagesRef, orderBy('createdAt', 'asc'), limit(1)), (snapshot) => {
+            const first = snapshot.docs[0];
+            op = first ? { id: first.id, ...first.data() } : null;
+            publish();
+        }, onError);
+        messagesUnsubscribe = onSnapshot(query(messagesRef, orderBy('createdAt', 'asc'), limitToLast(windowSize)), (snapshot) => {
+            tail = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+            publish();
+        }, onError);
+    },
+
+    loadOlderMessages: () => {
+        const { currentTopicId, messagesWindow } = get();
+        if (!db || !currentTopicId) return;
+        const next = messagesWindow + MESSAGES_PAGE;
+        set({ messagesWindow: next });
+        get().subscribeMessages(currentTopicId, next);
     },
 
     cleanupTopicsListener: () => {
@@ -173,6 +212,10 @@ export const useForumStore = create((set, get) => ({
         if (messagesUnsubscribe) {
             messagesUnsubscribe();
             messagesUnsubscribe = null;
+        }
+        if (opUnsubscribe) {
+            opUnsubscribe();
+            opUnsubscribe = null;
         }
     },
 
@@ -245,11 +288,10 @@ export const useForumStore = create((set, get) => ({
 
             toast.success(t('toast.topicCreated'), {
                 description: cleanTitle,
-                // The feed picks its topic from the store, not the URL, so
-                // select it before navigating or /feed lands on 'general'.
+                // The open topic is the URL's ?topic= (FeedView follows it).
                 actions: [{
                     label: t('toast.openTopic'),
-                    onClick: () => { get().setCurrentTopicId(topicId); navigateTo('/feed'); },
+                    onClick: () => navigateTo(`/feed?topic=${encodeURIComponent(topicId)}`),
                 }],
             });
             return topicId;

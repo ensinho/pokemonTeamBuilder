@@ -134,6 +134,8 @@ export function PokedexView({
     const [searchParams] = useSearchParams();
     const pokemonQueryParam = searchParams.get('pokemon');
     const setBrowseSequence = usePokedexStore((s) => s.setBrowseSequence);
+    // The real result count, not the loaded page (it read "50" for 1025).
+    const filteredTotal = usePokedexStore((s) => s.filteredPokemons.length);
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
     const [isGamePickerOpen, setIsGamePickerOpen] = useState(false);
@@ -405,7 +407,7 @@ export function PokedexView({
                     <div className="team-builder-panel__header team-builder-panel__header--picker team-builder-panel__header--compact">
                         <div className="team-builder-picker-heading-row team-builder-picker-heading-row--compact min-w-0">
                             <h2 className="team-builder-panel__title team-builder-panel__title--compact">{t('nav.pokedex')}</h2>
-                            <span className="team-builder-panel__meta team-builder-panel__meta--compact">{displayedPokemons.length}</span>
+                            <span className="team-builder-panel__meta team-builder-panel__meta--compact">{filteredTotal}</span>
                         </div>
                     </div>
 

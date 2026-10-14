@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
@@ -57,11 +59,46 @@ export function FeedView({ showToast, navigate }) {
         toggleMessageLike,
         deleteMessage,
         deleteTopic,
-    } = useForumStore();
+        hasOlderMessages,
+        loadOlderMessages,
+    } = useForumStore(useShallow((s) => ({
+        topics: s.topics, currentTopicId: s.currentTopicId, messages: s.messages,
+        isInitialLoadingTopics: s.isInitialLoadingTopics, isInitialLoadingMessages: s.isInitialLoadingMessages,
+        setCurrentTopicId: s.setCurrentTopicId, initTopicsListener: s.initTopicsListener,
+        cleanupTopicsListener: s.cleanupTopicsListener, createTopic: s.createTopic, sendMessage: s.sendMessage,
+        toggleMessageLike: s.toggleMessageLike, deleteMessage: s.deleteMessage, deleteTopic: s.deleteTopic,
+        hasOlderMessages: s.hasOlderMessages, loadOlderMessages: s.loadOlderMessages,
+    })));
 
-    const { userId, isAdmin } = useAuthStore();
-    const { savedTeams } = useFirestoreTeamsStore();
-    const { currentTeam, teamName, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore();
+    // Selectors, not whole stores: a bare useAuthStore()/useActiveTeamStore()
+    // re-rendered the forum on every unrelated store tick (2026-10-14).
+    const { userId, isAdmin } = useAuthStore(useShallow((s) => ({ userId: s.userId, isAdmin: s.isAdmin })));
+    const savedTeams = useFirestoreTeamsStore((s) => s.savedTeams);
+    const { currentTeam, teamName, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore(useShallow((s) => ({
+        currentTeam: s.currentTeam, teamName: s.teamName, setCurrentTeam: s.setCurrentTeam,
+        setTeamName: s.setTeamName, setEditingTeamId: s.setEditingTeamId,
+    })));
+
+    // The open topic lives in the URL (/feed?topic=<id>), not only in the
+    // store: before 2026-10-14 a shared "topic link" was plain /feed, Back
+    // left the forum instead of closing the thread, and arriving from Home
+    // opened whatever topic the Home preview had selected. Opening pushes a
+    // history entry (Back closes it); the store follows the URL.
+    const [searchParams, setSearchParams] = useSearchParams();
+    const routerNavigate = useNavigate();
+    const topicParam = searchParams.get('topic') || null;
+    const openedHereRef = useRef(false);
+    const setTopicInUrl = (id, { replace = false } = {}) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (id) next.set('topic', id); else next.delete('topic');
+            return next;
+        }, { replace });
+    };
+    useEffect(() => {
+        if (topicParam !== (currentTopicId || null)) setCurrentTopicId(topicParam);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- the URL drives the store, not the reverse
+    }, [topicParam]);
 
     // Local UI States
     const [selectedCategory, setSelectedCategory] = useState('all');
@@ -146,25 +183,35 @@ export function FeedView({ showToast, navigate }) {
 
     // Navigation handlers
     const handleSelectTopic = (topicId) => {
-        setCurrentTopicId(topicId);
+        openedHereRef.current = true;
+        setTopicInUrl(topicId);
         setReplyingTo(null);
         setAttachedTeam(null);
         setReplyText('');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // .app-shell__content is the scroller; window.scrollTo moved nothing.
+        document.querySelector('.app-shell__content')?.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const handleBackToFeed = () => {
-        setCurrentTopicId(null);
         setReplyingTo(null);
         setAttachedTeam(null);
         setReplyText('');
+        // Opened from the list in this visit: the in-app back is history back,
+        // so the browser's Back does not reopen the thread afterwards.
+        if (openedHereRef.current) {
+            openedHereRef.current = false;
+            routerNavigate(-1);
+        } else {
+            setTopicInUrl(null, { replace: true });
+        }
     };
 
     // Topic creation handler
     const handleCreateTopicSubmit = async ({ title, category, text, attachedTeam }) => {
         const id = await createTopic(title, category, text, attachedTeam);
         if (id) {
-            setCurrentTopicId(id);
+            openedHereRef.current = true;
+            setTopicInUrl(id);
             if (showToast) {
                 showToast(
                     language === 'pt' ? 'Tópico criado com sucesso!' : 'Topic published successfully!',
@@ -294,7 +341,7 @@ export function FeedView({ showToast, navigate }) {
     // Delete topic
     const handleDeleteTopic = async (topicId) => {
         await deleteTopic(topicId);
-        setCurrentTopicId(null);
+        setTopicInUrl(null, { replace: true });
     };
 
     // Single popover anchor reference
@@ -372,6 +419,8 @@ export function FeedView({ showToast, navigate }) {
                             messageActions={messageActions}
                             confirmingDeleteId={confirmingDeleteId}
                             showToast={showToast}
+                            hasOlder={hasOlderMessages}
+                            onLoadOlder={loadOlderMessages}
                         />
                     </main>
 
