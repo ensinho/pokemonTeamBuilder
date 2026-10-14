@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Puzzle, Search, Star } from 'lucide-react';
+import { KeyRound, Puzzle, Search, Star } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
@@ -9,6 +9,7 @@ import { ChevronDownIcon, CloseIcon, DownloadIcon, FlowerIcon, HeartIcon, HomeIc
 import { ShinyBurst } from '../ShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
+import { typeIcons } from '../../constants/types';
 
 const CHAMPIONS_LOGO = getGameLogo('champions');
 
@@ -69,6 +70,45 @@ const PlaythroughVisual = ({ t }) => (
         </div>
         <span className="rounded-full bg-surface-raised px-2.5 py-1 text-2xs font-bold text-muted">
             {t('builder.playthroughBadge')}
+        </span>
+    </div>
+);
+
+// Pre-Fairy chart — the example from the suggestion that asked for it:
+// Azumarill as it is today, then as it was in Gen 3.
+const PreFairyVisual = ({ t }) => {
+    const card = (types) => (
+        <span className="flex flex-col items-center gap-1.5 rounded-lg bg-surface-raised px-2.5 py-2">
+            <img src={`${SPRITE_BASE}/184.png`} alt="" className="h-10 w-10 object-contain" style={{ imageRendering: 'pixelated' }} />
+            <span className="flex items-center gap-1">
+                {types.map((type) => <img key={type} src={typeIcons[type]} alt="" className="h-4 w-4 rounded-full" />)}
+            </span>
+        </span>
+    );
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex items-center gap-2.5">
+                {card(['water', 'fairy'])}
+                <span className="px-1 text-sm font-bold text-muted">→</span>
+                {card(['water'])}
+            </div>
+            <span className="rounded-full bg-surface-raised px-2.5 py-1 text-2xs font-bold text-muted">
+                {t('builder.legacyTypesLabel')}
+            </span>
+        </div>
+    );
+};
+
+// Account controls — the two buttons the profile card now has.
+const AccountVisual = ({ t }) => (
+    <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2 bg-bg p-3" aria-hidden="true">
+        <span className="flex w-48 items-center gap-2 rounded-md bg-surface-raised px-3 py-2 text-xs font-semibold text-fg">
+            <KeyRound className="h-3.5 w-3.5 text-primary" />
+            {t('profile.changePasswordBtn')}
+        </span>
+        <span className="flex w-48 items-center gap-2 rounded-md bg-surface-raised px-3 py-2 text-xs font-semibold text-danger">
+            <CloseIcon className="h-3.5 w-3.5" />
+            {t('profile.deleteAccountBtn')}
         </span>
     </div>
 );
@@ -461,6 +501,7 @@ const NOTE_ICONS = {
     message: MessageIcon,
     puzzle: Puzzle,
     search: Search,
+    key: KeyRound,
 };
 
 const NOTE_VISUALS = {
@@ -478,6 +519,8 @@ const NOTE_VISUALS = {
     delight: DelightVisual,
     dock: DockVisual,
     search: SearchVisual,
+    preFairy: PreFairyVisual,
+    account: AccountVisual,
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall, onOpenSearch }) {

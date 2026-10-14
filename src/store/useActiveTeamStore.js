@@ -128,8 +128,16 @@ const serializeTeamPokemon = (pokemon, megaStones = null) => {
     };
 };
 
+// Pre-Fairy (Gen 2–5) analysis, for playthroughs of older games. Per device,
+// like the builder's other view settings.
+const LEGACY_TYPES_KEY = 'ptb-legacy-types';
+const readLegacyTypes = () => {
+    try { return localStorage.getItem(LEGACY_TYPES_KEY) === '1'; } catch (_) { return false; }
+};
+
 export const useActiveTeamStore = create((set, get) => ({
     currentTeam: [],
+    legacyTypes: readLegacyTypes(),
     teamName: '',
     editingTeamId: null,
     teamAnalysis: { strengths: new Set(), weaknesses: {}, defensiveCoverage: {} },
@@ -160,9 +168,17 @@ export const useActiveTeamStore = create((set, get) => ({
     },
 
     recalculateAnalysis: () => {
-        const { currentTeam } = get();
+        const { currentTeam, legacyTypes } = get();
         const pokemonsList = usePokedexStore.getState().pokemons;
-        set(analyzeTeam(currentTeam, pokemonsList));
+        set(analyzeTeam(currentTeam, pokemonsList, { legacyTypes }));
+    },
+
+    setLegacyTypes: (on) => {
+        const legacyTypes = Boolean(on);
+        if (legacyTypes === get().legacyTypes) return;
+        try { localStorage.setItem(LEGACY_TYPES_KEY, legacyTypes ? '1' : '0'); } catch (_) { /* ignore */ }
+        set({ legacyTypes });
+        get().recalculateAnalysis();
     },
 
     handleAddPokemon: async (pokemon) => {
