@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trophy, ShieldCheck, Sparkles } from 'lucide-react';
+import { Trophy, ShieldCheck, Sparkles, Info } from 'lucide-react';
 import { typeIcons } from '../constants/types';
 import { getPokemonDisplaySprite, getPokemonArtworkSpriteUrl } from '../utils/pokemonSprites';
 import { SkeletonCard } from './SkeletonCard';
@@ -7,6 +7,7 @@ import { Sprite } from './Sprite';
 import { StarIcon, PlusIcon } from './icons';
 import { coreIconFor } from './coreIcons';
 import { useShinyBurst } from '../hooks/useShinyBurst';
+import { useTranslation } from '../hooks/useTranslation';
 import '../styles/pokemon-card.css';
 
 // Map reason kind → icon + default colour
@@ -31,12 +32,24 @@ export const PokemonCard = React.memo(function PokemonCard({
     isFavorite,
     onToggleFavorite,
     isSelected,
+    // Builder picker: the whole card adds (the target is the card, not a 30px
+    // bar under it) and details move to a small info button. The Pokédex keeps
+    // the default — the card opens the entry.
+    addOnClick = false,
 }) {
     const shiny = useShinyBurst();
+    const { t } = useTranslation();
 
     if (!details) return <SkeletonCard />;
 
+    const primaryAction = addOnClick && onAddToTeam ? onAddToTeam : onCardClick;
+
     const handleCardClick = (e) => {
+        e.stopPropagation();
+        primaryAction?.(details);
+    };
+
+    const handleInfoClick = (e) => {
         e.stopPropagation();
         onCardClick?.(details);
     };
@@ -55,9 +68,10 @@ export const PokemonCard = React.memo(function PokemonCard({
     };
 
     const handleKeyDown = (e) => {
+        if (e.target !== e.currentTarget) return;
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            onCardClick?.(details);
+            primaryAction?.(details);
         }
     };
 
@@ -71,8 +85,8 @@ export const PokemonCard = React.memo(function PokemonCard({
             onKeyDown={handleKeyDown}
             role="button"
             tabIndex={0}
-            aria-label={`View details for ${details.name}`}
-            className={`pokemon-card group ${hasSynergy ? 'pokemon-card--synergy' : isSuggested ? 'pokemon-card--suggested' : ''}  ${isSelected ? 'pokemon-card--selected' : ''}`}
+            aria-label={addOnClick ? t('builder.addToTeamAria', { name: details.name }) : `View details for ${details.name}`}
+            className={`pokemon-card group ${addOnClick ? 'pokemon-card--picker' : ''} ${hasSynergy ? 'pokemon-card--synergy' : isSuggested ? 'pokemon-card--suggested' : ''}  ${isSelected ? 'pokemon-card--selected' : ''}`}
             style={hasSynergy ? { '--synergy-color': reasonColor } : undefined}
         >
             <div className="pokemon-card__topbar">
@@ -95,6 +109,18 @@ export const PokemonCard = React.memo(function PokemonCard({
                         <div className="pokemon-card__badge">
                             Suggested
                         </div>
+                    )}
+
+                    {addOnClick && onCardClick && (
+                        <button
+                            type="button"
+                            onClick={handleInfoClick}
+                            className="pokemon-card__info touch-target"
+                            aria-label={t('builder.detailsAria', { name: details.name })}
+                            title={t('builder.detailsAria', { name: details.name })}
+                        >
+                            <Info aria-hidden="true" />
+                        </button>
                     )}
 
                     {onToggleFavorite && (
@@ -125,7 +151,15 @@ export const PokemonCard = React.memo(function PokemonCard({
                 </span>
             )}
 
-            {onAddToTeam && (
+            {/* In the picker the card itself is the add target, so this is the
+                cue, not a second control (aria-hidden; clicks fall through). */}
+            {onAddToTeam && addOnClick && (
+                <span className="pokemon-card__action" aria-hidden="true">
+                    <PlusIcon className="w-3 h-3" />
+                    {t('builder.addShort')}
+                </span>
+            )}
+            {onAddToTeam && !addOnClick && (
                 <button
                     onClick={handleAddClick}
                     type="button"

@@ -649,7 +649,6 @@ export default function AppLayout() {
 
     // Caches for dynamic fetches
     const [pokemonDetailsCache, setPokemonDetailsCache] = useState({});
-    const [moveDetailsCache, setMoveDetailsCache] = useState({});
     const [teamSearchTerm, setTeamSearchTerm] = useState('');
     const [sharedTeamLoaded, setSharedTeamLoaded] = useState(false);
 
@@ -1252,8 +1251,6 @@ export default function AppLayout() {
                     colors={colors}
                     items={items}
                     natures={natures}
-                    moveDetailsCache={moveDetailsCache}
-                    setMoveDetailsCache={setMoveDetailsCache}
                 />
                 </Suspense>
             )}
