@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Check, ChevronRight, Hourglass, Palette, Pencil, Plus, Shield, Sparkles, Swords } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
+import { GuestAccountCard } from '../GuestAccountCard';
 import { useForumStore } from '../../store/useForumStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useTranslation } from '../../hooks/useTranslation';
@@ -683,7 +684,10 @@ export function CozyHomeView({
     // Phones get one tab at a time, the PDF's shape; desktop keeps the story
     // rail beside whichever tab is open.
     let main;
-    if (tab === 'today') main = isPhone ? <>{hero}{yourDay}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
+    // A guest's invitation to an account, right under the hero on a phone and at
+    // the top of the rail on desktop. Renders nothing for an account holder.
+    const guestCard = <GuestAccountCard variant="home" />;
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{yourDay}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 8);
     else if (tab === 'meta') main = metaPanel;
     else main = communityPanel(5);
@@ -702,6 +706,7 @@ export function CozyHomeView({
 
                 {!isPhone && (
                     <aside className="cozy-rail">
+                        {guestCard}
                         {journeyPanel}
                         {tab !== 'community' && communityPanel(1)}
                     </aside>
