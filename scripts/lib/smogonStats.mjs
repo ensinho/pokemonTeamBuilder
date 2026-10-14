@@ -76,3 +76,40 @@ export function orderCutoffs(published, preference = []) {
         ...published.filter((c) => !preference.includes(c)).sort((a, b) => b - a),
     ];
 }
+
+/**
+ * The catalog the index ships: this month's builds, plus every format a
+ * previous run built that this month did not publish.
+ *
+ * Smogon only lists the ladders that ran that month, so a regulation that just
+ * rotated out (Reg M-A once M-B opened, Reg I once Champions took over) simply
+ * stops appearing. Rebuilding the index from this month alone made those
+ * regulations vanish from the picker overnight — along with their perfectly
+ * good baked files, and every saved team that pointed at them. A carried entry
+ * keeps the month its data is from, so the UI can say how old it is.
+ *
+ * `catalog` is the FORMATS list (its order is the picker's order); `built` the
+ * metas this run produced; `previous` the last index (or null); `hasFile(entry)`
+ * whether a carried entry's baked file still exists. Formats in neither list
+ * are dropped, as are carried entries the catalog no longer names.
+ */
+export function mergeCatalog({ catalog = [], built = [], previous = null, month = null, hasFile = () => true }) {
+    const fresh = new Map(built.map((f) => [f.id, { ...f, month }]));
+    const prior = new Map((previous?.formats || []).map((f) => [f.id, { ...f, month: f.month || previous?.month || null }]));
+    const out = [];
+    for (const { id } of catalog) {
+        if (fresh.has(id)) out.push(fresh.get(id));
+        else if (prior.has(id) && hasFile(prior.get(id))) out.push(prior.get(id));
+    }
+    return out;
+}
+
+/**
+ * The format the app opens on: the newest VGC regulation with data from the
+ * current month (the catalog lists regulations newest first), then any VGC
+ * regulation, then whatever is first.
+ */
+export function pickDefaultFormat(formats = [], month = null) {
+    const vgc = formats.filter((f) => f.kind === 'vgc');
+    return vgc.find((f) => f.month === month) || vgc[0] || formats[0] || null;
+}

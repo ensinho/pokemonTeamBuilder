@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { orderCutoffs, parseStatsListing, parseUsageTable } from './smogonStats.mjs';
+import { mergeCatalog, orderCutoffs, parseStatsListing, parseUsageTable, pickDefaultFormat } from './smogonStats.mjs';
 
 // Smogon publishes scraped text, not an API, so these fixtures are verbatim
 // slices of the real pages — spacing, trailing pipes and all. If the site's
@@ -94,5 +94,54 @@ describe('orderCutoffs', () => {
     it('falls back to the bare preference list when nothing is published', () => {
         expect(orderCutoffs([], preference)).toEqual(preference);
         expect(orderCutoffs(undefined, preference)).toEqual(preference);
+    });
+});
+
+describe('mergeCatalog', () => {
+    const catalog = [
+        { id: 'gen9championsvgc2026regmc' },
+        { id: 'gen9championsvgc2026regmb' },
+        { id: 'gen9championsvgc2026regma' },
+        { id: 'gen9ou' },
+    ];
+    const previous = {
+        month: '2026-08',
+        formats: [
+            { id: 'gen9championsvgc2026regmb', kind: 'vgc', species: 120 },
+            { id: 'gen9championsvgc2026regma', kind: 'vgc', species: 117, month: '2026-06' },
+            { id: 'gen9retiredtier', kind: 'tier' },
+        ],
+    };
+
+    it('keeps a regulation the month stopped publishing, with the month its data is from', () => {
+        const built = [{ id: 'gen9championsvgc2026regmc', kind: 'vgc' }, { id: 'gen9championsvgc2026regmb', kind: 'vgc', species: 125 }];
+        const out = mergeCatalog({ catalog, built, previous, month: '2026-09' });
+        expect(out.map((f) => f.id)).toEqual(['gen9championsvgc2026regmc', 'gen9championsvgc2026regmb', 'gen9championsvgc2026regma']);
+        expect(out[1]).toMatchObject({ species: 125, month: '2026-09' }); // fresh build wins
+        expect(out[2]).toMatchObject({ species: 117, month: '2026-06' }); // carried, keeps its own month
+    });
+
+    it('stamps a carried entry from an old index with that index month', () => {
+        const out = mergeCatalog({ catalog, built: [], previous, month: '2026-09' });
+        expect(out.find((f) => f.id === 'gen9championsvgc2026regmb').month).toBe('2026-08');
+    });
+
+    it('drops carried entries whose file is gone, and ids the catalog no longer names', () => {
+        const out = mergeCatalog({ catalog, built: [], previous, month: '2026-09', hasFile: (f) => f.id !== 'gen9championsvgc2026regma' });
+        expect(out.map((f) => f.id)).toEqual(['gen9championsvgc2026regmb']);
+    });
+});
+
+describe('pickDefaultFormat', () => {
+    it('opens on the newest regulation that has this month’s data', () => {
+        const formats = [
+            { id: 'a', kind: 'vgc', month: '2026-08' },
+            { id: 'b', kind: 'vgc', month: '2026-09' },
+            { id: 'c', kind: 'tier', month: '2026-09' },
+        ];
+        expect(pickDefaultFormat(formats, '2026-09').id).toBe('b');
+        expect(pickDefaultFormat(formats, '2026-10').id).toBe('a');
+        expect(pickDefaultFormat([{ id: 'c', kind: 'tier' }], '2026-09').id).toBe('c');
+        expect(pickDefaultFormat([], '2026-09')).toBeNull();
     });
 });

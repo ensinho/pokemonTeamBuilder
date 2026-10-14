@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { hasLadderDetail, mergeTournamentIntoLadder } from './lib/limitlessMerge.mjs';
+
 // Builds the UNIFIED competitive-usage dataset for the Team Builder + Meta pages
 // from REAL tournament results on the free Limitless VGC API, then completes each
 // entry with the EV spreads + Tera types the API doesn't expose (grafted from the
@@ -13,7 +15,11 @@ import path from 'node:path';
 // gaps Limitless has (EV spreads + Tera).
 //
 // Output (one file per regulation, keyed by the SAME format ids the UI selects):
-//   public/data/usage/<smogonFormatId>.json   (extended in place — adds winRate)
+//   public/data/usage/<smogonFormatId>.json   — when the file carries Smogon
+//       ladder detail, Limitless is MERGED in (per-species winRate + `tour`, and
+//       a top-level `tournament` ranking — see lib/limitlessMerge.mjs). Only a
+//       regulation with no ladder file (retired from the ladder) is written
+//       Limitless-first, as before.
 //   public/data/competitive-usage.json         (the default/current regulation,
 //                                                kept for back-compat consumers)
 //
@@ -121,6 +127,15 @@ const resolveSpeciesId = async (deckId, name) => {
         }
         if (r.error) sawError = true;
     }
+    // Form-only defaults ("basculegion", "indeedee" — whose /pokemon/ default is
+    // the -male variant) 404 above; the species endpoint answers the bare name.
+    // build-usage-stats.mjs learned this first; without it here those species
+    // silently lost their tournament data (Reg M-C, 2026-10).
+    for (const slug of [...slugCandidates(deckId || ''), ...slugCandidates(name || '')]) {
+        const r = await fetchJson(`${POKEAPI}/pokemon-species/${slug}`);
+        if (r.json?.id) { speciesCache.set(key, r.json.id); return r.json.id; }
+        if (r.error) sawError = true;
+    }
     if (!sawError) speciesCache.set(key, null); // definitively absent — cache the miss
     return null;
 };
@@ -200,12 +215,13 @@ const aggregateRegulation = async (token) => {
                 if (!agg.has(key)) {
                     agg.set(key, {
                         name: p.name || key, deckId: p.id || null,
-                        teams: 0, wins: 0, games: 0, weighted: 0,
+                        teams: 0, wins: 0, games: 0, weighted: 0, topCut: 0,
                         items: new Map(), abilities: new Map(), moves: new Map(), tera: new Map(),
                     });
                 }
                 const e = agg.get(key);
                 e.teams += 1; e.wins += wins; e.games += games; e.weighted += weight;
+                if (place <= 8) e.topCut += 1;
                 bump(e.items, p.item);
                 bump(e.abilities, p.ability);
                 bump(e.tera, p.tera);
@@ -255,6 +271,7 @@ const aggregateRegulation = async (token) => {
             usage,          // % of analyzed teams running this species
             winRate,        // % games won by teams running it (null if no records)
             weighted: e.weighted,
+            topCut: e.topCut, // teams that finished top 8 with it
             items: topEntries(e.items, CAP.items).map((it) => ({ ...it, slug: itemSlug(it.name) })),
             abilities: topEntries(e.abilities, CAP.abilities),
             tera: topEntries(e.tera, CAP.tera),
@@ -264,7 +281,13 @@ const aggregateRegulation = async (token) => {
         };
     }
 
-    return { byId, teamsAnalyzed, tournaments: tournaments.length, species: Object.keys(byId).length };
+    // The window the sample covers, so the page can say "tournaments from … to …".
+    const dates = tournaments.map((t) => t.date).filter(Boolean).sort();
+    const day = (d) => (d ? String(d).slice(0, 10) : null);
+    return {
+        byId, teamsAnalyzed, tournaments: tournaments.length, species: Object.keys(byId).length,
+        from: day(dates[0]), to: day(dates.at(-1)),
+    };
 };
 
 // Graft Smogon's EV spreads + Tera onto the Limitless entries (the two fields the
@@ -296,8 +319,17 @@ async function main() {
     const formats = index?.formats || [];
     if (!formats.length) { console.warn('build-limitless-usage: no usage-index.json formats; run build-usage-stats first. Skipping.'); return; }
 
+    // `--formats=a,b` refreshes just those (the retired regulations' tournament
+    // data does not change, and each regulation is ~80 paced API calls).
+    const only = (process.argv.find((a) => a.startsWith('--formats=')) || '')
+        .slice('--formats='.length).split(',').map((x) => x.trim()).filter(Boolean);
+
     let builtAny = false;
     for (const fmt of formats) {
+        if (only.length && !only.includes(fmt.id)) continue;
+        // Bo3 ladders share their regulation's tournaments; only the regulation
+        // itself gets them, or one Limitless pull would be pasted onto both.
+        if (fmt.kind && fmt.kind !== 'vgc') continue;
         const token = limitlessTokenFor(fmt.id);
         if (!token) { console.log(`  · ${fmt.id}: no Limitless token — skipping`); continue; }
         try {
@@ -305,11 +337,14 @@ async function main() {
             if (!reg || !reg.species) { console.warn(`  · ${fmt.id} (${token}): no Limitless data — keeping existing`); continue; }
             const filled = await fillFromSmogon(fmt.id, reg.byId);
 
-            // Re-write the per-format usage file: Limitless byId as the source of
-            // truth, Smogon spreads/Tera merged in. Keep Smogon's format/month meta.
             let existing = {};
             try { existing = JSON.parse(await fs.readFile(path.join(USAGE_DIR, `${fmt.id}.json`), 'utf8')); } catch (_) { /* new */ }
-            const payload = {
+
+            // Ladder file present → enrich it, keep every Smogon field and band.
+            const merged = hasLadderDetail(existing) ? mergeTournamentIntoLadder(existing, reg, { generatedAt }) : null;
+            // No ladder detail (a regulation the ladder retired) → Limitless leads,
+            // Smogon spreads/Tera grafted in. Keep Smogon's format/month meta.
+            const payload = merged || {
                 generatedAt,
                 month: existing.month || null,
                 format: existing.format || { id: fmt.id, label: fmt.label, group: fmt.group },
@@ -319,11 +354,12 @@ async function main() {
                 tournaments: reg.tournaments,
                 species: reg.species,
                 byId: reg.byId,
+                tournament: { source: 'limitless', generatedAt, teamsAnalyzed: reg.teamsAnalyzed, tournaments: reg.tournaments, from: reg.from, to: reg.to },
             };
             await fs.mkdir(USAGE_DIR, { recursive: true });
             await fs.writeFile(path.join(USAGE_DIR, `${fmt.id}.json`), `${JSON.stringify(payload)}\n`);
             builtAny = true;
-            console.log(`  ✓ ${fmt.id} (${token}): ${reg.species} species from ${reg.teamsAnalyzed} teams / ${reg.tournaments} tournaments (spreads:${filled.spreads}, tera:${filled.tera})`);
+            console.log(`  ✓ ${fmt.id} (${token}, ${merged ? 'merged into ladder' : 'tournament-only'}): ${reg.species} species from ${reg.teamsAnalyzed} teams / ${reg.tournaments} tournaments, ${reg.from}→${reg.to} (spreads:${filled.spreads}, tera:${filled.tera})`);
 
             // The default regulation also feeds the back-compat competitive-usage.json.
             if (fmt.id === (index.default || formats[0].id)) {
