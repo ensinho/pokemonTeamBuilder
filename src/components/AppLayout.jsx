@@ -627,16 +627,46 @@ export default function AppLayout() {
     // first tap on each is a render, not a download. Waiting for boot keeps
     // these chunks out of the way of the requests the splash is holding for; a
     // failed prefetch is harmless (lazy() retries). Data Saver opts out.
+    //
+    // It waits for the network to go quiet (no new resource for 1.5 s, capped
+    // at 8 s) and fetches one chunk at a time: firing all of them on idle made a
+    // phone deep link 3–10% slower, the chunks competing with the page's own
+    // data on a 4G connection (measured 2026-10-14, ux-bench).
     useEffect(() => {
         if (!isBootSettled || navigator.connection?.saveData) return undefined;
         const list = isMobile ? MOBILE_PREFETCH : DESKTOP_PREFETCH;
-        const warm = () => list.forEach((load) => { load().catch(() => {}); });
-        if ('requestIdleCallback' in window) {
-            const handle = window.requestIdleCallback(warm, { timeout: 4000 });
-            return () => window.cancelIdleCallback(handle);
+        let cancelled = false;
+        let started = false;
+        let quietTimer;
+        let observer;
+        const warm = async () => {
+            if (started) return;
+            started = true;
+            observer?.disconnect();
+            window.clearTimeout(quietTimer);
+            for (const load of list) {
+                if (cancelled) return;
+                try { await load(); } catch { /* lazy() retries on use */ }
+            }
+        };
+        const armQuiet = () => {
+            window.clearTimeout(quietTimer);
+            quietTimer = window.setTimeout(warm, 1500);
+        };
+        if ('PerformanceObserver' in window) {
+            try {
+                observer = new PerformanceObserver(armQuiet);
+                observer.observe({ type: 'resource' });
+            } catch { observer = null; }
         }
-        const handle = window.setTimeout(warm, 1500);
-        return () => window.clearTimeout(handle);
+        armQuiet();
+        const capTimer = window.setTimeout(warm, 8000);
+        return () => {
+            cancelled = true;
+            observer?.disconnect();
+            window.clearTimeout(quietTimer);
+            window.clearTimeout(capTimer);
+        };
     }, [isMobile, isBootSettled]);
 
     const splashMessages = useMemo(() => [
