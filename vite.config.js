@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { challengeDevApi } from './scripts/lib/challengeDevApi.mjs'
 
 // Unique id for this build, used to cache-bust static /data/*.json files on every
 // deploy (see src/services/pokemonDataCache.js). Overridable via VITE_BUILD_ID
@@ -16,6 +17,9 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // `npm run dev` only: /api/challenge served in-process over an in-memory
+    // database, since /api/* otherwise exists only on Vercel.
+    challengeDevApi(),
     VitePWA({
       registerType: 'prompt',
       // Use the existing site.webmanifest — only add the service worker

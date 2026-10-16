@@ -29,6 +29,11 @@
       "maxDuration": 30,
       "excludeFiles": "api/**/*.test.js"
     },
+    "api/challenge.js": {
+      "memory": 2048,
+      "maxDuration": 30,
+      "excludeFiles": "api/**/*.test.js"
+    },
     "api/battle-notify.js": {
       "maxDuration": 15,
       "excludeFiles": "api/**/*.test.js"
