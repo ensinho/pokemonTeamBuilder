@@ -61,6 +61,11 @@ const labelOf = (battle, option) => {
 
 const round = (n) => (Number.isFinite(n) ? Math.round(n * 10) / 10 : n);
 
+// The trace is stored in Firestore, which refuses `undefined` anywhere in a
+// document — and a candidate the lookahead skipped has no `sim`, most
+// evaluators give no `parts`, a few no `reason`. Absent means "omit the key".
+const defined = (obj) => Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
+
 /**
  * @param {{snapshot: object, request: object, p2Lines: string[], seed: number[], turn: number|string,
  *          profileKey: string, championId?: string, model?: object|null}} input
@@ -179,7 +184,7 @@ export const decide = ({ snapshot, request, p2Lines = [], seed, turn, profileKey
     const trace = {
         ...baseTrace,
         winProb: winProb === null ? null : round(winProb * 100) / 100,
-        candidates: scored.map((entry) => ({
+        candidates: scored.map((entry) => defined({
             choice: entry.option.choice,
             label: labelOf(battle, entry.option),
             kind: entry.kind,
@@ -187,7 +192,7 @@ export const decide = ({ snapshot, request, p2Lines = [], seed, turn, profileKey
             sim: entry.sim === undefined ? undefined : round(entry.sim),
             final: round(entry.final),
             reason: entry.reason,
-            parts: entry.parts ? Object.fromEntries(Object.entries(entry.parts).map(([k, v]) => [k, typeof v === 'number' ? round(v) : v])) : undefined,
+            parts: entry.parts ? defined(Object.fromEntries(Object.entries(entry.parts).map(([k, v]) => [k, typeof v === 'number' ? round(v) : v]))) : undefined,
         })),
         foe: { moves: foePred.moves.slice(0, 4).map((m) => ({ id: m.id, p: round(m.p * 100) / 100 })), pSwitch: round(foePred.pSwitch * 100) / 100 },
         chosen: chosen.option.choice,
