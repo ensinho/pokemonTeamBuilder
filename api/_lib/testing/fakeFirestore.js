@@ -11,6 +11,28 @@
  * handler re-reading inside the transaction, not from Firestore's locking.
  */
 
+/**
+ * The dotted path of the first `undefined` inside `value`, or null. Firestore
+ * refuses a document with one anywhere (without `ignoreUndefinedProperties`,
+ * which this app doesn't set), and `structuredClone` would keep it silently —
+ * so the fake checks, or a write that fails in production passes here.
+ */
+export const undefinedPathIn = (value, path = '') => {
+    if (value === undefined) return path || '(root)';
+    if (value && typeof value === 'object') {
+        for (const [key, child] of Object.entries(value)) {
+            const found = undefinedPathIn(child, path ? `${path}.${key}` : key);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
+const assertStorable = (data) => {
+    const at = undefinedPathIn(data);
+    if (at) throw new Error(`Cannot use "undefined" as a Firestore value (found in field "${at}").`);
+};
+
 export const createFakeFirestore = () => {
     const store = new Map();
     let autoId = 0;
@@ -41,16 +63,19 @@ export const createFakeFirestore = () => {
         async get() { return snapshotOf(this.path); }
 
         async set(data, options) {
+            assertStorable(data);
             const prev = options?.merge ? (store.get(this.path) || {}) : {};
             store.set(this.path, structuredClone({ ...prev, ...data }));
         }
 
         async create(data) {
+            assertStorable(data);
             if (store.has(this.path)) throw new Error('Document already exists');
             store.set(this.path, structuredClone(data));
         }
 
         async update(data) {
+            assertStorable(data);
             if (!store.has(this.path)) throw new Error('No document to update');
             store.set(this.path, structuredClone({ ...store.get(this.path), ...data }));
         }

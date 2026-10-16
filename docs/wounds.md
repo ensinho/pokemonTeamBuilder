@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-16 — Every challenge turn where Cynthia had a choice failed with a 500 `bug`
+- **Symptom:** in production, `POST /api/challenge` `choose` answered `{"error":"internal","detail":"Value for argument \"data\" is not a valid Firestore document. Cannot use \"undefined\" as a Firestore value (found in field \"aiTrace.`0`.candidates.`2`.parts\")"}`. No battle got past its first turn, on any weekday. The transaction is atomic, so the runs were stuck at turn 0 but not corrupted.
+- **Root cause:** `decide()` (`api/_lib/ai/index.js`) wrote `sim`, `parts` and `reason` into every trace candidate, as `undefined` when absent. `sim` exists only for the lookahead's top K (and never for `dp`/`platinum`, which have no lookahead); most evaluators return no `parts`; a few return no `reason`. The handler stores the trace as-is in `secret/state.aiTrace`, and Firestore refuses `undefined`. 851 green tests missed it because `fakeFirestore.js` wrote with `structuredClone`, which keeps `undefined` silently. The `GET /api/challenge` self-check runs the AI but never writes what it returns.
+- **Fix:** a `defined()` helper in `index.js` omits absent keys from each candidate and its `parts`. `fakeFirestore.js` now refuses `undefined` on `set`/`create`/`update` (`undefinedPathIn`, exported), with Firestore's own message. The AI fuzz (`invariants.test.js`) checks every trace it produces in all four profiles. Reverting the fix makes 7 tests fail with the production error.
+- **Correct pattern:** anything written to Firestore omits absent keys or uses `null`, never `undefined`. A test fake must be at least as strict as the real service on what it accepts. A stand-in that is more forgiving turns a production 500 into a green suite.
+- **Files:** `api/_lib/ai/index.js`, `api/_lib/testing/fakeFirestore.js`, `api/_lib/ai/invariants.test.js`
+
 ### 2026-10-16 — The challenge room drew at the wrong scale after its screen was replaced `bug`
 - **Symptom:** with the new desktop rails, the room's tiles came out tiny in one corner while the Poké Ball ring filled the screen. The same happened whenever the window crossed the 1024 px phone/desktop breakpoint.
 - **Root cause:** `useScreenScale` set `--px` from a `useLayoutEffect(…, [])` on a ref object, so it ran once per console mount. When the console swapped its screen elements (one screen ↔ two, or a wrapper appearing around the screen), the new element never got `--px` and fell back to the 2 px default. A second, cosmetic bug: the remount also reset the room, so the player lost their position.
