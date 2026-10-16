@@ -17,12 +17,11 @@ import { EmptyState } from '../../EmptyState';
 import { PokeballIcon } from '../../icons';
 import { getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../../../utils/pokemonSprites';
 import { readMyRequest, describeLogLines } from '../../../utils/battleProtocol';
-import { readBattleField, parseCondition, hpTone } from '../../../utils/battleState';
-import { getBattleIcon } from '../../../utils/battleSprites';
+import { readBattleField } from '../../../utils/battleState';
 import { Battlefield } from './Battlefield';
+import { MoveOption, SwitchOption } from './BattleChoiceButtons';
 import { BattleLogPanel } from './BattleLogPanel';
 import { TooltipTrigger, MoveTooltipCard, MonTooltipCard } from './BattlePopover';
-import { typeColors, typeIcons } from '../../../constants/types';
 import { POKEBALL_PLACEHOLDER_URL } from '../../../constants/theme';
 import '../../../styles/battle-view.css';
 import { confirmAction } from '../../../store/useConfirmStore';
@@ -99,77 +98,6 @@ function TurnBanner({ waiting, opponentName, choiceLabel, t, language, onSync, i
                 </button>
             )}
         </div>
-    );
-}
-
-/** Move button styled with type color chip accents. */
-function MoveOption({ move, disabled, onClick, typeForMove }) {
-    const mType = typeForMove ? typeForMove(move.name) : null;
-    const color = mType ? typeColors[mType] : null;
-    const iconUrl = mType ? typeIcons[mType] : null;
-
-    return (
-        <button
-            key={move.slot}
-            type="button"
-            className="battle-move battle-move--chip"
-            disabled={disabled}
-            onClick={onClick}
-            style={color ? {
-                '--move-type-color': color,
-                borderColor: `${color}99`,
-                background: `linear-gradient(135deg, color-mix(in srgb, ${color} 22%, var(--color-surface)) 0%, var(--color-surface) 100%)`,
-            } : {}}
-        >
-            <div className="battle-move__header">
-                {iconUrl ? (
-                    <img src={iconUrl} alt={mType || ''} className="battle-move__type-icon" />
-                ) : mType ? (
-                    <span className="battle-move__type-tag" style={{ backgroundColor: color }}>
-                        {mType}
-                    </span>
-                ) : null}
-                <span className="battle-move__name">{move.name}</span>
-            </div>
-            {Number.isFinite(move.pp) && (
-                <span className="battle-move__pp">{move.pp}/{move.maxpp} PP</span>
-            )}
-        </button>
-    );
-}
-
-/** A switch option button */
-function SwitchOption({ mon, disabled, onClick }) {
-    const icon = getBattleIcon(mon.name);
-    const condition = parseCondition(mon.condition);
-    return (
-        <button
-            type="button"
-            className="battle-move battle-move--switch"
-            disabled={disabled}
-            onClick={onClick}
-        >
-            <span className="battle-move__icon">
-                {icon.url ? (
-                    <img src={icon.url} alt={mon.name} loading="lazy" />
-                ) : (
-                    <PokeballIcon className="w-5 h-5 text-muted opacity-40" />
-                )}
-            </span>
-            <span className="battle-move__body">
-                <span className="battle-move__name">{mon.name}</span>
-                {condition && (
-                    <span className="battle-move__hp">
-                        <span className={`battle-move__hp-track is-${hpTone(condition.pct)}`}>
-                            <span className="battle-move__hp-fill" style={{ width: `${condition.pct}%` }} />
-                        </span>
-                        <span className="battle-move__hp-text">
-                            {condition.max ? `${condition.current}/${condition.max}` : `${Math.round(condition.pct)}%`}
-                        </span>
-                    </span>
-                )}
-            </span>
-        </button>
     );
 }
 

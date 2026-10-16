@@ -1,5 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { createFakeFirestore } from './_lib/testing/fakeFirestore.js';
+
 /**
  * End-to-end cover for the turn endpoint, against an in-memory stand-in for
  * Firestore.
@@ -14,76 +16,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
  * you play a whole battle through the HTTP boundary, which is what this does.
  */
 
-const state = vi.hoisted(() => ({ store: new Map() }));
-
-// ---------------------------------------------------------------------------
-// A Firestore small enough to reason about: a flat path -> data map, with just
-// the surface `battle-turn.js` actually touches.
-// ---------------------------------------------------------------------------
-
-const childIds = (prefix) => {
-    const ids = new Set();
-    for (const key of state.store.keys()) {
-        if (!key.startsWith(`${prefix}/`)) continue;
-        const rest = key.slice(prefix.length + 1);
-        if (!rest.includes('/')) ids.add(rest);
-    }
-    return [...ids].sort();
-};
-
-class FakeDoc {
-    constructor(path) { this.path = path; this.id = path.split('/').pop(); }
-
-    async get() {
-        const data = state.store.get(this.path);
-        return { exists: data !== undefined, id: this.id, data: () => data };
-    }
-
-    async set(data, options) {
-        const prev = options?.merge ? (state.store.get(this.path) || {}) : {};
-        state.store.set(this.path, { ...prev, ...data });
-    }
-
-    async create(data) {
-        if (state.store.has(this.path)) throw new Error('Document already exists');
-        state.store.set(this.path, data);
-    }
-
-    async update(data) {
-        if (!state.store.has(this.path)) throw new Error('No document to update');
-        state.store.set(this.path, { ...state.store.get(this.path), ...data });
-    }
-
-    collection(name) { return new FakeCollection(`${this.path}/${name}`); }
-}
-
-class FakeCollection {
-    constructor(path) { this.path = path; }
-
-    doc(id) { return new FakeDoc(`${this.path}/${id}`); }
-
-    async get() {
-        return {
-            docs: childIds(this.path).map((id) => ({
-                id,
-                data: () => state.store.get(`${this.path}/${id}`),
-            })),
-        };
-    }
-}
-
-const fakeDb = {
-    doc: (path) => new FakeDoc(path),
-    collection: (path) => new FakeCollection(path),
-    batch: () => {
-        const ops = [];
-        return {
-            set: (ref, data, options) => ops.push(() => ref.set(data, options)),
-            update: (ref, data) => ops.push(() => ref.update(data)),
-            commit: async () => { for (const op of ops) await op(); },
-        };
-    },
-};
+// A Firestore small enough to reason about — shared with the challenge
+// endpoint's tests (`./_lib/testing/fakeFirestore.js`).
+const fake = createFakeFirestore();
+const state = { store: fake.store };
+const { childIds } = fake;
+const fakeDb = fake.db;
 
 vi.mock('firebase-admin/firestore', () => ({
     FieldValue: { increment: (n) => ({ __increment: n }) },
