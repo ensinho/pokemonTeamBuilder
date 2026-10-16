@@ -28,6 +28,9 @@ export const BATTLE_RANDOM_ENDPOINT = import.meta.env.VITE_BATTLE_RANDOM_ENDPOIN
 // other request they could ride. Vercel-only, same as the two above.
 export const BATTLE_NOTIFY_ENDPOINT = import.meta.env.VITE_BATTLE_NOTIFY_ENDPOINT || '/api/battle-notify';
 
+// The Champion Challenge (daily battle vs the Cynthia AI). Same Vercel-only caveat.
+export const CHALLENGE_ENDPOINT = import.meta.env.VITE_CHALLENGE_ENDPOINT || '/api/challenge';
+
 // Public half of the VAPID key pair used to subscribe this browser to Web Push
 // (`npm run push:keys` generates the pair; the private half stays server-side,
 // in the Vercel env). Absent, the app still shows in-app notifications — only

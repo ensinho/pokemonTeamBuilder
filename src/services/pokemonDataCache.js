@@ -297,6 +297,10 @@ export const loadGames = async () => {
 // Replaces a client-side @pkmn/sim import that cost 1 MB gzip.
 export const loadBattleDex = () => fetchLargeStaticJson('battle-dex.json');
 
+// Where each Gen 4/5 battle sprite's feet are (scripts/build-sprite-feet.mjs),
+// so the Champion Challenge stands every Pokémon on its platform.
+export const loadSpriteFeet = () => fetchLargeStaticJson('sprite-feet.json');
+
 export const loadPokemonIndex = async () => {
     const staticPokemonIndex = await fetchLargeStaticJson('pokemon-index.json');
     return normalizeResourceList(staticPokemonIndex, 'pokemons')

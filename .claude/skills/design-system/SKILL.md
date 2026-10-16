@@ -220,6 +220,41 @@ raw `#705746` (dark) is illegible on any dark theme. **Never set a canon colour 
 
 Solid-fill `.type-badge--*` stays for dense grids where a type is counted, not read.
 
+## The game screen exception (`.ds-screen`, 2026-10-15)
+
+The Champion Challenge (`/challenge`, `src/styles/champion-challenge-ds.css`) draws
+two Nintendo DS screens, and **inside a `.ds-screen` it is the game, not the app**.
+Three rules replace the app's there — and only there:
+
+- **Unit: the DS pixel.** Every size and offset is `calc(N * var(--px))`, where
+  `--px` = screen width / 256 (`useScreenScale`). Spacing tokens would break the
+  256 × 192 grid the sprites are drawn on. Sprites render 1:1 (Gen 4 battle
+  sprites are 96 × 96 DS px; never scale them to another size — 80/96 blurred
+  them and lifted them off their platforms).
+- **Palette: `--ds-*`, declared once on `.ds-screen`.** Canon DPPt/HGSS colours,
+  theme-independent (a DS screen does not go dark with the app). No raw colour
+  anywhere else in a screen; type colours arrive as `--type` / `--fx-color` and
+  are mixed with `--ds-*`, never used raw as ink.
+- **Type: DotGothic16, regular only (`font-synthesis: none`).** The one fourth
+  family the app has, loaded with the route's CSS and used nowhere else. Its
+  thin 1-px strokes match the DS text box and keep C/O and 8/S apart at small
+  sizes (Pixelify Sans failed that); a faux-bold pixel font smears, so the
+  hierarchy is size and colour, as on the DS.
+
+Two palettes live there: `--ds-*` (the room, the DS console's paper and the
+Pokétch) and `--bw-*` (the battle HUD, styled on Pokémon Black & White at
+Enzo's call, 2026-10-15: dark slanted data boxes, the black message band, the
+red touch menu with the FIGHT capsule, blue menu cards). Two layouts
+(`useConsoleLayout`): **single** — one screen holds everything on a desktop,
+the HUD as a strip inside it — and **dual** — two stacked screens on a phone,
+the bottom one for touch. Every sub-menu ends in the same VOLTAR capsule
+(`.bw-cancel`).
+
+Motion inside a screen may use game timings (a 160 ms walk step, a 450 ms
+send-out) but stays transform/opacity and stops under reduced motion. The
+console frame around the screens (`.ds-console`, its bar, the D-pad) is ordinary
+app UI and follows every rule in this skill.
+
 ## Type
 
 **Two voices, and they do not swap jobs** (changed 2026-09-14 at Enzo's call;

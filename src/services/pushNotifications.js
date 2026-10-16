@@ -28,6 +28,7 @@ import { appId, VAPID_PUBLIC_KEY } from '../constants/firebase';
 
 const MASTER_KEY = 'ptb:browserNotifications';
 const DAILY_KEY = 'ptb:notify:dailyPuzzle';
+const CHALLENGE_KEY = 'ptb:notify:dailyChallenge';
 const LOCAL_ENDPOINT_KEY = 'ptb:push:endpoint';
 
 const readFlag = (key, fallback) => {
@@ -52,6 +53,8 @@ export const setNotificationsEnabled = (enabled) => writeFlag(MASTER_KEY, enable
 
 /** Topic switch: the once-a-day "the new PokéPuzzle is up" nudge. */
 export const getDailyPuzzleEnabled = () => readFlag(DAILY_KEY, true);
+/** The Champion Challenge's "new team" push — on unless turned off, like the puzzle's. */
+export const getDailyChallengeEnabled = () => readFlag(CHALLENGE_KEY, true);
 
 export const isPushSupported = () => (
     typeof window !== 'undefined'
@@ -123,7 +126,7 @@ export const describeSubscription = (subscription, { lang = 'en' } = {}) => {
         endpoint: json.endpoint,
         keys: { p256dh: json.keys?.p256dh || '', auth: json.keys?.auth || '' },
         lang: lang === 'pt' ? 'pt' : 'en',
-        topics: { battles: true, dailyPuzzle: getDailyPuzzleEnabled() },
+        topics: { battles: true, dailyPuzzle: getDailyPuzzleEnabled(), dailyChallenge: getDailyChallengeEnabled() },
         userAgent: typeof navigator !== 'undefined' ? String(navigator.userAgent).slice(0, 180) : '',
         updatedAt: Date.now(),
     };
@@ -252,5 +255,21 @@ export const setDailyPuzzleEnabled = async (enabled, { userId } = {}) => {
         );
     } catch (err) {
         console.error('Could not update the daily puzzle notification setting:', err);
+    }
+};
+
+/** Flip the Champion Challenge's daily topic, on this device and on the server's copy. */
+export const setDailyChallengeEnabled = async (enabled, { userId } = {}) => {
+    writeFlag(CHALLENGE_KEY, enabled);
+    if (!db || !userId) return;
+    try {
+        const registration = await getRegistration();
+        const subscription = await registration?.pushManager?.getSubscription();
+        const endpoint = subscription?.toJSON()?.endpoint;
+        if (!endpoint) return;
+        // merge: true merges the topics map — the other topics keep their values.
+        await setDoc(subscriptionDoc(userId, endpoint), { topics: { dailyChallenge: enabled }, updatedAt: Date.now() }, { merge: true });
+    } catch (err) {
+        console.error('Could not update the daily challenge notification setting:', err);
     }
 };

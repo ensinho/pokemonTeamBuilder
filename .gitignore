@@ -49,3 +49,7 @@ dist-ssr
 .playwright-mcp/
 
 /brag-output**
+
+# Raw AI training data (scripts/ai-dataset.mjs). Only the trained weights in
+# api/_lib/ai/models/ are committed.
+scratch/ai-data/

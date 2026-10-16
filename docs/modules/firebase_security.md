@@ -63,8 +63,24 @@ Access patterns were extracted directly from `src/store/*.js`. Summary:
 | Forum topics + messages | `artifacts/{appId}/public/data/forumTopics/**` | **anyone** | author creates (uid-stamped); author or admin edits/deletes |
 | Feedback / suggestions | `artifacts/{appId}/feedback`, `.../suggestions` | admin only | any signed-in user creates |
 | Legacy pokémon seed | `artifacts/{appId}/pokemons` | anyone | nobody (read-only) |
+| Champion Challenge day | `artifacts/{appId}/public/data/challengeDays/{day}` | **anyone** | nobody — `api/challenge.js` (Admin SDK) only |
+| Champion Challenge ranking | `artifacts/{appId}/public/data/challengeRanks/{day}` | **anyone** | nobody — written inside the transaction that ends an official run; `forget` (account deletion) removes a player through the endpoint |
+| Champion Challenge runs + rounds | `artifacts/{appId}/challengeRuns/{runId}/**` | owner (`uid` field) | nobody; owner may **delete** (account deletion) |
+| Challenge hidden state | `.../challengeRuns/{runId}/secret/state` | **nobody** | nobody; owner may delete |
+| Challenge stats | `artifacts/{appId}/challengeStats/{uid}` | owner | nobody; owner may delete |
+| Anonymous AI training rows | `artifacts/{appId}/aiTraining/{id}` | nobody | nobody (server only) |
 
 Key design choices and the reasoning:
+
+- **Server-authoritative data lives outside `users/{uid}/`.** The challenge's runs
+  and stats are written only by `api/challenge.js`. Under `users/{uid}/` the
+  wildcard `allow read, write: if isOwner(userId)` would let the owner rewrite a
+  run as "won", and a narrower sub-rule can't take that back — **rules only add
+  permissions**. So anything the player must not be able to edit gets its own
+  top-level path with `create, update: false`, and account deletion
+  (`accountDeletion.js`) must remove it explicitly; `USER_COLLECTIONS` only
+  covers `users/`. Sub-documents (`rounds`, `secret`) check the parent with
+  `get()`, so delete them before the run itself.
 
 - **Ownership comes from the URL.** Private data lives under `.../users/{userId}/...`,
   so the rule is simply `request.auth.uid == userId`. A user literally cannot address

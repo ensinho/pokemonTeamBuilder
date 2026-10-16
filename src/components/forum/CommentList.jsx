@@ -14,6 +14,7 @@ import { ChevronUp, ChevronsUpDown } from 'lucide-react';
 import { formatForumTime } from '../../utils/forumTime';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
+import { ChallengeShareCard } from '../ChallengeShareCard';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 
@@ -127,6 +128,13 @@ export const CommentItem = memo(function CommentItem({
                 {comment.sharedPuzzle?.rows?.length > 0 && (
                     <div className="my-2">
                         <PuzzleShareCard puzzle={comment.sharedPuzzle} />
+                    </div>
+                )}
+
+                {/* Shared Champion Challenge result */}
+                {comment.sharedChallenge && (
+                    <div className="my-2">
+                        <ChallengeShareCard share={comment.sharedChallenge} />
                     </div>
                 )}
 

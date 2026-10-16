@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 // Selected with useShallow, not whole stores: a bare useForumStore() re-rendered
 // the whole Home on every forum message and every unrelated store tick.
 import { useShallow } from 'zustand/react/shallow';
-import { Check, ChevronRight, Hourglass, Palette, Pencil, Plus, Shield, Sparkles, Swords } from 'lucide-react';
+import { Check, ChevronRight, Crown, Hourglass, Palette, Pencil, Plus, Shield, Sparkles, Swords } from 'lucide-react';
 import { useAuthStore } from '../../store/useAuthStore';
 import { GuestAccountCard } from '../GuestAccountCard';
 import { useForumStore } from '../../store/useForumStore';
@@ -12,11 +12,14 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useTrainerBadges } from '../../hooks/useTrainerBadges';
 import { useMetaUsage } from '../../hooks/useMetaUsage';
 import { useDailyPuzzle } from '../../hooks/useDailyPuzzle';
+import { useChallengeSummary } from '../../hooks/useChallengeSummary';
 import { maxWidthBelow } from '../../constants/breakpoints';
 import { typeColors, typeIcons } from '../../constants/types';
 import { loadPokemonIndex } from '../../services/pokemonDataCache';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { formatForumTime } from '../../utils/forumTime';
+import { timeUntil, trainerSpriteUrl } from '../../utils/challengeView';
+import { nextResetAt as challengeResetAt } from '../../utils/challengeDay';
 import {
     TEAM_SIZE,
     TYPE_COUNT,
@@ -127,10 +130,19 @@ export function CozyHomeView({
     const now = useNow();
     const [tab, setTab] = useState('today');
 
-    const { userId, streak } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak })));
+    const { userId, streak, isAnonymous } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous })));
     const { badges, equippedBadge } = useTrainerBadges();
     const { ranked: metaRanked, format: metaFormat, status: metaStatus } = useMetaUsage();
     const puzzle = useDailyPuzzle(userId);
+    const challenge = useChallengeSummary(userId, isAnonymous);
+    const challengeLine = (c) => {
+        if (c.state === 'guest') return t('cozyHome.challengeGuest');
+        if (c.state === 'new') return t('cozyHome.challengeNew');
+        if (c.state === 'active') return t('cozyHome.challengeContinue');
+        if (c.state === 'won') return t('cozyHome.challengeWon', { n: c.streak });
+        if (c.state === 'lost') return t('cozyHome.challengeLost');
+        return t('cozyHome.challengeReady', { difficulty: c.difficulty ? t(`challenge.difficulty.${c.difficulty}`) : t('cozyHome.challengeTitle') });
+    };
 
     // The Pokédex index carries names and types for every id; saved slots and
     // usage rows only carry ids, so everything here resolves through it.
@@ -273,6 +285,16 @@ export function CozyHomeView({
                 onClick: () => navigate('/pokepuzzle'),
             });
         }
+        if (challenge) {
+            const tone = { won: 'success', active: 'warning', lost: 'neutral' }[challenge.state] || 'accent';
+            items.push({
+                key: 'challenge', when: t('cozyHome.jToday'), tone,
+                icon: challenge.state === 'won' ? <Check /> : <Crown />,
+                title: t('cozyHome.jChallenge'),
+                sub: challengeLine(challenge),
+                onClick: () => navigate('/challenge'),
+            });
+        }
         if (savedTeams[0]) {
             const team = savedTeams[0];
             const s = team === activeTeam ? summary : summarizeTeam(team, typesById);
@@ -295,7 +317,7 @@ export function CozyHomeView({
         }
         return items;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [nextBadge, puzzle, savedTeams, activeTeam, summary, typesById, latestShare, language, now]);
+    }, [nextBadge, puzzle, challenge, savedTeams, activeTeam, summary, typesById, latestShare, language, now]);
 
     // ── Pieces ──────────────────────────────────────────────────────────────
     const streakCount = streak?.count || 0;
@@ -434,15 +456,52 @@ export function CozyHomeView({
         : nextBadge.progress.target <= 10 ? nextBadge.progress.current
             : Math.floor(nextBadge.progress.percent / 10);
 
+    // Before the summary answers, the card still stands: a neutral state, the local reset time.
+    const challengeDay = challenge || { state: 'ready', difficulty: null, nextResetAt: challengeResetAt(now.getTime()) };
+    // Her six, always six: a "?" for each one not known here (the wildcard, or no day read yet).
+    const herSix = Array.from({ length: 6 }, (_, i) => challengeDay.lineup?.[i] || null);
+    const resetIn = timeUntil(challengeDay.nextResetAt, now.getTime());
+    // The compact cards stacked beside the featured one: it spans all their rows.
+    const dayRows = (puzzle.target ? 1 : 0) + 1 + (metaLeader ? 1 : 0);
+
     const yourDay = (
         <Panel
             card={false}
             title={t('cozyHome.yourDay')}
             meta={streakCount > 0 ? t('cozyHome.streakDay', { n: streakCount }) : t('cozyHome.noStreak')}
         >
-            <div className="cozy-day">
+            <div className="cozy-day" style={{ '--day-rows': dayRows }}>
+                {/* The featured card: the Champion and her six, the day's one battle.
+                    Always drawn (the summary fills it in), so the grid never reflows. */}
+                <button type="button" className="card card--interactive cozy-day__card cozy-day__card--feature cozy-day__card--challenge" style={{ '--day-tone': typeColors.dragon }}
+                    onClick={() => navigate('/challenge')}>
+                    <span className="cozy-day__head">
+                        <span className="cozy-day__tile cozy-day__tile--trainer" aria-hidden="true">
+                            <img src={trainerSpriteUrl('cynthia-gen4')} alt="" width={80} height={80} decoding="async" className="cozy-day__trainer" />
+                        </span>
+                        {challengeDay.state === 'won'
+                            ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.challengeDone')}</span>
+                            : <span className="btn btn-sm cozy-ink cozy-day__go">{t(challengeDay.state === 'active' ? 'cozyHome.challengeResume' : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo')}</span>}
+                    </span>
+                    <span className="cozy-day__eyebrow">
+                        {/* A phone's row has room for the short countdown only. */}
+                        <span className="cozy-day__long">{t('cozyHome.challengeNextIn', resetIn)}</span>
+                        <span className="cozy-day__short">{t('cozyHome.challengeNextInShort', { ...resetIn, minutes: String(resetIn.minutes).padStart(2, '0') })}</span>
+                    </span>
+                    <span className="cozy-day__title">{t('cozyHome.challengeTitle')}</span>
+                    <span className="cozy-day__sub">{challengeLine(challengeDay)}</span>
+                    {/* Her six as silhouettes until today's battle is won; the wildcard stays a "?". */}
+                    <span className="cozy-day__lineup" aria-hidden="true">
+                        {herSix.map((dex, index) => (dex ? (
+                            <Sprite key={index} src={dexSprite(dex)} className={`cozy-day__mini ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
+                        ) : (
+                            <span key={index} className="cozy-day__mini cozy-day__mini--unknown">?</span>
+                        )))}
+                    </span>
+                </button>
+
                 {puzzle.target && (
-                    <button type="button" className="card card--interactive cozy-day__card cozy-day__card--feature" style={{ '--day-tone': 'var(--color-primary)' }}
+                    <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-primary)' }}
                         onClick={() => navigate('/pokepuzzle')}>
                         <span className="cozy-day__head">
                             <span className="cozy-day__tile" aria-hidden="true">

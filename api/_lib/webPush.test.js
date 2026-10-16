@@ -31,6 +31,13 @@ describe('buildPushPayload', () => {
         expect(payload.url).toBe('/pokepuzzle');
     });
 
+    it("gives the Champion's daily team its own tray entry, in both languages", () => {
+        const en = buildPushPayload({ kind: 'dailyChallenge', lang: 'en', url: '/challenge' });
+        expect(en).toMatchObject({ group: 'ptb-challenge', url: '/challenge', groupUrl: '/challenge' });
+        expect(en.title).toMatch(/Cynthia/);
+        expect(buildPushPayload({ kind: 'dailyChallenge', lang: 'pt', url: '/challenge' }).title).toMatch(/time novo/);
+    });
+
     it('returns null for a kind it has no copy for', () => {
         expect(buildPushPayload({ kind: 'nonsense', lang: 'en' })).toBeNull();
     });

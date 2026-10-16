@@ -70,6 +70,10 @@ const TEMPLATES = {
         en: { title: 'A new PokéPuzzle is up!', body: () => "Today's Pokémon is waiting — keep your streak alive." },
         pt: { title: 'Novo PokéPuzzle no ar!', body: () => 'O Pokémon de hoje já está esperando — mantenha sua ofensiva.' },
     },
+    dailyChallenge: {
+        en: { title: 'Cynthia has a new team!', body: () => "Today's Champion team is in — walk up to her and battle." },
+        pt: { title: 'A Cynthia tem um time novo!', body: () => 'O time da Campeã de hoje chegou — vá até ela e batalhe.' },
+    },
 };
 
 const GROUPS = {
@@ -85,7 +89,16 @@ const GROUPS = {
         en: { title: '{{count}} reminders', body: 'Tap to open the app.' },
         pt: { title: '{{count}} lembretes', body: 'Toque para abrir o app.' },
     },
+    challenge: {
+        group: 'ptb-challenge',
+        groupUrl: '/challenge',
+        en: { title: 'Cynthia is waiting', body: 'Tap to walk up to the Champion.' },
+        pt: { title: 'A Cynthia está esperando', body: 'Toque para ir até a Campeã.' },
+    },
 };
+
+/** Which tray entry each kind collapses into; anything else is battle-shaped. */
+const GROUP_OF = { dailyPuzzle: 'puzzle', dailyChallenge: 'challenge' };
 
 const FALLBACK_NAME = { en: 'your opponent', pt: 'seu oponente' };
 
@@ -98,7 +111,7 @@ export const buildPushPayload = ({ kind, lang = 'en', params = {}, url = '/' }) 
     const template = TEMPLATES[kind]?.[language] || TEMPLATES[kind]?.en;
     if (!template) return null;
 
-    const groupKey = kind === 'dailyPuzzle' ? 'puzzle' : 'battle';
+    const groupKey = GROUP_OF[kind] || 'battle';
     const group = GROUPS[groupKey];
     const name = params.name || FALLBACK_NAME[language];
 

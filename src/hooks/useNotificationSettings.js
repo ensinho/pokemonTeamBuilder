@@ -7,11 +7,13 @@ import { useTranslation } from './useTranslation';
 import {
     disablePush,
     enablePush,
+    getDailyChallengeEnabled,
     getDailyPuzzleEnabled,
     getNotificationsEnabled,
     getPermission,
     isPushSupported,
     needsIosInstall,
+    setDailyChallengeEnabled,
     setDailyPuzzleEnabled,
 } from '../services/pushNotifications';
 
@@ -33,6 +35,7 @@ export function useNotificationSettings() {
     const [permission, setPermission] = useState(() => getPermission());
     const [enabled, setEnabled] = useState(() => getNotificationsEnabled() && getPermission() === 'granted');
     const [dailyEnabled, setDaily] = useState(() => getDailyPuzzleEnabled());
+    const [challengeEnabled, setChallenge] = useState(() => getDailyChallengeEnabled());
     const [busy, setBusy] = useState(false);
 
     // Permission can be revoked from the browser's own UI while the app is
@@ -98,6 +101,11 @@ export function useNotificationSettings() {
         await setDailyPuzzleEnabled(next, { userId });
     }, [userId]);
 
+    const toggleDailyChallenge = useCallback(async (next) => {
+        setChallenge(next);
+        await setDailyChallengeEnabled(next, { userId });
+    }, [userId]);
+
     return {
         supported: isPushSupported(),
         iosInstallNeeded: needsIosInstall(),
@@ -105,7 +113,9 @@ export function useNotificationSettings() {
         enabled,
         busy,
         dailyEnabled,
+        challengeEnabled,
         toggle,
         toggleDailyPuzzle,
+        toggleDailyChallenge,
     };
 }

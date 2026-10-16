@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { KeyRound, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
+import { Crown, KeyRound, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
@@ -10,6 +10,7 @@ import { ShinyBurst } from '../ShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
 import { typeIcons } from '../../constants/types';
+import { trainerSpriteUrl } from '../../utils/challengeView';
 
 const CHAMPIONS_LOGO = getGameLogo('champions');
 
@@ -48,7 +49,7 @@ const ChampionsDexVisual = ({ language }) => {
     );
 };
 
-// Reg M-C — the featured card of 1.15.0, so it is the one illustration that
+// Reg M-C — the featured card of 1.15.0 (now in the history), so it is the one illustration that
 // grows to fill its column: the Champions cover, the regulation, and the three
 // Pokémon leading its ladder with the share of teams that run them (Smogon,
 // September 2026, 1630+). Figures are the release's, not live data.
@@ -535,6 +536,28 @@ const DockVisual = ({ language }) => {
     );
 };
 
+// The Champion Challenge — Cynthia (her DS battle sprite) against her ace, and
+// the line that brings people back: a new team every midnight.
+const ChallengeVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex items-center gap-3">
+                <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface-raised">
+                    <img src={trainerSpriteUrl('cynthia-gen4')} alt="" className="h-12 w-12 object-contain" style={{ imageRendering: 'pixelated' }} />
+                </span>
+                <span className="font-mono text-2xs font-bold text-muted">VS</span>
+                <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface-raised">
+                    <img src={`${SPRITE_BASE}/445.png`} alt="" className="h-12 w-12 object-contain" style={{ imageRendering: 'pixelated' }} />
+                </span>
+            </div>
+            <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
+                {pt ? 'um time novo à meia-noite' : 'a new team at midnight'}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -547,6 +570,7 @@ const NOTE_ICONS = {
     puzzle: Puzzle,
     search: Search,
     key: KeyRound,
+    crown: Crown,
     trophy: Trophy,
     scale: Scale,
 };
@@ -568,6 +592,7 @@ const NOTE_VISUALS = {
     search: SearchVisual,
     preFairy: PreFairyVisual,
     account: AccountVisual,
+    challenge: ChallengeVisual,
     regMc: RegMcVisual,
 };
 
@@ -687,7 +712,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                     {/* Side by side from md up: the featured note on the left, the
                         others stacked at equal height on the right, both columns
                         the same height. One column on a phone, featured first. */}
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]">
+                    <div className={`grid grid-cols-1 gap-4${sideNotes.length > 0 ? ' md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]' : ''}`}>
                         <NoteCard {...cardProps(featuredNote)} featured />
                         {sideNotes.length > 0 && (
                             <div className="grid grid-cols-1 gap-4 md:auto-rows-fr">

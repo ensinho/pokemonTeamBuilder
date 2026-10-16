@@ -631,10 +631,11 @@ button.cozy-chip:hover {
     background: var(--color-warning);
 }
 
-/* Featured + compact (2026-10-06). The daily puzzle is the one thing that
-   is only "today"; it gets the large card, its silhouette big on a disc of
-   its tone. The badge and the meta leader stack beside it as rows — tile,
-   lines, action — the same row the phone uses for all three. */
+/* Featured + compact (2026-10-06; the Champion took the feature on
+   2026-10-16, Enzo). The challenge is the day's one battle: the large card,
+   Cynthia big on a disc of its tone and her six as silhouettes. The puzzle,
+   the badge and the meta leader stack beside it as rows — tile, lines,
+   action, one line each — the same row the phone uses for all of them. */
 .cozy-home .cozy-day__card--compact {
     display: grid;
     grid-template-columns: 3rem minmax(0, 1fr) auto;
@@ -665,9 +666,53 @@ button.cozy-chip:hover {
     height: 2rem;
 }
 
-.cozy-day__card--compact .cozy-day__chevron {
+.cozy-day__card--compact .cozy-day__chevron,
+.cozy-home .cozy-day__card--compact .cozy-day__go {
     grid-column: 3;
     grid-row: 1 / span 4;
+}
+
+/* One line each: a row never grows taller than its neighbours. */
+.cozy-day__card--compact .cozy-day__eyebrow,
+.cozy-day__card--compact .cozy-day__title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The Champion on her tile: the trainer sprite, pixels kept square. */
+.cozy-day__trainer {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    image-rendering: pixelated;
+}
+
+.cozy-day__short {
+    display: none;
+}
+
+/* Her six, small, under the lines. */
+.cozy-day__lineup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+}
+
+.cozy-day__mini {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+}
+
+.cozy-day__mini--unknown {
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
 }
 
 .cozy-day__card--compact .cozy-day__eyebrow,
@@ -690,12 +735,17 @@ button.cozy-chip:hover {
         grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
     }
 
+    .cozy-day:has(> .cozy-day__card--feature) > .cozy-day__card--compact {
+        grid-column: 2;
+    }
+
     .cozy-home .cozy-day__card--feature {
         position: relative;
         display: grid;
-        grid-row: span 2;
+        grid-column: 1;
+        grid-row: 1 / span var(--day-rows, 2);
         grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-rows: auto auto auto 1fr;
+        grid-template-rows: auto auto auto auto 1fr;
         column-gap: var(--space-4);
         row-gap: var(--space-1);
         overflow: hidden;
@@ -727,6 +777,12 @@ button.cozy-chip:hover {
     .cozy-day__card--feature .cozy-day__eyebrow { grid-column: 1; grid-row: 1; }
     .cozy-day__card--feature .cozy-day__title { grid-column: 1; grid-row: 2; }
     .cozy-day__card--feature .cozy-day__sub { grid-column: 1; grid-row: 3; }
+    .cozy-day__card--feature .cozy-day__lineup { grid-column: 1; grid-row: 4; }
+
+    .cozy-day__card--feature .cozy-day__trainer {
+        width: 7rem;
+        height: 7rem;
+    }
 
     .cozy-day__card--feature .cozy-day__title {
         font-family: var(--font-display);
@@ -740,7 +796,7 @@ button.cozy-chip:hover {
 
     .cozy-home .cozy-day__card--feature .cozy-day__go {
         grid-column: 1;
-        grid-row: 4;
+        grid-row: 5;
         align-self: end;
         justify-self: start;
         margin-top: var(--space-3);
@@ -1305,6 +1361,32 @@ button.cozy-journey__row:hover {
     .cozy-day__sub,
     .cozy-case {
         grid-column: 2;
+    }
+
+    /* One line each, so the rows keep one height. */
+    .cozy-day__eyebrow,
+    .cozy-day__title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .cozy-day__sub {
+        -webkit-line-clamp: 1;
+    }
+
+    .cozy-day__long {
+        display: none;
+    }
+
+    .cozy-day__short {
+        display: inline;
+    }
+
+    /* The Champion's six get the row's full width under it. */
+    .cozy-day__lineup {
+        grid-column: 1 / -1;
+        justify-content: space-between;
     }
 
     .cozy-team {

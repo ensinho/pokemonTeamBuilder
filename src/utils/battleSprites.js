@@ -41,6 +41,34 @@ export const getBattleSprite = (species, { back = false, shiny = false, animated
     }
 };
 
+/** The sprite-feet table's key for a sprite URL: its file name. */
+export const spriteKey = (url) => String(url || '').split('/').pop().replace(/\.png$/, '');
+
+/**
+ * The row of a 96 × 96 battle sprite its feet stand on, from the baked table
+ * (`public/data/sprite-feet.json`); the table's default until it has loaded.
+ */
+export const spriteFeet = (table, url, { back = false } = {}) => {
+    const fallback = back ? (table?.defaults?.back ?? 80) : (table?.defaults?.front ?? 80);
+    const rows = table?.feet?.[spriteKey(url)];
+    return rows?.[back ? 1 : 0] ?? fallback;
+};
+
+/**
+ * DS-era battle sprite for the Champion Challenge: Showdown's Gen 4 art
+ * (front, or `back` for the player's side), which `@pkmn/img` falls back to
+ * Gen 5 for Pokémon born after Platinum (#493).
+ */
+export const getDsSprite = (species, { back = false, shiny = false } = {}) => {
+    if (!species) return FALLBACK;
+    try {
+        const sprite = Sprites.getPokemon(species, { gen: 'gen4', side: back ? 'p1' : 'p2', shiny });
+        return { url: sprite.url, w: sprite.w || FALLBACK.w, h: sprite.h || FALLBACK.h };
+    } catch (_) {
+        return FALLBACK;
+    }
+};
+
 /** Small front-facing icon for the team bar. */
 export const getBattleIcon = (species, { shiny = false } = {}) => {
     if (!species) return FALLBACK;

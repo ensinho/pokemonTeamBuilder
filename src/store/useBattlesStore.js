@@ -13,7 +13,8 @@ import {
     where,
     writeBatch,
 } from 'firebase/firestore';
-import { auth, db } from '../services/firebase';
+import { db } from '../services/firebase';
+import { callAuthedApi } from '../services/apiClient';
 import {
     appId, BATTLE_TURN_ENDPOINT, BATTLE_RANDOM_ENDPOINT, BATTLE_NOTIFY_ENDPOINT,
 } from '../constants/firebase';
@@ -42,41 +43,10 @@ const unbindBattles = () => {
 
 /**
  * POST to one of the server-authoritative battle endpoints with the caller's
- * Firebase ID token.
- *
- * Both of them (turn resolution and the random roll) need the same three things
- * that are easy to get subtly wrong: a fresh token, a response that may not be
- * JSON at all (Vercel serves an HTML page for a platform-level failure), and an
- * error message that says what actually went wrong rather than "undefined".
- *
- * @returns {Promise<{ok: boolean, payload: object, error: string|null}>}
+ * Firebase ID token — the shared client in `services/apiClient.js` (the
+ * Champion Challenge uses it too).
  */
-const callBattleApi = async (endpoint, body, { serverErrorMessage = 'Server error (500).' } = {}) => {
-    const token = await auth?.currentUser?.getIdToken?.();
-    if (!token) return { ok: false, payload: {}, error: 'signedOut' };
-
-    const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body),
-    });
-
-    const text = await response.text();
-    let payload = {};
-    try {
-        payload = JSON.parse(text);
-    } catch (_) { /* non-JSON response (HTML error page) */ }
-
-    if (!response.ok) {
-        return {
-            ok: false,
-            payload,
-            error: payload.error
-                || (response.status === 500 ? serverErrorMessage : `HTTP ${response.status} error`),
-        };
-    }
-    return { ok: true, payload, error: null };
-};
+const callBattleApi = callAuthedApi;
 
 /**
  * Ask the server to push the opponent about a change this client just wrote.

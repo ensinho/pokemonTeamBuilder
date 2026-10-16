@@ -475,6 +475,57 @@ service cloud.firestore {
       match /notifications/{notifId} {
         allow read, create, delete: if isSignedIn();
       }
+
+      // ── Champion Challenge (api/challenge.js is the only writer) ──────────
+      // Runs live OUTSIDE users/{uid}/: the wildcard there grants the owner
+      // full write, and rules only ever add permissions, so a run stored there
+      // could be marked "won" from the console. Here the owner may read and
+      // delete (account deletion) — never create or update.
+
+      // The day's public document: lineup without sets, the Time do dia.
+      match /public/data/challengeDays/{dayKey} {
+        allow read: if true;
+        allow write: if false;
+      }
+
+      // The day's ranking (ranking.js): written only by the server, inside the
+      // transaction that ends an official run — a place can't be claimed here.
+      match /public/data/challengeRanks/{dayKey} {
+        allow read: if true;
+        allow write: if false;
+      }
+
+      match /challengeRuns/{runId} {
+        allow read, delete: if isSignedIn() && resource.data.uid == request.auth.uid;
+        allow create, update: if false;
+
+        // The player's own view of the log, one document per action.
+        match /rounds/{seq} {
+          allow read, delete: if isSignedIn()
+            && get(/databases/$(database)/documents/artifacts/$(appId)/challengeRuns/$(runId)).data.uid == request.auth.uid;
+          allow create, update: if false;
+        }
+
+        // Seed, choices, both teams and the AI trace: with these the RNG and
+        // Cynthia's sets are an open book, so nobody reads them. The owner may
+        // delete (account deletion removes this before the run itself, since
+        // the rule reads the parent).
+        match /secret/{docId} {
+          allow read, create, update: if false;
+          allow delete: if isSignedIn()
+            && get(/databases/$(database)/documents/artifacts/$(appId)/challengeRuns/$(runId)).data.uid == request.auth.uid;
+        }
+      }
+
+      match /challengeStats/{userId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if false;
+      }
+
+      // Anonymous battle rows for the AI's models: no uid, so nobody's to read.
+      match /aiTraining/{docId} {
+        allow read, write: if false;
+      }
     }
   }
 }

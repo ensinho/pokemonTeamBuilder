@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { selectDailyTargets } from './daily-puzzle.js';
+import { DAILY_TOPICS, selectDailyTargets } from './daily-puzzle.js';
 
 const sub = (path, data = {}) => ({ ref: { path }, data: () => data });
 
@@ -26,6 +26,18 @@ describe('selectDailyTargets', () => {
         // so a staging namespace would otherwise be notified by production.
         const docs = [sub('artifacts/somethingElse/users/u1/pushSubscriptions/s1', {})];
         expect(selectDailyTargets(docs, { appId })).toHaveLength(0);
+    });
+
+    it("keeps each daily topic's opt-out apart: no puzzle doesn't mean no Champion", () => {
+        const docs = [
+            sub('artifacts/pokemonTeamBuilder/users/u1/pushSubscriptions/s1', { topics: { dailyPuzzle: false } }),
+            sub('artifacts/pokemonTeamBuilder/users/u2/pushSubscriptions/s1', { topics: { dailyChallenge: false } }),
+            sub('artifacts/pokemonTeamBuilder/users/u3/pushSubscriptions/s1', {}),
+        ];
+        const ids = (topic) => selectDailyTargets(docs, { appId, topic }).map((d) => d.ref.path.split('/')[3]);
+        expect(ids('dailyPuzzle')).toEqual(['u2', 'u3']);
+        expect(ids('dailyChallenge')).toEqual(['u1', 'u3']);
+        expect(DAILY_TOPICS.map((t) => t.url)).toEqual(['/pokepuzzle', '/challenge']);
     });
 
     it('caps a single run so the cron cannot run past its budget', () => {

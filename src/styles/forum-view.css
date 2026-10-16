@@ -3324,3 +3324,24 @@
         margin-bottom: var(--space-2);
     }
 }
+
+
+/* A shared Champion Challenge result (ChallengeShareCard): its figures and the
+   win-chance curve as block characters, in the mono face that keeps them even. */
+.challenge-share-figures {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+    font-size: var(--text-xs);
+}
+
+.challenge-share-spark {
+    color: var(--color-primary);
+    font-family: var(--font-mono);
+    letter-spacing: 0;
+}
+
+.challenge-share-extra {
+    color: var(--color-muted);
+}
