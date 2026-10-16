@@ -14,6 +14,7 @@ export const useConsoleLayout = () => (useMediaQuery('(min-width: 1024px)') ? 's
 const RAIL_MIN = 15; // a rail of two, at its narrowest
 const RAIL_ONE = 20; // the one rail: two columns of named cards
 const GAP = 1.5; // the page gap at its widest
+const CHROME = 10; // what the window's height keeps from the screen (--ds-console-natural)
 
 /**
  * Which rails fit beside a desktop's one screen, given the challenge column's
@@ -23,7 +24,7 @@ const GAP = 1.5; // the page gap at its widest
  * @returns {'none'|'one'|'two'}
  */
 export const railModeFor = ({ width, height, rem = 16 }) => {
-    const natural = ((height - 9.5 * rem) * 4) / 3 + 1.5 * rem;
+    const natural = ((height - CHROME * rem) * 4) / 3 + 1.5 * rem;
     if (!(natural > 0) || !(width > 0)) return 'none';
     const keeps = (rails) => (width - rails * rem) / natural;
     if (keeps(2 * (RAIL_MIN + GAP)) >= 0.9) return 'two';
