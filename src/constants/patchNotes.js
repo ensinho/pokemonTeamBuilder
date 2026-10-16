@@ -18,23 +18,22 @@ export const RELEASES = [
         month: '2026-10',
         notes: [
             {
-                key: 'pre-fairy-chart',
-                icon: 'flower',
-                visual: 'preFairy',
-                title: 'patchNotes.preFairyTitle',
-                description: 'patchNotes.preFairyDesc',
-                cta: 'patchNotes.preFairyCta',
-                path: '/builder',
+                key: 'champion-challenge',
+                icon: 'crown',
+                visual: 'challenge',
+                title: 'patchNotes.challengeTitle',
+                description: 'patchNotes.challengeDesc',
+                cta: 'patchNotes.challengeCta',
+                path: '/challenge',
             },
-            {
-                key: 'account-security',
-                icon: 'key',
-                visual: 'account',
-                title: 'patchNotes.accountTitle',
-                description: 'patchNotes.accountDesc',
-                cta: 'patchNotes.accountCta',
-                path: '/profile?tab=account',
-            },
+        ],
+    },
+    {
+        version: '1.14.0',
+        month: '2026-10',
+        notes: [
+            { key: 'pre-fairy-chart', title: 'patchNotes.preFairyTitle' },
+            { key: 'account-security', title: 'patchNotes.accountTitle' },
         ],
     },
     {

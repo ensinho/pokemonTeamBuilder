@@ -90,7 +90,11 @@ export default async function handler(req, res) {
         title = "Daily PokePuzzle | Pokémon Team Builder";
         description = "Solve the daily PokePuzzle! Guess the Pokémon of the day from its types, stats, height, and weight. Play here!";
         imageUrl = "https://pokemonbuilder.app/pokepuzzle-og.png";
-    } 
+    }
+    else if (urlPath === '/challenge') {
+        title = "Champion Challenge | Pokémon Team Builder";
+        description = "Walk up to Cynthia and battle her every day: a new Champion team at midnight, a Team of the day to borrow, and a win streak to keep. A DS-style battle in your browser.";
+    }
     else if (urlPath.startsWith('/pokemon/')) {
         const param = urlPath.split('/')[2];
         const pokemon = findPokemon(param);

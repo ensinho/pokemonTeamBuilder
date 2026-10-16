@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { KeyRound, Puzzle, Search, Star } from 'lucide-react';
+import { Crown, KeyRound, Puzzle, Search, Star } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
@@ -10,6 +10,7 @@ import { ShinyBurst } from '../ShinyBurst';
 import { useTranslation } from '../../hooks/useTranslation';
 import { getGameLogo } from '../../assets/gameLogos';
 import { typeIcons } from '../../constants/types';
+import { trainerSpriteUrl } from '../../utils/challengeView';
 
 const CHAMPIONS_LOGO = getGameLogo('champions');
 
@@ -490,6 +491,28 @@ const DockVisual = ({ language }) => {
     );
 };
 
+// The Champion Challenge — Cynthia (her DS battle sprite) against her ace, and
+// the line that brings people back: a new team every midnight.
+const ChallengeVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-[9.5rem] flex-col items-center justify-center gap-2.5 bg-bg p-3" aria-hidden="true">
+            <div className="flex items-center gap-3">
+                <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface-raised">
+                    <img src={trainerSpriteUrl('cynthia-gen4')} alt="" className="h-12 w-12 object-contain" style={{ imageRendering: 'pixelated' }} />
+                </span>
+                <span className="font-mono text-2xs font-bold text-muted">VS</span>
+                <span className="flex h-14 w-14 items-center justify-center rounded-lg bg-surface-raised">
+                    <img src={`${SPRITE_BASE}/445.png`} alt="" className="h-12 w-12 object-contain" style={{ imageRendering: 'pixelated' }} />
+                </span>
+            </div>
+            <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
+                {pt ? 'um time novo à meia-noite' : 'a new team at midnight'}
+            </span>
+        </div>
+    );
+};
+
 // Ledger `icon` / `visual` names → components. Keeps constants/patchNotes.js
 // free of JSX so it can be imported anywhere (and unit-tested).
 const NOTE_ICONS = {
@@ -502,6 +525,7 @@ const NOTE_ICONS = {
     puzzle: Puzzle,
     search: Search,
     key: KeyRound,
+    crown: Crown,
 };
 
 const NOTE_VISUALS = {
@@ -521,6 +545,7 @@ const NOTE_VISUALS = {
     search: SearchVisual,
     preFairy: PreFairyVisual,
     account: AccountVisual,
+    challenge: ChallengeVisual,
 };
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall, onOpenSearch }) {
