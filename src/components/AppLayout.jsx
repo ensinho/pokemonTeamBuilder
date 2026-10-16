@@ -61,7 +61,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users, Settings, Brain, HeartHandshake, ShieldHalf } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users, Settings, Brain, HeartHandshake, ShieldHalf, Crown } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -80,6 +80,7 @@ const loadTeamBuilderView = () => import('./views/TeamBuilderView');
 const loadPokedexView = () => import('./views/PokedexView');
 const loadPokemonDetailView = () => import('./views/PokemonDetailView');
 const loadPokePuzzleView = () => import('./views/PokePuzzleView');
+const loadChampionChallengeView = () => import('./views/challenge/ChampionChallengeView');
 const loadMetaUsageView = () => import('./views/MetaUsageView');
 // The Mais sheet only exists once its tab is tapped, so it stays out of the
 // boot bundle — and is warmed with the tab destinations, so that tap opens it
@@ -116,6 +117,7 @@ const MOBILE_PREFETCH = [loadTeamBuilderView, loadPokedexView, loadPokemonDetail
 // specifiers as the lazy() calls below, so the module cache is shared.
 const ROUTE_CHUNKS = {
     builder: loadTeamBuilderView, pokedex: loadPokedexView, pokepuzzle: loadPokePuzzleView, meta: loadMetaUsageView,
+    challenge: loadChampionChallengeView,
     feed: () => import('./views/FeedView'), favorites: () => import('./views/FavoritesView'),
     tournaments: () => import('./views/TournamentsView'), damageCalc: () => import('./views/DamageCalculatorView'),
     speedTiers: () => import('./views/SpeedTiersView'), moves: () => import('./views/MovesListView'),
@@ -148,6 +150,7 @@ const BattleDetailView = lazy(() => import('./views/battle/BattleDetailView').th
 const TeamBuilderView = lazy(() => loadTeamBuilderView().then((m) => ({ default: m.TeamBuilderView })));
 const FeedView = lazy(() => import('./views/FeedView').then((m) => ({ default: m.FeedView })));
 const PokePuzzleView = lazy(loadPokePuzzleView); // default export
+const ChampionChallengeView = lazy(() => loadChampionChallengeView().then((m) => ({ default: m.ChampionChallengeView })));
 const MovesListView = lazy(() => import('./views/MovesListView').then((m) => ({ default: m.MovesListView })));
 const MoveDetailView = lazy(() => import('./views/MoveDetailView').then((m) => ({ default: m.MoveDetailView })));
 const AbilitiesListView = lazy(() => import('./views/AbilitiesListView').then((m) => ({ default: m.AbilitiesListView })));
@@ -348,6 +351,7 @@ export default function AppLayout() {
         if (path.includes('/pokedex')) return 'pokedex';
         if (path.includes('/pokemon/')) return 'pokemonDetail';
         if (path.includes('/pokepuzzle')) return 'pokepuzzle';
+        if (path.includes('/challenge')) return 'challenge';
         if (path.includes('/moves')) return 'moves';
         if (path.includes('/abilities')) return 'abilities';
         if (path.includes('/items')) return 'items';
@@ -848,6 +852,7 @@ export default function AppLayout() {
             'categoryGuesser': { title: t('nav.pokequiz'), subtitle: language === 'pt' ? 'Adivinhe Pokémon por características e atributos oficiais' : 'Guess Pokémon by official traits & characteristics' },
             'generationQuiz': { title: t('quiz.title'), subtitle: t('quiz.subtitle') },
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
+            'challenge': { title: t('challenge.title'), subtitle: '' },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
             'admin': { title: t('nav.admin'), subtitle: t('layout.adminSubtitle') },
             // "Cartão de Treinador & Preferências" ellipsised at "Prefe…" in a phone
@@ -949,6 +954,7 @@ export default function AppLayout() {
                 title: t('nav.guessing'),
                 items: [
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
+                    { key: 'challenge', label: t('nav.challenge'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
                     { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <Brain className="w-5 h-5 shrink-0" /> },
                     { key: 'pokeroom', label: 'PokéRoom', path: '/pokeroom', icon: <Users className="w-5 h-5 shrink-0" /> },
@@ -1877,6 +1883,7 @@ export default function AppLayout() {
                                     <Route path="/pokepuzzle" element={
                                         <PokePuzzleView />
                                     } />
+                                    <Route path="/challenge" element={<ChampionChallengeView />} />
                                     {/* Saved Teams now lives as a tab inside /favorites. */}
                                     <Route path="/teams" element={<Navigate to="/favorites?tab=teams" replace />} />
                                     <Route path="/teams/:id" element={

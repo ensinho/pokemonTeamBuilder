@@ -1,0 +1,2942 @@
+/* ── Champion Challenge — the DS console (/challenge) ───────────────────
+   Loaded with the route (lazy chunk).
+
+   Two worlds, one rule each (design-system exception, recorded in the skill):
+   - The console frame (.ds-console, its bar and controls) is app UI: theme
+     tokens and --space-* only.
+   - Inside a screen (.ds-screen) it is the game: one unit, the DS pixel
+     (--px, set by useScreenScale from the screen's width), and one palette,
+     the --ds-* tokens declared once below. Nothing in a screen uses a raw
+     colour outside that list (Pokémon type colours arrive as --type/--fx-color).
+   Motion is transform/opacity only, and every animation stops under
+   prefers-reduced-motion. */
+
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
+.challenge-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--page-gap, var(--space-4));
+    min-width: 0;
+}
+
+.challenge-loading {
+    padding: var(--space-12) 0;
+    animation: boot-splash-in var(--duration-slow) var(--ease-smooth) 250ms both;
+}
+
+/* ── The frame (app UI) ──────────────────────────────────────────────── */
+
+.ds-console {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+}
+
+.ds-defs {
+    position: absolute;
+    width: 0;
+    height: 0;
+}
+
+.ds-console__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.ds-console__spacer {
+    flex: 1;
+}
+
+.ds-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2_5);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.ds-chip.is-accent {
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: color-mix(in srgb, var(--color-primary) 45%, var(--color-fg));
+}
+
+.ds-chip.is-button {
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.ds-chip.is-button:hover {
+    background: var(--color-surface-hover);
+}
+
+.ds-chip.is-button[aria-pressed="true"] {
+    box-shadow: var(--ring-primary);
+}
+
+.ds-console__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3);
+}
+
+@media (min-width: 1024px) {
+    .ds-console__body {
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        align-items: start;
+    }
+}
+
+/* One screen holding everything (a desktop): as wide as the column, as tall as the window. */
+.ds-console__body.is-single {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.ds-console__body.is-single .ds-screen.is-main {
+    width: min(100%, calc((100dvh - 12rem) * 4 / 3));
+}
+
+.ds-console__lower {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.ds-console__keys {
+    margin: 0;
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+@media (max-width: 1023px) {
+    /* The page is the panel on a phone. */
+    .ds-console {
+        padding: 0;
+        border: none;
+        background: transparent;
+    }
+
+    .ds-console__keys {
+        display: none;
+    }
+
+    /* Both screens (1.5 × their width, stacked) fit between the console bar and
+       the dock, so a battle never needs scrolling: on a short phone the height
+       is the tighter bound. 6.75rem = the bar, the gaps and the dock's padding
+       and air (measured at 375 × 667, 390 × 844 and 430 × 932). */
+    .ds-console__body {
+        width: min(100%, calc((100dvh - var(--app-shell-top-band-height) - var(--app-shell-tab-height) - env(safe-area-inset-bottom, 0px) - 6.75rem) / 1.5));
+        margin-inline: auto;
+    }
+
+    /* One row: the countdown gives way before the bar wraps and pushes the screens down. */
+    .ds-console__bar {
+        flex-wrap: nowrap;
+    }
+
+    .ds-console__bar .ds-chip {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ds-console__bar .ds-chip.is-button {
+        flex-shrink: 0;
+    }
+}
+
+/* No D-pad or A/B on a phone: under two 4:3 screens they never fit above the
+   dock (430 × 932 still overlaps it), and shrinking the screens to make room
+   would resize them between stages. Touch is the input there — a tap walks to
+   where it lands, a tap on the text box is A. (Higher specificity than the
+   base .ds-controls rule further down.) */
+@media (max-width: 1023px) {
+    .ds-console .ds-controls {
+        display: none;
+    }
+}
+
+/* D-pad and A/B: real buttons, ≥ 44 px, pressed by sinking. */
+.ds-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4);
+    user-select: none;
+}
+
+.ds-dpad {
+    display: grid;
+    grid-template-columns: repeat(3, 2.75rem);
+    grid-template-rows: repeat(3, 2.75rem);
+    touch-action: none;
+}
+
+.ds-dpad__btn {
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+    transition: background-color var(--duration-press) var(--ease-out), scale var(--duration-press) var(--ease-out);
+}
+
+.ds-dpad__btn:active {
+    background: var(--color-surface-active);
+    scale: var(--press-scale);
+}
+
+.ds-dpad__btn::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    margin: auto;
+    border: 0.375rem solid transparent;
+}
+
+.ds-dpad__btn.is-up { grid-area: 1 / 2; }
+.ds-dpad__btn.is-left { grid-area: 2 / 1; }
+.ds-dpad__btn.is-right { grid-area: 2 / 3; }
+.ds-dpad__btn.is-down { grid-area: 3 / 2; }
+.ds-dpad__btn.is-up::after { border-bottom-color: var(--color-muted); transform: translateY(-25%); }
+.ds-dpad__btn.is-down::after { border-top-color: var(--color-muted); transform: translateY(25%); }
+.ds-dpad__btn.is-left::after { border-right-color: var(--color-muted); transform: translateX(-25%); }
+.ds-dpad__btn.is-right::after { border-left-color: var(--color-muted); transform: translateX(25%); }
+
+.ds-ab {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.ds-ab__btn {
+    width: 3rem;
+    height: 3rem;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-family: var(--font-display);
+    font-weight: var(--weight-semibold);
+    transition: background-color var(--duration-press) var(--ease-out), scale var(--duration-press) var(--ease-out);
+}
+
+.ds-ab__btn.is-a {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    transform: translateY(-0.5rem);
+}
+
+.ds-ab__btn:active {
+    scale: var(--press-scale);
+}
+
+/* ── A screen (the game) ─────────────────────────────────────────────── */
+
+.ds-screen,
+.ds-rail {
+    /* The game's palette — canon colours, theme-independent, declared once. */
+    --ds-ink: #383840;
+    --ds-ink-soft: #787888;
+    --ds-ink-shadow: #d4d4cc;
+    --ds-paper: #f8f8f4;
+    --ds-box-edge: #3a4a64;
+    --ds-box-inner: #8aa2c4;
+    --ds-hp-track: #4a4a52;
+    --ds-hp-high: #4cd07a;
+    --ds-hp-mid: #f2c02e;
+    --ds-hp-low: #f0503e;
+    --ds-ball: #e44a3a;
+    --ds-ball-off: #9a9aa4;
+    --ds-room-wall: #1e1e28;
+    --ds-room-wall-top: #3a3a4c;
+    --ds-room-floor-1: #3c3c4a;
+    --ds-room-floor-2: #33333f;
+    --ds-ring: #44d6bc;
+    --ds-ring-band: #2db6a0;
+    --ds-ring-disc: #2a2a34;
+    --ds-ring-button: #d6d488;
+    --ds-lamp: #c8ccd8;
+    --ds-lamp-light: #f8f8e8;
+    --ds-banner: #3a6ad0;
+    --ds-banner-stripe: #f0c838;
+    --ds-poketch: #e6e6ea;
+    --ds-poketch-edge: #b4b4be;
+    --ds-poketch-red: #e04452;
+    --ds-lcd: #9ccc98;
+    --ds-lcd-dim: #86b882;
+    --ds-lcd-ink: #2a4426;
+    --ds-fight: #ec6a72;
+    --ds-fight-edge: #a83844;
+    --ds-pokemon-edge: #2e8848;
+    --ds-back: #4a4a58;
+    --ds-cat-physical: #e8582c;
+    --ds-cat-physical-core: #f8d040;
+    --ds-cat-special: #4a6ad8;
+    --ds-cat-status: #8a8a96;
+    --ds-pp-mid: #b08400;
+    --ds-pp-low: #d0601c;
+    --ds-pp-out: #d83838;
+    /* The win-chance chart's diverging pair, validated with the dataviz
+       script on --ds-paper: CVD ΔE 28.5, normal 31.1, both ≥ 3:1. */
+    --ds-chart-you: #3a6ad0;
+    /* Black & White's HUD (the battle menu, the data boxes, the bands). */
+    --bw-white: #f8f8f8;
+    --bw-text-shadow: #18181e;
+    --bw-dark: #26262e;
+    --bw-dark-2: #3c3c48;
+    --bw-rim: #6c6c80;
+    --bw-band: #0e0e14;
+    --bw-hp-label: #f8b830;
+    --bw-male: #7aa8f8;
+    --bw-female: #f888a8;
+    --bw-status: #2c2c34;
+    --bw-red: #d8343a;
+    --bw-red-2: #b0242c;
+    --bw-red-deep: #6c121c;
+    --bw-fight-1: #f2604e;
+    --bw-fight-2: #c8282c;
+    --bw-pink: #ee6e7c;
+    --bw-pink-edge: #a83444;
+    --bw-gold: #eea42e;
+    --bw-gold-edge: #a0680e;
+    --bw-green: #4eae4a;
+    --bw-green-edge: #2a7428;
+    --bw-blue: #4a7ad0;
+    --bw-blue-edge: #264a96;
+    --bw-card-1: #4c6694;
+    --bw-card-2: #34486e;
+    --bw-card-rim: #94acd8;
+    --bw-pp-mid: #f8d030;
+    --bw-ok: #8ee08a;
+    --bw-warn: #ffaaa8;
+    --bw-pp-low: #f8902e;
+    --bw-pp-out: #f85050;
+    --bw-sky-1: #18243c;
+    --bw-sky-2: #34507a;
+    --bw-sky-3: #6886a8;
+    --bw-ground-1: #5a6e8a;
+    --bw-ground-2: #2e3c52;
+    --bw-plat-1: #8ea4c2;
+    --bw-plat-2: #4e6282;
+    --bw-plat-rim: #c4d6ec;
+    --ds-chart-her: #b88214;
+    --ds-badge: #f0c838;
+    --ds-status-brn: #e4743a;
+    --ds-status-par: #d8b432;
+    --ds-status-slp: #8a92a4;
+    --ds-status-psn: #a654bc;
+    --ds-status-frz: #5abce2;
+    --px: 2px;
+}
+
+.ds-screen {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--ds-room-wall);
+    color: var(--ds-ink);
+    font-family: 'DotGothic16', var(--font-display);
+    font-synthesis: none; /* a faux-bold pixel font smears; hierarchy is size and colour, as on the DS */
+    line-height: 1.2;
+    contain: layout paint;
+    user-select: none;
+}
+
+.ds-screen img {
+    image-rendering: pixelated;
+}
+
+/* ── The room ────────────────────────────────────────────────────────── */
+
+.ds-arena {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+}
+
+.ds-arena__walls {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(var(--ds-room-wall-top), var(--ds-room-wall-top)) 0 calc(14 * var(--px)) / 100% calc(2 * var(--px)) no-repeat,
+        var(--ds-room-wall);
+}
+
+.ds-arena__floor {
+    position: absolute;
+    left: calc(16 * var(--px));
+    top: calc(16 * var(--px));
+    width: calc(224 * var(--px));
+    height: calc(160 * var(--px));
+    background: conic-gradient(var(--ds-room-floor-1) 25%, var(--ds-room-floor-2) 0 50%, var(--ds-room-floor-1) 0 75%, var(--ds-room-floor-2) 0)
+        0 0 / calc(32 * var(--px)) calc(32 * var(--px));
+}
+
+.ds-arena__ring {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.ds-ring__glow { fill: none; stroke: var(--ds-ring); stroke-width: 2; opacity: 0.35; }
+.ds-ring__disc { fill: var(--ds-ring-disc); stroke: var(--ds-ring); stroke-width: 4; }
+.ds-ring__band { fill: var(--ds-ring-band); }
+.ds-ring__hub { fill: var(--ds-ring-disc); stroke: var(--ds-ring); stroke-width: 3; }
+.ds-ring__button { fill: var(--ds-ring-button); }
+
+.ds-arena__ring .ds-ring__glow {
+    transform-origin: 120px 108px;
+    animation: ds-ring-pulse 2.4s ease-in-out infinite;
+}
+
+.ds-arena__banner {
+    position: absolute;
+    left: calc(var(--bx) * var(--px));
+    top: calc(var(--by) * var(--px));
+    width: calc(var(--bw) * var(--px));
+    height: calc(20 * var(--px));
+    border-radius: calc(2 * var(--px));
+    background: linear-gradient(90deg, var(--ds-banner) 0 44%, var(--ds-banner-stripe) 44% 56%, var(--ds-banner) 56%);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-room-wall-top);
+}
+
+.ds-arena__lamp {
+    position: absolute;
+    left: calc(var(--lx) * var(--px) + 2 * var(--px));
+    top: calc(var(--ly) * var(--px) + 1 * var(--px));
+    width: calc(12 * var(--px));
+    height: calc(14 * var(--px));
+    border-radius: calc(1 * var(--px));
+    background: var(--ds-lamp);
+    box-shadow: inset 0 calc(-4 * var(--px)) 0 var(--ds-room-wall-top);
+}
+
+.ds-arena__lamp::after {
+    content: '';
+    position: absolute;
+    inset: calc(2 * var(--px)) calc(3 * var(--px)) calc(6 * var(--px));
+    border-radius: calc(1 * var(--px));
+    background: var(--ds-lamp-light);
+    animation: ds-lamp 2.8s ease-in-out infinite;
+}
+
+.ds-arena__door {
+    position: absolute;
+    left: calc(112 * var(--px));
+    top: calc(176 * var(--px));
+    width: calc(32 * var(--px));
+    height: calc(16 * var(--px));
+    background: var(--ds-room-floor-2);
+}
+
+.ds-actor {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: calc(var(--aw) * var(--px));
+    height: calc(var(--ah) * var(--px));
+    transform: translate(calc(var(--ax) * var(--px)), calc(var(--ay) * var(--px)));
+    transition: transform 160ms linear;
+    will-change: transform;
+}
+
+/* A frame of a sprite sheet drawn at half its file size (challengeArt.js
+   `sheetStyle`): its own cell (`--cell-w/h`), set inside the shared one at
+   `--cell-x/y`, nearest-neighbour so the pixels stay square. */
+.ds-sheet {
+    position: absolute;
+    left: calc(var(--cell-x, 0) * var(--px));
+    top: calc(var(--cell-y, 0) * var(--px));
+    width: calc(var(--cell-w, var(--aw)) * var(--px));
+    height: calc(var(--cell-h, var(--ah)) * var(--px));
+    background-repeat: no-repeat;
+    background-size: calc(var(--sheet-w) * var(--px)) calc(var(--sheet-h) * var(--px));
+    background-position:
+        calc(var(--sheet-col) * var(--cell-w, var(--aw)) * -1 * var(--px))
+        calc(var(--sheet-row) * var(--cell-h, var(--ah)) * -1 * var(--px));
+    image-rendering: pixelated;
+}
+
+/* His sheet has no ground shadow; Cynthia's has one drawn in. The same dark,
+   under his feet, on the shared ground line. */
+.ds-actor--player::before {
+    content: "";
+    position: absolute;
+    left: calc(10 * var(--px));
+    top: calc(31 * var(--px));
+    width: calc(14 * var(--px));
+    height: calc(4 * var(--px));
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--ds-room-wall) 80%, transparent);
+}
+
+.ds-actor--champion .ds-sheet {
+    animation: ds-breathe 1.2s steps(2, jump-none) infinite;
+}
+
+/* Just above her head (the cell's first opaque row is 5). */
+.ds-actor__bang {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% - 3 * var(--px));
+    display: grid;
+    place-items: center;
+    width: calc(10 * var(--px));
+    height: calc(12 * var(--px));
+    margin-left: calc(-5 * var(--px));
+    border-radius: calc(2 * var(--px));
+    background: var(--ds-paper);
+    box-shadow: 0 0 0 calc(1 * var(--px)) var(--ds-ink);
+    color: var(--ds-ink);
+    font-size: calc(10 * var(--px));
+    font-weight: 700;
+    animation: ds-bang 360ms var(--ease-pop, cubic-bezier(0.34, 1.56, 0.64, 1)) both;
+}
+
+/* Battle transition: two flashes, then the spiral closes in. */
+.ds-transition {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    background: repeating-conic-gradient(var(--ds-room-wall) 0 18deg, transparent 18deg 36deg);
+    animation: ds-spiral 1.1s ease-in both;
+}
+
+.ds-transition::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--ds-paper);
+    animation: ds-double-flash 0.45s steps(4, jump-none) both;
+}
+
+.ds-transition.is-reduced {
+    background: var(--ds-room-wall);
+    animation: ds-fade-in 150ms linear both;
+}
+
+.ds-transition.is-reduced::before {
+    display: none;
+}
+
+/* ── The text box ────────────────────────────────────────────────────── */
+
+.ds-textbox {
+    position: absolute;
+    left: calc(2 * var(--px));
+    right: calc(2 * var(--px));
+    bottom: calc(2 * var(--px));
+    z-index: 50;
+    height: calc(44 * var(--px));
+    padding: 0;
+    border: calc(2 * var(--px)) solid var(--ds-box-edge);
+    border-radius: calc(4 * var(--px));
+    background: var(--ds-paper);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-box-inner);
+    color: var(--ds-ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Exactly two lines: 44 − 2 × 2 (border) − 2 × 6 (inset) = 28 = 2 × 14. */
+.ds-textbox__inner {
+    position: absolute;
+    inset: calc(6 * var(--px)) calc(10 * var(--px));
+}
+
+/* Who is talking sits on the box's top edge as a plate — never a third line inside. */
+.ds-textbox__speaker {
+    position: absolute;
+    left: calc(-6 * var(--px));
+    top: calc(-7 * var(--px));
+    padding: calc(1 * var(--px)) calc(5 * var(--px));
+    border-radius: calc(3 * var(--px)) calc(3 * var(--px)) 0 0;
+    background: var(--ds-box-edge);
+    color: var(--ds-paper);
+    font-size: calc(7 * var(--px));
+    line-height: calc(9 * var(--px));
+    transform: translateY(-100%);
+}
+
+.ds-textbox__text {
+    display: block;
+    font-size: calc(10 * var(--px));
+    line-height: calc(14 * var(--px));
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--ds-ink-shadow);
+}
+
+.ds-textbox__ghost {
+    visibility: hidden;
+}
+
+/* A dialogue box (the room): BW's white box with a soft grey frame. */
+.ds-textbox.is-box {
+    border-color: var(--bw-rim);
+    border-radius: calc(6 * var(--px));
+    background: var(--bw-white);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-ink-shadow);
+}
+
+/* The battle message on a phone: BW's black band across the field. */
+.ds-textbox.is-band {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: calc(40 * var(--px));
+    border: none;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--bw-band) 86%, transparent);
+    box-shadow: inset 0 calc(1 * var(--px)) 0 var(--bw-rim);
+    color: var(--bw-white);
+}
+
+.ds-textbox.is-band .ds-textbox__inner {
+    inset: calc(6 * var(--px)) calc(10 * var(--px));
+}
+
+.ds-textbox.is-band .ds-textbox__text {
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+}
+
+/* The message in a desktop's HUD strip: a white box filling its slot. */
+.ds-textbox.is-hud {
+    inset: 0;
+    height: auto;
+    border: none;
+    border-radius: calc(5 * var(--px));
+    background: var(--bw-white);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-rim);
+}
+
+.ds-textbox.is-hud .ds-textbox__inner {
+    inset: calc(5 * var(--px)) calc(9 * var(--px));
+}
+
+.ds-textbox__arrow {
+    position: absolute;
+    right: calc(-4 * var(--px));
+    bottom: 0;
+    color: var(--ds-hp-low);
+    font-size: calc(7 * var(--px));
+    line-height: 1;
+    animation: ds-blink 0.8s steps(2, jump-none) infinite;
+}
+
+/* ── The battle ──────────────────────────────────────────────────────────
+   One centre line per side (STAGE in DsBattleScene.jsx): Cynthia's at
+   x 190 / ground 89, yours at x 66 / ground 151. Platforms are centred on
+   it, sprites (96 × 96, drawn 1:1) stand their feet row on it, and the two
+   HP boxes mirror each other across the screen. */
+
+.ds-battle {
+    position: absolute;
+    inset: 0;
+}
+
+.ds-battle__sky {
+    position: absolute;
+    inset: 0 0 auto;
+    height: calc(80 * var(--px));
+    background:
+        radial-gradient(ellipse at 22% 0%, color-mix(in srgb, var(--bw-white) 22%, transparent), transparent 45%),
+        radial-gradient(ellipse at 78% 0%, color-mix(in srgb, var(--bw-white) 16%, transparent), transparent 40%),
+        linear-gradient(var(--bw-sky-1), var(--bw-sky-2) 70%, var(--bw-sky-3));
+}
+
+.ds-battle__ground {
+    position: absolute;
+    inset: calc(64 * var(--px)) 0 0;
+    background:
+        repeating-linear-gradient(transparent 0 calc(10 * var(--px)), color-mix(in srgb, var(--bw-white) 6%, transparent) calc(10 * var(--px)) calc(11 * var(--px))),
+        linear-gradient(var(--bw-ground-1), var(--bw-ground-2));
+}
+
+.ds-platform {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 50% 38%, var(--bw-plat-1), var(--bw-plat-2) 70%);
+    box-shadow: 0 0 0 calc(1.5 * var(--px)) var(--bw-plat-rim), 0 calc(2 * var(--px)) 0 calc(1 * var(--px)) var(--bw-ground-2);
+}
+
+.ds-platform.is-foe {
+    left: calc(130 * var(--px));   /* 190 − 60 */
+    top: calc(76 * var(--px));     /*  89 − 13 */
+    width: calc(120 * var(--px));
+    height: calc(26 * var(--px));
+}
+
+.ds-platform.is-mine {
+    left: calc(-4 * var(--px));    /*  66 − 70 */
+    top: calc(135 * var(--px));    /* 151 − 16 */
+    width: calc(140 * var(--px));
+    height: calc(32 * var(--px));
+}
+
+/* Her trainer sprite (80 × 80, feet on row 79) stands where her Pokémon will. */
+.ds-trainer {
+    position: absolute;
+    left: calc(150 * var(--px));   /* 190 − 40 */
+    top: calc(10 * var(--px));     /*  89 − 79 */
+    width: calc(80 * var(--px));
+    height: calc(80 * var(--px));
+    transition: transform 450ms var(--ease-out), opacity 450ms var(--ease-out);
+}
+
+.ds-trainer.is-gone {
+    transform: translateX(calc(110 * var(--px)));
+    opacity: 0;
+}
+
+/* --feet: the sprite's feet row (sprite-feet.json), set per Pokémon. */
+.ds-mon {
+    position: absolute;
+    z-index: 5;
+    top: calc((var(--ground) - var(--feet, 80)) * var(--px));
+    width: calc(96 * var(--px));
+    height: calc(96 * var(--px));
+    transform-origin: 50% calc(var(--feet, 80) / 96 * 100%);
+    animation: ds-enter 450ms var(--ease-out) both;
+}
+
+.ds-mon.is-foe {
+    --ground: 89;
+    left: calc(142 * var(--px));   /* 190 − 48 */
+}
+
+.ds-mon.is-mine {
+    --ground: 151;
+    left: calc(18 * var(--px));    /*  66 − 48 */
+}
+
+.ds-mon__body {
+    width: 100%;
+    height: 100%;
+}
+
+.ds-mon img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    animation: ds-bob 1.6s ease-in-out infinite;
+}
+
+.ds-mon.is-attacking.is-mine .ds-mon__body { animation: ds-lunge-mine 320ms var(--ease-out); }
+.ds-mon.is-attacking.is-foe .ds-mon__body { animation: ds-lunge-foe 320ms var(--ease-out); }
+.ds-mon.is-hit img { animation: ds-blink-hit 450ms steps(6, jump-none); }
+.ds-mon.is-fainted { animation: ds-faint 500ms var(--ease-out) forwards; }
+
+/* HP boxes, Black & White's: a slim dark bar flush against the screen's
+   edge, cut on a slant toward the field, a lighter upper half; the name row,
+   then the HP bar in its dark frame behind the orange HP mark. Yours adds the
+   figures under the bar. Mirrored: the same width, opposite edges. */
+.ds-hpbox {
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: calc(1 * var(--px));
+    width: calc(120 * var(--px));
+    padding: calc(3 * var(--px)) calc(8 * var(--px)) calc(4 * var(--px));
+    background:
+        linear-gradient(color-mix(in srgb, var(--bw-white) 9%, transparent) 0 52%, transparent 52%),
+        color-mix(in srgb, var(--bw-dark) 90%, transparent);
+    box-shadow:
+        inset 0 calc(1 * var(--px)) 0 color-mix(in srgb, var(--bw-white) 30%, transparent),
+        inset 0 calc(-1 * var(--px)) 0 var(--bw-band);
+    color: var(--bw-white);
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+}
+
+.ds-hpbox.is-foe {
+    left: 0;
+    top: calc(12 * var(--px));
+    padding-right: calc(17 * var(--px));
+    clip-path: polygon(0 0, 100% 0, calc(100% - 9 * var(--px)) 100%, 0 100%);
+}
+
+/* Below her platform (ends at y 102), above the message (from y 146). */
+.ds-hpbox.is-mine {
+    right: 0;
+    top: calc(104 * var(--px));
+    padding-left: calc(17 * var(--px));
+    clip-path: polygon(calc(9 * var(--px)) 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.ds-hpbox__row {
+    display: flex;
+    align-items: baseline;
+    gap: calc(3 * var(--px));
+    min-width: 0;
+    font-size: calc(8 * var(--px));
+    line-height: calc(10 * var(--px));
+    white-space: nowrap;
+}
+
+.ds-hpbox__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ds-hpbox__gender.is-m { color: var(--bw-male); }
+.ds-hpbox__gender.is-f { color: var(--bw-female); }
+
+.ds-hpbox__level {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-hpbox__level small {
+    font-size: calc(6 * var(--px));
+}
+
+/* The bar's frame holds the mark and the bar, as on the DS. */
+.ds-hpbox__bar {
+    display: flex;
+    align-items: center;
+    gap: calc(2 * var(--px));
+    height: calc(7 * var(--px));
+    padding: 0 calc(2 * var(--px)) 0 calc(3 * var(--px));
+    border-radius: calc(3.5 * var(--px));
+    background: var(--bw-band);
+    box-shadow: 0 0 0 calc(0.5 * var(--px)) var(--bw-rim);
+}
+
+.ds-hpbox__label {
+    color: var(--bw-hp-label);
+    font-size: calc(6 * var(--px));
+    line-height: calc(7 * var(--px));
+    text-shadow: none;
+}
+
+.ds-hpbox__track {
+    flex: 1;
+    height: calc(3 * var(--px));
+    overflow: hidden;
+    border-radius: calc(1.5 * var(--px));
+    background: var(--ds-hp-track);
+}
+
+.ds-hpbox__fill,
+.ds-partymon__fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    transform: scaleX(var(--hp));
+    transform-origin: left center;
+    transition: transform 500ms linear;
+}
+
+.ds-hpbox__fill.is-high, .ds-partymon__fill.is-high { background: var(--ds-hp-high); }
+.ds-hpbox__fill.is-mid, .ds-partymon__fill.is-mid { background: var(--ds-hp-mid); }
+.ds-hpbox__fill.is-low, .ds-partymon__fill.is-low { background: var(--ds-hp-low); }
+
+.ds-hpbox__numbers {
+    align-self: flex-end;
+    font-size: calc(8 * var(--px));
+    line-height: calc(9 * var(--px));
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-hpbox__status {
+    align-self: center;
+    padding: 0 calc(2 * var(--px));
+    border-radius: calc(2 * var(--px));
+    background: var(--ds-ink-soft);
+    color: var(--ds-paper);
+    font-size: calc(6 * var(--px));
+    line-height: calc(8 * var(--px));
+    text-shadow: none;
+}
+
+.ds-hpbox__status.is-brn { background: var(--ds-status-brn); }
+.ds-hpbox__status.is-par { background: var(--ds-status-par); }
+.ds-hpbox__status.is-slp { background: var(--ds-status-slp); }
+.ds-hpbox__status.is-psn,
+.ds-hpbox__status.is-tox { background: var(--ds-status-psn); }
+.ds-hpbox__status.is-frz { background: var(--ds-status-frz); }
+
+/* Poké Ball rows — on their own only before the send-outs, mirrored like the boxes. */
+.ds-balls {
+    position: absolute;
+    z-index: 20;
+    display: flex;
+    gap: calc(2 * var(--px));
+}
+
+.ds-balls.is-foe { left: calc(7 * var(--px)); top: calc(22 * var(--px)); }
+.ds-balls.is-mine { right: calc(7 * var(--px)); top: calc(126 * var(--px)); }
+
+.ds-ball {
+    width: calc(7 * var(--px));
+    height: calc(7 * var(--px));
+    border-radius: 50%;
+    background: linear-gradient(var(--ds-ball) 0 44%, var(--ds-ink) 44% 56%, var(--ds-paper) 56%);
+    box-shadow: 0 0 0 calc(0.5 * var(--px)) var(--ds-ink);
+}
+
+.ds-ball.is-fainted {
+    background: linear-gradient(var(--ds-ball-off) 0 44%, var(--ds-ink) 44% 56%, var(--ds-ball-off) 56%);
+    opacity: 0.7;
+}
+
+.ds-ball.is-empty {
+    opacity: 0.2;
+}
+
+/* Move effects */
+.ds-fx {
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+}
+
+.ds-fx > span {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.ds-fx__burst {
+    width: calc(30 * var(--px));
+    height: calc(30 * var(--px));
+    margin: calc(-15 * var(--px)) 0 0 calc(-15 * var(--px));
+    background: var(--fx-color);
+    clip-path: polygon(50% 0, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+    transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) scale(0);
+    animation: ds-burst 420ms var(--ease-out) forwards;
+}
+
+.ds-fx.is-special .ds-fx__burst {
+    animation-delay: 280ms;
+}
+
+.ds-fx__orb {
+    width: calc(14 * var(--px));
+    height: calc(14 * var(--px));
+    margin: calc(-7 * var(--px)) 0 0 calc(-7 * var(--px));
+    border-radius: 50%;
+    background: radial-gradient(var(--ds-paper) 20%, var(--fx-color) 60%);
+    animation: ds-orb 300ms ease-in forwards;
+}
+
+.ds-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    background: var(--ds-paper);
+    pointer-events: none;
+    animation: ds-flash 240ms ease-out forwards;
+}
+
+.ds-battle.is-weather-sandstorm .ds-battle__sky,
+.ds-battle.is-weather-sandstorm .ds-battle__ground {
+    filter: sepia(0.5);
+}
+
+.ds-battle.is-weather-raindance .ds-battle__sky {
+    filter: brightness(0.82) saturate(0.8);
+}
+
+/* ── Panels that fill a screen (picker, gate, result) ────────────────── */
+
+.ds-picker,
+.ds-panel {
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--ds-box-inner) 12%, transparent) calc(6 * var(--px)) calc(8 * var(--px))),
+        var(--ds-paper);
+}
+
+.ds-cmd,
+.ds-go,
+.bw-btn,
+.bw-fight,
+.bw-move,
+.bw-card,
+.bw-cancel,
+.bw-hud__back {
+    border: none;
+    font: inherit;
+    cursor: pointer;
+    transition: transform var(--duration-press) var(--ease-out), opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.ds-cmd:active,
+.ds-go:active,
+.bw-btn:active:not(:disabled),
+.bw-fight:active:not(:disabled),
+.bw-move:active:not(:disabled),
+.bw-card:active,
+.bw-cancel:active,
+.bw-hud__back:active {
+    transform: translateY(calc(1 * var(--px)));
+}
+
+.ds-cmd {
+    border-radius: calc(10 * var(--px));
+    color: var(--ds-paper);
+    font-size: calc(11 * var(--px));
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--ds-ink);
+}
+
+.ds-cmd.is-plain {
+    display: grid;
+    place-items: center;
+    padding: calc(6 * var(--px)) calc(10 * var(--px));
+    background: var(--ds-back);
+    text-decoration: none;
+}
+
+/* Gen 4's three categories: a burst, rings, a half-moon. */
+.ds-move__cat {
+    flex: none;
+    width: calc(9 * var(--px));
+    height: calc(9 * var(--px));
+}
+
+.ds-move__cat.is-physical {
+    background: radial-gradient(circle, var(--ds-cat-physical-core) 0 30%, var(--ds-cat-physical) 32%);
+    clip-path: polygon(50% 0, 62% 30%, 96% 22%, 74% 50%, 96% 78%, 62% 70%, 50% 100%, 38% 70%, 4% 78%, 26% 50%, 4% 22%, 38% 30%);
+}
+
+.ds-move__cat.is-special {
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--ds-paper) 0 18%, var(--ds-cat-special) 20% 42%, var(--ds-paper) 44% 60%, var(--ds-cat-special) 62%);
+}
+
+.ds-move__cat.is-status {
+    border-radius: 50%;
+    background: conic-gradient(var(--ds-cat-status) 0 50%, var(--ds-paper) 0);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--ds-cat-status);
+}
+
+/* ── The battle menu, Black & White style ────────────────────────────────
+   One set of pieces in two homes (DsBwCommands.jsx): the red touch screen
+   on a phone, the HUD strip inside the one screen on a desktop. */
+
+/* The four buttons: BW's two-tone fill, a light rim inside, a dark outline. */
+.bw-btn {
+    --btn-1: var(--bw-blue);
+    --btn-edge: var(--bw-blue-edge);
+    border-radius: calc(6 * var(--px));
+    background: linear-gradient(var(--btn-1) 0 50%, color-mix(in srgb, var(--btn-1) 82%, var(--btn-edge)) 50%);
+    box-shadow:
+        inset 0 0 0 calc(1.5 * var(--px)) var(--btn-edge),
+        inset 0 0 0 calc(3 * var(--px)) color-mix(in srgb, var(--btn-1) 55%, var(--bw-white));
+    color: var(--bw-white);
+    font-size: calc(10 * var(--px));
+    letter-spacing: calc(0.5 * var(--px));
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--btn-edge);
+}
+
+.bw-btn.is-fight { --btn-1: var(--bw-pink); --btn-edge: var(--bw-pink-edge); }
+.bw-btn.is-dossier { --btn-1: var(--bw-gold); --btn-edge: var(--bw-gold-edge); }
+.bw-btn.is-pokemon { --btn-1: var(--bw-green); --btn-edge: var(--bw-green-edge); }
+.bw-btn.is-run { --btn-1: var(--bw-blue); --btn-edge: var(--bw-blue-edge); }
+
+.bw-btn:disabled,
+.bw-fight:disabled,
+.bw-move:disabled {
+    cursor: default;
+    filter: grayscale(0.75);
+    opacity: 0.55;
+}
+
+/* A move: its type's colour in two tones, a white rim, name and PP. */
+.bw-move {
+    display: grid;
+    grid-template-rows: 1fr auto;
+    align-items: center;
+    min-width: 0;
+    padding: calc(4 * var(--px)) calc(8 * var(--px));
+    border-radius: calc(8 * var(--px));
+    background: linear-gradient(color-mix(in srgb, var(--type) 78%, var(--bw-white)) 0 50%, var(--type) 50%);
+    box-shadow:
+        inset 0 0 0 calc(2 * var(--px)) color-mix(in srgb, var(--type) 30%, var(--bw-white)),
+        0 0 0 calc(1.5 * var(--px)) color-mix(in srgb, var(--type) 55%, var(--bw-text-shadow));
+    color: var(--bw-white);
+    text-align: left;
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 color-mix(in srgb, var(--type) 45%, var(--bw-text-shadow));
+}
+
+/* The keyboard's cursor lives on a desktop's HUD; a touch screen has none. */
+.bw-hud .bw-move.is-focused,
+.bw-move:focus-visible {
+    outline: calc(2 * var(--px)) solid var(--bw-white);
+    outline-offset: calc(1 * var(--px));
+}
+
+.bw-move.is-empty {
+    cursor: default;
+    background: color-mix(in srgb, var(--bw-white) 12%, transparent);
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) color-mix(in srgb, var(--bw-white) 30%, transparent);
+}
+
+.bw-move__name {
+    overflow: hidden;
+    font-size: calc(12 * var(--px));
+    line-height: calc(14 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bw-move__meta {
+    display: flex;
+    align-items: center;
+    gap: calc(3 * var(--px));
+    font-size: calc(7 * var(--px));
+    line-height: calc(9 * var(--px));
+}
+
+.bw-move__type {
+    padding: 0 calc(4 * var(--px));
+    border-radius: calc(3 * var(--px));
+    background: color-mix(in srgb, var(--type) 60%, var(--bw-text-shadow));
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--type) 40%, var(--bw-white));
+    color: var(--bw-white);
+    text-transform: uppercase;
+}
+
+.bw-move__pp {
+    margin-left: auto;
+    font-size: calc(8 * var(--px));
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* PP running out: yellow at half, orange at a quarter, red at none. */
+.bw-move__pp.is-mid { color: var(--bw-pp-mid); }
+.bw-move__pp.is-low { color: var(--bw-pp-low); }
+.bw-move__pp.is-out { color: var(--bw-pp-out); }
+
+.bw-moves__grid {
+    display: grid;
+    flex: 1;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: calc(6 * var(--px));
+    min-height: 0;
+}
+
+/* BW's Cancel: a wide dark capsule. */
+.bw-cancel,
+.bw-hud__back {
+    flex: none;
+    height: calc(22 * var(--px));
+    border-radius: calc(11 * var(--px));
+    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-rim);
+    color: var(--bw-white);
+    font-size: calc(9 * var(--px));
+    letter-spacing: calc(0.5 * var(--px));
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+}
+
+/* Party and her team: a card each, BW's blue battle-menu cards. */
+.bw-sheet {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(5 * var(--px));
+    padding: calc(20 * var(--px)) calc(8 * var(--px)) calc(8 * var(--px));
+    color: var(--bw-white);
+}
+
+.bw-sheet__title {
+    margin: 0;
+    font-size: calc(10 * var(--px));
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+}
+
+.bw-sheet__grid {
+    display: grid;
+    flex: 1;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: 1fr;
+    gap: calc(5 * var(--px));
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.bw-card {
+    display: grid;
+    grid-template-columns: calc(32 * var(--px)) minmax(0, 1fr);
+    grid-template-rows: 1fr calc(4 * var(--px));
+    align-items: center;
+    column-gap: calc(4 * var(--px));
+    row-gap: calc(1 * var(--px));
+    min-width: 0;
+    padding: calc(3 * var(--px)) calc(6 * var(--px));
+    border-radius: calc(8 * var(--px));
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    color: var(--bw-white);
+    text-align: left;
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+}
+
+.bw-card img {
+    grid-row: 1 / 3;
+    width: calc(32 * var(--px));
+    height: calc(24 * var(--px));
+    object-fit: contain;
+}
+
+.bw-card__name {
+    overflow: hidden;
+    font-size: calc(9 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bw-card__hp {
+    height: calc(3 * var(--px));
+    overflow: hidden;
+    border-radius: calc(2 * var(--px));
+    background: var(--ds-hp-track);
+}
+
+.bw-card.is-foe {
+    cursor: default;
+}
+
+.bw-card.is-foe:not(.is-revealed) img {
+    filter: brightness(0);
+    opacity: 0.55;
+}
+
+.bw-card.is-foe:not(.is-revealed) .bw-card__name {
+    opacity: 0.7;
+}
+
+.bw-card.is-fainted {
+    opacity: 0.5;
+}
+
+.bw-card.is-fainted .bw-card__name {
+    text-decoration: line-through;
+}
+
+.bw-card__unknown {
+    display: grid;
+    grid-row: 1 / 3;
+    place-items: center;
+    width: calc(32 * var(--px));
+    height: calc(24 * var(--px));
+    font-size: calc(16 * var(--px));
+    opacity: 0.75;
+}
+
+.bw-balls {
+    display: flex;
+    gap: calc(2 * var(--px));
+}
+
+/* ── A phone's bottom screen: the red touch menu ─────────────────────── */
+
+.bw-touch {
+    position: absolute;
+    inset: 0;
+    color: var(--bw-white);
+    background:
+        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-red-2) 55%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
+        radial-gradient(ellipse at 50% 42%, var(--bw-red) 0 50%, var(--bw-red-2));
+}
+
+.bw-touch.is-moves,
+.bw-touch.is-sheet {
+    display: flex;
+    flex-direction: column;
+    gap: calc(6 * var(--px));
+    padding: calc(20 * var(--px)) calc(8 * var(--px)) calc(8 * var(--px));
+    background:
+        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-red-deep) 50%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
+        var(--bw-red-2);
+}
+
+/* The DS's status bar along the top: the clock, the turn. */
+.bw-touch__status {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: calc(14 * var(--px));
+    padding: 0 calc(6 * var(--px));
+    background: var(--bw-status);
+    font-size: calc(7 * var(--px));
+    font-variant-numeric: tabular-nums;
+}
+
+.bw-touch .bw-sheet {
+    position: relative;
+    flex: 1;
+    padding: 0;
+}
+
+.bw-touch .bw-balls {
+    position: absolute;
+}
+
+.bw-touch .bw-balls.is-foe {
+    left: 50%;
+    top: calc(20 * var(--px));
+    transform: translateX(-50%);
+}
+
+.bw-touch .bw-balls.is-mine {
+    left: calc(16 * var(--px));
+    top: calc(112 * var(--px));
+}
+
+/* FIGHT: the wide capsule in the middle, white-rimmed, the screen's centre of gravity. */
+.bw-fight {
+    position: absolute;
+    left: calc(30 * var(--px));
+    right: calc(30 * var(--px));
+    top: calc(34 * var(--px));
+    height: calc(72 * var(--px));
+    border-radius: calc(36 * var(--px));
+    background: radial-gradient(ellipse at 50% 30%, var(--bw-fight-1), var(--bw-fight-2) 72%);
+    box-shadow:
+        inset 0 0 0 calc(3 * var(--px)) var(--bw-white),
+        inset 0 0 0 calc(5 * var(--px)) var(--bw-fight-2),
+        0 0 0 calc(2 * var(--px)) var(--bw-red-deep),
+        0 calc(3 * var(--px)) 0 calc(2 * var(--px)) var(--bw-red-deep);
+    color: var(--bw-white);
+    font-size: calc(20 * var(--px));
+    letter-spacing: calc(1 * var(--px));
+    text-shadow:
+        calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-red-deep),
+        calc(2 * var(--px)) calc(2 * var(--px)) 0 var(--bw-red-deep);
+}
+
+.bw-fight__label::before { content: '‹ '; }
+.bw-fight__label::after { content: ' ›'; }
+
+.bw-touch__row {
+    position: absolute;
+    left: calc(6 * var(--px));
+    right: calc(6 * var(--px));
+    bottom: calc(6 * var(--px));
+    display: grid;
+    grid-template-columns: 1fr 0.9fr 1fr;
+    align-items: end;
+    gap: calc(6 * var(--px));
+}
+
+.bw-touch__row .bw-btn {
+    height: calc(40 * var(--px));
+}
+
+/* RUN sits lower and smaller between the other two, as in BW. */
+.bw-touch__row .bw-btn.is-run {
+    height: calc(30 * var(--px));
+}
+
+/* While the turn plays the menu stays, dimmed — the screen never jumps. */
+.bw-touch.is-waiting .bw-fight,
+.bw-touch.is-waiting .bw-btn:disabled {
+    filter: grayscale(0.5) brightness(0.85);
+    opacity: 0.7;
+}
+
+/* ── A desktop's single screen: the HUD strip ────────────────────────── */
+
+.bw-stage {
+    position: absolute;
+    inset: 0;
+}
+
+.bw-hud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    display: flex;
+    gap: calc(3 * var(--px));
+    height: calc(48 * var(--px));
+    padding: calc(3 * var(--px));
+    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
+    box-shadow: 0 calc(-1 * var(--px)) 0 var(--bw-rim);
+}
+
+.bw-hud__message {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.bw-hud.is-choosing .bw-hud__message {
+    flex: 0 0 47%;
+}
+
+.bw-hud__commands {
+    flex: 1;
+    min-width: 0;
+}
+
+.bw-hud__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: calc(3 * var(--px));
+    height: 100%;
+}
+
+.bw-hud__grid .bw-btn {
+    font-size: calc(9 * var(--px));
+}
+
+.bw-hud .bw-moves__grid {
+    height: 100%;
+    gap: calc(3 * var(--px));
+}
+
+/* In the strip a move is a name and its PP; the box on the left says the rest. */
+.bw-hud .bw-move {
+    grid-template-rows: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: calc(3 * var(--px));
+    padding: 0 calc(5 * var(--px));
+    border-radius: calc(5 * var(--px));
+}
+
+.bw-hud .bw-move__name {
+    font-size: calc(9 * var(--px));
+    line-height: calc(11 * var(--px));
+}
+
+/* In the strip a move button is its name alone; the box on the left has the rest, PP included. */
+.bw-hud .bw-move .bw-move__meta {
+    display: none;
+}
+
+.bw-hud .bw-move__pp {
+    font-size: calc(7 * var(--px));
+}
+
+/* What the focused move does: the HUD's left box while choosing. */
+.bw-hud__info {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: calc(2 * var(--px));
+    padding: calc(3 * var(--px)) calc(8 * var(--px));
+    border-radius: calc(5 * var(--px));
+    background: var(--bw-white);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-rim);
+    color: var(--ds-ink);
+}
+
+.bw-hud__info-name {
+    font-size: calc(10 * var(--px));
+}
+
+.bw-hud__info-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(2 * var(--px)) calc(5 * var(--px));
+    font-size: calc(7 * var(--px));
+}
+
+.bw-hud__back {
+    position: absolute;
+    right: calc(5 * var(--px));
+    bottom: calc(4 * var(--px));
+    height: calc(14 * var(--px));
+    padding: 0 calc(8 * var(--px));
+    border-radius: calc(7 * var(--px));
+    font-size: calc(7 * var(--px));
+}
+
+/* Party and her team, opened over the field on a desktop. */
+.bw-overlay {
+    position: absolute;
+    inset: calc(6 * var(--px)) calc(6 * var(--px)) calc(52 * var(--px));
+    z-index: 70;
+    border-radius: calc(8 * var(--px));
+    background:
+        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-red-deep) 45%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
+        var(--bw-red-2);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white), 0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep);
+    animation: ds-fade-in 150ms var(--ease-out) both;
+}
+
+.bw-overlay .bw-sheet {
+    padding: calc(8 * var(--px));
+}
+
+/* The team picker (or the gate) opening over the room, a menu over the map. */
+.bw-overlay.is-menu {
+    inset: calc(12 * var(--px)) calc(20 * var(--px));
+    overflow: hidden;
+    background: none;
+    box-shadow:
+        0 0 0 calc(2 * var(--px)) var(--bw-rim),
+        0 0 0 calc(256 * var(--px)) color-mix(in srgb, var(--ds-room-wall) 55%, transparent);
+}
+
+/* ── A desktop's result: the chart above, the outcome in a strip below ── */
+
+.bw-result {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.bw-result__report {
+    position: relative;
+    min-height: 0;
+}
+
+.bw-result .ds-result {
+    position: relative;
+    inset: auto;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: calc(6 * var(--px));
+    padding: calc(5 * var(--px)) calc(8 * var(--px));
+    box-shadow: 0 calc(-1 * var(--px)) 0 var(--ds-ink-shadow);
+}
+
+.bw-result .ds-result__title {
+    font-size: calc(14 * var(--px));
+}
+
+.bw-result .ds-result__figures {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.bw-result .ds-result__figures div {
+    padding: calc(2 * var(--px)) calc(3 * var(--px));
+}
+
+.bw-result .ds-result__figures dd {
+    font-size: calc(10 * var(--px));
+}
+
+.bw-result .ds-result__figures dt {
+    overflow: hidden;
+    font-size: calc(6 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bw-result .ds-panel__body {
+    display: none;
+}
+
+.bw-result .ds-panel__actions {
+    flex-wrap: nowrap;
+    margin-top: 0;
+}
+
+/* ── Bottom screen: the Pokétch ──────────────────────────────────────── */
+
+.ds-poketch {
+    position: absolute;
+    inset: 0;
+    background: var(--ds-poketch);
+    box-shadow: inset 0 0 0 calc(3 * var(--px)) var(--ds-poketch-edge);
+}
+
+.ds-poketch__lcd {
+    position: absolute;
+    left: calc(10 * var(--px));
+    top: calc(10 * var(--px));
+    right: calc(34 * var(--px));
+    bottom: calc(10 * var(--px));
+    border-radius: calc(4 * var(--px));
+    background:
+        repeating-linear-gradient(0deg, transparent 0 calc(2 * var(--px)), color-mix(in srgb, var(--ds-lcd-dim) 40%, transparent) calc(2 * var(--px)) calc(2.5 * var(--px))),
+        var(--ds-lcd);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-lcd-ink);
+    color: var(--ds-lcd-ink);
+}
+
+.ds-poketch__party {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(3, 1fr);
+    gap: calc(4 * var(--px)) calc(10 * var(--px));
+    height: 100%;
+    margin: 0;
+    padding: calc(8 * var(--px)) calc(12 * var(--px));
+    list-style: none;
+}
+
+.ds-poketch__mon {
+    display: flex;
+    align-items: center;
+    gap: calc(4 * var(--px));
+    min-width: 0;
+}
+
+.ds-poketch__mon img {
+    flex-shrink: 0;
+    width: calc(40 * var(--px));
+    height: calc(30 * var(--px));
+    object-fit: contain;
+    filter: url(#ds-lcd-ink);
+}
+
+.ds-poketch__mon.is-fainted img {
+    opacity: 0.35;
+}
+
+.ds-poketch__hp {
+    flex: 1;
+    height: calc(5 * var(--px));
+    border-radius: calc(1 * var(--px));
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--ds-lcd-ink);
+}
+
+.ds-poketch__hp > span {
+    display: block;
+    height: 100%;
+    background: var(--ds-lcd-ink);
+    transform: scaleX(var(--hp));
+    transform-origin: left center;
+    transition: transform 500ms linear;
+}
+
+/* The dossier: her six, unknown until sent out. */
+.ds-poketch__foe {
+    display: flex;
+    align-items: center;
+    gap: calc(4 * var(--px));
+    min-width: 0;
+}
+
+.ds-poketch__foe img {
+    flex-shrink: 0;
+    width: calc(40 * var(--px));
+    height: calc(30 * var(--px));
+    object-fit: contain;
+    filter: url(#ds-lcd-ink);
+    opacity: 0.4;
+}
+
+.ds-poketch__foe.is-revealed img {
+    opacity: 1;
+}
+
+.ds-poketch__foe.is-fainted img {
+    opacity: 0.25;
+}
+
+.ds-poketch__unknown {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: calc(40 * var(--px));
+    height: calc(30 * var(--px));
+    font-size: calc(20 * var(--px));
+    opacity: 0.6;
+}
+
+.ds-poketch__name {
+    overflow: hidden;
+    font-size: calc(8 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ds-poketch__foe:not(.is-revealed) .ds-poketch__name {
+    opacity: 0.6;
+}
+
+.ds-poketch__foe.is-fainted .ds-poketch__name {
+    text-decoration: line-through;
+}
+
+.ds-poketch__clock {
+    display: grid;
+    place-content: center;
+    gap: calc(6 * var(--px));
+    height: 100%;
+    text-align: center;
+}
+
+.ds-poketch__caption {
+    font-size: calc(9 * var(--px));
+}
+
+.ds-poketch__digits {
+    font-size: calc(28 * var(--px));
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.ds-poketch__counter {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(6 * var(--px));
+    height: 100%;
+    margin: 0;
+    padding: calc(12 * var(--px));
+}
+
+.ds-poketch__counter dt {
+    font-size: calc(8 * var(--px));
+}
+
+.ds-poketch__counter dd {
+    margin: 0;
+    font-size: calc(18 * var(--px));
+    font-weight: 700;
+}
+
+.ds-poketch__button {
+    position: absolute;
+    right: calc(6 * var(--px));
+    top: calc(40 * var(--px));
+    width: calc(22 * var(--px));
+    height: calc(112 * var(--px));
+    border: none;
+    border-radius: calc(8 * var(--px));
+    background: var(--ds-poketch-red);
+    box-shadow: inset 0 calc(-4 * var(--px)) 0 color-mix(in srgb, var(--ds-poketch-red) 70%, var(--ds-ink));
+    cursor: pointer;
+    transition: transform var(--duration-press) var(--ease-out);
+}
+
+.ds-poketch__button:active {
+    transform: translateY(calc(2 * var(--px)));
+}
+
+/* ── Bottom screen: the team picker and panels ───────────────────────── */
+
+.ds-picker,
+.ds-panel {
+    display: flex;
+    flex-direction: column;
+    gap: calc(5 * var(--px));
+    padding: calc(8 * var(--px)) calc(10 * var(--px));
+    color: var(--ds-ink);
+}
+
+.ds-picker__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: calc(6 * var(--px));
+}
+
+.ds-picker__title,
+.ds-panel__title {
+    margin: 0;
+    font-size: calc(11 * var(--px));
+    font-weight: 700;
+}
+
+.ds-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--ds-box-edge);
+    font: inherit;
+    font-size: calc(8 * var(--px));
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.ds-link.is-block {
+    align-self: flex-start;
+}
+
+.ds-picker__label {
+    display: flex;
+    align-items: center;
+    gap: calc(4 * var(--px));
+    font-size: calc(9 * var(--px));
+    font-weight: 700;
+}
+
+.ds-badge {
+    padding: 0 calc(3 * var(--px));
+    border-radius: calc(4 * var(--px));
+    background: var(--ds-badge);
+    color: var(--ds-ink);
+    font-size: calc(6 * var(--px));
+}
+
+.ds-picker__daily {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(4 * var(--px));
+    min-height: 0;
+}
+
+.ds-picker__grid {
+    display: grid;
+    flex: 1;
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: 1fr;
+    gap: calc(4 * var(--px));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ds-picker__mon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    border-radius: calc(6 * var(--px));
+    background: color-mix(in srgb, var(--ds-box-inner) 22%, var(--ds-paper));
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--ds-box-inner);
+}
+
+.ds-picker__mon img {
+    width: calc(40 * var(--px));
+    height: calc(30 * var(--px));
+    object-fit: contain;
+}
+
+.ds-picker__name {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: calc(8 * var(--px));
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ds-picker__set {
+    display: none;
+}
+
+.ds-picker__mine {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(3 * var(--px));
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.ds-picker__empty {
+    margin: 0;
+    font-size: calc(8 * var(--px));
+}
+
+.ds-teamrow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: calc(2 * var(--px));
+    padding: calc(4 * var(--px)) calc(6 * var(--px));
+    border: none;
+    border-radius: calc(6 * var(--px));
+    background: color-mix(in srgb, var(--ds-box-inner) 18%, var(--ds-paper));
+    color: var(--ds-ink);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ds-teamrow[aria-pressed="true"] {
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-box-edge);
+}
+
+.ds-teamrow__name {
+    overflow: hidden;
+    font-size: calc(9 * var(--px));
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ds-teamrow__status {
+    font-size: calc(7 * var(--px));
+}
+
+.ds-teamrow__status.is-ready { color: var(--ds-pokemon-edge); }
+.ds-teamrow__status.is-warn { color: var(--ds-fight-edge); }
+
+.ds-teamrow__sprites {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: calc(2 * var(--px));
+}
+
+.ds-teamrow__sprites img {
+    width: calc(20 * var(--px));
+    height: calc(20 * var(--px));
+    object-fit: contain;
+}
+
+.ds-picker__errors {
+    margin: 0;
+    padding-left: calc(10 * var(--px));
+    color: var(--ds-fight-edge);
+    font-size: calc(7 * var(--px));
+}
+
+.ds-picker__foot {
+    display: flex;
+    align-items: center;
+    gap: calc(6 * var(--px));
+}
+
+.ds-picker__privacy {
+    flex: 1;
+    color: var(--ds-ink-soft);
+    font-size: calc(6 * var(--px));
+    line-height: 1.25;
+}
+
+.ds-go {
+    padding: calc(6 * var(--px)) calc(12 * var(--px));
+    border-radius: calc(10 * var(--px));
+    background: var(--ds-fight);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-fight-edge), 0 calc(3 * var(--px)) 0 var(--ds-fight-edge);
+    color: var(--ds-paper);
+    font-size: calc(10 * var(--px));
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--ds-fight-edge);
+    white-space: nowrap;
+}
+
+.ds-go:disabled {
+    opacity: 0.6;
+}
+
+.ds-panel__body {
+    margin: 0;
+    font-size: calc(9 * var(--px));
+    line-height: 1.35;
+}
+
+.ds-panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(6 * var(--px));
+    margin-top: auto;
+}
+
+.ds-result__title {
+    margin: 0;
+    font-size: calc(18 * var(--px));
+    font-weight: 700;
+}
+
+.ds-result.is-won .ds-result__title {
+    color: var(--ds-pokemon-edge);
+}
+
+.ds-result__figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(calc(44 * var(--px)), 1fr));
+    gap: calc(4 * var(--px));
+    margin: 0;
+}
+
+.ds-result__figures div {
+    display: flex;
+    flex-direction: column-reverse;
+    padding: calc(4 * var(--px));
+    border-radius: calc(5 * var(--px));
+    background: color-mix(in srgb, var(--ds-box-inner) 20%, var(--ds-paper));
+}
+
+.ds-result__figures dt {
+    font-size: calc(7 * var(--px));
+}
+
+.ds-result__figures dd {
+    margin: 0;
+    font-size: calc(14 * var(--px));
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Top screen after a battle: the report ────────────────────────────── */
+
+.ds-report {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(4 * var(--px));
+    padding: calc(6 * var(--px));
+    background:
+        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--ds-box-inner) 12%, transparent) calc(6 * var(--px)) calc(8 * var(--px))),
+        var(--ds-paper);
+    color: var(--ds-ink);
+}
+
+.ds-report__head {
+    display: flex;
+    align-items: baseline;
+    gap: calc(5 * var(--px));
+    padding: 0 calc(2 * var(--px));
+}
+
+.ds-report__title {
+    font-size: calc(11 * var(--px));
+    line-height: calc(13 * var(--px));
+}
+
+.ds-report__sub {
+    color: var(--ds-ink-soft);
+    font-size: calc(7 * var(--px));
+}
+
+.ds-report__chart {
+    flex: 1;
+    min-height: 0;
+    border-radius: calc(4 * var(--px));
+    background: var(--ds-paper);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--ds-ink-shadow);
+}
+
+.ds-chart {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    cursor: crosshair;
+    touch-action: pan-y;
+}
+
+.ds-chart:focus-visible {
+    outline: calc(2 * var(--px)) solid var(--ds-box-edge);
+    outline-offset: calc(1 * var(--px));
+}
+
+/* Recessive frame: hairline grid, ink-soft ticks; the 50% line is the neutral midpoint. */
+.ds-chart__grid { stroke: var(--ds-ink-shadow); stroke-width: 0.5; }
+.ds-chart__mid { stroke: var(--ds-ink-soft); stroke-width: 0.75; stroke-dasharray: 2 2; }
+.ds-chart__tick { fill: var(--ds-ink-soft); font-size: 6px; }
+.ds-chart__region { fill: var(--ds-ink-soft); font-size: 6px; }
+
+.ds-chart__area { stroke: none; }
+.ds-chart__area.is-you { fill: color-mix(in srgb, var(--ds-chart-you) 38%, transparent); }
+.ds-chart__area.is-her { fill: color-mix(in srgb, var(--ds-chart-her) 38%, transparent); }
+
+.ds-chart__line {
+    fill: none;
+    stroke: var(--ds-ink);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* The one highlighted step: the biggest swing, thicker and ringed. */
+.ds-chart__swing { stroke: var(--ds-fight); stroke-width: 3; stroke-linecap: round; }
+.ds-chart__swing-dot { fill: var(--ds-paper); stroke: var(--ds-fight); stroke-width: 1.5; }
+.ds-chart__end { fill: var(--ds-ink); stroke: var(--ds-paper); stroke-width: 1; }
+
+.ds-chart__cross line { stroke: var(--ds-ink); stroke-width: 0.5; }
+.ds-chart__cross circle { fill: var(--ds-paper); stroke: var(--ds-ink); stroke-width: 1.5; }
+.ds-chart__cross rect { fill: var(--ds-ink); }
+.ds-chart__cross text { fill: var(--ds-paper); font-size: 6px; }
+
+.ds-chart__cover {
+    fill: var(--ds-paper);
+    transform-box: fill-box;
+    transform-origin: right center;
+    animation: ds-uncover 900ms var(--ease-out) both 200ms;
+    pointer-events: none;
+}
+
+.ds-report__swing {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: calc(1 * var(--px));
+    margin-top: calc(6 * var(--px));
+    padding: calc(5 * var(--px)) calc(8 * var(--px));
+    border: calc(2 * var(--px)) solid var(--ds-box-edge);
+    border-radius: calc(4 * var(--px));
+    background: var(--ds-paper);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-box-inner);
+}
+
+.ds-report__plate {
+    position: absolute;
+    left: calc(4 * var(--px));
+    top: calc(-2 * var(--px));
+    padding: calc(1 * var(--px)) calc(5 * var(--px));
+    border-radius: calc(3 * var(--px)) calc(3 * var(--px)) 0 0;
+    background: var(--ds-box-edge);
+    color: var(--ds-paper);
+    font-size: calc(7 * var(--px));
+    line-height: calc(9 * var(--px));
+    transform: translateY(-100%);
+}
+
+.ds-report__line {
+    overflow: hidden;
+    font-size: calc(9 * var(--px));
+    line-height: calc(12 * var(--px));
+    text-overflow: ellipsis;
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--ds-ink-shadow);
+    white-space: nowrap;
+}
+
+.ds-report__line.is-soft {
+    color: var(--ds-ink-soft);
+    font-size: calc(8 * var(--px));
+}
+
+/* ── Motion ──────────────────────────────────────────────────────────── */
+
+@keyframes ds-uncover { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@keyframes ds-ring-pulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.6; } }
+@keyframes ds-lamp { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
+@keyframes ds-breathe { from { transform: translateY(0); } to { transform: translateY(calc(1 * var(--px))); } }
+@keyframes ds-bang { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes ds-blink { from { opacity: 1; } to { opacity: 0; } }
+@keyframes ds-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ds-double-flash { 0% { opacity: 0; } 25% { opacity: 1; } 50% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes ds-spiral {
+    0% { opacity: 0; transform: rotate(0deg) scale(0.2); }
+    40% { opacity: 0; transform: rotate(0deg) scale(0.2); }
+    100% { opacity: 1; transform: rotate(270deg) scale(3); }
+}
+@keyframes ds-enter { from { opacity: 0; transform: scale(0.1); } to { opacity: 1; transform: scale(1); } }
+@keyframes ds-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(calc(1 * var(--px))); } }
+@keyframes ds-lunge-mine { 50% { transform: translate(calc(14 * var(--px)), calc(-6 * var(--px))); } }
+@keyframes ds-lunge-foe { 50% { transform: translate(calc(-14 * var(--px)), calc(6 * var(--px))); } }
+@keyframes ds-blink-hit { 0%, 33%, 66% { opacity: 0.15; } 16%, 50%, 83%, 100% { opacity: 1; } }
+@keyframes ds-faint { to { opacity: 0; transform: translateY(calc(30 * var(--px))); } }
+@keyframes ds-flash { 0% { opacity: 0; } 30% { opacity: 0.8; } 100% { opacity: 0; } }
+@keyframes ds-burst {
+    0% { transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) scale(0); opacity: 1; }
+    60% { transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) scale(1.2); opacity: 1; }
+    100% { transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) scale(0.4); opacity: 0; }
+}
+@keyframes ds-orb {
+    from { transform: translate(calc(var(--fx-from-x) * var(--px)), calc(var(--fx-from-y) * var(--px))) scale(0.5); }
+    to { transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) scale(1.1); opacity: 0.6; }
+}
+@keyframes ds-spark {
+    0% { opacity: 1; transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) rotate(calc(var(--i) * 60deg)) translateY(0); }
+    100% { opacity: 0; transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) rotate(calc(var(--i) * 60deg)) translateY(calc(-22 * var(--px))); }
+}
+@keyframes ds-sparkle {
+    0% { opacity: 0; transform: translate(calc((var(--fx-to-x) - 24 + var(--i) * 7) * var(--px)), calc((var(--fx-to-y) + 16) * var(--px))); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc((var(--fx-to-x) - 24 + var(--i) * 7) * var(--px)), calc((var(--fx-to-y) - 24) * var(--px))); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ds-screen *,
+    .ds-screen *::before,
+    .ds-screen *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+    }
+
+    .ds-fx {
+        display: none;
+    }
+}
+
+/* The focused move's PP in the HUD's info box, toned like the buttons' (on white: darker). */
+.bw-hud__pp { font-variant-numeric: tabular-nums; }
+.bw-hud__pp.is-mid { color: var(--ds-pp-mid); }
+.bw-hud__pp.is-low { color: var(--ds-pp-low); }
+.bw-hud__pp.is-out { color: var(--ds-pp-out); }
+
+/* Over the field the six cards sit 3 × 2 — the overlay is wider than tall. */
+.bw-overlay .bw-sheet__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.bw-overlay .bw-card {
+    grid-template-columns: calc(26 * var(--px)) minmax(0, 1fr);
+    padding: calc(2 * var(--px)) calc(4 * var(--px));
+}
+
+.bw-overlay .bw-card img,
+.bw-overlay .bw-card__unknown {
+    width: calc(26 * var(--px));
+    height: calc(20 * var(--px));
+}
+
+/* The result strip, two rows: the outcome and its figures; the next step at the right. */
+.bw-result .ds-result {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    row-gap: calc(4 * var(--px));
+}
+
+.bw-result .ds-panel__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+}
+
+.bw-result .ds-go,
+.bw-result .ds-cmd {
+    padding: calc(3 * var(--px)) calc(10 * var(--px));
+    font-size: calc(8 * var(--px));
+    white-space: nowrap;
+}
+
+/* ── Menus in the Black & White style: the picker, the gate, the result ──
+   BW's battle-menu blue with stripes, cards with a light rim, white type
+   with a dark shadow, and the start button as FIGHT's white-rimmed capsule.
+   (The report above a result stays paper: a page to read, not a menu.) */
+
+.ds-picker,
+.ds-panel {
+    background:
+        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-card-2) 70%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
+        linear-gradient(var(--bw-card-1), var(--bw-ground-2));
+    color: var(--bw-white);
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+}
+
+.ds-link {
+    color: var(--bw-card-rim);
+}
+
+.ds-picker__mon,
+.ds-teamrow,
+.ds-result__figures div {
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    color: var(--bw-white);
+}
+
+.ds-teamrow[aria-pressed="true"] {
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white);
+}
+
+.ds-teamrow__status.is-ready { color: var(--bw-ok); }
+.ds-teamrow__status.is-warn { color: var(--bw-warn); }
+
+.ds-picker__errors { color: var(--bw-warn); }
+
+.ds-picker__privacy,
+.ds-panel__body {
+    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
+}
+
+.ds-result.is-won .ds-result__title {
+    color: var(--bw-ok);
+}
+
+.ds-go {
+    border-radius: calc(14 * var(--px));
+    background: radial-gradient(ellipse at 50% 30%, var(--bw-fight-1), var(--bw-fight-2) 72%);
+    box-shadow:
+        inset 0 0 0 calc(2 * var(--px)) var(--bw-white),
+        inset 0 0 0 calc(3.5 * var(--px)) var(--bw-fight-2),
+        0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep),
+        0 calc(2 * var(--px)) 0 calc(1.5 * var(--px)) var(--bw-red-deep);
+    color: var(--bw-white);
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-red-deep);
+}
+
+.ds-cmd.is-plain {
+    border-radius: calc(14 * var(--px));
+    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-rim);
+    color: var(--bw-white);
+}
+
+/* ── Symmetry pass (2026-10-15, Enzo: "mais dinâmicas, organizadas, simétricas") ── */
+
+/* The picker's foot: VOLTAR and the start, side by side, the same height. */
+.ds-picker__privacy {
+    flex: none;
+    margin: 0;
+    text-align: center;
+}
+
+.ds-picker__foot {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: calc(6 * var(--px));
+}
+
+.ds-picker__foot .bw-cancel,
+.ds-picker__foot .ds-go {
+    height: calc(24 * var(--px));
+    padding: 0 calc(8 * var(--px));
+    font-size: calc(10 * var(--px));
+    white-space: nowrap;
+}
+
+.ds-panel > .bw-cancel {
+    align-self: stretch;
+}
+
+/* The result: centred and symmetric — the outcome, its figures in one row,
+   two equal buttons. On a desktop it fills the screen when there is no chart. */
+.ds-result {
+    align-items: stretch;
+    justify-content: center;
+    text-align: center;
+}
+
+.ds-result__title {
+    text-align: center;
+}
+
+.ds-result__figures {
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    grid-auto-flow: column;
+}
+
+.ds-result .ds-panel__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: calc(6 * var(--px));
+    margin-top: calc(4 * var(--px));
+}
+
+.ds-result .ds-panel__actions > * {
+    display: grid;
+    place-items: center;
+    height: calc(26 * var(--px));
+    padding: 0 calc(6 * var(--px));
+    font-size: calc(9 * var(--px));
+    text-align: center;
+    white-space: nowrap;
+}
+
+.bw-result .ds-result {
+    display: flex;
+    flex-direction: column;
+    gap: calc(4 * var(--px));
+    padding: calc(5 * var(--px)) calc(10 * var(--px)) calc(6 * var(--px));
+}
+
+.bw-result .ds-result__title {
+    font-size: calc(12 * var(--px));
+    line-height: calc(14 * var(--px));
+}
+
+.bw-result .ds-result .ds-panel__actions {
+    margin-top: 0;
+}
+
+.bw-result .ds-result .ds-panel__actions > * {
+    height: calc(20 * var(--px));
+    font-size: calc(8 * var(--px));
+}
+
+/* The one screen as large as the window allows; the frame wraps it, no empty wings. */
+.ds-console.is-single {
+    width: min(100%, calc((100dvh - 9.5rem) * 4 / 3 + 2 * var(--space-3)));
+    margin-inline: auto;
+}
+
+.ds-console__body.is-single .ds-screen.is-main {
+    width: 100%;
+}
+
+/* BW's battle message: the black band, inset a hair, with a thin rounded frame. */
+.ds-textbox.is-band {
+    left: calc(2 * var(--px));
+    right: calc(2 * var(--px));
+    bottom: calc(2 * var(--px));
+    height: calc(38 * var(--px));
+    border-radius: calc(4 * var(--px));
+    box-shadow:
+        inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--bw-white) 70%, transparent),
+        inset 0 0 0 calc(2 * var(--px)) var(--bw-band);
+}
+
+/* The Time do dia as BW party cards: sprite left, name right, 3 × 2 — rows that
+   can shrink, so the privacy line and the foot always fit under them. */
+.ds-picker__grid {
+    grid-auto-rows: minmax(0, 1fr);
+}
+
+.ds-picker__mon {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: calc(3 * var(--px));
+    min-height: 0;
+    padding: 0 calc(5 * var(--px));
+}
+
+.ds-picker__mon img {
+    flex: none;
+    width: calc(28 * var(--px));
+    height: calc(22 * var(--px));
+}
+
+.ds-picker__name {
+    font-size: calc(8 * var(--px));
+    text-align: left;
+}
+
+.ds-badge {
+    text-shadow: none;
+}
+
+.bw-overlay.is-menu {
+    inset: calc(8 * var(--px)) calc(16 * var(--px));
+}
+
+/* Two wide columns, three rows: the whole name fits beside the sprite. */
+.ds-picker__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* ── The day's ranking (DsRanking): a BW menu with two boards ────────── */
+
+.ds-ranking {
+    gap: calc(4 * var(--px));
+}
+
+.ds-ranking__title {
+    flex: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ds-ranking__tabs {
+    display: grid;
+    flex: none;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: calc(4 * var(--px));
+}
+
+.ds-ranking__tab {
+    min-width: 0;
+    height: calc(14 * var(--px));
+    padding: 0 calc(8 * var(--px));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    border: none;
+    border-radius: calc(7 * var(--px));
+    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--bw-rim);
+    color: var(--bw-white);
+    font: inherit;
+    font-size: calc(7 * var(--px));
+    cursor: pointer;
+}
+
+.ds-ranking__tab.is-on {
+    background: var(--bw-white);
+    color: var(--bw-dark);
+    text-shadow: none;
+}
+
+.ds-ranking__list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(2 * var(--px));
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    list-style: none;
+}
+
+.ds-ranking__row {
+    display: grid;
+    grid-template-columns: calc(14 * var(--px)) minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: calc(5 * var(--px));
+    padding: calc(1 * var(--px)) calc(6 * var(--px));
+    border-radius: calc(5 * var(--px));
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--bw-card-rim);
+    font-size: calc(8 * var(--px));
+    line-height: calc(12 * var(--px));
+}
+
+.ds-ranking__row.is-me {
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-gold);
+}
+
+.ds-ranking__place {
+    color: var(--bw-gold);
+    text-align: center;
+}
+
+.ds-ranking__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ds-ranking__turns {
+    color: color-mix(in srgb, var(--bw-white) 70%, transparent);
+    font-size: calc(6 * var(--px));
+}
+
+.ds-ranking__score {
+    min-width: calc(22 * var(--px));
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+}
+
+.ds-ranking__counts {
+    margin: 0;
+    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
+    font-size: calc(7 * var(--px));
+    text-align: center;
+}
+
+.ds-ranking__empty {
+    display: grid;
+    flex: 1;
+    place-items: center;
+    text-align: center;
+}
+
+.ds-result__place {
+    margin: 0;
+    color: var(--bw-gold);
+    font-size: calc(8 * var(--px));
+    text-align: center;
+}
+
+/* Three equal buttons when the result can be shared. */
+.ds-result .ds-panel__actions.is-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.ds-cmd.is-share {
+    border-radius: calc(14 * var(--px));
+    background: linear-gradient(var(--bw-blue) 0 50%, color-mix(in srgb, var(--bw-blue) 82%, var(--bw-blue-edge)) 50%);
+    box-shadow:
+        inset 0 0 0 calc(1.5 * var(--px)) var(--bw-blue-edge),
+        inset 0 0 0 calc(3 * var(--px)) color-mix(in srgb, var(--bw-blue) 55%, var(--bw-white));
+    color: var(--bw-white);
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-blue-edge);
+}
+
+/* The bar's long and short forms: a phone gets icons and "0h44", one row. */
+.ds-chip__short {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    .ds-chip__long {
+        display: none;
+    }
+
+    .ds-chip__short {
+        display: inline;
+    }
+
+    svg.ds-chip__short {
+        display: block;
+    }
+}
+
+
+/* ── Move effects by type (BW-style signatures) ──────────────────────────
+   Eight particles per move, placed at the target (--fx-to-*), each offset by
+   its index (--i). The shape says what they are, the pattern how they move.
+   A special move's particles wait for its orb to land. */
+
+.ds-fx__p {
+    width: calc(6 * var(--px));
+    height: calc(6 * var(--px));
+    margin: calc(-3 * var(--px)) 0 0 calc(-3 * var(--px));
+    background: var(--fx-color);
+    opacity: 0;
+    animation-duration: 560ms;
+    animation-timing-function: var(--ease-out);
+    animation-fill-mode: forwards;
+    animation-delay: calc(var(--i) * 35ms);
+}
+
+.ds-fx.is-special .ds-fx__p {
+    animation-delay: calc(260ms + var(--i) * 35ms);
+}
+
+/* Shapes */
+.is-shape-flame .ds-fx__p {
+    width: calc(6 * var(--px));
+    height: calc(9 * var(--px));
+    border-radius: 50% 50% 45% 45% / 65% 65% 35% 35%;
+    background: radial-gradient(ellipse at 50% 70%, var(--ds-hp-mid), var(--fx-color) 55%, color-mix(in srgb, var(--fx-color) 70%, var(--ds-hp-low)));
+}
+
+.is-shape-bubble .ds-fx__p {
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--ds-paper) 0 18%, color-mix(in srgb, var(--fx-color) 55%, transparent) 22%);
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--fx-color) 70%, var(--ds-paper));
+}
+
+.is-shape-wisp .ds-fx__p {
+    width: calc(12 * var(--px));
+    height: calc(12 * var(--px));
+    margin: calc(-6 * var(--px)) 0 0 calc(-6 * var(--px));
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--fx-color) 85%, var(--ds-paper)), transparent 70%);
+}
+
+.is-shape-leaf .ds-fx__p {
+    width: calc(8 * var(--px));
+    height: calc(4 * var(--px));
+    border-radius: 50% 0;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--fx-color) 70%, var(--ds-paper)), var(--fx-color));
+}
+
+.is-shape-rock .ds-fx__p {
+    width: calc(7 * var(--px));
+    height: calc(6 * var(--px));
+    background: linear-gradient(color-mix(in srgb, var(--fx-color) 70%, var(--ds-paper)), color-mix(in srgb, var(--fx-color) 70%, var(--ds-ink)));
+    clip-path: polygon(20% 0, 80% 8%, 100% 55%, 70% 100%, 15% 90%, 0 40%);
+}
+
+.is-shape-shard .ds-fx__p {
+    width: calc(5 * var(--px));
+    height: calc(9 * var(--px));
+    background: linear-gradient(var(--ds-paper), var(--fx-color));
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+.is-shape-bolt .ds-fx__p {
+    width: calc(6 * var(--px));
+    height: calc(12 * var(--px));
+    background: linear-gradient(var(--ds-paper), var(--fx-color) 40%);
+    clip-path: polygon(40% 0, 100% 0, 60% 42%, 95% 42%, 20% 100%, 38% 55%, 5% 55%);
+}
+
+.is-shape-ring .ds-fx__p {
+    width: calc(26 * var(--px));
+    height: calc(26 * var(--px));
+    margin: calc(-13 * var(--px)) 0 0 calc(-13 * var(--px));
+    border-radius: 50%;
+    background: none;
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--fx-color), 0 0 calc(3 * var(--px)) color-mix(in srgb, var(--fx-color) 60%, transparent);
+}
+
+.is-shape-sparkle .ds-fx__p {
+    width: calc(5 * var(--px));
+    height: calc(5 * var(--px));
+    background: color-mix(in srgb, var(--fx-color) 60%, var(--ds-paper));
+    clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+}
+
+.is-shape-line .ds-fx__p {
+    width: calc(22 * var(--px));
+    height: calc(2 * var(--px));
+    margin: calc(-1 * var(--px)) 0 0 calc(-11 * var(--px));
+    border-radius: calc(1 * var(--px));
+    background: linear-gradient(90deg, transparent, var(--fx-color), var(--ds-paper), var(--fx-color), transparent);
+}
+
+.is-shape-dot .ds-fx__p {
+    width: calc(3 * var(--px));
+    height: calc(3 * var(--px));
+    margin: calc(-1.5 * var(--px)) 0 0 calc(-1.5 * var(--px));
+    border-radius: 50%;
+}
+
+.is-shape-star .ds-fx__p {
+    width: calc(4 * var(--px));
+    height: calc(4 * var(--px));
+    margin: calc(-2 * var(--px)) 0 0 calc(-2 * var(--px));
+}
+
+/* Patterns */
+.ds-fx.is-rise .ds-fx__p { animation-name: ds-fx-rise; }
+.ds-fx.is-fall .ds-fx__p { animation-name: ds-fx-fall; }
+.ds-fx.is-ring .ds-fx__p { animation-name: ds-fx-ring; animation-duration: 640ms; animation-delay: calc(var(--i) * 70ms); }
+.ds-fx.is-special.is-ring .ds-fx__p { animation-delay: calc(260ms + var(--i) * 70ms); }
+.ds-fx.is-slash .ds-fx__p { animation-name: ds-fx-slash; animation-duration: 360ms; animation-delay: calc(var(--i) * 45ms); }
+.ds-fx.is-quake .ds-fx__p { animation-name: ds-fx-quake; }
+.ds-fx.is-swarm .ds-fx__p { animation-name: ds-fx-swarm; animation-duration: 640ms; }
+.ds-fx.is-burst .ds-fx__p { animation-name: ds-spark; animation-duration: 520ms; animation-delay: 180ms; }
+.ds-fx.is-sparkle .ds-fx__p { animation-name: ds-sparkle; animation-delay: calc(var(--i) * 50ms); }
+
+.ds-battle.is-shake > .ds-battle__sky,
+.ds-battle.is-shake > .ds-battle__ground,
+.ds-battle.is-shake > .ds-platform {
+    animation: ds-shake 320ms steps(6, jump-none);
+}
+
+@keyframes ds-fx-rise {
+    0% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 5) * var(--px)), calc((var(--fx-to-y) + 16) * var(--px))) rotate(calc(var(--i) * 40deg)); }
+    20% { opacity: 1; }
+    100% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 7) * var(--px)), calc((var(--fx-to-y) - 22 - var(--i) * 2) * var(--px))) rotate(calc(var(--i) * 40deg + 90deg)); }
+}
+
+@keyframes ds-fx-fall {
+    0% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 6) * var(--px)), calc((var(--fx-to-y) - 42) * var(--px))); }
+    25% { opacity: 1; }
+    85% { opacity: 1; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 5) * var(--px)), calc((var(--fx-to-y) + 4) * var(--px))); }
+    100% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 5) * var(--px)), calc((var(--fx-to-y) + 8) * var(--px))); }
+}
+
+@keyframes ds-fx-ring {
+    0% { opacity: 0.9; transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) scale(0.1); }
+    100% { opacity: 0; transform: translate(calc(var(--fx-to-x) * var(--px)), calc(var(--fx-to-y) * var(--px))) scale(1.6); }
+}
+
+@keyframes ds-fx-slash {
+    0% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 3) * var(--px)), calc((var(--fx-to-y) + (var(--i) - 3.5) * 4) * var(--px))) rotate(-38deg) scaleX(0); }
+    40% { opacity: 1; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 3) * var(--px)), calc((var(--fx-to-y) + (var(--i) - 3.5) * 4) * var(--px))) rotate(-38deg) scaleX(1); }
+    100% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 3 + 6) * var(--px)), calc((var(--fx-to-y) + (var(--i) - 3.5) * 4 - 4) * var(--px))) rotate(-38deg) scaleX(1.2); }
+}
+
+@keyframes ds-fx-quake {
+    0% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 8) * var(--px)), calc((var(--fx-to-y) + 22) * var(--px))); }
+    30% { opacity: 1; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 8) * var(--px)), calc((var(--fx-to-y) - 8 - var(--i) % 3 * 5) * var(--px))) rotate(calc(var(--i) * 30deg)); }
+    100% { opacity: 0; transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 10) * var(--px)), calc((var(--fx-to-y) + 16) * var(--px))) rotate(calc(var(--i) * 30deg + 120deg)); }
+}
+
+@keyframes ds-fx-swarm {
+    0% { opacity: 0; transform: translate(calc(var(--fx-from-x) * var(--px)), calc(var(--fx-from-y) * var(--px))); }
+    20% { opacity: 1; }
+    60% { transform: translate(calc((var(--fx-to-x) + (var(--i) - 3.5) * 6) * var(--px)), calc((var(--fx-to-y) + (var(--i) % 3 - 1) * 9) * var(--px))); }
+    100% { opacity: 0; transform: translate(calc((var(--fx-to-x) - (var(--i) - 3.5) * 4) * var(--px)), calc((var(--fx-to-y) - (var(--i) % 3 - 1) * 7) * var(--px))); }
+}
+
+@keyframes ds-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translate(calc(-2 * var(--px)), calc(1 * var(--px))); }
+    40% { transform: translate(calc(2 * var(--px)), calc(-1 * var(--px))); }
+    60% { transform: translate(calc(-2 * var(--px)), 0); }
+    80% { transform: translate(calc(1 * var(--px)), calc(1 * var(--px))); }
+}
+
+/* Three buttons on a phone's 256 px: a step smaller. */
+.ds-result .ds-panel__actions.is-three > * {
+    font-size: calc(8 * var(--px));
+}
+
+/* Region labels stay legible where the line runs under them: a paper halo. */
+.ds-chart__region {
+    paint-order: stroke;
+    stroke: var(--ds-paper);
+    stroke-width: 2.5px;
+    stroke-linejoin: round;
+}
+
+
+/* ── A desktop's side rails (DsConsole `rails`, useRailMode) ───────────
+   BW menus beside the one screen, in the room a wide column leaves: the
+   teams and the ranking — what a phone keeps in its Pokétch and menus. One
+   rail stacks both on the right, half the height each; two put the teams on
+   the left. A rail is the game, so it holds the screen's palette, at a fixed
+   DS pixel (2 px at full density), and stretches to the console's height. */
+
+.challenge-view {
+    container: challenge / inline-size;
+}
+
+.ds-deck {
+    --deck-console: calc((100dvh - 9.5rem) * 4 / 3 + 2 * var(--space-3));
+    --deck-gap: var(--page-gap, var(--space-4));
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    justify-content: center;
+    gap: var(--deck-gap);
+}
+
+/* One rail: wide enough for two columns of named cards (useRailMode). */
+.ds-deck.is-one {
+    --deck-rail: 20rem;
+    grid-template-columns: minmax(0, var(--deck-console)) var(--deck-rail);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "console start" "console end";
+}
+
+.ds-deck.is-two {
+    --deck-rail: clamp(15rem, calc((100cqi - var(--deck-console)) / 2 - var(--deck-gap)), 20rem);
+    grid-template-columns: var(--deck-rail) minmax(0, var(--deck-console)) var(--deck-rail);
+    grid-template-areas: "start console end";
+}
+
+/* Only where the rails name the areas: an unknown area name would open an implicit track. */
+.ds-deck:is(.is-one, .is-two) > .ds-console {
+    grid-area: console;
+}
+
+.ds-rail {
+    --px: 0.125rem;
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+    color: var(--bw-white);
+    font-family: 'DotGothic16', var(--font-display);
+    font-synthesis: none;
+    line-height: 1.2;
+    user-select: none;
+    container: rail / size;
+}
+
+.ds-rail.is-start {
+    grid-area: start;
+}
+
+.ds-rail.is-end {
+    grid-area: end;
+}
+
+.ds-rail img {
+    image-rendering: pixelated;
+}
+
+.ds-rail > .ds-panel {
+    gap: calc(4 * var(--px));
+    padding: calc(8 * var(--px));
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-rim);
+}
+
+/* A rail's boards: the same two tabs, a step smaller. */
+.ds-rail .ds-ranking__tab {
+    padding: 0 calc(4 * var(--px));
+    font-size: calc(6 * var(--px));
+}
+
+.ds-rail .ds-panel__title {
+    flex: none;
+    overflow: hidden;
+    font-size: calc(9 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Both teams: BW party cards, two columns — one, roomier, in a tall rail. */
+.ds-teams__grid {
+    display: grid;
+    flex: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
+    gap: calc(3 * var(--px));
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ds-teams .bw-card {
+    grid-template-columns: calc(20 * var(--px)) minmax(0, 1fr);
+    column-gap: calc(3 * var(--px));
+    padding: calc(2 * var(--px)) calc(4 * var(--px));
+    border-radius: calc(6 * var(--px));
+    cursor: default;
+}
+
+.ds-teams .bw-card:active {
+    transform: none;
+}
+
+.ds-teams .bw-card img,
+.ds-teams .bw-card__unknown {
+    width: calc(20 * var(--px));
+    height: calc(15 * var(--px));
+}
+
+.ds-teams .bw-card__unknown {
+    font-size: calc(10 * var(--px));
+}
+
+.ds-teams .bw-card__name {
+    font-size: calc(7 * var(--px));
+}
+
+/* On the field now: BW's white rim. */
+.ds-teams .bw-card.is-active {
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-white);
+}
+
+@container rail (min-height: 34rem) {
+    .ds-teams__grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ds-teams .bw-card {
+        grid-template-columns: calc(26 * var(--px)) minmax(0, 1fr);
+    }
+
+    .ds-teams .bw-card img,
+    .ds-teams .bw-card__unknown {
+        width: calc(26 * var(--px));
+        height: calc(20 * var(--px));
+    }
+
+    .ds-teams .bw-card__name {
+        font-size: calc(8 * var(--px));
+    }
+}
+
+/* Your record under the ranking (the rail only): three figures, one row. */
+.ds-ranking__record {
+    display: grid;
+    flex: none;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: calc(3 * var(--px));
+    margin: 0;
+}
+
+.ds-ranking__record div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 0;
+    padding: calc(2 * var(--px)) calc(3 * var(--px));
+    border-radius: calc(5 * var(--px));
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+}
+
+.ds-ranking__record dt {
+    max-width: 100%;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
+    font-size: calc(6 * var(--px));
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ds-ranking__record dd {
+    margin: 0;
+    font-size: calc(10 * var(--px));
+    font-variant-numeric: tabular-nums;
+}

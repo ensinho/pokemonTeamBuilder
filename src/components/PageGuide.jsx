@@ -208,4 +208,5 @@ export const pageGuideTips = {
     favorites: true,
     generationQuiz: true,
     feed: true,
+    challenge: true,
 };
