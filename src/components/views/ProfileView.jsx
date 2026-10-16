@@ -118,7 +118,7 @@ const SectionCard = ({ title, subtitle, icon, meta, className = '', children }) 
 const NotificationsCard = () => {
     const { t } = useTranslation();
     const {
-        enabled, busy, dailyEnabled, iosInstallNeeded, supported, toggle, toggleDailyPuzzle,
+        enabled, busy, dailyEnabled, iosInstallNeeded, supported, toggle, toggleDailyPuzzle, challengeEnabled, toggleDailyChallenge,
     } = useNotificationSettings();
 
     // Two switches, one per question the user is actually answering. This was a
@@ -147,6 +147,14 @@ const NotificationsCard = () => {
                     onChange={(next) => toggleDailyPuzzle(next)}
                     label={t('profile.notifyTopicPuzzle')}
                     description={t('profile.notifyPuzzleDesc')}
+                />
+                <Switch
+                    variant="row"
+                    checked={enabled && challengeEnabled}
+                    disabled={!enabled}
+                    onChange={(next) => toggleDailyChallenge(next)}
+                    label={t('profile.notifyTopicChallenge')}
+                    description={t('profile.notifyChallengeDesc')}
                 />
             </div>
 

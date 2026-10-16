@@ -309,8 +309,10 @@ export const useForumStore = create((set, get) => ({
     //     sees the moment it is claimed.
     //   sharedPuzzle — a finished PokéPuzzle board (see utils/pokePuzzleShare),
     //     which by construction carries no answer.
+    //   sharedChallenge — a Champion Challenge result (utils/challengeShare),
+    //     with no team in it; read back through readChallengeShare.
     sendMessage: async (topicId, text, attachedTeam = null, replyTo = null, attachments = {}) => {
-        const { battleInvite = null, sharedPuzzle = null } = attachments || {};
+        const { battleInvite = null, sharedPuzzle = null, sharedChallenge = null } = attachments || {};
         if (!db) return false;
         const authState = useAuthStore.getState();
         if (!authState.userId) {
@@ -322,7 +324,7 @@ export const useForumStore = create((set, get) => ({
         }
 
         const cleanText = text.trim();
-        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle) {
+        if (!cleanText && !attachedTeam && !battleInvite && !sharedPuzzle && !sharedChallenge) {
             return false;
         }
 
@@ -377,6 +379,7 @@ export const useForumStore = create((set, get) => ({
                 sharedPuzzle: sharedPuzzle && Array.isArray(sharedPuzzle.rows) && sharedPuzzle.rows.length
                     ? sharedPuzzle
                     : null,
+                sharedChallenge: sharedChallenge?.v === 1 ? sharedChallenge : null,
                 replyTo: replyRef
             };
 
@@ -390,7 +393,7 @@ export const useForumStore = create((set, get) => ({
                     ? cleanText.substring(0, 100)
                     : (serializedAttachedTeam
                         ? `Shared team: ${serializedAttachedTeam.name}`
-                        : (sharedPuzzle ? 'PokéPuzzle result' : 'Battle invite'))
+                        : (sharedPuzzle ? 'PokéPuzzle result' : (sharedChallenge ? 'Champion Challenge result' : 'Battle invite')))
             });
 
             return true;

@@ -6,6 +6,7 @@ import { ThreadDetailSkeleton } from './ForumSkeletons';
 import { PokeballIcon, HeartIcon, ReplyIcon, DownloadIcon } from '../icons';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
+import { ChallengeShareCard } from '../ChallengeShareCard';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { useChatAutoScroll } from '../../hooks/useChatAutoScroll';
@@ -138,6 +139,13 @@ export function ThreadDetail({
                     {opMessage?.sharedPuzzle?.rows?.length > 0 && (
                         <div className="my-4">
                             <PuzzleShareCard puzzle={opMessage.sharedPuzzle} />
+                        </div>
+                    )}
+
+                    {/* Champion Challenge result in OP */}
+                    {opMessage?.sharedChallenge && (
+                        <div className="my-4">
+                            <ChallengeShareCard share={opMessage.sharedChallenge} />
                         </div>
                     )}
 
