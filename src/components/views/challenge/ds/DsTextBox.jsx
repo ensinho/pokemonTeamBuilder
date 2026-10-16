@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { TEXT_PACE } from '../../../../utils/battleTimeline';
 import { play } from '../../../../utils/challengeSfx';
 
 /**
@@ -8,6 +9,9 @@ import { play } from '../../../../utils/challengeSfx';
  * next one advances, as in the games. Real text — readable by screen readers
  * (`aria-live`) and translated like any other copy. With reduced motion the
  * line appears whole.
+ *
+ * `msPerChar` is the base speed; `TEXT_PACE` scales it with the time a
+ * battle line holds the screen, so the two never drift apart.
  *
  * `advanceRef` receives the same press, for the console's A button.
  * `variant`: 'box' (a dialogue box), 'band' (the BW battle message across a
@@ -31,7 +35,7 @@ export function DsTextBox({
             setCount(n);
             if (blip && text[n - 1] !== ' ') play('textBlip');
             if (n >= text.length) clearInterval(timerRef.current);
-        }, msPerChar);
+        }, msPerChar * TEXT_PACE);
         return () => clearInterval(timerRef.current);
     }, [text, reducedMotion, msPerChar, blip]);
 

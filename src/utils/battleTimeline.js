@@ -169,6 +169,13 @@ export const withDialogue = (events, dialogue = []) => {
     return tagged.sort((a, b) => a.key - b.key || a.order - b.order).map((entry) => entry.event);
 };
 
+/**
+ * How unhurried the text reads: scales the typewriter (`DsTextBox`) and the
+ * time a line holds the screen together, so a slower line still finishes
+ * typing before it moves on. Animations with no text keep their own pace.
+ */
+export const TEXT_PACE = 1.1;
+
 /** How long an event holds the screen, in ms at normal speed. */
 const BASE_MS = {
     intro: 1500,
@@ -198,7 +205,8 @@ export const durationOf = (event, { fast = false, reducedMotion = false } = {}) 
     const base = BASE_MS[event.type] ?? 700;
     // A silent HP change still needs time for the bar to drain.
     const ms = event.type === 'hp' && !event.from ? 550 : base;
-    return Math.round(ms * (fast ? 0.5 : 1) * (reducedMotion ? 0.7 : 1));
+    const pace = isSilent(event) ? 1 : TEXT_PACE;
+    return Math.round(ms * pace * (fast ? 0.5 : 1) * (reducedMotion ? 0.7 : 1));
 };
 
 /* ── The playback reducer ────────────────────────────────────────────────

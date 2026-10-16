@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-    durationOf, initialPlayback, isPlaying, isSilent, playbackReducer, toTimeline, withDialogue,
+    TEXT_PACE, durationOf, initialPlayback, isPlaying, isSilent, playbackReducer, toTimeline, withDialogue,
 } from './battleTimeline';
 
 const TURN = [
@@ -88,6 +88,9 @@ describe('timing', () => {
         expect(durationOf(move)).toBeGreaterThan(durationOf({ type: 'hp' }));
         expect(durationOf(move, { fast: true })).toBeLessThan(durationOf(move));
         expect(durationOf(move, { reducedMotion: true })).toBeLessThan(durationOf(move));
+        // Text reads at TEXT_PACE; a bar draining with no text keeps its own pace.
+        expect(durationOf(move)).toBe(Math.round(750 * TEXT_PACE));
+        expect(durationOf({ type: 'hp' })).toBe(550);
         expect(isSilent({ type: 'turn' })).toBe(true);
         expect(isSilent({ type: 'hp', from: 'item: Leftovers' })).toBe(false);
     });
