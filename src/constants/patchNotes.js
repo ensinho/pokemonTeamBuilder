@@ -12,6 +12,12 @@ import { PATCH_NOTES_VERSION } from './theme';
 // `month` is 'YYYY-MM'; it is formatted per language at render time, so a new
 // release needs no new date copy. `visual` and `icon` are looked up in
 // PatchNotesModal — the ledger stays data, not JSX.
+//
+// The current release lays out side by side: the note marked `featured` is the
+// large card on the left, the others stack at equal height on the right (one
+// column on a phone, featured first). Keep it to one featured note and three
+// side notes — the right column divides its height evenly between them. A
+// release with no side notes gives the featured card the full width.
 export const RELEASES = [
     {
         version: PATCH_NOTES_VERSION,
@@ -19,6 +25,7 @@ export const RELEASES = [
         notes: [
             {
                 key: 'champion-challenge',
+                featured: true,
                 icon: 'crown',
                 visual: 'challenge',
                 title: 'patchNotes.challengeTitle',
@@ -26,6 +33,16 @@ export const RELEASES = [
                 cta: 'patchNotes.challengeCta',
                 path: '/challenge',
             },
+        ],
+    },
+    {
+        version: '1.15.0',
+        month: '2026-10',
+        notes: [
+            { key: 'reg-mc', title: 'patchNotes.regMcTitle' },
+            { key: 'tournament-win-rates', title: 'patchNotes.tourTitle' },
+            { key: 'champions-sets', title: 'patchNotes.champSetsTitle' },
+            { key: 'balanced-suggestions', title: 'patchNotes.balanceTitle' },
         ],
     },
     {

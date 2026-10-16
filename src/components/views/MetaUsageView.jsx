@@ -8,7 +8,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { EmptyState } from '../EmptyState';
 import { rankUsage, commonCores, commonTeams } from '../../utils/metaUsage';
-import { filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
+import { TOUR_BAND, filterRows, ladderPairs, sortRows, usageRows } from '../../utils/metaFormats';
 import { MonSprite, pretty, SourceCredit } from './metaShared';
 import { CutoffSelect, FormatPicker, TypeFilter } from './metaControls';
 import '../../styles/meta-view.css';
@@ -23,6 +23,14 @@ import { Loader } from '../Loader';
 // A single core row (2-, 3- or 4-Pokémon grouping) with the sprites and share.
 // `unit` names what `count` counts — tournament teams, or weighted ladder games
 // for a Smogon tier's teammate data. They are not the same quantity.
+// "2026-10-01" → "1 out" / "Oct 1". Parsed as a calendar day, not a UTC
+// instant, so it never slides to the previous day west of Greenwich.
+const formatDay = (iso, pt) => {
+    const [y, m, d] = String(iso).split('-').map(Number);
+    if (!y || !m || !d) return iso;
+    return new Date(y, m - 1, d).toLocaleDateString(pt ? 'pt-BR' : 'en-US', { day: 'numeric', month: 'short' });
+};
+
 function CoreRow({ core, rank, onOpenMon, unit = 'teams' }) {
     return (
         <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2">
@@ -74,7 +82,7 @@ export function MetaUsageView() {
     const { formats, defaultFormatId, month, status: idxStatus } = useUsageIndex();
     const fmtId = params.get('fmt') || defaultFormatId || '';
     const {
-        data: usageData, format, totalBattles,
+        data: usageData, format, totalBattles, tournament,
         cutoffs, detailCutoff, activeCutoff, status: fmtStatus,
     } = useUsageFormat(fmtId, params.get('cut'));
     const { teams } = useTournamentData();
@@ -240,7 +248,19 @@ export function MetaUsageView() {
                     is for a pointer; on a phone the cards are plainly tappable,
                     so dropping it is what lets the sentence end on its own. */}
                 <p className="max-w-2xl text-sm text-muted sm:text-sm">
-                    {usingSmogon && format ? (
+                    {usingSmogon && format && activeCutoff === TOUR_BAND && tournament ? (
+                        // Ranked by tournament registrations: say how big and how
+                        // recent the sample is, since it is far smaller than the ladder.
+                        <>
+                            {pt
+                                ? `${format.label} em torneios: ${tournament.teamsAnalyzed.toLocaleString('pt-BR')} times de ${tournament.tournaments} torneios do Limitless`
+                                : `${format.label} at tournaments: ${tournament.teamsAnalyzed.toLocaleString('en-US')} teams from ${tournament.tournaments} Limitless events`}
+                            {tournament.from && tournament.to && (
+                                <span className="whitespace-nowrap">{` (${formatDay(tournament.from, pt)} – ${formatDay(tournament.to, pt)})`}</span>
+                            )}
+                            {pt ? ', com taxa de vitória.' : ', with win rates.'}
+                        </>
+                    ) : usingSmogon && format ? (
                         <>
                             {pt
                                 ? `Uso real de ${format.label} no ladder competitivo${battlesLabel ? ` (${battlesLabel} partidas${month ? `, ${month}` : ''})` : ''}`
@@ -259,7 +279,7 @@ export function MetaUsageView() {
                         ? 'Pokémon mais usados nos times recentes de torneios — clique para ver o que estão rodando.'
                         : 'Most-used Pokémon across recent tournament teams — click any to see what they run.')}
                 </p>
-                <SourceCredit pt={pt} sources={['smogon', 'vgcpastes', 'pikalytics']} className="mt-2.5" />
+                <SourceCredit pt={pt} sources={['smogon', 'limitless', 'vgcpastes', 'pikalytics']} className="mt-2.5" />
             </header>
 
             {/* Tabs. Only two views exist for a VGC regulation; a Smogon tier has

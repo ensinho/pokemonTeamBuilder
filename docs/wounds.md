@@ -68,6 +68,48 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 - **Correct pattern:** never `Battle.fromJSON(battle.toJSON())` on a battle you still use — go through `engine.snapshot()` / `fog.js`. Any new code that clones a battle needs a "replay equals live" test.
 - **Files:** `api/_lib/challenge/engine.js`, `api/_lib/ai/fog.js`, `api/_lib/ai/invariants.test.js`
 
+### 2026-10-14 — Rotated-out regulations vanished from Meta & usage `bug`
+- **Symptom:** Reg M-A and Reg I disappeared from the regulation picker after the 2026-08 data refresh, though `public/data/usage/gen9championsvgc2026regma.json` and `gen9vgc2026regi.json` were still committed.
+- **Root cause:** `build-usage-stats.mjs` rebuilt `usage-index.json` from the formats *this month* published. Smogon stops listing a ladder once its regulation rotates out, so each refresh silently dropped the previous regulation — and a `--formats=` smoke run truncated the index to the handful it rebuilt.
+- **Fix:** `mergeCatalog` / `pickDefaultFormat` (`scripts/lib/smogonStats.mjs`, tested): the index is this month's builds plus every earlier entry whose file still exists, each stamped with its own `month`; catalog formats with a file but no entry are re-listed from the file. Default = newest VGC regulation with this month's data.
+- **Correct pattern:** a generated catalog is never rebuilt from one month's listing alone. Absent upstream ≠ gone; keep the last good data and say how old it is.
+- **Files:** `scripts/build-usage-stats.mjs`, `scripts/lib/smogonStats.mjs`
+
+### 2026-10-14 — Limitless overwrote the Smogon ladder file it was meant to enrich `bug`
+- **Symptom:** Reg M-A/Reg I files had no rating bands; Reg M-B had bands but no win rates — whichever script ran last won.
+- **Root cause:** `build-limitless-usage.mjs` rewrote `usage/<format>.json` with its own aggregate as `byId`, discarding Smogon's `cutoffs`/`detailCutoff`; when Limitless failed, the next Smogon run wrote a file with no tournament data at all.
+- **Fix:** `mergeTournamentIntoLadder` (`scripts/lib/limitlessMerge.mjs`, tested) keeps the ladder as `byId` and adds per-species `winRate` + `tour`, plus a top-level `tournament` ranking the Meta list shows as a "Tournaments" band (`TOUR_BAND`). Only a regulation with no ladder file is still written tournament-first.
+- **Correct pattern:** two sources answering different questions are merged side by side, never one written over the other.
+- **Files:** `scripts/build-limitless-usage.mjs`, `scripts/lib/limitlessMerge.mjs`, `src/utils/metaFormats.js`, `src/hooks/useUsageStats.js`
+
+### 2026-10-14 — 91 Smogon sets shipped with empty EVs and were auto-applied `bug`
+- **Symptom:** applying (or auto-filling) e.g. Champions VGC "Pivot Support" Incineroar gave a spread of all zeros.
+- **Root cause:** Smogon set `evs` can be an array of alternative spreads, like `item` and `nature`. `build-smogon.mjs` read it as one object, so `mapStats` found no keys and returned six zeros — 91 of 1315 sets.
+- **Fix:** take `asArray(raw.evs)[0]`; a set with no spread carries no `evs` at all instead of zeros.
+- **Correct pattern:** every Smogon set field can be a value or a list of alternatives — normalise all of them through `asArray`, not just the ones you have seen as arrays.
+- **Files:** `scripts/build-smogon.mjs`
+
+### 2026-10-14 — Limitless lost Indeedee-F and Basculegion silently `bug`
+- **Symptom:** in Reg M-C both had ladder data but no tournament win rate.
+- **Root cause:** the Limitless species resolver tried only `/pokemon/{slug}`; form-only defaults (`basculegion`, `indeedee` — whose default variant is `-male`) 404 there. `build-usage-stats.mjs` had learned the `/pokemon-species/` fallback already; the second resolver never got it.
+- **Fix:** same fallback added to `build-limitless-usage.mjs`.
+- **Correct pattern:** there are three species resolvers across the data scripts; a resolution fix in one is a fix to make in all of them (or, better, share one).
+- **Files:** `scripts/build-limitless-usage.mjs`
+
+### 2026-10-14 — Builder suggestions kept doubling down on a niche `dispattern`
+- **Symptom (Enzo):** with Rillaboom + Mega Sceptile, "Suggested for your team" was Tsareena, Scovillain and more Grass "Grassy Terrain abusers" — a third Grass type stacking the same Fire/Ice/Flying/Bug weaknesses.
+- **Root cause:** `buildSynergySuggestions` scored every reason additively; the core reason (40) never decayed and nothing penalised repeating a type or a weakness.
+- **Fix:** `SATURATION` in `src/utils/synergySuggestions.js` (tested, and the tests fail on the old code): 2+ members of a type → −30 per saturated type a candidate shares; a weakness already on 2+ members → −5 per shared one; core weight divides by `1 + 3·abusers on team` once the setter is there; coverage weight ×1.5 while the team leans.
+- **Correct pattern:** a suggestion engine needs a brake as well as an accelerator — every positive signal that compounds needs a saturation check.
+- **Files:** `src/utils/synergySuggestions.js`, `src/utils/synergySuggestions.test.js`
+
+### 2026-10-14 — Pokémon Champions spreads are Stat Points, not EVs `dispattern`
+- **Symptom:** Champions usage spreads ("32 HP / 32 Atk") were shown labelled as EVs; Champions Smogon sets could not be applied as-is; the per-Pokémon page showed "Tera Fire 0%" under a Champions format, borrowed from a VGC 2025 set.
+- **Root cause:** Champions spends 0–32 Stat Points per stat (66 total) and has no Terastallization; the app speaks EVs everywhere.
+- **Fix:** `src/utils/statPoints.js` (tested): `n SP ↔ 8n − 4 EVs`, trimmed into 510 because 66 SP buys one point more than EVs can (32/32/2 → 516). Sets carry converted `evs` + original `sp`; pages label SP; the preset converts usage spreads and takes nature + EVs from the same spread; Champions formats show no Tera.
+- **Correct pattern:** anything from a Champions format is SP until converted, and never borrows Tera.
+- **Files:** `src/utils/statPoints.js`, `src/utils/loadCompetitivePreset.js`, `src/utils/smogonSets.js`, `src/components/views/PokemonUsageView.jsx`
+
 ### 2026-10-14 — A dialog opened from inside a card rendered squeezed into the card `bug`
 - **Symptom:** the new change-password / delete-account dialogs, opened from Profile's account card, drew inside the card's bounds (a 26rem-wide sliver at the bottom of the page) instead of over the screen.
 - **Root cause:** `.modal-scrim` is `position: fixed`, but a fixed element resolves against the nearest ancestor that establishes a containing block (transform / filter / contain / container queries) — the profile card is one, so the "full-screen" scrim was card-sized. The old small modal had the same bug and hid it by being small.

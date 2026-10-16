@@ -31,6 +31,22 @@ export function formatEvSpread(evs = {}) {
     return parts.join(' / ');
 }
 
+// The spread as the set's own game writes it: a Pokémon Champions set (which
+// carries its original Stat Points in `sp`) reads "2 HP / 32 SpA / 32 Spe SP",
+// everything else in EVs. Applying a set always uses the converted `evs`.
+export function formatSetSpread(set = {}) {
+    const { unit, text } = setSpreadParts(set);
+    return text && unit === 'SP' ? `${text} SP` : text;
+}
+
+// The same, split for a labelled row ("SP: 2 HP / 32 SpA" / "EVs: 252 HP …"),
+// so a label never says EVs over a Stat Point spread.
+export function setSpreadParts(set = {}) {
+    return set?.sp
+        ? { unit: 'SP', text: formatEvSpread(set.sp) }
+        : { unit: 'EVs', text: formatEvSpread(set?.evs) };
+}
+
 // Non-default IVs (Smogon zeroes Atk on special attackers, Spe under Trick Room).
 export function formatIvNotes(ivs = {}) {
     const parts = EV_ORDER.filter((k) => (ivs[k] ?? 31) !== 31).map((k) => `${ivs[k]} ${STAT_SHORT[k]}`);

@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import { statPointSpreadToEvs } from '../src/utils/statPoints.js';
+
 // Builds public/data/smogon.json from pkmn's mirror of Smogon's analysis + set
 // data (https://pkmn.github.io/smogon/data/). This is the EXPERT-CURATED layer
 // that complements competitive-usage.json: where competitive-usage is "what
@@ -23,7 +25,12 @@ const INDEX_FILE = path.join(DATA_DIR, 'pokemon-index.json');
 // species' sets come from the FIRST format here that lists it — so a VGC mon keeps
 // its VGC sets, while the long tail still gets robust doubles sets.
 const FORMATS = [
-    // Doubles first — same mechanics as VGC, so these sets are the most relevant
+    // Pokémon Champions leads: it is the game the official VGC circuit runs on
+    // now, so its sets are what a player building today means by "the set".
+    // Champions has no EVs — it spends Stat Points (0–32 per stat, 66 in all) —
+    // so these formats are flagged `statPoints` and converted on the way in.
+    { file: 'championsvgc2026', label: 'Champions VGC', statPoints: true },
+    // Doubles next — same mechanics as VGC, so these sets are the most relevant
     // and become a species' primary source. Order also decides which set shows first.
     { file: 'gen9vgc2025', label: 'VGC 2025' },
     { file: 'gen9vgc2024', label: 'VGC 2024' },
@@ -32,6 +39,8 @@ const FORMATS = [
     { file: 'gen9nationaldexdoubles', label: 'Nat Dex Doubles' },
     // Singles tiers add coverage AND extra set options per species (clearly
     // labelled by tier), ordered most-mainstream first.
+    { file: 'championsbattlestadiumsingles', label: 'Champions BSS', statPoints: true },
+    { file: 'championsou', label: 'Champions OU', statPoints: true },
     { file: 'gen9battlestadiumsingles', label: 'Battle Stadium' },
     { file: 'gen9ou', label: 'OU' },
     { file: 'gen9anythinggoes', label: 'Anything Goes' },
@@ -170,6 +179,10 @@ const mapStats = (obj, base) => {
     return out;
 };
 
+// Champions spends Stat Points, not EVs — see src/utils/statPoints.js. The editor
+// speaks EVs, so a Champions set carries the converted spread in `evs` and the
+// original in `sp` for the pages that show it the way the game does.
+
 // Smogon move slots are "Move" | ["Move A", "Move B"] (alternatives). Normalize
 // every slot to an array of slugs so the UI/apply logic is uniform.
 const normMoves = (moves = []) => moves
@@ -181,8 +194,9 @@ const asArray = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 // Smogon lists alternatives as arrays (e.g. item: ["Focus Sash","Choice Specs"]).
 // We keep the FIRST as the primary (used by one-click "apply set") and surface
 // the rest for display.
-const normalizeSet = (name, raw, description) => {
+const normalizeSet = (name, raw, description, { statPoints = false } = {}) => {
     const itemOpts = asArray(raw.item).map(slugify).filter(Boolean);
+    const evsRaw = asArray(raw.evs)[0] || null;
     return {
         name,
         item: itemOpts[0] || '',
@@ -191,7 +205,12 @@ const normalizeSet = (name, raw, description) => {
         nature: String(asArray(raw.nature)[0] || 'serious').toLowerCase(),
         tera: asArray(raw.teratypes).map((t) => String(t).toLowerCase()),
         moves: normMoves(raw.moves),
-        evs: mapStats(raw.evs, ZERO_EVS),
+        // `evs` may be a list of alternative spreads, like items and natures.
+        // Read as one object it mapped to six zeros — "invest nothing" — which
+        // the builder then auto-applied. The first alternative is the primary.
+        // A set that publishes no spread at all carries no `evs`.
+        ...(evsRaw ? { evs: mapStats(statPoints ? statPointSpreadToEvs(evsRaw) : evsRaw, ZERO_EVS) } : {}),
+        ...(statPoints && evsRaw ? { sp: mapStats(evsRaw, ZERO_EVS) } : {}),
         ivs: mapStats(raw.ivs, MAX_IVS),
         level: raw.level || null,
         description: clip(stripHtml(description)) || '',
@@ -248,7 +267,7 @@ const main = async () => {
 
             for (const [setName, raw] of Object.entries(setMap)) {
                 if (rec.sets.length >= MAX_SETS_PER_SPECIES) break;
-                const s = normalizeSet(setName, raw, setDescriptions[setName]?.description);
+                const s = normalizeSet(setName, raw, setDescriptions[setName]?.description, { statPoints: fmt.statPoints });
                 if (!s.moves.length) continue;
                 // De-dupe near-identical builds (same item + same lead move of each slot).
                 const sig = `${s.item}|${s.moves.map((slot) => slot[0]).join(',')}`;

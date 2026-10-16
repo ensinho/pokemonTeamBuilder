@@ -700,7 +700,7 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 - **Pronto quando:** ✅ teclado, clique e toque andam e respeitam colisão; o encontro dispara uma vez.
 
 ### F5 — Integração ✅ (2026-10-15)
-- [x] Card da Home (`useChallengeSummary`) + `journey`, `render-meta`, guia, i18n, notas de versão 1.15.0, exclusão de conta (runs, rodadas, estado secreto, estatísticas).
+- [x] Card da Home (`useChallengeSummary`) + `journey`, `render-meta`, guia, i18n, notas de versão 1.16.0, exclusão de conta (runs, rodadas, estado secreto, estatísticas).
 - [x] Coleta anônima (`aiTraining`) ligada + aviso `challenge.privacy.notice` no seletor. A página `/privacy` continua só recomendada.
 - [x] `docs/modules/daily_challenge.md`, `docs/index.md`, exceção na skill `design-system`.
 - **Pronto quando:** ✅ os estados do card testados (`challengeSummaryState`) e vistos no navegador (convidado, novo); rota na busca ("cynthia") e no "Mais"; exclusão testada com um Firestore falso (falta conferir contra o real depois do deploy).

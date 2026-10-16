@@ -5,7 +5,7 @@ import { AnchoredPopover } from '../AnchoredPopover';
 import { BottomSheet } from '../BottomSheet';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { maxWidthBelow } from '../../constants/breakpoints';
-import { cutoffLabel, groupFormats, searchFormats } from '../../utils/metaFormats';
+import { TOUR_BAND, cutoffLabel, groupFormats, searchFormats } from '../../utils/metaFormats';
 import { typeChart, typeColors, typeIcons } from '../../constants/types';
 
 // The controls the Meta pages steer with. They live together because they share
@@ -189,9 +189,11 @@ export function CutoffSelect({ cutoffs = [], value, onChange, pt = false, classN
                     type="button"
                     onClick={() => onChange(c)}
                     aria-pressed={c === value}
-                    title={pt
-                        ? (c > 0 ? `Partidas entre jogadores com rating ${c} ou mais` : 'Todas as partidas do ladder')
-                        : (c > 0 ? `Games between players rated ${c} and above` : 'Every game on the ladder')}
+                    title={c === TOUR_BAND
+                        ? (pt ? 'Times registrados em torneios do Limitless, com taxa de vitória' : 'Teams registered at Limitless tournaments, with win rates')
+                        : pt
+                            ? (c > 0 ? `Partidas entre jogadores com rating ${c} ou mais` : 'Todas as partidas do ladder')
+                            : (c > 0 ? `Games between players rated ${c} and above` : 'Every game on the ladder')}
                     className="segmented__item touch-target touch-target--y tabular-nums"
                 >
                     {cutoffLabel(c, pt)}

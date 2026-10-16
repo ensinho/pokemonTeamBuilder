@@ -2,12 +2,14 @@
 // member, so a Pokémon arrives already equipped like the meta runs it (e.g.
 // Tyranitar → Tyranitarite, not a stale Assault Vest analysis set).
 //
-// It merges the precise per-regulation Smogon ladder usage (public/data/usage/*)
-// for the "what's used" fields — item, ability, moves, Tera — with the reliable
-// standard EV spread from smogon.json (the ladder spreads can be Champions-scale
-// or noisy). Falls back to the tournament usage, then the curated Smogon set.
+// It takes every field from the precise per-regulation Smogon ladder usage
+// (public/data/usage/*) — item, ability, moves, Tera, and the most-used spread
+// with its own nature — falling back to the tournament usage, then the curated
+// Smogon set. Pokémon Champions spreads arrive in Stat Points (0–32) and are
+// converted to the EVs the editor speaks.
 
 import { primaryMoves } from './smogonSets';
+import { looksLikeStatPoints, statPointSpreadToEvs } from './statPoints';
 
 const dayStamp = () => {
     const d = new Date();
@@ -42,6 +44,25 @@ const toSlug = (s = '') => s.toLowerCase().replace(/[’'.]/g, '').replace(/\s+/
 const EV_MAP = { hp: 'hp', atk: 'attack', def: 'defense', spa: 'special-attack', spd: 'special-defense', spe: 'speed' };
 
 /**
+ * The ladder's most-used spread as `{ evs, nature }` in the editor's keys, or
+ * null when it is not usable. Nature and EVs come from the same spread so a
+ * preset never pairs one build's nature with another build's investment.
+ *
+ * Champions spreads are Stat Points and convert exactly. A spread that is
+ * neither SP nor a real investment (a near-empty EV line) is ignored.
+ */
+export function usageSpread(spread) {
+    const raw = spread?.evs;
+    if (!raw || !Object.keys(raw).length) return null;
+    const sp = looksLikeStatPoints(raw);
+    if (!sp && Object.values(raw).reduce((a, b) => a + b, 0) < 100) return null;
+    const converted = sp ? statPointSpreadToEvs(raw) : raw;
+    const evs = {};
+    for (const [k, v] of Object.entries(converted)) if (EV_MAP[k]) evs[EV_MAP[k]] = v;
+    return { evs, nature: spread.nature ? spread.nature.toLowerCase() : undefined };
+}
+
+/**
  * Resolve a customization patch (item / ability / nature / teraType / moves /
  * evs) representing the most-used competitive build for `id`, or null if we have
  * nothing for it.
@@ -52,28 +73,25 @@ export async function competitivePresetFor(id) {
     ]);
     const usage = usageById[id] || null;      // precise per-format Smogon usage
     const comp = compById[id] || null;        // tournament poképaste usage
-    const smogonSet = smogonById[id]?.sets?.[0] || null;
+    const smogonSets = smogonById[id]?.sets || [];
+    const smogonSet = smogonSets[0] || null;
+    // The first curated set that actually publishes a spread.
+    const spreadSet = smogonSets.find((s) => s.evs && Object.values(s.evs).some((v) => v > 0)) || null;
     if (!usage && !comp && !smogonSet) return null;
 
     const usedMoves = (usage?.moves || comp?.moves || []).slice(0, 4).map((m) => toSlug(m.name)).filter(Boolean);
     const abilityName = usage?.abilities?.[0]?.name || comp?.abilities?.[0]?.name;
     const teraName = usage?.tera?.[0]?.name || comp?.tera?.[0]?.name || smogonSet?.tera?.[0];
 
-    // EVs: prefer the curated Smogon set's standard 0-252 spread; only use a usage
-    // spread if it actually looks like a full investment (Champions spreads don't).
-    let evs = smogonSet?.evs || null;
-    if (!evs && usage?.spreads?.[0]?.evs) {
-        const raw = usage.spreads[0].evs;
-        if (Object.values(raw).reduce((a, b) => a + b, 0) >= 100) {
-            evs = {};
-            for (const [k, v] of Object.entries(raw)) if (EV_MAP[k]) evs[EV_MAP[k]] = v;
-        }
-    }
+    const { evs, nature } = usageSpread(usage?.spreads?.[0]) || {
+        evs: spreadSet?.evs || null,
+        nature: spreadSet?.nature || smogonSet?.nature || undefined,
+    };
 
     return {
         item: usage?.items?.[0]?.slug || comp?.items?.[0]?.slug || smogonSet?.item || '',
         ability: abilityName ? toSlug(abilityName) : (smogonSet?.ability || undefined),
-        nature: usage?.spreads?.[0]?.nature?.toLowerCase() || smogonSet?.nature || undefined,
+        nature,
         teraType: teraName ? teraName.toLowerCase() : undefined,
         moves: usedMoves.length ? usedMoves : (smogonSet ? primaryMoves(smogonSet) : []),
         evs,

@@ -9,7 +9,7 @@
 > **Status (2026-10-15):** F1–F5 built and verified in the browser, uncommitted:
 > the `/challenge` route as a DS console (walk to Cynthia, her dialogue, the
 > Time do dia featured, an animated battle, result, practice), the Home card,
-> search, OG, guide, patch notes 1.15.0, account deletion. M1 accepted at
+> search, OG, guide, patch notes 1.16.0, account deletion. M1 accepted at
 > log-loss 0.501 (Enzo, 2026-10-15). F3 finished the same day: the win-chance
 > report, the Pokétch dossier, WebAudio sound. Next: F6 (ranking, share card, push).
 
@@ -103,7 +103,7 @@ src/styles/champion-challenge-ds.css   the design-system exception: --px, --ds-*
 - **Home card** (`useChallengeSummary`, `CozyHomeView`): reads the public day, the run and the stats (≤ 3 `getDoc`) plus a `ptb:challenge:summary` cache; states guest / new / ready / active / won / lost (`challengeSummaryState`, tested), always with the countdown. ~1.3 KB gzip on the entry bundle; imports nothing from the route.
 - **`src/utils/challengeDay.js`** mirrors `api/_lib/challenge/day.js` (tested over 800 instants). A run that doesn't exist is a *denied* read, not an empty one (its rule checks `resource.data.uid`) — the card treats both as "not played".
 - **Account deletion** erases runs, their rounds and secret state, then the runs and the stats (two waves: a round's rule reads its run). `aiTraining` rows have no uid and stay.
-- **Search** ("cynthia" finds it via `nav.challengeSearch`), the Mais sheet, `render-meta` OG tags, the page guide, patch notes 1.15.0.
+- **Search** ("cynthia" finds it via `nav.challengeSearch`), the Mais sheet, `render-meta` OG tags, the page guide, patch notes 1.16.0.
 - **Calls on mount wait for Firebase's session** (`callAuthedApi` → `auth.authStateReady()`): the app paints from a saved identity before the session is restored (wound 2026-10-15).
 
 ## Invariants (each has a test — don't break them)

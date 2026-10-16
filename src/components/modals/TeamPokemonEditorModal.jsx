@@ -12,7 +12,7 @@ import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
 import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useBattleItems } from '../../hooks/useBattleItems';
-import { applySmogonSet, formatEvSpread } from '../../utils/smogonSets';
+import { applySmogonSet, formatSetSpread } from '../../utils/smogonSets';
 import { EV_MAX_PER_STAT, EV_TOTAL_BUDGET, applyEvChange, maxEvFor, remainingEvs } from '../../utils/evBudget';
 import { buildSignature } from '../../utils/teamDraft';
 import { natureLabel, ALL_NATURES } from '../../constants/natures';
@@ -347,7 +347,7 @@ export function TeamPokemonEditorModal({ pokemon, onClose, onSave, colors, items
                                     </div>
                                     <div className="editor-sets">
                                         {smogonEntry.sets.map((set, i) => {
-                                            const spread = formatEvSpread(set.evs);
+                                            const spread = formatSetSpread(set);
                                             return (
                                                 <button
                                                     key={`${set.name}-${i}`}

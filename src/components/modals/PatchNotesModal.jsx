@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Crown, KeyRound, Puzzle, Search, Star } from 'lucide-react';
+import { Crown, KeyRound, Puzzle, Scale, Search, Star, Trophy } from 'lucide-react';
 
 import { PATCH_NOTES_VERSION } from '../../constants/theme';
 import { RELEASES, CURRENT_RELEASE, PAST_RELEASES, formatReleaseMonth } from '../../constants/patchNotes';
@@ -44,6 +44,51 @@ const ChampionsDexVisual = ({ language }) => {
             </div>
             <span className="font-mono text-2xs font-semibold tabular-nums text-muted">
                 {pt ? '262 Pokémon · 208 espécies' : '262 Pokémon · 208 species'}
+            </span>
+        </div>
+    );
+};
+
+// Reg M-C — the featured card of 1.15.0 (now in the history), so it is the one illustration that
+// grows to fill its column: the Champions cover, the regulation, and the three
+// Pokémon leading its ladder with the share of teams that run them (Smogon,
+// September 2026, 1630+). Figures are the release's, not live data.
+const REG_MC_LEADERS = [
+    { id: 812, name: 'Rillaboom', pct: 46 },
+    { id: 903, name: 'Sneasler', pct: 37 },
+    { id: 727, name: 'Incineroar', pct: 31 },
+];
+const RegMcVisual = ({ language }) => {
+    const pt = language === 'pt';
+    return (
+        <div className="flex h-full min-h-[13rem] flex-col justify-center gap-4 bg-bg p-5" aria-hidden="true">
+            <div className="flex items-center justify-center gap-3">
+                <span className="flex h-14 w-36 min-w-0 items-center justify-center rounded-md bg-surface-raised p-2 sm:w-44">
+                    <img src={CHAMPIONS_LOGO} alt="" className="max-h-full max-w-full object-contain" />
+                </span>
+                <span className="shrink-0 whitespace-nowrap rounded-full bg-primary-soft px-3 py-1 font-mono text-sm font-bold text-primary">Reg M-C</span>
+            </div>
+            {/* The ladder's top three, one equal column each: sprite, name, and a
+                bar whose length is the share of teams that run it. */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                {REG_MC_LEADERS.map(({ id, name, pct }) => (
+                    <span key={id} className="flex min-w-0 flex-col items-center gap-2 rounded-lg bg-surface-raised px-2 py-3 sm:px-3">
+                        <img
+                            src={`${SPRITE_BASE}/${id}.png`}
+                            alt=""
+                            className="h-16 w-16 object-contain"
+                            style={{ imageRendering: 'pixelated' }}
+                        />
+                        <span className="w-full truncate text-center text-2xs font-semibold text-fg sm:text-xs">{name}</span>
+                        <span className="h-1.5 w-full overflow-hidden rounded-full bg-surface">
+                            <span className="block h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+                        </span>
+                        <span className="font-mono text-xs font-bold tabular-nums text-primary">{pct}%</span>
+                    </span>
+                ))}
+            </div>
+            <span className="text-center font-mono text-2xs font-semibold tabular-nums text-muted">
+                {pt ? 'Ladder Smogon 1630+ · 1,6 mi de partidas · 80 torneios' : 'Smogon ladder 1630+ · 1.6M games · 80 tournaments'}
             </span>
         </div>
     );
@@ -526,6 +571,8 @@ const NOTE_ICONS = {
     search: Search,
     key: KeyRound,
     crown: Crown,
+    trophy: Trophy,
+    scale: Scale,
 };
 
 const NOTE_VISUALS = {
@@ -546,7 +593,44 @@ const NOTE_VISUALS = {
     preFairy: PreFairyVisual,
     account: AccountVisual,
     challenge: ChallengeVisual,
+    regMc: RegMcVisual,
 };
+
+// One "what's new" card. The featured one carries its illustration and grows to
+// the height of the column beside it; the side ones are icon, title, text and
+// call to action, so three of them stack into identical rows. Either way the
+// call to action sits on the card's bottom edge, so the cards line up across.
+function NoteCard({ note, featured = false, onActivate, expanded, colors, t, language }) {
+    const { title, description, cta } = note;
+    const NoteIcon = note.Icon;
+    const NoteVisual = note.Visual;
+    return (
+        <button
+            type="button"
+            onClick={onActivate}
+            className="flex h-full w-full flex-col rounded-xl bg-surface-raised p-4 text-left transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            aria-label={`${title} – ${cta}`}
+            aria-expanded={expanded}
+        >
+            {featured && NoteVisual && (
+                <div className="mb-3 flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg bg-surface">
+                    <NoteVisual colors={colors} t={t} language={language} />
+                </div>
+            )}
+            <div className="mb-1 flex items-center gap-2">
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
+                    <NoteIcon className="h-4 w-4" />
+                </span>
+                <h3 className={`font-bold text-primary${featured ? ' text-lg' : ''}`}>{title}</h3>
+            </div>
+            <p className="text-sm text-fg">{description}</p>
+            <span className="mt-auto inline-flex items-center gap-1 pt-2 text-xs font-semibold text-primary">
+                {cta}
+                <span aria-hidden="true">→</span>
+            </span>
+        </button>
+    );
+}
 
 export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInstall, onOpenSearch }) {
     const { t, language } = useTranslation();
@@ -568,6 +652,22 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
         description: t(note.description),
         cta: t(note.cta),
     }));
+    const featuredNote = notes.find((note) => note.featured) || notes[0];
+    const sideNotes = notes.filter((note) => note !== featuredNote);
+    // A note either goes somewhere or opens the history below it.
+    const activate = (note) => (note.expandsHistory
+        ? () => setHistoryOpen(true)
+        : note.action === 'search'
+            ? () => { onClose(); onOpenSearch?.(); }
+            : () => goTo(note.path));
+    const cardProps = (note) => ({
+        note,
+        onActivate: activate(note),
+        expanded: note.expandsHistory ? historyOpen : undefined,
+        colors,
+        t,
+        language,
+    });
 
     return (
         <div className="modal-scrim" onClick={onClose} role="presentation">
@@ -577,7 +677,7 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                 aria-modal="true"
                 aria-labelledby="patch-notes-title"
                 tabIndex={-1}
-                className="modal-panel"
+                className="modal-panel modal-panel--2xl"
                 style={{ '--scrollbar-track-color': colors.card, '--scrollbar-thumb-color': colors.primary, '--scrollbar-thumb-border-color': colors.card }}
                 onClick={(event) => event.stopPropagation()}
             >
@@ -609,44 +709,17 @@ export function PatchNotesModal({ onClose, colors, isInstallable, isIOS, onInsta
                 </div>
 
                 <div className="space-y-4 px-5 py-4 overflow-y-auto custom-scrollbar flex-1 min-h-0">
-                    {notes.map((note) => {
-                        const { key, title, description, cta, path } = note;
-                        const NoteIcon = note.Icon;
-                        const NoteVisual = note.Visual;
-                        // A note either goes somewhere or opens the history below it.
-                        const activate = note.expandsHistory
-                            ? () => setHistoryOpen(true)
-                            : note.action === 'search'
-                                ? () => { onClose(); onOpenSearch?.(); }
-                                : () => goTo(path);
-                        return (
-                            <button
-                                key={key}
-                                type="button"
-                                onClick={activate}
-                                className="w-full rounded-xl bg-surface-raised p-4 text-left transition-colors duration-150 hover:bg-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-                                aria-label={`${title} – ${cta}`}
-                                aria-expanded={note.expandsHistory ? historyOpen : undefined}
-                            >
-                                <div className="mb-3 overflow-hidden rounded-lg bg-surface">
-                                    <NoteVisual colors={colors} t={t} language={language} />
-                                </div>
-                                <div className="flex items-center gap-2 mb-1">
-                                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
-                                        <NoteIcon className="w-4 h-4" />
-                                    </span>
-                                    <h3 className="font-bold text-primary">{title}</h3>
-                                </div>
-                                <p className="text-sm text-fg">
-                                    {description}
-                                </p>
-                                <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
-                                    {cta}
-                                    <span aria-hidden="true">→</span>
-                                </span>
-                            </button>
-                        );
-                    })}
+                    {/* Side by side from md up: the featured note on the left, the
+                        others stacked at equal height on the right, both columns
+                        the same height. One column on a phone, featured first. */}
+                    <div className={`grid grid-cols-1 gap-4${sideNotes.length > 0 ? ' md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)]' : ''}`}>
+                        <NoteCard {...cardProps(featuredNote)} featured />
+                        {sideNotes.length > 0 && (
+                            <div className="grid grid-cols-1 gap-4 md:auto-rows-fr">
+                                {sideNotes.map((note) => <NoteCard key={note.key} {...cardProps(note)} />)}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Past releases. Collapsed by default so the modal still leads
                         with what's new, but reachable whenever someone wants to

@@ -74,6 +74,21 @@ Species names are resolved to national-dex ids from the committed `pokemon-index
 
 The scraped text parsers — the directory listing and the fixed-width usage table — live in `scripts/lib/smogonStats.mjs` and are pinned by `smogonStats.test.mjs` against real fixtures. They are the most likely thing to break silently when Smogon's output shifts, so change them test-first.
 
+**Formats outlive their month (`mergeCatalog`, 2026-10).** Smogon lists only the ladders that ran that month, so a regulation that rotated out (Reg M-A once M-B opened, Reg I once Champions took over) simply stops appearing. The index is therefore this month's builds **plus** every earlier entry whose file is still on disk, each stamped with its own `month` — `pickDefaultFormat` opens on the newest VGC regulation that has *this* month's data. A catalog format with a file but no index entry is re-listed from the file's metadata. `--formats=a,b` now rebuilds just those and carries the rest, so it is also how to refresh one ladder.
+
+### Tournament results merged in (Limitless)
+
+`scripts/build-limitless-usage.mjs` (`npm run data:limitless`, after `data:usage`) pulls up to 80 of the biggest Limitless VGC events per regulation (`format=M-C`, `SVI`…) and **merges** them into the Smogon file instead of replacing it (`scripts/lib/limitlessMerge.mjs`, tested):
+
+- each ladder species it also saw gains `winRate` and `tour: { usage, teams, winRate, topCut }` (top 8 finishes);
+- the file gains `tournament: { source, teamsAnalyzed, tournaments, from, to, byId }` — the full tournament ranking, including species the ladder detail never reached.
+
+The Meta list offers that ranking as one more band after the rating cutoffs (`TOUR_BAND = 'tour'` in `metaFormats.js`, `?cut=tour`). A regulation with **no** ladder file is still written tournament-first, as before. Only `kind: 'vgc'` formats are enriched — the Bo3 ladders share their regulation's events. `--formats=` limits the run; retired regulations' tournament data does not change, so refresh only the live ones.
+
+### Pokémon Champions spreads are Stat Points
+
+Champions has no EVs: 0–32 Stat Points per stat, 66 in all. Smogon's Champions usage spreads and Champions sets are written in SP. `src/utils/statPoints.js` converts (`n SP ↔ 8n − 4 EVs`, trimmed back into 510 because 66 SP buys one point more than EVs can), and the build scripts import it from there. Sets carry the converted `evs` (what "apply" uses) and the original `sp` (what the pages show, labelled SP). Champions formats have no Tera — don't borrow one from an older game's set.
+
 ### Tier legality (`tier-legality.json`)
 
 Baked by the same script from Showdown's `formats-data.js` — one small file for the whole national dex. `{ byId: { "984": { tier, doubles?, natdex? } } }`, where `doubles`/`natdex` appear only when they differ from `tier`.

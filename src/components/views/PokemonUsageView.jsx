@@ -11,7 +11,8 @@ import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { getPokemonFrontSpriteUrl, getPokemonArtworkSpriteUrl, resolveMegaPokemonEntry } from '../../utils/pokemonSprites';
 import { useMegaStones } from '../../hooks/useMegaStones';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
-import { formatEvSpread, primaryMoves, titleCaseSlug, toApiSlug } from '../../utils/smogonSets';
+import { primaryMoves, setSpreadParts, titleCaseSlug, toApiSlug } from '../../utils/smogonSets';
+import { looksLikeStatPoints } from '../../utils/statPoints';
 import { useReferenceStore } from '../../store/useReferenceStore';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useUsageIndex, useUsageFormat } from '../../hooks/useUsageStats';
@@ -25,6 +26,15 @@ import { UsageBar, MonSprite, MoveChip, Panel, pretty, pctOf, formatUsageSpread,
 import { FormatPicker } from './metaControls';
 
 const slugify = toApiSlug;
+
+// Pikalytics keys its pages by the same Smogon format ids we bake, for the VGC
+// and Champions ladders. The base species name is the page: a mega form is a
+// set of its base there, not a Pokémon of its own.
+const pikalyticsUrl = (formatId, name) => {
+    if (!formatId || !name || !/^gen9(champions|vgc)/.test(formatId)) return null;
+    const base = String(name).replace(/-Mega(-[A-Z])?$/, '');
+    return `https://www.pikalytics.com/pokedex/${formatId}/${encodeURIComponent(base)}`;
+};
 const cap = (s = '') => s.charAt(0).toUpperCase() + s.slice(1);
 
 function MetricTile({ icon, value, label, accent }) {
@@ -102,10 +112,13 @@ export function PokemonUsageView() {
     // (Pokémon Champions has no Tera, so those formats leave this empty).
     const teraList = useMemo(() => {
         if (usage?.tera?.length) return usage.tera.map((t) => ({ name: t.name, count: t.count }));
+        // Champions has no Terastallization: borrowing an older game's set Tera
+        // here printed "Fire 0%" under a format where nobody can use it.
+        if (/champions/.test(fmtId)) return [];
         const m = new Map();
         for (const set of smogon?.sets || []) for (const t of set.tera || []) m.set(t, (m.get(t) || 0) + 1);
         return [...m.entries()].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
-    }, [usage, smogon]);
+    }, [usage, smogon, fmtId]);
 
     const setFmt = (val) => setParams((prev) => { const p = new URLSearchParams(prev); p.set('fmt', val); return p; }, { replace: true });
 
@@ -140,6 +153,8 @@ export function PokemonUsageView() {
     const n = usage?.n || 0;
     const hasUsage = Boolean(usage && n > 0);
     const usageLoading = fmtStatus === 'loading' && !byId;
+    // Pokémon Champions ladders report spreads in Stat Points (0–32), not EVs.
+    const spreadsInSp = Boolean(usage?.spreads?.length) && usage.spreads.every((sp) => looksLikeStatPoints(sp.evs) || !Object.keys(sp.evs || {}).length);
 
     return (
         <main className="edv-page usage-view mx-auto max-w-[1400px] px-3 py-5 sm:px-5">
@@ -201,6 +216,28 @@ export function PokemonUsageView() {
                                 >
                                     {format.label}{detailCutoff > 0 ? ` · ${detailCutoff}+` : ''}
                                 </span>
+                            )}
+                            {usage?.tour && (
+                                // The tournament lens next to the ladder one: how often it
+                                // was registered at Limitless events and how those teams did.
+                                <span
+                                    className="rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs font-semibold text-muted tabular-nums"
+                                    title={pt ? 'Times registrados em torneios do Limitless' : 'Teams registered at Limitless tournaments'}
+                                >
+                                    {pt ? 'Torneios' : 'Tournaments'}: {usage.tour.usage}%
+                                    {Number.isFinite(usage.tour.winRate) && ` · ${usage.tour.winRate}% ${pt ? 'vit.' : 'WR'}`}
+                                    {usage.tour.topCut > 0 && ` · ${usage.tour.topCut} top 8`}
+                                </span>
+                            )}
+                            {pikalyticsUrl(fmtId, usage?.name) && (
+                                <a
+                                    href={pikalyticsUrl(fmtId, usage?.name)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 rounded-xl bg-surface-raised/60 px-3 py-1.75 text-2xs font-semibold text-muted transition-colors hover:text-primary"
+                                >
+                                    Pikalytics <ArrowUpRight className="h-3 w-3" />
+                                </a>
                             )}
                         </div>
                     </div>
@@ -273,7 +310,12 @@ export function PokemonUsageView() {
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {/* Real EV spreads (nature + investment) */}
                         {usage.spreads?.length > 0 && (
-                            <Panel title={pt ? 'Spreads (EVs reais)' : 'Common spreads'} icon={<TrendingUp className="h-4 w-4 text-primary" />}>
+                            <Panel
+                                title={spreadsInSp
+                                    ? (pt ? 'Spreads (Stat Points)' : 'Common spreads (Stat Points)')
+                                    : (pt ? 'Spreads (EVs reais)' : 'Common spreads')}
+                                icon={<TrendingUp className="h-4 w-4 text-primary" />}
+                            >
                                 <div className="space-y-1.5">
                                     {usage.spreads.slice(0, 6).map((sp, i) => {
                                         const spread = formatUsageSpread(sp.evs);
@@ -343,7 +385,7 @@ export function PokemonUsageView() {
                     </h2>
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
                         {smogon.sets.map((set, i) => {
-                            const spread = formatEvSpread(set.evs);
+                            const { unit: spreadUnit, text: spread } = setSpreadParts(set);
                             return (
                                 <article
                                     key={`${set.name}-${i}`}
@@ -373,7 +415,7 @@ export function PokemonUsageView() {
                                             </span>
                                         )}
                                     </div>
-                                    {spread && <p className="mb-3 text-2xs text-muted"><span className="font-semibold text-fg">EVs:</span> {spread}</p>}
+                                    {spread && <p className="mb-3 text-2xs text-muted"><span className="font-semibold text-fg">{spreadUnit}:</span> {spread}</p>}
                                     <div className="grid grid-cols-2 gap-1.5">
                                         {primaryMoves(set).map((mv) => (
                                             <MoveChip key={mv} name={mv} type={typeForMove(mv)} className="w-full text-center justify-center py-1.5 rounded-lg border border-border bg-surface-raised/20 text-2xs hover:border-border transition-colors" />

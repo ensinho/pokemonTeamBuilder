@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
-import { orderCutoffs, parseStatsListing, parseUsageTable } from './lib/smogonStats.mjs';
+import { mergeCatalog, orderCutoffs, parseStatsListing, parseUsageTable, pickDefaultFormat } from './lib/smogonStats.mjs';
 
 // Builds precise, per-format competitive usage from Smogon's monthly stats
 // ("chaos" JSON): real usage %, held items, moves, abilities, EV spreads, Tera
@@ -36,10 +36,28 @@ const STATS_BASE = 'https://www.smogon.com/stats';
 // below drops every format with no files, so speculative ids (a BSS series that
 // may or may not be running, a tier that was folded away) are safe to keep here.
 const FORMATS = [
-    // VGC regulations — `kind: 'vgc'`, and the default the app opens on.
+    // VGC regulations — `kind: 'vgc'`, newest first: the first one built is the
+    // default the app opens on. A regulation the month no longer publishes (M-A
+    // after M-B launched, Reg I once Champions took over) is not dropped — see
+    // `carryForward` in main().
+    { id: 'gen9championsvgc2026regmc', label: 'VGC Reg M-C', group: 'Pokémon Champions', kind: 'vgc' },
     { id: 'gen9championsvgc2026regmb', label: 'VGC Reg M-B', group: 'Pokémon Champions', kind: 'vgc' },
     { id: 'gen9championsvgc2026regma', label: 'VGC Reg M-A', group: 'Pokémon Champions', kind: 'vgc' },
     { id: 'gen9vgc2026regi', label: 'VGC 2026 Reg I', group: 'Scarlet & Violet', kind: 'vgc' },
+
+    // The Best-of-3 ladders run the same regulation, so they are Meta-page
+    // browsing only (`kind: 'tier'`) — a second "Reg M-C" card in the Team
+    // Builder's ruleset picker would be the same rules twice.
+    { id: 'gen9championsvgc2026regmcbo3', label: 'VGC Reg M-C (Bo3)', group: 'Pokémon Champions', kind: 'tier' },
+    { id: 'gen9championsvgc2026regmbbo3', label: 'VGC Reg M-B (Bo3)', group: 'Pokémon Champions', kind: 'tier' },
+
+    // Pokémon Champions singles: Smogon's own Champions tiers plus the
+    // cartridge Battle Stadium series, which rotates with the VGC regulation.
+    { id: 'gen9championsou', label: 'Champions OU', group: 'Champions Singles', kind: 'tier' },
+    { id: 'gen9championsuu', label: 'Champions UU', group: 'Champions Singles', kind: 'tier' },
+    { id: 'gen9championsbssregmc', label: 'Battle Stadium Reg M-C', group: 'Champions Singles', kind: 'tier' },
+    { id: 'gen9championsbssregmb', label: 'Battle Stadium Reg M-B', group: 'Champions Singles', kind: 'tier' },
+    { id: 'gen9championsbssregma', label: 'Battle Stadium Reg M-A', group: 'Champions Singles', kind: 'tier' },
 
     // Scarlet & Violet singles ladder.
     { id: 'gen9ou', label: 'OU', group: 'SV Singles', kind: 'tier' },
@@ -59,7 +77,11 @@ const FORMATS = [
 
     // Scarlet & Violet doubles ladder.
     { id: 'gen9doublesou', label: 'Doubles OU', group: 'SV Doubles', kind: 'tier' },
+    { id: 'gen9doublesubers', label: 'Doubles Ubers', group: 'SV Doubles', kind: 'tier' },
     { id: 'gen9doublesuu', label: 'Doubles UU', group: 'SV Doubles', kind: 'tier' },
+    { id: 'gen92v2doubles', label: '2v2 Doubles', group: 'SV Doubles', kind: 'tier' },
+    // Reg G is long retired from official play but Showdown still ladders it.
+    { id: 'gen9vgc2024regg', label: 'VGC 2024 Reg G', group: 'SV Doubles', kind: 'tier' },
 
     // National Dex family.
     { id: 'gen9nationaldex', label: 'National Dex OU', group: 'National Dex', kind: 'tier' },
@@ -658,12 +680,12 @@ async function main() {
 
     // `--formats=gen9ou,gen9uu` builds just those, for a 30-second smoke test
     // before committing to the full catalog (~40 chaos dumps, a few hundred MB).
-    // A partial run writes a partial index, so it is for checking the pipeline
-    // works — not for producing the data the site ships.
+    // Formats left out keep their baked files and index entries (mergeCatalog),
+    // so a partial run is also how to refresh one ladder without the rest.
     const only = (process.argv.find((a) => a.startsWith('--formats=')) || '')
         .slice('--formats='.length).split(',').map((s) => s.trim()).filter(Boolean);
     const wanted = only.length ? FORMATS.filter((f) => only.includes(f.id)) : FORMATS;
-    if (only.length) console.warn(`  · --formats: building ${wanted.length} of ${FORMATS.length} (PARTIAL index — do not ship)`);
+    if (only.length) console.warn(`  · --formats: rebuilding ${wanted.length} of ${FORMATS.length}; the rest keep their baked files`);
 
     const built = [];
     for (const fmt of wanted) {
@@ -684,19 +706,64 @@ async function main() {
     // Never clobber a good catalog with an empty run (e.g. Smogon briefly down).
     if (!built.length) { console.warn('build-usage-stats: no formats built; keeping existing data.'); return; }
 
-    // The app opens on a VGC regulation (the audience the builder is aimed at),
-    // falling back to whatever built first if no VGC ladder ran this month.
-    const defaultFormat = built.find((f) => f.kind === 'vgc') || built[0];
+    // Formats this month did not publish keep their last baked file (see
+    // mergeCatalog). A --formats smoke run carries everything else forward too,
+    // so it no longer truncates the shipped index to the handful it rebuilt.
+    let previous = null;
+    try { previous = JSON.parse(await fs.readFile(path.join(DATA_DIR, 'usage-index.json'), 'utf8')); } catch (_) { /* first run */ }
+    const onDisk = new Set(await fs.readdir(USAGE_DIR).catch(() => []));
+    // Before carry-forward existed, a rotated-out regulation fell out of the
+    // index while its file stayed on disk (Reg M-A and Reg I, 2026-08). Any
+    // catalog format with a baked file but no index entry is re-listed from the
+    // file's own metadata, so those come back instead of staying orphaned.
+    previous = { ...(previous || {}), formats: [...(previous?.formats || [])] };
+    for (const fmt of FORMATS) {
+        if (previous.formats.some((f) => f.id === fmt.id) || !onDisk.has(`${fmt.id}.json`)) continue;
+        try {
+            const file = JSON.parse(await fs.readFile(path.join(USAGE_DIR, `${fmt.id}.json`), 'utf8'));
+            const cutoff = file.detailCutoff ?? file.format?.cutoff ?? null;
+            previous.formats.push({
+                ...fmt,
+                cutoff,
+                cutoffs: file.format?.cutoffs || (cutoff == null ? [] : [cutoff]),
+                totalBattles: file.totalBattles || 0,
+                species: file.species || Object.keys(file.byId || {}).length,
+                file: `usage/${fmt.id}.json`,
+                month: file.month || null,
+            });
+        } catch (_) { /* unreadable — leave it out */ }
+    }
+    const formats = mergeCatalog({
+        catalog: FORMATS,
+        built,
+        previous,
+        month,
+        hasFile: (entry) => onDisk.has(path.basename(entry.file || `${entry.id}.json`)),
+    });
+    // A carried entry's month is the one stamped in its own file — indexes from
+    // before per-entry months would otherwise date it to the previous run.
+    for (const f of formats) {
+        if (f.month === month) continue;
+        try {
+            const file = JSON.parse(await fs.readFile(path.join(USAGE_DIR, `${f.id}.json`), 'utf8'));
+            if (file.month) f.month = file.month;
+        } catch (_) { /* keep the index's month */ }
+    }
+    const carried = formats.filter((f) => f.month !== month).map((f) => `${f.id} (${f.month})`);
+    if (carried.length) console.log(`  · carried forward (not published in ${month}): ${carried.join(', ')}`);
+
+    // The app opens on the newest VGC regulation with this month's data.
+    const defaultFormat = pickDefaultFormat(formats, month);
 
     const index = {
         generatedAt: new Date().toISOString(),
         month,
         source: `${STATS_BASE}/${month}/`,
         default: defaultFormat.id,
-        formats: built,
+        formats,
     };
     await fs.writeFile(path.join(DATA_DIR, 'usage-index.json'), `${JSON.stringify(index, null, 2)}\n`);
-    console.log(`build-usage-stats: wrote ${built.length} formats + index (default ${index.default}).`);
+    console.log(`build-usage-stats: built ${built.length} formats, index lists ${formats.length} (default ${index.default}).`);
 }
 
 main().catch((err) => { console.warn('build-usage-stats failed (non-fatal):', err.message); });

@@ -9,7 +9,7 @@ import { useMoveTypes } from '../../hooks/useMoveTypes';
 import { useTournamentData } from '../../hooks/useTournamentData';
 import { useTranslation } from '../../hooks/useTranslation';
 import { itemSpriteUrl } from '../../utils/itemSuggestions';
-import { formatEvSpread, formatIvNotes } from '../../utils/smogonSets';
+import { formatIvNotes, setSpreadParts } from '../../utils/smogonSets';
 import { useEntityNavigate } from '../../hooks/useEntityNavigate';
 import { UsageBar, MonSprite, pctOf } from './metaShared';
 
@@ -247,7 +247,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
 
                     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                         {entry.sets.map((set, i) => {
-                            const evSpread = formatEvSpread(set.evs);
+                            const { unit: spreadUnit, text: evSpread } = setSpreadParts(set);
                             const ivNotes = formatIvNotes(set.ivs);
                             return (
                                 <article key={`${set.name}-${i}`} className="rounded-xl border border-border bg-surface p-4 space-y-3">
@@ -286,7 +286,7 @@ export function SmogonCompetitivePanel({ pokemonId }) {
 
                                     {evSpread && (
                                         <div className="text-xs text-muted">
-                                            <span className="font-bold text-fg">EVs:</span> <span className="font-mono">{evSpread}</span>
+                                            <span className="font-bold text-fg">{spreadUnit}:</span> <span className="font-mono">{evSpread}</span>
                                             {ivNotes && <> · <span className="font-bold text-fg">IVs:</span> <span className="font-mono">{ivNotes}</span></>}
                                         </div>
                                     )}

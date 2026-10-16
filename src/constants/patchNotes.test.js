@@ -40,12 +40,18 @@ describe('the release ledger', () => {
         expect([CURRENT_RELEASE, ...PAST_RELEASES]).toEqual(RELEASES);
     });
 
-    it('gives the current release the illustration data the modal needs', () => {
+    it('gives the current release the data its side-by-side layout needs', () => {
         for (const note of CURRENT_RELEASE.notes) {
-            expect(note.visual).toBeTruthy();
             expect(note.icon).toBeTruthy();
             expect(note.description).toMatch(/^patchNotes\./);
+            expect(note.cta).toMatch(/^patchNotes\./);
         }
+        // One large card on the left, with the illustration; the rest share
+        // the right column evenly.
+        const featured = CURRENT_RELEASE.notes.filter((n) => n.featured);
+        expect(featured).toHaveLength(1);
+        expect(featured[0].visual).toBeTruthy();
+        expect(CURRENT_RELEASE.notes.length - 1).toBeLessThanOrEqual(3);
     });
 });
 
