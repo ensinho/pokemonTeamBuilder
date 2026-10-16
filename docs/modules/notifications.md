@@ -21,7 +21,8 @@ Three channels, deliberately separate, all reachable from one switch:
    just as often as "none". Getting this wrong fired one banner per waiting
    battle on every app open (wounds.md, 2026-09-21).
 2. **One notification per kind, not per event.** Everything battle-shaped
-   carries the tag `ptb-battles`, the daily nudge `ptb-daily`. The service
+   carries the tag `ptb-battles`, the daily PokéPuzzle nudge `ptb-daily`, the
+   Champion Challenge's new team `ptb-challenge` (`GROUP_OF` in `webPush.js`). The service
    worker counts what is already on screen and replaces it with a summary
    ("3 batalhas esperando por você"). `digestAttention`
    (`src/utils/notificationDigest.js`) does the same for in-app bursts.
@@ -49,6 +50,7 @@ Three channels, deliberately separate, all reachable from one switch:
 | Your turn / battle opened | `api/_lib/battleNotify.js` (push + email) | the turn resolver, `api/battle-turn.js` |
 | Challenge sent, team owed | `api/battle-notify.js` | the browser — `useBattlesStore` pings it |
 | New daily PokéPuzzle | `api/daily-puzzle.js` | Vercel cron, `0 12 * * *` (09:00 BRT) |
+| Cynthia's new team (Champion Challenge) | `api/daily-puzzle.js` (`DAILY_TOPICS`), topic `dailyChallenge` | the same cron — the Hobby cap of two crons means a daily topic rides this one |
 
 On the Hobby plan a cron may run **once a day at most**, and fires within the
 scheduled hour rather than on the minute. This project now has two — the

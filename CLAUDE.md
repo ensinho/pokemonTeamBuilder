@@ -94,6 +94,16 @@ before adding one (`find api -name '*.js' ! -name '*.test.js' ! -path 'api/_lib/
 
 **Dependency trap:** Vercel's function loader does **not** support `require(esm)`, but local Node ≥22.12 does — so a CommonJS package requiring an ESM-only one loads fine here and kills the function there (`ERR_REQUIRE_ESM`, exit 1, no stack). This is why `package.json` has an `overrides` entry pinning `jwks-rsa`'s `jose` to v5. Before adding or upgrading anything under `api/`, check it with `node --no-experimental-require-module -e "require('<pkg>')"`; `api/_lib/dependencies.test.js` automates that for the known-fragile paths.
 
+**The Champion Challenge (`api/challenge.js`, `api/_lib/challenge/`, `api/_lib/ai/`)** is the
+single-player sibling: the daily battle against a Cynthia AI. It uses the
+**synchronous** `Battle` API (no streams, no timers), replays from seed + choices
+like PvP, and its AI decides on a snapshot taken before the player's choice. Two
+sim traps it documents: `battle.toJSON()` returns the `log` **by reference** (clone
+through `engine.snapshot()` / `ai/fog.js`, never a raw `fromJSON(toJSON())`), and
+`gen9customgame` is a debug format that shows exact HP to both sides. Read
+`docs/modules/daily_challenge.md` before touching it; `npm run ai:arena` after any
+AI change.
+
 Two unauthenticated probes, in order, when battles misbehave in production:
 - `GET /api/battle-turn?ping=1` — answers before loading anything. JSON means the function starts at all; another `FUNCTION_INVOCATION_FAILED` means the fault is the deployment or platform config, not this code.
 - `GET /api/battle-turn` — full self-check: dependency load, credentials (shape only, never contents), a Firestore round-trip, and a real two-Pokémon sim run.
@@ -115,7 +125,7 @@ Three rules, all of them bugs that happened (`docs/wounds.md`, 2026-09-21) —
   `battles: []` also means "not asked yet"; `hasLoadedBattles` is the difference,
   and ignoring it fired one banner per waiting battle on every app open.
 - **Several events of one kind collapse into one tray entry** via a shared tag
-  (`ptb-battles`, `ptb-daily`), counted in the worker.
+  (`ptb-battles`, `ptb-daily`, `ptb-challenge`), counted in the worker.
 - **Request permission only from a click, and show through the worker.** iOS
   rejects a prompt with no user gesture, has no `Notification` constructor, and
   has no push at all until the PWA is installed (`needsIosInstall()`).

@@ -46,7 +46,26 @@ Spike desta sessão:
 
 Pesos aprendidos (variáveis padronizadas): Pokémon vivos **0,72**, HP total **0,66**, confronto atual (melhor dano de cada lado) **0,40**, quem é mais rápido **0,23**, status **0,18**, boosts **0,09**. A ordem bate com a intuição de jogador, o que é um bom sinal de que o modelo não está "decorando" ruído.
 
-**Variáveis** (`features.js`, versão 1 = as 6 do spike; versão 2 candidata):
+**Treino de verdade (F1, 2026-10-14)** — `npm run ai:dataset` + `npm run ai:train`, variáveis com neblina (como no jogo):
+
+| Dados (autojogo) | Divisão | Log-loss | Brier | Acerto | ECE |
+|---|---|---|---|---|---|
+| 600 batalhas, robôs ε = 25% | `battle % 10` | 0,551 | 0,187 | 70,7% | 0,062 |
+| 1.500 batalhas, ε = 25% | por par de batalhas | 0,526 | 0,178 | 72,6% | 0,017 |
+| 1.500 batalhas, ε = 25%, **informação completa** | por par | 0,523 | 0,176 | 73,0% | 0,016 |
+| **1.500 batalhas, ε = 10%** (instalado) | por par | **0,501** | **0,167** | **75,2%** | **0,029** |
+| 2.000 batalhas, ε = 10%, variáveis v2 (+ hazards, + vantagem × turno) | por par | 0,511 | 0,172 | 74,4% | 0,025 |
+
+O que cada linha ensinou:
+- **A divisão por número da batalha enviesava a calibração.** O conjunto alterna o confronto real (Cynthia × Time do dia) e times aleatórios, e `battle % 10` punha proporções diferentes de cada tipo no treino e no teste. Dividir por **par** de batalhas derrubou o ECE de 0,062 para 0,017.
+- **A neblina quase não custa precisão:** 0,526 contra 0,523 com informação completa. Treinar com neblina, como o jogo usa, é de graça.
+- **O piso vem do ruído dos robôs, não do modelo:** com 25% de jogadas aleatórias (trocas aleatórias inclusive), o resultado fica menos previsível a partir da posição. Com 10%, a log-loss cai para 0,501. O spike chegou a 0,470 com outra política (aleatoriedade só entre golpes).
+- **A v2 não ajudou** (0,511, dentro da variação entre amostras, que é de ±0,01). Ficou a v1, mais simples.
+- Pesos aprendidos (padronizados): HP total **1,44**, confronto 0,29, velocidade 0,25, boosts 0,09, Pokémon vivos 0,06 (colinear com o HP), status 0,02.
+
+**Critério de aceite: aceito pelo Enzo em 2026-10-15 ("segue no 501").** Passou em Brier (≤ 0,17), ECE (≤ 0,05) e ganho sobre a referência (0,501 contra 0,576), mas ficou em log-loss 0,501 contra ≤ 0,50. Isso é 0,001 acima, abaixo do erro amostral do conjunto de teste (cerca de ±0,005). Foi instalado com `--force` porque um modelo calibrado com 75% de acerto é muito melhor que a fórmula manual. Opções para o Enzo: aceitar e ajustar o critério para o autojogo atual, ou exigir dados humanos (F6) antes de usar o M1 no *lookahead*.
+
+**Variáveis** (`features.js`, versão 1 = as 6 do spike; a v2 foi medida e não entrou):
 
 | # | Variável (sempre do ponto de vista da Cynthia) | v1 | v2 |
 |---|---|---|---|
@@ -159,7 +178,8 @@ scripts/
   ai-train.mjs         [NEW] treina M1/M2, valida por batalha, escreve models/*.js e um relatório
 ```
 
-- **Treino** (`ai-train.mjs`): padronização (média e desvio guardados no modelo), gradiente descendente com L2, separação por batalha 70/30 e **sem dependência nova**. O spike treinou M1 em segundos.
+- **Treino** (`ai-train.mjs`): padronização (média e desvio guardados no modelo), gradiente descendente com L2, separação 70/30 **por par de batalhas** (o conjunto alterna confronto real e times aleatórios) e **sem dependência nova**. Treina em segundos.
+- **Dados de autojogo** (`ai-dataset.mjs`): os dois lados são o mesmo robô ε-guloso (`--epsilon`, padrão 25; o modelo instalado usou 10), para que M1 aprenda "quem está ganhando", e não "qual lado joga melhor". Metade das batalhas é o confronto real do dia, metade são dois times aleatórios. `--full` gera variáveis com informação completa, para comparação.
 - **Relatório:** log-loss, Brier, acerto, curva de calibração (10 faixas) e **ECE**, sempre comparados ao baseline "mais Pokémon vivos". Sai em Markdown para colar no PR.
 - **Arquivos de dados:** os brutos ficam em `scratch/ai-data/`. A pasta `scratch/` é versionada, então `scratch/ai-data/` entra no `.gitignore` [MODIFY]. Só os pesos (`models/*.js`, poucos KB) são commitados.
 - **Critério para aceitar um modelo novo:**
@@ -188,7 +208,7 @@ scripts/
 
 | Fase | Entrega |
 |---|---|
-| **F1** | `features.js` (v1), `model.js`, `winprob-v1.js` treinado em autojogo, M1 no lookahead e no modo de risco, `foe-v0.js` com pesos de mão, `ai-dataset`/`ai-train`, testes acima |
+| **F1** ✅ | `features.js` (v1), `model.js`, `winprob-v1.js` treinado em autojogo, M1 no lookahead, no modo de risco, nas falas e na curva, `foe-v0.js` com pesos de mão, `ai-dataset`/`ai-train`. Coleta anônima já gravada no fim de cada partida (`aiTraining`); o aviso na tela é da F5 |
 | **F3** | Gráfico pós-batalha na `ResultScreen` (SVG próprio, seguindo a skill `dataviz`), com a maior virada destacada |
 | **F5** | Coleta anônima ativa + aviso na tela; recomendada a página `/privacy` |
 | **F6** | M2 treinado com dados humanos (a partir de ~2 mil partidas); M3 e ajuste dos perfis; retreino do M1 com humanos |

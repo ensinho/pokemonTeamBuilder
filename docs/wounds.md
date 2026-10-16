@@ -12,6 +12,62 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-16 — The challenge room drew at the wrong scale after its screen was replaced `bug`
+- **Symptom:** with the new desktop rails, the room's tiles came out tiny in one corner while the Poké Ball ring filled the screen. The same happened whenever the window crossed the 1024 px phone/desktop breakpoint.
+- **Root cause:** `useScreenScale` set `--px` from a `useLayoutEffect(…, [])` on a ref object, so it ran once per console mount. When the console swapped its screen elements (one screen ↔ two, or a wrapper appearing around the screen), the new element never got `--px` and fell back to the 2 px default. A second, cosmetic bug: the remount also reset the room, so the player lost their position.
+- **Fix:** `useScreenScale` now returns a callback ref that re-measures and re-observes whenever React attaches a new element. `DsConsole` keeps one tree (`.ds-deck`, with or without rails), so the screen never remounts when the rails come and go.
+- **Correct pattern:** a hook that measures a DOM node takes a callback ref, not a ref object read in a run-once effect, whenever the node can be replaced without the component unmounting. And keep conditional wrappers out of a subtree whose state matters: render the wrapper always, and toggle what is inside it.
+- **Files:** `src/hooks/useScreenScale.js`, `src/components/views/challenge/ds/DsConsole.jsx`
+
+### 2026-10-16 — A grid item named an area its grid did not define `bug`
+- **Symptom:** on a narrow desktop (no rails) the challenge console was squeezed into the right half of its column.
+- **Root cause:** `.ds-deck > .ds-console { grid-area: console }` applied in every mode, but only the rail modes define `grid-template-areas`. CSS resolves an unknown area name to implicit lines, so the console went into an auto-sized implicit column after the explicit one.
+- **Fix:** `grid-area: console` applies only under `.ds-deck:is(.is-one, .is-two)`, the modes that name it.
+- **Correct pattern:** when `grid-template-areas` changes by mode, scope each `grid-area` to the same mode. An area name the grid lacks is not an error; it silently creates tracks.
+- **Files:** `src/styles/champion-challenge-ds.css`
+
+### 2026-10-15 — Talking to Cynthia a second time skipped her dialogue `bug`
+- **Symptom:** after VOLTAR from the team picker, pressing A in front of Cynthia jumped straight back to the picker — no "!", no lines.
+- **Root cause:** `DsArena` reset the dialogue's line counter when *entering* dialogue mode, in an effect running in the same commit as the "all lines read → done" effect; that one still saw the previous dialogue's count and fired `onDialogueDone` at once. The room's "arrived" flag also stayed set, so the player could not walk away either.
+- **Fix:** reset the counter on the way *out* of dialogue, and re-arm the arrival when the room returns to walking.
+- **Correct pattern:** when an effect both resets state and another effect reads it in the same commit, reset on the transition away, not on the way in — the reader runs before the reset lands.
+- **Files:** `src/components/views/challenge/ds/DsArena.jsx`
+
+### 2026-10-15 — An API call made on mount failed for returning users ("A sala da Campeã teve um problema") `bug`
+- **Symptom:** opening `/challenge` directly (or reloading it) as a returning visitor showed the room's server-error state; a first visit, or arriving by a click, worked.
+- **Root cause:** `useAuthStore` boots "ready" from a saved snapshot (`isAuthReady: true` at once, so the app paints without waiting), but Firebase restores `auth.currentUser` asynchronously. The challenge loads as soon as `isAuthReady` — before the session is back — so `callAuthedApi` found no user and returned `signedOut`. PvP never showed it because its calls come from clicks, long after the restore.
+- **Fix:** `callAuthedApi` awaits `auth.authStateReady()` when `currentUser` is still null, then reads it again.
+- **Correct pattern:** `isAuthReady` means "safe to paint", not "Firebase has a user". Anything that needs a token on mount goes through `callAuthedApi` (which waits) or waits on `isAuthReconciled`; never read `auth.currentUser` straight after boot.
+- **Files:** `src/services/apiClient.js`, `src/services/apiClient.test.js`
+
+### 2026-10-15 — The DS text box could not be tapped past a line `bug`
+- **Symptom:** on a phone, tapping Cynthia's dialogue never finished the line or moved on — the typewriter kept going and the encounter never reached the team picker. Desktop hid it: Z advanced the dialogue directly, skipping unread lines.
+- **Root cause:** the tap set the visible count to `Infinity`, but the typewriter's `setInterval` kept running with its own counter and wrote `n` back on the next tick, so "finish the line" lasted one frame.
+- **Fix:** the interval id lives in a ref and a tap clears it before showing the whole line; A on the keyboard goes through the same press (`advanceRef`), so both finish the line first and advance on the second press, as in the games.
+- **Correct pattern:** an effect-owned timer that a handler can override must be stoppable by that handler (ref the id); never let a timer and an event both write the same state. Test a tap-through on a touch context, not only the keyboard path.
+- **Files:** `src/components/views/challenge/ds/DsTextBox.jsx`, `src/components/views/challenge/ds/DsArena.jsx`
+
+### 2026-10-15 — Battle commands flashed for one frame between the server's answer and the turn `bug`
+- **Symptom:** after choosing a move, the transcript went "Cynthia está pensando…" → "O que X vai fazer?" → the turn — the prompt and the command panel appeared for one render before the turn played.
+- **Root cause:** `useBattlePlayback` queues new log lines in an effect, one render after they arrive, so for that render `isPlaying` was false while the request already said "your turn".
+- **Fix:** lines past the queue's `tail` count as playing (`lines.length > state.tail`).
+- **Correct pattern:** when an effect turns props into queued work, derive "busy" from the props too, not only from the queue the effect fills.
+- **Files:** `src/hooks/useBattlePlayback.js`
+
+### 2026-10-15 — Gen 4 battle sprites floated above (or sank into) their platforms `bug`
+- **Symptom:** Roserade hovered over her platform, others sank into it; the foe looked softer than the player's Pokémon.
+- **Root cause:** Showdown pads Gen 4/5 sprites into 96 × 96 and the feet land anywhere from row 72 to 93; the foe was drawn at 80 DS px (scaled 0.83, blurring the pixel grid) with one fixed offset. The sprite host sends no CORS header, so the browser cannot measure the art.
+- **Fix:** `scripts/build-sprite-feet.mjs` bakes each sprite's feet row into `public/data/sprite-feet.json` (9 KB gzip, lazy); both sides draw 1:1 and stand the feet row on their platform's centre line (`STAGE` in `DsBattleScene.jsx`).
+- **Correct pattern:** pixel art renders at an integer multiple of its own grid; anything about a sprite's pixels that layout depends on is baked at build time.
+- **Files:** `scripts/build-sprite-feet.mjs`, `src/hooks/useSpriteFeet.js`, `src/utils/battleSprites.js`, `src/components/views/challenge/ds/DsBattleScene.jsx`, `src/styles/champion-challenge-ds.css`
+
+### 2026-10-14 — AI clones wrote imagined turns into the live battle's log `bug`
+- **Symptom:** in the Champion Challenge AI fuzz, the live battle's p1 log had 2,220 lines while a replay of the same recorded choices had 203 — the extra lines were turns the AI's lookahead had only *simulated*. A player would have been sent lines from battles that never happened. Caught by the I2 test ("a replay of the recorded choices is identical") before anything shipped.
+- **Root cause:** `@pkmn/sim`'s `battle.toJSON()` returns the `log` array **by reference** (every other field is a copy), and `Battle.fromJSON` adopts that array instead of copying it. So a clone built from a raw `toJSON()` appends to the live battle's log, and two clones from one JSON append to each other's. The 2026-10-14 spike measured clone *cost*, never clone *isolation*.
+- **Fix:** `engine.snapshot()` copies the log (`json.log = json.log.slice()`); every clone in `api/_lib/ai/fog.js` goes through `cloneOf`, which gives it its own log. Side effect: decisions got faster (Sunday p95 59 → 39 ms) — the shared log had been growing.
+- **Correct pattern:** never `Battle.fromJSON(battle.toJSON())` on a battle you still use — go through `engine.snapshot()` / `fog.js`. Any new code that clones a battle needs a "replay equals live" test.
+- **Files:** `api/_lib/challenge/engine.js`, `api/_lib/ai/fog.js`, `api/_lib/ai/invariants.test.js`
+
 ### 2026-10-14 — A dialog opened from inside a card rendered squeezed into the card `bug`
 - **Symptom:** the new change-password / delete-account dialogs, opened from Profile's account card, drew inside the card's bounds (a 26rem-wide sliver at the bottom of the page) instead of over the screen.
 - **Root cause:** `.modal-scrim` is `position: fixed`, but a fixed element resolves against the nearest ancestor that establishes a containing block (transform / filter / contain / container queries) — the profile card is one, so the "full-screen" scrim was card-sized. The old small modal had the same bug and hid it by being small.
@@ -776,6 +832,16 @@ EOF
 
 These are real smells found in the codebase. They are **not yet fixed** — listed so you
 don't copy them and so we can pay them down deliberately. Promote one to "Resolved" when you fix it.
+
+### `security` — PvP battles show each player the opponent's exact HP (found 2026-10-14)
+- `api/_lib/battleResolver.js` and `api/battle-turn.js` play `gen9customgame`. In `@pkmn/sim` Custom Game is a **debug** format (`debug: true` → `battle.reportExactHP`), so the shared half of every `|split|` HP line carries exact HP — each player's stream reads `|-damage|p2a: Garchomp|144/183`, not `79/100`. Exact HP at a known level is enough to work out the opponent's HP/Def EV investment. Verified with `extractChannelMessages` on 2026-10-14.
+- The Champion Challenge avoids it: `gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Terastal Clause` (`api/_lib/challenge/constants.js`) carries HP Percentage Mod and no debug flag.
+- **Next step:** switch PvP's format to `gen9anythinggoes@@@<the clauses PvP wants>` (Anything Goes' other rules are validator-only, and the resolver never validates). It changes the replay of in-progress battles (the format is part of the replay), so record the format per battle — as the challenge does in `secret/state.format` — or let running battles finish on the old one.
+
+### `dispattern` — The PvP endpoint tests are flaky under a loaded CPU (found 2026-10-14, widened 2026-10-15)
+- "never shows a player the other side's bench" failed once in a full `npm test` run (`expected ['Terapagos-Terastal', …] to deeply equal ['Terapagos', …]`) and passes alone and on re-runs. The PvP resolver feeds `BattleStreams` with a 5 ms `drain()` between writes (`battleResolver.js`, `DRAIN_MS`); with the challenge's AI tests saturating the CPU in parallel, that timing assumption is what gives.
+- 2026-10-15: the same race now shows in most full runs as two failures — `battle-random` "deals both trainers a team and starts the battle" and `battle-turn` "bootstraps the opening position and asks both players for a team order" — and once even with only those two files running beside a dev server; three clean re-runs pass 18/18. The challenge work changes no PvP server code (in F1 only the tests' in-memory Firestore moved to `api/_lib/testing/`), and the failures are the stream timing above.
+- **Correct pattern / next step:** new battle code uses the synchronous `Battle` API (`api/_lib/challenge/engine.js`) — no timers, no stream promises. Moving PvP onto it would retire `DRAIN_MS`, the drain race and the flake together.
 
 ### `dispattern` — View stylesheets load *before* `index.css`, so a Tailwind utility beats a view rule (found 2026-09-24)
 - `AppLayout` imports `HomeView` from the `views/index.js` barrel, which statically re-exports nearly every view — so every barrel view module, and **its stylesheet**, is evaluated with `App`, and `main.jsx` imports `App` *before* `./index.css`. The resulting order (dev and production alike) is: view CSS files → `index.css` (Tailwind utilities + the component primitives) → lazily loaded CSS (views not in the barrel: Meta, Gyms, battles…). Consequence: **a single-class rule in a view stylesheet loses to a Tailwind utility on the same element** (both 0,1,0; the utility comes later). Three phone overrides in the 2026-09-24 pass silently did nothing until they were made compound (`.spd-tier .spd-row__types > *`, `.home-panel .pinned-repo-header`, `.team-builder-mobile .team-builder-mobile__grid`). Check the order with `[...document.styleSheets].map(s => s.ownerNode?.dataset?.viteDevId)` in dev.

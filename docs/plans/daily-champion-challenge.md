@@ -1,8 +1,9 @@
 # Plano — Desafio da Campeã (batalha diária contra a Cynthia)
 
-> Status: **alinhado** (fluxo `/feature`, etapa 2 concluída). As decisões da seção 14
-> foram respondidas pelo Enzo em 2026-10-14. Próximo passo: F1 (motor + IA).
-> Nenhum código produtivo foi alterado ainda.
+> Status: **F1 (motor + IA) implementada em 2026-10-14**; próximo passo: F2 (jogável no navegador).
+> As decisões da seção 14 foram respondidas pelo Enzo em 2026-10-14.
+> O sistema como construído está em [`docs/modules/daily_challenge.md`](../modules/daily_challenge.md).
+> Onde este plano e a especificação técnica divergirem, vale a especificação.
 > Documentos irmãos: [especificação técnica](./daily-champion-challenge-tech.md) (arquivos, contratos, dados, estados, tarefas), [IA de batalha](./daily-champion-challenge-ai.md) e [modelos de previsão](./daily-champion-challenge-ml.md).
 > Data: 2026-10-14.
 
@@ -64,7 +65,7 @@ Quem volta pode pular a caminhada: o botão "Ir até a Cynthia" fica visível de
 
 | Peça existente | Onde | Uso no desafio |
 |---|---|---|
-| Simulador autoritativo | `api/_lib/battleResolver.js` (`packTeam`), `@pkmn/sim@0.10.11` | Mesma versão, mesmo formato `gen9customgame`, nível 50 |
+| Simulador autoritativo | `api/_lib/battleResolver.js`, `@pkmn/sim@0.10.11` | Mesma versão e nível 50; formato próprio (`gen9anythinggoes`, §3.5) e API síncrona (§3.2) em `api/_lib/challenge/engine.js` |
 | Times aleatórios determinísticos | `api/_lib/randomTeams.js` → `generateRandomTeam({seed})` | **Time do dia** (seed derivada da data) |
 | Leitores de protocolo | `src/utils/battleProtocol.js` (`readMyRequest`, `describeLogLines`), `src/utils/battleState.js` (`readBattleField`, `hpTone`) | Estado da cena, menu de golpes, textos da caixa |
 | Sprites de batalha | `src/utils/battleSprites.js` + `@pkmn/img` (suporta `gen4`) | Pokémon em estilo DS (≤ #493), com fallback para gen5 |
@@ -97,10 +98,15 @@ O resolver PvP usa `BattleStreams` com 5 ms de espera por escolha. Num duelo con
 | Replay completo de 42 turnos / 91 escolhas | **64 ms**, log byte a byte idêntico ao da partida ao vivo |
 | `battle.choose('p1', 'move 3')` ilegal | Retorna `false` e emite `\|error\|[Invalid choice] …`, ou seja, o sim é o validador |
 | `Battle.fromJSON(battle.toJSON())` + `actions.getDamage(...)` | Funciona; a IA calcula numa **cópia** e não toca o PRNG da batalha real |
-| `extractChannelMessages` | Exportado pelo pacote; gera o log na perspectiva do p1 a partir de `battle.log` |
-| Regras extras via `Dex.formats.validate('gen9customgame@@@…')` | Aceita Sleep Clause Mod, Species, OHKO, Evasion Moves e Terastal Clause |
+| `extractChannelMessages` | Exportado pelo pacote; separa o log por canal: **1 = p1, 2 = p2** (0 é espectador, −1 onisciente) |
+| Regras extras via `'<formato>@@@…'` | Aceita Sleep Clause Mod, `!Team Preview` e Terastal Clause; Species, OHKO e Evasion Moves são regras de validador, então vão para `validateTeam` |
 
 Sem streams, não existem as promises soltas que derrubavam a função (wound 2026-07-27).
+
+**Achados da implementação (F1)**, todos com teste:
+- `battle.toJSON()` devolve o `log` **por referência** e `Battle.fromJSON` o adota. Um clone feito direto de `toJSON()` escreve os turnos simulados no log da batalha real. `engine.snapshot()` e cada clone da IA copiam o log.
+- As linhas `|t:|` levam `Date.now()`; o motor as descarta para o replay ser byte a byte idêntico.
+- Nada é emitido sem `battle.sendUpdates()` depois de cada `choose`.
 
 ### 3.3 As partidas ficam **fora** de `users/{uid}/`
 A regra `match /users/{userId}/{document=**} { allow read, write: if isOwner(userId) }` (`firestore.rules:38-40`) dá escrita total ao dono. Regras do Firestore somam permissões: uma sub-regra não consegue tirar o que o curinga deu. Uma partida guardada ali poderia ser marcada como vitória pelo console. Por isso:
@@ -115,7 +121,11 @@ A regra `match /users/{userId}/{document=**} { allow read, write: if isOwner(use
 - **Achado paralelo, fora do escopo:** `advanceStreak` em `useAuthStore.js` usa `toISOString()` (data UTC), enquanto o PokéPuzzle usa o dia local. Para quem está em UTC−3 e joga depois das 21h, a sequência do puzzle conta no dia seguinte. Vale uma correção separada com `/log-wound`.
 
 ### 3.5 Regras da batalha
-- **Formato:** simples, 6×6, `gen9customgame` com Sleep Clause Mod, Species Clause, OHKO Clause, Evasion Moves Clause e **Terastal Clause**. A tela não tem botão de Tera, e o DPPt também não tinha.
+- **Formato:** simples, 6×6, `gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Terastal Clause`.
+  - **Não `gen9customgame`:** é um formato de *debug* e mostra o HP **exato** de cada lado ao outro (dá para deduzir EVs). O Anything Goes traz HP Percentage Mod: cada lado vê o próprio HP exato e o do outro em %, como no DS.
+  - **Sem Team Preview:** a prévia imprimiria o time inteiro da Cynthia e revelaria o curinga antes da hora.
+  - **Terastal Clause:** a tela não tem botão de Tera, e o DPPt também não tinha.
+  - **Species Clause, OHKO Clause e Evasion Moves Clause** são regras de validador (o validador não roda na batalha), então são checadas em `validateTeam` (`duplicateSpecies`, `bannedMove`).
 - **Nível:** todos no 50, inclusive a Cynthia, como na Battle Tower. O `showdownExport` já emite `Level: 50`.
 - **Itens:** sem itens de bolsa; itens segurados valem.
 - **Restrições ao time próprio:** nenhuma. Lendários e Ubers são liberados. A partida é marcada com o tier do time (`tier-legality.json`), e o ranking "justo" da F6 é o do Time do dia (§14.4).
@@ -132,7 +142,7 @@ A regra `match /users/{userId}/{document=**} { allow read, write: if isOwner(use
 ## 4. Rotação diária do time da Cynthia
 
 ### 4.1 Pool de possibilidades
-O pool fica no servidor, em `api/_lib/championPool.js`, para que os sets continuem ocultos.
+O pool fica no servidor, em `api/_lib/challenge/pool.js`, para que os sets continuem ocultos.
 
 | Grupo | Espécies | Fonte |
 |---|---|---|
@@ -140,14 +150,18 @@ O pool fica no servidor, em `api/_lib/championPool.js`, para que os sets continu
 | Frequentes | Spiritomb, Lucario, Milotic, Togekiss, Roserade | DP, Pt, BDSP, Renegade Platinum (`gym-leaders.json`); pokemon.com |
 | Ocasionais | Gastrodon, Glaceon, Eelektross, Braviary | Gastrodon: DP/BDSP (`gym-leaders.json`). Glaceon (PWT), Eelektross e Braviary (Unova): pokemon.com, **sets a confirmar na Bulbapedia** |
 
-Cada espécie tem de 1 a 3 **variantes de set**, por exemplo:
-- `spiritomb:platinum`: Dark Pulse / Shadow Ball / Psychic / Silver Wind.
-- `spiritomb:renegade`: Lum Berry, Pressure, Dark Pulse / Will-O-Wisp / Confuse Ray / Rest.
+Cada espécie tem **uma variante por dificuldade** (`dp`, `platinum`, `rematch`, `world`), por exemplo:
+- `Spiritomb/platinum`: Sitrus Berry; Dark Pulse / Psychic / Silver Wind / Shadow Ball.
+- `Spiritomb/rematch`: Lum Berry, Pressure; Dark Pulse / Will-O-Wisp / Confuse Ray / Rest.
 
-Cada variante guarda o texto Showdown completo e a fonte (wiki ou jogo).
+Cada variante guarda o texto Showdown e a fonte:
+- **DP e Platinum:** golpes conferidos no Dittobase em 2026-10-14 (a Bulbapedia segue bloqueada).
+- **Revanche:** Renegade Platinum (`gym-leaders.json`).
+- **Domingo, e todas as variantes de Glaceon, Eelektross e Braviary:** `source: 'design'`. As espécies vêm do pokemon.com, mas nenhuma fonte primária dos sets estava acessível.
+- **EVs:** todas as variantes menos as de Domingo usam 84 em tudo, o mesmo spread do Time do dia. Assim a diferença entre os dias fica nos sets e na IA, não em status brutos (calibrado com `ai:arena`, §6.4).
 
 ### 4.2 Algoritmo
-Função pura `championTeamFor(dayKey)` em `api/_lib/championRotation.js`:
+Funções puras `championLineupFor(dayKey)` e `championTeamTextFor(dayKey)` em `api/_lib/challenge/rotation.js`:
 
 1. `seed = hash('champion:' + dayKey)`, usando o `PRNG` do próprio sim.
 **Composição fixa (cláusula decidida em 2026-10-14): 1 ás + 3 frequentes + 1 ocasional + 1 curinga competitivo.**
@@ -168,7 +182,8 @@ Função pura `championTeamFor(dayKey)` em `api/_lib/championRotation.js`:
    - no máximo 1 tipo repetido com o resto do time, para ela não ficar com 3 fraquezas iguais.
 5. **Ordem:** o primeiro (frequente) abre; ocasional e curinga ocupam posições sorteadas entre a 2ª e a 5ª; Garchomp fecha.
 6. **Sets:** frequentes e ocasional usam a variante da **dificuldade do dia** (abaixo). O curinga usa **sempre** o set competitivo gerado, no nível 50; nos dias fáceis, a IA continua no perfil fácil.
-7. **Anti-repetição:** a composição de hoje não pode ser igual à de nenhum dos últimos 7 dias. Se for, sorteia de novo com `seed+1`. Isso é determinístico, porque calcular os 7 dias anteriores é só aritmética.
+7. **Anti-repetição (por ciclos):** os 40 núcleos possíveis (3 de 5 frequentes × 1 de 4 ocasionais) são distribuídos em ciclos embaralhados de 40 dias. Dentro de um ciclo nenhum núcleo se repete, e os 7 primeiros de cada ciclo ficam livres dos 7 últimos do ciclo anterior. O custo é O(1) por dia, e repetir em 7 dias fica impossível por construção (teste com 365 dias).
+   - **Por que não "sortear de novo se repetir":** cada dia anterior também pode ter sido sorteado de novo contra os *seus* 7 anteriores. Calcular um dia exigiria calcular toda a história desde o lançamento a cada partida a frio.
 
 No Pokétch, a silhueta do curinga aparece como **"?"** até ele entrar, porque é a surpresa do dia.
 
@@ -176,7 +191,7 @@ No Pokétch, a silhueta do curinga aparece como **"?"** até ele entrar, porque 
 
 | Dia | Nome do desafio | Sets | IA |
 |---|---|---|---|
-| Seg, Ter | Diamante & Pérola | Golpes dos jogos originais, sem item, sem EVs | Temperatura alta (erra às vezes) e prevê pouco |
+| Seg, Ter | Diamante & Pérola | Golpes dos jogos originais, sem item, EVs uniformes (84) | Temperatura alta (erra às vezes) e prevê pouco |
 | Qua, Qui | Platina | Golpes do Platinum, itens simples | Média |
 | Sex, Sáb | Revanche | Itens e habilidades (estilo Renegade/BDSP), EVs distribuídos | Baixa, prevê trocas |
 | Dom | Campeã Mundial | Sets competitivos (estilo PWT) | Mínima, a Cynthia "a sério" |
@@ -205,13 +220,15 @@ O seletor abre na tela de baixo, com duas abas:
 
 > Resumo de produto. **A organização completa (arquivos, fórmulas, perfis, calibragem e testes) está no [documento da IA](./daily-champion-challenge-ai.md).**
 
-Arquivo: `api/_lib/cynthiaAI.js`. Exporta uma função pura:
-`decide({ battle, request, history, rng, difficulty }) → 'move 2' | 'switch 4' | 'default'`.
+Pasta: `api/_lib/ai/`. O ponto de entrada é `index.js`, que exporta uma função pura:
+`decide({ snapshot, request, p2Lines, seed, turn, profileKey, championId }) → { choice: 'move 2' | 'switch 4' | 'default', trace }`.
+
+Ela recebe o `snapshot` (o JSON da batalha **antes** da jogada do jogador), e não a batalha viva. É isso que garante os invariantes 1 e 2 abaixo.
 
 ### 6.1 Invariantes (cada um vira teste)
 1. **Decide antes de ver a escolha do jogador.** A IA recebe uma cópia feita *antes* de `choose('p1', …)` ser aplicado. Se recebesse a batalha depois, poderia ler a ação do jogador na fila. Teste: a decisão é idêntica para qualquer escolha do p1.
 2. **Nunca consome o PRNG da batalha.** Todo cálculo (`getDamage`, ordem de velocidade) roda em `Battle.fromJSON(battle.toJSON())`. Teste: replay depois de um turno ao vivo gera log idêntico.
-3. **É determinística.** A aleatoriedade vem de `rng = PRNG(hash(seed, turn, 'ai'))`. A mesma partida reproduz as mesmas decisões, e os testes ficam estáveis.
+3. **É determinística.** A aleatoriedade vem de `rngFor(seed, turn, 'ai')` (`api/_lib/ai/rng.js`). A mesma partida reproduz as mesmas decisões, e os testes ficam estáveis.
 4. **Escolhas ficam gravadas.** O histórico guarda as escolhas dos dois lados. O replay nunca chama a IA de novo, então ajustar a IA (`AI_VERSION`) não altera partidas em andamento.
 5. **Só usa informação que a Cynthia teria.** Golpes e itens do jogador só contam depois de revelados no log. Golpes ainda não vistos são estimados: um STAB de 80–90 de poder por tipo da espécie.
 6. **Nunca faz escolha ilegal.** As opções saem do `request` do lado p2. Fuzz: 200 batalhas aleatórias sem nenhum `|error|`.
@@ -247,8 +264,20 @@ A memória é **derivada do histórico** a cada replay. Não há estado extra, e
 
 Falas reativas aparecem na caixa de texto: início, primeiro nocaute sofrido, envio do Garchomp, último Pokémon, vitória e derrota. Os textos são originais (sem copiar o diálogo do jogo), ficam em `translations.js` e saem do servidor como **chaves**, não como texto.
 
-### 6.4 Desempenho
-- Por turno: replay de ~5–70 ms mais a IA (cópia + no máximo 4×6 chamadas de `getDamage`), meta < 50 ms.
+### 6.4 Desempenho e calibragem (medidos na F1)
+- Por turno: replay de ~5–70 ms mais a IA.
+  - **Medido:** p95 de cerca de 5 ms por decisão sem *lookahead* (Seg–Qui), e de 30–40 ms com ele (Sex–Dom).
+  - Cada decisão usa **um** clone com cache de `getDamage` (~0,075 ms por chamada), e não um clone por cálculo.
+- **Taxa de vitória da Cynthia** contra o robô guloso (`npm run ai:arena`), dentro das metas do documento da IA:
+
+  | Dia | Resultado | Meta |
+  |---|---|---|
+  | Seg/Ter | 43,8% | 40–55% |
+  | Qua/Qui | 60% | 50–65% |
+  | Sex/Sáb | 72,5% | 60–75% |
+  | Dom | 87,5% | ≥ 70% |
+
+  Contra o robô aleatório: 90–100%. Zero jogadas ilegais.
 - Com a leitura e a escrita no Firestore, a meta é **p50 < 400 ms com a função quente**.
 - **Partida a frio:** carregar sim + firebase-admin custa cerca de 1 s. O cliente faz `GET /api/challenge?ping=1` ao **entrar na arena**, e a caminhada até a Cynthia (3–5 s) esconde o tempo de partida a frio.
 
@@ -267,7 +296,8 @@ Falas reativas aparecem na caixa de texto: início, primeiro nocaute sofrido, en
 - **Partidas fora de `users/`:** `challengeRuns/{uid}_{dia}`. O dono lê; só o servidor escreve.
   - O que permitiria trapacear (seed, histórico de escolhas, time da Cynthia, trace da IA) fica em `secret/state`, que ninguém lê pelo cliente.
   - As estatísticas ficam em `challengeStats/{uid}`.
-- **Cada turno:** replay síncrono (~64 ms numa partida longa) → snapshot → jogada do jogador → decisão da IA no snapshot → grava tudo numa transação → devolve as linhas novas e as falas.
+- **Cada turno:** replay síncrono (~64 ms numa partida longa) → snapshot → decisão da IA no snapshot → jogada do jogador → transação curta (relê o `turn` e grava) → devolve as linhas novas e as falas.
+  - O replay e a IA ficam **fora** da transação, para o documento ficar travado só por algumas idas e voltas. Duas abas no mesmo turno calculam as duas; a segunda recebe `staleTurn`, e nada do que ela calculou é gravado.
 
 ---
 
@@ -386,7 +416,7 @@ Falas reativas aparecem na caixa de texto: início, primeiro nocaute sofrido, en
 | OG / SEO | `api/render-meta.js` + `useDocumentMeta` | Novo ramo `/challenge` com título, descrição e imagem |
 | Guia da página | `pageGuideTips.challenge` + `guide.challenge` | Exatamente 2 dicas em PT e EN (`translations.test.js` exige) |
 | i18n | `translations.js` | Namespace `challenge.*` (UI, falas da Cynthia, nomes dos desafios) e `cozyHome.challenge*` |
-| Notas de versão | `PATCH_NOTES_VERSION` (`theme.js`) | 1.14.0 → 1.15.0 |
+| Notas de versão | `PATCH_NOTES_VERSION` (`theme.js`) | Próxima minor livre: a `main` já usa 1.15.0 (Reg M-C), então o desafio sai como **1.16.0** |
 | Notificações (fase 6) | `api/daily-puzzle.js` (cron 12:00 UTC) | Tópico `dailyChallenge` no mesmo cron, sem função nova |
 | Docs | `docs/modules/daily_challenge.md` + `docs/index.md` | Módulo próprio, sem inchar os existentes |
 
@@ -400,7 +430,7 @@ Resumo:
 
 | Área | Novo | Alterado |
 |---|---|---|
-| Servidor | `api/challenge.js`, `api/_lib/challenge/*` (9 módulos), `api/_lib/ai/*` (IA), Firestore falso compartilhado, `scripts/ai-arena.mjs` | `firestore.rules`, `vercel.json`, `package.json` (scripts), `battle-turn.test.js` |
+| Servidor | `api/challenge.js`, `api/_lib/challenge/*` (13 módulos), `api/_lib/ai/*` (IA), Firestore falso compartilhado, `scripts/ai-{arena,dataset,train}.mjs` | `firestore.rules`, `vercel.json`, `package.json` (scripts), `battle-turn.test.js`, `dependencies.test.js` |
 | Cliente | Store + hook, `services/challengeApi.js`, `services/apiClient.js`, 5 utils puros com teste, ~25 componentes em `views/challenge/`, 2 folhas de estilo | `AppLayout.jsx`, `CozyHomeView.jsx`, `useBattlesStore.js`, `accountDeletion.js`, `translations.js`, `theme.js`, `PageGuide.jsx`, `render-meta.js` |
 | Arte | `scripts/challenge-art/*.txt` → `scripts/build-challenge-art.mjs` → `public/challenge/*.png` | — |
 | Docs | `docs/modules/daily_challenge.md` | `docs/index.md`, skill `design-system` (exceção `.ds-screen`) |
@@ -414,12 +444,12 @@ Cada fase termina com lint (zero warnings), `npm test` e `npm run build` verdes.
 | Fase | Entrega | Pronto quando |
 |---|---|---|
 | **F0 — Alinhamento e arte** | ~~Respostas da §14~~ (feito em 2026-10-14); tileset, sprite do jogador e fonte escolhidos | Arte original estilo DS aprovada; pool da Cynthia conferido nas wikis (Glaceon, Eelektross, Braviary) |
-| **F1 — Motor + IA** | `challengeEngine`, `cynthiaAI`, `championPool`, `championRotation`, `api/challenge.js`, regras | Batalha completa pelo handler no teste; fuzz de 200 batalhas sem `\|error\|`; os 6 invariantes da §6.1 com teste; rotação determinística sem repetir 7 dias; 8/12 funções |
-| **F2 — Jogável** | Store, hook, `TeamPicker`, uma cena de batalha simples (com os leitores existentes) | Dá para vencer e perder no navegador; escolha ilegal mostra erro; "pensando…" otimista; partida retomada depois de recarregar |
-| **F3 — Console DS** | `ConsoleShell`, cena DPPt, HP, linha de Poké Balls, `battleTimeline` + animações, `CommandPanel`, Pokétch | `/verify-ui` em 1440 e 390 px, escuro e claro; quadros no meio da animação; *reduced motion* |
-| **F4 — Arena** | `ArenaScreen`, movimento, BFS, diálogo, transição, ping de aquecimento | D-pad por toque (CDP) e teclado; "Ir até a Cynthia" para quem volta |
-| **F5 — Integração** | Card da Home, navegação, OG, guia, i18n, notas de versão, docs | Card mostra os 3 estados; rota na busca e no "Mais"; `render-meta` responde a `/challenge` |
-| **F6 — Depois** | Ranking diário (Time do dia e Livre), cartão de compartilhamento estilo PokéPuzzle, push no cron diário | Escrita do ranking só pelo servidor; regras testadas |
+| **F1 — Motor + IA** ✅ 2026-10-14 | `api/_lib/challenge/` (`engine`, `pool`, `rotation`…), `api/_lib/ai/`, `api/challenge.js`, regras | Batalha completa pelo handler no teste; fuzz sem `\|error\|` (`AI_FUZZ=200` para a varredura completa); os invariantes com teste; rotação determinística sem repetir 7 dias; 8/12 funções |
+| **F2 — Jogável** ✅ 2026-10-15 | Store, hook, `TeamPicker`, uma cena de batalha simples (com os leitores existentes) | Dá para vencer e perder no navegador; escolha ilegal mostra erro; "pensando…" otimista; partida retomada depois de recarregar |
+| **F3 — Console DS** ✅ 2026-10-15 | `ConsoleShell`, cena DPPt, HP, linha de Poké Balls, `battleTimeline` + animações, `CommandPanel`, Pokétch | `/verify-ui` em 1440 e 390 px, escuro e claro; quadros no meio da animação; *reduced motion* |
+| **F4 — Arena** ✅ 2026-10-15 (Cynthia: sprite de fã por zedubstep; protagonista: folha do Hilbert, BW) | `ArenaScreen`, movimento, BFS, diálogo, transição, ping de aquecimento | D-pad por toque (CDP) e teclado; "Ir até a Cynthia" para quem volta |
+| **F5 — Integração** ✅ 2026-10-15 | Card da Home, navegação, OG, guia, i18n, notas de versão, docs | Card mostra os 3 estados; rota na busca e no "Mais"; `render-meta` responde a `/challenge` |
+| **F6 — Depois** ✅ 2026-10-15 (ranking, compartilhar em texto e no fórum, push; falta o cartão-imagem) | Ranking diário (Time do dia e Livre), cartão de compartilhamento estilo PokéPuzzle, push no cron diário | Escrita do ranking só pelo servidor; regras testadas |
 
 F1 e F2 sozinhas já entregam um desafio jogável. F3 e F4 trazem o "uau".
 
@@ -474,7 +504,7 @@ F1 e F2 sozinhas já entregam um desafio jogável. F3 e F4 trazem o "uau".
 | Limite de 12 funções | Uma função só, com `action`; ficam 4 vagas |
 | IA fácil ou difícil demais | Dificuldade por dia; `AI_VERSION` permite ajustar sem quebrar partidas em andamento; F6 mede a taxa de vitória por dia |
 | Times do Builder incompletos | Validação no seletor + "Completar com set competitivo" |
-| Sets de Glaceon, Eelektross e Braviary sem fonte primária conferida (Bulbapedia bloqueada nesta sessão) | Ficam marcados como "a confirmar" e só entram no pool depois da F0 |
+| Sets de Glaceon, Eelektross e Braviary sem fonte primária conferida (Bulbapedia bloqueada) | DP e Platinum conferidos no Dittobase. As três espécies de Unova entraram com sets próprios marcados `source: 'design'`; trocar quando houver fonte |
 | Conflito com a grade de espaçamento | Exceção explícita para `.ds-screen`, registrada na skill |
 
 ---

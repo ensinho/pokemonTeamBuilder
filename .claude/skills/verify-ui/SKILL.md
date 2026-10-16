@@ -67,6 +67,13 @@ Rules that make the pass worth something:
   `page.evaluate` — dev serves source modules), node identity (mark a node with a
   `data-` attribute, act, check it survived — this is how a whole grid remounting
   on a star tap was found). A screenshot is the last check, not the only one.
+- **Import the page's own module, not a bare path, once the dev server has hot-
+  updated anything.** After an HMR update Vite serves a module as
+  `…/useAuthStore.js?t=<stamp>`; a bare `import('/pokemonTeamBuilder/src/store/…')`
+  then loads a *second* instance, so you read a store that never loaded and your
+  writes (e.g. `isAnonymous: false`) change nothing on screen (2026-10-15: a
+  "picker never appears" chase). Resolve the URL the page loaded:
+  `performance.getEntriesByType('resource').map((e) => e.name).find((n) => n.split('?')[0].endsWith(path))`.
 - **Motion needs mid-frames.** Click, wait 80–200ms, screenshot; wait out the
   duration, screenshot again. A still "after" frame cannot tell a glide from a
   teleport.

@@ -6,6 +6,7 @@
 > A parte **aprendida** (regressão logística: chance de vitória, previsão da jogada, calibragem) está em
 > [daily-champion-challenge-ml.md](./daily-champion-challenge-ml.md).
 > Data: 2026-10-14. Números medidos em `@pkmn/sim@0.10.11`, Node local.
+> **Implementada em 2026-10-14 (F1).** Este documento foi atualizado para o código: pesos ajustados (§8), *lookahead* (§10), perfis calibrados (§14) e resultados da arena (§16).
 
 ## 0. O que é uma IA "de qualidade" aqui
 
@@ -26,7 +27,7 @@
 | # | Invariante | Teste |
 |---|---|---|
 | I1 | **Decide antes da escolha do jogador.** Recebe o snapshot feito *antes* de `apply('p1', …)` | Mesma decisão para qualquer escolha do p1 |
-| I2 | **Nunca consome o PRNG da batalha real.** Todo cálculo roda em clones (`Battle.fromJSON`) | Replay depois de turnos ao vivo = log idêntico |
+| I2 | **Nunca consome o PRNG nem escreve na batalha real.** Todo cálculo roda em clones com log próprio (`fog.js` `cloneOf`): `toJSON()` devolve o `log` por referência, e um clone ingênuo escreveria os turnos simulados na batalha real (achado pelo teste, wound 2026-10-14) | Replay depois de turnos ao vivo = log idêntico |
 | I3 | **É determinística.** Toda aleatoriedade vem de `rngFor(seed, turn, 'ai')` | Mesma entrada → mesma escolha e mesmo `trace` |
 | I4 | **Escolhas ficam gravadas.** O replay nunca chama a IA | Mudar `PROFILES` não altera o replay de uma partida gravada |
 | I5 | **Não espia.** Item, habilidade, EVs, golpes e banco não revelados do jogador são crenças, não fatos | Trocar o item ou os EVs ocultos do p1 não muda a decisão |
@@ -41,61 +42,66 @@
 ```
 api/_lib/ai/
   index.js              decide(input) → {choice, trace}; AI_VERSION
-  rng.js                hashSeed(...parts), rngFor(seed, turn, tag) → PRNG do sim
-  view.js               buildView(snapshot, request, p2Lines) → BattleView (só leitura)
-  knowledge.js          knowledgeFrom(p2Lines) → o que foi revelado + crenças sobre o resto
-  fog.js                fogClone(snapshot, knowledge) → Battle com o lado do jogador "embaçado"
-  estimate.js           damageRange, koChance, actsFirst, threatOf, bestMoveAgainst (com try/catch; ver §6)
+  rng.js                rngFor(seed, ...tags) → PRNG do sim (hashSeed vem de challenge/seed.js)
+  view.js               buildView(battle, knowledge, personality) → BattleView (só leitura, para trace/testes)
+  knowledge.js          knowledgeFrom(p2Lines) → o que foi revelado + eventos (uma passada no log)
+  memory.js             memoryFrom(knowledge) → perfil do jogador nesta partida
+  fog.js                fogClone / estimationClone / simulationClone, todos com log próprio (cloneOf)
+  estimate.js           createEstimator(clone) → damage, actsFirst, threatOf, bestMoveAgainst (§6)
   features.js           variáveis dos modelos (fonte única: jogo, coleta e treino) — documento de ML
   model.js              predictWin / predictActions — documento de ML
-  models/               winprob-v1.js, foe-v0.js (pesos versionados)
-  options.js            legalOptions(request) → [{choice, kind, moveId?, slot?}]
-  memory.js             memoryFrom(p2Lines) → perfil do jogador nesta partida
-  foeModel.js           predictFoe(view, knowledge, memory, est) → {moves: [{id, p}], pSwitch}
+  models/               winprob-v1.js (treinado), foe-v0.js (pesos de mão)
+  observe.js            trainingRow (linha anônima) e winProbFull (ponto da curva pós-batalha)
+  options.js            legalOptions(request) → [{choice, kind, moveId?, slot?, species?}]
+  foeModel.js           predictFoe({est, foe, me, memory}) → {moves: [{id, p, exp}], pSwitch, top}
   evaluators/
-    attack.js           pontua golpes de dano
+    classify.js         qual avaliador é dono de cada golpe (um só, sem contar duas vezes)
+    abilities.js        habilidades que absorvem um tipo ou impedem sono (possíveis × reveladas)
+    attack.js           golpes de dano
     setup.js            boosts (Swords Dance, Nasty Plot, Dragon Dance, Coil, Calm Mind…)
-    status.js           Will-O-Wisp, Thunder Wave, sono, Toxic, Confuse Ray
-    recovery.js         Recover, Roost, Rest, Synthesis…
-    utility.js          Haze/Roar/Whirlwind, Protect, hazards
-    switch.js           trocas voluntárias
+    status.js           Will-O-Wisp, Thunder Wave, sono, Toxic, Confuse Ray; evaluateOther (resto)
+    recovery.js         Recover, Roost, Rest, Wish, Aqua Ring…
+    utility.js          Haze/Roar/Whirlwind, Protect, hazards, clima/terreno
+    switch.js           trocas voluntárias + matchup(x) e hazardDamage(x)
   lookahead.js          simulação de 1 turno nos clones com neblina (perfis altos)
-  policy.js             filtros de sanidade → personalidade → softmax → escolha
-  replacement.js        quem entra depois de um desmaio
+  policy.js             softmax top-N com temperatura → escolha
+  replacement.js        quem entra depois de um desmaio (e quem volta com Revival Blessing)
   profiles.js           PROFILES: dp, platinum, rematch, world (§14)
   personality/
-    cynthia.js          ás, preferência de primeiro Pokémon, manias (genérico por campeão)
+    cynthia.js          ás, frieza com vantagem (genérico por campeão)
   testing/
     scenario.js         DSL de cenários para os testes (§17)
-  *.test.js
+    robots.js           random / greedy / epsilon, para a arena e o autojogo
+  *.test.js             scenarios, invariants (fuzz), estimate, knowledge
 scripts/ai-arena.mjs    autojogo para calibrar (§16); npm run ai:arena / ai:bench
 ```
 
-Cada avaliador é uma função pura `(ctx) → {score, parts, reason}` e não conhece os outros. Para adicionar um comportamento, cria-se um avaliador e uma linha de peso em `profiles.js`.
+Cada avaliador é uma função pura `(ctx, move) → {score, parts, reason}` e não conhece os outros. `classify` decide qual avaliador é dono de cada golpe. Para adicionar um comportamento, cria-se um avaliador, uma regra em `classify.js` e uma linha de peso em `profiles.js`.
 
 ---
 
 ## 3. Fluxo de uma decisão
 
 ```
-decide({ snapshot, request, p2Lines, seed, turn, profileKey, championId })
+decide({ snapshot, request, p2Lines, seed, turn, profileKey, championId, model? })
   │
   ├─ request.wait? ───────────────────────────────► nenhuma decisão
-  ├─ request.forceSwitch? ────────────────────────► replacement.js ─┐
-  │                                                                 │
-  ├─ view      = buildView(snapshot, request, p2Lines)              │
-  ├─ knowledge = knowledgeFrom(p2Lines)                              │
-  ├─ fogged    = fogClone(snapshot, knowledge)        (~1,3 ms)      │
-  ├─ memory    = memoryFrom(p2Lines)                                 │
-  ├─ foe       = predictFoe(view, knowledge, memory, est)            │
-  ├─ options   = legalOptions(request)                               │
-  ├─ scored    = options × avaliadores (com pesos do perfil)         │
-  ├─ perfil com lookahead? → lookahead.js nos top-K   (~20–30 ms)    │
-  └─ policy.pick(scored, profile, rng) ──────────────────────────────┴─► { choice, trace }
+  ├─ uma opção só? ───────────────────────────────► ela, sem calcular nada
+  ├─ knowledge = knowledgeFrom(p2Lines); memory = memoryFrom(knowledge)
+  ├─ fogged    = fogClone(snapshot, knowledge)                 (~0,6 ms)
+  ├─ est       = createEstimator(estimationClone(fogged))      (um clone por decisão)
+  ├─ foe       = predictFoe({est, foe, me, memory})
+  ├─ options   = legalOptions(request)
+  ├─ request.forceSwitch? → replacement.js
+  │  senão      → options × avaliadores (com pesos do perfil) + leitura de troca
+  ├─ perfil com lookahead? → lookahead.js nos top-K            (~20–35 ms)
+  └─ policy.pick(scored, profile, rng) ────────────────────────► { choice, trace }
 ```
 
-Na entrada (vinda de `api/challenge.js`):
-- `snapshot` é `battle.toJSON()` antes do p1;
+Na entrada (vinda de `_lib/challenge/actions.js`):
+- `snapshot` é `engine.snapshot(battle)` antes do p1 (o `toJSON()` com o log copiado);
+- `turn` é uma etiqueta da decisão (`'<turno>.<n>'`): várias decisões cabem numa chamada (a jogada e as trocas forçadas depois), e cada uma precisa do próprio dado;
+- `model` é o M1 (`models/winprob-v1.js` por padrão); os testes passam modelos fixos;
 - `request` é `battle.sides[1].activeRequest`;
 - `p2Lines` é o log no canal do p2, via `extractChannelMessages(…, [1])` (o motor devolve junto com as linhas do p1);
 - `seed` é a da partida.
@@ -152,9 +158,11 @@ Validado no spike desta sessão. No mesmo Stone Edge do Garchomp contra um Togek
 
 ## 6. Estimativas (`estimate.js`)
 
+**Como ficou na implementação (mais barato que o desenho original):** o spike fazia duas cópias do clone por cálculo. Medido: clonar custa ~0,6 ms e `getDamage` ~0,075 ms. Por isso cada decisão faz **um** clone de estimativa e memoiza `(atacante, defensor, golpe)`. O dano máximo vem de `getDamage` com `randomizer = d => d`, e o mínimo é derivado (`⌊máx × 0,85⌋`, o piso do sorteio de dano), com erro de um ou dois pontos e metade das chamadas. Nesse clone, `eatItem`/`useItem` são neutralizados: sem isso, a primeira estimativa "come" a Yache Berry e todas as seguintes veem o Pokémon sem ela. Uma decisão completa, trocas incluídas, custa poucos ms.
+
 | Função | Como | Custo |
 |---|---|---|
-| `damageRange(battle, atkSide, defSide, moveId)` → `[min, max]` | Duas cópias leves do clone com neblina: `randomizer = d => d` (máx) e `d => floor(floor(d×85)/100)` (mín); `move = dex.getActiveMove(id)` com `willCrit = false`; `actions.getDamage(atk, def, move, true)`. `false`/`undefined`/`0` = imune ou sem efeito | ~1 ms por par; memoizado por `(atk, def, move)` na decisão |
+| `damage(atk, def, moveId)` → `{min, max, expPct, ko, acc, immune, status, fallback}` | `move = dex.getActiveMove(id)` com `willCrit = false`; `actions.getDamage(atk, def, move, true)`; golpes de múltiplos acertos × acertos esperados (3,1 para 2–5). `false`/`undefined`/`null` = imune | ~0,075 ms; memoizado na decisão |
 | `koChance(range, hp)` | Fração linear do intervalo ≥ HP; × precisão do golpe | O(1) |
 | `actsFirst(a, moveA, b, moveB)` | Prioridade (`dex.moves.get(id).priority`, Prankster/Gale Wings pela crença) → `getActionSpeed()` → Trick Room inverte; empate = 0,5 | O(1) |
 | `threatOf(foe → me)` | Maior dano esperado (%) entre os golpes revelados e acreditados do jogador contra o meu ativo | Até 4 `damageRange` |
@@ -170,6 +178,8 @@ Medido no spike: Garchomp `getActionSpeed()` = 169 e Togekiss = 100; Extreme Spe
 - Lê `request.active[0].moves`: aceita `move i` se `!disabled` e `pp > 0`. Se todos estiverem bloqueados, o sim oferece Struggle como `move 1`.
 - Trocas: `switch j` para cada `request.side.pokemon[j]` que não esteja desmaiado nem ativo, e só se não estiver `trapped`.
 - `forceSwitch`: só trocas.
+- `maybeTrapped` conta como preso: uma troca recusada seria jogada ilegal.
+- **Revival Blessing:** depois dele, o pedido de "troca" é para escolher um Pokémon **desmaiado** (a entrada ativa traz `reviving`). As opções viram os desmaiados, e `replacement.js` revive o mais forte, com preferência pelo ás. Achado pelo autojogo: o curinga Pawmot usa o golpe.
 - **Nunca** gera `terastallize`, `mega` ou `dynamax` (a Terastal Clause recusa; validado).
 
 ---
@@ -194,6 +204,13 @@ Medido no spike: Garchomp `getActionSpeed()` = 169 e Togekiss = 100; Extreme Spe
 
 Os pesos (60, 20, 35…) são o ponto de partida. Cada perfil pode multiplicá-los (§14), e o autojogo calibra (§16).
 
+**Ajustes feitos na implementação (cada um com o cenário que o motivou):**
+- **Queda de status própria:** a penalidade cresce com a queda já sofrida: `8 + 12 × estágios já perdidos`. Com −8 fixo, um segundo Leaf Storm a −2 ainda ganhava (cenário 18).
+- **Confuse Ray:** 20 → **12**. Empatava com Will-O-Wisp num atacante físico, e queimar vale muito mais que confundir (cenário 8).
+- **Efeitos secundários** entram no ataque: status 12, flinch 10 (só agindo antes), boost próprio 6, queda no alvo 4, cada um × chance (× 2 com Serene Grace).
+- **Status sem avaliador** (Embargo, Sweet Scent, Attract…): nota simbólica **3**. O perfil DP, com temperatura alta, às vezes os usa, como a IA do DS; os perfis altos quase nunca. Memento vale 25 com HP < 30%.
+- **Recarga** (Giga Impact) −15 sem nocaute; **golpe de dois turnos** −10 sem Power Herb; **Fake Out** só no primeiro turno; **Dream Eater** só em alvo dormindo; status atrás de **Substitute** = −∞.
+
 ---
 
 ## 9. Previsão do jogador (`foeModel.js`)
@@ -214,7 +231,9 @@ Só nos perfis `rematch` e `world`. Dá precisão onde a heurística erra: habil
 1. Candidatos = top-K pela heurística (K = 3 em `rematch`, 4 em `world`).
 2. Respostas do jogador = top-3 golpes de `foeModel` (com probabilidade). **Sem trocas do p1 na simulação**, porque o banco dele é desconhecido.
 3. Para cada par, S = 2 amostras num clone do `fogged`, com `prng = new PRNG(hashSeed(seed, turn, i, j, s))`, e `choose` dos dois lados.
-4. **`Δ = P(depois) − P(antes)`**, com P = chance de vitória do modelo **M1** (`models/winprob-v1.js`), calculada no clone com neblina. Sem modelo carregado, cai para a fórmula manual: `(HP% que o jogador perdeu + 100·[desmaiou]) − (HP% que eu perdi + 100·[desmaiei]) + 15·[status novo no jogador]`.
+4. **`Δ = (P(depois) − P(antes)) × 600`**, com P = chance de vitória do modelo **M1** (`models/winprob-v1.js`). A escala `MODEL_SCALE = 600` põe Δ na mesma unidade da heurística ("pontos ≈ % de HP"). Sem modelo carregado, cai para a fórmula manual: `(HP% que o jogador perdeu + 100·[desmaiou]) − (HP% que eu perdi + 100·[desmaiei]) + 15·[status novo no jogador]`.
+   - **Nos dois casos soma-se a variação de boosts:** 15 por estágio de ataque ou ataque especial, 10 de velocidade, 5 de defesa (os do jogador apagados contam a favor, como no Haze).
+   - **Por quê:** um horizonte de 1 turno não enxerga o valor de uma preparação, e Swords Dance parece só um turno apanhando (cenário 6). O M1, treinado com robôs que nunca se preparam, também dá peso quase nulo a boosts (0,09).
 5. `sim(candidato) = Σ p(resposta) × média(Δ)`, e `final = (1 − w)·heurística + w·sim`, com `w` do perfil.
 
 **Custo medido:** clonar ~1,3 ms; clonar + simular um turno ~1,1 ms. Com K = 4, 3 respostas e 2 amostras, são 24 simulações ≈ 30 ms. Cabe no orçamento.
@@ -272,8 +291,8 @@ Derivada do log do p2 a cada replay. Não há estado extra, então I3 e I4 conti
 
 | Parâmetro | `dp` (Seg/Ter) | `platinum` (Qua/Qui) | `rematch` (Sex/Sáb) | `world` (Dom) |
 |---|---|---|---|---|
-| Sets da Cynthia (pool) | Golpes originais, sem item/EVs | Golpes do Platinum, itens simples | Itens + habilidades + EVs | Competitivos (estilo PWT) |
-| Temperatura `T` / top-N | 18 / 4 | 10 / 3 | 5 / 3 | 1,5 / 2 |
+| Sets da Cynthia (pool) | Golpes originais, sem item, 84 EVs em tudo | Golpes do Platinum, Sitrus Berry, 84 EVs | Itens + habilidades + naturezas do Renegade, 84 EVs | Competitivos (estilo PWT), spreads próprios |
+| Temperatura `T` / top-N | **6** / 3 (era 18 / 4) | **6** / 3 (era 10 / 3) | **12** / 3 (era 5 / 3) | 1,5 / 2 |
 | Lookahead (`w`, K, S) | — | — | 0,5 · 3 · 2 | 0,7 · 4 · 2 |
 | Leitura de troca | não | não | sim (`pSwitch > 0,35`) | sim (`> 0,25`) |
 | Adaptação (§11) | só preparação | completa | completa | completa |
@@ -322,6 +341,23 @@ npm run ai:bench                        # tempo por decisão, p50/p95, por perfi
 
 O alvo humano entra na F6, com dados reais: vitória do jogador entre 35% e 60% por dia da semana. Se sair da faixa, ajustam-se os pesos e sobe a versão patch.
 
+**Resultado da calibragem (2026-10-14, 80–120 partidas, M1 carregado):**
+
+| Cynthia | vs guloso | meta | vs aleatório | meta | ms p50 / p95 |
+|---|---|---|---|---|---|
+| `dp` | 43,8% | 40–55% ✓ | 98,8% | ≥ 90% ✓ | 2,6 / 5,1 |
+| `platinum` | 61,3% | 50–65% ✓ | 97,5% | ≥ 95% ✓ | 2,6 / 4,8 |
+| `rematch` | 68,3% | 60–75% ✓ | 98,8% | ≥ 97% ✓ | 17,9 / 32,5 |
+| `world` | 88,8% | ≥ 70% ✓ | 100% | ≥ 98% ✓ | 21,3 / 37,3 |
+
+Zero jogadas ilegais e zero partidas sem fim. Como se chegou lá:
+- Na primeira rodada, DP e Platinum perdiam feio (12,5% e 35%): os sets do DS **sem EVs** enfrentavam o Time do dia com 84 em tudo, uma vantagem bruta de status no nível 50.
+- Com o spread uniforme, a diferença entre os dias ficou nos sets e na IA.
+- A Revanche ficava acima da meta mesmo sem *lookahead* (81%), porque a força vinha dos spreads 252/252 do Renegade. Com 84 uniforme e T=12, caiu para a faixa.
+- **Pendente:** o confronto `world × platinum` (IA contra IA) exige a IA jogando do lado p1; ela é escrita para o p2. Fica para quando houver necessidade.
+
+`--set perfil.chave=valor` testa um parâmetro sem editar `profiles.js` (ex.: `--set rematch.T=12 --set rematch.lookahead.w=0.4`).
+
 ---
 
 ## 17. Testes
@@ -360,9 +396,13 @@ expect(decide(s.input).choice).toBe('move 2');   // Stone Edge nocauteia
 19. Com P baixa (M1), escolhe o golpe arriscado que pode virar; com P alta, o seguro.
 20. Todo golpe do dex passa pelo estimador sem lançar erro (Beat Up incluído).
 
-**Propriedades:**
+**Propriedades** (`invariants.test.js`):
 - I1 a I8 (§1);
-- fuzz de 200 batalhas `random × cynthia` por perfil: zero `|error|`, sempre termina em menos de 300 turnos, e o ás é sempre o último a entrar.
+- fuzz `random × cynthia` por perfil: zero `|error|`, sempre termina em menos de 300 turnos, o ás nunca sai por troca voluntária e nunca entra antes da hora, decisão < 250 ms.
+  - Em `npm test` roda **6 batalhas por perfil** para a suíte continuar rápida.
+  - `AI_FUZZ=200 npx vitest run api/_lib/ai/invariants.test.js` faz a varredura completa, e `npm run ai:arena` também conta jogadas ilegais.
+
+Todos os 20 cenários acima passam (o 20 está em `estimate.test.js`: mais de 800 golpes do dex, nos dois sentidos).
 
 ---
 

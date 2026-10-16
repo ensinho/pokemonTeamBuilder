@@ -4,7 +4,8 @@
 > e dos documentos da IA: [daily-champion-challenge-ai.md](./daily-champion-challenge-ai.md) (como a Cynthia decide)
 > e [daily-champion-challenge-ml.md](./daily-champion-challenge-ml.md) (modelos de previsão por regressão).
 > Este arquivo é o **como**: arquivos, contratos, dados, estados, testes e tarefas por fase.
-> Data: 2026-10-14. Base: `main` em `10cb419`.
+> Data: 2026-10-14. Base: `main` em `10cb419`. **F1 implementada em 2026-10-14**: as seções 2 e 4 descrevem o código como ele está; o sistema construído está resumido em [`docs/modules/daily_challenge.md`](../modules/daily_challenge.md).
+> Os números de linha citados (`AppLayout.jsx:350` etc.) são do commit base: use-os como pista e procure pelo símbolo.
 
 ## 0. Premissas assumidas
 
@@ -59,18 +60,22 @@ A **leitura** vai direto ao Firestore: abre rápido e não acorda a função. A 
 ```
 cliente                         challenge.js                                  Firestore
   │ POST choose {runId,turn,choice}  │                                            │
-  │─────────────────────────────────►│ verifyCaller → uid                         │
-  │  (UI: "Cynthia está pensando…")  │ tx: lê run + secret/state ◄────────────────│
+  │─────────────────────────────────►│ verifyCaller → uid; regex da choice         │
+  │  (UI: "Cynthia está pensando…")  │ lê run + secret/state (fora da tx) ◄───────│
   │                                  │ confere dono / status / turn / dia          │
   │                                  │ battle = replay(seed, teams, choices)       │
-  │                                  │ snap = battle.toJSON()   ← antes do p1!     │
+  │                                  │ snap = snapshot(battle)  ← antes do p1!     │
+  │                                  │ ai.decide(snap…) se o p2 deve               │
   │                                  │ apply(p1, choice) → inválida? 400           │
-  │                                  │ enquanto p2 deve: ai.decide(snap…) → apply  │
+  │                                  │ apply(p2, IA); enquanto só o p2 deve: IA    │
   │                                  │ linhas novas do p1 + eventos de fala        │
-  │                                  │ tx: grava round, choices, run, stats ──────►│
+  │                                  │ tx curta: relê turn → grava round, secret,  │
+  │                                  │ run, stats, aiTraining ────────────────────►│
   │◄─────────────────────────────────│ {turn, lines, status, events, result?}      │
   │ anima a fila de eventos          │                                            │
 ```
+
+**Por que a transação é curta:** o replay e a IA (até ~100 ms) rodam fora dela. Dentro, só há a releitura de `turn` e as gravações, então o documento fica travado por algumas idas e voltas, não pelo cálculo. Duas abas no mesmo turno calculam as duas; a segunda encontra o `turn` avançado, recebe `staleTurn`, e nada do que ela calculou é gravado.
 
 ---
 
@@ -86,16 +91,19 @@ api/
   _lib/
     testing/fakeFirestore.js      [NEW] FakeDoc/FakeCollection extraídos de battle-turn.test.js:34-87
     challenge/
-      constants.js                [NEW] FORMAT, LEVEL, ENGINE_VERSION, BANNED_MOVES, CHAMPIONS
-      day.js           (+ .test)  [NEW] dia de Brasília, próxima virada, dia da semana
-      pool.js          (+ .test)  [NEW] dados da Cynthia: espécies, variantes, fontes
-      rotation.js      (+ .test)  [NEW] time do dia da campeã, dificuldade, silhuetas
-      dailyTeam.js     (+ .test)  [NEW] Time do dia do jogador (randoms + nível 50)
+      constants.js                [NEW] FORMAT, LEVEL, ENGINE_VERSION, BANNED_MOVES, CHOICE_PATTERN, CHAMPIONS
+      seed.js                     [NEW] hashSeed(...partes) → semente de 4×16 bits (cyrb128)
+      day.js           (+ .test)  [NEW] dia de Brasília, próxima virada, dia da semana, semana ISO
+      pool.js          (+ .test)  [NEW] dados da Cynthia: espécies, uma variante por dificuldade, fontes
+      rotation.js      (+ .test)  [NEW] time do dia da campeã (ciclos), dificuldade, escalação pública
+      dailyTeam.js                [NEW] Time do dia do jogador (randoms + nível 50); testado em validateTeam.test
       validateTeam.js  (+ .test)  [NEW] time salvo → texto empacotado ou lista de erros
-      engine.js        (+ .test)  [NEW] Battle síncrono: criar, replay, aplicar, quem deve, resultado
-      runs.js          (+ .test)  [NEW] caminhos e transações do Firestore
-      outcome.js       (+ .test)  [NEW] resultado, pontuação, sequência
-      dialogue.js      (+ .test)  [NEW] eventos da batalha → chaves de fala
+      engine.js        (+ .test)  [NEW] Battle síncrono: criar, replay, aplicar, quem deve, resultado, snapshot
+      outcome.js       (+ .test)  [NEW] resultado, pontuação, sequência (o teste cobre também dialogue.js)
+      dialogue.js                 [NEW] eventos da batalha → chaves de fala, uma vez cada
+      runs.js                     [NEW] caminhos do Firestore e documento público do dia
+      actions.js                  [NEW] as 4 ações sem HTTP (testadas via challenge.test.js)
+      errors.js                   [NEW] ChallengeError(status, code, extra)
     ai/                           [NEW] ver o documento da IA, §2 (inclui features.js, model.js, models/ do documento de ML)
 api/battle-turn.test.js           [MODIFY] passa a importar o Firestore falso de _lib/testing
 scripts/ai-arena.mjs              [NEW] autojogo para calibrar a IA (documento da IA, §16)
@@ -112,27 +120,31 @@ Tudo sob `api/_lib/` continua fora da contagem de funções, porque o prefixo `_
 ### 2.2 `api/challenge.js`
 Mesmo esqueleto de `battle-turn.js`:
 - **Imports estáticos:** só `./_lib/httpBasics.js` e `./_lib/runtimeGuards.js`. Nada de `firebase-admin`, `@pkmn/*` ou `_lib/challenge/*` no topo.
-- **`loadDeps()`** memoizada, como em `battle-turn.js:46-75`. Carrega `serverAuth`, `@pkmn/sim`, `_lib/challenge/*` e `_lib/ai/*`. Cada passo tem nome, e uma falha responde `500 {error: 'Failed to load <módulo>: …'}`. Se a carga falhar, o memo é zerado para a próxima chamada tentar de novo.
+- **`loadDeps()`** memoizada, como em `battle-turn.js:46-75`. Carrega, em passos nomeados, `serverAuth`, `actions` (que puxa `@pkmn/sim` e `_lib/challenge/*`), `engine` e `ai`. Uma falha responde `503 {error: 'Failed to load <passo>: …'}`, o mesmo status do `battle-turn`. Se a carga falhar, o memo é zerado para a próxima chamada tentar de novo.
+- **A lógica fica em `_lib/challenge/actions.js`** (`createChallengeService({db, appId, now, randomInt})`), sem HTTP. O endpoint só faz CORS, autenticação e despacho, e os testes chamam o handler de verdade.
 - **`GET ?ping=1`** responde `{ok: true, ping: true}` antes de carregar qualquer coisa.
 - **`GET` sem parâmetros** é o self-check: dependências, formato das credenciais (nunca o conteúdo), ida e volta no Firestore, e uma batalha de 2 Pokémon com **uma decisão real da IA** e o tempo medido.
 - **`POST`** faz CORS (`setCorsHeaders`), chama `verifyCaller(req)` → `uid` e despacha por `body.action`.
-- **Erros:** um `HttpError(status, code, extra)` vira `res.status(status).json({error: code, ...extra})`.
+- **Erros:** um `ChallengeError(status, code, extra)` (`_lib/challenge/errors.js`, subclasse do `HttpError`) vira `res.status(status).json({error: code, ...extra})`. O 401 do `verifyCaller` vira `unauthenticated`.
 - **Promises:** todas aguardadas. As transações usam `withTimeout`.
 
 ### 2.3 Módulos de `_lib/challenge/`
 
 | Módulo | Exporta (assinatura) | Notas |
 |---|---|---|
-| `constants.js` | `FORMAT = 'gen9customgame@@@Sleep Clause Mod,Terastal Clause'`, `LEVEL = 50`, `ENGINE_VERSION = 'pkmn-sim@0.10.11'`, `BANNED_MOVES = ['fissure','guillotine','horndrill','sheercold','doubleteam','minimize']`, `CHAMPIONS = {cynthia: {trainerSprite: 'cynthia-gen4', aceSpecies: 'garchomp'}}` | OHKO e evasão são checados em `validateTeam`; essas cláusulas só agem na validação de time, que não roda |
-| `day.js` | `dayKeyAt(ms) → 'YYYY-MM-DD'`, `nextResetAt(ms) → ms`, `weekdayOf(dayKey) → 0..6`, `previousDayKey(dayKey)` | Usa `Intl.DateTimeFormat('en-CA', {timeZone: 'America/Sao_Paulo'})` para continuar certo se o horário de verão voltar. Espelho idêntico em `src/utils/challengeDay.js` (§3.1) |
-| `pool.js` | `CYNTHIA_POOL: Array<{species, dexNum, tier: 'core'\|'frequent'\|'occasional', leadWeight, variants: {[key]: {showdownText, source}}}>` | `showdownText` sem a linha `Level:` (o motor força 50). `source` é a URL da wiki ou a chave do jogo em `gym-leaders.json` |
-| `rotation.js` | `difficultyFor(dayKey) → 'dp'\|'platinum'\|'rematch'\|'world'`, `championLineupFor(dayKey, championId) → [{species, dexNum, variantKey}]` (6: 3 frequentes + 1 ocasional + 1 curinga + ás por último; o curinga leva `wildcard: true`), `championTeamTextFor(dayKey, championId) → string`, `wildcardFor(dayKey, exclude) → {species, showdownText}` | Curinga via `generateRandomTeam` de `randomTeams.js` com seed `hash('wildcard:'+dayKey)`, filtros do plano §4.2. Seed `hash('champion:'+dayKey)` com o `PRNG` do sim; anti-repetição de 7 dias (plano §4.2). Funções puras |
-| `dailyTeam.js` | `dailyTeamFor(dayKey) → {showdownText, members: [{species, dexNum, item, ability, moves}]}` | `generateRandomTeam({seed: hashSeed('daily-team:'+dayKey)})` de `randomTeams.js:111`. Depois `Teams.import`, `set.level = 50` em cada um, e `Teams.export` |
-| `validateTeam.js` | `validateTeam(showdownText) → {ok: true, text, packed, members} \| {ok: false, errors: [{slot, code, detail}]}` | Códigos: `parse`, `empty`, `tooMany` (>6), `noMoves`, `bannedMove`, `unknownSpecies`, `tooLong` (>8 KB). Reaproveita `packTeam` (`battleResolver.js:58`). O **tier** do time é só informativo: o cliente calcula com `src/utils/tierLegality.js`, manda em `start`, e o servidor grava sem confiar (vale só como etiqueta; o ranking justo é o do Time do dia) |
-| `engine.js` | `createBattle({seed, teams}) → Battle`, `replay({seed, teams, choices}) → {battle, p1Lines, p2Lines}`, `apply(battle, side, choice) → {ok: true} \| {ok: false, error}`, `owes(battle, side) → boolean`, `outcome(battle) → {ended, winner, turns, remaining: {p1, p2}, hpPct: {p1, p2}}`, `snapshot(battle) → json` | `send` captura `update` (canais p1 e p2 via `extractChannelMessages(…, [0, 1])`) e o `sideupdate` de cada lado (`\|request\|`, `\|error\|`). As linhas do p1 vão para o cliente; as do p2 alimentam a IA e **nunca** saem do servidor. **`battle.sendUpdates()` depois de cada `choose`** (sem isso nada é emitido; medido no spike). `owes` lê `side.activeRequest` (`!wait`, com `active`/`forceSwitch`/`teamPreview`). Team preview é respondido com `default` automaticamente |
-| `runs.js` | `paths(appId)`, `readDay`, `ensureDay(tx, dayKey)`, `readRun(tx, runId)`, `createRun(tx, …)`, `appendRound(tx, run, lines)`, `writeSecret(tx, …)`, `readStats/writeStats` | Uma transação por ação. Tudo aguardado |
-| `outcome.js` | `scoreOf(outcome) → number`, `nextStats(stats, {dayKey, status, practice}) → stats`, `effectiveStreak(stats, todayKey) → number` | Pontuação: vitória = `1000 + 150×restantes + hp% médio − 5×turnos`; derrota = 0. Treino não mexe nas estatísticas |
-| `dialogue.js` | `dialogueEvents(prevLines, newLines, ctx) → [{key, params, at}]` | `at` é o índice da linha depois da qual a fala entra. Chaves na §5.3 |
+| `constants.js` | `FORMAT = 'gen9anythinggoes@@@!Team Preview,Sleep Clause Mod,Terastal Clause'`, `LEVEL = 50`, `ENGINE_VERSION = 'pkmn-sim@0.10.11'`, `BANNED_MOVES = ['fissure','guillotine','horndrill','sheercold','doubleteam','minimize']`, `CHOICE_PATTERN`, `MAX_TEAM_TEXT`, `MAX_NAME_LENGTH`, `CHAMPIONS = {cynthia: {name: 'Cynthia', trainerSprite: 'cynthia-gen4', aceSpecies: 'Garchomp'}}` | **Não `gen9customgame`:** é formato de *debug* e mostra o HP exato de cada lado ao outro. O Anything Goes traz HP Percentage Mod; as demais regras dele são de validador e não agem. Team Preview desligado para não revelar o curinga. Species, OHKO e evasão são checados em `validateTeam` |
+| `seed.js` | `hashSeed(...partes) → [4 inteiros de 16 bits]` | cyrb128 dobrado no formato do `PRNG` do sim. Fonte única de toda semente derivada (dia, curinga, Time do dia, dados da IA) |
+| `day.js` | `dayKeyAt(ms) → 'YYYY-MM-DD'`, `nextResetAt(ms) → ms`, `weekdayOf(dayKey) → 0..6`, `previousDayKey`, `shiftDayKey`, `daysBetween`, `isoWeekOf`, `isDayKey` | `Intl.DateTimeFormat` com `America/Sao_Paulo` via `formatToParts`, para continuar certo se o horário de verão voltar. Espelho em `src/utils/challengeDay.js` (§3.1, F2) |
+| `pool.js` | `CYNTHIA_POOL: Array<{species, dexNum, tier: 'core'\|'frequent'\|'occasional', leadWeight, variants: {dp, platinum, rematch, world: {showdownText, source}}}>`, `poolFor(championId)` | Uma variante por dificuldade. `showdownText` sem `Level:` (o motor força 50). Variantes sem spread próprio (todas menos as de Domingo) recebem 84 EVs em tudo. `source`: `dittobase:*`, `gym-leaders.json:renegade-platinum` ou `design` |
+| `rotation.js` | `difficultyFor(dayKey)`, `coreFor(dayKey, championId)`, `championLineupFor(dayKey, championId) → [{species, dexNum, tier, variantKey, wildcard?}]`, `championTeamTextFor(dayKey, championId)`, `wildcardFor(dayKey, championId, teamSpecies)`, `publicLineup(lineup)` | **Núcleos em ciclos** (plano §4.2, item 7): sem repetição em 7 dias por construção, O(1) por dia. Curinga via `generateRandomTeam` com `hashSeed('wildcard', championId, dayKey, tentativa)`. Cache por processo. ~2–3 ms por dia |
+| `dailyTeam.js` | `dailyTeamFor(dayKey) → {showdownText, members: [{species, dexNum, item, ability, moves}]}` | `generateRandomTeam({seed: hashSeed('daily-team', dayKey)})`, depois `Teams.import`, `level = 50` e `Teams.export` |
+| `validateTeam.js` | `validateTeam(showdownText) → {ok: true, text, packed, members} \| {ok: false, errors: [{slot, code, detail}]}` | Códigos: `parse`, `empty`, `tooMany` (>6), `tooLong` (>8 KB), `unknownSpecies`, `duplicateSpecies` (Species Clause), `noMoves`, `unknownMove`, `bannedMove`. Lista **todos** os erros de uma vez. Usa `Teams` direto, não o `packTeam` do PvP (que lança na primeira falha). O **tier** é só etiqueta: o cliente calcula com `src/utils/tierLegality.js` e o servidor grava sem confiar |
+| `engine.js` | `createMatch({seed, teams, names, format?}) → {battle, lines: {p1, p2}, lastError}`, `apply(match, side, choice) → {ok} \| {ok: false, error}`, `replay({seed, teams, names, choices, format?}) → match`, `owes(battle, side)`, `requestOf(battle, side)`, `outcome(battle)`, `snapshot(battle)`, `battleNames(player, champion)`, `packAtLevel(text)` | `send` captura `update` (canais **1 = p1 e 2 = p2** via `extractChannelMessages(…, [1, 2])`) e o `sideupdate` de cada lado. **Descarta `\|t:\|`** (leva `Date.now()`). **`sendUpdates()` depois de cada `choose`.** Uma jogada recusada é removida das linhas. `owes` lê `activeRequest` (`!wait`) + `isChoiceDone()`. **`snapshot` copia o `log`:** `toJSON()` o devolve por referência e um clone escreveria na batalha real (wound 2026-10-14) |
+| `runs.js` | `paths(appId)`, `officialRunId(uid, day)`, `practiceRunId(uid, day, n)`, `buildDayDoc({dayKey, championId, aiVersion, nowMs})` | Só caminhos e o documento público; as transações ficam em `actions.js` |
+| `actions.js` | `createChallengeService({db, appId, now, randomInt, championId, model}) → {ensureDay, start, choose, forfeit}` | `start` é uma transação; `choose` e `forfeit` calculam fora e fazem uma transação curta. Tudo aguardado |
+| `outcome.js` | `scoreOf`, `resultOf(outcome, status)`, `emptyStats(uid)`, `nextStats(stats, {dayKey, status, practice})`, `effectiveStreak(stats, todayKey)` | Pontuação: vitória = `1000 + 150×restantes + hp% médio − 5×turnos`; derrota = 0. Treino não mexe nas estatísticas; um dia nunca conta duas vezes; histórico de 60 dias |
+| `dialogue.js` | `dialogueEvents(prevLines, newLines, {said, aceSpecies, championName, winProb}) → {events: [{key, params?, at}], said}` | `at` é o índice em `newLines` depois do qual a fala entra. `said` (guardado em `secret/state`) garante uma vez por partida. Inclui `turned` (P da Cynthia caiu > 0,25) e `confident` (P > 0,85), via M1 |
+| `errors.js` | `ChallengeError(status, code, extra)`, `fail(...)` | Só depende de `httpBasics.js` |
 
 ### 2.4 Contrato da API
 
@@ -151,8 +163,8 @@ Mesmo esqueleto de `battle-turn.js`:
 // pedido: time salvo
 { "action": "start", "practice": false,
   "team": { "source": "saved", "teamId": "abc123", "name": "Chuva", "tier": "OU", "showdownText": "Pelipper @ Damp Rock\n..." } }
-// pedido: Time do dia
-{ "action": "start", "practice": true, "team": { "source": "daily" } }
+// pedido: Time do dia (trainerName é opcional: o nome no protocolo, ≤ 20 caracteres)
+{ "action": "start", "practice": true, "team": { "source": "daily" }, "trainerName": "Enzo" }
 // 200
 { "runId": "UID_2026-10-14", "turn": 0, "status": "active",
   "lines": ["|player|p1|...", "|request|{...}", "..."], "events": [{ "key": "challenge.cynthia.intro", "at": 0 }] }
@@ -169,7 +181,8 @@ Mesmo esqueleto de `battle-turn.js`:
   "result": null }
 // 200 no fim
 { "turn": 23, "status": "won", "lines": ["...", "|win|Enzo"], "events": [...],
-  "result": { "turns": 23, "remaining": 2, "hpPct": 41, "score": 1226, "streak": 4, "bestStreak": 9 } }
+  "result": { "turns": 23, "remaining": 2, "hpPct": 41, "score": 1226, "streak": 4, "bestStreak": 9,
+              "winChanceCurve": [0.5, 0.47, …] } }   // streak/bestStreak são null num treino
 ```
 - `choice` precisa casar com `^(move [1-4]|switch [1-6]|default)$`; fora disso, 400 `invalidChoice` sem chegar ao sim.
 
@@ -189,8 +202,11 @@ Mesmo esqueleto de `battle-turn.js`:
 | 404 | `runNotFound` | — | — |
 | 409 | `officialAlreadyPlayed` | Segunda partida oficial no mesmo dia | `runId` |
 | 409 | `staleTurn` | `turn` diferente do atual (duas abas, repetição) | `turn` atual |
-| 410 | `dayClosed` | Partida de um dia que já virou | `status: 'expired'` |
-| 500 | `internal` / `Failed to load …` | — | — |
+| 409 | `runEnded` | A partida já terminou | `status` |
+| 409 | `notYourTurn` | O simulador não espera nada do jogador (não deve acontecer: a IA responde às trocas forçadas dela na mesma chamada) | `turn` |
+| 410 | `dayClosed` | Partida de um dia que já virou; ela é marcada `expired` e a sequência registra o dia | `status: 'expired'`, `dayKey` |
+| 503 | `Failed to load <passo>: …` | Dependência pesada não carregou | — |
+| 500 | `internal` | Erro inesperado | `detail`, `lastRuntimeError` |
 
 **Regras das revanches de treino:**
 - Só depois de a oficial terminar.
@@ -498,16 +514,23 @@ artifacts/{appId}/
   challengeRuns/{runId}                // runId = {uid}_{dayKey} | {uid}_{dayKey}_p{n}
     { uid, dayKey, practice, practiceN, championId, challengeKey,
       teamSource: 'saved'|'daily', teamName, teamTier,
-      status: 'active'|'won'|'lost'|'expired', turn, roundCount,
+      status: 'active'|'won'|'lost'|'expired', turn, roundCount, lineCount,
       result: {turns, remaining, hpPct, score} | null,
       winChanceCurve: [0.5, 0.47, …] | null,   // perspectiva do jogador; só gravada no fim
+      forfeited?,                               // true quando o jogador desistiu
+      practiceCount, activePracticeId,          // só na partida oficial: controle dos treinos
       engineVersion, aiVersion, createdAt, updatedAt, endedAt }
-    rounds/{seq}  { seq, turn, lines: [...], createdAt }              // log na visão do p1
-    secret/state  { format, seed: [4 ints], teams: {p1, p2}, choices: [{side, choice, turn}],
-                    aiTrace: [últimas 10 decisões] }                  // ninguém lê pelo cliente
+    rounds/{seq}  { seq, turn, lines: [...], events: [{key, params?, at}], createdAt }   // visão do p1
+    secret/state  { format, seed: [4 ints], teams: {p1, p2}, names: {p1, p2}, profileKey,
+                    choices: [{side, choice, turn}],         // na ordem aplicada; é o que o replay usa
+                    aiTrace: [últimas 10 decisões],
+                    said: [chaves de fala já usadas],
+                    winCurve: [P do jogador por ação],       // copiada para a partida no fim
+                    training: [{m1, m2}] }                   // linhas anônimas, gravadas no fim
+                                                             // ninguém lê pelo cliente
 
   aiTraining/{autoId}                  // anônimo: sem uid/nome/time (documento de ML, §3)
-    { schema, aiVersion, engineVersion, featureVersion, week, difficulty, teamSource, outcome, turns: [...] }
+    { schema, aiVersion, engineVersion, featureVersion, week, difficulty, teamSource, outcome, turns: [...], expiresAt }
 
   challengeStats/{uid}
     { uid, played, wins, losses, streak, bestStreak, lastPlayedDay, lastWonDay,
@@ -566,7 +589,7 @@ match /aiTraining/{docId} {
 | `api/render-meta.js` | `:89` | Ramo `urlPath === '/challenge'` com título, descrição e imagem |
 | `src/components/PageGuide.jsx` | `:203` | `pageGuideTips.challenge` |
 | `src/constants/translations.js` | EN perto de `:938`, PT espelhado | `challenge.*`, `nav.challenge`, `guide.challenge` (exatamente 2 dicas), `cozyHome.challenge*` |
-| `src/constants/theme.js` | `:12` | `PATCH_NOTES_VERSION = '1.15.0'` + entrada nas notas |
+| `src/constants/theme.js` | `:12` | `PATCH_NOTES_VERSION = '1.16.0'` (a `main` já usa 1.15.0 para a Reg M-C) + entrada em `patchNotes.js` |
 | `src/services/accountDeletion.js` | `:44-50` | Consulta `challengeRuns where uid == uid` → apaga `rounds/*`, `secret/state`, a partida; e `challengeStats/{uid}` |
 | `src/store/useBattlesStore.js` | `:54-79` | `callBattleApi` passa a usar `services/apiClient.js` (mesmo comportamento) |
 | `vercel.json` | `functions` | `"api/challenge.js": {"memory": 2048, "maxDuration": 30, "excludeFiles": "api/**/*.test.js"}` |
@@ -612,14 +635,14 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 | `api/_lib/challenge/day.test.js` | 23:59 e 00:00 de Brasília; virada de mês e de ano; `nextResetAt`; o dia da semana bate com o calendário |
 | `pool.test.js` | Toda variante importa no sim; nenhuma tem golpe banido; toda espécie tem `source`; Garchomp é `core` |
 | `rotation.test.js` | Mesmo dia → mesmo time; 6 espécies distintas; ás por último; composição exata 3+1+1+ás em 365 dias; curinga nunca é do pool, nunca restrito/mítico, sempre evoluído, nunca o primeiro; nenhuma composição repetida em 7 dias (365 dias simulados); distribuição de primeiros Pokémon dentro do peso esperado ±10% |
-| `dailyTeam.test.js` | Determinístico; todos no nível 50; 6 membros com 4 golpes |
+| `dailyTeam` (em `validateTeam.test.js`) | Determinístico; todos no nível 50; 6 membros com golpes; passa no `validateTeam` |
 | `validateTeam.test.js` | Cada código de erro; time válido devolve `packed` e `tier` |
 | `engine.test.js` | Replay = partida ao vivo (log idêntico); sem `sendUpdates` nada sai (guarda de regressão); jogada ilegal → `{ok: false, error}`; `owes` depois de desmaio (só um lado); log do p1 não contém o item do p2 |
 | `outcome.test.js` | Sequência: vitória seguida, buraco de um dia, derrota zera, treino não conta, `expired` |
-| `dialogue.test.js` | Primeiro nocaute sofrido, ás enviado, último Pokémon — cada fala uma vez por partida |
+| `dialogue` (em `outcome.test.js`) | Primeiro nocaute sofrido, ás enviado, último Pokémon, virada pelo M1 — cada fala uma vez por partida, no índice `at` certo |
 | `api/challenge.test.js` | Partida completa pelo handler; token anônimo → `signInRequired` em `start`/`choose`/`forfeit` e `ensureDay` liberado; fim de partida grava `aiTraining` sem `uid` e a curva só no fim; `officialAlreadyPlayed`; `practiceLocked`; `staleTurn`; `dayClosed` (relógio falso); `invalidChoice` com `simError`; substituição da IA sem o p1 dever; o documento lido pelo cliente não tem `seed`, `choices` nem o time do p2; `ensureDay` concorrente cria um só documento |
 | `api/challenge.deps.test.js` | Força `@pkmn/sim` a falhar → `GET ?ping=1` responde e `POST` devolve JSON nomeando o módulo |
-| `api/_lib/dependencies.test.js` | [MODIFY] incluir `require('@pkmn/sim')` com `--no-experimental-require-module` |
+| `api/_lib/dependencies.test.js` | [MODIFY] ✅ `@pkmn/sim` e `@pkmn/randoms` sem `require(esm)` |
 | `src/utils/challengeDay.test.js` | Espelho idêntico ao do servidor em 800 datas; `effectiveStreak` |
 | `src/utils/battleTimeline.test.js` | Um turno real gravado (fixture) → eventos esperados; fala inserida no `at` certo; desmaio + troca forçada |
 | `src/utils/arenaMap.test.js` | Colisão; BFS acha o caminho e respeita pilares; `encounterTile` |
@@ -647,39 +670,44 @@ nav.challenge · guide.challenge (2 dicas) · cozyHome.challenge{Title,Ready,Con
 - [ ] Escolher a fonte de pixel (sugestão: Pixelify Sans) e testar acentos em PT.
 - [ ] Rascunhar a arte (`scripts/challenge-art/*.txt`) e gerar os PNGs para aprovação.
 
-### F1 — Servidor e IA
-- [ ] `_lib/testing/fakeFirestore.js` (extrair) + `battle-turn.test.js` usando o arquivo extraído.
-- [ ] `constants`, `day`, `pool`, `rotation`, `dailyTeam`, `validateTeam`, `engine`, `outcome`, `dialogue` + testes.
-- [ ] `_lib/ai/*` + testes + `scripts/ai-arena.mjs` (documento da IA).
-- [ ] `features.js`, `model.js`, `ai-dataset`, `ai-train`, `winprob-v1.js` treinado em autojogo e aprovado pelos critérios (documento de ML, §4).
-- [ ] `runs.js` + `api/challenge.js` + `challenge.test.js` + `challenge.deps.test.js`.
-- [ ] `firestore.rules`, `vercel.json`, contagem de funções = 8.
-- **Pronto quando:** todos os testes verdes; arena de IA com as metas do documento da IA (§10); self-check local verde.
+### F1 — Servidor e IA ✅ (2026-10-14, sem commit)
+- [x] `_lib/testing/fakeFirestore.js` (extraído, com `runTransaction`) + `battle-turn.test.js` usando o arquivo extraído.
+- [x] `constants`, `seed`, `day`, `pool`, `rotation`, `dailyTeam`, `validateTeam`, `engine`, `outcome`, `dialogue`, `errors` + testes.
+- [x] `_lib/ai/*` + testes (19 cenários, estimador em todo golpe do dex, invariantes, fuzz) + `scripts/ai-arena.mjs`.
+- [x] `features.js`, `model.js`, `ai-dataset`, `ai-train`, `winprob-v1.js` treinado em autojogo. **Critério:** passou em Brier (0,167), ECE (0,029) e ganho sobre a referência, mas ficou em log-loss 0,501 contra ≤ 0,50 (documento de ML, §4). Instalado com `--force`; **aceito pelo Enzo em 2026-10-15**.
+- [x] `runs.js` + `actions.js` + `api/challenge.js` + `challenge.test.js` + `challenge.deps.test.js`.
+- [x] `firestore.rules`, `vercel.json`, contagem de funções = 8.
+- **Pronto quando:** todos os testes verdes ✅ (exceto as 2 falhas antigas de `dependencies.test.js` nesta máquina); arena com as metas do documento da IA ✅; self-check verde no teste ✅ (falta rodar contra o Firestore real, depois do deploy).
 
-### F2 — Jogável
-- [ ] `apiClient`, `challengeApi`, store, hook, `challengeDay` (+ teste do espelho).
-- [ ] `ChampionChallengeView` com cena **simples**: os leitores existentes + `TeamPicker` + `CommandPanel` + `MovePanel` + `PartyPanel` + `ResultScreen`.
-- [ ] Rota, `currentPage` e navegação, para poder testar de verdade.
-- [ ] `SignInGate` + estado `signInGate`; nova tentativa com token renovado no `apiClient`.
-- **Pronto quando:** vencer e perder no navegador; retomar depois de recarregar; erro de jogada aparece; duas abas não corrompem a partida; convidado não consegue jogar, mas consegue entrar e seguir sem recarregar.
+### F2 — Jogável ✅ (2026-10-14/15, sem commit)
+- [x] `apiClient`, `challengeApi`, store, hook, `challengeDay` (+ teste do espelho).
+- [x] `ChampionChallengeView` — foi direto ao console DS (F3/F4), sem a cena simples intermediária.
+- [x] Rota, `currentPage` e navegação.
+- [x] `SignInGate` + estado `gate`; nova tentativa com token renovado no `apiClient`.
+- **Pronto quando:** ✅ vencer e perder no navegador; retomar depois de recarregar; erro de jogada aparece; duas abas não corrompem; convidado entra e segue sem recarregar.
 
-### F3 — Console DS
-- [ ] `ConsoleShell` + `useScreenScale`, `BattleScene`, `HpBox`, `BallRow`, `TextBox`.
-- [ ] `battleTimeline` + `useTimelinePlayer` + `moveFx` + `MoveFxLayer` (3 moldes + 12 assinaturas).
-- [ ] Pokétch e os 4 apps; `challengeSfx`.
-- [ ] `WinChanceChart` na `ResultScreen` (antes de desenhar, carregar a skill `dataviz`).
-- **Pronto quando:** `/verify-ui` completo; *reduced motion*; orçamentos da §3.14 medidos.
+### F3 — Console DS ✅ (2026-10-15)
+- [x] `DsConsole` + `useScreenScale`, `DsBattleScene` (geometria `STAGE`, sprites 1:1 sobre a linha dos pés — `sprite-feet.json`), `HpBox` espelhados, `BallRow`, `DsTextBox`.
+- [x] `battleTimeline` + `useBattlePlayback` + efeitos de golpe (3 moldes por categoria; as 12 assinaturas por tipo ficam para depois).
+- [x] Pokétch com os 4 apps (equipe, dossiê, relógio, contador); `challengeSfx` (síntese WebAudio, mudo lembrado, desbloqueio no primeiro gesto).
+- [x] Gráfico da chance de vitória (`DsBattleReport`, tela de cima no resultado): par divergente validado pelo script da skill `dataviz`, maior virada com a causa lida do log (o servidor grava `winChanceMarks`: turno + posição no log por ponto), mira por mouse/toque/←→, tabela para leitor de tela.
+- **Pronto quando:** ✅ `/verify-ui` em 1440/390 × escuro/claro, quadros no meio da animação, *reduced motion*; rota 16,5 KB JS / 7 KB CSS gzip.
 
-### F4 — Arena
-- [ ] `arenaMap`, `ArenaScreen`, `ArenaActor`, `useArenaMovement`, `useConsoleInput`, `DPad`.
-- [ ] Diálogo, transição, ping de aquecimento ao montar a arena, "Ir até a Cynthia".
-- **Pronto quando:** teclado e toque (CDP) andam e respeitam colisão; o encontro dispara uma vez.
+### F4 — Arena ✅ (2026-10-15)
+- [x] `arenaMap` (BFS, `faceToward`), `DsArena`, `useConsoleInput`, D-pad (só no desktop; no celular o toque anda — não cabe acima do dock).
+- [x] Diálogo, transição, aquecimento pela ação `state`, "Ir até a Cynthia".
+- [x] Arte: Cynthia pela folha de fã de zedubstep (fornecida pelo Enzo); protagonista pela folha do Hilbert (BW), fornecida pelo Enzo em 2026-10-16.
+- **Pronto quando:** ✅ teclado, clique e toque andam e respeitam colisão; o encontro dispara uma vez.
 
-### F5 — Integração
-- [ ] Card da Home + `journey`, `render-meta`, guia, i18n completo, notas de versão, exclusão de conta.
-- [ ] Coleta anônima (`aiTraining`) ligada + aviso `challenge.privacy.notice`; recomendado criar `/privacy`.
-- [ ] `docs/modules/daily_challenge.md`, `docs/index.md`, exceção na skill `design-system`.
-- **Pronto quando:** card nos 5 estados; rota na busca e no "Mais"; excluir uma conta de teste apaga tudo do desafio.
+### F5 — Integração ✅ (2026-10-15)
+- [x] Card da Home (`useChallengeSummary`) + `journey`, `render-meta`, guia, i18n, notas de versão 1.15.0, exclusão de conta (runs, rodadas, estado secreto, estatísticas).
+- [x] Coleta anônima (`aiTraining`) ligada + aviso `challenge.privacy.notice` no seletor. A página `/privacy` continua só recomendada.
+- [x] `docs/modules/daily_challenge.md`, `docs/index.md`, exceção na skill `design-system`.
+- **Pronto quando:** ✅ os estados do card testados (`challengeSummaryState`) e vistos no navegador (convidado, novo); rota na busca ("cynthia") e no "Mais"; exclusão testada com um Firestore falso (falta conferir contra o real depois do deploy).
 
-### F6 — Depois
-- Ranking diário, cartão de compartilhamento, push no cron diário existente.
+### F6 — Depois ✅ em parte (2026-10-15)
+- [x] Ranking diário (`api/_lib/challenge/ranking.js`): `public/data/challengeRanks/{dia}`, dois quadros (Time do dia, Times próprios), top 50 por pontuação → menos turnos → quem terminou antes; só vitória oficial entra, todo fim oficial conta em `played`. Escrito na transação que encerra a partida; regra só leitura; `state` devolve o topo e a sua posição (sem uid de ninguém); `forget` tira o jogador na exclusão de conta. Painel BW (`DsRanking`) pelo chip "Ranking".
+- [x] Compartilhar (`utils/challengeShare.js`): texto com dia, dificuldade, resultado, sequência, posição e a curva em blocos (▁▂▄▆█); folha de compartilhar no celular, área de transferência no desktop.
+- [x] Push "time novo da Cynthia": tópico `dailyChallenge` no cron diário existente (`DAILY_TOPICS`), etiqueta `ptb-challenge`, chave no Perfil.
+- [x] Post no fórum: anexo `sharedChallenge` (`ChallengeShareCard`), oferecido no toast de compartilhar.
+- [ ] Cartão-imagem (canvas), como o do PokéPuzzle.
