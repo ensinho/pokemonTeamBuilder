@@ -89,7 +89,7 @@ src/styles/champion-challenge-ds.css   the design-system exception: --px, --ds-*
 
 `MoveFx` in `DsBattleScene.jsx`: eight particles at the target, a **pattern** (how they move: rise, fall, ring, slash, quake, swarm, burst; status moves sparkle) and a **shape** (flame, bubble, wisp, leaf, rock, shard, bolt, ring, sparkle, line, dot, star) per type (`FX_BY_TYPE`); a special move's particles wait for its orb. Heavy physical hits (ground, rock, fighting) shake the field (`is-shake`, the world layers only). Transform/opacity; none under reduced motion.
 
-**CSS budget:** the route's stylesheet is ~10.9 KB gzip of its 12 KB — the BW pass layered rules over the DPPt ones. Before adding much more, merge the overridden blocks (`.ds-hpbox`, `.ds-textbox.is-*`, `.ds-picker*`, `.ds-result`).
+**CSS budget:** the route's stylesheet is 11.1 KB gzip of its 12 KB (2026-10-16). The BW pass had layered rules over the DPPt ones; those are merged now, one rule per selector, with the DPPt panel colours gone. A refactor of this stylesheet is checked by diffing computed styles across 16 states (desktop with and without rails, phone; room, picker, ranking, battle and its menus, result with its chart) before and after. The same diff found this merge left nothing different but the dead declarations it meant to drop.
 
 ### F6: ranking, share, push (2026-10-15)
 

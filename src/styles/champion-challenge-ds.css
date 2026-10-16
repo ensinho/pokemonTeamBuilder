@@ -274,9 +274,6 @@
     --ds-lcd-dim: #86b882;
     --ds-lcd-ink: #2a4426;
     --ds-fight: #ec6a72;
-    --ds-fight-edge: #a83844;
-    --ds-pokemon-edge: #2e8848;
-    --ds-back: #4a4a58;
     --ds-cat-physical: #e8582c;
     --ds-cat-physical-core: #f8d040;
     --ds-cat-special: #4a6ad8;
@@ -591,14 +588,16 @@
 
 /* The battle message on a phone: BW's black band across the field. */
 .ds-textbox.is-band {
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: calc(40 * var(--px));
+    left: calc(2 * var(--px));
+    right: calc(2 * var(--px));
+    bottom: calc(2 * var(--px));
+    height: calc(38 * var(--px));
     border: none;
-    border-radius: 0;
+    border-radius: calc(4 * var(--px));
     background: color-mix(in srgb, var(--bw-band) 86%, transparent);
-    box-shadow: inset 0 calc(1 * var(--px)) 0 var(--bw-rim);
+    box-shadow:
+    inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--bw-white) 70%, transparent),
+    inset 0 0 0 calc(2 * var(--px)) var(--bw-band);
     color: var(--bw-white);
 }
 
@@ -950,15 +949,25 @@
     filter: brightness(0.82) saturate(0.8);
 }
 
-/* ── Panels that fill a screen (picker, gate, result) ────────────────── */
+/* ── Panels that fill a screen (picker, gate, result, ranking, rails) ──
+   Black & White's menus: the battle-menu blue with stripes, cards with a
+   light rim, white type with a dark shadow, the start button as FIGHT's
+   white-rimmed capsule. (The report above a result stays paper: a page to
+   read, not a menu.) */
 
 .ds-picker,
 .ds-panel {
     position: absolute;
     inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(5 * var(--px));
+    padding: calc(8 * var(--px)) calc(10 * var(--px));
     background:
-        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--ds-box-inner) 12%, transparent) calc(6 * var(--px)) calc(8 * var(--px))),
-        var(--ds-paper);
+        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-card-2) 70%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
+        linear-gradient(var(--bw-card-1), var(--bw-ground-2));
+    color: var(--bw-white);
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
 }
 
 .ds-cmd,
@@ -997,7 +1006,10 @@
     display: grid;
     place-items: center;
     padding: calc(6 * var(--px)) calc(10 * var(--px));
-    background: var(--ds-back);
+    border-radius: calc(14 * var(--px));
+    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-rim);
+    color: var(--bw-white);
     text-decoration: none;
 }
 
@@ -1491,7 +1503,7 @@
 
 /* The team picker (or the gate) opening over the room, a menu over the map. */
 .bw-overlay.is-menu {
-    inset: calc(12 * var(--px)) calc(20 * var(--px));
+    inset: calc(8 * var(--px)) calc(16 * var(--px));
     overflow: hidden;
     background: none;
     box-shadow:
@@ -1516,16 +1528,17 @@
 .bw-result .ds-result {
     position: relative;
     inset: auto;
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: calc(6 * var(--px));
-    padding: calc(5 * var(--px)) calc(8 * var(--px));
+    gap: calc(4 * var(--px));
+    padding: calc(5 * var(--px)) calc(10 * var(--px)) calc(6 * var(--px));
     box-shadow: 0 calc(-1 * var(--px)) 0 var(--ds-ink-shadow);
 }
 
 .bw-result .ds-result__title {
-    font-size: calc(14 * var(--px));
+    font-size: calc(12 * var(--px));
+    line-height: calc(14 * var(--px));
 }
 
 .bw-result .ds-result__figures {
@@ -1549,11 +1562,6 @@
 
 .bw-result .ds-panel__body {
     display: none;
-}
-
-.bw-result .ds-panel__actions {
-    flex-wrap: nowrap;
-    margin-top: 0;
 }
 
 /* ── Bottom screen: the Pokétch ──────────────────────────────────────── */
@@ -1730,16 +1738,7 @@
     transform: translateY(calc(2 * var(--px)));
 }
 
-/* ── Bottom screen: the team picker and panels ───────────────────────── */
-
-.ds-picker,
-.ds-panel {
-    display: flex;
-    flex-direction: column;
-    gap: calc(5 * var(--px));
-    padding: calc(8 * var(--px)) calc(10 * var(--px));
-    color: var(--ds-ink);
-}
+/* ── The team picker and the panels' parts ───────────────────────────── */
 
 .ds-picker__head {
     display: flex;
@@ -1759,7 +1758,7 @@
     padding: 0;
     border: none;
     background: none;
-    color: var(--ds-box-edge);
+    color: var(--bw-card-rim);
     font: inherit;
     font-size: calc(8 * var(--px));
     text-decoration: underline;
@@ -1784,6 +1783,7 @@
     background: var(--ds-badge);
     color: var(--ds-ink);
     font-size: calc(6 * var(--px));
+    text-shadow: none;
 }
 
 .ds-picker__daily {
@@ -1797,8 +1797,8 @@
 .ds-picker__grid {
     display: grid;
     flex: 1;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: minmax(0, 1fr);
     gap: calc(4 * var(--px));
     margin: 0;
     padding: 0;
@@ -1807,18 +1807,22 @@
 
 .ds-picker__mon {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: calc(3 * var(--px));
     min-width: 0;
+    min-height: 0;
+    padding: 0 calc(5 * var(--px));
     border-radius: calc(6 * var(--px));
-    background: color-mix(in srgb, var(--ds-box-inner) 22%, var(--ds-paper));
-    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--ds-box-inner);
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    color: var(--bw-white);
 }
 
 .ds-picker__mon img {
-    width: calc(40 * var(--px));
-    height: calc(30 * var(--px));
+    flex: none;
+    width: calc(28 * var(--px));
+    height: calc(22 * var(--px));
     object-fit: contain;
 }
 
@@ -1827,6 +1831,7 @@
     overflow: hidden;
     font-size: calc(8 * var(--px));
     font-weight: 700;
+    text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
@@ -1857,15 +1862,16 @@
     padding: calc(4 * var(--px)) calc(6 * var(--px));
     border: none;
     border-radius: calc(6 * var(--px));
-    background: color-mix(in srgb, var(--ds-box-inner) 18%, var(--ds-paper));
-    color: var(--ds-ink);
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    color: var(--bw-white);
     font: inherit;
     text-align: left;
     cursor: pointer;
 }
 
 .ds-teamrow[aria-pressed="true"] {
-    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-box-edge);
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white);
 }
 
 .ds-teamrow__name {
@@ -1880,8 +1886,8 @@
     font-size: calc(7 * var(--px));
 }
 
-.ds-teamrow__status.is-ready { color: var(--ds-pokemon-edge); }
-.ds-teamrow__status.is-warn { color: var(--ds-fight-edge); }
+.ds-teamrow__status.is-ready { color: var(--bw-ok); }
+.ds-teamrow__status.is-warn { color: var(--bw-warn); }
 
 .ds-teamrow__sprites {
     grid-column: 1 / -1;
@@ -1898,31 +1904,38 @@
 .ds-picker__errors {
     margin: 0;
     padding-left: calc(10 * var(--px));
-    color: var(--ds-fight-edge);
+    color: var(--bw-warn);
     font-size: calc(7 * var(--px));
 }
 
 .ds-picker__foot {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
     align-items: center;
     gap: calc(6 * var(--px));
 }
 
 .ds-picker__privacy {
-    flex: 1;
-    color: var(--ds-ink-soft);
+    flex: none;
+    margin: 0;
+    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
     font-size: calc(6 * var(--px));
     line-height: 1.25;
+    text-align: center;
 }
 
 .ds-go {
     padding: calc(6 * var(--px)) calc(12 * var(--px));
-    border-radius: calc(10 * var(--px));
-    background: var(--ds-fight);
-    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--ds-fight-edge), 0 calc(3 * var(--px)) 0 var(--ds-fight-edge);
-    color: var(--ds-paper);
+    border-radius: calc(14 * var(--px));
+    background: radial-gradient(ellipse at 50% 30%, var(--bw-fight-1), var(--bw-fight-2) 72%);
+    box-shadow:
+    inset 0 0 0 calc(2 * var(--px)) var(--bw-white),
+    inset 0 0 0 calc(3.5 * var(--px)) var(--bw-fight-2),
+    0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep),
+    0 calc(2 * var(--px)) 0 calc(1.5 * var(--px)) var(--bw-red-deep);
+    color: var(--bw-white);
     font-size: calc(10 * var(--px));
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--ds-fight-edge);
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-red-deep);
     white-space: nowrap;
 }
 
@@ -1932,6 +1945,7 @@
 
 .ds-panel__body {
     margin: 0;
+    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
     font-size: calc(9 * var(--px));
     line-height: 1.35;
 }
@@ -1947,15 +1961,17 @@
     margin: 0;
     font-size: calc(18 * var(--px));
     font-weight: 700;
+    text-align: center;
 }
 
 .ds-result.is-won .ds-result__title {
-    color: var(--ds-pokemon-edge);
+    color: var(--bw-ok);
 }
 
 .ds-result__figures {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(calc(44 * var(--px)), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    grid-auto-flow: column;
     gap: calc(4 * var(--px));
     margin: 0;
 }
@@ -1965,7 +1981,9 @@
     flex-direction: column-reverse;
     padding: calc(4 * var(--px));
     border-radius: calc(5 * var(--px));
-    background: color-mix(in srgb, var(--ds-box-inner) 20%, var(--ds-paper));
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    color: var(--bw-white);
 }
 
 .ds-result__figures dt {
@@ -2037,7 +2055,6 @@
 .ds-chart__grid { stroke: var(--ds-ink-shadow); stroke-width: 0.5; }
 .ds-chart__mid { stroke: var(--ds-ink-soft); stroke-width: 0.75; stroke-dasharray: 2 2; }
 .ds-chart__tick { fill: var(--ds-ink-soft); font-size: 6px; }
-.ds-chart__region { fill: var(--ds-ink-soft); font-size: 6px; }
 
 .ds-chart__area { stroke: none; }
 .ds-chart__area.is-you { fill: color-mix(in srgb, var(--ds-chart-you) 38%, transparent); }
@@ -2187,102 +2204,10 @@
 }
 
 /* The result strip, two rows: the outcome and its figures; the next step at the right. */
-.bw-result .ds-result {
-    grid-template-columns: auto minmax(0, 1fr);
-    grid-template-rows: auto auto;
-    row-gap: calc(4 * var(--px));
-}
-
-.bw-result .ds-panel__actions {
-    grid-column: 1 / -1;
-    justify-content: flex-end;
-}
-
-.bw-result .ds-go,
-.bw-result .ds-cmd {
-    padding: calc(3 * var(--px)) calc(10 * var(--px));
-    font-size: calc(8 * var(--px));
-    white-space: nowrap;
-}
-
-/* ── Menus in the Black & White style: the picker, the gate, the result ──
-   BW's battle-menu blue with stripes, cards with a light rim, white type
-   with a dark shadow, and the start button as FIGHT's white-rimmed capsule.
-   (The report above a result stays paper: a page to read, not a menu.) */
-
-.ds-picker,
-.ds-panel {
-    background:
-        repeating-linear-gradient(135deg, transparent 0 calc(6 * var(--px)), color-mix(in srgb, var(--bw-card-2) 70%, transparent) calc(6 * var(--px)) calc(7 * var(--px))),
-        linear-gradient(var(--bw-card-1), var(--bw-ground-2));
-    color: var(--bw-white);
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
-}
-
-.ds-link {
-    color: var(--bw-card-rim);
-}
-
-.ds-picker__mon,
-.ds-teamrow,
-.ds-result__figures div {
-    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
-    color: var(--bw-white);
-}
-
-.ds-teamrow[aria-pressed="true"] {
-    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white);
-}
-
-.ds-teamrow__status.is-ready { color: var(--bw-ok); }
-.ds-teamrow__status.is-warn { color: var(--bw-warn); }
-
-.ds-picker__errors { color: var(--bw-warn); }
-
-.ds-picker__privacy,
-.ds-panel__body {
-    color: color-mix(in srgb, var(--bw-white) 78%, transparent);
-}
-
-.ds-result.is-won .ds-result__title {
-    color: var(--bw-ok);
-}
-
-.ds-go {
-    border-radius: calc(14 * var(--px));
-    background: radial-gradient(ellipse at 50% 30%, var(--bw-fight-1), var(--bw-fight-2) 72%);
-    box-shadow:
-        inset 0 0 0 calc(2 * var(--px)) var(--bw-white),
-        inset 0 0 0 calc(3.5 * var(--px)) var(--bw-fight-2),
-        0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep),
-        0 calc(2 * var(--px)) 0 calc(1.5 * var(--px)) var(--bw-red-deep);
-    color: var(--bw-white);
-    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-red-deep);
-}
-
-.ds-cmd.is-plain {
-    border-radius: calc(14 * var(--px));
-    background: linear-gradient(var(--bw-dark-2), var(--bw-dark));
-    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-rim);
-    color: var(--bw-white);
-}
 
 /* ── Symmetry pass (2026-10-15, Enzo: "mais dinâmicas, organizadas, simétricas") ── */
 
 /* The picker's foot: VOLTAR and the start, side by side, the same height. */
-.ds-picker__privacy {
-    flex: none;
-    margin: 0;
-    text-align: center;
-}
-
-.ds-picker__foot {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: calc(6 * var(--px));
-}
-
 .ds-picker__foot .bw-cancel,
 .ds-picker__foot .ds-go {
     height: calc(24 * var(--px));
@@ -2303,15 +2228,6 @@
     text-align: center;
 }
 
-.ds-result__title {
-    text-align: center;
-}
-
-.ds-result__figures {
-    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-    grid-auto-flow: column;
-}
-
 .ds-result .ds-panel__actions {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2327,18 +2243,6 @@
     font-size: calc(9 * var(--px));
     text-align: center;
     white-space: nowrap;
-}
-
-.bw-result .ds-result {
-    display: flex;
-    flex-direction: column;
-    gap: calc(4 * var(--px));
-    padding: calc(5 * var(--px)) calc(10 * var(--px)) calc(6 * var(--px));
-}
-
-.bw-result .ds-result__title {
-    font-size: calc(12 * var(--px));
-    line-height: calc(14 * var(--px));
 }
 
 .bw-result .ds-result .ds-panel__actions {
@@ -2361,55 +2265,9 @@
 }
 
 /* BW's battle message: the black band, inset a hair, with a thin rounded frame. */
-.ds-textbox.is-band {
-    left: calc(2 * var(--px));
-    right: calc(2 * var(--px));
-    bottom: calc(2 * var(--px));
-    height: calc(38 * var(--px));
-    border-radius: calc(4 * var(--px));
-    box-shadow:
-        inset 0 0 0 calc(1 * var(--px)) color-mix(in srgb, var(--bw-white) 70%, transparent),
-        inset 0 0 0 calc(2 * var(--px)) var(--bw-band);
-}
-
 /* The Time do dia as BW party cards: sprite left, name right, 3 × 2 — rows that
    can shrink, so the privacy line and the foot always fit under them. */
-.ds-picker__grid {
-    grid-auto-rows: minmax(0, 1fr);
-}
-
-.ds-picker__mon {
-    flex-direction: row;
-    justify-content: flex-start;
-    gap: calc(3 * var(--px));
-    min-height: 0;
-    padding: 0 calc(5 * var(--px));
-}
-
-.ds-picker__mon img {
-    flex: none;
-    width: calc(28 * var(--px));
-    height: calc(22 * var(--px));
-}
-
-.ds-picker__name {
-    font-size: calc(8 * var(--px));
-    text-align: left;
-}
-
-.ds-badge {
-    text-shadow: none;
-}
-
-.bw-overlay.is-menu {
-    inset: calc(8 * var(--px)) calc(16 * var(--px));
-}
-
 /* Two wide columns, three rows: the whole name fits beside the sprite. */
-.ds-picker__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
 /* ── The day's ranking (DsRanking): a BW menu with two boards ────────── */
 
 .ds-ranking {
@@ -2738,6 +2596,8 @@
 
 /* Region labels stay legible where the line runs under them: a paper halo. */
 .ds-chart__region {
+    fill: var(--ds-ink-soft);
+    font-size: 6px;
     paint-order: stroke;
     stroke: var(--ds-paper);
     stroke-width: 2.5px;
