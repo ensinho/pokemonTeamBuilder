@@ -38,6 +38,7 @@ import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
 import { JourneyBar, JourneyList, JourneyTile, MissionRow } from '../journeys/JourneyList';
 import { currentJourney } from '../../utils/journeys';
+import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import '../../styles/cozy-home.css';
 
@@ -725,7 +726,7 @@ export function CozyHomeView({
             action={seeJourneys}
         >
             <div className="journey-home">
-                {isBrandNew && <p className="journey-home__welcome">{t('journeys.home.welcome')}</p>}
+                {isBrandNew && <MascotTip>{t('journeys.home.welcome')}</MascotTip>}
                 <div className="journey-home__head">
                     <JourneyTile journey={level} isCurrent />
                     <span className="journey__text">

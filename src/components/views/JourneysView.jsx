@@ -7,7 +7,7 @@ import { useDocumentMeta } from '../../hooks/useDocumentMeta';
 import { journeyTotals } from '../../utils/journeys';
 import { JourneyList } from '../journeys/JourneyList';
 import { BadgeGallery } from '../journeys/BadgeGallery';
-import { EmptyState } from '../EmptyState';
+import { MascotTip } from '../Mascot';
 import '../../styles/journeys.css';
 
 const TABS = ['journeys', 'badges'];
@@ -39,7 +39,7 @@ export function JourneysView() {
 
     return (
         <main className="journeys-view">
-            <p className="section-lead journeys-view__lead">{t('journeys.subtitle')}</p>
+            <MascotTip size="lg" className="journeys-view__lead">{t('journeys.subtitle')}</MascotTip>
 
             <dl className="journeys-view__stats">
                 {stats.map((stat) => {
@@ -65,7 +65,10 @@ export function JourneysView() {
             {tab === 'journeys' ? (
                 <>
                     {totals.journeysDone === totals.journeysTotal && (
-                        <EmptyState compact title={t('journeys.allDoneTitle')} message={t('journeys.allDoneSub')} />
+                        <MascotTip size="lg" cheer>
+                            <strong>{t('journeys.allDoneTitle')}</strong>
+                            {t('journeys.allDoneSub')}
+                        </MascotTip>
                     )}
                     <JourneyList journeys={journeys} />
                 </>

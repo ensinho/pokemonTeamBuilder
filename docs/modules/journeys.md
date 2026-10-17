@@ -19,6 +19,16 @@ action). **No points** — the reward is the badge (Enzo's call).
 | `src/components/views/JourneysView.jsx` | `/journeys` — stats, Journeys / Badges tabs (`?tab=badges`). |
 | `src/components/views/CozyHomeView.jsx` | "Sua jornada" card under the hero (current level, next three missions) and the Home's **Jornada** tab (replaced Meta). |
 
+## The mascot (`src/components/Mascot.jsx`)
+
+The favicon's Gengar (`public/logo-mark.webp`) is the voice of tips and big
+moments: `<Mascot size>` alone, or `<MascotTip>` (mascot + speech bubble — a
+fill, never a box; inside a card it takes the raised surface). Used by the
+PageGuide trigger and popover, the mission guide (with a check when done), the
+Home's welcome, the Journeys page lead and all-done state, and the badge modal
+when a journey finishes. `cheer` plays one hop — only for something the
+trainer just earned.
+
 ## Where marks come from
 
 - Page visits: AppLayout's effect on `currentPage` → `PAGE_MARKS`.

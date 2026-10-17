@@ -2024,6 +2024,7 @@ export const TRANSLATIONS = {
             statBadges: 'Badges',
             allDoneTitle: 'Every journey complete',
             allDoneSub: 'You know every corner of the app. Now it is about collecting the badges left.',
+            unlockTip: 'Journey complete! The next level is already waiting for you in Journeys.',
             home: {
                 title: 'Your journey',
                 meta: 'Level {{n}} of {{total}}',
@@ -4190,6 +4191,7 @@ export const TRANSLATIONS = {
             statBadges: 'Insígnias',
             allDoneTitle: 'Todas as jornadas concluídas',
             allDoneSub: 'Você conhece cada canto do app. Agora é colecionar as insígnias que faltam.',
+            unlockTip: 'Jornada concluída! O próximo nível já está te esperando em Jornadas.',
             home: {
                 title: 'Sua jornada',
                 meta: 'Nível {{n}} de {{total}}',

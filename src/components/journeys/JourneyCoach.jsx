@@ -5,7 +5,7 @@ import { useJourneyCoachStore } from '../../store/useJourneyCoachStore';
 import { useJourneys, useMissionLauncher } from '../../hooks/useJourneys';
 import { useTranslation } from '../../hooks/useTranslation';
 import { findMission, nextMission } from '../../utils/journeys';
-import { JOURNEY_ICONS } from './journeyIcons';
+import { Mascot } from '../Mascot';
 import '../../styles/journeys.css';
 
 // A finished mission's card stays this long, then steps aside on its own.
@@ -45,13 +45,14 @@ function CoachCard({ missionId }) {
 
     if (!mission) return null;
 
-    const Icon = JOURNEY_ICONS[journey.id];
     const title = t(`journeys.missions.${mission.id}.title`);
 
     return (
         <aside className={`journey-coach ${isDone ? 'is-done' : ''}`} aria-label={t('journeys.coach.label')}>
+            {/* The mascot is the one talking; a done mission adds its check. */}
             <span className="journey-coach__mark" aria-hidden="true">
-                {isDone ? <Check /> : <Icon />}
+                <Mascot size="sm" cheer={isDone} />
+                {isDone && <span className="journey-coach__check"><Check /></span>}
             </span>
 
             <div className="journey-coach__text" role="status" aria-live="polite">
