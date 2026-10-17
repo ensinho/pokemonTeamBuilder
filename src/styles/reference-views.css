@@ -6,8 +6,6 @@
 .ref-view {
     display: flex;
     flex-direction: column;
-    min-height: 0;
-    height: 100%;
 }
 
 .ref-toolbar {
@@ -28,11 +26,16 @@
     white-space: nowrap;
 }
 
-/* Scroll region */
+/* Not a scroll region — the page (.app-shell__content) is the only scroller.
+   This was `overflow-y: auto` inside a `height: 100%` that never resolved (the
+   page frame has no height), so the list grew to its content and never
+   scrolled, yet still counted as a scroll container: the wheel landed on it,
+   and .custom-scrollbar's `overscroll-behavior: contain` stopped the scroll
+   from chaining to the page. Only a wheel over the gutter moved the page.
+   `clip` keeps the rounded corners without making a scroll container, so the
+   sticky column header sticks to the page, under the app header. */
 .ref-list {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
+    overflow: clip;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     background: var(--color-surface);
@@ -41,7 +44,7 @@
 /* Sticky column header */
 .ref-head {
     position: sticky;
-    top: 0;
+    top: var(--app-shell-top-band-height);
     z-index: 2;
     display: grid;
     align-items: center;
@@ -294,18 +297,12 @@
         width: 100%;
     }
 
-    /* A fill, not a box. `clip` rather than `auto`: an auto-overflow element is
-       a scroll container even when it never scrolls, and the sticky column
-       header only ever stuck to *that* — which never moves on a phone, where
-       the page scrolls. Clipped, the header sticks to the page's own scroller,
-       under the app header, as it was always meant to. */
+    /* A fill, not a box (the clip itself is the base rule's). */
     .ref-list {
-        overflow: clip;
         border: none;
     }
 
     .ref-head {
-        top: var(--app-shell-top-band-height);
         padding-inline: var(--space-3);
     }
 

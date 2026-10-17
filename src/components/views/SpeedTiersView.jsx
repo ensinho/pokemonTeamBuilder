@@ -145,7 +145,7 @@ export function SpeedTiersView({ generations = [] }) {
             ) : ranked.length === 0 ? (
                 <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
             ) : (
-                <div className="ref-list custom-scrollbar">
+                <div className="ref-list">
                     <div className="spd-list">
                         {visibleTiers.map((tier, i) => {
                             const main = tier[0];

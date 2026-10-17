@@ -109,7 +109,7 @@ export function ItemsListView() {
             ) : total === 0 ? (
                 <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
             ) : (
-                <div className="ref-list custom-scrollbar">
+                <div className="ref-list">
                     <div className="ref-head ref-head--items">
                         <span aria-hidden="true"></span>
                         <span>{t('db.colName')}</span>

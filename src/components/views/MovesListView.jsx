@@ -190,7 +190,7 @@ export function MovesListView() {
             ) : total === 0 ? (
                 <EmptyState compact title={t('db.noMatchesTitle')} message={t('db.noMatchesDesc')} />
             ) : (
-                <div className="ref-list custom-scrollbar">
+                <div className="ref-list">
                     <div className="ref-head ref-head--moves">
                         <span>{t('db.colName')}</span>
                         <span>{t('db.colType')}</span>
