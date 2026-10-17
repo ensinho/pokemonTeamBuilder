@@ -5,12 +5,14 @@ import { useBattleDex } from '../../../../hooks/useBattleDex';
 import { useBattlePlayback } from '../../../../hooks/useBattlePlayback';
 import { useConsoleInput } from '../../../../hooks/useConsoleInput';
 import { useConsoleLayout } from '../../../../hooks/useConsoleLayout';
+import { useSheetSources } from '../../../../hooks/useSheetSources';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { confirmAction } from '../../../../store/useConfirmStore';
 import { readMyRequest } from '../../../../utils/battleProtocol';
 import { readBattleField } from '../../../../utils/battleState';
 import { eventText } from '../../../../utils/challengeText';
 import { play, soundFor } from '../../../../utils/challengeSfx';
+import { settledRequest, sheetFromRequest, shownConditions, withShown } from '../../../../utils/challengeSheet';
 import { championRoster, faintedSpecies, myRoster, railTeams, switchCounts } from '../../../../utils/challengeView';
 import { DsBattleScene } from './DsBattleScene';
 import { DsHud, DsTouchMenu } from './DsBwCommands';
@@ -50,6 +52,7 @@ export function DsBattleStage({
 }) {
     const { t } = useTranslation();
     const dex = useBattleDex();
+    const { items } = useSheetSources();
     const layout = useConsoleLayout();
     const clock = useClock();
     const lines = run.lines;
@@ -70,6 +73,11 @@ export function DsBattleStage({
     const myBalls = useMemo(() => mine.map((m) => ({ ...m, fainted: myFainted.has(m.species) })), [mine, myFainted]);
     const foeBalls = useMemo(() => championRoster(visible, lineup), [visible, lineup]);
     const switchKeys = useMemo(() => switchCounts(visible), [visible]);
+    // Your team's sheet as the playback has drawn it — never ahead of the field.
+    const sheet = useMemo(
+        () => withShown(sheetFromRequest(settledRequest(lines, shown), { dex, items }), shownConditions(visible, 'p1')),
+        [lines, shown, visible, dex, items],
+    );
     const turn = useMemo(() => {
         for (let i = visible.length - 1; i >= 0; i -= 1) {
             if (visible[i].startsWith('|turn|')) return Number(visible[i].slice(6)) || 0;
@@ -122,6 +130,7 @@ export function DsBattleStage({
         onForfeit: forfeit,
         switchLabel: (name) => t('challenge.battle.switchLabel', { name }),
         inputRef: commandInput,
+        activeIndex: Math.max(0, sheet.findIndex((member) => member.active)),
     });
     useConsoleInput({
         onAction: (action) => {
@@ -183,6 +192,7 @@ export function DsBattleStage({
                             moveMeta={moveMeta}
                             message={message}
                             foeBalls={foeBalls}
+                            sheet={sheet}
                             championName={championName}
                             reducedMotion={reducedMotion}
                         />
@@ -205,6 +215,7 @@ export function DsBattleStage({
                     moveMeta={moveMeta}
                     myBalls={myBalls}
                     foeBalls={foeBalls}
+                    sheet={sheet}
                     championName={championName}
                     clock={clock}
                     turn={turn}

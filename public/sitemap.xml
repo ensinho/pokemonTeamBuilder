@@ -61,6 +61,11 @@
     <priority>0.5</priority>
   </url>
   <url>
+    <loc>https://pokemonbuilder.app/journeys</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
     <loc>https://pokemonbuilder.app/pokepuzzle</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
