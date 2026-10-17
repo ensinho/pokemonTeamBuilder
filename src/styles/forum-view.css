@@ -1685,6 +1685,14 @@
     .forum-center {
         padding-left: var(--page-gap);
     }
+
+    /* The scroller clips what overflows it, so it reserves the step a row's
+       fill bleeds past the text — on both sides — and reaches back into the
+       centre's gutter on the left so the text column does not move. */
+    .forum-feed-scroll {
+        margin-left: calc(-1 * var(--space-3));
+        padding-inline: var(--space-3);
+    }
 }
 
 @media (min-width: 1440px) {
@@ -2046,6 +2054,8 @@
 .forum-feed-list {
     display: flex;
     flex-direction: column;
+    /* Room between the header's rule and the first row's hover fill. */
+    padding-top: var(--space-2);
     transition: opacity var(--duration-fast) var(--ease-smooth);
 }
 
@@ -2060,14 +2070,37 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    /* The fill bleeds one step past the text on *both* sides — the feed's
+       scroller reserves the same step on the right (2026-10-17: the right
+       side was clipped flush with the header while the left bled). */
     margin-inline: calc(-1 * var(--space-3));
     padding: var(--space-3);
+    border-radius: var(--radius-lg);
     cursor: pointer;
     transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
 .post-row + .post-row {
-    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-2);
+}
+
+/* The separator sits in the gap between rows, inset to the text column, and
+   steps aside for a hovered row so its rounded fill never meets a line. */
+.post-row + .post-row::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--space-1) - 0.5px);
+    right: var(--space-3);
+    left: var(--space-3);
+    height: 1px;
+    background: var(--color-border);
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.post-row:hover::before,
+.post-row:hover + .post-row::before {
+    opacity: 0;
 }
 
 .post-row:hover {
@@ -3258,6 +3291,19 @@
     .post-row {
         margin-inline: calc(-1 * var(--page-gutter));
         padding: var(--space-3) var(--page-gutter);
+        border-radius: 0;
+    }
+
+    .post-row + .post-row::before {
+        right: var(--page-gutter);
+        left: var(--page-gutter);
+    }
+
+    /* The scroller spans the screen so the rows' edge-to-edge fill is not
+       clipped at the gutter; its padding puts the text back on the gutter. */
+    .forum-feed-scroll {
+        margin-inline: calc(-1 * var(--page-gutter));
+        padding-inline: var(--page-gutter);
     }
 
     /* The filter row scrolls to the screen's edges, not the gutter's. */
