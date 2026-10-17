@@ -3,7 +3,9 @@
 Five levels of missions that teach the app by having the trainer use it, each
 rewarded with a badge. Modelled on a missions/medals screen (levels as an
 accordion, badges grouped by how they are earned, a detail sheet with one
-action). **No points** — the reward is the badge (Enzo's call).
+action). **No points** — the reward is the badge (Enzo's call). Since
+2026-10-17 missions also count toward the Trainer Level, whose experience is
+*computed*, never spent — see [rewards.md](./rewards.md).
 
 ## Pieces
 
