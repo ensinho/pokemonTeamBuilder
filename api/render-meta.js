@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { escapeHtml, fetchTopicMeta, topicIdFromUrl } from './_lib/forumMeta.js';
 
 // Cache the pokemon index + tournament teams in memory across lambda invocations
 let pokemons = [];
@@ -173,6 +174,15 @@ export default async function handler(req, res) {
     else if (urlPath === '/feed') {
         title = "Community Feed | Pokémon Team Builder";
         description = "See what the community is building and sharing on Pokémon Team Builder.";
+        // A shared post unfurls as that post (forumMeta.js); any miss keeps the above.
+        const topicId = topicIdFromUrl(req.url);
+        const topicMeta = topicId ? await fetchTopicMeta(topicId) : null;
+        if (topicMeta) {
+            title = topicMeta.title;
+            description = topicMeta.description;
+            url = `https://pokemonbuilder.app/feed?topic=${encodeURIComponent(topicId)}`;
+            canonicalUrl = url;
+        }
     }
     else if (urlPath.startsWith('/tournaments/team/')) {
         const teamId = urlPath.split('/')[3];
@@ -190,21 +200,25 @@ export default async function handler(req, res) {
         description = "View details of this shared Pokémon team. Import it directly into your builder with one click.";
     }
     
-    // Inject dynamic metadata tags in index.html
-    html = html.replace(/<title>[^<]*<\/title>/i, `<title>${title}</title>`);
-    html = html.replace(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${description}" />`);
-    html = html.replace(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${canonicalUrl}" />`);
+    // Inject dynamic metadata tags in index.html. Escaped, because a forum
+    // title is user text; replaced through a function, because a replacement
+    // *string* expands `$&`/`$1` — a title containing them would rewrite the page.
+    const set = (pattern, tag) => { html = html.replace(pattern, () => tag); };
+    const esc = { title: escapeHtml(title), description: escapeHtml(description), image: escapeHtml(imageUrl), url: escapeHtml(url), canonical: escapeHtml(canonicalUrl) };
+    set(/<title>[^<]*<\/title>/i, `<title>${esc.title}</title>`);
+    set(/<meta name="description" content="[^"]*"\s*\/?>/i, `<meta name="description" content="${esc.description}" />`);
+    set(/<link rel="canonical" href="[^"]*"\s*\/?>/i, `<link rel="canonical" href="${esc.canonical}" />`);
 
     // OG Meta tags
-    html = html.replace(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${title}" />`);
-    html = html.replace(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${description}" />`);
-    html = html.replace(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${imageUrl}" />`);
-    html = html.replace(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${url}" />`);
-    
+    set(/<meta property="og:title" content="[^"]*"\s*\/?>/i, `<meta property="og:title" content="${esc.title}" />`);
+    set(/<meta property="og:description" content="[^"]*"\s*\/?>/i, `<meta property="og:description" content="${esc.description}" />`);
+    set(/<meta property="og:image" content="[^"]*"\s*\/?>/i, `<meta property="og:image" content="${esc.image}" />`);
+    set(/<meta property="og:url" content="[^"]*"\s*\/?>/i, `<meta property="og:url" content="${esc.url}" />`);
+
     // Twitter Meta tags
-    html = html.replace(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${title}" />`);
-    html = html.replace(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${description}" />`);
-    html = html.replace(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${imageUrl}" />`);
+    set(/<meta name="twitter:title" content="[^"]*"\s*\/?>/i, `<meta name="twitter:title" content="${esc.title}" />`);
+    set(/<meta name="twitter:description" content="[^"]*"\s*\/?>/i, `<meta name="twitter:description" content="${esc.description}" />`);
+    set(/<meta name="twitter:image" content="[^"]*"\s*\/?>/i, `<meta name="twitter:image" content="${esc.image}" />`);
     
     // Set caching and return HTML
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
