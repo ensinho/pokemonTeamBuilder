@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import { looksLikeStatPoints, statPointSpreadToEvs, statPointsToEvs } from './statPoints';
+import { convertSpread, detectEvScale, evsToStatPoints, looksLikeStatPoints, statPointSpreadToEvs, statPointsToEvs } from './statPoints';
 
 describe('statPointsToEvs', () => {
     it('maps the level-50 breakpoints', () => {
@@ -43,5 +43,38 @@ describe('looksLikeStatPoints', () => {
         expect(looksLikeStatPoints({ hp: 4, spa: 252, spe: 252 })).toBe(false);
         expect(looksLikeStatPoints({ hp: 32, atk: 32, spe: 32 })).toBe(false); // 96 > 66
         expect(looksLikeStatPoints({})).toBe(false);
+    });
+});
+
+describe('convertSpread', () => {
+    it('round-trips a Stat Point spread that fits 510 EVs', () => {
+        const evs = convertSpread({ hp: 1, spa: 32, spe: 32 }, 'sp', 'ev');
+        expect(evs).toEqual({ hp: 4, spa: 252, spe: 252 });
+        expect(convertSpread(evs, 'ev', 'sp')).toEqual({ hp: 1, spa: 32, spe: 32 });
+    });
+
+    it('keeps an EV spread inside the 66-point budget', () => {
+        const sp = convertSpread({ hp: 252, def: 4, spa: 252 }, 'ev', 'sp'); // 32 + 1 + 32 = 65
+        expect(sp).toEqual({ hp: 32, def: 1, spa: 32 });
+        const over = convertSpread({ hp: 252, atk: 252, spe: 252 }, 'ev', 'sp'); // 96 → 66
+        expect(Object.values(over).reduce((a, b) => a + b, 0)).toBe(66);
+    });
+
+    it('is a copy when the scales match', () => {
+        const spread = { hp: 4 };
+        expect(convertSpread(spread, 'ev', 'ev')).toEqual(spread);
+        expect(convertSpread(spread, 'ev', 'ev')).not.toBe(spread);
+    });
+});
+
+describe('evsToStatPoints / detectEvScale', () => {
+    it('inverts the level-50 breakpoints', () => {
+        expect([0, 3, 4, 12, 252].map(evsToStatPoints)).toEqual([0, 0, 1, 2, 32]);
+    });
+
+    it('reads the scale off the spreads, or says it cannot tell', () => {
+        expect(detectEvScale([{ hp: 2, spa: 32, spe: 32 }, {}])).toBe('sp');
+        expect(detectEvScale([{ hp: 2, spa: 32 }, { hp: 252, spe: 252 }])).toBe('ev');
+        expect(detectEvScale([{}, { hp: 0 }])).toBe(null);
     });
 });
