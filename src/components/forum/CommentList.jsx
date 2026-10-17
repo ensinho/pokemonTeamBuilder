@@ -1,64 +1,86 @@
 import React, { memo, useState, useMemo, useCallback } from 'react';
+import { CircleMinus, CirclePlus } from 'lucide-react';
 import { AvatarSprite } from '../AvatarSprite';
 import { TrainerBadge } from '../TrainerBadge';
-import {
-    PokeballIcon,
-    ReplyIcon,
-    HeartIcon,
-    TrashIcon,
-    DownloadIcon,
-    MessageIcon,
-    ChevronDownIcon,
-} from '../icons';
-import { ChevronUp, ChevronsUpDown } from 'lucide-react';
+import { PokeballIcon, ReplyIcon, HeartIcon, TrashIcon, ShareIcon } from '../icons';
 import { formatForumTime } from '../../utils/forumTime';
+import { buildCommentTree, displayAncestors } from '../../utils/forumTree';
 import { BattleInviteCard } from '../BattleInviteCard';
 import { PuzzleShareCard } from '../PuzzleShareCard';
 import { ChallengeShareCard } from '../ChallengeShareCard';
-import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
-import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { ForumTeamCard } from './ForumTeamCard';
 
-export const CommentItem = memo(function CommentItem({
-    comment,
+const isStaff = (c) => c.createdBy === 'system' || c.creatorName === 'Professor Oak' || c.userEmail === 'enzopo625@gmail.com';
+
+/**
+ * One comment and everything under it, Reddit style: avatar and byline, the
+ * text, the action row, then the replies indented one column with a thread
+ * line back to this avatar. The line (and the ⊖ on it) collapses the branch;
+ * a collapsed comment is one line that says how much it hides.
+ */
+const CommentNode = memo(function CommentNode({
+    node,
+    collapsedIds,
     topicCreatorId,
-    repliesByParentId,
-    expandedCommentIds,
-    onToggleExpand,
-    likedByMe,
-    canDelete,
-    isConfirmingDelete,
-    canLike,
-    language = 'pt',
+    userId,
+    isAdmin,
+    language,
     t,
     actions,
-    depth = 0,
 }) {
-    const isOP = comment.createdBy === topicCreatorId;
-    const isMsgAdmin = comment.createdBy === 'system' || comment.userEmail === 'enzopo625@gmail.com' || (comment.creatorName === 'Professor Oak');
-    const likeCount = comment.likeCount || comment.likedBy?.length || 0;
-    const timeFormatted = formatForumTime(comment.createdAt, language);
+    const { comment, children, showQuote, descendants } = node;
+    const id = comment.id;
+    const isCollapsed = collapsedIds.has(id);
+    const hasChildren = children.length > 0;
+    const likeCount = Array.isArray(comment.likedBy) ? comment.likedBy.length : (comment.likeCount || 0);
+    const liked = !!userId && Array.isArray(comment.likedBy) && comment.likedBy.includes(userId);
+    const canDelete = isAdmin || (!!userId && comment.createdBy === userId);
+    const isOP = !!topicCreatorId && comment.createdBy === topicCreatorId && topicCreatorId !== 'system';
+    const repliesLabel = descendants === 1 ? t('forum.repliesOne') : t('forum.repliesMany', { count: descendants });
 
-    // Direct replies to this comment
-    const childReplies = repliesByParentId?.get(comment.id) || [];
-    const hasReplies = childReplies.length > 0;
-    const isExpanded = expandedCommentIds?.has(comment.id);
+    const byline = (
+        <div className="cmt__byline">
+            <button type="button" className="cmt__author" onClick={() => actions.openProfile(comment)}>
+                @{comment.creatorName}
+            </button>
+            {comment.creatorBadgeId && <TrainerBadge badgeId={comment.creatorBadgeId} size="xs" />}
+            {isOP && <span className="cmt__tag cmt__tag--op" title="Original Poster">OP</span>}
+            {isStaff(comment) && (
+                <span className="cmt__tag cmt__tag--staff">{comment.creatorName === 'Professor Oak' ? 'System' : 'Admin'}</span>
+            )}
+            <span className="cmt__dot" aria-hidden="true">·</span>
+            <time className="cmt__time" dateTime={comment.createdAt}>{formatForumTime(comment.createdAt, language)}</time>
+            {isCollapsed && descendants > 0 && (
+                <span className="cmt__hidden">
+                    <span className="cmt__dot" aria-hidden="true">·</span>
+                    {repliesLabel}
+                </span>
+            )}
+        </div>
+    );
 
-    const handleReplyClick = () => {
-        if (hasReplies && onToggleExpand && !isExpanded) {
-            onToggleExpand(comment.id, true);
-        }
-        actions.reply(comment);
-    };
+    if (isCollapsed) {
+        return (
+            <div id={`forum-msg-${id}`} className="cmt is-collapsed">
+                <button
+                    type="button"
+                    className="cmt__expand"
+                    onClick={() => actions.toggle(id)}
+                    aria-expanded="false"
+                    aria-label={`${t('forum.expandThread')} · @${comment.creatorName}`}
+                >
+                    <CirclePlus className="w-4 h-4" aria-hidden="true" />
+                </button>
+                {byline}
+            </div>
+        );
+    }
 
     return (
-        <div id={`forum-msg-${comment.id}`} className={`comment-item ${depth > 0 ? 'comment-item--nested' : ''}`}>
-            {/* Guide line for threaded visual hierarchy */}
-            <div className="comment-item__guide" aria-hidden="true" />
-
-            {/* Avatar */}
+        <div id={`forum-msg-${id}`} className={`cmt ${hasChildren ? 'has-children' : ''}`}>
             <button
                 type="button"
-                className="comment-item__avatar"
+                className="cmt__avatar"
                 onClick={() => actions.openProfile(comment)}
                 aria-label={`@${comment.creatorName}`}
             >
@@ -66,379 +88,186 @@ export const CommentItem = memo(function CommentItem({
                     trainerSprite={comment.creatorTrainerSprite}
                     pokemonId={comment.creatorAvatar}
                     isShiny={comment.creatorAvatarIsShiny}
-                    fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
+                    fallback={<PokeballIcon className="w-4 h-4 text-muted" />}
                 />
             </button>
+            {byline}
 
-            {/* Body */}
-            <div className="comment-item__body">
-                {/* Header: Author + Badges + Timestamp */}
-                <div className="comment-item__header">
-                    <div className="comment-item__author-row">
-                        <button
-                            type="button"
-                            className="comment-item__author-name"
-                            onClick={() => actions.openProfile(comment)}
-                        >
-                            @{comment.creatorName}
-                        </button>
-                        {comment.creatorBadgeId && (
-                            <TrainerBadge badgeId={comment.creatorBadgeId} size="xs" />
-                        )}
-                        {isOP && (
-                            <span className="comment-item__tag comment-item__tag--op" title="Original Poster">
-                                OP
-                            </span>
-                        )}
-                        {isMsgAdmin && (
-                            <span className="comment-item__tag comment-item__tag--admin">
-                                {comment.creatorName === 'Professor Oak' ? 'System' : 'Admin'}
-                            </span>
-                        )}
-                    </div>
-                    <span className="comment-item__time" title={comment.createdAt}>
-                        {timeFormatted}
-                    </span>
-                </div>
+            {hasChildren && (
+                <button
+                    type="button"
+                    className="cmt__line"
+                    onClick={() => actions.toggle(id)}
+                    aria-expanded="true"
+                    aria-label={`${t('forum.collapseThread')} (${repliesLabel})`}
+                >
+                    <CircleMinus className="cmt__line-icon" aria-hidden="true" />
+                </button>
+            )}
 
-                {/* Quoted reply banner */}
-                {comment.replyTo && (
+            <div className="cmt__content">
+                {showQuote && comment.replyTo && (
                     <button
                         type="button"
                         onClick={() => actions.jumpTo(comment.replyTo.messageId)}
-                        className="comment-item__quote"
-                        title={language === 'pt' ? 'Ir para a mensagem original' : 'Jump to original comment'}
+                        className="cmt__quote"
                     >
-                        <ReplyIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="font-semibold text-fg">@{comment.replyTo.creatorName}</span>
+                        <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
+                        <span className="cmt__quote-name">@{comment.replyTo.creatorName}</span>
                         {comment.replyTo.textSnippet && (
-                            <span className="comment-item__quote-text truncate">
-                                "{comment.replyTo.textSnippet}"
-                            </span>
+                            <span className="cmt__quote-text">{comment.replyTo.textSnippet}</span>
                         )}
                     </button>
                 )}
 
-                {/* Text Content */}
-                {comment.text && (
-                    <p className="comment-item__text">{comment.text}</p>
-                )}
+                {comment.text && <p className="cmt__text">{comment.text}</p>}
 
-                {/* Shared Puzzle */}
-                {comment.sharedPuzzle?.rows?.length > 0 && (
-                    <div className="my-2">
-                        <PuzzleShareCard puzzle={comment.sharedPuzzle} />
-                    </div>
-                )}
-
-                {/* Shared Champion Challenge result */}
-                {comment.sharedChallenge && (
-                    <div className="my-2">
-                        <ChallengeShareCard share={comment.sharedChallenge} />
-                    </div>
-                )}
-
-                {/* Battle Invite */}
-                {comment.battleInvite?.battleId && (
-                    <div className="my-2">
-                        <BattleInviteCard invite={comment.battleInvite} />
-                    </div>
-                )}
-
-                {/* Shared Team */}
+                {comment.sharedPuzzle?.rows?.length > 0 && <PuzzleShareCard puzzle={comment.sharedPuzzle} />}
+                {comment.sharedChallenge && <ChallengeShareCard share={comment.sharedChallenge} />}
+                {comment.battleInvite?.battleId && <BattleInviteCard invite={comment.battleInvite} />}
                 {comment.sharedTeam && (
-                    <div className="forum-team-share-card my-2">
-                        <div className="forum-team-share-header">
-                            <h5 className="forum-team-share-title">
-                                <PokeballIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                                <span className="truncate">{comment.sharedTeam.name}</span>
-                            </h5>
-                            <button
-                                type="button"
-                                onClick={() => actions.importTeam(comment.sharedTeam)}
-                                className="btn btn-primary h-7 px-2.5 text-xs font-semibold"
-                            >
-                                <DownloadIcon className="w-3.5 h-3.5 mr-1" />
-                                {language === 'pt' ? 'Importar' : 'Import'}
-                            </button>
-                        </div>
-                        <div className="forum-team-share-slots">
-                            {Array.from({ length: 6 }).map((_, slotIdx) => {
-                                const pk = comment.sharedTeam.pokemons?.[slotIdx];
-                                const spriteUrl = pk ? getTeamPokemonDisplaySprite(pk) : null;
-                                return (
-                                    <div
-                                        key={slotIdx}
-                                        className="forum-team-share-slot"
-                                        onMouseEnter={(e) => pk && actions.hoverSlot({
-                                            messageId: comment.id,
-                                            slotIndex: slotIdx,
-                                            pokemon: pk,
-                                            ref: e.currentTarget
-                                        })}
-                                        onMouseLeave={() => actions.hoverSlot(null)}
-                                    >
-                                        {spriteUrl ? (
-                                            <img
-                                                src={spriteUrl}
-                                                alt={pk.name}
-                                                loading="lazy"
-                                                className="forum-team-share-sprite"
-                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                            />
-                                        ) : (
-                                            <span className="forum-team-share-empty">
-                                                <PokeballIcon className="w-3.5 h-3.5" />
-                                            </span>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
+                    <ForumTeamCard
+                        team={comment.sharedTeam}
+                        ownerId={id}
+                        onImport={actions.importTeam}
+                        onHoverSlot={actions.hoverSlot}
+                        t={t}
+                    />
                 )}
 
-                {/* Actions row */}
-                <div className="comment-item__actions">
+                <div className="cmt__actions">
                     <button
                         type="button"
-                        onClick={() => actions.like(comment.id)}
-                        disabled={!canLike}
-                        aria-pressed={likedByMe}
-                        className={`comment-item__action-btn ${likedByMe ? 'is-liked' : ''}`}
+                        onClick={() => actions.like(id)}
+                        aria-pressed={liked}
+                        aria-label={`${liked ? t('forum.unlike') : t('forum.like')} · ${t('forum.likesCount', { count: likeCount })}`}
+                        className={`cmt-action ${liked ? 'is-liked' : ''}`}
                     >
-                        <HeartIcon className={`w-3.5 h-3.5 shrink-0 ${likedByMe ? 'fill-primary text-primary' : ''}`} />
-                        <span>{likeCount > 0 ? likeCount : (language === 'pt' ? 'Curtir' : 'Like')}</span>
+                        <HeartIcon className="cmt-action__icon" />
+                        <span>{likeCount > 0 ? likeCount : t('forum.like')}</span>
                     </button>
-
+                    <button type="button" onClick={() => actions.reply(comment)} className="cmt-action">
+                        <ReplyIcon className="cmt-action__icon" />
+                        <span>{t('forum.reply')}</span>
+                    </button>
                     <button
                         type="button"
-                        onClick={handleReplyClick}
-                        className="comment-item__action-btn"
+                        onClick={() => actions.share(comment)}
+                        className="cmt-action"
+                        aria-label={t('forum.share')}
                     >
-                        <ReplyIcon className="w-3.5 h-3.5 shrink-0" />
-                        <span>{language === 'pt' ? 'Responder' : 'Reply'}</span>
+                        <ShareIcon className="cmt-action__icon" />
+                        <span className="cmt-action__label">{t('forum.share')}</span>
                     </button>
-
-                    {/* Replies count button (when 1+ replies exist) */}
-                    {hasReplies && (
+                    {canDelete && (
                         <button
                             type="button"
-                            onClick={() => onToggleExpand(comment.id)}
-                            className={`comment-item__replies-toggle ${isExpanded ? 'is-expanded' : ''}`}
-                            aria-expanded={isExpanded}
-                            title={isExpanded
-                                ? (language === 'pt' ? 'Ocultar respostas' : 'Hide replies')
-                                : (language === 'pt' ? 'Ver respostas' : 'Show replies')}
+                            onClick={() => actions.remove(comment)}
+                            className="cmt-action cmt-action--danger"
+                            aria-label={t('forum.deleteComment')}
+                            title={t('forum.deleteComment')}
                         >
-                            <MessageIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                            <span className="font-semibold">
-                                {childReplies.length} {childReplies.length === 1
-                                    ? (language === 'pt' ? 'resposta' : 'reply')
-                                    : (language === 'pt' ? 'respostas' : 'replies')}
-                            </span>
-                            {isExpanded ? (
-                                <ChevronUp className="w-3.5 h-3.5 shrink-0 text-muted" />
-                            ) : (
-                                <ChevronDownIcon className="w-3.5 h-3.5 shrink-0 text-muted" />
-                            )}
+                            <TrashIcon className="cmt-action__icon" />
                         </button>
                     )}
-
-                    {canDelete && (
-                        isConfirmingDelete ? (
-                            <span className="flex items-center gap-1.5 ml-auto">
-                                <button
-                                    type="button"
-                                    onClick={() => actions.confirmDelete(comment.id)}
-                                    className="btn btn-danger h-6 px-2 text-2xs"
-                                >
-                                    {language === 'pt' ? 'Excluir' : 'Delete'}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => actions.askDelete(null)}
-                                    className="btn btn-secondary h-6 px-2 text-2xs"
-                                >
-                                    {t ? t('common.cancel') : 'Cancelar'}
-                                </button>
-                            </span>
-                        ) : (
-                            <button
-                                type="button"
-                                onClick={() => actions.askDelete(comment.id)}
-                                className="comment-item__action-btn comment-item__action-btn--delete ml-auto"
-                                title={language === 'pt' ? 'Excluir comentário' : 'Delete comment'}
-                                aria-label={language === 'pt' ? 'Excluir comentário' : 'Delete comment'}
-                            >
-                                <TrashIcon className="w-3.5 h-3.5" />
-                            </button>
-                        )
-                    )}
                 </div>
-
-                {/* Nested Replies (Rendered directly underneath when expanded) */}
-                {hasReplies && isExpanded && (
-                    <div className="comment-item__nested-replies">
-                        {childReplies.map((replyComment) => (
-                            <CommentItem
-                                key={replyComment.id}
-                                comment={replyComment}
-                                topicCreatorId={topicCreatorId}
-                                repliesByParentId={repliesByParentId}
-                                expandedCommentIds={expandedCommentIds}
-                                onToggleExpand={onToggleExpand}
-                                likedByMe={actions.isLikedByMe ? actions.isLikedByMe(replyComment) : false}
-                                canDelete={actions.canDelete ? actions.canDelete(replyComment) : false}
-                                isConfirmingDelete={actions.isConfirmingDelete ? actions.isConfirmingDelete(replyComment.id) : false}
-                                canLike={canLike}
-                                language={language}
-                                t={t}
-                                actions={actions}
-                                depth={depth + 1}
-                            />
-                        ))}
-                    </div>
-                )}
             </div>
+
+            {hasChildren && (
+                <div className="cmt__children">
+                    {children.map((child) => (
+                        <CommentNode
+                            key={child.comment.id}
+                            node={child}
+                            collapsedIds={collapsedIds}
+                            topicCreatorId={topicCreatorId}
+                            userId={userId}
+                            isAdmin={isAdmin}
+                            language={language}
+                            t={t}
+                            actions={actions}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 });
 
-export function CommentList({
+/**
+ * The comments of a post as a tree (`nest`), or a chat room's messages as one
+ * chronological run with quotes (`nest={false}` — a reply moved up next to
+ * its parent would never be seen by people reading at the bottom).
+ *
+ * Memoised with stable props, so typing in the composer re-renders the
+ * thread's frame and not every comment in it (wound 2026-09-24).
+ */
+export const CommentList = memo(function CommentList({
     comments = [],
+    sort = 'old',
+    nest = true,
     topicCreatorId,
     userId,
     isAdmin,
-    confirmingDeleteId,
     language = 'pt',
     t,
     actions,
 }) {
-    // State for tracking which comment replies are expanded
-    const [expandedCommentIds, setExpandedCommentIds] = useState(() => new Set());
+    const { roots, parentOf } = useMemo(() => buildCommentTree(comments, { sort, nest }), [comments, sort, nest]);
+    // Everything starts open (Reddit): a reply is part of the conversation,
+    // not something to dig for. The user folds what they are done with.
+    const [collapsedIds, setCollapsedIds] = useState(() => new Set());
 
-    // Build the hierarchical replies map:
-    // Any comment where replyTo.messageId matches another comment in the list is a child reply.
-    const { topLevelComments, repliesByParentId } = useMemo(() => {
-        const commentIdSet = new Set(comments.map((c) => c.id));
-        const repliesMap = new Map();
-        const topLevel = [];
-
-        comments.forEach((c) => {
-            const parentId = c.replyTo?.messageId;
-            if (parentId && commentIdSet.has(parentId)) {
-                if (!repliesMap.has(parentId)) {
-                    repliesMap.set(parentId, []);
-                }
-                repliesMap.get(parentId).push(c);
-            } else {
-                topLevel.push(c);
-            }
-        });
-
-        return { topLevelComments: topLevel, repliesByParentId: repliesMap };
-    }, [comments]);
-
-    const handleToggleExpand = useCallback((commentId, forceState = null) => {
-        setExpandedCommentIds((prev) => {
+    const toggle = useCallback((id) => {
+        setCollapsedIds((prev) => {
             const next = new Set(prev);
-            const shouldExpand = forceState !== null ? forceState : !next.has(commentId);
-            if (shouldExpand) {
-                next.add(commentId);
-            } else {
-                next.delete(commentId);
-            }
+            if (next.has(id)) next.delete(id); else next.add(id);
             return next;
         });
     }, []);
 
-    // Toggle expand all / collapse all
-    const allParentIds = useMemo(() => Array.from(repliesByParentId.keys()), [repliesByParentId]);
-    const areAllExpanded = allParentIds.length > 0 && allParentIds.every((id) => expandedCommentIds.has(id));
-
-    const handleToggleAll = () => {
-        if (areAllExpanded) {
-            setExpandedCommentIds(new Set());
-        } else {
-            setExpandedCommentIds(new Set(allParentIds));
-        }
-    };
-
-    // Enhanced jumpTo that automatically expands any parent reply branch
-    const enhancedActions = useMemo(() => {
-        return {
-            ...actions,
-            jumpTo: (messageId) => {
-                // Find if target messageId has a parent and expand it
-                for (const [parentId, childList] of repliesByParentId.entries()) {
-                    if (childList.some((child) => child.id === messageId)) {
-                        setExpandedCommentIds((prev) => new Set([...prev, parentId]));
-                    }
-                }
-                actions.jumpTo(messageId);
-            },
-            isLikedByMe: (c) => !!userId && Array.isArray(c.likedBy) && c.likedBy.includes(userId),
-            canDelete: (c) => isAdmin || (!!userId && c.createdBy === userId),
-            isConfirmingDelete: (id) => confirmingDeleteId === id,
-        };
-    }, [actions, repliesByParentId, userId, isAdmin, confirmingDeleteId]);
+    const nodeActions = useMemo(() => ({
+        ...actions,
+        toggle,
+        // A jump opens every folded branch on the way to its target first.
+        jumpTo: (messageId) => {
+            const ancestors = displayAncestors(parentOf, messageId);
+            setCollapsedIds((prev) => {
+                if (!ancestors.some((a) => prev.has(a)) && !prev.has(messageId)) return prev;
+                const next = new Set(prev);
+                ancestors.forEach((a) => next.delete(a));
+                next.delete(messageId);
+                return next;
+            });
+            requestAnimationFrame(() => actions.jumpTo(messageId));
+        },
+    }), [actions, toggle, parentOf]);
 
     if (comments.length === 0) {
         return (
             <div className="comment-list__empty">
-                <PokeballIcon className="w-8 h-8 text-muted opacity-40 mb-2" />
-                <p className="font-semibold text-fg">
-                    {language === 'pt' ? 'Nenhuma resposta ainda' : 'No comments yet'}
-                </p>
-                <p className="text-xs text-muted max-w-xs mt-1">
-                    {language === 'pt'
-                        ? 'Seja o primeiro treinador a contribuir para esta discussão!'
-                        : 'Be the first trainer to participate in this discussion!'}
-                </p>
+                <PokeballIcon className="w-8 h-8 text-muted mb-2" />
+                <p className="comment-list__empty-title">{t('forum.noComments')}</p>
+                <p className="comment-list__empty-hint">{t('forum.noCommentsHint')}</p>
             </div>
         );
     }
 
     return (
-        <div className="comment-list">
-            {/* Thread controls header if replies exist */}
-            {allParentIds.length > 0 && (
-                <div className="comment-list__toolbar">
-                    <button
-                        type="button"
-                        onClick={handleToggleAll}
-                        className="comment-list__collapse-all-btn"
-                    >
-                        <ChevronsUpDown className="w-3.5 h-3.5 text-primary" />
-                        <span>
-                            {areAllExpanded
-                                ? (language === 'pt' ? 'Recolher todas as respostas' : 'Collapse all replies')
-                                : (language === 'pt' ? 'Expandir todas as respostas' : 'Expand all replies')}
-                        </span>
-                    </button>
-                </div>
-            )}
-
-            {/* List of top-level comments (with nested replies inside) */}
-            {topLevelComments.map((comment) => (
-                <CommentItem
-                    key={comment.id}
-                    comment={comment}
+        <div className={`comment-list ${nest ? '' : 'comment-list--flat'}`}>
+            {roots.map((node) => (
+                <CommentNode
+                    key={node.comment.id}
+                    node={node}
+                    collapsedIds={collapsedIds}
                     topicCreatorId={topicCreatorId}
-                    repliesByParentId={repliesByParentId}
-                    expandedCommentIds={expandedCommentIds}
-                    onToggleExpand={handleToggleExpand}
-                    likedByMe={enhancedActions.isLikedByMe(comment)}
-                    canDelete={enhancedActions.canDelete(comment)}
-                    isConfirmingDelete={enhancedActions.isConfirmingDelete(comment.id)}
-                    canLike={!!userId}
+                    userId={userId}
+                    isAdmin={isAdmin}
                     language={language}
                     t={t}
-                    actions={enhancedActions}
-                    depth={0}
+                    actions={nodeActions}
                 />
             ))}
         </div>
     );
-}
+});

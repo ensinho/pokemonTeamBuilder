@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, useDeferredValue } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useShallow } from 'zustand/react/shallow';
 import { useForumStore } from '../../store/useForumStore';
@@ -6,9 +6,23 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
 import { useBattlesStore } from '../../store/useBattlesStore';
+import { confirmAction } from '../../store/useConfirmStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useComposerFocus } from '../../hooks/useComposerFocus';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
+import {
+    FEED_SORTS,
+    DEFAULT_FEED_SORT,
+    FORUM_CATEGORY_IDS,
+    filterTopics,
+    rankTopics,
+    trendingTopics,
+    communityStats,
+    isTopicLikedBy,
+    isPinnedTopic,
+    topicLastActivity,
+} from '../../utils/forumRanking';
+import { currentTopicUrl, shareLink } from '../../utils/forumShare';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { FriendActionButton } from '../FriendActionButton';
 import { UserProfileModal } from '../modals/UserProfileModal';
@@ -17,6 +31,7 @@ import {
     ThreadDetail,
     ForumHeader,
     ForumSidebar,
+    ForumExplorer,
     TopicCreateModal,
     ThreadCardSkeleton,
 } from '../forum';
@@ -35,13 +50,29 @@ const profileFromData = (data) => {
     };
 };
 
+// Where the feed was scrolled when a post was opened. Module scope, because
+// the feed unmounts while a post is open; coming back lands where you left
+// (Reddit does), instead of at the top of the list every time.
+let savedFeedScroll = 0;
+
+// Feed filters live in the URL next to ?topic=, so Back, refresh and a shared
+// link all keep them. Defaults are left out of the URL.
+const PARAM_DEFAULTS = { sort: DEFAULT_FEED_SORT, cat: 'all', q: '' };
+
+// Hands children one object whose functions never change identity but always
+// call the latest closure — memoised rows stay memoised.
+function useStableActions(actions) {
+    const latest = useRef(actions);
+    latest.current = actions;
+    const names = Object.keys(actions).join('|');
+    return useMemo(
+        () => Object.fromEntries(names.split('|').map((name) => [name, (...args) => latest.current[name](...args)])),
+        [names],
+    );
+}
+
 export function FeedView({ showToast, navigate }) {
     const { t, language } = useTranslation();
-    useDocumentMeta({
-        title: 'Community Feed & Forum',
-        description: 'Join discussions, share Pokémon teams, and discuss competitive strategies.',
-        path: '/feed',
-    });
 
     const {
         topics,
@@ -55,6 +86,7 @@ export function FeedView({ showToast, navigate }) {
         createTopic,
         sendMessage,
         toggleMessageLike,
+        toggleTopicLike,
         deleteMessage,
         deleteTopic,
         hasOlderMessages,
@@ -64,7 +96,8 @@ export function FeedView({ showToast, navigate }) {
         isInitialLoadingTopics: s.isInitialLoadingTopics, isInitialLoadingMessages: s.isInitialLoadingMessages,
         setCurrentTopicId: s.setCurrentTopicId, initTopicsListener: s.initTopicsListener,
         cleanupTopicsListener: s.cleanupTopicsListener, createTopic: s.createTopic, sendMessage: s.sendMessage,
-        toggleMessageLike: s.toggleMessageLike, deleteMessage: s.deleteMessage, deleteTopic: s.deleteTopic,
+        toggleMessageLike: s.toggleMessageLike, toggleTopicLike: s.toggleTopicLike,
+        deleteMessage: s.deleteMessage, deleteTopic: s.deleteTopic,
         hasOlderMessages: s.hasOlderMessages, loadOlderMessages: s.loadOlderMessages,
     })));
 
@@ -84,39 +117,54 @@ export function FeedView({ showToast, navigate }) {
     const [searchParams, setSearchParams] = useSearchParams();
     const routerNavigate = useNavigate();
     const topicParam = searchParams.get('topic') || null;
+    const commentParam = searchParams.get('c') || null;
+    const sortParam = searchParams.get('sort');
+    const sortBy = FEED_SORTS.includes(sortParam) ? sortParam : DEFAULT_FEED_SORT;
+    const catParam = searchParams.get('cat');
+    const selectedCategory = FORUM_CATEGORY_IDS.includes(catParam) ? catParam : 'all';
+    const searchQuery = searchParams.get('q') || '';
+    const deferredQuery = useDeferredValue(searchQuery);
     const openedHereRef = useRef(false);
-    const setTopicInUrl = (id, { replace = false } = {}) => {
+    const feedScrollRef = useRef(null);
+
+    const setTopicInUrl = useCallback((id, { replace = false } = {}) => {
         setSearchParams((prev) => {
             const next = new URLSearchParams(prev);
             if (id) next.set('topic', id); else next.delete('topic');
+            next.delete('c');
             return next;
         }, { replace });
-    };
-    useEffect(() => {
-        if (topicParam !== (currentTopicId || null)) setCurrentTopicId(topicParam);
-        // eslint-disable-next-line react-hooks/exhaustive-deps -- the URL drives the store, not the reverse
-    }, [topicParam]);
+    }, [setSearchParams]);
 
-    // Local UI States
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [sortBy, setSortBy] = useState('recent');
+    const setFeedParam = useCallback((key, value) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (!value || value === PARAM_DEFAULTS[key]) next.delete(key); else next.set(key, value);
+            return next;
+        }, { replace: true });
+    }, [setSearchParams]);
+
+    // Local UI state
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-    // Composer & Reply States
+    const [createPreset, setCreatePreset] = useState(null);
     const [replyText, setReplyText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
     const [replyingTo, setReplyingTo] = useState(null);
-    const [confirmingDeleteId, setConfirmingDeleteId] = useState(null);
-
-    // Profile & Popover states
     const [selectedProfile, setSelectedProfile] = useState(null);
     const [hoveredSlot, setHoveredSlot] = useState(null);
     const popoverRef = useRef(null);
 
     const { composerRef, focusComposer } = useComposerFocus();
 
-    // Initialize forum topics listener
+    // The URL drives the store; a different topic starts with a clean composer.
+    useEffect(() => {
+        if (topicParam !== (currentTopicId || null)) setCurrentTopicId(topicParam);
+        setReplyingTo(null);
+        setAttachedTeam(null);
+        setReplyText('');
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- the URL drives the store, not the reverse
+    }, [topicParam]);
+
     useEffect(() => {
         initTopicsListener();
         return () => {
@@ -124,75 +172,87 @@ export function FeedView({ showToast, navigate }) {
         };
     }, [initTopicsListener, cleanupTopicsListener]);
 
-    // Active Topic selection
     const activeTopic = useMemo(() => {
         if (!currentTopicId) return null;
-        return topics.find((t) => t.id === currentTopicId) || null;
+        return topics.find((tp) => tp.id === currentTopicId) || null;
     }, [topics, currentTopicId]);
+    const isThreadOpen = !!activeTopic;
 
-    // Filter & Sort Topics for central feed
-    const filteredTopics = useMemo(() => {
-        let result = topics;
+    useDocumentMeta({
+        title: activeTopic ? activeTopic.title : 'Community Feed & Forum',
+        description: activeTopic?.bodyPreview || 'Join discussions, share Pokémon teams, and discuss competitive strategies.',
+        path: '/feed',
+    });
 
-        // Filter by category
-        if (selectedCategory !== 'all') {
-            result = result.filter((t) => t.category === selectedCategory);
-        }
+    // Ranking, trending and the community figures, all from the one topics
+    // stream. `now` is read here so Hot re-ranks whenever a topic moves.
+    const { pinned, rows, trending, trendingIds, stats, categoryCounts, pinnedRooms } = useMemo(() => {
+        const now = Date.now();
+        const filtered = filterTopics(topics, { category: selectedCategory, query: deferredQuery });
+        const ranked = rankTopics(filtered, sortBy, now);
+        const hot = trendingTopics(topics, now);
+        const counts = { all: topics.length };
+        for (const tp of topics) counts[tp.category] = (counts[tp.category] || 0) + 1;
+        return {
+            ...ranked,
+            trending: hot,
+            trendingIds: new Set(hot.map((tp) => tp.id)),
+            stats: communityStats(topics, now),
+            categoryCounts: counts,
+            // The explorer's rooms ignore the feed's filters: they are always one click away.
+            pinnedRooms: topics.filter(isPinnedTopic).sort((a, b) => topicLastActivity(b) - topicLastActivity(a)),
+        };
+    }, [topics, selectedCategory, deferredQuery, sortBy]);
 
-        // Filter by search query
-        if (searchQuery.trim()) {
-            const query = searchQuery.toLowerCase();
-            result = result.filter(
-                (t) =>
-                    (t.title && t.title.toLowerCase().includes(query)) ||
-                    (t.creatorName && t.creatorName.toLowerCase().includes(query)) ||
-                    (t.lastMessageText && t.lastMessageText.toLowerCase().includes(query))
-            );
-        }
+    // The explorer's discussion list: the feed's own order, minus the rooms it lists above.
+    const explorerTopics = useMemo(() => rows.filter((tp) => !isPinnedTopic(tp)), [rows]);
 
-        // Sorting
-        return [...result].sort((a, b) => {
-            if (sortBy === 'popular') {
-                const popA = (a.likeCount || a.likedBy?.length || 0) + (a.messageCount || 0);
-                const popB = (b.likeCount || b.likedBy?.length || 0) + (b.messageCount || 0);
-                return popB - popA;
-            }
-            if (sortBy === 'comments') {
-                return (b.messageCount || 0) - (a.messageCount || 0);
-            }
-            // Default 'recent': newest activity / creation first
-            const dateA = new Date(a.lastActivityAt || a.createdAt || 0).getTime();
-            const dateB = new Date(b.lastActivityAt || b.createdAt || 0).getTime();
-            return dateB - dateA;
-        });
-    }, [topics, selectedCategory, searchQuery, sortBy]);
-
-    // Featured team for the right sidebar showcase
-    const featuredArsenalTeam = useMemo(() => {
+    // The team the rail offers to share: the one being built, else the newest saved.
+    const featuredTeam = useMemo(() => {
         if (currentTeam && currentTeam.length > 0) {
             return { name: teamName || 'Active Team', pokemons: currentTeam };
         }
-        if (savedTeams && savedTeams.length > 0) {
-            return savedTeams[0];
-        }
-        return null;
+        return savedTeams?.[0] || null;
     }, [currentTeam, teamName, savedTeams]);
 
-    // Navigation handlers
-    const handleSelectTopic = (topicId) => {
+    // Back to the feed lands where the user left it.
+    useLayoutEffect(() => {
+        if (!isThreadOpen && feedScrollRef.current) feedScrollRef.current.scrollTop = savedFeedScroll;
+    }, [isThreadOpen]);
+
+    const hrefFor = useCallback((id) => {
+        const next = new URLSearchParams(searchParams);
+        next.set('topic', id);
+        next.delete('c');
+        return `/feed?${next.toString()}`;
+    }, [searchParams]);
+
+    // ── Feed actions ───────────────────────────────────────────────────────
+    const prepareOpen = () => {
+        if (feedScrollRef.current) savedFeedScroll = feedScrollRef.current.scrollTop;
         openedHereRef.current = true;
-        setTopicInUrl(topicId);
-        setReplyingTo(null);
-        setAttachedTeam(null);
-        setReplyText('');
-        // .app-shell__content is the scroller; window.scrollTo moved nothing.
-        document.querySelector('.app-shell__content')?.scrollTo({ top: 0, behavior: 'smooth' });
+        // .app-shell__content is the page scroller on some layouts.
+        document.querySelector('.app-shell__content')?.scrollTo({ top: 0 });
     };
 
+    const notifyShare = (result) => {
+        if (result === 'copied') showToast?.(t('forum.linkCopied'), 'success');
+        else if (result === 'failed') showToast?.(t('forum.shareFailed'), 'error');
+    };
+
+    const rowActions = useStableActions({
+        beforeOpen: () => prepareOpen(),
+        open: (id) => { prepareOpen(); setTopicInUrl(id); },
+        like: (id) => toggleTopicLike(id),
+        share: async (topic) => notifyShare(await shareLink({
+            title: topic.title,
+            text: (topic.bodyPreview || '').slice(0, 120),
+            url: currentTopicUrl(topic.id),
+        })),
+        openProfile: (data) => setSelectedProfile(profileFromData(data)),
+    });
+
     const handleBackToFeed = () => {
-        setReplyingTo(null);
-        setAttachedTeam(null);
-        setReplyText('');
         // Opened from the list in this visit: the in-app back is history back,
         // so the browser's Back does not reopen the thread afterwards.
         if (openedHereRef.current) {
@@ -203,70 +263,61 @@ export function FeedView({ showToast, navigate }) {
         }
     };
 
-    // Topic creation handler
-    const handleCreateTopicSubmit = async ({ title, category, text, attachedTeam }) => {
-        const id = await createTopic(title, category, text, attachedTeam);
+    // A sort or category picked in the explorer. From inside a post it means
+    // "show me the feed like this": the post closes, as a new history entry so
+    // Back returns to it.
+    const selectFeedFilter = (key, value) => {
+        if (!topicParam) {
+            setFeedParam(key, value);
+            return;
+        }
+        openedHereRef.current = false;
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (!value || value === PARAM_DEFAULTS[key]) next.delete(key); else next.set(key, value);
+            next.delete('topic');
+            next.delete('c');
+            return next;
+        });
+    };
+
+    const openCreate = (preset = null) => {
+        setCreatePreset(preset);
+        setIsCreateModalOpen(true);
+    };
+
+    // The store announces the new post (with an "open" action); here we just go there.
+    const handleCreateTopicSubmit = async ({ title, category, text, attachedTeam: team }) => {
+        const id = await createTopic(title, category, text, team);
         if (id) {
             openedHereRef.current = true;
             setTopicInUrl(id);
-            if (showToast) {
-                showToast(
-                    language === 'pt' ? 'Tópico criado com sucesso!' : 'Topic published successfully!',
-                    'success'
-                );
-            }
         }
     };
 
-    // Send comment handler
+    // ── Thread actions ─────────────────────────────────────────────────────
+    // No toast on success: the new comment appears in the thread and the view
+    // scrolls to it — the change already has a place on screen.
     const handleSendMessageSubmit = async (e) => {
         if (e) e.preventDefault();
         if (!replyText.trim() && !attachedTeam) return;
-
         const success = await sendMessage(currentTopicId, replyText, attachedTeam, replyingTo);
         if (success) {
             setReplyText('');
             setAttachedTeam(null);
             setReplyingTo(null);
-            if (showToast) {
-                showToast(language === 'pt' ? 'Resposta publicada!' : 'Comment posted!', 'success');
-            }
         }
     };
 
-    // Post battle challenge into thread
     const handlePostBattleInvite = async (mode) => {
         const battleId = await useBattlesStore.getState().createPublicInvite({ mode });
         if (!battleId) return;
-
         const posted = await sendMessage(currentTopicId, replyText, null, replyingTo, {
             battleInvite: { battleId, mode },
         });
         if (posted) {
             setReplyText('');
             setReplyingTo(null);
-        }
-    };
-
-    // Replying / quoting a message
-    const handleStartReply = (message) => {
-        const team = message.sharedTeam;
-        setReplyingTo({
-            messageId: message.id,
-            creatorName: message.creatorName || 'Trainer',
-            textSnippet: message.text || (team ? team.name : ''),
-            teamName: team?.name || null,
-        });
-        focusComposer();
-    };
-
-    // Jump to quoted comment and flash it
-    const scrollToMessage = (messageId) => {
-        const el = document.getElementById(`forum-msg-${messageId}`);
-        if (el) {
-            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            el.classList.add('forum-message-item--flash');
-            setTimeout(() => el.classList.remove('forum-message-item--flash'), 1200);
         }
     };
 
@@ -280,57 +331,64 @@ export function FeedView({ showToast, navigate }) {
         if (loaded) navigate('/builder');
     };
 
-    // Delete comment
-    const handleConfirmDeleteMessage = async (messageId) => {
-        const ok = await deleteMessage(currentTopicId, messageId);
-        if (ok && showToast) {
-            showToast(language === 'pt' ? 'Mensagem excluída.' : 'Message deleted.', 'success');
-        }
-        setConfirmingDeleteId(null);
+    // Jump to a comment and flash it — the landing spot of a quote, a
+    // permalink, or a comment of mine that just arrived.
+    const scrollToMessage = (messageId) => {
+        const el = document.getElementById(`forum-msg-${messageId}`);
+        if (!el) return;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.classList.remove('is-flash');
+        // Restart the highlight even if it is still running from a moment ago.
+        void el.offsetWidth;
+        el.classList.add('is-flash');
+        setTimeout(() => el.classList.remove('is-flash'), 1600);
     };
 
-    // Delete topic
     const handleDeleteTopic = async (topicId) => {
+        const ok = await confirmAction({
+            title: t('forum.deletePostTitle'),
+            message: t('forum.deletePostMessage'),
+            confirmText: t('forum.deleteConfirm'),
+        });
+        if (!ok) return;
         await deleteTopic(topicId);
         setTopicInUrl(null, { replace: true });
     };
 
-    // Single popover anchor reference
-    const popoverAnchor = useMemo(() => {
-        return { current: hoveredSlot?.ref || null };
-    }, [hoveredSlot]);
-
-    // Stable actions object for children
-    const latestActions = useRef(null);
-    latestActions.current = {
+    const messageActions = useStableActions({
         like: (messageId) => toggleMessageLike(currentTopicId, messageId),
-        reply: handleStartReply,
+        reply: (message) => {
+            const team = message.sharedTeam;
+            setReplyingTo({
+                messageId: message.id,
+                creatorName: message.creatorName || 'Trainer',
+                textSnippet: message.text || (team ? team.name : ''),
+                teamName: team?.name || null,
+            });
+            focusComposer();
+        },
         jumpTo: scrollToMessage,
-        askDelete: setConfirmingDeleteId,
-        confirmDelete: handleConfirmDeleteMessage,
+        share: async (message) => notifyShare(await shareLink({
+            title: activeTopic?.title || '',
+            text: (message.text || '').slice(0, 120),
+            url: currentTopicUrl(currentTopicId, message.id),
+        })),
+        remove: async (message) => {
+            const ok = await confirmAction({
+                title: t('forum.deleteCommentTitle'),
+                message: t('forum.deleteCommentMessage'),
+                confirmText: t('forum.deleteConfirm'),
+            });
+            if (!ok) return;
+            if (await deleteMessage(currentTopicId, message.id)) showToast?.(t('forum.commentDeleted'), 'success');
+        },
         importTeam: handleImportTeam,
         openProfile: (data) => setSelectedProfile(profileFromData(data)),
         hoverSlot: setHoveredSlot,
-    };
+    });
 
-    const messageActions = useMemo(
-        () =>
-            Object.fromEntries(
-                [
-                    'like',
-                    'reply',
-                    'jumpTo',
-                    'askDelete',
-                    'confirmDelete',
-                    'importTeam',
-                    'openProfile',
-                    'hoverSlot',
-                ].map((name) => [name, (...args) => latestActions.current[name](...args)])
-            ),
-        []
-    );
+    const popoverAnchor = useMemo(() => ({ current: hoveredSlot?.ref || null }), [hoveredSlot]);
 
-    // Composer props bundle
     const composerProps = {
         replyText,
         onReplyTextChange: (e) => setReplyText(e.target.value),
@@ -347,12 +405,64 @@ export function FeedView({ showToast, navigate }) {
         disabled: !userId,
     };
 
+    const sidebar = (
+        <ForumSidebar
+            stats={stats}
+            trending={trending}
+            currentTopicId={activeTopic?.id || null}
+            hrefFor={hrefFor}
+            onBeforeOpen={rowActions.beforeOpen}
+            featuredTeam={featuredTeam}
+            onShareTeam={(team) => openCreate({ team, category: 'teams' })}
+            navigate={navigate}
+            language={language}
+            t={t}
+        />
+    );
+
+    const renderRow = (topic, isPinned) => (
+        <ThreadCard
+            key={topic.id}
+            topic={topic}
+            href={hrefFor(topic.id)}
+            liked={isTopicLikedBy(topic, userId)}
+            isPinned={isPinned}
+            isTrending={!isPinned && trendingIds.has(topic.id)}
+            onOpen={rowActions.open}
+            onBeforeOpen={rowActions.beforeOpen}
+            onLike={rowActions.like}
+            onShare={rowActions.share}
+            onOpenProfile={rowActions.openProfile}
+            language={language}
+            t={t}
+        />
+    );
+
+    const hasFilters = !!searchQuery || selectedCategory !== 'all';
+    const isEmpty = pinned.length === 0 && rows.length === 0;
+
     return (
         <div className="forum-view">
-            {activeTopic ? (
-                /* Thread Detail View (Drill-Down Inline) */
-                <div className="forum-hub-layout forum-hub-layout--detail">
-                    <main className="forum-main-col forum-main-col--detail">
+            {/* Desktop: explorer | the content | rail, like an editor. Phone:
+                the centre alone, the feed and a post as two screens. */}
+            <div className={`forum-workspace ${activeTopic ? 'is-thread' : 'is-feed'}`}>
+                <ForumExplorer
+                    sortBy={sortBy}
+                    selectedCategory={selectedCategory}
+                    categoryCounts={categoryCounts}
+                    pinned={pinnedRooms}
+                    topics={explorerTopics}
+                    activeTopicId={activeTopic?.id || null}
+                    hrefFor={hrefFor}
+                    onSelectSort={(id) => selectFeedFilter('sort', id)}
+                    onSelectCategory={(id) => selectFeedFilter('cat', id)}
+                    onBeforeOpen={rowActions.beforeOpen}
+                    language={language}
+                    t={t}
+                />
+
+                <main className="forum-center">
+                    {activeTopic ? (
                         <ThreadDetail
                             topic={activeTopic}
                             messages={messages}
@@ -368,99 +478,82 @@ export function FeedView({ showToast, navigate }) {
                             composerRef={composerRef}
                             composerProps={composerProps}
                             messageActions={messageActions}
-                            confirmingDeleteId={confirmingDeleteId}
-                            showToast={showToast}
                             hasOlder={hasOlderMessages}
                             onLoadOlder={loadOlderMessages}
+                            onLikeTopic={(id, opMessage) => toggleTopicLike(id, { opMessage })}
+                            onShareTopic={rowActions.share}
+                            focusCommentId={commentParam}
                         />
-                    </main>
-
-                    {/* Desktop Right Sidebar in Detail View */}
-                    <div className="hidden lg:block h-full overflow-y-auto custom-scrollbar">
-                        <ForumSidebar
-                            featuredTeam={featuredArsenalTeam}
-                            onImportTeam={handleImportTeam}
-                            totalTopics={topics.length}
-                            language={language}
-                            navigate={navigate}
-                        />
-                    </div>
-                </div>
-            ) : (
-                /* Central Feed (Reddit / TCG Pocket Style Threads List) */
-                <div className="forum-feed-scroll custom-scrollbar">
-                    <div className="forum-hub-layout">
-                        <main className="forum-main-col">
+                    ) : (
+                        <div ref={feedScrollRef} className="forum-feed-scroll custom-scrollbar">
                             <ForumHeader
                                 selectedCategory={selectedCategory}
-                                onSelectCategory={setSelectedCategory}
+                                onSelectCategory={(id) => setFeedParam('cat', id)}
                                 searchQuery={searchQuery}
-                                onSearchChange={setSearchQuery}
+                                onSearchChange={(value) => setFeedParam('q', value)}
                                 sortBy={sortBy}
-                                onSortChange={setSortBy}
-                                onOpenCreateTopic={() => setIsCreateModalOpen(true)}
-                                totalTopics={filteredTopics.length}
-                                language={language}
+                                onSortChange={(id) => setFeedParam('sort', id)}
+                                onOpenCreateTopic={() => openCreate()}
+                                stats={stats}
+                                t={t}
                             />
 
-                            <section className="forum-thread-feed" aria-label="Lista de discussões do fórum">
-                                {isInitialLoadingTopics ? (
+                            <section
+                                className={`forum-feed-list ${searchQuery !== deferredQuery ? 'is-stale' : ''}`}
+                                aria-label={t('forum.title')}
+                                aria-busy={isInitialLoadingTopics && topics.length === 0}
+                            >
+                                {isInitialLoadingTopics && topics.length === 0 ? (
                                     <>
                                         <ThreadCardSkeleton />
                                         <ThreadCardSkeleton />
                                         <ThreadCardSkeleton />
                                     </>
-                                ) : filteredTopics.length === 0 ? (
-                                    <div className="comment-list__empty py-12">
-                                        <PokeballIcon className="w-12 h-12 text-muted opacity-30 mb-3" />
-                                        <h3 className="font-bold text-base text-fg">
-                                            {language === 'pt' ? 'Nenhum tópico encontrado' : 'No topics found'}
-                                        </h3>
-                                        <p className="text-xs text-muted max-w-sm mt-1.5 mb-4">
+                                ) : isEmpty ? (
+                                    <div className="forum-feed-empty">
+                                        <PokeballIcon className="w-10 h-10 text-muted" />
+                                        <h3 className="forum-feed-empty__title">{t('forum.emptyTitle')}</h3>
+                                        <p className="forum-feed-empty__text">
                                             {searchQuery
-                                                ? (language === 'pt'
-                                                    ? 'Nenhum resultado corresponde à sua busca. Tente outras palavras-chave ou limpe os filtros.'
-                                                    : 'No results matched your search. Try different keywords.')
-                                                : (language === 'pt'
-                                                    ? 'Ainda não há discussões nesta categoria. Inicie a primeira agora mesmo!'
-                                                    : 'No discussions in this category yet. Be the first to start one!')}
+                                                ? t('forum.emptySearch', { query: searchQuery })
+                                                : t('forum.emptyCategory')}
                                         </p>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsCreateModalOpen(true)}
-                                            className="btn btn-primary h-8 px-4 text-xs font-semibold"
-                                        >
-                                            {language === 'pt' ? 'Criar Novo Tópico' : 'Start New Topic'}
-                                        </button>
+                                        <div className="forum-feed-empty__actions">
+                                            {hasFilters && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary btn-sm"
+                                                    onClick={() => {
+                                                        setSearchParams((prev) => {
+                                                            const next = new URLSearchParams(prev);
+                                                            next.delete('q');
+                                                            next.delete('cat');
+                                                            return next;
+                                                        }, { replace: true });
+                                                    }}
+                                                >
+                                                    {t('forum.clearFilters')}
+                                                </button>
+                                            )}
+                                            <button type="button" onClick={() => openCreate()} className="btn btn-primary btn-sm">
+                                                {t('forum.createPost')}
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
-                                    filteredTopics.map((topic) => (
-                                        <ThreadCard
-                                            key={topic.id}
-                                            topic={topic}
-                                            isActive={currentTopicId === topic.id}
-                                            onSelect={handleSelectTopic}
-                                            onOpenProfile={(data) => setSelectedProfile(profileFromData(data))}
-                                            language={language}
-                                        />
-                                    ))
+                                    <>
+                                        {pinned.map((topic) => renderRow(topic, true))}
+                                        {rows.map((topic) => renderRow(topic, false))}
+                                    </>
                                 )}
                             </section>
-                        </main>
+                        </div>
+                    )}
+                </main>
 
-                        {/* Desktop Right Sidebar */}
-                        <ForumSidebar
-                            featuredTeam={featuredArsenalTeam}
-                            onImportTeam={handleImportTeam}
-                            totalTopics={topics.length}
-                            language={language}
-                            navigate={navigate}
-                        />
-                    </div>
-                </div>
-            )}
+                <div className="forum-rail-scroll custom-scrollbar">{sidebar}</div>
+            </div>
 
-            {/* Create Topic Modal */}
             <TopicCreateModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
@@ -469,11 +562,13 @@ export function FeedView({ showToast, navigate }) {
                 savedTeams={savedTeams}
                 currentTeam={currentTeam}
                 teamName={teamName}
+                initialTeam={createPreset?.team || null}
+                initialCategory={createPreset?.category || null}
                 language={language}
                 t={t}
             />
 
-            {/* Hover details popover for Pokémon in shared teams */}
+            {/* Hover details for a Pokémon in a shared team */}
             <AnchoredPopover
                 isOpen={!!hoveredSlot}
                 anchorRef={popoverAnchor}
@@ -528,7 +623,6 @@ export function FeedView({ showToast, navigate }) {
                 )}
             </AnchoredPopover>
 
-            {/* User Profile Modal */}
             <UserProfileModal
                 isOpen={!!selectedProfile}
                 profile={selectedProfile}

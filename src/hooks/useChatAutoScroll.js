@@ -33,8 +33,11 @@ const SETTLE_MS = 1200;
  *   back from `display: none` has had its scrollTop reset to 0, and without
  *   this the thread reappears at the top, which is the exact complaint this
  *   hook exists to answer.
+ * @param {boolean} options.enabled  false leaves the list alone entirely — a
+ *   forum *post* opens at the post, Reddit style; only a chat room follows
+ *   its newest message (2026-10-17).
  */
-export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMine = false, pinKey = null }) {
+export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMine = false, pinKey = null, enabled = true }) {
     const prevThread = useRef(threadKey);
     const prevCount = useRef(0);
     const pinUntil = useRef(0);
@@ -73,7 +76,7 @@ export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMi
         // like neither an opening (count was still the old one) nor growth
         // (23 is not more than 23), so nothing scrolled while the remounted
         // list sat at the top.
-        if (!el || count === 0) {
+        if (!el || count === 0 || !enabled) {
             prevCount.current = 0;
             return;
         }
@@ -89,7 +92,7 @@ export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMi
         } else if (grew && (lastIsMine || nearBottom)) {
             el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
         }
-    }, [containerRef, threadKey, count, lastIsMine, startPin]);
+    }, [containerRef, threadKey, count, lastIsMine, startPin, enabled]);
 
     // A re-layout with the same messages: jump and pin, but never smooth — this
     // is the same "the list is opening" case as a fresh thread, and it deserves
@@ -100,10 +103,10 @@ export function useChatAutoScroll(containerRef, { threadKey, count = 0, lastIsMi
         prevPinKey.current = pinKey;
 
         const el = containerRef.current;
-        if (!el || count === 0) return;
+        if (!el || count === 0 || !enabled) return;
         el.scrollTop = el.scrollHeight;
         startPin();
-    }, [containerRef, pinKey, count, startPin]);
+    }, [containerRef, pinKey, count, startPin, enabled]);
 
     useEffect(() => {
         const el = containerRef.current;
