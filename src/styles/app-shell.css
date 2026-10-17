@@ -365,6 +365,11 @@
     margin-top: var(--space-4);
 }
 
+/* With every section open (2026-10-17) the rail is one long list: a step
+   less between sections keeps all of it on a 900px-tall screen. */
+.app-shell__sidebar:not(.is-collapsed) .app-shell__nav-group { margin-top: var(--space-2); }
+.app-shell__sidebar:not(.is-collapsed) .app-shell__nav-group:first-child { margin-top: 0; }
+
 .app-shell__nav-group:first-child {
     margin-top: 0;
 }
@@ -409,6 +414,22 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-0_5);
+}
+
+/* A section that does not fold (the rail, 2026-10-17): the toggle's quiet
+   label without the control — same type, same inset, so the heading's first
+   letter lands on the icons' left edge, and the same gap above its rows the
+   open panel used to leave. */
+.app-shell__nav-group-heading {
+    display: flex;
+    align-items: center;
+    min-height: 1.5rem;
+    padding-inline: var(--app-shell-row-inset);
+    margin-bottom: var(--space-0_5);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    line-height: 1.3;
+    color: var(--color-muted);
 }
 
 /* Section header: a label you can click, not a row you navigate to. It keeps the
@@ -564,6 +585,17 @@
 .app-shell__nav-link:hover,
 .app-shell__account-button:hover {
     background: var(--color-surface-hover);
+}
+
+/* A short desktop screen with the full list showing (2026-10-17): rows a
+   step tighter, so every section fits without the rail scrolling (from 900px tall up;
+   below that the list scrolls). Pointer
+   rows, not touch targets — the phone uses the dock and the Mais sheet. */
+@media (min-width: 1024px) and (max-height: 1200px) {
+    .app-shell__sidebar:not(.is-collapsed) .app-shell__nav .app-shell__nav-link {
+        min-height: 1.75rem;
+        padding-block: var(--space-0_5);
+    }
 }
 
 /* Active is a fill and nothing else — no accent bar, no weight bump, no border.

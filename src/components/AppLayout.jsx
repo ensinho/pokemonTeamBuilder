@@ -284,44 +284,6 @@ const readSidebarCollapsePref = () => {
     } catch { return null; }
 };
 
-// Which nav sections are open. An ordered list, oldest first, capped at two —
-// see the note on ShellNavGroup for why two. Opening a third closes the least
-// recently opened, so the cap holds without the user ever having to close
-// anything, and the rail's height stays inside a known band.
-//
-// Stores the open keys rather than the folded ones: "at most two open" is the
-// invariant, and a two-element list cannot express a broken state the way a set
-// of five folded flags could. Keyed by the stable section key, never by the
-// translated title.
-const SIDEBAR_GROUPS_KEY = 'ptb-sidebar-open-groups';
-const MAX_OPEN_NAV_GROUPS = 2;
-
-// First run opens two. Landing on an empty rail is the failure this whole shape
-// exists to avoid, so the default has to show some of the tail, and these are
-// the two sections whose contents people reach for most.
-const DEFAULT_OPEN_NAV_GROUPS = ['teamBuilding', 'dashboard'];
-
-const readOpenGroups = () => {
-    try {
-        const parsed = JSON.parse(window.localStorage.getItem(SIDEBAR_GROUPS_KEY));
-        // Truncate on read too: the cap could have been larger when this was
-        // written, and a stored list is not a promise about today's rules.
-        return Array.isArray(parsed) ? parsed.slice(-MAX_OPEN_NAV_GROUPS) : null;
-    } catch { return null; }
-};
-
-const persistOpenGroups = (next) => {
-    try {
-        window.localStorage.setItem(SIDEBAR_GROUPS_KEY, JSON.stringify(next));
-    } catch { /* preference is best-effort */ }
-    return next;
-};
-
-// Append and evict in one place, so "opened by a click" and "opened because you
-// navigated into it" can never disagree about which section gets dropped.
-const withGroupOpen = (open, key) =>
-    (open.includes(key) ? open : [...open, key].slice(-MAX_OPEN_NAV_GROUPS));
-
 // On the small-laptop band (1024–1279px) the fixed sidebar steals too much
 // width, so default it to the icon rail. At ≥1280px there's room to expand it.
 const autoCollapseForWidth = (w) => w >= BREAKPOINTS.lg && w < BREAKPOINTS.xl;
@@ -468,8 +430,6 @@ export default function AppLayout() {
         if (pref !== null) return pref;                 // deliberate choice wins
         return autoCollapseForWidth(window.innerWidth); // otherwise decide by width
     });
-    const [openNavGroups, setOpenNavGroups] = useState(() =>
-        (typeof window === 'undefined' ? DEFAULT_OPEN_NAV_GROUPS : (readOpenGroups() ?? DEFAULT_OPEN_NAV_GROUPS)));
     const [authModal, setAuthModal] = useState({ open: false, mode: 'signIn' });
 
     // Lets a store-raised toast open the auth modal. Every "you need an account
@@ -518,20 +478,6 @@ export default function AppLayout() {
         () => resolveAvatar({ avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny }),
         [avatarPreference, trainerSprite, greetingPokemonId, greetingPokemonIsShiny],
     );
-
-    // Fold or unfold a section. Unfolding a third one drops the section that has
-    // been open longest — the cap enforces itself, so the control is always a
-    // plain toggle and never refuses a click.
-    //
-    // Persisted immediately: the sidebar is the one piece of chrome on every
-    // route, so re-folding it each visit would be a tax.
-    const toggleNavGroup = useCallback((groupKey) => {
-        setOpenNavGroups((previous) => persistOpenGroups(
-            previous.includes(groupKey)
-                ? previous.filter((key) => key !== groupKey)
-                : withGroupOpen(previous, groupKey)
-        ));
-    }, []);
 
     // Explicit collapse/expand from the sidebar controls. Persists the choice so
     // it overrides the width-based auto behavior from then on.
@@ -1036,27 +982,6 @@ export default function AppLayout() {
             .map(({ key, label, searchLabel, path, icon }) => ({ key, label: searchLabel || label, path, icon }));
     }, [primaryNavItems, navigationGroups, t]);
 
-    // Landing on a page that lives inside a folded section unfolds it, so "where
-    // am I" is answered by the rail itself rather than only by a dot on a folded
-    // header. It goes through the same append-and-evict as a click, so arriving
-    // at a third section closes the oldest exactly as clicking into it would.
-    //
-    // Returns `previous` untouched when the section is already open — the effect
-    // runs on every route change, and a fresh array each time would rewrite
-    // localStorage and re-render the rail for nothing. Navigating to one of the
-    // pinned primary links leaves the sections alone: those five are in no
-    // section, so there is nothing to reveal, and re-folding the rail on every
-    // trip Home would just make it flicker.
-    useEffect(() => {
-        const activeGroup = navigationGroups.find((g) =>
-            g.items.some((item) => currentPage === item.key));
-        if (!activeGroup) return;
-        setOpenNavGroups((previous) => (previous.includes(activeGroup.key)
-            ? previous
-            : persistOpenGroups(withGroupOpen(previous, activeGroup.key))));
-    }, [navigationGroups, currentPage]);
-
-
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
@@ -1483,14 +1408,12 @@ export default function AppLayout() {
 
                                 <ul className="app-shell__nav-list">
                                     {navigationGroups.map((group) => (
+                                        // Every section open, always (2026-10-17, Enzo): the rail
+                                        // lists everything under quiet headings instead of folding.
                                         <ShellNavGroup
                                             key={group.key}
                                             title={group.title}
                                             railCollapsed={isRailCollapsed}
-                                            isOpen={openNavGroups.includes(group.key)}
-                                            hasActiveItem={group.items.some((item) => currentPage === item.key)}
-                                            onToggle={() => toggleNavGroup(group.key)}
-                                            panelId={`app-shell-nav-${group.key}`}
                                         >
                                             {group.items.map((item) => (
                                                 <li key={item.key}>

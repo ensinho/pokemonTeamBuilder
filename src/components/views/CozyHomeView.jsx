@@ -720,16 +720,13 @@ export function CozyHomeView({
         </button>
     );
     const journeyCard = level && (
-        <Panel
-            title={t('journeys.home.title')}
-            meta={t('journeys.home.meta', { n: level.level, total: journeys.length })}
-            action={seeJourneys}
-        >
+        <Panel title={t('journeys.home.title')} action={seeJourneys}>
             <div className="journey-home">
                 {isBrandNew && <MascotTip>{t('journeys.home.welcome')}</MascotTip>}
                 <div className="journey-home__head">
                     <JourneyTile journey={level} isCurrent />
                     <span className="journey__text">
+                        <span className="journey__level">{t('journeys.home.meta', { n: level.level, total: journeys.length })}</span>
                         <span className="journey__title">{t(`journeys.list.${level.id}.title`)}</span>
                         <span className="journey__sub">{t(`journeys.list.${level.id}.sub`)}</span>
                     </span>
@@ -757,7 +754,9 @@ export function CozyHomeView({
     // A guest's invitation to an account, right under the hero on a phone and at
     // the top of the rail on desktop. Renders nothing for an account holder.
     const guestCard = <GuestAccountCard variant="home" />;
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyCard}{yourDay}{journeyPanel}</> : <>{hero}{journeyCard}{yourDay}{teamsPanel(3)}</>;
+    // The journey card sits under the hero on a phone; on a desktop it heads
+    // the rail, above the story of what just happened (2026-10-17, Enzo).
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyCard}{yourDay}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
     else if (tab === 'journey') main = journeyTab;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 8);
     else main = communityPanel(5);
@@ -777,6 +776,7 @@ export function CozyHomeView({
                 {!isPhone && (
                     <aside className="cozy-rail">
                         {guestCard}
+                        {tab !== 'journey' && journeyCard}
                         {journeyPanel}
                         {tab !== 'community' && communityPanel(1)}
                     </aside>

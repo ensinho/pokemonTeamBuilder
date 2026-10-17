@@ -739,3 +739,21 @@
     grid-template-columns: minmax(0, 1fr);
     gap: var(--space-1);
 }
+
+/* The rail's copy of the card on a short screen (2026-10-17): with every nav
+   section open, the sentence and the art would push Jogos and Comunidade
+   below the fold. The title and the two buttons say enough there; the Home
+   card carries the full pitch. */
+@media (max-height: 1200px) {
+    .guest-card--rail .guest-card__stage,
+    .guest-card--rail .guest-card__text {
+        display: none;
+    }
+
+    /* Side by side: one row instead of two. "Criar conta" / "Entrar" fit
+       the rail's width at btn-sm. */
+    .guest-card--rail .guest-card__actions {
+        grid-template-columns: auto auto;
+        justify-content: start;
+    }
+}
