@@ -157,6 +157,7 @@ export function ChampionChallengeView() {
     const handleStart = async (team) => {
         const ok = await start({ practice, team, trainerName: trainerDisplayName() });
         if (!ok) return;
+        useAuthStore.getState().markJourney('challengePlayed');
         // Only a battle started here plays its opening; a resumed one picks up where it was.
         setStartedRunId(useChampionChallengeStore.getState().run?.runId || null);
         setStage('transition');

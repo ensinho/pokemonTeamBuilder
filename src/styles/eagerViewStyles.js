@@ -38,4 +38,3 @@ import './pokemon-detail-view.css';
 import './locations-view.css';
 import './pokemon-detail-mobile.css';
 import './tools-views.css';
-import './secret-room-guesser.css';

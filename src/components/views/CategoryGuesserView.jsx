@@ -158,9 +158,9 @@ export function CategoryGuesserView({ showDetails }) {
     const { t, language } = useTranslation();
 
     useDocumentMeta({
-        title: 'PokéQuiz - Adivinhe o Tema',
+        title: 'Quiz por categoria',
         description: 'Adivinhe Pokémon baseados em características, atributos e temas oficiais.',
-        path: '/guesser',
+        path: '/quiz?tab=categories',
     });
 
     const [pokemonIndex, setPokemonIndex] = useState([]);

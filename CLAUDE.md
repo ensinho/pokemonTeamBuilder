@@ -53,6 +53,9 @@ The core domain logic. `src/constants/types.js` holds `typeChart` (per-type `dam
 ### Routing & layout
 `App.jsx` is a thin shell. **`src/components/AppLayout.jsx` is the real entry point** — it owns the sidebar, all modals, and the `<Routes>` (`/`, `/builder`, `/pokedex`, `/favorites`, `/quiz`, `/pokepuzzle`, `/teams`, `/generator`, `/profile`, `/feed`, `/admin`). It's large and central; expect most cross-cutting wiring to pass through it. Views live in `src/components/views/`, modals in `src/components/modals/` (both barrel-exported via `index.js`). The global search (`CommandPalette`, ⌘K / `/` / the header's search control) is lazy-loaded from AppLayout and ranks local data through `src/utils/globalSearch.js` — extend it with a new group rather than adding another search UI.
 
+### Journeys (`src/utils/journeys.js`, `docs/modules/journeys.md`)
+The onboarding: five levels of missions (`/journeys`, the Home's "Sua jornada" card, the floating `JourneyCoach`), each level rewarded with a journey badge. Missions are pure predicates over facts that `useTrainerBadges` evaluates once (`stats.journeys`); actions no collection records are `markJourney(mark)` in `useAuthStore` (synced to the preferences doc). The Quiz is one page with two modes (`/quiz`, `?tab=categories`; `/guesser` redirects). PokéRoom was removed on 2026-10-17 (`/pokeroom/*` redirects to the Quiz).
+
 ### Data layer (`src/services/pokemonDataCache.js`)
 Three-tier cache for PokéAPI data, all funneled through `fetchJsonCached`:
 1. In-memory `Map` (per session).

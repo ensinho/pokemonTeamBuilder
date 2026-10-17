@@ -1,4 +1,5 @@
 import React from 'react';
+import { JOURNEYS_BY_ID } from '../utils/journeys';
 
 /**
  * High-fidelity Vector SVGs for Pokémon Trainer Badges (Gym Badges & Achievements)
@@ -515,6 +516,45 @@ const EMBLEM_GLYPHS = {
     flame: (rim) => (
         <path d="M50 28 C54 39 66 45 66 57 C66 66 59 72 50 72 C41 72 34 66 34 57 C34 49 40 45 43 49 C43 41 47 34 50 28 Z" fill="#ffffff" stroke={rim} strokeWidth="3" strokeLinejoin="round" />
     ),
+    // The journey glyphs (2026-10-17). Line glyphs are drawn twice — a wide
+    // rim stroke under a narrow white one — so they keep an edge on any face.
+    compass: (rim) => (
+        <g>
+            <circle cx="50" cy="50" r="20" fill="#ffffff" stroke={rim} strokeWidth="3" />
+            <polygon points="50,35 56,50 44,50" fill={rim} />
+            <polygon points="44,50 56,50 50,65" fill={rim} opacity="0.45" />
+            <circle cx="50" cy="50" r="2.5" fill="#ffffff" />
+        </g>
+    ),
+    swords: (rim) => (
+        <g strokeLinecap="round" fill="none">
+            <path d="M35 65 L63 37 M37 37 L65 65" stroke={rim} strokeWidth="11" />
+            <path d="M37 55 L45 63 M55 63 L63 55" stroke={rim} strokeWidth="9" />
+            <path d="M35 65 L63 37 M37 37 L65 65" stroke="#ffffff" strokeWidth="5" />
+            <path d="M37 55 L45 63 M55 63 L63 55" stroke="#ffffff" strokeWidth="3.5" />
+        </g>
+    ),
+    target: (rim) => (
+        <g>
+            <circle cx="50" cy="50" r="20" fill="#ffffff" stroke={rim} strokeWidth="3" />
+            <circle cx="50" cy="50" r="12" fill="none" stroke={rim} strokeWidth="4" />
+            <circle cx="50" cy="50" r="4" fill={rim} />
+        </g>
+    ),
+    people: (rim) => (
+        <g stroke={rim} strokeWidth="3" strokeLinejoin="round" fill="#ffffff">
+            <circle cx="61" cy="42" r="6" />
+            <path d="M51 66 C52 58 56 53 61 53 C67 53 73 58 73 66 Z" />
+            <circle cx="40" cy="40" r="7" />
+            <path d="M26 67 C26 56 32 51 40 51 C48 51 54 56 54 67 Z" />
+        </g>
+    ),
+    crown: (rim) => (
+        <g stroke={rim} strokeWidth="3" strokeLinejoin="round" fill="#ffffff">
+            <path d="M31 61 L29 37 L41 47 L50 31 L59 47 L71 37 L69 61 Z" />
+            <rect x="30" y="64" width="40" height="6" rx="2" />
+        </g>
+    ),
 };
 
 const createEmblemSvg = ({ id, shape, from, to, rim, glyph }) => {
@@ -556,10 +596,100 @@ const countBadge = (statKey, target) => ({
     checkUnlocked: (stats) => (stats[statKey] || 0) >= target,
 });
 
+// A badge earned by finishing one journey (utils/journeys.js). The stats carry
+// the evaluated journeys (`stats.journeys`, from useTrainerBadges); without
+// them the badge reads as 0 of the journey's missions, never as unlocked.
+const journeyBadge = (journeyId) => {
+    const total = JOURNEYS_BY_ID[journeyId].missions.length;
+    const find = (stats) => (stats.journeys || []).find((j) => j.id === journeyId);
+    return {
+        journeyId,
+        targetCount: total,
+        getProgress: (stats) => {
+            const current = find(stats)?.doneCount || 0;
+            return { current, target: total, percent: Math.round((current / total) * 100) };
+        },
+        checkUnlocked: (stats) => Boolean(find(stats)?.isComplete),
+    };
+};
+
 /**
  * Registry of all available Trainer Badges with requirements and criteria.
+ * The journey badges come first: they are the path a new trainer is on, so
+ * they are what the badge gallery and the "next badge" pick should lead with.
  */
 export const BADGES_LIST = [
+    // ── Journeys (one per level, all hexagons — the shape says "journey")
+    {
+        id: 'badge_journey_first_steps',
+        key: 'journey_first_steps',
+        nameEn: 'Pallet Trainer',
+        namePt: 'Treinador de Pallet',
+        descEn: 'Every master started in Pallet Town. Earned by finishing the First steps journey.',
+        descPt: 'Todo mestre começou em Pallet. Conquistada ao concluir a jornada Primeiros passos.',
+        reqEn: 'First steps journey',
+        reqPt: 'Jornada Primeiros passos',
+        category: 'journey',
+        ...journeyBadge('first-steps'),
+        Icon: createEmblemSvg({ id: 'emJourney1', shape: 'hexagon', from: '#fdba74', to: '#c2410c', rim: '#7c2d12', glyph: 'compass' }),
+        accentColor: '#c2410c',
+    },
+    {
+        id: 'badge_journey_first_team',
+        key: 'journey_first_team',
+        nameEn: 'Squad Leader',
+        namePt: 'Líder de Equipe',
+        descEn: 'Six slots, one plan, saved for good. Earned by finishing the Your first team journey.',
+        descPt: 'Seis espaços, um plano, salvo para sempre. Conquistada ao concluir a jornada Seu primeiro time.',
+        reqEn: 'Your first team journey',
+        reqPt: 'Jornada Seu primeiro time',
+        category: 'journey',
+        ...journeyBadge('first-team'),
+        Icon: createEmblemSvg({ id: 'emJourney2', shape: 'hexagon', from: '#fca5a5', to: '#dc2626', rim: '#7f1d1d', glyph: 'swords' }),
+        accentColor: '#dc2626',
+    },
+    {
+        id: 'badge_journey_strategy',
+        key: 'journey_strategy',
+        nameEn: 'Tactician',
+        namePt: 'Mente Tática',
+        descEn: 'You read the matchup before the battle starts. Earned by finishing the Strategy journey.',
+        descPt: 'Você lê o confronto antes da batalha começar. Conquistada ao concluir a jornada Estratégia.',
+        reqEn: 'Strategy journey',
+        reqPt: 'Jornada Estratégia',
+        category: 'journey',
+        ...journeyBadge('strategy'),
+        Icon: createEmblemSvg({ id: 'emJourney3', shape: 'hexagon', from: '#93c5fd', to: '#2563eb', rim: '#1e3a8a', glyph: 'target' }),
+        accentColor: '#2563eb',
+    },
+    {
+        id: 'badge_journey_community',
+        key: 'journey_community',
+        nameEn: 'Familiar Face',
+        namePt: 'Rosto Conhecido',
+        descEn: 'The region knows your name now. Earned by finishing the Community journey.',
+        descPt: 'A região já sabe o seu nome. Conquistada ao concluir a jornada Comunidade.',
+        reqEn: 'Community journey',
+        reqPt: 'Jornada Comunidade',
+        category: 'journey',
+        ...journeyBadge('community'),
+        Icon: createEmblemSvg({ id: 'emJourney4', shape: 'hexagon', from: '#86efac', to: '#16a34a', rim: '#14532d', glyph: 'people' }),
+        accentColor: '#16a34a',
+    },
+    {
+        id: 'badge_journey_league',
+        key: 'journey_league',
+        nameEn: 'League Challenger',
+        namePt: 'Desafiante da Liga',
+        descEn: 'Puzzles, quizzes, the Champion and a friend: you have faced them all. Earned by finishing the Road to the League journey.',
+        descPt: 'Puzzle, quiz, a Campeã e um amigo: você encarou todos. Conquistada ao concluir a jornada Rumo à Liga.',
+        reqEn: 'Road to the League journey',
+        reqPt: 'Jornada Rumo à Liga',
+        category: 'journey',
+        ...journeyBadge('league'),
+        Icon: createEmblemSvg({ id: 'emJourney5', shape: 'hexagon', from: '#d8b4fe', to: '#7c3aed', rim: '#4c1d95', glyph: 'crown' }),
+        accentColor: '#7c3aed',
+    },
     {
         id: 'badge_boulder',
         key: 'boulder',

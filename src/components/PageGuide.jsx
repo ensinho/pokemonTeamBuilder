@@ -4,7 +4,7 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 import { appId } from '../constants/firebase';
 import { AnchoredPopover } from './AnchoredPopover';
-import { InfoIcon } from './icons';
+import { Mascot } from './Mascot';
 import { useTranslation } from '../hooks/useTranslation';
 import { TRANSLATIONS } from '../constants/translations';
 
@@ -111,7 +111,8 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
                 aria-expanded={isOpen}
                 className={`touch-target inline-flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-surface-hover hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-primary ${isOpen ? 'bg-primary-soft text-primary' : 'bg-transparent text-muted'}`}
             >
-                <InfoIcon />
+                {/* The mascot is the app's voice for tips (2026-10-17). */}
+                <Mascot size="xs" />
             </button>
 
             <AnchoredPopover
@@ -134,9 +135,7 @@ export function PageGuide({ pageKey, db, userId, userEmail, displayName, showToa
             >
                 <div className="p-4">
                     <div className="flex items-center gap-2 mb-3">
-                        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary-soft text-primary" aria-hidden="true">
-                            <InfoIcon />
-                        </span>
+                        <Mascot size="xs" />
                         <h4 className="text-sm font-bold text-primary">
                             {titleText}
                         </h4>
@@ -207,6 +206,7 @@ export const pageGuideTips = {
     pokedex: true,
     favorites: true,
     generationQuiz: true,
+    journeys: true,
     feed: true,
     challenge: true,
 };

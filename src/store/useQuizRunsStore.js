@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { db } from '../services/firebase';
 import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
-import { useAuthStore } from './useAuthStore';
+import { markJourney, useAuthStore } from './useAuthStore';
 import { GENERATION_RANGES } from '../constants/pokemon';
 
 const QUIZ_GENERATION_KEYS = Object.keys(GENERATION_RANGES).filter((key) => key !== 'all');
@@ -240,6 +240,8 @@ export const useQuizRunsStore = create((set, get) => {
 
             const currentRun = quizRuns[runIndex];
             const foundCount = foundIdsArray.length;
+            // A right answer, not an opened page, is what the journey counts.
+            if (foundCount > 0) markJourney('quizGuess');
             const isComplete = foundCount === currentRun.totalCount;
 
             const accuracyPercent = foundCount + invalidGuesses > 0

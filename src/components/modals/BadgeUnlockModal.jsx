@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useToastStore } from '../../store/useToastStore';
 import { CloseIcon, StarsIcon } from '../icons';
 import { Check } from 'lucide-react';
+import { MascotTip } from '../Mascot';
 
 /**
  * A badge the user just earned. A plain dialog (`.modal-scrim > .modal-panel`,
@@ -69,6 +70,12 @@ export function BadgeUnlockModal() {
                     <h2 id="badge-unlock-title" className="modal-title">{badgeName}</h2>
                     <p className="m-0 text-sm font-semibold text-primary">{badgeReq}</p>
                     <p id="badge-unlock-desc" className="modal-subtitle">{badgeDesc}</p>
+                    {/* A finished journey is the big moment: the mascot says what is next. */}
+                    {newlyUnlockedBadge.category === 'journey' && (
+                        <MascotTip cheer className="badge-unlock__tip">
+                            {newlyUnlockedBadge.journeyId === 'league' ? t('journeys.allDoneSub') : t('journeys.unlockTip')}
+                        </MascotTip>
+                    )}
                 </div>
 
                 <div className="modal-footer">

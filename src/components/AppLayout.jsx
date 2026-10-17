@@ -31,7 +31,9 @@ import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { appId } from '../constants/firebase';
 import { BREAKPOINTS } from '../constants/breakpoints';
-import { setNavigator, setSignInPrompt } from '../utils/navigation';
+import { setNavigator, setPartnerPicker, setSignInPrompt } from '../utils/navigation';
+import { PAGE_MARKS } from '../utils/journeys';
+import { JourneyCoach } from './journeys/JourneyCoach';
 import { splashHoldMs, splashProgress } from '../utils/bootSplash';
 import { usePokedex } from '../hooks/usePokedex';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -61,7 +63,7 @@ import {
 // Every destination gets its own glyph: Habilidades/PokéQuiz, Amigos/Entrar and
 // Batalhas/Construtor used to share one each, which made the Mais grid harder to
 // scan than its labels (2026-10-06).
-import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Users, Settings, Brain, HeartHandshake, ShieldHalf, Crown } from 'lucide-react';
+import { BoxIcon, Puzzle, Medal, Search, TrendingUp, Settings, HeartHandshake, ShieldHalf, Crown, Route as RouteIcon } from 'lucide-react';
 
 // The Home view stays eager: it's the landing route, so lazy-loading it would only add a
 // fallback flash on first paint. Every other view is code-split (React.lazy) to shrink
@@ -122,8 +124,8 @@ const ROUTE_CHUNKS = {
     tournaments: () => import('./views/TournamentsView'), damageCalc: () => import('./views/DamageCalculatorView'),
     speedTiers: () => import('./views/SpeedTiersView'), moves: () => import('./views/MovesListView'),
     abilities: () => import('./views/AbilitiesListView'), items: () => import('./views/ItemsListView'),
-    gyms: () => import('./views/GymsView'), generationQuiz: () => import('./views/GenerationQuizView'),
-    categoryGuesser: () => import('./views/CategoryGuesserView'), pokeroom: () => import('./views/SecretRoomGuesserView'),
+    gyms: () => import('./views/GymsView'), generationQuiz: () => import('./views/QuizView'),
+    journeys: () => import('./views/JourneysView'),
     friends: () => import('./views/FriendsView'), battles: () => import('./views/battle/BattleListView'),
     profile: () => import('./views/ProfileView'), admin: () => import('./views/AdminDashboardView'),
 };
@@ -139,9 +141,8 @@ const isTypingTarget = (target) => Boolean(
 
 const AdminDashboardView = lazy(() => import('./views/AdminDashboardView').then((m) => ({ default: m.AdminDashboardView })));
 const FavoritesView = lazy(() => import('./views/FavoritesView').then((m) => ({ default: m.FavoritesView })));
-const GenerationQuizView = lazy(() => import('./views/GenerationQuizView').then((m) => ({ default: m.GenerationQuizView })));
-const CategoryGuesserView = lazy(() => import('./views/CategoryGuesserView').then((m) => ({ default: m.CategoryGuesserView })));
-const SecretRoomGuesserView = lazy(() => import('./views/SecretRoomGuesserView').then((m) => ({ default: m.SecretRoomGuesserView })));
+const QuizView = lazy(() => import('./views/QuizView').then((m) => ({ default: m.QuizView })));
+const JourneysView = lazy(() => import('./views/JourneysView').then((m) => ({ default: m.JourneysView })));
 const PokedexView = lazy(() => loadPokedexView().then((m) => ({ default: m.PokedexView })));
 const ProfileView = lazy(() => import('./views/ProfileView').then((m) => ({ default: m.ProfileView })));
 const FriendsView = lazy(() => import('./views/FriendsView').then((m) => ({ default: m.FriendsView })));
@@ -347,6 +348,7 @@ export default function AppLayout() {
     const currentPage = useMemo(() => {
         const path = location.pathname;
         if (path === '/') return 'home';
+        if (path.startsWith('/journeys')) return 'journeys';
         if (path.includes('/feed')) return 'feed';
         if (path.includes('/pokedex')) return 'pokedex';
         if (path.includes('/pokemon/')) return 'pokemonDetail';
@@ -361,9 +363,7 @@ export default function AppLayout() {
         if (path.includes('/damage-calculator')) return 'damageCalc';
         if (path.includes('/speed-tiers')) return 'speedTiers';
         if (path.includes('/teams')) return 'allTeams';
-        if (path.includes('/guesser')) return 'categoryGuesser';
         if (path.includes('/quiz')) return 'generationQuiz';
-        if (path.includes('/pokeroom')) return 'secretRoom';
         if (path.includes('/battles')) return 'battles';
         if (path.includes('/friends')) return 'friends';
         if (path.includes('/favorites')) return 'favorites';
@@ -480,6 +480,18 @@ export default function AppLayout() {
     }, []);
     const [showPatchNotes, setShowPatchNotes] = useState(false);
     const [showGreetingPokemonSelector, setShowGreetingPokemonSelector] = useState(false);
+    // The journeys' first mission opens the partner picker from wherever it is
+    // started (Home, the Journeys page, the guide's "Next mission").
+    useEffect(() => {
+        setPartnerPicker(() => setShowGreetingPokemonSelector(true));
+    }, []);
+
+    // A page the journeys teach leaves its mark the first time it is opened
+    // (utils/journeys.js PAGE_MARKS). markJourney is a no-op once set.
+    useEffect(() => {
+        const mark = PAGE_MARKS[currentPage];
+        if (mark) useAuthStore.getState().markJourney(mark);
+    }, [currentPage]);
     const [showTrainerSpriteSelector, setShowTrainerSpriteSelector] = useState(false);
 
     // Bound here (not only in FriendsView) so the sidebar badge stays live on every
@@ -849,8 +861,8 @@ export default function AppLayout() {
             'builder': { title: t('builder.title'), subtitle: t('builder.subtitle') },
             'pokedex': { title: t('nav.pokedex'), subtitle: t('home.shortcutPokedexDesc') },
             'allTeams': { title: t('savedTeams.title'), subtitle: t('savedTeams.subtitle') },
-            'categoryGuesser': { title: t('nav.pokequiz'), subtitle: language === 'pt' ? 'Adivinhe Pokémon por características e atributos oficiais' : 'Guess Pokémon by official traits & characteristics' },
             'generationQuiz': { title: t('quiz.title'), subtitle: t('quiz.subtitle') },
+            'journeys': { title: t('journeys.title'), subtitle: t('journeys.subtitle') },
             'pokepuzzle': { title: t('pokepuzzle.title'), subtitle: t('pokepuzzle.subtitle') },
             'challenge': { title: t('challenge.title'), subtitle: '' },
             'favorites': { title: t('nav.favorites'), subtitle: language === 'pt' ? 'Gerencie seus times salvos e Pokémon favoritos' : 'Manage your saved teams and favorite Pokémon' },
@@ -874,16 +886,10 @@ export default function AppLayout() {
                     ? 'Líderes de ginásio e os times exatos que eles usam'
                     : 'Gym leaders and the exact teams they run',
             },
-            'secretRoom': {
-                title: 'PokéRoom',
-                subtitle: language === 'pt'
-                    ? 'Salas privadas para adivinhar Pokémon com amigos'
-                    : 'Private rooms to guess Pokémon with friends',
-            },
             'notFound': { title: t('layout.notFoundPageTitle'), subtitle: '' },
         };
         // Falling back to the Home entry made a missing key look like a working
-        // header — /gyms and /pokeroom both shipped showing "Início" for exactly
+        // header — /gyms and the old /pokeroom both shipped showing "Início" for exactly
         // that reason. An unknown route now shows nothing rather than a lie.
         return pages[currentPage] || { title: '', subtitle: '' };
     }, [currentPage, t, language]);
@@ -911,8 +917,13 @@ export default function AppLayout() {
     // 2026-10-09 (Enzo): the forum is pinned too, between Pokédex and My teams —
     // it is where people go every day, and two clicks through Community hid it.
     // The pinned label is the short "Fórum"; the page title keeps "Feed e fórum".
+    //
+    // 2026-10-17: Journeys joins them, right under Home — it is where a new
+    // trainer learns everything else on this list, so it cannot be two clicks
+    // away in a folding section.
     const primaryNavItems = useMemo(() => ([
         { key: 'home', label: t('nav.home'), path: '/', icon: <HomeIcon /> },
+        { key: 'journeys', label: t('nav.journeys'), path: '/journeys', icon: <RouteIcon className="w-5 h-5 shrink-0" /> },
         { key: 'builder', label: t('nav.builder'), path: '/builder', icon: <SwordsIcon /> },
         { key: 'pokedex', label: t('nav.pokemonList'), path: '/pokedex', icon: <PokeballIcon /> },
         { key: 'feed', label: t('nav.forum'), path: '/feed', icon: <MessageIcon /> },
@@ -956,8 +967,6 @@ export default function AppLayout() {
                     { key: 'pokepuzzle', label: t('nav.pokepuzzle'), path: '/pokepuzzle', icon: <Puzzle className="w-5 h-5 shrink-0" /> },
                     { key: 'challenge', label: t('nav.challenge'), searchLabel: t('nav.challengeSearch'), path: '/challenge', icon: <Crown className="w-5 h-5 shrink-0" /> },
                     { key: 'generationQuiz', label: t('nav.quiz'), path: '/quiz', icon: <SuccessToastIcon /> },
-                    { key: 'categoryGuesser', label: t('nav.pokequiz'), path: '/guesser', icon: <Brain className="w-5 h-5 shrink-0" /> },
-                    { key: 'pokeroom', label: 'PokéRoom', path: '/pokeroom', icon: <Users className="w-5 h-5 shrink-0" /> },
                 ]
             },
             {
@@ -1402,6 +1411,10 @@ export default function AppLayout() {
             <SessionTransition />
 
             <ToastStack />
+
+            {/* The mission guide. Steps aside on the screens that own the whole
+                viewport: the Champion's console and a battle in progress. */}
+            <JourneyCoach hidden={currentPage === 'challenge' || location.pathname.startsWith('/battles/')} />
 
             {/* Sidebar Shell Layout */}
             <div className="app-shell">
@@ -1866,20 +1879,18 @@ export default function AppLayout() {
                                             }}
                                         />
                                     } />
-                                     <Route path="/pokeroom" element={<SecretRoomGuesserView />} />
-                                     <Route path="/pokeroom/:roomId" element={<SecretRoomGuesserView />} />
-                                     <Route path="/guesser" element={
-                                         <CategoryGuesserView
-                                             showDetails={showDetails}
-                                             showToast={showToast}
-                                         />
-                                     } />
-                                     <Route path="/quiz" element={
-                                        <GenerationQuizView
+                                    {/* One Quiz, two modes. The old PokéQuiz (/guesser) is its
+                                        "categories" mode; PokéRoom left on 2026-10-17, and its
+                                        links land on the Quiz rather than on a 404. */}
+                                    <Route path="/quiz" element={
+                                        <QuizView
                                             showDetails={showDetails}
                                             showToast={showToast}
                                         />
                                     } />
+                                    <Route path="/guesser" element={<Navigate to="/quiz?tab=categories" replace />} />
+                                    <Route path="/journeys" element={<JourneysView />} />
+                                    <Route path="/pokeroom/*" element={<Navigate to="/quiz" replace />} />
                                     <Route path="/pokepuzzle" element={
                                         <PokePuzzleView />
                                     } />
@@ -1964,7 +1975,7 @@ export default function AppLayout() {
                         </div>
                     </main>
 
-                    {currentPage !== 'feed' && currentPage !== 'generationQuiz' && currentPage !== 'secretRoom' && !location.pathname.startsWith('/pokeroom') && (
+                    {currentPage !== 'feed' && currentPage !== 'generationQuiz' && (
                         <footer className="app-shell__footer">
                             <div className="app-shell__footer-row">
                                 <div className="app-shell__footer-credit">

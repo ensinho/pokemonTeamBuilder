@@ -1,0 +1,75 @@
+/* The mascot (components/Mascot.jsx) and its speech bubble.
+
+   The bubble is a fill, never a box: inside a card it takes the raised
+   surface, on the page the plain one — the parent owns any edge. Its tail is
+   a small rotated square of the same fill, pointing at the mascot. */
+
+.mascot {
+    display: block;
+    flex-shrink: 0;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.mascot--xs { width: 1.5rem; height: 1.5rem; }
+.mascot--sm { width: 2.25rem; height: 2.25rem; }
+.mascot--md { width: 3rem; height: 3rem; }
+.mascot--lg { width: 4rem; height: 4rem; }
+
+/* One hop for a moment the trainer earned — a reward, so it may spring. */
+.mascot.is-cheering { animation: mascot-cheer var(--duration-pop, 320ms) var(--ease-spring, ease-out) 1; }
+
+@keyframes mascot-cheer {
+    0%   { translate: 0 0; scale: 1; }
+    40%  { translate: 0 calc(var(--space-2) * -1); scale: 1.06; }
+    100% { translate: 0 0; scale: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .mascot.is-cheering { animation: none; }
+}
+
+.mascot-tip {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.mascot-tip__bubble {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    background: var(--bubble-fill, var(--color-surface));
+    font-size: var(--text-sm);
+    line-height: var(--leading-normal);
+    color: var(--color-fg-secondary);
+}
+
+.mascot-tip__bubble::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--space-1) * -1);
+    bottom: var(--space-3);
+    width: var(--space-2_5);
+    height: var(--space-2_5);
+    border-radius: var(--space-0_5);
+    background: inherit;
+    rotate: 45deg;
+}
+
+.mascot-tip__bubble > :first-child { margin-top: 0; }
+.mascot-tip__bubble > :last-child { margin-bottom: 0; }
+
+.mascot-tip__bubble strong {
+    display: block;
+    margin-bottom: var(--space-0_5);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+/* Inside a card the bubble is the raised fill (no box in a box). */
+:where(.card, .modal-panel) .mascot-tip { --bubble-fill: var(--color-surface-raised); }

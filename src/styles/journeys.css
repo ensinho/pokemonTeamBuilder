@@ -1,0 +1,547 @@
+/* ============================================================================
+   Journeys (2026-10-17) — levels, missions, the badge gallery and the guide.
+   One card per level owns the border; everything inside it separates with
+   fill (the never-nest-a-border rule). The pending mission's mark is the one
+   dashed line here, because dashed means "not there yet". One accent: the
+   current level's ring and its filled tile; done is the success tone.
+   ============================================================================ */
+
+/* ---- The page -------------------------------------------------------------- */
+
+.journeys-view {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    width: 100%;
+    max-width: 52rem;
+    margin: 0 auto;
+    min-width: 0;
+}
+
+.journeys-view__lead { max-width: 40rem; }
+
+.badge-unlock__tip { width: 100%; margin-top: var(--space-2); text-align: left; }
+
+.journeys-view__stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+}
+
+.journeys-view__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    text-align: center;
+}
+
+.journeys-view__stat-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--color-primary);
+}
+
+.journeys-view__stat-value {
+    order: 1;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: var(--tracking-heading);
+    color: var(--color-fg);
+}
+
+.journeys-view__stat-label {
+    order: 2;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+@media (min-width: 640px) {
+    .journeys-view__tabs { align-self: flex-start; width: auto; }
+}
+
+/* ---- A level ------------------------------------------------------------- */
+
+.journey-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+/* The level being played wears the ring (a ring, never a border: a border
+   would resize the card when the level changes). */
+.journey.is-current { box-shadow: var(--ring-primary); }
+
+.journey__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    padding: var(--space-4);
+    border: none;
+    border-radius: inherit;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.journey__head:hover { background: var(--color-surface-hover); }
+.journey__head:active { background: var(--color-surface-active); }
+
+.journey__head[aria-expanded='true'] { border-end-start-radius: 0; border-end-end-radius: 0; }
+
+/* The tile: muted until it is the level being played; the earned emblem
+   once it is done (the reward, shown where the level is). */
+.journey__tile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    flex-shrink: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+}
+
+.journey__tile svg { width: 1.375rem; height: 1.375rem; }
+
+.journey__tile.is-current {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.journey__tile.is-earned { background: transparent; }
+.journey__tile.is-earned svg { width: 3rem; height: 3rem; }
+
+.journey__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.journey__level {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.journey__title {
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+    letter-spacing: -0.02em;
+    color: var(--color-fg);
+}
+
+.journey__sub {
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    color: var(--color-fg-secondary);
+}
+
+.journey__count {
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg-secondary);
+}
+
+.journey.is-complete .journey__count { color: var(--color-success); }
+
+.journey__chevron {
+    width: 1.125rem;
+    height: 1.125rem;
+    color: var(--color-muted);
+    transition: transform var(--duration-fast) var(--ease-smooth);
+}
+
+.journey__head[aria-expanded='true'] .journey__chevron { transform: rotate(180deg); }
+
+.journey__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: 0 var(--space-4) var(--space-4);
+}
+
+/* A value bar, not a surface: thin, one fill. */
+.journey__bar {
+    display: block;
+    height: 0.375rem;
+    overflow: hidden;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+}
+
+.journey__bar > i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--color-primary);
+    transition: inline-size var(--duration-slow) var(--ease-out);
+}
+
+.journey.is-complete .journey__bar > i { background: var(--color-success); }
+
+.journey__missions {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.journey__reward {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.journey__reward strong { font-weight: var(--weight-semibold); color: var(--color-fg); }
+
+.journey__reward-icon {
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+.journey__reward.is-earned .journey__reward-icon { filter: none; opacity: 1; }
+
+/* ---- A mission ----------------------------------------------------------- */
+
+.mission {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--space-3);
+    width: 100%;
+    min-height: 3.5rem;
+    padding: var(--space-3);
+    border: none;
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+button.mission {
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+button.mission:hover { background: var(--color-surface-hover); }
+button.mission:active { background: var(--color-surface-active); }
+
+.mission.is-done {
+    grid-template-columns: auto minmax(0, 1fr);
+    background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface-raised));
+}
+
+.mission__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    border: 2px dashed var(--color-border-strong);
+    border-radius: var(--radius-full);
+}
+
+.mission.is-done .mission__mark {
+    border: none;
+    background: var(--color-success);
+    color: var(--color-on-primary);
+}
+
+.mission__mark svg { width: 0.875rem; height: 0.875rem; }
+
+.mission__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.mission__title {
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    color: var(--color-fg);
+}
+
+.mission__sub {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    color: var(--color-muted);
+}
+
+.mission.is-done .mission__title { color: var(--color-fg-secondary); }
+.mission.is-done .mission__sub { color: var(--color-success); }
+
+.mission__go {
+    width: 1rem;
+    height: 1rem;
+    color: var(--color-muted);
+}
+
+/* ---- Home's journey card -------------------------------------------------- */
+
+.journey-home {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.journey-home__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* ---- The badge gallery ---------------------------------------------------- */
+
+.badge-gallery {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.badge-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.badge-group__count {
+    font-family: var(--font-mono);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg-secondary);
+}
+
+.badge-group__sub {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.badge-group__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: var(--space-2);
+    margin: var(--space-2) 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.badge-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3) var(--space-2);
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.badge-tile:hover { background: var(--color-surface-hover); }
+.badge-tile:active { background: var(--color-surface-active); }
+
+.badge-tile.is-equipped { box-shadow: var(--ring-primary); }
+
+.badge-tile__emblem {
+    display: inline-flex;
+    width: 3.5rem;
+    height: 3.5rem;
+}
+
+.badge-tile__emblem svg { width: 100%; height: 100%; }
+
+/* A badge still to earn: its shape in grey. The colour is the reward. */
+.badge-tile:not(.is-unlocked) .badge-tile__emblem {
+    filter: grayscale(1);
+    opacity: 0.4;
+}
+
+.badge-tile__name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-snug);
+    text-align: center;
+    color: var(--color-fg);
+}
+
+.badge-tile:not(.is-unlocked) .badge-tile__name { color: var(--color-muted); }
+
+/* ---- One badge up close ---------------------------------------------------- */
+
+.badge-detail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    text-align: center;
+}
+
+.badge-detail__emblem {
+    display: inline-flex;
+    width: 6rem;
+    height: 6rem;
+    margin-bottom: var(--space-2);
+}
+
+.badge-detail__emblem svg { width: 100%; height: 100%; }
+
+.badge-detail__emblem.is-locked {
+    filter: grayscale(1);
+    opacity: 0.4;
+}
+
+.badge-detail__progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    width: 100%;
+    margin-top: var(--space-2);
+}
+
+.badge-detail__figure {
+    font-size: var(--text-sm);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+/* ---- The guide ------------------------------------------------------------ */
+
+/* Floats over the page: on a phone above the dock, on a desktop in the
+   bottom corner (toasts take the top one there). It earns its shadow — it
+   genuinely floats — and draws its edge inside, like the dock. */
+.journey-coach {
+    position: fixed;
+    z-index: var(--z-sticky);
+    right: var(--space-4);
+    left: var(--space-4);
+    bottom: calc(
+        var(--app-shell-tab-height, 3.5rem) + var(--space-1_5) * 2
+        + max(var(--space-3), calc(env(safe-area-inset-bottom, 0px) - var(--space-2)))
+        + var(--space-2)
+    );
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-elevated);
+    box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--color-border);
+    animation: journey-coach-in var(--duration-slow) var(--ease-out);
+}
+
+@media (min-width: 1024px) {
+    .journey-coach {
+        left: auto;
+        right: var(--space-6);
+        bottom: var(--space-6);
+        width: min(24rem, calc(100vw - var(--space-12)));
+    }
+}
+
+@keyframes journey-coach-in {
+    from { opacity: 0; translate: 0 var(--space-2); }
+    to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .journey-coach { animation: none; }
+}
+
+.journey-coach__mark {
+    position: relative;
+    display: inline-flex;
+}
+
+/* A done mission: a success check pinned to the mascot's corner. */
+.journey-coach__check {
+    position: absolute;
+    right: calc(var(--space-1) * -1);
+    bottom: calc(var(--space-1) * -1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: var(--radius-full);
+    background: var(--color-success);
+    color: var(--color-on-primary);
+    box-shadow: 0 0 0 2px var(--color-surface-elevated);
+}
+
+.journey-coach__check svg { width: 0.75rem; height: 0.75rem; }
+
+.journey-coach__text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.journey-coach__eyebrow {
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.journey-coach.is-done .journey-coach__eyebrow {
+    font-weight: var(--weight-semibold);
+    color: var(--color-success);
+}
+
+.journey-coach__title {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+    color: var(--color-fg);
+}
+
+.journey-coach__hint {
+    margin-top: var(--space-1);
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    color: var(--color-fg-secondary);
+}
+
+.journey-coach__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+}

@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { db } from '../services/firebase';
 import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
-import { useAuthStore } from './useAuthStore';
+import { markJourney, useAuthStore } from './useAuthStore';
 import { CATEGORY_LISTS } from '../data/categoryListsData';
 
 const LOCAL_STORAGE_PREFIX = 'pokeQuizRun:';
@@ -255,6 +255,8 @@ export const useCategoryGuesserStore = create((set, get) => {
 
             const currentRun = quizRuns[runIndex];
             const foundCount = foundNamesArray.length;
+            // A right answer, not an opened page, is what the journey counts.
+            if (foundCount > 0) markJourney('quizGuess');
             const isComplete = foundCount === currentRun.totalCount;
 
             const accuracyPercent = foundCount + invalidGuesses > 0

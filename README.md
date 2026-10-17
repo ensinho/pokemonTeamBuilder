@@ -65,7 +65,7 @@ Challenge friends to turn-based battles. Play each move on your own schedule and
 <img src="https://api.iconify.design/lucide/gamepad-2.svg?color=%237C6AE8" width="28" alt="">
 
 **Games**<br/>
-PokéPuzzle (a daily guessing challenge), PokéQuiz, PokéRoom multiplayer, a generation quiz and a random team generator.
+PokéPuzzle (a daily guessing challenge), the Quiz (by generation or by official category), the daily Champion Challenge and a random team generator. Journeys (`/journeys`) teach the app level by level and reward each one with a badge.
 
 </td>
 <td width="50%" valign="top">

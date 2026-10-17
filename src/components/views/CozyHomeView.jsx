@@ -36,7 +36,9 @@ import { PcBox } from '../PcBox';
 import { Sprite } from '../Sprite';
 import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
-import { Loader } from '../Loader';
+import { JourneyBar, JourneyList, JourneyTile, MissionRow } from '../journeys/JourneyList';
+import { currentJourney } from '../../utils/journeys';
+import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import '../../styles/cozy-home.css';
 
@@ -50,7 +52,10 @@ import '../../styles/cozy-home.css';
  */
 
 const PERIOD_PARTNER = { morning: 196, afternoon: 25, evening: 197, night: 197 };
-const TABS = ['today', 'teams', 'meta', 'community'];
+// Meta left the tabs on 2026-10-17 for the trainer's journey: Home guides
+// what you do here first; the meta stays one tap away (its card in "Your
+// day", the format chip, the rail).
+const TABS = ['today', 'journey', 'teams', 'community'];
 
 const displayName = (name = '') =>
     name.split('-').filter(Boolean).map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ');
@@ -131,8 +136,8 @@ export function CozyHomeView({
     const [tab, setTab] = useState('today');
 
     const { userId, streak, isAnonymous } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous })));
-    const { badges, equippedBadge } = useTrainerBadges();
-    const { ranked: metaRanked, format: metaFormat, status: metaStatus } = useMetaUsage();
+    const { badges, equippedBadge, journeys } = useTrainerBadges();
+    const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
     const puzzle = useDailyPuzzle(userId);
     const challenge = useChallengeSummary(userId, isAnonymous);
     const challengeLine = (c) => {
@@ -525,7 +530,7 @@ export function CozyHomeView({
                 )}
 
                 <button type="button" className="card card--interactive cozy-day__card cozy-day__card--compact" style={{ '--day-tone': 'var(--color-warning)' }}
-                    onClick={() => navigate('/profile')}>
+                    onClick={() => navigate('/journeys?tab=badges')}>
                     <span className="cozy-day__head">
                         <span className="cozy-day__tile cozy-day__tile--badge" aria-hidden="true">
                             {nextBadge ? <nextBadge.Icon /> : <Sparkles />}
@@ -703,39 +708,45 @@ export function CozyHomeView({
         );
     };
 
-    const metaPanel = (
+    // ── The journey ─────────────────────────────────────────────────────────
+    // The level being played and what is left in it, each mission a button
+    // that goes and does it — the onboarding a new trainer meets first, and
+    // the next step for everyone else until all five levels are done.
+    const level = currentJourney(journeys);
+    const isBrandNew = level?.level === 1 && level.doneCount === 0;
+    const seeJourneys = (
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/journeys')}>
+            {t('journeys.home.seeAll')} <ChevronRight aria-hidden="true" />
+        </button>
+    );
+    const journeyCard = level && (
         <Panel
-            card={false}
-            title={t('cozyHome.metaTitle')}
-            meta={metaFormat?.label}
-            action={(
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/meta')}>
-                    {t('cozyHome.seeMeta')} <ChevronRight aria-hidden="true" />
-                </button>
-            )}
+            title={t('journeys.home.title')}
+            meta={t('journeys.home.meta', { n: level.level, total: journeys.length })}
+            action={seeJourneys}
         >
-            {metaRanked.length === 0 ? (
-                metaStatus === 'loading'
-                    ? <Loader size="sm" label={t('cozyHome.metaEmpty')} block />
-                    : <EmptyState compact title={t('cozyHome.metaTitle')} message={t('cozyHome.metaEmpty')} />
-            ) : (
-                <ol className="data-list cozy-meta">
-                    {metaRanked.slice(0, 8).map((row, i) => {
-                        const type = typesById.get(row.id)?.[0] || 'normal';
-                        return (
-                            <li key={row.id} className="data-list__row cozy-meta__row" style={{ '--row-type': typeColors[type] }}>
-                                <span className="data-list__num cozy-meta__rank">{i + 1}</span>
-                                <Sprite src={dexSprite(row.id)} className="cozy-meta__sprite" />
-                                <span className="cozy-meta__name">{displayName(row.name)}</span>
-                                <span className="cozy-meta__bar" aria-hidden="true">
-                                    <i style={{ inlineSize: `${Math.min(100, (row.count / Math.max(1, metaRanked[0].count)) * 100)}%` }} />
-                                </span>
-                                <span className="data-list__num cozy-meta__pct">{row.count}%</span>
-                            </li>
-                        );
-                    })}
+            <div className="journey-home">
+                {isBrandNew && <MascotTip>{t('journeys.home.welcome')}</MascotTip>}
+                <div className="journey-home__head">
+                    <JourneyTile journey={level} isCurrent />
+                    <span className="journey__text">
+                        <span className="journey__title">{t(`journeys.list.${level.id}.title`)}</span>
+                        <span className="journey__sub">{t(`journeys.list.${level.id}.sub`)}</span>
+                    </span>
+                    <span className="journey__count">{level.doneCount}/{level.total}</span>
+                </div>
+                <JourneyBar percent={level.percent} />
+                <ol className="journey__missions">
+                    {level.missions.filter((m) => !m.done).slice(0, 3).map((mission) => (
+                        <MissionRow key={mission.id} mission={mission} />
+                    ))}
                 </ol>
-            )}
+            </div>
+        </Panel>
+    );
+    const journeyTab = (
+        <Panel card={false} title={t('journeys.title')} meta={t('journeys.subtitle')} action={seeJourneys}>
+            <JourneyList journeys={journeys} />
         </Panel>
     );
 
@@ -746,9 +757,9 @@ export function CozyHomeView({
     // A guest's invitation to an account, right under the hero on a phone and at
     // the top of the rail on desktop. Renders nothing for an account holder.
     const guestCard = <GuestAccountCard variant="home" />;
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{yourDay}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyCard}{yourDay}{journeyPanel}</> : <>{hero}{journeyCard}{yourDay}{teamsPanel(3)}</>;
+    else if (tab === 'journey') main = journeyTab;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 8);
-    else if (tab === 'meta') main = metaPanel;
     else main = communityPanel(5);
 
     return (

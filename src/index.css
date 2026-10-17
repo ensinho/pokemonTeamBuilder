@@ -561,7 +561,7 @@
         .battle-panel, .battle-header, .edv-header, .edv-section,
         .forum-right-card, .forum-new-topic-card, .friends-invite,
         .pdv__identity, .pdv__panel, .profile-hero, .profile-card,
-        .dmg-card, .dmg-result, .trn-card, .pokeroom__panel
+        .dmg-card, .dmg-result, .trn-card
     ) {
         box-shadow: var(--surface-sheen);
     }
