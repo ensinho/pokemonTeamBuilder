@@ -24,6 +24,7 @@ import { ShellNavGroup } from './ShellNavGroup';
 import ToastStack from './ToastStack';
 import { ThemeToggle } from './ThemeToggle';
 import { getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
+import { storedFormFields, withUniqueInstanceIds } from '../utils/teamSerialization';
 import { trainerSpriteUrl } from '../hooks/useTrainerSprites';
 import { GengarPresence } from './GengarPresence';
 import { getStaticPokemonDetail } from '../services/pokemonDataCache';
@@ -371,8 +372,9 @@ export default function AppLayout() {
         handleShareTeam, editingTeamMember, setEditingTeamMember, shareModal,
         closeShareModal, handleUpdateTeamMember, suggestedPokemonIds, teamAnalysis,
         setCurrentTeam, shareTeamByData, handleAddPokemon, setEditingTeamId,
-        handleRandomizeTeam, isRandomizing
+        handleRandomizeTeam, isRandomizing, importTeam
     } = useActiveTeam();
+    const speciesClause = useActiveTeamStore((s) => s.speciesClause);
 
     const {
         favoritePokemons, handleToggleFavoritePokemon, deleteConfirmation,
@@ -985,7 +987,13 @@ export default function AppLayout() {
     // Available Pokemons & Recent Teams computations
     const availablePokemons = useMemo(() => {
         const teamIds = new Set(currentTeam.map(p => p.id));
-        const available = pokedex.pokemons.filter(p => !teamIds.has(p.id));
+        // Under the Species Clause (a competitive builder) by species, not by id:
+        // with Dragonite on the team the picker kept offering Mega Dragonite (its
+        // own id), which the store refuses. `baseId` is on every form entry.
+        const teamSpecies = new Set(currentTeam.map(p => p.speciesId || p.baseId || p.id));
+        const available = pokedex.pokemons.filter(p => (speciesClause
+            ? !teamSpecies.has(p.baseId || p.id)
+            : !teamIds.has(p.id)));
 
         const indexMap = new Map(pokedex.pokemons.map((p, idx) => [p.id, idx]));
 
@@ -999,7 +1007,7 @@ export default function AppLayout() {
             const bIndex = indexMap.get(b.id) ?? 0;
             return aIndex - bIndex;
         });
-    }, [pokedex.pokemons, currentTeam, suggestedPokemonIds]);
+    }, [pokedex.pokemons, currentTeam, suggestedPokemonIds, speciesClause]);
 
     const recentTeams = useMemo(() => {
         return [...savedTeams]
@@ -1067,12 +1075,13 @@ export default function AppLayout() {
                     };
                     return {
                         ...detail,
+                        ...storedFormFields(savedPokemonData),
                         instanceId: savedPokemonData.instanceId || `${detail.id}-${Date.now()}-${i}`,
                         customization: { ...defaultCustomization, ...(savedPokemonData.customization || {}) },
                     };
                 });
 
-                setCurrentTeam(customizedTeam.filter(Boolean));
+                setCurrentTeam(withUniqueInstanceIds(customizedTeam.filter(Boolean)));
                 setTeamName(teamData.name);
                 dismissToast(loadingId);
                 showToast(t('layout.loadedSharedTeam', { name: teamData.name }), 'success');
@@ -1122,18 +1131,30 @@ export default function AppLayout() {
 
             return {
                 ...detail,
+                ...storedFormFields(savedPokemonData),
                 instanceId: savedPokemonData.instanceId,
                 customization: { ...defaultCustomization, ...savedPokemonData.customization }
             };
         }).filter(Boolean);
 
-        setCurrentTeam(customizedTeam);
+        setCurrentTeam(withUniqueInstanceIds(customizedTeam));
         setTeamName(team.name);
         setEditingTeamId(team.id);
         navigate('/builder');
         setIsSidebarOpen(false);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, [fetchPokemonDetails, showToast, navigate, setCurrentTeam, setTeamName, setEditingTeamId]);
+
+    // A tournament roster. It must not go through handleEditTeam: that path reads
+    // `customization` and `instanceId` off each member, and a tournament set has
+    // neither — every set came out blank and all six shared one id.
+    const handleImportTeam = useCallback(async (team) => {
+        const loaded = await importTeam(team);
+        if (!loaded) return;
+        navigate('/builder');
+        setIsSidebarOpen(false);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, [navigate, importTeam]);
 
     // Duplicate a saved team, then offer to open the copy in the builder. The
     // toast action (rather than an automatic redirect) keeps the user wherever
@@ -1759,10 +1780,10 @@ export default function AppLayout() {
                                     <Route path="/items" element={<ItemsListView />} />
                                     <Route path="/items/:name" element={<ItemDetailView />} />
                                     <Route path="/tournaments" element={
-                                        <TournamentsView db={db} onOpenTeam={handleEditTeam} />
+                                        <TournamentsView db={db} onOpenTeam={handleImportTeam} />
                                     } />
                                     <Route path="/tournaments/team/:id" element={
-                                        <TournamentTeamView onImport={handleEditTeam} colors={colors} />
+                                        <TournamentTeamView onImport={handleImportTeam} colors={colors} />
                                     } />
                                     <Route path="/meta" element={<MetaUsageView />} />
                                     <Route path="/meta/:idOrName" element={<PokemonUsageView />} />

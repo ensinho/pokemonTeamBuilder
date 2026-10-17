@@ -230,6 +230,19 @@ describe('buildBattleTeamText', () => {
         expect(errors).toEqual([]);
         expect(text.split('\n\n')).toHaveLength(2);
     });
+
+    it('feeds the battle engine a Stat Points spread as EVs', () => {
+        const champion = mon('garchomp', ['earthquake']);
+        champion.customization = { ...champion.customization, evScale: 'sp', evs: { hp: 2, attack: 32, speed: 32 } };
+        const { text } = buildBattleTeamText([champion]);
+        expect(text).toContain('EVs: 12 HP / 252 Atk / 252 Spe');
+    });
+
+    it('names a member by its exact form through the species index', () => {
+        const member = { ...mon('rotom', ['hydro-pump']), id: 10009 };
+        const entryById = (id) => (id === 10009 ? { apiName: 'rotom-wash' } : null);
+        expect(buildBattleTeamText([member], { entryById }).text.split('\n')[0]).toBe('Rotom-Wash');
+    });
 });
 
 describe('battleAttentionNotice', () => {

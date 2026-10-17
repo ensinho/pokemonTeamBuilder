@@ -3,9 +3,15 @@ import { db } from '../services/firebase';
 import { doc, collection, setDoc } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
 import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl, getTeamPokemonDisplaySprite } from '../utils/pokemonSprites';
-import { resolvePokemonDetail } from '../services/pokemonDataCache';
+import { resolvePokemonDetail, resolvePokemonDetailByName } from '../services/pokemonDataCache';
+import { ensureSpeciesIndex, getSpeciesIndex } from '../services/speciesIndex';
 import { analyzeTeam } from '../utils/teamAnalysis';
 import { buildShowdownExportText as buildShowdownText } from '../utils/showdownExport';
+import { buildTeamMembers } from '../utils/teamImport';
+import { newInstanceId, serializeTeam } from '../utils/teamSerialization';
+import { speciesIdOf, wouldDuplicateSpecies } from '../utils/teamUniqueness';
+import { convertSpread } from '../utils/statPoints';
+import { isPlaythroughMode } from '../constants/regulations';
 import { competitivePresetFor } from '../utils/loadCompetitivePreset';
 import { markJourney, useAuthStore } from './useAuthStore';
 import { toast } from './useToastStore';
@@ -47,15 +53,15 @@ const writeClipboard = async (text) => {
     }
 };
 
-// Monotonic counter so instanceIds stay unique even when several members are
-// created within the same millisecond (e.g. the randomizer building 6 at once).
-let teamMemberSeq = 0;
-
 // Build a fully-formed team member from a resolved Pokémon record. When a
 // competitive `preset` patch is supplied, the member arrives pre-filled with the
 // most-used meta build (item / ability / nature / Tera / moves / EVs); otherwise
 // it gets the blank default. Shared by handleAddPokemon and handleRandomizeTeam.
-const createTeamMember = (fullPokemon, preset = null) => {
+//
+// `scale` is the spread scale of the team it joins: a Pokémon added to a Stat
+// Points team (an imported Pokémon Champions one) is built in Stat Points too,
+// so the paste never mixes 252s with a 66-point budget.
+const createTeamMember = (fullPokemon, preset = null, scale = 'ev') => {
     const base = {
         item: '',
         nature: 'serious',
@@ -66,23 +72,42 @@ const createTeamMember = (fullPokemon, preset = null) => {
         evs: { hp: 0, attack: 0, defense: 0, 'special-attack': 0, 'special-defense': 0, speed: 0 },
         ivs: { hp: 31, attack: 31, defense: 31, 'special-attack': 31, 'special-defense': 31, speed: 31 },
     };
+    // The preset is mined per base species, so it can name an ability or a move
+    // this exact Pokémon does not have — Mold Breaker is Mega Gyarados's, and a
+    // paste of "Gyarados @ Gyaradosite / Ability: Mold Breaker" is rejected by
+    // Showdown. Keep only what the resolved record confirms; with no record to
+    // check against (still the list entry), take the preset as it is.
+    const ownAbilities = new Set((fullPokemon.abilities || []).map((a) => a?.name).filter(Boolean));
+    const learnable = new Set((fullPokemon.moves || []).map((m) => m?.name).filter(Boolean));
+    const presetAbility = [preset?.ability, ...(preset?.abilities || [])]
+        .find((ability) => ability && (ownAbilities.size === 0 || ownAbilities.has(ability)));
+    const presetMoves = (preset?.moves || []).filter((move) => learnable.size === 0 || learnable.has(move)).slice(0, 4);
     const customization = preset
         ? {
             ...base,
             item: preset.item ?? base.item,
-            ability: preset.ability || base.ability,
+            ability: presetAbility || base.ability,
             nature: preset.nature || base.nature,
             teraType: preset.teraType || base.teraType,
-            moves: preset.moves?.length ? preset.moves.slice(0, 4) : base.moves,
+            moves: presetMoves.length ? presetMoves : base.moves,
             evs: preset.evs ? { ...base.evs, ...preset.evs } : base.evs,
         }
         : base;
+    if (scale === 'sp') {
+        customization.evs = convertSpread(customization.evs, 'ev', 'sp');
+        customization.evScale = 'sp';
+    }
     return {
         ...fullPokemon,
-        instanceId: `${fullPokemon.id}-${Date.now()}-${teamMemberSeq++}`,
+        // What the Species Clause compares — a form counts as its base species.
+        speciesId: speciesIdOf(fullPokemon, getSpeciesIndex().baseIdOf) ?? fullPokemon.id,
+        instanceId: newInstanceId(fullPokemon.id),
         customization,
     };
 };
+
+// A team is in Stat Points when every member already on it is.
+const teamScale = (team) => (team.length > 0 && team.every((m) => m?.customization?.evScale === 'sp') ? 'sp' : 'ev');
 
 // Adds still resolving their full record (see handleAddPokemon). Saving waits
 // for them, so a team saved right after a tap is not stored half-built.
@@ -106,28 +131,6 @@ const getMegaStones = async () => {
     return {};
 };
 
-const serializeTeamPokemon = (pokemon, megaStones = null) => {
-    const item = pokemon?.customization?.item;
-    const mega = (item && megaStones) ? megaStones[item] : null;
-    const isMega = mega && mega.baseId === pokemon.id;
-    
-    const spriteId = isMega ? mega.spriteId : pokemon.id;
-    const displayName = isMega ? megaDisplayName(mega.form) : pokemon.name;
-    const types = (isMega && mega?.types) ? mega.types : (pokemon?.types || []);
-
-    return {
-        id: pokemon.id,
-        name: displayName,
-        types,
-        sprite: getPokemonArtworkSpriteUrl(spriteId),
-        shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
-        animatedSprite: getPokemonFrontSpriteUrl(spriteId),
-        animatedShinySprite: getPokemonFrontSpriteUrl(spriteId, { shiny: true }),
-        instanceId: pokemon.instanceId,
-        customization: pokemon.customization || {},
-    };
-};
-
 // Pre-Fairy (Gen 2–5) analysis, for playthroughs of older games. Per device,
 // like the builder's other view settings.
 const LEGACY_TYPES_KEY = 'ptb-legacy-types';
@@ -135,9 +138,19 @@ const readLegacyTypes = () => {
     try { return localStorage.getItem(LEGACY_TYPES_KEY) === '1'; } catch (_) { return false; }
 };
 
+// Species Clause (one of each species, forms and Megas included) is a
+// competitive rule, so it holds only while the builder is paired with a
+// regulation; playthrough mode allows repeats, as the games do. TeamBuilderView
+// owns that choice (`tb-regulation`) and keeps this in step; the first read is
+// for an import that lands before the builder has mounted.
+const readSpeciesClause = () => {
+    try { return !isPlaythroughMode(localStorage.getItem('tb-regulation')); } catch (_) { return true; }
+};
+
 export const useActiveTeamStore = create((set, get) => ({
     currentTeam: [],
     legacyTypes: readLegacyTypes(),
+    speciesClause: readSpeciesClause(),
     teamName: '',
     editingTeamId: null,
     teamAnalysis: { strengths: new Set(), weaknesses: {}, defensiveCoverage: {} },
@@ -181,11 +194,26 @@ export const useActiveTeamStore = create((set, get) => ({
         get().recalculateAnalysis();
     },
 
+    setSpeciesClause: (on) => set({ speciesClause: Boolean(on) }),
+
     handleAddPokemon: async (pokemon) => {
         if (get().currentTeam.length >= 6) {
             toast.warning(t('toast.teamFull'), {
                 description: t('toast.teamFullDesc'),
                 actions: openBuilderAction(),
+            });
+            return;
+        }
+
+        // Species Clause, competitive builder only. Checked against the slots
+        // already filled — a placeholder from a tap still resolving counts, so a
+        // double tap cannot slip a second one in. Kicking the index load here
+        // keeps the form lookups warm.
+        ensureSpeciesIndex();
+        if (get().speciesClause && wouldDuplicateSpecies(get().currentTeam, pokemon, getSpeciesIndex().baseIdOf)) {
+            toast.warning(t('toast.speciesClause'), {
+                key: 'species-clause',
+                description: t('toast.speciesClauseDesc'),
             });
             return;
         }
@@ -202,7 +230,8 @@ export const useActiveTeamStore = create((set, get) => ({
         // more on a phone, which read as the tap not registering. It also
         // captured `currentTeam` before the await, so a second tap during that
         // wait overwrote the first Pokémon instead of adding beside it.
-        const placeholder = createTeamMember(pokemon);
+        const scale = teamScale(get().currentTeam);
+        const placeholder = createTeamMember(pokemon, null, scale);
         const { instanceId } = placeholder;
         set((state) => ({ currentTeam: [...state.currentTeam, placeholder] }));
         get().recalculateAnalysis();
@@ -226,7 +255,7 @@ export const useActiveTeamStore = create((set, get) => ({
                 fullPokemon = { ...pokemon, ...resolved };
             }
 
-            const complete = createTeamMember(fullPokemon, await setPromise);
+            const complete = createTeamMember(fullPokemon, await setPromise, scale);
             set((state) => {
                 const current = state.currentTeam.find((m) => m.instanceId === instanceId);
                 // Removed, cleared or replaced by the randomizer while we waited.
@@ -267,7 +296,7 @@ export const useActiveTeamStore = create((set, get) => ({
     handleRandomizeTeam: async (pool, count = 6) => {
         if (get().isRandomizing) return;
         const seen = new Set();
-        const candidates = [];
+        let candidates = [];
         for (const p of Array.isArray(pool) ? pool : []) {
             if (p && p.id != null && !seen.has(p.id)) {
                 seen.add(p.id);
@@ -279,15 +308,23 @@ export const useActiveTeamStore = create((set, get) => ({
             return;
         }
 
-        // Partial Fisher–Yates: pick `count` distinct entries without a full shuffle.
-        const picks = [];
-        for (let i = 0; i < count && candidates.length > 0; i += 1) {
-            const j = Math.floor(Math.random() * candidates.length);
-            picks.push(candidates.splice(j, 1)[0]);
-        }
-
         set({ isRandomizing: true });
         try {
+            // Partial Fisher–Yates: pick `count` distinct entries without a full
+            // shuffle. Under the Species Clause the pool's forms and Megas are
+            // entries of their own, so a pick also takes its species out.
+            const { baseIdOf } = get().speciesClause ? await ensureSpeciesIndex() : {};
+            const picks = [];
+            while (picks.length < count && candidates.length > 0) {
+                const j = Math.floor(Math.random() * candidates.length);
+                const [pick] = candidates.splice(j, 1);
+                picks.push(pick);
+                if (baseIdOf) {
+                    const species = speciesIdOf(pick, baseIdOf);
+                    candidates = candidates.filter((c) => speciesIdOf(c, baseIdOf) !== species);
+                }
+            }
+
             const resolved = await Promise.all(picks.map(async (pokemon) => {
                 const setPromise = competitivePresetFor(pokemon.id).catch(() => null);
                 let full = pokemon;
@@ -441,12 +478,12 @@ export const useActiveTeamStore = create((set, get) => ({
             return;
         }
 
-        const megaStones = await getMegaStones();
+        const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
         const teamId = editingTeamId || doc(collection(db, `artifacts/${appId}/users/${userId}/teams`)).id;
         const existingTeam = savedTeams?.find(t => t.id === editingTeamId);
         const teamData = {
             name: teamName,
-            pokemons: currentTeam.map(pokemon => serializeTeamPokemon(pokemon, megaStones)),
+            pokemons: serializeTeam(currentTeam, megaStones, baseIdOf),
             isFavorite: existingTeam?.isFavorite || false,
             createdAt: existingTeam?.createdAt || new Date().toISOString(),
             updatedAt: new Date().toISOString()
@@ -475,6 +512,8 @@ export const useActiveTeamStore = create((set, get) => ({
 
     buildShowdownExportText: (teamMembers) => buildShowdownText(teamMembers, {
         includeTeraType: useThemeStore.getState().showTeraType,
+        // Names a member by its exact form even when all it kept was an id.
+        entryById: getSpeciesIndex().entryById,
     }),
 
     copyTextToClipboard: async (text, successMessage) => {
@@ -520,6 +559,74 @@ export const useActiveTeamStore = create((set, get) => ({
         return exportTeamToShowdown(currentTeam, teamName);
     },
 
+    /**
+     * Load someone else's team into the builder as a new one: a tournament
+     * roster, a share link, a forum post. Each member is rebuilt from its full
+     * record with its own instance id, and a tournament set (item, ability,
+     * nature, moves and spread on the member itself, in Showdown's spelling)
+     * keeps all of it. Tournament teams used to go through the saved-team
+     * loader, which reads the `customization`/`instanceId` a set does not have.
+     *
+     * In a competitive builder a repeated species is dropped (first one wins)
+     * and named in the toast. Returns whether anything loaded; navigation is the
+     * caller's.
+     */
+    importTeam: async (team) => {
+        const source = Array.isArray(team?.pokemons) ? team.pokemons.filter(Boolean) : [];
+        if (source.length === 0) {
+            toast.warning(t('toast.importEmpty'));
+            return false;
+        }
+
+        const previous = {
+            currentTeam: get().currentTeam,
+            teamName: get().teamName,
+            editingTeamId: get().editingTeamId,
+            savedSignature: get().savedSignature,
+        };
+
+        try {
+            const { list } = await ensureSpeciesIndex();
+            const result = await buildTeamMembers(
+                team,
+                { pokemonIndex: list, resolveDetail: resolvePokemonDetail, resolveDetailByName: resolvePokemonDetailByName },
+                { mode: 'import', speciesClause: get().speciesClause },
+            );
+            if (result.members.length === 0) throw new Error('No Pokémon could be resolved');
+
+            const name = team.name || t('toast.importedTeamName');
+            set({ currentTeam: result.members, teamName: name, editingTeamId: null, savedSignature: null });
+            get().recalculateAnalysis();
+
+            const notes = [];
+            if (result.dropped.length > 0) {
+                notes.push(t('toast.teamImportDropped', { names: result.dropped.map((m) => prettyPokemonName(m.name)).join(', ') }));
+            }
+            if (result.unresolved.length > 0) {
+                notes.push(t('toast.teamImportPartial', { names: result.unresolved.join(', ') }));
+            }
+            toast.success(t('toast.teamImported', { name }), {
+                key: 'team-imported',
+                description: notes.join(' ') || undefined,
+                // Importing replaces whatever was in the builder; if that was a
+                // team, one tap puts it back.
+                actions: previous.currentTeam.length > 0 ? [{
+                    label: t('toast.undo'),
+                    onClick: () => {
+                        set(previous);
+                        get().recalculateAnalysis();
+                    },
+                }] : [],
+            });
+            return true;
+        } catch (_) {
+            toast.error(t('toast.importFailed'), {
+                actions: [{ label: t('toast.retry'), onClick: () => get().importTeam(team) }],
+            });
+            return false;
+        }
+    },
+
     shareTeamByData: async (teamMembers, providedName = 'Unnamed Team') => {
         const isAuthReady = useAuthStore.getState().isAuthReady;
         if (!db || !isAuthReady) {
@@ -531,7 +638,7 @@ export const useActiveTeamStore = create((set, get) => ({
             return;
         }
 
-        const megaStones = await getMegaStones();
+        const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
         const safeName = providedName || 'Unnamed Team';
         const snippetPokemons = teamMembers.map((member) => {
             const item = member?.customization?.item;
@@ -558,7 +665,7 @@ export const useActiveTeamStore = create((set, get) => ({
         const teamId = doc(collection(db, `artifacts/${appId}/public/data/teams`)).id;
         const teamData = {
             name: safeName,
-            pokemons: teamMembers.map(pokemon => serializeTeamPokemon(pokemon, megaStones)),
+            pokemons: serializeTeam(teamMembers, megaStones, baseIdOf),
             createdAt: new Date().toISOString(),
         };
 

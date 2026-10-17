@@ -32,24 +32,23 @@ export const isRandomBattle = (battle) => battle?.mode === 'random';
 /**
  * Turn a saved team into the Showdown paste the battle engine will import.
  *
- * `buildShowdownExportText` is reused verbatim (it already emits `Level: 50`),
- * but two of its outputs are not battle-safe, both verified against
- * `@pkmn/sim`'s `Teams.import()`:
+ * `buildShowdownExportText` does the formatting; what this adds is what only a
+ * battle cares about, both verified against `@pkmn/sim`'s `Teams.import()`:
  *
- *  1. A member with no held item is exported as `Name @ Nothing`. The parser
- *     keeps that as an item literally called "Nothing", which doesn't exist in
- *     the dex — so the Pokémon would go into battle holding garbage. A real
- *     Showdown paste just omits the `@` part.
- *  2. A member with no moves parses to `moves: []`. In a battle that Pokémon can
+ *  1. A member with no moves parses to `moves: []`. In a battle that Pokémon can
  *     do nothing but Struggle, which is never what the user meant — so this
  *     reports it instead of silently shipping a dud.
+ *  2. A spread written in Stat Points (a Pokémon Champions team) is converted
+ *     to the EVs it is worth. The battles run under a mainline ruleset, where
+ *     "32 Spe" would be read as 32 EVs — a fully invested Pokémon fighting as
+ *     an uninvested one.
  *
- * The export util itself is left alone on purpose: its output is also what the
- * "copy team" feature hands to users, and its tests pin the current format.
+ * `entryById` (the species index lookup) lets a member that only kept its id be
+ * named by its exact form; without it the name stored on the member is used.
  *
  * @returns {{text: string, errors: Array<{name: string, reason: string}>}}
  */
-export const buildBattleTeamText = (teamMembers = []) => {
+export const buildBattleTeamText = (teamMembers = [], { entryById } = {}) => {
     const members = (Array.isArray(teamMembers) ? teamMembers : []).filter(Boolean);
     const errors = [];
 
@@ -64,11 +63,7 @@ export const buildBattleTeamText = (teamMembers = []) => {
         }
     });
 
-    // Drop the placeholder item so the paste is valid Showdown.
-    const text = buildShowdownExportText(members)
-        .split('\n')
-        .map((line) => line.replace(/ @ Nothing$/, ''))
-        .join('\n');
+    const text = buildShowdownExportText(members, { evScale: 'ev', entryById });
 
     return { text, errors };
 };

@@ -120,3 +120,12 @@ describe('applyEvChange', () => {
         expect(next.hp).toBe(6);
     });
 });
+
+describe('Stat Points scale', () => {
+    it('caps at 32 per stat and 66 in total', () => {
+        expect(maxEvFor({}, 'hp', 'sp')).toBe(32);
+        expect(maxEvFor({ attack: 32, speed: 32 }, 'hp', 'sp')).toBe(2);
+        expect(remainingEvs({ attack: 32, speed: 32 }, 'sp')).toBe(2);
+        expect(applyEvChange({ attack: 32, speed: 32 }, 'hp', 252, 'sp').hp).toBe(2);
+    });
+});

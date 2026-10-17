@@ -142,7 +142,7 @@ export function TournamentTeamView({ onImport, colors }) {
                         {onImport && (
                             <button
                                 type="button"
-                                onClick={() => onImport({ name: team.title || team.tournament || 'Tournament Team', pokemons: team.pokemons || [] })}
+                                onClick={() => onImport({ name: team.title || team.tournament || 'Tournament Team', pokemons: team.pokemons || [], evScale: team.evScale })}
                                 className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1 text-xs font-bold text-white transition-all hover:opacity-90 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fg"
                             >
                                 <ShowdownIcon className="h-4 w-4" /> {pt ? 'Importar' : 'Import to builder'}

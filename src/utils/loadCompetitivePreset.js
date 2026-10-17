@@ -79,7 +79,12 @@ export async function competitivePresetFor(id) {
     const spreadSet = smogonSets.find((s) => s.evs && Object.values(s.evs).some((v) => v > 0)) || null;
     if (!usage && !comp && !smogonSet) return null;
 
-    const usedMoves = (usage?.moves || comp?.moves || []).slice(0, 4).map((m) => toSlug(m.name)).filter(Boolean);
+    // Candidates, most used first — more than four, because usage is keyed by base
+    // species: Rotom's list holds Rotom-Wash's Hydro Pump, Gyarados's abilities
+    // lead with Mega Gyarados's Mold Breaker. createTeamMember keeps the first
+    // ones this exact Pokémon can actually have.
+    const usedMoves = (usage?.moves || comp?.moves || []).slice(0, 12).map((m) => toSlug(m.name)).filter(Boolean);
+    const usedAbilities = (usage?.abilities || comp?.abilities || []).map((a) => toSlug(a.name)).filter(Boolean);
     const abilityName = usage?.abilities?.[0]?.name || comp?.abilities?.[0]?.name;
     const teraName = usage?.tera?.[0]?.name || comp?.tera?.[0]?.name || smogonSet?.tera?.[0];
 
@@ -91,6 +96,7 @@ export async function competitivePresetFor(id) {
     return {
         item: usage?.items?.[0]?.slug || comp?.items?.[0]?.slug || smogonSet?.item || '',
         ability: abilityName ? toSlug(abilityName) : (smogonSet?.ability || undefined),
+        abilities: [...usedAbilities, smogonSet?.ability].filter(Boolean),
         nature,
         teraType: teraName ? teraName.toLowerCase() : undefined,
         moves: usedMoves.length ? usedMoves : (smogonSet ? primaryMoves(smogonSet) : []),

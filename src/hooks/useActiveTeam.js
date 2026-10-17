@@ -30,5 +30,6 @@ export function useActiveTeam() {
         buildShowdownExportText: store.buildShowdownExportText,
         shareTeamByData: store.shareTeamByData,
         handleShareTeam: store.handleShareTeam,
+        importTeam: store.importTeam,
     };
 }

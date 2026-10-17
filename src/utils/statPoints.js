@@ -3,8 +3,12 @@
 // first, where 4 EVs already round up. So n SP ↔ 8n − 4 EVs: 32 SP is the
 // familiar 252, and a full 66 SP spends at most 508 of the 510 EV budget.
 //
-// Smogon's Champions sets and usage spreads are written in SP; the app's
-// editor, damage calc and Showdown export all speak EVs.
+// Smogon's Champions sets, usage spreads and tournament pastes are written in
+// SP. A team member keeps its spread in SP when `customization.evScale` is
+// 'sp' (an imported Champions team): Showdown's Champions formats read the
+// `EVs:` line of a paste as Stat Points, so that is how it goes back out. Only
+// the mainline stat formula (the editor's totals, the in-app battles) needs
+// them as EVs — `statPointsToEvs` / `convertSpread` below.
 
 export const SP_MAX_PER_STAT = 32;
 export const SP_TOTAL_BUDGET = 66;
@@ -28,6 +32,7 @@ export function looksLikeStatPoints(spread = {}) {
 }
 
 const EV_TOTAL_BUDGET = 510;
+const EV_MAX_PER_STAT = 252;
 
 /**
  * A whole Stat Point spread → an EV spread the editor will accept.
@@ -48,4 +53,44 @@ export function statPointSpreadToEvs(spread = {}) {
         overflow -= cut;
     }
     return evs;
+}
+
+/** Inverse of `statPointsToEvs`: the points an EV investment buys at level 50. */
+export function evsToStatPoints(evs = 0) {
+    const value = Math.floor(Number(evs) || 0);
+    return value < 4 ? 0 : Math.min(SP_MAX_PER_STAT, Math.floor((value + 4) / 8));
+}
+
+/**
+ * Re-express a whole spread in the other scale ('ev' ↔ 'sp'), inside the target
+ * budget. The per-stat conversion can overshoot the total by a few points, so
+ * the overflow comes off the smallest investments first, as above.
+ */
+export function convertSpread(spread = {}, fromScale = 'ev', toScale = 'ev') {
+    const from = fromScale === 'sp' ? 'sp' : 'ev';
+    const to = toScale === 'sp' ? 'sp' : 'ev';
+    if (from === to) return { ...(spread || {}) };
+    if (to === 'ev') return statPointSpreadToEvs(spread);
+    const points = Object.fromEntries(Object.entries(spread || {}).map(([k, v]) => [k, evsToStatPoints(Math.min(EV_MAX_PER_STAT, Number(v) || 0))]));
+    let overflow = Object.values(points).reduce((a, b) => a + b, 0) - SP_TOTAL_BUDGET;
+    const ascending = Object.keys(points).filter((k) => points[k] > 0).sort((a, b) => points[a] - points[b]);
+    for (const k of ascending) {
+        if (overflow <= 0) break;
+        const cut = Math.min(overflow, points[k]);
+        points[k] -= cut;
+        overflow -= cut;
+    }
+    return points;
+}
+
+/**
+ * Which scale a list of spreads is written in: 'sp' when every invested one
+ * passes `looksLikeStatPoints`, 'ev' otherwise, and null when none invests
+ * anything (no signal — the caller decides, e.g. from the format).
+ */
+export function detectEvScale(spreads = []) {
+    const invested = (Array.isArray(spreads) ? spreads : [])
+        .filter((evs) => evs && Object.values(evs).some((v) => Number(v) > 0));
+    if (invested.length === 0) return null;
+    return invested.every((evs) => looksLikeStatPoints(evs)) ? 'sp' : 'ev';
 }

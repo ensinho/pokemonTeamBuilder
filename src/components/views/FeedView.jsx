@@ -5,12 +5,10 @@ import { useForumStore } from '../../store/useForumStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useActiveTeamStore } from '../../store/useActiveTeamStore';
 import { useFirestoreTeamsStore } from '../../store/useFirestoreTeamsStore';
-import { useReferenceStore } from '../../store/useReferenceStore';
 import { useBattlesStore } from '../../store/useBattlesStore';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useComposerFocus } from '../../hooks/useComposerFocus';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-import { getStaticPokemonDetail } from '../../services/pokemonDataCache';
 import { AnchoredPopover } from '../AnchoredPopover';
 import { FriendActionButton } from '../FriendActionButton';
 import { UserProfileModal } from '../modals/UserProfileModal';
@@ -74,9 +72,8 @@ export function FeedView({ showToast, navigate }) {
     // re-rendered the forum on every unrelated store tick (2026-10-14).
     const { userId, isAdmin } = useAuthStore(useShallow((s) => ({ userId: s.userId, isAdmin: s.isAdmin })));
     const savedTeams = useFirestoreTeamsStore((s) => s.savedTeams);
-    const { currentTeam, teamName, setCurrentTeam, setTeamName, setEditingTeamId } = useActiveTeamStore(useShallow((s) => ({
-        currentTeam: s.currentTeam, teamName: s.teamName, setCurrentTeam: s.setCurrentTeam,
-        setTeamName: s.setTeamName, setEditingTeamId: s.setEditingTeamId,
+    const { currentTeam, teamName } = useActiveTeamStore(useShallow((s) => ({
+        currentTeam: s.currentTeam, teamName: s.teamName,
     })));
 
     // The open topic lives in the URL (/feed?topic=<id>), not only in the
@@ -273,60 +270,14 @@ export function FeedView({ showToast, navigate }) {
         }
     };
 
-    // Import team to Builder
+    // Import team to Builder. The store's importer rebuilds each member from its
+    // full record with its own instance id and reports the outcome itself; this
+    // used to copy the posted members straight in, sharing whatever ids (or no
+    // ids) the post carried.
     const handleImportTeam = async (sharedTeam) => {
         if (!sharedTeam || !sharedTeam.pokemons) return;
-
-        let pokemonIndex = useReferenceStore.getState().pokemonIndex || [];
-        if (!pokemonIndex || pokemonIndex.length === 0) {
-            try {
-                pokemonIndex = await useReferenceStore.getState().fetchPokemonIndex();
-            } catch (err) {
-                console.error('Failed to fetch pokemon index on import:', err);
-                pokemonIndex = [];
-            }
-        }
-        const indexById = new Map((pokemonIndex || []).map((p) => [p.id, p]));
-
-        const enrichedPokemons = await Promise.all(
-            sharedTeam.pokemons.map(async (p) => {
-                if (!p) return p;
-                let indexEntry = indexById.get(p.id);
-                if (!indexEntry && p.id) {
-                    try {
-                        indexEntry = await getStaticPokemonDetail(p.id);
-                    } catch (_) {
-                        /* ignore */
-                    }
-                }
-                const types =
-                    Array.isArray(p.types) && p.types.length > 0
-                        ? p.types
-                        : Array.isArray(indexEntry?.types) && indexEntry.types.length > 0
-                        ? indexEntry.types
-                        : ['normal'];
-
-                return {
-                    ...(indexEntry || {}),
-                    ...p,
-                    types,
-                };
-            })
-        );
-
-        setCurrentTeam(enrichedPokemons);
-        setTeamName(sharedTeam.name || 'Imported Team');
-        setEditingTeamId(null);
-
-        if (showToast) {
-            showToast(
-                language === 'pt'
-                    ? `Time "${sharedTeam.name}" importado com sucesso para o Construtor!`
-                    : `Team "${sharedTeam.name}" imported to Builder!`,
-                'success'
-            );
-        }
-        navigate('/builder');
+        const loaded = await useActiveTeamStore.getState().importTeam(sharedTeam);
+        if (loaded) navigate('/builder');
     };
 
     // Delete comment
