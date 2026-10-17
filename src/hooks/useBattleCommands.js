@@ -5,31 +5,41 @@ import { play } from '../utils/challengeSfx';
 /**
  * The battle menu's state, shared by both layouts of the Champion Challenge
  * (the BW touch screen on a phone, the HUD strip on a desktop): which view is
- * open — the menu, the moves, the party, her team — the move the info box
- * describes, and the choices themselves.
+ * open — the menu, the moves, the party (the team sheet), her team — the move
+ * the info box describes, the party member on the sheet, and the choices.
  *
- * A forced switch opens the party with no way back. Keys (through `inputRef`,
- * fed by the console's one keyboard): 1–4 pick a move; in the moves, the
- * arrows walk the 2 × 2 grid and A picks; A opens the moves from the menu; B
- * goes back.
+ * The party is BW's Summary: every member's sheet, readable while the turn
+ * plays too; on your turn the one shown can be sent in. A forced switch opens
+ * it on the first who can come in, with no way back. Keys (through
+ * `inputRef`, fed by the console's one keyboard): 1–4 pick a move; in the
+ * moves, the arrows walk the 2 × 2 grid and A picks; in the party ← → walk
+ * the six and A sends the one shown in; A opens the moves from the menu; B
+ * goes back. `activeIndex` is who the party opens on otherwise.
  */
-export function useBattleCommands({ request, enabled, onChoose, onForfeit, switchLabel, inputRef }) {
+export function useBattleCommands({ request, enabled, onChoose, onForfeit, switchLabel, inputRef, activeIndex = 0 }) {
     const forced = request.kind === 'switch';
+    const firstIn = forced && request.switches?.length ? request.switches[0].slot - 1 : 0;
     const [view, setView] = useState(forced ? 'party' : 'main');
     const [focus, setFocus] = useState(0);
+    const [member, setMember] = useState(firstIn);
 
     useEffect(() => {
         setView(forced ? 'party' : 'main');
         setFocus(0);
-    }, [forced, request]);
+        if (forced) setMember(firstIn);
+    }, [forced, request, firstIn]);
 
     const moves = request.moves || [];
+    const size = request.teamSize || 0;
     const open = (next) => {
-        // Her team (and the way back from it) opens while the turn plays, too.
-        if (!enabled && next !== 'dossier' && next !== 'main') return;
+        // The party and her team (and the way back) open while the turn plays, too.
+        if (!enabled && next !== 'dossier' && next !== 'party' && next !== 'main') return;
         play(next === 'main' ? 'cancel' : next === 'moves' ? 'confirm' : 'cursor');
+        if (next === 'party' && !forced) setMember(activeIndex);
         setView(next);
     };
+    // The sheet's member, if the sim would take them now.
+    const switchable = enabled ? (request.switches || []).find((mon) => mon.slot === member + 1) || null : null;
     const chooseMove = (move) => {
         if (!enabled || !move || move.disabled || move.pp === 0) return;
         play('confirm');
@@ -53,6 +63,11 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
                 if (!enabled) return;
                 if (/^[1-4]$/.test(action) && request.kind === 'move') {
                     chooseMove(moves[Number(action) - 1]);
+                } else if (view === 'party' && (action === 'left' || action === 'right') && size) {
+                    play('cursor');
+                    setMember((member + (action === 'left' ? size - 1 : 1)) % size);
+                } else if (view === 'party' && action === 'a') {
+                    if (switchable) chooseSwitch(switchable);
                 } else if (view === 'moves' && ['up', 'down', 'left', 'right'].includes(action)) {
                     const step = { left: -1, right: 1, up: -2, down: 2 }[action];
                     const next = focus + step;
@@ -67,5 +82,5 @@ export function useBattleCommands({ request, enabled, onChoose, onForfeit, switc
         };
     });
 
-    return { view, open, forced, focus, setFocus, chooseMove, chooseSwitch, forfeit };
+    return { view, open, forced, focus, setFocus, member, setMember, switchable, chooseMove, chooseSwitch, forfeit };
 }

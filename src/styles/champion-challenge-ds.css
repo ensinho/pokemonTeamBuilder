@@ -976,6 +976,8 @@
 .bw-fight,
 .bw-move,
 .bw-card,
+.bw-ficha__tab,
+.ds-picker__mon,
 .bw-cancel,
 .bw-hud__back {
     border: none;
@@ -990,6 +992,8 @@
 .bw-fight:active:not(:disabled),
 .bw-move:active:not(:disabled),
 .bw-card:active,
+.bw-ficha__tab:active,
+.ds-picker__mon:active,
 .bw-cancel:active,
 .bw-hud__back:active {
     transform: translateY(calc(1 * var(--px)));
@@ -1261,6 +1265,197 @@
     gap: calc(2 * var(--px));
 }
 
+/* The team sheet (DsTeamSheet): BW's Summary — the six as tabs, then one in full. */
+.bw-ficha {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(4 * var(--px));
+    min-height: 0;
+}
+
+.bw-ficha__tabs {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: calc(3 * var(--px));
+}
+
+.bw-ficha__tab {
+    display: grid;
+    justify-items: center;
+    gap: calc(1 * var(--px));
+    padding: calc(2 * var(--px)) calc(3 * var(--px)) calc(3 * var(--px));
+    border-radius: calc(6 * var(--px));
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+}
+
+.bw-ficha__tab[aria-selected='true'] {
+    box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white), 0 0 0 calc(1 * var(--px)) var(--bw-text-shadow);
+}
+
+.bw-ficha__tab img {
+    width: calc(28 * var(--px));
+    height: calc(21 * var(--px));
+    object-fit: contain;
+}
+
+.bw-ficha__tab .bw-card__hp {
+    width: 100%;
+}
+
+.bw-ficha__tab.is-fainted img {
+    filter: grayscale(1);
+    opacity: 0.5;
+}
+
+.bw-ficha__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: calc(4 * var(--px));
+    min-height: 0;
+    padding: calc(5 * var(--px)) calc(7 * var(--px));
+    border-radius: calc(8 * var(--px));
+    background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
+    box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
+    color: var(--bw-white);
+    font-size: calc(8 * var(--px));
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 var(--bw-text-shadow);
+}
+
+.bw-ficha__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: calc(2 * var(--px)) calc(4 * var(--px));
+}
+
+.bw-ficha__name {
+    font-size: calc(11 * var(--px));
+}
+
+.bw-ficha__head .bw-move__type {
+    font-size: calc(6 * var(--px));
+}
+
+.bw-ficha__field {
+    padding: 0 calc(3 * var(--px));
+    border-radius: calc(3 * var(--px));
+    background: var(--bw-gold-edge);
+    font-size: calc(6 * var(--px));
+}
+
+.bw-ficha__hp {
+    display: flex;
+    align-items: center;
+    gap: calc(3 * var(--px));
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+}
+
+.bw-ficha__hp .bw-card__hp {
+    width: calc(40 * var(--px));
+}
+
+.bw-ficha__facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(2 * var(--px)) calc(10 * var(--px));
+    margin: 0;
+}
+
+.bw-ficha__facts div,
+.bw-ficha__facts dd {
+    display: flex;
+    align-items: center;
+    gap: calc(3 * var(--px));
+    margin: 0;
+}
+
+.bw-ficha__facts dt,
+.bw-ficha__stats dt {
+    font-size: calc(6 * var(--px));
+    opacity: 0.75;
+}
+
+.bw-ficha__facts img {
+    width: calc(15 * var(--px));
+    height: calc(15 * var(--px));
+    margin: calc(-3 * var(--px)) 0;
+    image-rendering: pixelated;
+}
+
+.bw-ficha__moves {
+    display: grid;
+    flex: 1 0 auto;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: minmax(calc(14 * var(--px)), 1fr);
+    gap: calc(3 * var(--px));
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.bw-ficha__move {
+    display: flex;
+    align-items: center;
+    gap: calc(3 * var(--px));
+    min-width: 0;
+    padding: 0 calc(5 * var(--px));
+    border-radius: calc(5 * var(--px));
+    background: linear-gradient(color-mix(in srgb, var(--type, var(--bw-card-1)) 78%, var(--bw-white)) 0 50%, var(--type, var(--bw-card-1)) 50%);
+    text-shadow: calc(1 * var(--px)) calc(1 * var(--px)) 0 color-mix(in srgb, var(--type, var(--bw-card-2)) 45%, var(--bw-text-shadow));
+}
+
+.bw-ficha__move.is-empty {
+    background: color-mix(in srgb, var(--bw-white) 12%, transparent);
+}
+
+.bw-ficha__move .bw-move__name {
+    font-size: calc(8 * var(--px));
+    line-height: calc(10 * var(--px));
+}
+
+.bw-ficha__pp {
+    margin-left: auto;
+    font-size: calc(6 * var(--px));
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.bw-ficha__stats {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    margin: 0;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+}
+
+.bw-ficha__stats dd {
+    margin: 0;
+}
+
+/* Before the battle: the species' base stats, labelled as such. */
+.bw-ficha__stats.is-base::after {
+    content: attr(data-note);
+    grid-column: 1 / -1;
+    font-size: calc(6 * var(--px));
+    opacity: 0.7;
+}
+
+.bw-ficha__foot {
+    display: flex;
+    gap: calc(6 * var(--px));
+}
+
+.bw-ficha__foot > * {
+    flex: 1;
+    min-width: 0;
+    height: calc(22 * var(--px));
+}
+
 /* ── A phone's bottom screen: the red touch menu ─────────────────────── */
 
 .bw-touch {
@@ -1447,6 +1642,17 @@
     font-size: calc(7 * var(--px));
 }
 
+/* While the turn plays: POKéMON and her team, small, beside the message. */
+.bw-hud__peek {
+    display: grid;
+    flex: 0 0 22%;
+    gap: calc(3 * var(--px));
+}
+
+.bw-hud__peek .bw-btn {
+    font-size: calc(7 * var(--px));
+}
+
 /* What the focused move does: the HUD's left box while choosing. */
 .bw-hud__info {
     position: absolute;
@@ -1495,6 +1701,11 @@
         var(--bw-red-2);
     box-shadow: inset 0 0 0 calc(2 * var(--px)) var(--bw-white), 0 0 0 calc(1.5 * var(--px)) var(--bw-red-deep);
     animation: ds-fade-in 150ms var(--ease-out) both;
+}
+
+/* The team sheet needs the whole screen: it covers the HUD too. */
+.bw-overlay.is-full {
+    inset: calc(6 * var(--px));
 }
 
 .bw-overlay .bw-sheet {
@@ -1807,6 +2018,7 @@
 
 .ds-picker__mon {
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: flex-start;
     gap: calc(3 * var(--px));
@@ -1817,6 +2029,30 @@
     background: linear-gradient(var(--bw-card-1), var(--bw-card-2));
     box-shadow: inset 0 0 0 calc(1.5 * var(--px)) var(--bw-card-rim);
     color: var(--bw-white);
+}
+
+.ds-picker__grid li {
+    display: flex;
+    min-height: 0;
+}
+
+/* A member opens its sheet: the "i" says so. */
+.ds-picker__info {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: calc(9 * var(--px));
+    height: calc(9 * var(--px));
+    margin-left: auto;
+    border-radius: 50%;
+    box-shadow: inset 0 0 0 calc(1 * var(--px)) var(--bw-card-rim);
+    font-size: calc(6 * var(--px));
+}
+
+.ds-picker__sheet {
+    display: flex;
+    flex: 1;
+    min-height: 0;
 }
 
 .ds-picker__mon img {
@@ -1834,10 +2070,6 @@
     text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;
-}
-
-.ds-picker__set {
-    display: none;
 }
 
 .ds-picker__mine {

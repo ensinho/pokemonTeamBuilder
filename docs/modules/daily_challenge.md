@@ -79,6 +79,15 @@ src/styles/champion-challenge-ds.css   the design-system exception: --px, --ds-*
 - One state for both: `useBattleCommands` (views main / moves / party / dossier, the focused move, keys 1–4, ←→↑↓, A, B). Renderers in `ds/DsBwCommands.jsx` (`DsTouchMenu`, `DsHud`). No BAG in this challenge: its yellow slot opens her team.
 - Every sub-menu ends in VOLTAR: moves, party (unless the switch is forced), her team, the picker (Meus times → Time do dia → the room), the gate.
 
+### The team sheet (Ficha, 2026-10-17)
+
+BW's Summary for your own team, before and during the battle (`ds/DsTeamSheet.jsx`, data from `utils/challengeSheet.js`, tested):
+the six as tabs (icon + HP), then one in full — types, level, gender, HP, status, ability, item (with its sprite), the four moves (type, category, PP in battle / power before it) and the six stats (real in battle, **base** before it, labelled).
+- **Before:** in the picker, a tap on a member of the Time do dia opens its sheet; "Ficha ▸" opens a saved team's. VOLTAR returns one level; A still starts.
+- **During:** POKéMON opens the sheet, **also while the turn plays** (phone: the button stays lit in the dimmed menu; desktop: POKéMON / TIME DELA beside the message in the HUD). On your turn the member shown can be sent in (ENVIAR); ← → walk the six. A forced switch opens on the first who can come in and waits for the faint to finish playing. On a desktop the sheet covers the HUD too (`.bw-overlay.is-full`).
+- **Never ahead of the field:** the sheet is built from the newest `|request|` among the lines already played (`settledRequest` — the sim sends it after its turn), with HP and status from the played lines (`shownConditions`). The order follows the sim's: the active Pokémon is first, as in the games.
+- Terastal Clause is on, so there is no Tera type on the sheet.
+
 ### After the battle, the Pokétch, sound
 
 - **The report** (`DsBattleReport`, top screen of the result): the M1 curve, decision by decision, diverging fill around 50% (`--ds-chart-you` / `--ds-chart-her`, validated with the dataviz script), the biggest swing ringed and named from the log (`utils/winChart.js`: `biggestSwing`, `swingCause`). The server stores `winChanceMarks` beside the curve — per point, the battle turn and the player's log length — so a swing's lines are a slice of the log. A forfeit keeps the curve so far; fewer than two points shows the room instead.
@@ -89,7 +98,7 @@ src/styles/champion-challenge-ds.css   the design-system exception: --px, --ds-*
 
 `MoveFx` in `DsBattleScene.jsx`: eight particles at the target, a **pattern** (how they move: rise, fall, ring, slash, quake, swarm, burst; status moves sparkle) and a **shape** (flame, bubble, wisp, leaf, rock, shard, bolt, ring, sparkle, line, dot, star) per type (`FX_BY_TYPE`); a special move's particles wait for its orb. Heavy physical hits (ground, rock, fighting) shake the field (`is-shake`, the world layers only). Transform/opacity; none under reduced motion.
 
-**CSS budget:** the route's stylesheet is 11.1 KB gzip of its 12 KB (2026-10-16). The BW pass had layered rules over the DPPt ones; those are merged now, one rule per selector, with the DPPt panel colours gone. A refactor of this stylesheet is checked by diffing computed styles across 16 states (desktop with and without rails, phone; room, picker, ranking, battle and its menus, result with its chart) before and after. The same diff found this merge left nothing different but the dead declarations it meant to drop.
+**CSS budget:** the route's stylesheet is 11.7 KB gzip of its 12 KB (2026-10-17, with the team sheet; 11.1 KB on 2026-10-16). The BW pass had layered rules over the DPPt ones; those are merged now, one rule per selector, with the DPPt panel colours gone. A refactor of this stylesheet is checked by diffing computed styles across 16 states (desktop with and without rails, phone; room, picker, ranking, battle and its menus, result with its chart) before and after. The same diff found this merge left nothing different but the dead declarations it meant to drop.
 
 ### F6: ranking, share, push (2026-10-15)
 

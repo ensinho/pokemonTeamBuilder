@@ -1,7 +1,7 @@
 import { typeColors } from '../../../../constants/types';
 import { useTranslation } from '../../../../hooks/useTranslation';
 import { getBattleIcon } from '../../../../utils/battleSprites';
-import { hpTone, parseCondition } from '../../../../utils/battleState';
+import { DsTeamSheet } from './DsTeamSheet';
 import { DsTextBox } from './DsTextBox';
 
 /*
@@ -16,7 +16,8 @@ import { DsTextBox } from './DsTextBox';
  *                 describes the one in focus.
  *
  * Both read the same state (`useBattleCommands`). There is no BAG — no items in
- * this challenge — so its yellow slot opens her team, the dossier.
+ * this challenge — so its yellow slot opens her team, the dossier. POKéMON
+ * opens your team's sheet (DsTeamSheet), the way to send one in on your turn.
  */
 
 /** PP colour, as on the DS: yellow at half, orange at a quarter, red at none. */
@@ -72,30 +73,25 @@ function MoveGrid({ cmd, request, moveMeta }) {
     );
 }
 
-/** Your six, BW style: a card each with the icon, the name and the HP bar. */
-function PartyGrid({ cmd, request }) {
+/**
+ * Your six as BW's Summary (DsTeamSheet): readable while the turn plays; on
+ * your turn the one shown can be sent in. A forced switch has no way back.
+ */
+function PartySheet({ cmd, sheet }) {
     const { t } = useTranslation();
+    const shown = sheet[cmd.member];
     return (
         <div className="bw-sheet">
-            <p className="bw-sheet__title">{cmd.forced ? t('challenge.command.chooseWho') : t('challenge.command.pokemon')}</p>
-            <div className="bw-sheet__grid">
-                {(request.switches || []).map((mon) => {
-                    const icon = getBattleIcon(mon.name);
-                    const hp = parseCondition(mon.condition);
-                    return (
-                        <button key={mon.slot} type="button" className="bw-card" onClick={() => cmd.chooseSwitch(mon)}>
-                            {icon.url && <img src={icon.url} alt="" width={40} height={30} decoding="async" draggable="false" />}
-                            <span className="bw-card__name">{mon.name}</span>
-                            {hp && (
-                                <span className="bw-card__hp">
-                                    <span className={`ds-partymon__fill is-${hpTone(hp.pct)}`} style={{ '--hp': hp.pct / 100 }} />
-                                </span>
-                            )}
-                        </button>
-                    );
-                })}
+            {cmd.forced && <p className="bw-sheet__title">{t('challenge.command.chooseWho')}</p>}
+            <DsTeamSheet members={sheet} index={cmd.member} onSelect={cmd.setMember} />
+            <div className="bw-ficha__foot">
+                {!cmd.forced && <button type="button" className="bw-cancel" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>}
+                {cmd.switchable && (
+                    <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.chooseSwitch(cmd.switchable)}>
+                        {t('challenge.sheet.switchIn', { name: shown?.species || cmd.switchable.name })}
+                    </button>
+                )}
             </div>
-            {!cmd.forced && <button type="button" className="bw-cancel" onClick={() => cmd.open('main')}>{t('challenge.command.back')}</button>}
         </div>
     );
 }
@@ -141,7 +137,7 @@ function BallRow({ slots, className }) {
  * A phone's bottom screen. While the turn plays it stays on the menu, dimmed —
  * as the DS does — so the layout never jumps between turns.
  */
-export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls, championName, clock, turn }) {
+export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls, sheet, championName, clock, turn }) {
     const { t } = useTranslation();
     const status = (
         <div className="bw-touch__status" aria-hidden="true">
@@ -158,7 +154,8 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
             </div>
         );
     }
-    if (enabled && cmd.view === 'party') return <div className="bw-touch is-sheet">{status}<PartyGrid cmd={cmd} request={request} /></div>;
+    // A forced switch waits for the faint to play out before it takes the screen.
+    if (cmd.view === 'party' && (enabled || !cmd.forced)) return <div className="bw-touch is-sheet">{status}<PartySheet cmd={cmd} sheet={sheet} /></div>;
     if (cmd.view === 'dossier') return <div className="bw-touch is-sheet">{status}<DossierGrid cmd={cmd} foe={foeBalls} championName={championName} /></div>;
 
     return (
@@ -175,7 +172,8 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
                     {t('challenge.command.herTeam')}
                 </button>
                 <button type="button" className="bw-btn is-run" onClick={cmd.forfeit} disabled={!enabled}>{t('challenge.command.forfeit')}</button>
-                <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.open('party')} disabled={!enabled || !request.switches?.length}>
+                {/* Your team's sheet, too. */}
+                <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.open('party')} disabled={!sheet.length}>
                     {t('challenge.command.pokemon')}
                 </button>
             </div>
@@ -188,7 +186,7 @@ export function DsTouchMenu({ cmd, request, enabled, moveMeta, myBalls, foeBalls
  * buttons on the right — or, choosing a move, the moves on the right and what
  * the focused one does on the left. Party and her team open over the field.
  */
-export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, championName, reducedMotion }) {
+export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, sheet, championName, reducedMotion }) {
     const { t } = useTranslation();
     const choosing = enabled && cmd.view === 'moves';
     const focused = choosing ? request.moves?.[cmd.focus] : null;
@@ -196,7 +194,7 @@ export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, cham
 
     return (
         <>
-            {enabled && cmd.view === 'party' && <div className="bw-overlay"><PartyGrid cmd={cmd} request={request} /></div>}
+            {cmd.view === 'party' && (enabled || !cmd.forced) && <div className="bw-overlay is-full"><PartySheet cmd={cmd} sheet={sheet} /></div>}
             {cmd.view === 'dossier' && <div className="bw-overlay"><DossierGrid cmd={cmd} foe={foeBalls} championName={championName} /></div>}
             <div className={`bw-hud ${enabled ? 'is-choosing' : ''}`}>
                 <div className="bw-hud__message">
@@ -230,12 +228,23 @@ export function DsHud({ cmd, request, enabled, moveMeta, message, foeBalls, cham
                                 <button type="button" className="bw-btn is-dossier" onClick={() => cmd.open('dossier')} disabled={!foeBalls.length}>
                                     {t('challenge.command.herTeam')}
                                 </button>
-                                <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.open('party')} disabled={!request.switches?.length}>
+                                <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.open('party')} disabled={!sheet.length}>
                                     {t('challenge.command.pokemon')}
                                 </button>
                                 <button type="button" className="bw-btn is-run" onClick={cmd.forfeit}>{t('challenge.command.forfeit')}</button>
                             </div>
                         )}
+                    </div>
+                )}
+                {!enabled && (
+                    // While the turn plays: both teams stay one click away, as on the phone.
+                    <div className="bw-hud__peek">
+                        <button type="button" className="bw-btn is-pokemon" onClick={() => cmd.open(cmd.view === 'party' ? 'main' : 'party')} disabled={!sheet.length} aria-pressed={cmd.view === 'party'}>
+                            {t('challenge.command.pokemon')}
+                        </button>
+                        <button type="button" className="bw-btn is-dossier" onClick={() => cmd.open(cmd.view === 'dossier' ? 'main' : 'dossier')} disabled={!foeBalls.length} aria-pressed={cmd.view === 'dossier'}>
+                            {t('challenge.command.herTeam')}
+                        </button>
                     </div>
                 )}
             </div>
