@@ -85,6 +85,9 @@ export default async function handler(req, res) {
     // form for pages reachable by both numeric id and slug (/pokemon, /meta), so
     // both forms consolidate to one indexable URL instead of splitting signal.
     let canonicalUrl = url;
+    // A page whose preview depends on a live lookup that missed (a timeout, a
+    // cold start) must not pin the generic card in the edge cache for a day.
+    let previewMissed = false;
 
     // Dynamic metadata routing
     if (urlPath === '/pokepuzzle') {
@@ -182,6 +185,8 @@ export default async function handler(req, res) {
             description = topicMeta.description;
             url = `https://pokemonbuilder.app/feed?topic=${encodeURIComponent(topicId)}`;
             canonicalUrl = url;
+        } else if (topicId) {
+            previewMissed = true;
         }
     }
     else if (urlPath.startsWith('/tournaments/team/')) {
@@ -222,8 +227,11 @@ export default async function handler(req, res) {
     
     // Set caching and return HTML
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    // Cache at the Edge for 1 day, stale-while-revalidate for 1 hour to allow rapid updates
-    res.setHeader('Cache-Control', 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600');
+    // Cache at the Edge for 1 day, stale-while-revalidate for 1 hour to allow rapid updates;
+    // a missed preview is retried after a minute instead.
+    res.setHeader('Cache-Control', previewMissed
+        ? 'public, max-age=60, s-maxage=60'
+        : 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=3600');
     
     return res.status(200).send(html);
 }
