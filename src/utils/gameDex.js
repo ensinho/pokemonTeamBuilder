@@ -14,7 +14,7 @@ const genIndex = (g) => {
 };
 
 const MEGA_RE = /-mega(-[xy])?$/;
-const SUFFIX_RE = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax)$/;
+const SUFFIX_RE = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax|mask)$/;
 // Real PokéAPI megas occupy ids 10033–10090. The index also carries 46 newer
 // Megas at locally-assigned ids (10278+) — real forms from the Legends Z-A /
 // Mega Dimension era, but not PokéAPI entries — which this guard keeps out of
@@ -22,7 +22,9 @@ const SUFFIX_RE = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax)$/;
 // that needs a per-game form group, not a moved threshold. Read
 // docs/wounds.md 2026-09-08 before touching this.
 const isOfficialForm = (f) => !MEGA_RE.test(f.apiName || '') || f.id <= 10090;
-const suffixOf = (name = '') => (name.match(SUFFIX_RE)?.[1] || '').replace(/-[xy]$/, '');
+// Paldean Tauros' breeds (`tauros-paldea-aqua-breed`) are Paldean forms; the
+// breed tail is dropped so they answer to the game's `paldea` suffix.
+const suffixOf = (name = '') => (name.replace(/-(combat|blaze|aqua)-breed$/, '').match(SUFFIX_RE)?.[1] || '').replace(/-[xy]$/, '');
 
 /**
  * @param {object} ctx

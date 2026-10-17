@@ -42,7 +42,7 @@ const GAMES = [
     // that `isOfficialForm` in utils/gameDex.js filters out of every real game —
     // see docs/wounds.md 2026-09-08 before changing that.
     { key: 'legends-za', label: 'Legends: Z-A', generation: 'generation-ix', pokedexes: ['lumiose-city', 'hyperspace'], forms: ['mega'], closedRoster: true },
-    { key: 'scarlet-violet', label: 'Scarlet / Violet', generation: 'generation-ix', pokedexes: ['paldea', 'kitakami', 'blueberry'], forms: ['paldea'] },
+    { key: 'scarlet-violet', label: 'Scarlet / Violet', generation: 'generation-ix', pokedexes: ['paldea', 'kitakami', 'blueberry'], forms: ['paldea', 'mask'] },
     // Champions is battle-only: its 208-species Pokédex IS the whole legal roster,
     // with nothing transferable in from earlier generations — hence `closedRoster`.
     // Forms come from what the Reg M-A/M-B usage data actually shows being played:
