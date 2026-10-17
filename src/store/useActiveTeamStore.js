@@ -7,7 +7,7 @@ import { resolvePokemonDetail } from '../services/pokemonDataCache';
 import { analyzeTeam } from '../utils/teamAnalysis';
 import { buildShowdownExportText as buildShowdownText } from '../utils/showdownExport';
 import { competitivePresetFor } from '../utils/loadCompetitivePreset';
-import { useAuthStore } from './useAuthStore';
+import { markJourney, useAuthStore } from './useAuthStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { navigateTo } from '../utils/navigation';
@@ -391,6 +391,7 @@ export const useActiveTeamStore = create((set, get) => ({
             ),
         }));
         get().recalculateAnalysis();
+        markJourney('memberEdited');
 
         toast.info(t('builder.memberUpdated', { name: prettyPokemonName(member.name) }), {
             // One shared key: a new edit refreshes this toast in place rather
@@ -501,6 +502,7 @@ export const useActiveTeamStore = create((set, get) => ({
             });
             return false;
         }
+        markJourney('showdownExport');
         const trimmed = String(name || '').trim();
         toast.success(trimmed ? t('builder.exportCopiedNamed', { name: trimmed }) : t('builder.exportCopied'), {
             key: 'showdown-export',
@@ -562,6 +564,7 @@ export const useActiveTeamStore = create((set, get) => ({
 
         try {
             await setDoc(doc(db, `artifacts/${appId}/public/data/teams`, teamId), teamData);
+            markJourney('shareLink');
             const basePath = `${import.meta.env.BASE_URL || '/'}`.replace(/\/$/, '');
             const builderPath = `${basePath}/builder`.replace(/\/{2,}/g, '/');
             const shareUrl = new URL(builderPath, window.location.origin);

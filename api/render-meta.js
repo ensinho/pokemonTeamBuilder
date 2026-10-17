@@ -162,9 +162,13 @@ export default async function handler(req, res) {
         title = "Gym Leaders | Pokémon Team Builder";
         description = "Gym leaders and their teams across every Pokémon game, region by region.";
     }
+    else if (urlPath === '/journeys') {
+        title = "Journeys | Pokémon Team Builder";
+        description = "Learn the team builder step by step: five levels of missions, each rewarded with a trainer badge.";
+    }
     else if (urlPath === '/quiz') {
-        title = "Generation Quiz | Pokémon Team Builder";
-        description = "Guess which generation a Pokémon is from and test your Pokédex knowledge.";
+        title = "Pokémon Quiz | Pokémon Team Builder";
+        description = "Two ways to play: name every Pokémon of a generation, or every Pokémon that shares an official trait.";
     }
     else if (urlPath === '/feed') {
         title = "Community Feed | Pokémon Team Builder";

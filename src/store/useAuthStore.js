@@ -173,6 +173,33 @@ const writeActiveDays = (activeDays) => {
     } catch (_) { /* ignore */ }
 };
 
+// Journey marks (utils/journeys.js): the things a trainer has done that no
+// collection records — a page visited, a team exported, a quiz started. A map
+// of `mark: true`, kept like activeDays: in localStorage for an instant first
+// paint and in the preferences doc so it follows the account. Only `true`
+// survives a read, so a hand-edited value can't smuggle anything else in.
+const JOURNEY_MARKS_KEY = 'ptb:journeyMarks';
+
+const cleanJourneyMarks = (raw) => Object.fromEntries(
+    Object.entries(raw && typeof raw === 'object' ? raw : {})
+        .filter(([key, value]) => value === true && key.length <= 40)
+);
+
+const getInitialJourneyMarks = () => {
+    if (typeof window === 'undefined') return {};
+    try {
+        return cleanJourneyMarks(JSON.parse(localStorage.getItem(JOURNEY_MARKS_KEY) || '{}'));
+    } catch (_) {
+        return {};
+    }
+};
+
+const writeJourneyMarks = (marks) => {
+    try {
+        localStorage.setItem(JOURNEY_MARKS_KEY, JSON.stringify(marks));
+    } catch (_) { /* a convenience: the account copy still has them */ }
+};
+
 export const useAuthStore = create((set, get) => {
     let authUnsubscribe = null;
     let syncNudgeTimer = null;
@@ -257,6 +284,7 @@ export const useAuthStore = create((set, get) => {
         greetingPokemonIsShiny: getInitialGreeting().isShiny,
         streak: getInitialStreak(),
         activeDays: getInitialActiveDays(),
+        journeyMarks: getInitialJourneyMarks(),
         selectedBadgeId: typeof window !== 'undefined' ? localStorage.getItem('selectedBadgeId') || null : null,
         newlyUnlockedBadge: null,
         showSyncPrompt: false,
@@ -401,6 +429,12 @@ export const useAuthStore = create((set, get) => {
                             };
                             writeActiveDays(mergedDays);
                             set({ activeDays: mergedDays });
+
+                            // 5.2 Journey marks: a mark is never taken back, so
+                            // the union of both copies is the truth.
+                            const mergedMarks = { ...cleanJourneyMarks(data.journeyMarks), ...get().journeyMarks };
+                            writeJourneyMarks(mergedMarks);
+                            set({ journeyMarks: mergedMarks });
                         } else {
                             set({ streak: getInitialStreak() });
                         }
@@ -496,7 +530,7 @@ export const useAuthStore = create((set, get) => {
         },
 
         syncPreferencesToFirestore: async () => {
-            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, selectedBadgeId, userEmail, isAnonymous } = get();
+            const { userId, displayName, trainerSprite, avatarPreference, greetingPokemonId, greetingPokemonIsShiny, streak, activeDays, journeyMarks, selectedBadgeId, userEmail, isAnonymous } = get();
             if (!userId) return;
 
             const homeWallpaperId = useThemeStore.getState().homeWallpaperId;
@@ -521,6 +555,7 @@ export const useAuthStore = create((set, get) => {
                 homeWallpaperId: homeWallpaperId || null,
                 streak,
                 activeDays,
+                journeyMarks,
                 selectedBadgeId: selectedBadgeId || null,
                 email: userEmail || null,
                 isAnonymous,
@@ -528,6 +563,17 @@ export const useAuthStore = create((set, get) => {
             };
 
             await get().savePreferences(updates);
+        },
+
+        // Record a journey mark (utils/journeys.js JOURNEY_MARKS). Idempotent:
+        // a mark already set costs nothing, so callers need not check first.
+        markJourney: (mark) => {
+            const current = get().journeyMarks || {};
+            if (!mark || current[mark]) return;
+            const next = { ...current, [mark]: true };
+            writeJourneyMarks(next);
+            set({ journeyMarks: next });
+            get().savePreferences({ journeyMarks: next });
         },
 
         // Count today as a day active. Idempotent per local day.
@@ -849,3 +895,6 @@ export const useAuthStore = create((set, get) => {
         }
     };
 });
+
+/** Record a journey mark from outside React (stores, handlers). */
+export const markJourney = (mark) => useAuthStore.getState().markJourney(mark);

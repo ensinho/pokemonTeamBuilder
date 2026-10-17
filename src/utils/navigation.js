@@ -36,3 +36,14 @@ export function setSignInPrompt(fn) {
 export function promptSignIn(mode = 'signIn') {
     if (typeof signInPrompt === 'function') signInPrompt(mode);
 }
+
+let partnerPicker = null;
+
+export function setPartnerPicker(fn) {
+    partnerPicker = fn;
+}
+
+/** Open the partner Pokémon picker (the journeys' first mission). */
+export function openPartnerPicker() {
+    if (typeof partnerPicker === 'function') partnerPicker();
+}

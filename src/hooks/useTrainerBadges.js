@@ -6,7 +6,11 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useQuizRunsStore } from '../store/useQuizRunsStore';
 import { useCategoryGuesserStore } from '../store/useCategoryGuesserStore';
 import { useFirestoreTeamsStore } from '../store/useFirestoreTeamsStore';
+import { useActiveTeamStore } from '../store/useActiveTeamStore';
+import { useFriendsStore } from '../store/useFriendsStore';
+import { useBattlesStore } from '../store/useBattlesStore';
 import { BADGES_LIST, BADGES_BY_ID, getBadgeById } from '../constants/badges';
+import { evaluateJourneys } from '../utils/journeys';
 
 const CELEBRATED_BADGES_KEY = 'ptb:celebratedBadges';
 
@@ -111,12 +115,21 @@ export function useTrainerBadges(extraStats = {}) {
     const userId = useAuthStore((s) => s.userId);
     const streak = useAuthStore((s) => s.streak);
     const activeDays = useAuthStore((s) => s.activeDays);
-    const teamsCount = useFirestoreTeamsStore((s) => s.savedTeams?.length || 0);
+    const savedTeams = useFirestoreTeamsStore((s) => s.savedTeams);
+    const teamsCount = savedTeams?.length || 0;
     const favoritesCount = useFirestoreTeamsStore((s) => s.favoritePokemons?.size || 0);
     const [forumMessages, setForumMessages] = useState(0);
     const selectedBadgeId = useAuthStore((s) => s.selectedBadgeId);
     const setSelectedBadgeId = useAuthStore((s) => s.setSelectedBadgeId);
     const setNewlyUnlockedBadge = useAuthStore((s) => s.setNewlyUnlockedBadge);
+    // What the journeys read beyond the counters (utils/journeys.js). Friends
+    // and battles are listened to by the shell already; this only reads them.
+    const greetingPokemonId = useAuthStore((s) => s.greetingPokemonId);
+    const isAnonymous = useAuthStore((s) => s.isAnonymous);
+    const journeyMarks = useAuthStore((s) => s.journeyMarks);
+    const currentTeam = useActiveTeamStore((s) => s.currentTeam);
+    const friendsCount = useFriendsStore((s) => s.friends?.length || 0);
+    const battlesCount = useBattlesStore((s) => s.battles?.length || 0);
 
     // Generation Quiz & Category Guesser stores
     const genQuizRuns = useQuizRunsStore((s) => s.quizRuns) || [];
@@ -201,7 +214,7 @@ export function useTrainerBadges(extraStats = {}) {
     }, [genQuizRuns, catQuizRuns]);
 
     // Aggregate all trainer stats
-    const stats = useMemo(() => ({
+    const baseStats = useMemo(() => ({
         pokepuzzleWins: totalPokepuzzleWins,
         completedQuizzesCount,
         perfectQuizzesCount,
@@ -213,6 +226,22 @@ export function useTrainerBadges(extraStats = {}) {
         forumMessages,
         ...extraStats,
     }), [totalPokepuzzleWins, completedQuizzesCount, perfectQuizzesCount, streak, activeDays, teamsCount, favoritesCount, forumMessages, extraStats]);
+
+    // The journeys, evaluated once here so the badges that reward them and the
+    // views that list them read the same answer.
+    const journeys = useMemo(() => evaluateJourneys({
+        ...baseStats,
+        marks: journeyMarks,
+        greetingPokemonId,
+        isAnonymous,
+        selectedBadgeId,
+        savedTeams: savedTeams || [],
+        currentTeam,
+        friendsCount,
+        battlesCount,
+    }), [baseStats, journeyMarks, greetingPokemonId, isAnonymous, selectedBadgeId, savedTeams, currentTeam, friendsCount, battlesCount]);
+
+    const stats = useMemo(() => ({ ...baseStats, journeys }), [baseStats, journeys]);
 
     // Badges mapped with current progress and unlock status
     const badges = useMemo(() => {
@@ -277,8 +306,17 @@ export function useTrainerBadges(extraStats = {}) {
         }
     }, [stats, setNewlyUnlockedBadge]);
 
+    /** Celebrate one badge now (a journey just finished), once ever. */
+    const celebrateBadge = useCallback((badgeId) => {
+        const badge = getBadgeById(badgeId);
+        if (!badge || getCelebratedBadges().has(badge.id)) return;
+        markBadgeCelebrated(badge.id);
+        setNewlyUnlockedBadge(badge);
+    }, [setNewlyUnlockedBadge]);
+
     return {
         stats,
+        journeys,
         badges,
         equippedBadge,
         selectedBadgeId,
@@ -288,6 +326,7 @@ export function useTrainerBadges(extraStats = {}) {
         unequipBadge,
         toggleEquip,
         checkBadgeCelebration,
+        celebrateBadge,
     };
 }
 

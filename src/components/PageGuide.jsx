@@ -207,6 +207,7 @@ export const pageGuideTips = {
     pokedex: true,
     favorites: true,
     generationQuiz: true,
+    journeys: true,
     feed: true,
     challenge: true,
 };

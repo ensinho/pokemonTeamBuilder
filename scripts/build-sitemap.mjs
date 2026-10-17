@@ -28,6 +28,7 @@ const STATIC_ROUTES = [
     { loc: '/damage-calculator', changefreq: 'monthly', priority: '0.6' },
     { loc: '/speed-tiers', changefreq: 'monthly', priority: '0.6' },
     { loc: '/quiz', changefreq: 'monthly', priority: '0.5' },
+    { loc: '/journeys', changefreq: 'monthly', priority: '0.5' },
     { loc: '/pokepuzzle', changefreq: 'monthly', priority: '0.5' },
     { loc: '/feed', changefreq: 'daily', priority: '0.5' },
 ];

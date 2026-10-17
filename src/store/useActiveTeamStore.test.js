@@ -14,7 +14,7 @@ vi.mock('../utils/loadCompetitivePreset', () => ({
     competitivePresetFor: () => Promise.resolve({ item: 'Leftovers', ability: 'pressure' }),
 }));
 vi.mock('./useToastStore', () => ({ toast: { error: vi.fn(), warning: vi.fn(), success: vi.fn(), info: vi.fn() } }));
-vi.mock('./useAuthStore', () => ({ useAuthStore: { getState: () => ({}) } }));
+vi.mock('./useAuthStore', () => ({ useAuthStore: { getState: () => ({}) }, markJourney: () => {} }));
 vi.mock('./useFirestoreTeamsStore', () => ({ useFirestoreTeamsStore: { getState: () => ({}) } }));
 vi.mock('./usePokedexStore', () => ({ usePokedexStore: { getState: () => ({ pokemons: [] }) } }));
 

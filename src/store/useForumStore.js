@@ -17,7 +17,7 @@ import {
     limitToLast
 } from 'firebase/firestore';
 import { appId } from '../constants/firebase';
-import { useAuthStore } from './useAuthStore';
+import { markJourney, useAuthStore } from './useAuthStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { navigateTo, promptSignIn } from '../utils/navigation';
@@ -285,6 +285,8 @@ export const useForumStore = create((set, get) => ({
                 sharedTeam: serializedAttachedTeam
             };
             await setDoc(firstMsgRef, firstMsgData);
+            markJourney('forumPost');
+            if (serializedAttachedTeam) markJourney('forumTeamShare');
 
             toast.success(t('toast.topicCreated'), {
                 description: cleanTitle,
@@ -384,6 +386,10 @@ export const useForumStore = create((set, get) => ({
             };
 
             await setDoc(messageRef, messageData);
+            // The server-side message count is cached for a minute; the mark
+            // is what lets the journey see this post right away.
+            markJourney('forumPost');
+            if (serializedAttachedTeam) markJourney('forumTeamShare');
 
             const topicDocRef = doc(db, `artifacts/${appId}/public/data/forumTopics`, topicId);
             await updateDoc(topicDocRef, {
