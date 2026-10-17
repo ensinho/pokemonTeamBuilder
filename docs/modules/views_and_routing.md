@@ -204,35 +204,13 @@ History: `usePokePuzzleHistory` hook, synced to Firestore for logged-in users.
 ---
 
 ### FeedView
-**Path:** `/feed`  
-**File:** `src/components/views/FeedView.jsx`  
+**Path:** `/feed` (`?topic=`, `?c=`, `?sort=`, `?cat=`, `?q=`)  
+**File:** `src/components/views/FeedView.jsx`, `src/components/forum/`  
 **Style:** `src/styles/forum-view.css`
 
-Community forum. Structure:
-- Topic list — filterable by category tag; full-bleed rows with a hairline between them
-- Thread view — messages with user avatars, timestamps, reactions
-- Team sharing cards embedded in messages
-- New topic / reply composer
-
-State: `useForumStore` (topics, messages, real-time `onSnapshot`).
-
-**Layout contract** (rebuilt 2026-09-11 — see `docs/wounds.md`):
-- The feed **fills through the layout** at every width (`flex: 1 1 0; min-height: 0`
-  down `.app-shell__body` → `.app-shell__page-frame` → `.forum-view`). No viewport
-  units: `calc(100vh - 8rem)` is a guess about the chrome above and below it.
-- **Two scrollers, one per pane** — `.forum-topics-list` and `.forum-message-list`.
-  A message body never gets an `overflow` of any kind; `min-width: 0` plus
-  `overflow-wrap: anywhere` is what contains wide content.
-- **Each scroller declares both axes** (`overflow-x: hidden; overflow-y: auto`)
-  plus `touch-action: pan-y`. Setting only `overflow-y` makes `overflow-x`
-  compute to `auto`, and the thread becomes draggable sideways. The one
-  deliberate horizontal scroller is the mobile chip row, `.forum-categories`,
-  which sits in `.forum-sidebar__header` — outside both lists.
-- A post is a **grid** (`--forum-avatar` | content), and `--forum-rail` is reserved
-  on the header, list and composer alike so all three share one right edge.
-- Below 640px the sidebar and the thread are **two screens**, toggled by
-  `is-pane-topics` / `is-pane-thread`; `useChatAutoScroll`'s `pinKey` re-pins the
-  thread, because hiding a pane resets its `scrollTop`.
+The community forum on Reddit's layout: explorer | feed or post | rail on a
+desktop, two screens on a phone. Ranking, the comment tree, sharing and link
+previews are in **[forum.md](./forum.md)** — read it before touching the forum.
 
 ---
 

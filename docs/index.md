@@ -16,6 +16,7 @@
 | [State & Stores](./modules/state_and_stores.md) | Adding/modifying Zustand stores or hooks |
 | [Data Layer](./modules/data_layer.md) | Pokémon data, cache strategy, PokéAPI integration |
 | [Notifications](./modules/notifications.md) | Toasts, OS banners, Web Push, the daily nudge |
+| [Forum](./modules/forum.md) | The /feed forum: three-pane workspace, Hot/New/Top ranking, comment tree, topic likes, sharing and link previews |
 | [Journeys](./modules/journeys.md) | Onboarding missions, journey badges, the mission guide, the Home's journey card |
 | [Champion Challenge](./modules/daily_challenge.md) | The daily battle vs the Cynthia AI as built: endpoint, engine, AI, the DS-console client, Home card, invariants, traps, calibration |
 | [Wounds Log](./wounds.md) | Before any non-trivial work — anti-pattern registry |
