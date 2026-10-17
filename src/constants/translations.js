@@ -439,6 +439,8 @@ export const TRANSLATIONS = {
             challengeResume: 'Continue',
             challengeRematch: 'Rematch',
             challengeDone: 'Won today',
+            challengeDifficulty: 'Difficulty',
+            challengeStreak: 'Win streak',
             jChallenge: 'Champion Challenge',
             play: 'Play',
             solved: 'Solved',
@@ -2827,6 +2829,8 @@ export const TRANSLATIONS = {
             yourFavorites: 'Seus favoritos',
             seeAll: 'Ver todos',
             emptyStatsTitle: 'Seu cartão de treinador começa aqui',
+            challengeDifficulty: 'Dificuldade',
+            challengeStreak: 'Sequência',
             emptyStatsDesc: 'Salve 1 time para liberar suas estatísticas.',
             motos: [
                 'Pronto para ser o melhor de todos!',

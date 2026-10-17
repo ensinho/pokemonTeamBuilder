@@ -476,17 +476,18 @@ export function CozyHomeView({
             meta={streakCount > 0 ? t('cozyHome.streakDay', { n: streakCount }) : t('cozyHome.noStreak')}
         >
             <div className="cozy-day" style={{ '--day-rows': dayRows }}>
-                {/* The featured card: the Champion and her six, the day's one battle.
-                    Always drawn (the summary fills it in), so the grid never reflows. */}
+                {/* The featured card: the Champion and her six, the day's one battle,
+                    drawn as Black & White's trainer intro — the band across the card,
+                    Cynthia on her pad. Always drawn (the summary fills it in), so the
+                    grid never reflows. */}
                 <button type="button" className="card card--interactive cozy-day__card cozy-day__card--feature cozy-day__card--challenge" style={{ '--day-tone': typeColors.dragon }}
                     onClick={() => navigate('/challenge')}>
                     <span className="cozy-day__head">
                         <span className="cozy-day__tile cozy-day__tile--trainer" aria-hidden="true">
+                    <span className="cozy-day__band" aria-hidden="true" />
                             <img src={trainerSpriteUrl('cynthia-gen4')} alt="" width={80} height={80} decoding="async" className="cozy-day__trainer" />
                         </span>
-                        {challengeDay.state === 'won'
-                            ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.challengeDone')}</span>
-                            : <span className="btn btn-sm cozy-ink cozy-day__go">{t(challengeDay.state === 'active' ? 'cozyHome.challengeResume' : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo')}</span>}
+                            <span className="cozy-day__pad" />
                     </span>
                     <span className="cozy-day__eyebrow">
                         {/* A phone's row has room for the short countdown only. */}
@@ -495,13 +496,31 @@ export function CozyHomeView({
                     </span>
                     <span className="cozy-day__title">{t('cozyHome.challengeTitle')}</span>
                     <span className="cozy-day__sub">{challengeLine(challengeDay)}</span>
-                    {/* Her six as silhouettes until today's battle is won; the wildcard stays a "?". */}
+                    {/* Her six as silhouettes until today's battle is won; the wildcard stays a "?".
+                        The filter goes on the sprite, never the slot, or the slot turns black too. */}
                     <span className="cozy-day__lineup" aria-hidden="true">
-                        {herSix.map((dex, index) => (dex ? (
-                            <Sprite key={index} src={dexSprite(dex)} className={`cozy-day__mini ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
-                        ) : (
-                            <span key={index} className="cozy-day__mini cozy-day__mini--unknown">?</span>
-                        )))}
+                        {herSix.map((dex, index) => (
+                            <span key={index} className={`cozy-day__mini ${dex ? '' : 'cozy-day__mini--unknown'}`}>
+                                {dex
+                                    ? <Sprite src={dexSprite(dex)} className={`cozy-day__mini-sprite ${challengeDay.state === 'won' ? '' : 'pokepuzzle-silhouette'}`} />
+                                    : '?'}
+                            </span>
+                        ))}
+                    </span>
+                    <span className="cozy-day__foot">
+                        <span className="cozy-day__facts">
+                            <span className="stat">
+                                <span className="stat__label">{t('cozyHome.challengeDifficulty')}</span>
+                                <span className="stat__value">{challengeDay.difficulty ? t(`challenge.difficulty.${challengeDay.difficulty}`) : '—'}</span>
+                            </span>
+                            <span className="stat">
+                                <span className="stat__label">{t('cozyHome.challengeStreak')}</span>
+                                <span className="stat__value">{challengeDay.streak || 0}</span>
+                            </span>
+                        </span>
+                        {challengeDay.state === 'won'
+                            ? <span className="badge badge--success cozy-day__go"><Check aria-hidden="true" /> {t('cozyHome.challengeDone')}</span>
+                            : <span className="btn btn-sm cozy-ink cozy-day__go"><Swords aria-hidden="true" /> {t(challengeDay.state === 'active' ? 'cozyHome.challengeResume' : challengeDay.state === 'lost' ? 'cozyHome.challengeRematch' : 'cozyHome.challengeGo')}</span>}
                     </span>
                 </button>
 
@@ -613,7 +632,7 @@ export function CozyHomeView({
                         return (
                             <li key={team.id}>
                                 <button type="button" className="card card--inset card--interactive card--compact cozy-team pc-box-host" onClick={() => handleEditTeam(team)}>
-                                    <PcBox members={s.members} size="sm" className="cozy-team__roster" />
+                                    <PcBox members={s.members} size={isPhone ? 'sm' : 'md'} className={`cozy-team__roster ${isPhone ? '' : 'pc-box--fluid'}`} />
                                     <span className="cozy-team__text">
                                         <span className="cozy-team__name">{team.name}</span>
                                         <span className="cozy-team__sub">
@@ -785,7 +804,7 @@ export function CozyHomeView({
     // the day's cards, after what an active trainer came for.
     if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{yourDay}{journeyCompact}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
     else if (tab === 'journey') main = journeyTab;
-    else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 8);
+    else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 9);
     else main = communityPanel(5);
 
     return (
