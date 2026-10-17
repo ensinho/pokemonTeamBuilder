@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, FileText, MessageSquare, RefreshCw, Share2, Trash2 } from 'lucide-react';
+import { FramedAvatar } from '../../rewards/FramedAvatar';
 
 import { useBattles } from '../../../hooks/useBattles';
 import { useBattlesStore } from '../../../store/useBattlesStore';
@@ -441,14 +442,14 @@ export function BattleDetailView() {
                 </button>
 
                 <div className="battle-nav-opponent">
-                    <span className="battle-header__avatar battle-header__avatar--sm">
+                    <FramedAvatar uid={view.opponentId} className="battle-header__avatar battle-header__avatar--sm">
                         <AvatarSprite
                             trainerSprite={view.opponentAvatar?.trainerSprite}
                             pokemonId={view.opponentAvatar?.pokemonId}
                             isShiny={view.opponentAvatar?.isShiny}
                             fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-50" />}
                         />
-                    </span>
+                    </FramedAvatar>
                     <div className="battle-nav-opponent__text">
                         <h2 className="battle-nav-opponent__name">
                             {view.opponentName || t('friends.unknownTrainer')}
@@ -799,14 +800,14 @@ export function BattleDetailView() {
                                                 key={message.id}
                                                 className={`battle-chat__row ${message.createdBy === userId ? 'is-mine' : ''}`}
                                             >
-                                                <span className="battle-chat__avatar">
+                                                <FramedAvatar uid={message.createdBy} stampedFrameId={message.creatorFrameId} className="battle-chat__avatar">
                                                     <AvatarSprite
                                                         trainerSprite={message.creatorTrainerSprite}
                                                         pokemonId={message.creatorAvatar}
                                                         isShiny={message.creatorAvatarIsShiny}
                                                         fallback={<PokeballIcon className="w-4 h-4 text-muted opacity-40" />}
                                                     />
-                                                </span>
+                                                </FramedAvatar>
                                                 <span className="battle-chat__bubble">
                                                     <span className="battle-chat__author">{message.creatorName}</span>
                                                     <span className="battle-chat__text">{message.text}</span>

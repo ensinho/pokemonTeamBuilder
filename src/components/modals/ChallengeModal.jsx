@@ -3,6 +3,7 @@ import { useTranslation } from '../../hooks/useTranslation';
 import { useToastStore } from '../../store/useToastStore';
 import { useModalA11y } from '../../hooks/useModalA11y';
 import { AvatarSprite } from '../AvatarSprite';
+import { FramedAvatar } from '../rewards/FramedAvatar';
 import { PokeballIcon, SwordsIcon, DiceIcon, CloseIcon, ClipIcon } from '../icons';
 
 export function ChallengeModal({
@@ -92,13 +93,15 @@ export function ChallengeModal({
                     {/* Opponent Display / Picker */}
                     {friend ? (
                         <div className="flex items-center gap-3 p-3 bg-surface-raised border border-border rounded-xl">
-                            <AvatarSprite
-                                trainerSprite={friend.trainerSprite}
-                                pokemonId={friend.avatarPokemonId}
-                                isShiny={friend.avatarIsShiny}
-                                className="w-10 h-10 object-contain"
-                                fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-40" />}
-                            />
+                            <FramedAvatar uid={friend.userId} stampedFrameId={friend.frameId} className="inline-flex w-10 h-10 shrink-0 items-center justify-center rounded-full">
+                                <AvatarSprite
+                                    trainerSprite={friend.trainerSprite}
+                                    pokemonId={friend.avatarPokemonId}
+                                    isShiny={friend.avatarIsShiny}
+                                    className="w-10 h-10 object-contain"
+                                    fallback={<PokeballIcon className="w-5 h-5 text-muted opacity-40" />}
+                                />
+                            </FramedAvatar>
                             <div className="min-w-0 flex-1">
                                 <span className="text-2xs text-muted font-bold block">
                                     {language === 'pt' ? 'Oponente' : 'Opponent'}
