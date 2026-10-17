@@ -1591,1170 +1591,1823 @@
         inset: calc(-1 * var(--space-2)) calc(-1 * var(--space-0_5));
     }
 }
-
 /* ==========================================================================
-   Modern Reddit / TCG Pocket Forum Layout & Component Styles
+   The feed and the post, on Reddit's layout (2026-10-17)
+   --------------------------------------------------------------------------
+   Enzo asked for a forum that feels like the one everybody already uses.
+   What that borrowed, and what it kept of ours:
+   - The feed is one panel of rows split by hairlines — meta, title, preview,
+     the team as the thumbnail, then the vote / comments / share pills. It
+     replaced one bordered card per topic.
+   - A post carries its own title, and its comments are a tree: a reply sits
+     one column in, joined to its parent by a thread line that also folds the
+     branch. The comment cards inside the thread card are gone (box in box).
+   - Hearts, not arrows; Poké Balls and the trainer badge stay.
+   Phones follow the phone rules: the page is the panel, no fill on rows, and
+   anything placed straight on the page takes --color-surface.
    ========================================================================== */
 
-.forum-hub-layout {
+/* ---- Frame: an editor's workspace ---------------------------------------- */
+/* Desktop: explorer | the content | rail, three panes on the page itself —
+   no card around the content (Enzo, 2026-10-17: a small centred card wasted
+   the screen). The explorer is transparent like an editor's side bar and
+   ends in one hairline; the centre is the whole width between the columns;
+   the rail keeps its cards and only appears where a third column fits
+   (1440). Below 1024px the centre is the page and the feed and a post are
+   two screens. The canvas pattern is off on this route: text sits straight
+   on the ground here, and dots under a list read as noise. */
+
+@media (min-width: 1024px) {
+    .app-shell__content:has(.forum-view) {
+        background-image: none;
+    }
+}
+
+.forum-workspace {
+    --forum-explorer-width: 16rem;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 19rem;
-    gap: var(--space-2_5);
-    width: 100%;
-    max-width: 100%;
-    margin: 0;
-    padding: 0;
-    align-items: start;
+    flex: 1 1 0;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    height: 100%;
+}
+
+.forum-center {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
 }
 
 .forum-feed-scroll {
     flex: 1 1 0;
     min-height: 0;
-    overflow-y: auto;
     overflow-x: hidden;
+    overflow-y: auto;
     touch-action: pan-y;
-    padding: 0 0 var(--space-4);
+    padding-bottom: var(--space-6);
 }
 
-.forum-hub-layout--detail {
-    flex: 1 1 0;
-    min-height: 0;
-    height: 100%;
-    width: 100%;
-    max-width: 100%;
-    padding: 0;
-    gap: var(--space-2_5);
-    align-items: stretch;
-    padding-bottom: 0;
+/* Switching between the feed and a post is a cross-fade, not a cut. */
+.forum-feed-scroll,
+.thread-detail {
+    animation: forum-pane-in var(--duration-fast) var(--ease-smooth) backwards;
 }
 
-@media (max-width: 1023px) {
-    .forum-hub-layout {
-        grid-template-columns: 1fr;
-        gap: var(--space-2);
-        padding: 0;
-    }
-
-    .forum-hub-layout--detail {
-        padding: 0;
-    }
+@keyframes forum-pane-in {
+    from { opacity: 0; }
 }
 
-.forum-main-col {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    width: 100%;
-}
-
-.forum-main-col--detail {
-    flex: 1 1 0;
-    min-height: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-/* Header & Banner — Pokédex-Style Compact Strip */
-.forum-header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1_5);
-    margin-bottom: var(--space-2);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-2) var(--space-3);
-    box-shadow: var(--elevation-1);
-}
-
-.forum-header__banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-}
-
-.forum-header__heading-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.forum-header__title {
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.015em;
-    color: var(--color-fg);
-    margin: 0;
-    line-height: 1.2;
-}
-
-.forum-header__meta {
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-    background: var(--color-surface-raised);
-    padding: 0.08rem 0.4rem;
-    border-radius: var(--radius-full);
-}
-
-.forum-new-topic-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.625rem;
-    padding: 0 var(--space-2_5);
-    border: none;
-    border-radius: var(--radius-full);
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    box-shadow: 0 2px 6px color-mix(in srgb, var(--color-primary) 25%, transparent);
-    transition: transform var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth),
-                opacity var(--duration-fast) var(--ease-smooth);
-}
-
-.forum-new-topic-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 35%, transparent);
-    opacity: 0.95;
-}
-
-.forum-header__toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-1_5);
-    padding-top: var(--space-1);
-    border-top: 1px solid var(--color-border);
-    flex-wrap: wrap;
-}
-
-.forum-categories-scroll {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    overflow-x: auto;
-    padding-bottom: 1px;
-    scrollbar-width: none;
-}
-
-.forum-categories-scroll::-webkit-scrollbar {
+.forum-explorer,
+.forum-rail-scroll {
     display: none;
 }
 
-.forum-category-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.5rem;
-    padding: 0 var(--space-2);
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
-    color: var(--color-muted);
+.forum-rail-scroll {
+    min-height: 0;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+    .forum-workspace {
+        grid-template-columns: var(--forum-explorer-width) minmax(0, 1fr);
+    }
+
+    .forum-explorer {
+        display: flex;
+    }
+
+    /* The content keeps its own gutter from the explorer's hairline. */
+    .forum-center {
+        padding-left: var(--page-gap);
+    }
+
+    /* The scroller clips what overflows it, so it reserves the step a row's
+       fill bleeds past the text — on both sides — and reaches back into the
+       centre's gutter on the left so the text column does not move. */
+    .forum-feed-scroll {
+        margin-left: calc(-1 * var(--space-3));
+        padding-inline: var(--space-3);
+    }
+}
+
+@media (min-width: 1440px) {
+    .forum-workspace {
+        grid-template-columns: var(--forum-explorer-width) minmax(0, 1fr) var(--page-rail-width);
+    }
+
+    .forum-rail-scroll {
+        display: block;
+        padding-left: var(--page-gap);
+    }
+}
+
+/* ---- Explorer ----------------------------------------------------------- */
+
+.forum-explorer {
+    flex-direction: column;
+    gap: var(--space-5);
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: var(--space-1) var(--space-3) var(--space-6) 0;
+    border-right: 1px solid var(--color-border);
+}
+
+.forum-explorer__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+}
+
+.forum-explorer__heading {
+    margin: 0 0 var(--space-1);
+    padding-left: var(--space-2);
     font-size: var(--text-2xs);
     font-weight: var(--weight-semibold);
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
+    color: var(--color-muted);
 }
 
-.forum-category-pill:hover {
-    border-color: var(--color-border-hover);
-    color: var(--color-fg);
-}
-
-.forum-category-pill.is-active {
-    background: var(--color-primary-soft);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-
-.forum-header__controls {
+.forum-explorer__item {
     display: flex;
     align-items: center;
-    gap: var(--space-1_5);
-    flex-wrap: wrap;
-}
-
-.forum-search-box {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.5rem;
-    padding: 0 var(--space-1_5);
-    border: 1px solid var(--color-border);
+    gap: var(--space-2);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2);
+    border: none;
     border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    transition: border-color var(--duration-fast) var(--ease-smooth);
-}
-
-.forum-search-box:focus-within {
-    border-color: var(--color-primary);
-}
-
-.forum-search-input {
-    border: none;
-    background: transparent;
-    color: var(--color-fg);
-    font-size: var(--text-2xs);
-    outline: none;
-    width: 7.5rem;
-}
-
-.forum-search-input::placeholder {
-    color: var(--color-muted);
-}
-
-.forum-search-clear {
-    border: none;
     background: transparent;
     color: var(--color-muted);
-    cursor: pointer;
-    padding: 0;
-    display: inline-flex;
-    align-items: center;
-}
-
-.forum-search-clear:hover {
-    color: var(--color-fg);
-}
-
-.forum-sort-box {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.5rem;
-    padding: 0 var(--space-1_5);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-}
-
-.forum-sort-select {
-    border: none;
-    background: transparent;
-    color: var(--color-fg);
-    font-size: var(--text-2xs);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
     font-weight: var(--weight-medium);
-    outline: none;
+    text-align: left;
+    text-decoration: none;
     cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
 }
 
-/* Thread Cards List (Feed Central) — Compact & Spacious */
-.forum-thread-feed {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1_5);
-}
-
-.thread-card {
-    display: flex;
-    gap: var(--space-2_5);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-2) var(--space-3);
-    cursor: pointer;
-    box-shadow: var(--elevation-1);
-    transition: transform var(--duration-fast) var(--ease-smooth),
-                box-shadow var(--duration-fast) var(--ease-smooth),
-                border-color var(--duration-fast) var(--ease-smooth),
-                background-color var(--duration-fast) var(--ease-smooth);
-    position: relative;
-    outline: none;
-}
-
-.thread-card:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--elevation-2);
-    border-color: var(--color-border-hover);
+.forum-explorer__item:hover {
     background: var(--color-surface-hover);
+    color: var(--color-fg);
 }
 
-.thread-card:focus-visible {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px var(--color-primary-soft);
+.forum-explorer__item[aria-current] {
+    background: var(--color-surface-active);
+    color: var(--color-fg);
 }
 
-.thread-card.is-active {
-    border-color: var(--color-primary);
-    background: color-mix(in srgb, var(--color-primary) 5%, var(--color-surface));
-}
-
-.thread-card__avatar-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.forum-explorer__icon {
+    width: 0.875rem;
+    height: 0.875rem;
     flex-shrink: 0;
 }
 
-.thread-card__avatar-btn {
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-    padding: 0;
-    transition: transform var(--duration-fast) var(--ease-smooth);
+.forum-explorer__item[aria-current] .forum-explorer__icon {
+    color: var(--color-primary);
 }
 
-.thread-card__avatar-btn:hover {
-    transform: scale(1.06);
-}
-
-.thread-card__content {
-    flex: 1 1 0;
+.forum-explorer__label {
+    flex: 1 1 auto;
     min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forum-explorer__count {
+    flex-shrink: 0;
+    font-size: var(--text-2xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
+}
+
+.forum-explorer__topic {
     display: flex;
     flex-direction: column;
+    gap: var(--space-0_5);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
 }
 
-.thread-card__header-row {
+.forum-explorer__topic:hover {
+    background: var(--color-surface-hover);
+}
+
+/* The open post: a fill and the accent edge an editor gives its open file. */
+.forum-explorer__topic[aria-current] {
+    background: var(--color-surface-active);
+    box-shadow: inset 2px 0 0 var(--color-primary);
+}
+
+.forum-explorer__topic-title {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    line-height: 1.35;
+    color: var(--color-fg);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.forum-explorer__topic-meta {
     display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    flex-wrap: wrap;
-    margin-bottom: var(--space-0_5);
-}
-
-.thread-card__badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.1rem var(--space-1_5);
-    border-radius: var(--radius-full);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    letter-spacing: 0.02em;
-}
-
-.category-badge--general {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-}
-
-.category-badge--teams {
-    background: rgba(52, 211, 153, 0.14);
-    color: #34D399;
-}
-
-.category-badge--strategy {
-    background: rgba(251, 191, 36, 0.14);
-    color: #FBBF24;
-}
-
-.category-badge--announcements {
-    background: rgba(248, 113, 113, 0.14);
-    color: #F87171;
-}
-
-.thread-card__badge--official {
-    background: color-mix(in srgb, var(--color-primary) 18%, transparent);
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary-soft);
-}
-
-.thread-card__time {
-    display: inline-flex;
     align-items: center;
     gap: var(--space-1);
+    font-family: var(--font-display);
     font-size: var(--text-2xs);
     color: var(--color-muted);
-    margin-left: auto;
 }
 
-.thread-card__title {
-    font-size: var(--text-md);
+.forum-explorer__topic-meta svg + * {
+    margin-right: var(--space-1);
+}
+
+/* ---- Feed header --------------------------------------------------------- */
+
+.forum-feed-head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding-bottom: var(--space-3);
+}
+
+.forum-feed-head__top {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.forum-feed-head__id {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.forum-feed-head__title {
+    margin: 0;
+    font-size: var(--text-lg);
     font-weight: var(--weight-semibold);
-    line-height: 1.3;
+    line-height: 1.2;
     color: var(--color-fg);
-    margin: var(--space-0_5) 0 var(--space-1);
-    letter-spacing: -0.01em;
-    transition: color var(--duration-fast);
 }
 
-.thread-card:hover .thread-card__title {
-    color: var(--color-primary);
-}
-
-.thread-card__snippet {
+.forum-feed-head__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    margin: 0;
+    font-family: var(--font-display);
     font-size: var(--text-xs);
-    line-height: 1.45;
     color: var(--color-muted);
-    margin: 0 0 var(--space-1_5);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
-.thread-card__team-preview {
+.forum-feed-head__live {
+    color: var(--color-success);
+}
+
+/* Sort and categories share one row; on a phone the row scrolls sideways. */
+.forum-feed-head__filters {
     display: flex;
     align-items: center;
-    gap: var(--space-1_5);
-    padding: var(--space-1) var(--space-1_5);
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
+    gap: var(--space-2);
+    min-width: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+}
+
+.forum-feed-head__filters::-webkit-scrollbar {
+    display: none;
+}
+
+.forum-feed-head__sort {
+    flex-shrink: 0;
+}
+
+.forum-feed-head__divider {
+    flex-shrink: 0;
+    width: 1px;
+    height: var(--space-5);
+    background: var(--color-border);
+}
+
+.forum-feed-head .forum-feed-head__search-toggle {
+    display: none;
+}
+
+.forum-feed-head__create-short {
+    display: none;
+}
+
+@media (max-width: 1023px) {
+    .forum-feed-head__create-short {
+        display: inline;
+    }
+}
+
+.forum-search {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 16rem;
+    min-width: 0;
+    height: var(--control-h-sm);
+    margin-left: auto;
+    padding: 0 var(--space-2_5);
     border-radius: var(--radius-md);
-    width: fit-content;
-    margin-bottom: var(--space-1_5);
-}
-
-.thread-card__team-slot {
-    width: 1.75rem;
-    height: 1.75rem;
-    border-radius: var(--radius-full);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
+    box-shadow: inset 0 0 0 1px var(--color-border-strong);
+    cursor: text;
+    transition: box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
-.thread-card__team-sprite {
-    width: 1.5rem;
-    height: 1.5rem;
-    object-fit: contain;
+.forum-search:focus-within {
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
-.thread-card__footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2_5);
-    padding-top: var(--space-1_5);
-    border-top: 1px solid var(--color-border);
-    font-size: var(--text-2xs);
+.forum-search__icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+    color: var(--color-muted);
 }
 
-.thread-card__author-info {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-}
-
-.thread-card__author-link {
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
+.forum-search__input {
+    flex: 1 1 0;
+    min-width: 0;
     border: none;
     background: transparent;
+    color: var(--color-fg);
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    outline: none;
+}
+
+/* The pill draws focus; a second ring on the field was the 2026-09-24 wound. */
+.forum-search__input:focus-visible {
+    outline: none;
+}
+
+.forum-search__input::placeholder {
+    color: var(--color-muted);
+}
+
+.forum-search__input::-webkit-search-cancel-button {
+    appearance: none;
+}
+
+.forum-search__clear {
+    display: inline-flex;
+    flex-shrink: 0;
     padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--color-muted);
     cursor: pointer;
 }
 
-.thread-card__author-link:hover {
-    color: var(--color-primary);
+.forum-search__clear:hover {
+    color: var(--color-fg);
+}
+
+/* Category chips — Reddit's filter row: the chosen one is filled in ink. */
+.forum-chips {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--space-1_5);
+}
+
+.forum-chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-3);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-chip:hover {
+    background: color-mix(in srgb, var(--color-fg) 8%, var(--color-surface-raised));
+    color: var(--color-fg);
+}
+
+.forum-chip[aria-pressed='true'] {
+    background: var(--color-fg);
+    color: var(--color-bg);
+}
+
+/* ---- Flairs (category, pinned, trending, official) ---------------------- */
+/* The canon-chip mixes from the design system: 14% fill, the label mixed
+   45% toward the ink so it reads on all six themes. */
+.forum-flair {
+    --flair: var(--color-muted);
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--space-1);
+    height: 1.25rem;
+    padding: 0 var(--space-1_5);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--flair) 14%, transparent);
+    color: color-mix(in srgb, var(--flair) 45%, var(--color-fg));
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    white-space: nowrap;
+}
+
+.forum-flair--general,
+.forum-flair--official { --flair: var(--color-primary); }
+.forum-flair--teams,
+.forum-flair--pinned { --flair: var(--color-success); }
+.forum-flair--strategy,
+.forum-flair--trending { --flair: var(--color-warning); }
+.forum-flair--announcements { --flair: var(--color-danger); }
+
+/* ---- Feed rows ------------------------------------------------------------ */
+
+.forum-feed-list {
+    display: flex;
+    flex-direction: column;
+    /* Room between the header's rule and the first row's hover fill. */
+    padding-top: var(--space-2);
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+/* The list is filtering behind a keystroke: dim it, late, never hide it. */
+.forum-feed-list.is-stale {
+    opacity: 0.6;
+    transition-delay: 200ms;
+}
+
+.post-row {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    /* The fill bleeds one step past the text on *both* sides — the feed's
+       scroller reserves the same step on the right (2026-10-17: the right
+       side was clipped flush with the header while the left bled). */
+    margin-inline: calc(-1 * var(--space-3));
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.post-row + .post-row {
+    margin-top: var(--space-2);
+}
+
+/* The separator sits in the gap between rows, inset to the text column, and
+   steps aside for a hovered row so its rounded fill never meets a line. */
+.post-row + .post-row::before {
+    content: "";
+    position: absolute;
+    top: calc(-1 * var(--space-1) - 0.5px);
+    right: var(--space-3);
+    left: var(--space-3);
+    height: 1px;
+    background: var(--color-border);
+    pointer-events: none;
+    transition: opacity var(--duration-fast) var(--ease-smooth);
+}
+
+.post-row:hover::before,
+.post-row:hover + .post-row::before {
+    opacity: 0;
+}
+
+.post-row:hover {
+    background: var(--color-surface-hover);
+}
+
+.post-row--skeleton {
+    cursor: default;
+}
+
+.post-row--skeleton:hover {
+    background: transparent;
+}
+
+.post-row__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.post-row__avatar,
+.thread-post__avatar,
+.cmt__avatar {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    cursor: pointer;
+}
+
+.post-row__avatar {
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.post-row__author,
+.thread-post__author,
+.cmt__author {
+    min-width: 0;
+    max-width: 14rem;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-fg);
+    font: inherit;
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.post-row__author:hover,
+.thread-post__author:hover,
+.cmt__author:hover {
     text-decoration: underline;
 }
 
-.thread-card__metrics {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2_5);
+.post-row__time,
+.thread-post__time,
+.cmt__time {
+    white-space: nowrap;
 }
 
-.thread-card__metric {
+.post-row__flairs {
     display: inline-flex;
-    align-items: center;
+    flex-wrap: wrap;
     gap: var(--space-1);
-    font-size: var(--text-2xs);
+}
+
+.post-row__main {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.post-row__text {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: var(--space-1);
+    min-width: 0;
+}
+
+/* A post title is a sentence someone wrote: the body face, not the mono. */
+.post-row__title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--color-fg);
+    overflow-wrap: anywhere;
+}
+
+.post-row__link {
+    color: inherit;
+    text-decoration: none;
+}
+
+.post-row__preview {
+    display: -webkit-box;
+    margin: 0;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    line-height: 1.5;
     color: var(--color-muted);
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+}
+
+.post-row__reply {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.post-row__reply-label {
+    flex-shrink: 0;
     font-weight: var(--weight-semibold);
 }
 
-/* Thread Detail View */
-.thread-detail {
+.post-row__reply-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* The team is the post's thumbnail, where Reddit puts the image. */
+.post-row__thumb {
+    display: grid;
+    flex-shrink: 0;
+    grid-template-columns: repeat(3, 2rem);
+    grid-auto-rows: 2rem;
+    gap: var(--space-0_5);
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.post-row__sprite {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* ---- Pills: the vote / comments / share row ----------------------------- */
+
+.post-row__actions,
+.thread-post__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.forum-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-3);
+    border: none;
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    color: var(--color-fg);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.forum-pill:hover {
+    background: color-mix(in srgb, var(--color-fg) 8%, var(--color-surface-raised));
+}
+
+.forum-pill:active {
+    scale: var(--press-scale);
+}
+
+.forum-pill svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.forum-pill.is-liked {
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface-raised));
+    color: var(--color-primary);
+}
+
+.forum-pill.is-liked .forum-pill__heart {
+    fill: currentColor;
+}
+
+/* ---- Empty feed ------------------------------------------------------------ */
+
+.forum-feed-empty {
     display: flex;
     flex-direction: column;
-    flex: 1 1 0;
-    min-height: 0;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    background: var(--color-surface);
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-10) var(--space-4);
+    text-align: center;
+}
+
+.forum-feed-empty__title {
+    margin: 0;
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.forum-feed-empty__text {
+    max-width: 24rem;
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+}
+
+.forum-feed-empty__actions {
+    display: flex;
+    gap: var(--space-2);
+    margin-top: var(--space-2);
+}
+
+@media (min-width: 1024px) {
+    .forum-feed-head {
+        padding: var(--space-1) 0 var(--space-3);
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    /* The explorer carries sort and categories on a desktop. */
+    .forum-feed-head__filters {
+        display: none;
+    }
+}
+
+/* Where the rail shows, its community card carries the figures. */
+@media (min-width: 1440px) {
+    .forum-feed-head__stats {
+        display: none;
+    }
+}
+
+/* ---- Rail ------------------------------------------------------------------- */
+
+.forum-sidebar-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.forum-sidebar-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--elevation-1);
-    animation: fade-in var(--duration-fast) var(--ease-smooth);
+    background: var(--color-surface);
+}
+
+.forum-sidebar-card__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.forum-sidebar-card__text {
+    margin: 0;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.forum-sidebar-card__team-name {
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.forum-community-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-2);
+    margin: 0;
+}
+
+.forum-community-stats > div {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.forum-community-stats dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--color-fg);
+}
+
+.forum-community-stats dd.is-live {
+    color: var(--color-success);
+}
+
+.forum-community-stats dt {
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.forum-rules__summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-inline: calc(-1 * var(--space-2));
+    padding: var(--space-1_5) var(--space-2);
+    border-radius: var(--radius-md);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+    list-style: none;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-rules__summary::-webkit-details-marker {
+    display: none;
+}
+
+.forum-rules__summary:hover {
+    background: var(--color-surface-hover);
+}
+
+.forum-rules__chevron {
+    width: 1rem;
+    height: 1rem;
+    margin-left: auto;
+    color: var(--color-muted);
+    transition: rotate var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-rules[open] .forum-rules__chevron {
+    rotate: 180deg;
+}
+
+.forum-rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: var(--space-2) 0 0;
+    padding-left: var(--space-4);
+    font-size: var(--text-xs);
+    line-height: 1.5;
+    color: var(--color-muted);
+}
+
+.forum-trending {
+    display: flex;
+    flex-direction: column;
+    margin: 0 calc(-1 * var(--space-2));
+    padding: 0;
+    list-style: none;
+}
+
+.forum-trending__item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2_5);
+    padding: var(--space-2);
+    border-radius: var(--radius-md);
+    color: inherit;
+    text-decoration: none;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.forum-trending__item:hover {
+    background: var(--color-surface-hover);
+}
+
+.forum-trending__rank {
+    flex-shrink: 0;
+    width: 1rem;
+    font-family: var(--font-display);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    line-height: 1.35;
+    text-align: center;
+    color: var(--color-muted);
+}
+
+.forum-trending li:first-child .forum-trending__rank {
+    color: var(--color-primary);
+}
+
+.forum-trending__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-0_5);
+    min-width: 0;
+}
+
+.forum-trending__title {
+    display: -webkit-box;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    line-height: 1.35;
+    color: var(--color-fg);
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+}
+
+.forum-trending__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    color: var(--color-muted);
+}
+
+.forum-trending__meta svg + * {
+    margin-right: var(--space-1);
+}
+
+.forum-sidebar-team-slots {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-1);
+}
+
+.forum-sidebar-team-slot {
+    display: grid;
+    min-width: 0;
+    aspect-ratio: 1;
+    place-items: center;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-raised);
+}
+
+/* ---- The post page ------------------------------------------------------- */
+
+.thread-detail {
     position: relative;
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .thread-detail__header-dock {
     flex-shrink: 0;
-    z-index: 10;
 }
 
-.thread-detail__header-dock .thread-header {
-    margin-bottom: 0;
-    border: none;
+.thread-bar {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) 0 var(--space-2);
     border-bottom: 1px solid var(--color-border);
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-    background: var(--color-surface);
-    padding: var(--space-2) var(--space-3_5);
+}
+
+.thread-bar__crumbs {
+    display: flex;
+    align-items: center;
     gap: var(--space-1_5);
+    min-width: 0;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.thread-bar__crumb-link {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+.thread-bar__crumb-link:hover {
+    color: var(--color-fg);
+    text-decoration: underline;
+}
+
+.thread-bar__crumb-current {
+    overflow: hidden;
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Breadcrumb and topic title share one cell and trade places: the title
+   comes in once the post's own heading has scrolled out of view. */
+.thread-bar__context {
+    display: grid;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
+}
+
+.thread-bar__crumbs,
+.thread-bar__title {
+    grid-area: 1 / 1;
+    transition: opacity var(--duration-fast) var(--ease-smooth),
+                translate var(--duration-fast) var(--ease-smooth);
+}
+
+.thread-bar__title {
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    translate: 0 var(--space-1);
+    pointer-events: none;
+}
+
+.thread-bar.is-titled .thread-bar__crumbs {
+    opacity: 0;
+    translate: 0 calc(-1 * var(--space-1));
+    pointer-events: none;
+}
+
+.thread-bar.is-titled .thread-bar__title {
+    opacity: 1;
+    translate: 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .thread-bar__crumbs,
+    .thread-bar__title {
+        translate: none !important;
+    }
+}
+
+.thread-bar__actions {
+    display: flex;
+    gap: var(--space-1);
+    margin-left: auto;
+}
+
+.thread-bar .thread-bar__delete:hover {
+    color: var(--color-danger);
 }
 
 .thread-messages-scroll {
     flex: 1 1 0;
     min-height: 0;
-    overflow-y: auto;
     overflow-x: hidden;
+    overflow-y: auto;
     touch-action: pan-y;
-    padding: var(--space-2_5) var(--space-3_5);
+    padding: var(--space-5) var(--space-3) var(--space-6) 0;
 }
 
-.thread-composer-dock {
-    flex-shrink: 0;
-    background: var(--color-surface);
-    border-top: 1px solid var(--color-border);
-    padding: var(--space-1_5) var(--space-3);
-    z-index: 20;
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
-    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+/* The pane is wide; a line of prose is not. */
+.thread-post__text,
+.cmt__text {
+    max-width: 75ch;
 }
 
-.thread-composer-dock .comment-composer {
-    border: none;
-    box-shadow: none;
-    padding: 0;
-    background: transparent;
-}
-
-.thread-header {
+.thread-post {
     display: flex;
     flex-direction: column;
-    gap: var(--space-1_5);
-    margin-bottom: var(--space-2);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-2) var(--space-3_5);
-    box-shadow: var(--elevation-1);
-}
-
-.thread-header__top-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    flex-wrap: wrap;
-}
-
-.thread-header__title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2_5);
-    flex-wrap: wrap;
-}
-
-.thread-header__back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.625rem;
-    padding: 0 var(--space-2);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
-    color: var(--color-fg);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
-}
-
-.thread-header__back-btn:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-
-.thread-header__breadcrumbs {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    font-size: var(--text-2xs);
-    color: var(--color-muted);
-}
-
-.thread-breadcrumb__sep {
-    opacity: 0.5;
-}
-
-.thread-header__title {
-    font-size: var(--text-md);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-    line-height: 1.25;
-    letter-spacing: -0.015em;
-    margin: 0;
-}
-
-.thread-header__author {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-}
-
-.thread-header__avatar-btn {
-    width: 1.375rem;
-    height: 1.375rem;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-    padding: 0;
-    flex-shrink: 0;
-}
-
-.thread-header__author-name {
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-    border: none;
-    background: transparent;
-    padding: 0;
-    cursor: pointer;
-}
-
-.thread-header__author-name:hover {
-    color: var(--color-primary);
-}
-
-.thread-header__time {
-    font-size: var(--text-2xs);
-    color: var(--color-muted);
-}
-
-.thread-header__op-tag {
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    padding: 0.05rem 0.25rem;
-    border-radius: var(--radius-sm);
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-}
-
-.thread-header__admin-tag {
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    padding: 0.05rem 0.25rem;
-    border-radius: var(--radius-sm);
-    background: rgba(248, 113, 113, 0.15);
-    color: #F87171;
-}
-
-.thread-header__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-}
-
-.thread-header__stat-pill {
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    color: var(--color-muted);
-    background: var(--color-surface-raised);
-    padding: 0.1rem var(--space-1_5);
-    border-radius: var(--radius-full);
-}
-
-.thread-header__action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.625rem;
-    padding: 0 var(--space-2);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
-    color: var(--color-muted);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
-}
-
-.thread-header__action-btn:hover {
-    border-color: var(--color-border-hover);
-    color: var(--color-fg);
-}
-
-.thread-header__action-btn--danger:hover {
-    border-color: #F87171;
-    color: #F87171;
-    background: rgba(248, 113, 113, 0.1);
-}
-
-/* Original Post (OP) Card */
-.thread-op-card {
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-3) var(--space-3_5);
-    margin-bottom: var(--space-2_5);
-    box-shadow: var(--elevation-1);
-}
-
-.thread-op-card__text {
-    font-size: var(--text-base);
-    line-height: 1.55;
-    color: var(--color-fg);
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.thread-op-card__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding-top: var(--space-2);
-    margin-top: var(--space-2);
-    border-top: 1px solid var(--color-border);
-}
-
-.thread-op-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.75rem;
-    padding: 0 var(--space-2_5);
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-muted);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--ease-smooth);
-}
-
-.thread-op-action-btn:hover {
-    color: var(--color-fg);
-    border-color: var(--color-border-hover);
-}
-
-.thread-op-action-btn.is-liked {
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-    border-color: color-mix(in srgb, var(--color-primary) 30%, transparent);
-}
-
-.thread-op-action-btn.is-liked svg {
-    fill: currentColor;
-}
-
-/* Comments Section */
-.thread-comments-section {
-    display: flex;
-    flex-direction: column;
-}
-
-.thread-comments-section__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-2);
-    padding-bottom: var(--space-1_5);
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-5);
     border-bottom: 1px solid var(--color-border);
 }
 
-.thread-comments-section__title {
-    font-size: var(--text-base);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-    margin: 0;
+.thread-post__meta {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
-}
-
-.thread-comments-section__count {
-    color: var(--color-muted);
-    font-weight: var(--weight-medium);
-}
-
-/* Comment Item (Reddit Style) */
-.comment-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-}
-
-.comment-list__toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin-bottom: var(--space-2);
-}
-
-.comment-list__collapse-all-btn {
-    display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-1_5);
     font-size: var(--text-xs);
-    font-weight: var(--weight-semibold);
     color: var(--color-muted);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-md);
-    transition: color var(--duration-fast);
 }
 
-.comment-list__collapse-all-btn:hover {
+.thread-post__avatar {
+    width: 2rem;
+    height: 2rem;
+}
+
+.thread-post__title {
+    margin: 0;
+    font-family: var(--font-body);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+    color: var(--color-fg);
+    overflow-wrap: anywhere;
+}
+
+.thread-post__flair {
+    align-self: flex-start;
+}
+
+.thread-post__text {
+    margin: 0;
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--color-fg);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.thread-comments {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.thread-comments__bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+}
+
+.thread-comments__title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: 0;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.thread-comments__count {
+    min-width: 1.25rem;
+    padding: 0 var(--space-1_5);
+    border-radius: var(--radius-full);
+    background: var(--color-surface-raised);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    line-height: 1.25rem;
+    text-align: center;
+    color: var(--color-muted);
+}
+
+/* ---- Comments: the tree ------------------------------------------------- */
+/* A comment is a grid: avatar | byline, then line | content, then the
+   replies in the content column. The thread line is the parent's column-1
+   cell; each reply draws an elbow back to it, and every reply but the last
+   carries the line on down past itself, so it ends at the last branch. */
+
+.comment-list {
+    --cmt-avatar: 2rem;
+    --cmt-gap: var(--space-2);
+    --cmt-line: var(--color-border-strong);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+}
+
+.cmt {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--cmt-avatar) minmax(0, 1fr);
+    column-gap: var(--cmt-gap);
+    align-items: start;
+    border-radius: var(--radius-md);
+}
+
+.cmt__avatar {
+    grid-column: 1;
+    grid-row: 1;
+    width: var(--cmt-avatar);
+    height: var(--cmt-avatar);
+}
+
+.cmt__byline {
+    display: flex;
+    flex-wrap: wrap;
+    grid-column: 2;
+    grid-row: 1;
+    align-items: center;
+    align-self: center;
+    gap: var(--space-1_5);
+    min-width: 0;
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+.cmt__tag {
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-semibold);
+    line-height: 1.125rem;
+}
+
+.cmt__tag--op {
+    background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+    color: color-mix(in srgb, var(--color-primary) 45%, var(--color-fg));
+}
+
+.cmt__tag--staff {
+    background: color-mix(in srgb, var(--color-danger) 14%, transparent);
+    color: color-mix(in srgb, var(--color-danger) 45%, var(--color-fg));
+}
+
+.cmt__hidden {
+    display: inline-flex;
+    gap: var(--space-1_5);
+    font-weight: var(--weight-semibold);
+}
+
+.cmt__content {
+    display: flex;
+    flex-direction: column;
+    grid-column: 2;
+    grid-row: 2;
+    gap: var(--space-2);
+    min-width: 0;
+    padding-top: var(--space-1);
+}
+
+.cmt__text {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: 1.55;
+    color: var(--color-fg);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.cmt__quote {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1_5);
+    width: 100%;
+    min-width: 0;
+    padding: var(--space-1_5) var(--space-2_5);
+    border: none;
+    border-left: 2px solid var(--color-primary);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    background: var(--color-surface-raised);
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.cmt__quote:hover {
+    background: var(--color-surface-hover);
+}
+
+.cmt__quote-name {
+    flex-shrink: 0;
+    font-weight: var(--weight-semibold);
+    color: var(--color-fg);
+}
+
+.cmt__quote-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Ghost actions; the row starts on the text's edge, not the button's. */
+.cmt__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-1);
+    margin-left: calc(-1 * var(--space-2));
+}
+
+.cmt-action {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    height: var(--control-h-sm);
+    padding: 0 var(--space-2);
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-muted);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth),
+                scale var(--duration-press) var(--ease-out);
+}
+
+.cmt-action:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-fg);
+}
+
+.cmt-action:active {
+    scale: var(--press-scale);
+}
+
+.cmt-action__icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+}
+
+.cmt-action.is-liked {
     color: var(--color-primary);
+}
+
+.cmt-action.is-liked .cmt-action__icon {
+    fill: currentColor;
+}
+
+.cmt-action--danger:hover {
+    color: var(--color-danger);
+}
+
+/* The parent's line: a button the height of its content, with the ⊖ sitting
+   on it level with the action row (Reddit's fold control). */
+.cmt__line {
+    position: relative;
+    display: flex;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: stretch;
+    align-items: flex-end;
+    justify-content: center;
+    justify-self: center;
+    width: 1rem;
+    margin-top: var(--space-1);
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--cmt-line);
+    cursor: pointer;
+}
+
+.cmt__line::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    translate: -50% 0;
+    background: currentColor;
+    transition: background-color var(--duration-fast) var(--ease-smooth);
+}
+
+.cmt__line-icon {
+    position: relative;
+    width: 1rem;
+    height: 1rem;
+    margin-bottom: calc((var(--control-h-sm) - 1rem) / 2);
+    border-radius: var(--radius-full);
+    background: var(--color-bg);
+    color: var(--color-muted);
+}
+
+.cmt__line:hover,
+.cmt__line:hover .cmt__line-icon {
+    color: var(--color-primary);
+}
+
+.cmt__children {
+    display: flex;
+    flex-direction: column;
+    grid-column: 2;
+    grid-row: 3;
+    min-width: 0;
+}
+
+.cmt__children > .cmt {
+    padding-top: var(--space-4);
+}
+
+/* The elbow from the parent's line into this reply's avatar… */
+.cmt__children > .cmt::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: calc(-1 * (var(--cmt-gap) + var(--cmt-avatar) / 2) - 0.5px);
+    width: calc(var(--cmt-gap) + var(--cmt-avatar) / 2);
+    height: calc(var(--space-4) + var(--cmt-avatar) / 2);
+    border-bottom: 1px solid var(--cmt-line);
+    border-left: 1px solid var(--cmt-line);
+    border-bottom-left-radius: var(--radius-md);
+    pointer-events: none;
+}
+
+/* …and the line carried on past it to the next sibling. */
+.cmt__children > .cmt:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(-1 * (var(--cmt-gap) + var(--cmt-avatar) / 2) - 0.5px);
+    border-left: 1px solid var(--cmt-line);
+    pointer-events: none;
+}
+
+.cmt__expand {
+    display: grid;
+    grid-column: 1;
+    grid-row: 1;
+    width: var(--cmt-avatar);
+    height: var(--cmt-avatar);
+    place-items: center;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: background-color var(--duration-fast) var(--ease-smooth),
+                color var(--duration-fast) var(--ease-smooth);
+}
+
+.cmt__expand:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+}
+
+/* Where a jump lands — a quote, a permalink, a comment just posted. Held
+   long enough to be found after the scroll settles; colour only. */
+.cmt.is-flash {
+    animation: forum-cmt-flash 1.6s var(--ease-smooth);
+}
+
+@keyframes forum-cmt-flash {
+    0%, 40% {
+        background: color-mix(in srgb, var(--color-primary) 16%, transparent);
+        box-shadow: 0 0 0 var(--space-2) color-mix(in srgb, var(--color-primary) 16%, transparent);
+    }
+    100% {
+        background: transparent;
+        box-shadow: 0 0 0 var(--space-2) transparent;
+    }
 }
 
 .comment-list__empty {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: var(--space-1);
     padding: var(--space-8) var(--space-4);
+    border: 1px dashed var(--color-border-strong);
+    border-radius: var(--radius-lg);
     text-align: center;
-    background: var(--color-surface);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-xl);
+    color: var(--color-muted);
 }
 
-.comment-item {
-    position: relative;
-    display: flex;
-    gap: var(--space-2);
-    padding-left: var(--space-0_5);
-}
-
-.comment-item__guide {
-    position: absolute;
-    left: 1rem;
-    top: 2.5rem;
-    bottom: -0.5rem;
-    width: 2px;
-    background: var(--color-border);
-    border-radius: 1px;
-    transition: background var(--duration-fast);
-}
-
-.comment-item:hover > .comment-item__guide {
-    background: var(--color-primary);
-}
-
-.comment-item__avatar {
-    width: 2rem;
-    height: 2rem;
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface-raised);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    overflow: hidden;
-    padding: 0;
-    flex-shrink: 0;
-    z-index: 1;
-}
-
-.comment-item__body {
-    flex: 1 1 0;
-    min-width: 0;
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-2) var(--space-2_5);
-    box-shadow: var(--elevation-1);
-    transition: border-color var(--duration-fast);
-}
-
-.comment-item__body:hover {
-    border-color: var(--color-border-hover);
-}
-
-.comment-item__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-2);
-    margin-bottom: var(--space-1);
-}
-
-.comment-item__author-row {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    flex-wrap: wrap;
-}
-
-.comment-item__author-name {
-    font-size: var(--text-xs);
+.comment-list__empty-title {
+    margin: 0;
+    font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
     color: var(--color-fg);
-    border: none;
-    background: transparent;
-    padding: 0;
-    cursor: pointer;
 }
 
-.comment-item__author-name:hover {
-    color: var(--color-primary);
+.comment-list__empty-hint {
+    margin: 0;
+    font-size: var(--text-xs);
 }
 
-.comment-item__tag {
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    padding: 0.05rem 0.3rem;
-    border-radius: var(--radius-sm);
+/* ---- A shared team, compact (2026-10-17) -------------------------------- */
+/* Six sprites on one strip under the name, no box per slot: the card was a
+   box of six boxes, ~150px tall, repeated down a thread of team posts. It
+   hugs its sprites instead of stretching across the pane. */
+.forum-team-share-card {
+    width: fit-content;
+    min-width: min(100%, 18rem);
+    max-width: 100%;
 }
 
-.comment-item__tag--op {
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
+.forum-team-share-header .forum-team-share-import {
+    margin-left: auto;
 }
 
-.comment-item__tag--admin {
-    background: rgba(248, 113, 113, 0.15);
-    color: #F87171;
-}
-
-.comment-item__time {
-    font-size: var(--text-2xs);
-    color: var(--color-muted);
-}
-
-.comment-item__quote {
+.forum-team-share-slots {
     display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    padding: var(--space-1) var(--space-2);
-    background: var(--color-surface);
-    border-left: 2px solid var(--color-primary);
-    border-radius: 0 var(--radius-md) var(--radius-md) 0;
-    margin-bottom: var(--space-1_5);
-    font-size: var(--text-2xs);
-    color: var(--color-muted);
-    cursor: pointer;
-    border-top: none;
-    border-right: none;
-    border-bottom: none;
-    text-align: left;
-    width: 100%;
+    gap: var(--space-0_5);
+    padding: var(--space-1_5) var(--space-2);
 }
 
-.comment-item__quote:hover {
+.forum-team-share-slot {
+    flex: 0 1 2.75rem;
+    width: 2.75rem;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    aspect-ratio: 1;
+    border-radius: var(--radius-sm);
+    background: transparent;
+}
+
+.forum-team-share-slot:hover {
     background: var(--color-surface-hover);
 }
 
-.comment-item__text {
-    font-size: var(--text-sm);
-    line-height: 1.45;
-    color: var(--color-fg);
-    white-space: pre-wrap;
-    word-break: break-word;
-    margin: 0;
+.forum-team-share-sprite {
+    width: 100%;
+    height: 100%;
 }
 
-.comment-item__actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1_5);
-    margin-top: var(--space-1_5);
-    padding-top: var(--space-1);
+/* ---- Composer (docked) ---------------------------------------------------- */
+
+.thread-composer-dock {
+    flex-shrink: 0;
+    padding: var(--space-3) 0;
     border-top: 1px solid var(--color-border);
-    flex-wrap: wrap;
 }
 
-.comment-item__action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.5rem;
-    padding: 0 var(--space-1_5);
-    border-radius: var(--radius-full);
-    border: none;
-    background: transparent;
-    color: var(--color-muted);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--duration-fast);
-}
-
-.comment-item__action-btn:hover {
-    color: var(--color-fg);
-    background: var(--color-surface);
-}
-
-.comment-item__action-btn.is-liked {
-    color: var(--color-primary);
-}
-
-.comment-item__action-btn.is-liked svg {
-    fill: currentColor;
-}
-
-.comment-item__action-btn--delete:hover {
-    color: var(--color-danger);
-}
-
-/* Replies toggle button */
-.comment-item__replies-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.5rem;
-    padding: 0 var(--space-2);
-    border-radius: var(--radius-full);
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-fg);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--duration-fast);
-}
-
-.comment-item__replies-toggle:hover {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-}
-
-.comment-item__replies-toggle.is-expanded {
-    background: var(--color-primary-soft);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-}
-
-/* Nested replies container */
-.comment-item__nested-replies {
-    margin-top: var(--space-3);
-    margin-left: var(--space-2);
-    padding-left: var(--space-3);
-    border-left: 2px solid var(--color-border);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-    transition: border-color var(--duration-fast);
-}
-
-.comment-item__nested-replies:hover {
-    border-left-color: var(--color-primary-soft);
-}
-
-.comment-item--nested {
-    padding-left: 0;
-}
-
-.comment-item--nested .comment-item__body {
-    background: var(--color-surface);
-    border-color: var(--color-border);
-}
-
-/* Comment Composer */
 .comment-composer {
     display: flex;
     flex-direction: column;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-2) var(--space-2_5);
-    box-shadow: var(--elevation-1);
-}
-
-.comment-composer__quote-banner,
-.comment-composer__team-banner {
-    display: flex;
-    align-items: center;
     gap: var(--space-2);
-    padding: var(--space-1) var(--space-2_5);
-    background: var(--color-surface-raised);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--space-1_5);
-    font-size: var(--text-2xs);
-    color: var(--color-fg);
 }
 
-.comment-composer__close-btn {
+.comment-composer__row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--space-2);
+}
+
+.comment-composer__field {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: var(--control-h-md);
+    max-height: 10.5rem;
+    padding: var(--space-2) var(--space-3_5);
     border: none;
-    background: transparent;
-    color: var(--color-muted);
-    cursor: pointer;
-    padding: 0;
-    display: inline-flex;
-}
-
-.comment-composer__close-btn:hover {
-    color: var(--color-fg);
-}
-
-.comment-composer__textarea {
-    width: 100%;
-    min-height: 2.5rem;
-    max-height: 7rem;
+    border-radius: var(--radius-lg);
     background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-1_5) var(--space-2_5);
+    box-shadow: inset 0 0 0 1px var(--color-border);
     color: var(--color-fg);
+    font-family: var(--font-body);
     font-size: var(--text-sm);
     line-height: 1.4;
     resize: none;
     outline: none;
-    transition: border-color var(--duration-fast);
-    box-sizing: border-box;
+    transition: box-shadow var(--duration-fast) var(--ease-smooth);
 }
 
-.comment-composer__textarea:focus {
-    border-color: var(--color-primary);
+.comment-composer__field:focus {
+    box-shadow: inset 0 0 0 1px var(--color-primary);
 }
 
-.comment-composer__toolbar {
+.comment-composer__field:focus-visible {
+    outline: none;
+}
+
+.comment-composer__attach.is-active {
+    color: var(--color-primary);
+}
+
+.comment-composer__banner {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-2);
-    margin-top: var(--space-1_5);
-}
-
-.comment-composer__tool-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 1.625rem;
-    padding: 0 var(--space-2);
+    min-width: 0;
+    padding: var(--space-1_5) var(--space-2_5);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
     background: var(--color-surface-raised);
-    color: var(--color-muted);
-    font-size: var(--text-2xs);
-    font-weight: var(--weight-semibold);
-    cursor: pointer;
-    transition: all var(--duration-fast);
+    font-size: var(--text-xs);
+    color: var(--color-fg);
 }
 
-.comment-composer__tool-btn:hover,
-.comment-composer__tool-btn.is-active {
-    color: var(--color-primary);
-    border-color: var(--color-primary);
+.comment-composer__banner-text {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.comment-composer__banner-snippet {
+    color: var(--color-muted);
+}
+
+.comment-composer__banner-close {
+    display: inline-flex;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-muted);
+    cursor: pointer;
+}
+
+.comment-composer__banner-close:hover {
+    color: var(--color-fg);
+}
+
+.comment-composer__menu-sep {
+    height: 1px;
+    margin: var(--space-1) 0;
+    background: var(--color-border);
+}
+
+.comment-composer__menu-empty {
+    margin: 0;
+    padding: var(--space-1_5) var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--color-muted);
+}
+
+/* ---- The page is the panel, at every width ------------------------------ */
+/* Nothing in the forum sits in a card but the rail's, so every control here
+   stands straight on the page and takes the surface: raised-on-bg is
+   invisible on the light themes (#f6f6f7 on #f2f2f3). */
+.forum-view .segmented,
+.forum-chip,
+.forum-pill,
+.post-row__thumb,
+.thread-comments__count,
+.cmt__quote,
+.comment-composer__banner,
+.comment-composer__field {
+    background: var(--color-surface);
+}
+
+.forum-chip:hover,
+.forum-pill:hover {
+    background: var(--color-surface-hover);
+}
+
+.forum-chip[aria-pressed='true'] {
+    background: var(--color-fg);
+}
+
+.forum-pill.is-liked {
+    background: color-mix(in srgb, var(--color-primary) 14%, var(--color-surface));
+}
+
+/* ---- Phones -------------------------------------------------------------- */
+
+@media (max-width: 1023px) {
+    .forum-feed-head {
+        padding-bottom: var(--space-2);
+    }
+
+    /* Rows run edge to edge under the shell gutter, Reddit-app style, so the
+       press fill and the hairlines span the screen. */
+    .post-row {
+        margin-inline: calc(-1 * var(--page-gutter));
+        padding: var(--space-3) var(--page-gutter);
+        border-radius: 0;
+    }
+
+    .post-row + .post-row::before {
+        right: var(--page-gutter);
+        left: var(--page-gutter);
+    }
+
+    /* The scroller spans the screen so the rows' edge-to-edge fill is not
+       clipped at the gutter; its padding puts the text back on the gutter. */
+    .forum-feed-scroll {
+        margin-inline: calc(-1 * var(--page-gutter));
+        padding-inline: var(--page-gutter);
+    }
+
+    /* The filter row scrolls to the screen's edges, not the gutter's. */
+    .forum-feed-head__filters {
+        margin-inline: calc(-1 * var(--page-gutter));
+        padding-inline: var(--page-gutter);
+    }
+
+    .forum-search {
+        display: none;
+    }
+
+    /* Searching takes the first line: the field replaces the name and Create. */
+    .forum-feed-head__top.is-searching .forum-search {
+        display: inline-flex;
+        flex: 1 1 0;
+        width: auto;
+        margin-left: 0;
+    }
+
+    /* Name, search and Create on one line; the figures get the full width
+       of the line below instead of wrapping beside the buttons. */
+    .forum-feed-head__top {
+        flex-wrap: wrap;
+        row-gap: var(--space-0_5);
+    }
+
+    .forum-feed-head__id {
+        display: contents;
+    }
+
+    .forum-feed-head__title {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: var(--text-md);
+    }
+
+    .forum-feed-head__create-long {
+        display: none;
+    }
+
+    .forum-feed-head__stats {
+        order: 5;
+        flex-basis: 100%;
+    }
+
+    .forum-feed-head__top.is-searching .forum-feed-head__title,
+    .forum-feed-head__top.is-searching .forum-feed-head__stats,
+    .forum-feed-head__top.is-searching .forum-feed-head__create {
+        display: none;
+    }
+
+    .forum-feed-head .forum-feed-head__search-toggle {
+        display: inline-flex;
+    }
+
+    /* iOS zooms into any field under 16px. */
+    .forum-search__input,
+    .comment-composer__field {
+        font-size: 16px;
+    }
+
+    .post-row__thumb {
+        grid-template-columns: repeat(3, 1.75rem);
+        grid-auto-rows: 1.75rem;
+    }
+
+    .thread-bar {
+        padding: 0 0 var(--space-2);
+    }
+
+    .thread-messages-scroll {
+        padding: var(--space-4) 0 var(--space-6);
+    }
+
+    .thread-post__title {
+        font-size: var(--text-lg);
+    }
+
+    .comment-list {
+        --cmt-avatar: 1.75rem;
+        gap: var(--space-4);
+    }
+
+    .thread-composer-dock {
+        padding: var(--space-2) 0 0;
+    }
+
+    .comment-composer__send-label {
+        display: none;
+    }
+
+    /* Icon-only send: square, like the attach button beside it. */
+    .thread-composer-dock .comment-composer__send {
+        width: var(--control-h-md);
+        padding: 0;
+    }
+}
+
+/* The narrowest phones keep Share as an icon so a comment's actions hold one line. */
+@media (max-width: 479px) {
+    .cmt-action__label {
+        display: none;
+    }
 }
 
 /* Placed by AnchoredPopover (fixed, portalled, above the button) — position
@@ -2802,529 +3455,113 @@
     font-weight: var(--weight-semibold);
 }
 
-/* Forum Right Sidebar */
-.forum-sidebar-right {
+/* Create post (TopicCreateModal) — the dialog primitives own the frame. */
+.topic-create-modal {
+    max-width: 36rem;
+}
+
+.topic-create-form {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2_5);
-    min-width: 0;
+    gap: var(--space-4);
 }
 
-.forum-sidebar-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    padding: var(--space-2_5) var(--space-3);
-    box-shadow: var(--elevation-1);
-}
-
-.forum-sidebar-card__header {
+.topic-create-categories {
     display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-2);
-}
-
-.forum-sidebar-card__title {
-    font-family: inherit;
-    font-size: var(--text-sm);
-    font-weight: var(--weight-semibold);
-    letter-spacing: -0.01em;
-    color: var(--color-fg);
-    margin: 0;
-}
-
-.forum-sidebar-team-slots {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    flex-wrap: wrap;
     gap: var(--space-1_5);
 }
 
-.forum-sidebar-team-slot {
-    aspect-ratio: 1;
-    border-radius: var(--radius-md);
-    background: var(--color-surface-raised);
-    border: 1px solid var(--color-border);
+.topic-create-label-row {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    padding: 2px;
-}
-
-.forum-rules-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2_5);
-    font-size: var(--text-xs);
-    color: var(--color-muted);
-    line-height: 1.45;
-}
-
-.forum-rules-list li {
-    display: flex;
-    align-items: flex-start;
+    align-items: baseline;
+    justify-content: space-between;
     gap: var(--space-2);
 }
 
-.forum-rule-number {
-    width: 1.125rem;
-    height: 1.125rem;
-    border-radius: var(--radius-full);
-    background: var(--color-surface-raised);
-    color: var(--color-fg);
-    font-weight: var(--weight-semibold);
+.topic-create-counter {
+    font-family: var(--font-display);
     font-size: var(--text-2xs);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-muted);
 }
 
-/* Topic Create Modal */
-.topic-create-modal {
-    max-width: 34rem;
-    width: 100%;
+/* Compound: index.css (and its .field-hint colour) loads after this file. */
+.topic-create-form .topic-create-error {
+    color: var(--color-danger);
 }
 
-.topic-create-modal__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-4);
-    padding-bottom: var(--space-3);
-    border-bottom: 1px solid var(--color-border);
+.topic-create-form .input-clean[aria-invalid='true'] {
+    border-color: var(--color-danger);
 }
 
-.topic-create-modal__title {
-    font-size: var(--text-lg);
-    font-weight: var(--weight-semibold);
-    color: var(--color-fg);
-    margin: 0;
+/* The dialog is the surface, so its chips step up one. */
+.topic-create-categories .forum-chip {
+    background: var(--color-surface-raised);
 }
 
-.topic-create-modal__form {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3_5);
-}
-
-.topic-create-select {
-    width: 100%;
-    min-height: 2.25rem;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 0 var(--space-3);
-    color: var(--color-fg);
-    font-size: var(--text-sm);
-    outline: none;
+.topic-create-categories .forum-chip[aria-pressed='true'] {
+    background: var(--color-fg);
 }
 
 .topic-create-textarea {
-    width: 100%;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-2_5) var(--space-3);
-    color: var(--color-fg);
-    font-size: var(--text-sm);
-    line-height: 1.5;
-    outline: none;
+    min-height: 7rem;
     resize: vertical;
 }
 
-.topic-create-modal__actions {
+.topic-create-team {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: var(--space-2);
-    padding-top: var(--space-3);
-    border-top: 1px solid var(--color-border);
-    margin-top: var(--space-1);
+    padding: var(--space-1_5) var(--space-1_5) var(--space-1_5) var(--space-2_5);
+    border-radius: var(--radius-md);
+    background: var(--color-surface-raised);
+}
+
+.topic-create-team__sprites {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.topic-create-team__sprites img {
+    width: 2rem;
+    height: 2rem;
+    object-fit: contain;
+}
+
+.topic-create-team__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Skeleton Loaders */
 .forum-skeleton-circle {
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
-    animation: forum-pulse 1.5s ease-in-out infinite;
+    animation: forum-pulse 1.5s var(--ease-smooth) infinite;
 }
 
 .forum-skeleton-pill {
     border-radius: var(--radius-full);
     background: var(--color-surface-raised);
-    animation: forum-pulse 1.5s ease-in-out infinite;
+    animation: forum-pulse 1.5s var(--ease-smooth) infinite;
 }
 
 .forum-skeleton-text {
     border-radius: var(--radius-sm);
     background: var(--color-surface-raised);
-    animation: forum-pulse 1.5s ease-in-out infinite;
+    animation: forum-pulse 1.5s var(--ease-smooth) infinite;
 }
 
 @keyframes forum-pulse {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.25; }
 }
-
-/* ==========================================================================
-   Thread detail on a phone — the page is the panel.
-   Below 1024px the thread was a bordered box inside the shell's gutter, its
-   header, scroller and composer each padded again inside it, and every
-   comment a bordered card inside that: three insets (~30px a side on a 390px
-   screen) and three boxes before a line of text. The shell's gutter is the
-   only gutter now; the thread reads as one continuous column, the comments
-   keep their fill, and the header and composer are bands separated by a
-   single rule. Desktop is untouched. (Declared after the base rules so equal
-   specificity wins by order.)
-   ========================================================================== */
-@media (max-width: 1023px) {
-    .thread-detail {
-        border: none;
-        border-radius: 0;
-        background: transparent;
-        box-shadow: none;
-    }
-
-    .thread-detail__header-dock .thread-header {
-        padding: 0 0 var(--space-2);
-        border-radius: 0;
-        background: transparent;
-    }
-
-    .thread-messages-scroll {
-        padding: var(--space-3) 0;
-    }
-
-    .thread-composer-dock {
-        padding: var(--space-2) 0 0;
-        border-radius: 0;
-        background: transparent;
-        box-shadow: none;
-    }
-
-    /* On the page, a card takes the surface fill and no line of its own. */
-    .thread-op-card,
-    .comment-item__body {
-        border: none;
-        box-shadow: none;
-        background: var(--color-surface);
-    }
-
-    /* A reply sits inside its parent's fill, so it steps up one surface. */
-    .comment-item--nested .comment-item__body {
-        background: var(--color-surface-raised);
-    }
-
-    .comment-item__nested-replies {
-        margin-left: 0;
-        padding-left: var(--space-2);
-    }
-}
-
-/* Thread header on a phone: two lines, not four. The desktop bands (nav row,
-   title row) wrapped into Back / chips / title / byline on a 390px screen —
-   four lines of chrome above the first post, the title alone on its own line
-   under a Back button with room to spare beside it. The bands dissolve
-   (`display: contents`, markup untouched) and their items re-flow:
-     line 1  ‹  Title of the thread               [share] [delete]
-     line 2  (avatar) @author OP · date      [category] [n messages]
-   The `::after` is the line break — a zero-height item at 100% basis. */
-@media (max-width: 639px) {
-    .thread-detail .thread-header {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        column-gap: var(--space-2);
-        row-gap: var(--space-2);
-    }
-
-    .thread-detail .thread-header::after {
-        content: "";
-        order: 5;
-        flex-basis: 100%;
-        height: 0;
-    }
-
-    .thread-header__top-row,
-    .thread-header__title-row,
-    .thread-header__actions {
-        display: contents;
-    }
-
-    .thread-header__top-row > :first-child {
-        order: 1;
-    }
-
-    /* Back is an icon here; its label stays as the aria-label. */
-    .thread-header__back-btn {
-        justify-content: center;
-        width: 2rem;
-        min-height: 2rem;
-        padding: 0;
-    }
-
-    .thread-header__back-btn > span {
-        display: none;
-    }
-
-    .thread-header__title {
-        order: 2;
-        flex: 1 1 0;
-        min-width: 0;
-        font-size: var(--text-base);
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        overflow: hidden;
-    }
-
-    .thread-header__actions > .thread-header__action-btn {
-        order: 3;
-        justify-content: center;
-        width: 2rem;
-        min-height: 2rem;
-        padding: 0;
-    }
-
-    /* Delete, or its confirm pair, closes the first line. */
-    .thread-header__actions > .thread-header__action-btn--danger,
-    .thread-header__actions > div {
-        order: 4;
-    }
-
-    .thread-header__author {
-        order: 6;
-        flex: 1 1 0;
-        min-width: 0;
-    }
-
-    /* The byline holds one line and gives way before the chips do: the date
-       truncates first, then the name. Compound selector: the element carries
-       Tailwind's `flex-wrap`, which loads after this file. */
-    .thread-detail .thread-header__author > div {
-        flex-wrap: nowrap;
-        min-width: 0;
-        overflow: hidden;
-    }
-
-    /* The topic's author is its OP by definition — the tag earns its place on
-       a reply, not on the byline of the post it is naming. */
-    .thread-header__op-tag {
-        display: none;
-    }
-
-    .thread-header__admin-tag {
-        flex-shrink: 0;
-        white-space: nowrap;
-    }
-
-    .thread-header__author-name,
-    .thread-header__time {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .thread-header__author-name {
-        flex-shrink: 1;
-    }
-
-    .thread-header__time {
-        flex-shrink: 100;
-    }
-
-    .thread-header__actions > .thread-card__badge {
-        order: 7;
-        white-space: nowrap;
-    }
-
-    /* The message count is the one chip a 390px byline cannot carry next to
-       the author, the Official tag and the category — with it the name
-       collapsed to "@…". The thread under the header is the count. */
-    .thread-header__stat-pill {
-        display: none;
-    }
-}
-
-/* ==========================================================================
-   Desktop breathing room (2026-10-09)
-   On a medium monitor the forum read as cramped (Enzo): 8–10px between
-   every card, a thread header packing back, breadcrumb, badges, count,
-   share and author into two tight rows, and each comment a bordered box
-   inside the bordered thread — box in a box, 186 times. This block
-   re-spaces, swaps the inner borders for fills, and gives the cards the
-   shared material (--card-sheen, index.css); phones keep their layer above.
-   ========================================================================== */
-@media (min-width: 1024px) {
-    /* The rail is the shell's, so the forum's side column lines up with
-       Home's and the builder's instead of being its own 19rem. */
-    .forum-hub-layout,
-    .forum-hub-layout--detail {
-        grid-template-columns: minmax(0, 1fr) var(--page-rail-width);
-        gap: var(--page-gap);
-    }
-
-    .forum-sidebar-right {
-        gap: var(--space-3);
-    }
-
-    .forum-sidebar-card {
-        padding: var(--space-4);
-        box-shadow: var(--card-sheen);
-    }
-
-    .forum-sidebar-card__header {
-        margin-bottom: var(--space-3);
-    }
-
-    /* — Topic list — */
-    .forum-header {
-        gap: var(--space-3);
-        margin-bottom: var(--space-4);
-        padding: var(--space-4) var(--space-5);
-        box-shadow: var(--surface-sheen);
-    }
-
-    .forum-thread-feed {
-        gap: var(--space-3);
-    }
-
-    /* No lift on hover: a list of large cards that rise under the pointer is
-       the page wobbling. The fill and edge carry the hover. */
-    .thread-card {
-        gap: var(--space-4);
-        padding: var(--space-4) var(--space-5);
-        box-shadow: var(--card-sheen);
-    }
-
-    .thread-card:hover {
-        transform: none;
-        box-shadow: var(--card-sheen-hover);
-    }
-
-    .thread-card__header-row {
-        margin-bottom: var(--space-1);
-    }
-
-    .thread-card__title {
-        margin: var(--space-1) 0 var(--space-1_5);
-    }
-
-    /* — Thread — */
-    .thread-detail {
-        box-shadow: var(--surface-sheen);
-    }
-
-    .thread-detail__header-dock .thread-header {
-        gap: var(--space-3);
-        padding: var(--space-4) var(--space-6);
-    }
-
-    .thread-header__title {
-        font-size: var(--text-lg);
-    }
-
-    .thread-messages-scroll {
-        padding: var(--space-5) var(--space-6) var(--space-6);
-    }
-
-    /* Inside the thread's border, everything separates by fill. */
-    .thread-op-card {
-        border: none;
-        box-shadow: var(--card-sheen);
-        padding: var(--space-4) var(--space-5);
-        margin-bottom: var(--space-6);
-    }
-
-    .thread-op-card__actions {
-        border-top: none;
-        padding-top: 0;
-        margin-top: var(--space-3);
-    }
-
-    .thread-comments-section__header {
-        border-bottom: none;
-        padding-bottom: 0;
-        margin-bottom: var(--space-4);
-    }
-
-    .comment-list {
-        gap: var(--space-4);
-    }
-
-    .comment-item {
-        gap: var(--space-3);
-    }
-
-    /* The thread line runs through the wider gap to the next avatar. */
-    .comment-item__guide {
-        bottom: calc(-1 * var(--space-4));
-    }
-
-    .comment-item__body {
-        border: none;
-        box-shadow: var(--card-sheen);
-        border-radius: var(--radius-lg);
-        padding: var(--space-3) var(--space-4);
-    }
-
-    .comment-item__body:hover {
-        background: var(--color-surface-hover);
-    }
-
-    .comment-item__header {
-        margin-bottom: var(--space-1_5);
-    }
-
-    .comment-item__quote {
-        margin-bottom: var(--space-2);
-        padding: var(--space-1_5) var(--space-2_5);
-    }
-
-    .comment-item__text {
-        line-height: 1.55;
-    }
-
-    .comment-item__actions {
-        border-top: none;
-        padding-top: 0;
-        margin-top: var(--space-2);
-        gap: var(--space-2);
-    }
-
-    /* The border-top already separates the composer from the scroll; the
-       dark drop-shadow above it was a second edge (and a raw rgba that was
-       wrong on the light themes). */
-    .thread-composer-dock {
-        padding: var(--space-3) var(--space-6) var(--space-4);
-        box-shadow: none;
-    }
-
-    .comment-composer__textarea {
-        min-height: 3rem;
-        padding: var(--space-2_5) var(--space-3_5);
-        line-height: 1.5;
-    }
-
-    .comment-composer__toolbar {
-        margin-top: var(--space-2_5);
-    }
-
-    .comment-composer__quote-banner,
-    .comment-composer__team-banner {
-        padding: var(--space-1_5) var(--space-3);
-        margin-bottom: var(--space-2);
-    }
-}
-
 
 /* A shared Champion Challenge result (ChallengeShareCard): its figures and the
    win-chance curve as block characters, in the mono face that keeps them even. */

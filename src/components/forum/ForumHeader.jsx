@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     PokeballIcon,
     SwordsIcon,
@@ -7,18 +7,32 @@ import {
     FlameIcon,
     SearchIcon,
     CloseIcon,
-    ArrowUpDownIcon,
     PlusIcon,
+    SparklesIcon,
+    TrophyIcon,
 } from '../icons';
 
-const CATEGORIES = [
-    { id: 'all', labelPt: 'Todos', labelEn: 'All', icon: PokeballIcon },
-    { id: 'general', labelPt: 'Geral', labelEn: 'General', icon: MessageIcon },
-    { id: 'teams', labelPt: 'Times', labelEn: 'Teams', icon: SwordsIcon },
-    { id: 'strategy', labelPt: 'Estratégia', labelEn: 'Strategy', icon: FlameIcon },
-    { id: 'announcements', labelPt: 'Anúncios', labelEn: 'Announcements', icon: StarIcon },
+// Same ids, same order as FORUM_CATEGORY_IDS (utils/forumRanking).
+const FORUM_CATEGORIES = [
+    { id: 'all', key: 'forum.catAll', icon: PokeballIcon },
+    { id: 'general', key: 'forum.catGeneral', icon: MessageIcon },
+    { id: 'teams', key: 'forum.catTeams', icon: SwordsIcon },
+    { id: 'strategy', key: 'forum.catStrategy', icon: FlameIcon },
+    { id: 'announcements', key: 'forum.catAnnouncements', icon: StarIcon },
 ];
 
+const SORTS = [
+    { id: 'hot', key: 'forum.sortHot', icon: FlameIcon },
+    { id: 'new', key: 'forum.sortNew', icon: SparklesIcon },
+    { id: 'top', key: 'forum.sortTop', icon: TrophyIcon },
+];
+
+/**
+ * The top of the feed in two lines:
+ *   name (+ figures on a phone) · search · Create post
+ *   Hot / New / Top | category chips — one row that scrolls on a phone
+ * On a phone the search is one tap away and takes over the first line.
+ */
 export function ForumHeader({
     selectedCategory,
     onSelectCategory,
@@ -27,102 +41,127 @@ export function ForumHeader({
     sortBy,
     onSortChange,
     onOpenCreateTopic,
-    totalTopics = 0,
-    language = 'pt',
+    stats,
+    t,
 }) {
+    const [isSearchOpen, setIsSearchOpen] = useState(() => !!searchQuery);
+    const inputRef = useRef(null);
+    const openedByTapRef = useRef(false);
+
+    useEffect(() => {
+        if (isSearchOpen && openedByTapRef.current) {
+            openedByTapRef.current = false;
+            inputRef.current?.focus();
+        }
+    }, [isSearchOpen]);
+
+    const closeSearch = () => {
+        onSearchChange('');
+        setIsSearchOpen(false);
+    };
+
     return (
-        <div className="forum-header">
-            {/* Top Compact Heading Row (like Pokédex panel header) */}
-            <div className="forum-header__banner">
-                <div className="forum-header__heading-row">
-                    <h2 className="forum-header__title">
-                        {language === 'pt' ? 'Fórum da Comunidade' : 'Community Forum'}
-                    </h2>
-                    {totalTopics > 0 && (
-                        <span className="forum-header__meta">{totalTopics}</span>
+        <header className="forum-feed-head">
+            <div className={`forum-feed-head__top ${isSearchOpen ? 'is-searching' : ''}`}>
+                <div className="forum-feed-head__id">
+                    <h2 className="forum-feed-head__title">{t('forum.title')}</h2>
+                    {stats && (
+                        <p className="forum-feed-head__stats">
+                            <span>{t('forum.statTopics', { count: stats.topics })}</span>
+                            <span aria-hidden="true">·</span>
+                            <span>{t('forum.statTrainers', { count: stats.trainers })}</span>
+                            {stats.activeToday > 0 && (
+                                <>
+                                    <span aria-hidden="true">·</span>
+                                    <span className="forum-feed-head__live">{t('forum.statToday', { count: stats.activeToday })}</span>
+                                </>
+                            )}
+                        </p>
                     )}
                 </div>
 
-                <button
-                    type="button"
-                    onClick={onOpenCreateTopic}
-                    className="btn btn-primary btn-sm forum-new-topic-btn"
-                >
+                <label className="forum-search">
+                    <SearchIcon className="forum-search__icon" />
+                    <input
+                        ref={inputRef}
+                        type="search"
+                        value={searchQuery}
+                        onChange={(e) => onSearchChange(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Escape') closeSearch(); }}
+                        placeholder={t('forum.searchPlaceholder')}
+                        aria-label={t('forum.searchPlaceholder')}
+                        className="forum-search__input"
+                        enterKeyHint="search"
+                    />
+                    {(searchQuery || isSearchOpen) && (
+                        <button
+                            type="button"
+                            onClick={closeSearch}
+                            className="forum-search__clear"
+                            aria-label={t('forum.clearSearch')}
+                        >
+                            <CloseIcon className="w-3.5 h-3.5" />
+                        </button>
+                    )}
+                </label>
+
+                {!isSearchOpen && (
+                    <button
+                        type="button"
+                        className="btn btn-ghost btn-icon btn-sm forum-feed-head__search-toggle"
+                        aria-label={t('forum.openSearch')}
+                        onClick={() => { openedByTapRef.current = true; setIsSearchOpen(true); }}
+                    >
+                        <SearchIcon className="w-4 h-4" />
+                    </button>
+                )}
+
+                <button type="button" onClick={onOpenCreateTopic} className="btn btn-primary btn-sm forum-feed-head__create">
                     <PlusIcon className="w-3.5 h-3.5 shrink-0" />
-                    <span>{language === 'pt' ? 'Novo Tópico' : 'New Topic'}</span>
+                    <span className="forum-feed-head__create-long">{t('forum.createPost')}</span>
+                    <span className="forum-feed-head__create-short">{t('forum.createShort')}</span>
                 </button>
             </div>
 
-            {/* Filter and Search Bar */}
-            <div className="forum-header__toolbar">
-                {/* Category Pills */}
-                <div className="forum-categories-scroll custom-scrollbar">
-                    {CATEGORIES.map((cat) => {
-                        const Icon = cat.icon;
-                        const isSelected = selectedCategory === cat.id;
-                        const label = language === 'pt' ? cat.labelPt : cat.labelEn;
-
+            <div className="forum-feed-head__filters">
+                <div className="segmented segmented--sm forum-feed-head__sort" role="group" aria-label={t('forum.sortLabel')}>
+                    {SORTS.map(({ id, key, icon }) => {
+                        const Icon = icon;
                         return (
                             <button
-                                key={cat.id}
+                                key={id}
                                 type="button"
-                                onClick={() => onSelectCategory(cat.id)}
-                                className={`forum-category-pill ${isSelected ? 'is-active' : ''}`}
+                                className="segmented__item"
+                                aria-pressed={sortBy === id}
+                                onClick={() => onSortChange(id)}
                             >
-                                <Icon className="w-3.5 h-3.5 shrink-0" />
-                                <span>{label}</span>
+                                <Icon />
+                                <span>{t(key)}</span>
                             </button>
                         );
                     })}
                 </div>
 
-                {/* Right controls: Search and Sort */}
-                <div className="forum-header__controls">
-                    {/* Search Field */}
-                    <div className="forum-search-box">
-                        <SearchIcon className="w-3.5 h-3.5 text-muted shrink-0" />
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => onSearchChange(e.target.value)}
-                            placeholder={language === 'pt' ? 'Buscar tópicos...' : 'Search topics...'}
-                            className="forum-search-input"
-                            aria-label={language === 'pt' ? 'Buscar tópicos' : 'Search topics'}
-                        />
-                        {searchQuery && (
-                            <button
-                                type="button"
-                                onClick={() => onSearchChange('')}
-                                className="forum-search-clear"
-                                aria-label="Limpar busca"
-                            >
-                                <CloseIcon className="w-3 h-3" />
-                            </button>
-                        )}
-                    </div>
+                <span className="forum-feed-head__divider" aria-hidden="true" />
 
-                    {/* Sort Selector */}
-                    <div className="forum-sort-box">
-                        <ArrowUpDownIcon className="w-3.5 h-3.5 text-muted shrink-0" />
-                        <select
-                            value={sortBy}
-                            onChange={(e) => onSortChange(e.target.value)}
-                            className="forum-sort-select"
-                            aria-label={language === 'pt' ? 'Ordenar tópicos' : 'Sort topics'}
-                        >
-                            <option value="recent">
-                                {language === 'pt' ? 'Mais Recentes' : 'Latest'}
-                            </option>
-                            <option value="popular">
-                                {language === 'pt' ? 'Populares' : 'Popular'}
-                            </option>
-                            <option value="comments">
-                                {language === 'pt' ? 'Mais Comentados' : 'Most Comments'}
-                            </option>
-                        </select>
-                    </div>
+                <div className="forum-chips" role="group" aria-label={t('forum.categoriesLabel')}>
+                    {FORUM_CATEGORIES.map(({ id, key, icon }) => {
+                        const Icon = icon;
+                        return (
+                            <button
+                                key={id}
+                                type="button"
+                                onClick={() => onSelectCategory(id)}
+                                aria-pressed={selectedCategory === id}
+                                className="forum-chip"
+                            >
+                                <Icon className="w-3.5 h-3.5 shrink-0" />
+                                <span>{t(key)}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
-        </div>
+        </header>
     );
 }

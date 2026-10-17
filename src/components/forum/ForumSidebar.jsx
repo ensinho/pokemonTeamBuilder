@@ -1,117 +1,144 @@
 import React from 'react';
-import { SwordsIcon, PokeballIcon, SavedTeamsIcon, ShieldCheckIcon, FlameIcon } from '../icons';
+import { Link } from 'react-router-dom';
+import { SwordsIcon, PokeballIcon, ShieldCheckIcon, FlameIcon, HeartIcon, MessageIcon, ChevronDownIcon } from '../icons';
 import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
 import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
+import { formatForumTime } from '../../utils/forumTime';
+import { topicLikes, topicReplies } from '../../utils/forumRanking';
 
+/**
+ * The forum's rail (desktop), on Reddit's model: the community card with its
+ * figures and rules, what is trending, and the one thing this community is
+ * for — sharing a team.
+ */
 export function ForumSidebar({
+    stats,
+    trending = [],
+    currentTopicId = null,
+    hrefFor,
+    onBeforeOpen,
     featuredTeam,
-    onImportTeam,
-    totalTopics = 0,
-    language = 'pt',
+    onShareTeam,
     navigate,
+    language = 'pt',
+    t,
 }) {
+    const trendingHere = trending.filter((tp) => tp.id !== currentTopicId);
+
     return (
-        <aside className="forum-sidebar-right">
-            {/* Featured Team Showcase */}
-            {featuredTeam ? (
-                <div className="forum-sidebar-card">
-                    <div className="forum-sidebar-card__header">
-                        <SwordsIcon className="w-4 h-4 text-primary shrink-0" />
-                        <h4 className="forum-sidebar-card__title">
-                            {language === 'pt' ? 'Time em Destaque' : 'Featured Team'}
-                        </h4>
-                    </div>
-                    <p className="text-xs font-semibold text-fg mb-3 truncate">
-                        {featuredTeam.name}
-                    </p>
-                    <div className="forum-sidebar-team-slots mb-3">
-                        {Array.from({ length: 6 }).map((_, idx) => {
-                            const pk = featuredTeam.pokemons?.[idx];
-                            const spriteUrl = pk ? getTeamPokemonDisplaySprite(pk) : null;
-                            return (
-                                <div key={idx} className="forum-sidebar-team-slot" title={pk?.name}>
-                                    {spriteUrl ? (
-                                        <img
-                                            src={spriteUrl}
-                                            alt={pk ? pk.name : ''}
-                                            className="w-full h-full object-contain"
-                                            onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
-                                        />
-                                    ) : (
-                                        <PokeballIcon className="w-3.5 h-3.5 text-muted opacity-30" />
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <button
-                        type="button"
-                        onClick={() => onImportTeam(featuredTeam)}
-                        className="btn btn-secondary w-full h-8 text-xs font-semibold"
-                    >
-                        {language === 'pt' ? 'Abrir no Construtor' : 'Load in Builder'}
-                    </button>
-                </div>
-            ) : (
-                <div className="forum-sidebar-card">
-                    <div className="forum-sidebar-card__header">
-                        <SavedTeamsIcon className="w-4 h-4 text-muted shrink-0" />
-                        <h4 className="forum-sidebar-card__title">
-                            {language === 'pt' ? 'Seu Arsenal' : 'Your Arsenal'}
-                        </h4>
-                    </div>
-                    <p className="text-xs text-muted mb-3">
-                        {language === 'pt'
-                            ? 'Você ainda não possui times salvos. Crie seu primeiro time para compartilhar!'
-                            : 'No saved teams yet. Create your first team to share it with the community!'}
-                    </p>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/builder')}
-                        className="btn btn-primary w-full h-8 text-xs font-semibold"
-                    >
-                        {language === 'pt' ? 'Criar Time no Construtor' : 'Create Team in Builder'}
-                    </button>
-                </div>
-            )}
+        <aside className="forum-sidebar-right" aria-label={t('forum.aboutTitle')}>
+            <section className="forum-sidebar-card">
+                <h4 className="forum-sidebar-card__title">{t('forum.aboutTitle')}</h4>
+                <p className="forum-sidebar-card__text">{t('forum.aboutText')}</p>
+                {stats && (
+                    <dl className="forum-community-stats">
+                        <div>
+                            <dt>{t('forum.aboutTopics')}</dt>
+                            <dd>{stats.topics}</dd>
+                        </div>
+                        <div>
+                            <dt>{t('forum.aboutTrainers')}</dt>
+                            <dd>{stats.trainers}</dd>
+                        </div>
+                        <div>
+                            <dt>{t('forum.aboutToday')}</dt>
+                            <dd className={stats.activeToday > 0 ? 'is-live' : ''}>{stats.activeToday}</dd>
+                        </div>
+                    </dl>
+                )}
+                <details className="forum-rules">
+                    <summary className="forum-rules__summary">
+                        <ShieldCheckIcon className="w-4 h-4 shrink-0" />
+                        <span>{t('forum.rulesTitle')}</span>
+                        <ChevronDownIcon className="forum-rules__chevron" />
+                    </summary>
+                    <ol className="forum-rules-list">
+                        <li>{t('forum.rule1')}</li>
+                        <li>{t('forum.rule2')}</li>
+                        <li>{t('forum.rule3')}</li>
+                    </ol>
+                </details>
+            </section>
 
-            {/* Community Rules / Guidelines (Reddit style) */}
-            <div className="forum-sidebar-card">
-                <div className="forum-sidebar-card__header">
-                    <ShieldCheckIcon className="w-4 h-4 text-muted shrink-0" />
-                    <h4 className="forum-sidebar-card__title">
-                        {language === 'pt' ? 'Diretrizes da Comunidade' : 'Community Rules'}
-                    </h4>
-                </div>
-                <ul className="forum-rules-list">
-                    <li>
-                        <span className="forum-rule-number">1</span>
-                        <span>{language === 'pt' ? 'Respeite outros treinadores e mantenha as discussões construtivas.' : 'Respect other trainers and keep discussions constructive.'}</span>
-                    </li>
-                    <li>
-                        <span className="forum-rule-number">2</span>
-                        <span>{language === 'pt' ? 'Evite spam ou links suspeitos fora do ecossistema Pokémon.' : 'No spam or external malicious links.'}</span>
-                    </li>
-                    <li>
-                        <span className="forum-rule-number">3</span>
-                        <span>{language === 'pt' ? 'Ao compartilhar times, explique as sinergias e papéis de cada Pokémon.' : 'When sharing teams, explain synergies and Pokémon roles.'}</span>
-                    </li>
-                </ul>
-            </div>
+            <section className="forum-sidebar-card">
+                <h4 className="forum-sidebar-card__title">
+                    <FlameIcon className="w-4 h-4 shrink-0 text-primary" />
+                    {t('forum.trendingTitle')}
+                </h4>
+                {trendingHere.length === 0 ? (
+                    <p className="forum-sidebar-card__text">{t('forum.trendingEmpty')}</p>
+                ) : (
+                    <ol className="forum-trending">
+                        {trendingHere.map((tp, i) => (
+                            <li key={tp.id}>
+                                <Link
+                                    to={hrefFor(tp.id)}
+                                    onClick={() => onBeforeOpen?.(tp.id)}
+                                    className="forum-trending__item"
+                                >
+                                    <span className="forum-trending__rank">{i + 1}</span>
+                                    <span className="forum-trending__body">
+                                        <span className="forum-trending__title">{tp.title}</span>
+                                        <span className="forum-trending__meta">
+                                            <HeartIcon className="w-3 h-3" /><span>{topicLikes(tp)}</span>
+                                            <MessageIcon className="w-3 h-3" /><span>{topicReplies(tp)}</span>
+                                            <span aria-hidden="true">·</span>
+                                            {formatForumTime(tp.lastActivityAt || tp.createdAt, language)}
+                                        </span>
+                                    </span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ol>
+                )}
+            </section>
 
-            {/* Quick Forum Stats */}
-            <div className="forum-sidebar-card">
-                <div className="forum-sidebar-card__header">
-                    <FlameIcon className="w-4 h-4 text-muted shrink-0" />
-                    <h4 className="forum-sidebar-card__title">
-                        {language === 'pt' ? 'Atividade do Fórum' : 'Forum Activity'}
-                    </h4>
-                </div>
-                <div className="flex items-center justify-between text-xs py-1 text-muted">
-                    <span>{language === 'pt' ? 'Tópicos criados:' : 'Total Topics:'}</span>
-                    <span className="font-bold text-fg">{totalTopics}</span>
-                </div>
-            </div>
+            <section className="forum-sidebar-card">
+                <h4 className="forum-sidebar-card__title">
+                    <SwordsIcon className="w-4 h-4 shrink-0 text-primary" />
+                    {t('forum.shareTeamTitle')}
+                </h4>
+                {featuredTeam ? (
+                    <>
+                        <p className="forum-sidebar-card__text">
+                            <span className="forum-sidebar-card__team-name">{featuredTeam.name}</span>
+                            {' — '}{t('forum.shareTeamHint')}
+                        </p>
+                        <div className="forum-sidebar-team-slots">
+                            {Array.from({ length: 6 }).map((_, idx) => {
+                                const pk = featuredTeam.pokemons?.[idx];
+                                return (
+                                    <div key={idx} className="forum-sidebar-team-slot" title={pk?.name}>
+                                        {pk ? (
+                                            <img
+                                                src={getTeamPokemonDisplaySprite(pk)}
+                                                alt={pk.name || ''}
+                                                width="40"
+                                                height="40"
+                                                loading="lazy"
+                                                className="w-full h-full object-contain"
+                                                onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                            />
+                                        ) : (
+                                            <PokeballIcon className="w-3.5 h-3.5 text-muted" />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <button type="button" onClick={() => onShareTeam(featuredTeam)} className="btn btn-secondary btn-sm btn-block">
+                            {t('forum.shareTeamAction')}
+                        </button>
+                    </>
+                ) : (
+                    <>
+                        <p className="forum-sidebar-card__text">{t('forum.noTeamHint')}</p>
+                        <button type="button" onClick={() => navigate('/builder')} className="btn btn-secondary btn-sm btn-block">
+                            {t('forum.openBuilder')}
+                        </button>
+                    </>
+                )}
+            </section>
         </aside>
     );
 }

@@ -401,7 +401,8 @@ service cloud.firestore {
           && request.resource.data.createdBy == request.auth.uid;
         allow update: if isAdmin()
           || (isSignedIn() && resource.data.createdBy == request.auth.uid)
-          || (isSignedIn() && onlyTouchesActivityFields());
+          || (isSignedIn() && onlyTouchesActivityFields())
+          || (isSignedIn() && touchesOnlyOwnTopicLike());
         allow delete: if isAdmin()
           || (isSignedIn() && resource.data.createdBy == request.auth.uid);
 
@@ -410,6 +411,20 @@ service cloud.firestore {
         function onlyTouchesActivityFields() {
           return request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['lastActivityAt', 'messageCount', 'lastMessageText']);
+        }
+
+        // The post's own vote (2026-10-17): any signed-in user may add or
+        // remove only their own like on the topic, touching just the like
+        // fields — the feed ranks and shows it without opening the thread.
+        function touchesOnlyOwnTopicLike() {
+          let affected = request.resource.data.diff(resource.data).affectedKeys();
+          let willHave = request.resource.data.get('likedBy', []);
+          let alreadyHas = resource.data.get('likedBy', []);
+          let added = willHave.removeAll(alreadyHas);
+          let removed = alreadyHas.removeAll(willHave);
+          return affected.hasOnly(['likedBy', 'likeCount'])
+            && added.hasOnly([request.auth.uid])
+            && removed.hasOnly([request.auth.uid]);
         }
 
         match /messages/{messageId} {

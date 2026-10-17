@@ -1,8 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { CloseIcon, ClipIcon, StarIcon } from '../icons';
 import { getCategoryMeta } from '../../utils/forumTime';
+import { getTeamPokemonDisplaySprite } from '../../utils/pokemonSprites';
+import { POKEBALL_PLACEHOLDER_URL } from '../../constants/theme';
 import { AttachMenuPopover } from './AttachMenuPopover';
+import { useModalA11y } from '../../hooks/useModalA11y';
 
+const TITLE_MAX = 120;
+
+/**
+ * Create a post, Reddit's dialog in the app's primitives: category chips, a
+ * title with its counter, optional text, an optional team, Publish.
+ * `initialTeam` / `initialCategory` pre-fill it when it opens — the rail's
+ * "Post on the forum" opens it with the team already attached.
+ */
 export function TopicCreateModal({
     isOpen,
     onClose,
@@ -11,6 +22,8 @@ export function TopicCreateModal({
     savedTeams = [],
     currentTeam = [],
     teamName = '',
+    initialTeam = null,
+    initialCategory = null,
     language = 'pt',
     t,
 }) {
@@ -19,9 +32,11 @@ export function TopicCreateModal({
     const [text, setText] = useState('');
     const [attachedTeam, setAttachedTeam] = useState(null);
     const [isAttachOpen, setIsAttachOpen] = useState(false);
-    const attachButtonRef = useRef(null);
-    const closeAttach = useCallback(() => setIsAttachOpen(false), []);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [titleError, setTitleError] = useState(false);
+    const attachButtonRef = useRef(null);
+    const titleRef = useRef(null);
+    const closeAttach = useCallback(() => setIsAttachOpen(false), []);
 
     useEffect(() => {
         if (!isOpen) {
@@ -31,27 +46,29 @@ export function TopicCreateModal({
             setAttachedTeam(null);
             setIsAttachOpen(false);
             setIsSubmitting(false);
+            setTitleError(false);
+        } else {
+            if (initialTeam) setAttachedTeam(initialTeam);
+            if (initialCategory) setCategory(initialCategory);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- seeds once per opening
     }, [isOpen]);
 
-    // Handle Escape key
-    useEffect(() => {
-        if (!isOpen) return;
-        const handleKeyDown = (e) => {
-            if (e.key === 'Escape') {
-                onClose();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
+    // Escape, focus, the phone sheet's drag-to-dismiss and the exit animation.
+    const panelRef = useModalA11y(onClose);
 
     if (!isOpen) return null;
 
+    const categories = ['general', 'teams', 'strategy', ...(isAdmin ? ['announcements'] : [])];
+
+    // Publish is never pre-disabled: an empty title is said next to the field.
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!title.trim()) return;
-
+        if (!title.trim()) {
+            setTitleError(true);
+            titleRef.current?.focus();
+            return;
+        }
         setIsSubmitting(true);
         try {
             await onSubmit({ title, category, text, attachedTeam });
@@ -61,101 +78,104 @@ export function TopicCreateModal({
         }
     };
 
+    const teamSprites = (attachedTeam?.pokemons || []).filter(Boolean).slice(0, 6);
+
     return (
         <div className="modal-scrim" onClick={onClose} role="presentation">
             <div
+                ref={panelRef}
                 className="modal-panel topic-create-modal"
                 onClick={(e) => e.stopPropagation()}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="topic-modal-title"
             >
-                {/* Header */}
-                <div className="topic-create-modal__header">
-                    <h3 id="topic-modal-title" className="topic-create-modal__title">
-                        {language === 'pt' ? 'Iniciar Nova Discussão' : 'Start a New Discussion'}
-                    </h3>
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="btn-ghost p-1.5 rounded-full"
-                        aria-label={t ? t('common.cancel') : 'Fechar'}
-                    >
-                        <CloseIcon className="w-5 h-5 text-muted" />
+                <div className="modal-header">
+                    <h2 id="topic-modal-title" className="modal-title">{t('forum.createTitle')}</h2>
+                    <button type="button" onClick={onClose} className="modal-close" aria-label={t('common.cancel')}>
+                        <CloseIcon />
                     </button>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="topic-create-modal__form">
-                    {/* Category Select */}
-                    <div className="forum-field">
-                        <label className="forum-field__label">
-                            {language === 'pt' ? 'Categoria da Discussão' : 'Discussion Category'}
-                        </label>
-                        <select
-                            value={category}
-                            onChange={(e) => setCategory(e.target.value)}
-                            className="topic-create-select"
-                        >
-                            <option value="general">{getCategoryMeta('general', language).label}</option>
-                            <option value="teams">{getCategoryMeta('teams', language).label}</option>
-                            <option value="strategy">{getCategoryMeta('strategy', language).label}</option>
-                            {isAdmin && (
-                                <option value="announcements">{getCategoryMeta('announcements', language).label}</option>
-                            )}
-                        </select>
+                <form id="topic-create-form" onSubmit={handleSubmit} className="modal-body topic-create-form" noValidate>
+                    <div className="field">
+                        <span className="field-label" id="topic-create-category">{t('forum.createCategory')}</span>
+                        <div className="topic-create-categories" role="group" aria-labelledby="topic-create-category">
+                            {categories.map((id) => (
+                                <button
+                                    key={id}
+                                    type="button"
+                                    className="forum-chip"
+                                    aria-pressed={category === id}
+                                    onClick={() => setCategory(id)}
+                                >
+                                    {getCategoryMeta(id, language).label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Title Input */}
-                    <div className="forum-field">
-                        <label className="forum-field__label">
-                            {language === 'pt' ? 'Título do Tópico' : 'Topic Title'}
-                        </label>
+                    <div className="field">
+                        <div className="topic-create-label-row">
+                            <label className="field-label" htmlFor="topic-create-title">{t('forum.createTitleLabel')}</label>
+                            <span className="topic-create-counter">{title.length}/{TITLE_MAX}</span>
+                        </div>
                         <input
+                            ref={titleRef}
+                            id="topic-create-title"
                             type="text"
-                            required
-                            placeholder={language === 'pt' ? 'Ex: Qual a melhor sinergia para Dragapult no meta atual?' : "What's on your mind?"}
+                            maxLength={TITLE_MAX}
+                            placeholder={t('forum.createTitlePlaceholder')}
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={(e) => { setTitle(e.target.value); if (titleError) setTitleError(false); }}
                             className="input-clean"
+                            aria-invalid={titleError}
+                            aria-describedby={titleError ? 'topic-create-title-error' : undefined}
                         />
+                        {titleError && (
+                            <span id="topic-create-title-error" className="field-hint topic-create-error" role="alert">
+                                {t('forum.createTitleRequired')}
+                            </span>
+                        )}
                     </div>
 
-                    {/* Message Body */}
-                    <div className="forum-field">
-                        <label className="forum-field__label">
-                            {language === 'pt' ? 'Mensagem Inicial / Detalhes' : 'First Message / Details'}
-                        </label>
+                    <div className="field">
+                        <label className="field-label" htmlFor="topic-create-body">{t('forum.createBodyLabel')}</label>
                         <textarea
-                            required
+                            id="topic-create-body"
                             rows={5}
-                            placeholder={language === 'pt' ? 'Descreva o contexto, dúvidas ou estratégias para os outros treinadores...' : 'Explain the details...'}
+                            placeholder={t('forum.createBodyPlaceholder')}
                             value={text}
                             onChange={(e) => setText(e.target.value)}
-                            className="topic-create-textarea custom-scrollbar"
+                            className="textarea-clean topic-create-textarea custom-scrollbar"
                         />
                     </div>
 
-                    {/* Attached Team Banner */}
-                    {attachedTeam && (
-                        <div className="comment-composer__team-banner mb-3">
-                            <ClipIcon className="w-3.5 h-3.5 text-primary shrink-0" />
-                            <span className="truncate flex-1 font-medium text-xs">
-                                {attachedTeam.name} ({attachedTeam.pokemons?.length || 0}/6)
-                            </span>
+                    {attachedTeam ? (
+                        <div className="topic-create-team">
+                            <div className="topic-create-team__sprites">
+                                {teamSprites.map((pk, i) => (
+                                    <img
+                                        key={pk.instanceId || `${pk.id}-${i}`}
+                                        src={getTeamPokemonDisplaySprite(pk)}
+                                        alt={pk.name || ''}
+                                        width="32"
+                                        height="32"
+                                        onError={(e) => { e.currentTarget.src = POKEBALL_PLACEHOLDER_URL; }}
+                                    />
+                                ))}
+                            </div>
+                            <span className="topic-create-team__name">{attachedTeam.name}</span>
                             <button
                                 type="button"
                                 onClick={() => setAttachedTeam(null)}
-                                className="comment-composer__close-btn"
-                                aria-label="Remover time anexado"
+                                className="btn btn-ghost btn-icon btn-sm"
+                                aria-label={t('forum.createRemoveTeam')}
                             >
                                 <CloseIcon className="w-3.5 h-3.5" />
                             </button>
                         </div>
-                    )}
-
-                    {/* Actions Row */}
-                    <div className="topic-create-modal__actions">
+                    ) : (
                         <div>
                             <button
                                 ref={attachButtonRef}
@@ -163,75 +183,57 @@ export function TopicCreateModal({
                                 aria-haspopup="dialog"
                                 aria-expanded={isAttachOpen}
                                 onClick={() => setIsAttachOpen((open) => !open)}
-                                className="btn btn-secondary h-8 text-xs font-semibold"
+                                className="btn btn-secondary btn-sm"
                             >
-                                <ClipIcon className="w-3.5 h-3.5 mr-1" />
-                                {language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                                <ClipIcon className="w-3.5 h-3.5" />
+                                {t('forum.createAttachTeam')}
                             </button>
-
                             <AttachMenuPopover
                                 isOpen={isAttachOpen}
                                 onClose={closeAttach}
                                 anchorRef={attachButtonRef}
-                                ariaLabel={language === 'pt' ? 'Anexar Time' : 'Attach Team'}
+                                ariaLabel={t('forum.createAttachTeam')}
                             >
-                                    <p className="comment-composer__menu-label">
-                                        {language === 'pt' ? 'Seus times salvos' : 'Your saved teams'}
-                                    </p>
-                                    {currentTeam.length > 0 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setAttachedTeam({ name: teamName || 'Active Team', pokemons: currentTeam });
-                                                setIsAttachOpen(false);
-                                            }}
-                                            className="comment-composer__menu-item is-featured"
-                                        >
-                                            <StarIcon className="w-3.5 h-3.5 text-amber-400 shrink-0 fill-amber-400" />
-                                            <span>{language === 'pt' ? 'Time ativo no Construtor' : 'Active team in Builder'}</span>
-                                        </button>
-                                    )}
-                                    {savedTeams.map((team) => (
-                                        <button
-                                            key={team.id}
-                                            type="button"
-                                            onClick={() => {
-                                                setAttachedTeam(team);
-                                                setIsAttachOpen(false);
-                                            }}
-                                            className="comment-composer__menu-item"
-                                        >
-                                            <span className="truncate">{team.name}</span>
-                                        </button>
-                                    ))}
-                                    {savedTeams.length === 0 && currentTeam.length === 0 && (
-                                        <p className="px-3 py-1.5 text-xs text-muted">
-                                            {language === 'pt' ? 'Nenhum time salvo ainda.' : 'No saved teams yet.'}
-                                        </p>
-                                    )}
+                                <p className="comment-composer__menu-label">{t('forum.createSavedTeams')}</p>
+                                {currentTeam.length > 0 && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setAttachedTeam({ name: teamName || 'Active Team', pokemons: currentTeam });
+                                            setIsAttachOpen(false);
+                                        }}
+                                        className="comment-composer__menu-item is-featured"
+                                    >
+                                        <StarIcon className="w-3.5 h-3.5 shrink-0" />
+                                        <span>{t('forum.createActiveTeam')}</span>
+                                    </button>
+                                )}
+                                {savedTeams.map((team) => (
+                                    <button
+                                        key={team.id}
+                                        type="button"
+                                        onClick={() => { setAttachedTeam(team); setIsAttachOpen(false); }}
+                                        className="comment-composer__menu-item"
+                                    >
+                                        <span className="truncate">{team.name}</span>
+                                    </button>
+                                ))}
+                                {savedTeams.length === 0 && currentTeam.length === 0 && (
+                                    <p className="comment-composer__menu-empty">{t('forum.createNoTeams')}</p>
+                                )}
                             </AttachMenuPopover>
                         </div>
-
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="btn btn-secondary h-8 px-3 text-xs font-semibold"
-                            >
-                                {t ? t('common.cancel') : 'Cancelar'}
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={!title.trim() || isSubmitting}
-                                className="btn btn-primary h-8 px-4 text-xs font-semibold"
-                            >
-                                {isSubmitting
-                                    ? (language === 'pt' ? 'Publicando...' : 'Publishing...')
-                                    : (language === 'pt' ? 'Publicar Tópico' : 'Publish Topic')}
-                            </button>
-                        </div>
-                    </div>
+                    )}
                 </form>
+
+                <div className="modal-footer">
+                    <button type="button" onClick={onClose} className="btn btn-secondary">
+                        {t('common.cancel')}
+                    </button>
+                    <button type="submit" form="topic-create-form" disabled={isSubmitting} className="btn btn-primary">
+                        {isSubmitting ? t('forum.createPublishing') : t('forum.createPublish')}
+                    </button>
+                </div>
             </div>
         </div>
     );
