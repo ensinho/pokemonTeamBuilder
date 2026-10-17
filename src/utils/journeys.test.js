@@ -7,6 +7,7 @@ import {
     evaluateJourneys,
     findMission,
     hasBalancedTeam,
+    journeyEmphasis,
     journeyTotals,
     nextMission,
 } from './journeys';
@@ -140,5 +141,47 @@ describe('hasBalancedTeam', () => {
 
     it('refuses an incomplete team, however balanced', () => {
         expect(hasBalancedTeam({ currentTeam: BALANCED.slice(0, 5) })).toBe(false);
+    });
+});
+
+describe('journeyEmphasis', () => {
+    it('focuses the journey for a brand-new trainer', () => {
+        expect(journeyEmphasis(evaluateJourneys({}), { activeDays: 1 })).toBe('focus');
+    });
+
+    it('keeps it focused through the first two levels while little is done', () => {
+        const journeys = evaluateJourneys({ greetingPokemonId: 1, marks: { pokedex: true, pokemonDetail: true }, favoritesCount: 1 });
+        expect(currentJourney(journeys).level).toBe(2);
+        expect(journeyEmphasis(journeys, { activeDays: 2 })).toBe('focus');
+    });
+
+    it('goes compact for a trainer who already does a lot', () => {
+        const journeys = evaluateJourneys({
+            teamsCount: 3,
+            savedTeams: [{ pokemons: BALANCED }],
+            isAnonymous: false,
+            forumMessages: 12,
+            pokepuzzleWins: 4,
+        });
+        expect(journeyEmphasis(journeys, { activeDays: 2 })).toBe('compact');
+    });
+
+    it('goes compact after a week of visits, however little is done', () => {
+        expect(journeyEmphasis(evaluateJourneys({}), { activeDays: 7 })).toBe('compact');
+    });
+
+    it('goes compact once past the second level', () => {
+        const journeys = evaluateJourneys({
+            greetingPokemonId: 1, favoritesCount: 1, teamsCount: 1,
+            currentTeam: BALANCED.slice(0, 1),
+            marks: { pokedex: true, pokemonDetail: true, memberEdited: true },
+            savedTeams: [{ pokemons: MONO_WATER }],
+        });
+        expect(currentJourney(journeys).level).toBe(3);
+        expect(journeyEmphasis(journeys)).toBe('compact');
+    });
+
+    it('steps aside when every journey is done', () => {
+        expect(journeyEmphasis([])).toBe('none');
     });
 });

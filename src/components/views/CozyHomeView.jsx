@@ -37,7 +37,7 @@ import { Sprite } from '../Sprite';
 import { TypeChip } from '../TypeChip';
 import { EmptyState } from '../EmptyState';
 import { JourneyBar, JourneyList, JourneyTile, MissionRow } from '../journeys/JourneyList';
-import { currentJourney } from '../../utils/journeys';
+import { currentJourney, journeyEmphasis, nextMission } from '../../utils/journeys';
 import { MascotTip } from '../Mascot';
 import { SHARE_BACKGROUNDS, getBackgroundById } from '../../assets/backgrounds';
 import '../../styles/cozy-home.css';
@@ -136,7 +136,7 @@ export function CozyHomeView({
     const [tab, setTab] = useState('today');
 
     const { userId, streak, isAnonymous } = useAuthStore(useShallow((s) => ({ userId: s.userId, streak: s.streak, isAnonymous: s.isAnonymous })));
-    const { badges, equippedBadge, journeys } = useTrainerBadges();
+    const { badges, equippedBadge, journeys, stats: trainerStats } = useTrainerBadges();
     const { ranked: metaRanked, format: metaFormat } = useMetaUsage();
     const puzzle = useDailyPuzzle(userId);
     const challenge = useChallengeSummary(userId, isAnonymous);
@@ -712,24 +712,27 @@ export function CozyHomeView({
     // The level being played and what is left in it, each mission a button
     // that goes and does it — the onboarding a new trainer meets first, and
     // the next step for everyone else until all five levels are done.
+    //
+    // How loud it is depends on who is looking (journeyEmphasis): a new
+    // trainer gets the full card — welcome, the level, its open missions —
+    // an active one a small "next step" card with the one mission up next.
     const level = currentJourney(journeys);
+    const emphasis = journeyEmphasis(journeys, { activeDays: trainerStats.activeDays });
     const isBrandNew = level?.level === 1 && level.doneCount === 0;
+    const upNext = nextMission(level);
     const seeJourneys = (
         <button type="button" className="btn btn-ghost btn-sm" onClick={() => navigate('/journeys')}>
             {t('journeys.home.seeAll')} <ChevronRight aria-hidden="true" />
         </button>
     );
-    const journeyCard = level && (
-        <Panel
-            title={t('journeys.home.title')}
-            meta={t('journeys.home.meta', { n: level.level, total: journeys.length })}
-            action={seeJourneys}
-        >
+    const journeyFocus = emphasis === 'focus' && (
+        <Panel title={t('journeys.home.title')} action={seeJourneys}>
             <div className="journey-home">
                 {isBrandNew && <MascotTip>{t('journeys.home.welcome')}</MascotTip>}
                 <div className="journey-home__head">
                     <JourneyTile journey={level} isCurrent />
                     <span className="journey__text">
+                        <span className="journey__level">{t('journeys.home.meta', { n: level.level, total: journeys.length })}</span>
                         <span className="journey__title">{t(`journeys.list.${level.id}.title`)}</span>
                         <span className="journey__sub">{t(`journeys.list.${level.id}.sub`)}</span>
                     </span>
@@ -744,6 +747,25 @@ export function CozyHomeView({
             </div>
         </Panel>
     );
+    const journeyCompact = emphasis === 'compact' && upNext && (
+        <section className="card card--compact journey-mini" aria-label={t('journeys.home.nextStep')}>
+            <div className="journey-mini__head">
+                <JourneyTile journey={level} isCurrent />
+                <span className="journey__text">
+                    <span className="journey__level">{t('journeys.home.nextStep')} · {t('journeys.level', { n: level.level })}</span>
+                    <span className="journey-mini__title">{t(`journeys.list.${level.id}.title`)}</span>
+                </span>
+                <button type="button" className="btn btn-ghost btn-sm btn-icon" onClick={() => navigate('/journeys')}
+                    aria-label={t('journeys.home.seeAll')} title={t('journeys.home.seeAll')}>
+                    <ChevronRight aria-hidden="true" />
+                </button>
+            </div>
+            <JourneyBar percent={level.percent} />
+            <ol className="journey__missions">
+                <MissionRow mission={upNext} />
+            </ol>
+        </section>
+    );
     const journeyTab = (
         <Panel card={false} title={t('journeys.title')} meta={t('journeys.subtitle')} action={seeJourneys}>
             <JourneyList journeys={journeys} />
@@ -757,7 +779,11 @@ export function CozyHomeView({
     // A guest's invitation to an account, right under the hero on a phone and at
     // the top of the rail on desktop. Renders nothing for an account holder.
     const guestCard = <GuestAccountCard variant="home" />;
-    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyCard}{yourDay}{journeyPanel}</> : <>{hero}{journeyCard}{yourDay}{teamsPanel(3)}</>;
+    // On a desktop the journey heads the rail, above the story of what just
+    // happened (2026-10-17, Enzo). On a phone the full card comes right under
+    // the hero — it is a new trainer's way in — and the small one waits under
+    // the day's cards, after what an active trainer came for.
+    if (tab === 'today') main = isPhone ? <>{hero}{guestCard}{journeyFocus}{yourDay}{journeyCompact}{journeyPanel}</> : <>{hero}{yourDay}{teamsPanel(3)}</>;
     else if (tab === 'journey') main = journeyTab;
     else if (tab === 'teams') main = teamsPanel(isPhone ? 6 : 8);
     else main = communityPanel(5);
@@ -777,6 +803,7 @@ export function CozyHomeView({
                 {!isPhone && (
                     <aside className="cozy-rail">
                         {guestCard}
+                        {tab !== 'journey' && (journeyFocus || journeyCompact)}
                         {journeyPanel}
                         {tab !== 'community' && communityPanel(1)}
                     </aside>

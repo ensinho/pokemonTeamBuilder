@@ -190,13 +190,11 @@ can reach) and the account menu's "What's new" item, all wired to
 ### ShellNavGroup
 **File:** `src/components/ShellNavGroup.jsx`
 
-One labelled section of the sidebar navigation, foldable — with **at most two sections open at once**.
+One labelled section of the sidebar navigation.
 
-The header keeps the type of a quiet label (12px, muted, 500) and is shorter than a nav row, so only the chevron marks it as a control; a folded section holding the current page shows a dot. On the icon rail it renders **no header at all** — labels are hidden there, so a header would be an empty control — just the bare list carrying its name on `aria-label`.
+**Since 2026-10-17 (Enzo) the rail's sections do not fold.** Every destination is listed under a quiet heading (`.app-shell__nav-group-heading`: 12px, muted, 500, the rows' inset) — easier to scan than a section you first have to open. Called without `onToggle`, the component renders that heading + list; the foldable shape (chevron header, animated panel) survives only for the phone drawer's About section (`DrawerAboutSection`), which keeps its own local open state. On the icon rail it renders **no header at all** — just the bare list carrying its name on `aria-label`.
 
-**The two-open cap is the design.** Independent folds let the rail grow to whatever the user last left open (everything, plus a scrollbar); a strict accordion left it empty — four chevron rows over 400px of nothing, the tail invisible *and* two clicks away (both logged in `docs/wounds.md`, 2026-09-10). Opening a third section closes the least recently opened, so the cap enforces itself and no click is ever refused.
-
-State lives in `AppLayout` as an **ordered, oldest-first list** (`openNavGroups`, capped by `MAX_OPEN_NAV_GROUPS`) and persists to `localStorage` as `ptb-sidebar-open-groups`, keyed by stable section slugs — never by the translated title. Both entry points (a click, and navigating into a folded section) append through the same `withGroupOpen` helper so they cannot disagree about which section gets evicted. First run opens `DEFAULT_OPEN_NAV_GROUPS`, because landing on an empty rail is the failure the whole shape exists to avoid.
+Fitting the full list: on a desktop up to 1200px tall the expanded rail tightens itself — rows at `1.75rem`, a step less between sections, and the rail's guest card down to its title and two side-by-side buttons (`auth-dialog.css`). That keeps all of it on screen from 900px tall up; below that the nav scrolls. The old two-open cap (`openNavGroups`, `ptb-sidebar-open-groups`) is gone; the stale localStorage key is harmless.
 
 Section labels and nav rows share one inline inset, `--app-shell-row-inset` on `.app-shell`, so the label's first letter lands on the same left edge as the icons under it at every breakpoint. Change it there, never per-rule.
 

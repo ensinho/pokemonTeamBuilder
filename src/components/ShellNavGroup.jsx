@@ -2,7 +2,16 @@ import React from 'react';
 import { ChevronDownIcon } from './icons';
 
 /**
- * One labelled section of the sidebar navigation, foldable.
+ * One labelled section of the sidebar navigation.
+ *
+ * 2026-10-17 (Enzo): the rail's sections no longer fold — every destination
+ * is listed, organised under its heading, which is easier to find than a
+ * section you first have to open. Without `onToggle` a section is that plain
+ * heading + list. The foldable shape below survives for the phone drawer's
+ * About section, the one place that still opens on demand. The history of
+ * the two-open cap is kept for context:
+ *
+ * (Before 2026-10-17) foldable.
  *
  * The four destinations that carry the app are pinned above these, unlabelled
  * and unfoldable. What is left is the long tail, and it folds — but **at most
@@ -41,6 +50,15 @@ export function ShellNavGroup({
     if (railCollapsed) {
         return (
             <li className="app-shell__nav-group">
+                <ul className="app-shell__nav-group-list" aria-label={title}>{children}</ul>
+            </li>
+        );
+    }
+
+    if (!onToggle) {
+        return (
+            <li className="app-shell__nav-group">
+                <span className="app-shell__nav-group-heading" aria-hidden="true">{title}</span>
                 <ul className="app-shell__nav-group-list" aria-label={title}>{children}</ul>
             </li>
         );
