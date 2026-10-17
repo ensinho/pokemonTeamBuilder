@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-17 — The wheel over Moves/Abilities/Items/Speed tiers did not scroll the page `bug`
+- **Symptom:** on desktop, scrolling with the mouse over the list did nothing; the page moved only with the pointer in the gutter beside the sidebar.
+- **Root cause:** `.ref-list` was `overflow-y: auto` inside `.ref-view { height: 100% }`, but `.app-shell__page-frame` has no height, so the 100% never resolved, the list grew to its content and never scrolled. It was still a scroll container, though, so the wheel targeted it first, and `.custom-scrollbar`'s `overscroll-behavior: contain` blocked the scroll from passing up to `.app-shell__content`. Phones already had the fix (`overflow: clip`, 2026-09-24); desktop kept the broken base rule.
+- **Fix:** `.ref-list { overflow: clip }` at every width (keeps the rounded corners, creates no scroll container), sticky `.ref-head` at `top: var(--app-shell-top-band-height)` so it sticks under the app header on the page's scroller, the unresolvable `height: 100%` removed from `.ref-view`, and `custom-scrollbar` dropped from the four lists. Verified in Edge at 1440 and 390: a wheel over the list moves `.app-shell__content` by 900px on all four routes, header pinned at the band.
+- **Correct pattern:** never give `overflow: auto` + `.custom-scrollbar` to an element whose height is not actually constrained. It never scrolls, but it still blocks the wheel from reaching the page. The page is the one scroller (see the design-system "Layout scroll invariant"); a list inside it uses `overflow: clip` and a sticky header offset by the top band.
+- **Files:** `src/styles/reference-views.css`, `src/components/views/{MovesListView,AbilitiesListView,ItemsListView,SpeedTiersView}.jsx`
+
 ### 2026-10-16 — Paldean Tauros and Ogerpon's masks were missing from the Pokédex `bug`
 - **Symptom:** two feedback reports — Paldean Tauros and the masked Ogerpon forms could not be found in the Pokédex or Team Builder.
 - **Root cause:** `scripts/build-pokemon-cache.mjs` only took a form whose PokéAPI name *ends* in a regional/mega suffix (`BATTLE_FORM_SUFFIX`). PokéAPI names them `tauros-paldea-combat-breed` and `ogerpon-wellspring-mask`, so the build skipped all six without a word. `src/utils/gameDex.js` had the same end-anchored suffix match.
