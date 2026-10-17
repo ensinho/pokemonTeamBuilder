@@ -176,3 +176,23 @@ export const journeyTotals = (journeys = []) => ({
     missionsDone: journeys.reduce((sum, j) => sum + j.doneCount, 0),
     missionsTotal: journeys.reduce((sum, j) => sum + j.total, 0),
 });
+
+/**
+ * How loud the Home should be about the journey (2026-10-17, Enzo): a new
+ * trainer — still on the first two levels, with only a handful of missions
+ * done and less than a week of visits — gets it front and centre, because it
+ * is their way in. Anyone past that is an active trainer, who gets a small
+ * "next step" card instead of a banner. `none` once every level is done.
+ */
+export const NEW_TRAINER_MAX_MISSIONS = 6;
+export const NEW_TRAINER_MAX_DAYS = 7;
+
+export const journeyEmphasis = (journeys = [], { activeDays = 0 } = {}) => {
+    const current = currentJourney(journeys);
+    if (!current) return 'none';
+    const { missionsDone } = journeyTotals(journeys);
+    const isNew = current.level <= 2
+        && missionsDone < NEW_TRAINER_MAX_MISSIONS
+        && activeDays < NEW_TRAINER_MAX_DAYS;
+    return isNew ? 'focus' : 'compact';
+};

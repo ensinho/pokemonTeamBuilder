@@ -323,6 +323,36 @@ button.mission:active { background: var(--color-surface-active); }
     gap: var(--space-3);
 }
 
+/* ---- Home's small journey card (an active trainer's "next step") --------- */
+
+.journey-mini {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.journey-mini__head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* A smaller tile than the full card's: this one is a step, not a banner. */
+.journey-mini .journey__tile {
+    width: 2.25rem;
+    height: 2.25rem;
+}
+
+.journey-mini .journey__tile svg { width: 1.125rem; height: 1.125rem; }
+
+.journey-mini__title {
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-snug);
+    color: var(--color-fg);
+}
+
 /* ---- The badge gallery ---------------------------------------------------- */
 
 .badge-gallery {

@@ -2029,6 +2029,7 @@ export const TRANSLATIONS = {
                 title: 'Your journey',
                 meta: 'Level {{n}} of {{total}}',
                 seeAll: 'See journeys',
+                nextStep: 'Next step',
                 welcome: 'Welcome, trainer! Start here: every mission takes you to the right place.',
             },
             coach: {
@@ -4196,6 +4197,7 @@ export const TRANSLATIONS = {
                 title: 'Sua jornada',
                 meta: 'Nível {{n}} de {{total}}',
                 seeAll: 'Ver jornadas',
+                nextStep: 'Próximo passo',
                 welcome: 'Bem-vindo, treinador! Comece por aqui: cada missão leva você ao lugar certo.',
             },
             coach: {
