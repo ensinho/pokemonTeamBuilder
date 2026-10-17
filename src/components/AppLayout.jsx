@@ -748,6 +748,11 @@ export default function AppLayout() {
                     'greetingPokemon',
                     'selectedBadgeId',
                     'ptb:celebratedBadges',
+                    // Journeys + rewards (a guest has no account copy to restore them)
+                    'ptb:journeyMarks',
+                    'trainerActiveDays',
+                    'ptb:checkin',
+                    'ptb:rewards',
                     'generationQuizActiveRunId',
                     // "Don't show me this again" acknowledgements
                     'syncPromptDismissed',
