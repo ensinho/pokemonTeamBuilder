@@ -3,12 +3,11 @@ import { Search } from 'lucide-react';
 import { HomeIcon } from '../icons';
 import { useTranslation } from '../../hooks/useTranslation';
 import { useDocumentMeta } from '../../hooks/useDocumentMeta';
-
-const LIGHT_THEMES = new Set(['light', 'daybreak', 'solar']);
+import { themeModeOf } from '../../constants/theme';
 
 export function NotFoundView({ navigate, theme, onOpenSearch }) {
     const { t } = useTranslation();
-    const isLightTheme = LIGHT_THEMES.has(theme);
+    const isLightTheme = themeModeOf(theme) === 'light';
 
     useDocumentMeta({ title: t('layout.notFoundPageTitle') });
 

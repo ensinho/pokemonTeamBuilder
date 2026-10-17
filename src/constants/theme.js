@@ -114,9 +114,77 @@ export const THEMES = {
         warning: '#B45309',
         info: '#1D4ED8',
     },
+    // Reward themes (2026-10-17): unlocked on the Trainer Level track
+    // (constants/cosmetics.js). Same shape as the six free ones.
+    ember: {
+        primary: '#fb7a3c',
+        primarySoft: 'rgba(251, 122, 60, 0.14)',
+        onPrimary: '#0c0807',
+        accent: '#FBBF24',
+        background: '#0c0807',
+        card: '#1a1310',
+        cardLight: '#241a16',
+        text: '#faf5f2',
+        textMuted: '#b3a49c',
+        border: '#2a1f1a',
+        success: '#34D399',
+        danger: '#F87171',
+        warning: '#FBBF24',
+        info: '#60A5FA',
+    },
+    viridian: {
+        primary: '#15803d',
+        primarySoft: 'rgba(21, 128, 61, 0.1)',
+        onPrimary: '#ffffff',
+        accent: '#B45309',
+        background: '#eef4ef',
+        card: '#FFFFFF',
+        cardLight: '#f3f8f4',
+        text: '#0c1a12',
+        textMuted: '#56685c',
+        border: '#f2f7f3',
+        success: '#047857',
+        danger: '#B91C1C',
+        warning: '#B45309',
+        info: '#1D4ED8',
+    },
+    aurum: {
+        primary: '#e0b341',
+        primarySoft: 'rgba(224, 179, 65, 0.14)',
+        onPrimary: '#0b0a07',
+        accent: '#fb923c',
+        background: '#0b0a07',
+        card: '#18160f',
+        cardLight: '#211e15',
+        text: '#fbf8ef',
+        textMuted: '#a8a08a',
+        border: '#29251a',
+        success: '#34D399',
+        danger: '#F87171',
+        warning: '#FBBF24',
+        info: '#60A5FA',
+    },
+    blossom: {
+        primary: '#be185d',
+        primarySoft: 'rgba(190, 24, 93, 0.1)',
+        onPrimary: '#ffffff',
+        accent: '#B45309',
+        background: '#fbf0f4',
+        card: '#FFFFFF',
+        cardLight: '#fdf5f8',
+        text: '#1f0d16',
+        textMuted: '#6f5a64',
+        border: '#fbf2f6',
+        success: '#047857',
+        danger: '#B91C1C',
+        warning: '#B45309',
+        info: '#1D4ED8',
+    },
 };
 
 // Display metadata for the theme picker UI. Order here drives render order.
+// The `reward` themes stay locked until earned — pickers ask
+// `isThemeUnlocked` (store/useRewardsStore.js) before offering one.
 // `mode` groups themes as dark vs light so the picker can label them separately.
 export const THEME_META = [
     { id: 'dark', label: 'Dark', hint: 'Default night mode', swatch: '#8b7cee', mode: 'dark' },
@@ -125,6 +193,10 @@ export const THEME_META = [
     { id: 'daybreak', label: 'Daybreak', hint: 'Cool blue daylight', swatch: '#2563EB', mode: 'light' },
     { id: 'light', label: 'Light', hint: 'Daylight, high contrast', swatch: '#6353b3', mode: 'light' },
     { id: 'solar', label: 'Solar', hint: 'Soft yellow daylight', swatch: '#ca8a04', mode: 'light' },
+    { id: 'ember', label: 'Ember', hint: 'Warm embers, Charizard nights', swatch: '#f97316', mode: 'dark', reward: true },
+    { id: 'viridian', label: 'Viridian', hint: 'Forest-green daylight', swatch: '#16a34a', mode: 'light', reward: true },
+    { id: 'aurum', label: 'Aurum', hint: 'Shiny gold on black', swatch: '#d4a017', mode: 'dark', reward: true },
+    { id: 'blossom', label: 'Blossom', hint: 'Fairy-pink daylight', swatch: '#ec4899', mode: 'light', reward: true },
 ];
 
 // Whether each theme reads as dark or light, for `color-scheme`. Derived from
@@ -148,6 +220,10 @@ export const THEME_PAIRS = {
     daybreak: 'midnight',
     eclipse: 'solar',
     solar: 'eclipse',
+    ember: 'viridian',
+    viridian: 'ember',
+    aurum: 'blossom',
+    blossom: 'aurum',
 };
 
 export function pairedTheme(themeId) {

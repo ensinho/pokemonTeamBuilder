@@ -353,6 +353,100 @@
     --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
 }
 
+/* Reward themes (2026-10-17) — unlocked on the Trainer Level track
+   (constants/cosmetics.js). Mirrors of THEMES in constants/theme.js. */
+:root[data-theme='ember'] {
+    --color-primary: #fb7a3c;
+    --color-primary-soft: rgba(251, 122, 60, 0.14);
+    --color-on-primary: #0c0807;
+    --color-accent: #FBBF24;
+    --color-accent-soft: rgba(251, 191, 36, 0.12);
+    --color-bg: #0c0807;
+    --color-surface: #1a1310;
+    --color-surface-raised: #241a16;
+    --color-fg: #faf5f2;
+    --color-muted: #b3a49c;
+    --color-border: #2a1f1a;
+    --color-success: #34D399;
+    --color-danger: #F87171;
+    --color-warning: #FBBF24;
+    --color-info: #60A5FA;
+
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.45);
+    --elevation-2: 0 6px 20px -6px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.3);
+    --elevation-3: 0 14px 36px -10px rgba(0,0,0,0.65);
+    --elevation-4: 0 20px 48px -12px rgba(0,0,0,0.75);
+}
+
+:root[data-theme='viridian'] {
+    --color-primary: #15803d;
+    --color-primary-soft: rgba(21, 128, 61, 0.1);
+    --color-on-primary: #ffffff;
+    --color-accent: #B45309;
+    --color-accent-soft: rgba(180, 83, 9, 0.08);
+    --color-bg: #eef4ef;
+    --color-surface: #ffffff;
+    --color-surface-raised: #f3f8f4;
+    --color-fg: #0c1a12;
+    --color-muted: #56685c;
+    --color-border: #f2f7f3;
+    --color-success: #047857;
+    --color-danger: #B91C1C;
+    --color-warning: #B45309;
+    --color-info: #1D4ED8;
+
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
+    --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
+    --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
+}
+
+:root[data-theme='aurum'] {
+    --color-primary: #e0b341;
+    --color-primary-soft: rgba(224, 179, 65, 0.14);
+    --color-on-primary: #0b0a07;
+    --color-accent: #fb923c;
+    --color-accent-soft: rgba(251, 146, 60, 0.12);
+    --color-bg: #0b0a07;
+    --color-surface: #18160f;
+    --color-surface-raised: #211e15;
+    --color-fg: #fbf8ef;
+    --color-muted: #a8a08a;
+    --color-border: #29251a;
+    --color-success: #34D399;
+    --color-danger: #F87171;
+    --color-warning: #FBBF24;
+    --color-info: #60A5FA;
+
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.45);
+    --elevation-2: 0 6px 20px -6px rgba(0,0,0,0.55), 0 2px 4px rgba(0,0,0,0.3);
+    --elevation-3: 0 14px 36px -10px rgba(0,0,0,0.65);
+    --elevation-4: 0 20px 48px -12px rgba(0,0,0,0.75);
+}
+
+:root[data-theme='blossom'] {
+    --color-primary: #be185d;
+    --color-primary-soft: rgba(190, 24, 93, 0.1);
+    --color-on-primary: #ffffff;
+    --color-accent: #B45309;
+    --color-accent-soft: rgba(180, 83, 9, 0.08);
+    --color-bg: #fbf0f4;
+    --color-surface: #ffffff;
+    --color-surface-raised: #fdf5f8;
+    --color-fg: #1f0d16;
+    --color-muted: #6f5a64;
+    --color-border: #fbf2f6;
+    --color-success: #047857;
+    --color-danger: #B91C1C;
+    --color-warning: #B45309;
+    --color-info: #1D4ED8;
+
+    --elevation-1: 0 1px 2px rgba(0,0,0,0.04);
+    --elevation-2: 0 4px 12px -4px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.04);
+    --elevation-3: 0 12px 28px -8px rgba(0,0,0,0.12);
+    --elevation-4: 0 20px 40px -12px rgba(0,0,0,0.16);
+}
+
 /* Typography — two voices with fixed jobs (v3, 2026-10-02).
    The families are Enzo's call (2026-09-14) and do not change here; what v3
    changed is which *roles* each one carries, so the pair reads as one system:
@@ -536,11 +630,13 @@
     --scrim-blur: 6px;
 }
 
-/* Light-mode direction for the elevated surface (see above). These three are
+/* Light-mode direction for the elevated surface (see above). These five are
    the light entries of THEME_MODE in constants/theme.js. */
 :root[data-theme='light'],
 :root[data-theme='daybreak'],
-:root[data-theme='solar'] {
+:root[data-theme='solar'],
+:root[data-theme='viridian'],
+:root[data-theme='blossom'] {
     --color-surface-elevated: var(--color-surface);
     --surface-sheen: var(--shadow-sm);
     --card-sheen: none;
@@ -1564,6 +1660,35 @@ h1, h2 {
 .card--inset {
     border-color: transparent;
     background: var(--color-surface-raised);
+}
+
+/* ---- Avatar frame + title (rewards, 2026-10-17) -----------------------------
+   A trainer's equipped frame (constants/cosmetics.js) is two rings around
+   whatever circular avatar container wears `data-frame` — `frameProps()` in
+   utils/rewards.js sets the attribute and the two canon colours. Rings are a
+   box-shadow, so no container changes size or reflows when a frame changes,
+   and an `overflow: hidden` crop never clips them. A frame is always round —
+   a framed container becomes a circle even where the plain one is a rounded
+   square (the account menu, the Profile avatar), or the rings drew a square
+   (Enzo, 2026-10-17). Doubled attribute: it has to beat a container's own
+   single-class shadow and radius. */
+[data-frame][data-frame] {
+    border-radius: var(--radius-full);
+    box-shadow: 0 0 0 0.125rem var(--frame-a), 0 0 0 0.25rem var(--frame-b);
+}
+
+[data-frame][data-frame-premium] {
+    box-shadow:
+        0 0 0 0.125rem var(--frame-a),
+        0 0 0 0.25rem var(--frame-b),
+        0 0 0 0.4375rem color-mix(in srgb, var(--frame-a) 30%, transparent);
+}
+
+.trainer-title {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    color: var(--color-muted);
 }
 
 /* ---- Section (v3) -----------------------------------------------------------
