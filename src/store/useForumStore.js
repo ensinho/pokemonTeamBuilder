@@ -21,8 +21,8 @@ import { markJourney, useAuthStore } from './useAuthStore';
 import { toast } from './useToastStore';
 import { t } from '../utils/translate';
 import { navigateTo, promptSignIn } from '../utils/navigation';
-import { getPokemonArtworkSpriteUrl, getPokemonFrontSpriteUrl } from '../utils/pokemonSprites';
-import { megaDisplayName } from '../hooks/useMegaStones';
+import { ensureSpeciesIndex } from '../services/speciesIndex';
+import { serializeTeam } from '../utils/teamSerialization';
 
 let topicsUnsubscribe = null;
 let messagesUnsubscribe = null;
@@ -60,28 +60,6 @@ const getMegaStones = async () => {
         console.error("Failed to load mega stones in store", e);
     }
     return {};
-};
-
-const serializeTeamPokemon = (pokemon, megaStones = null) => {
-    const item = pokemon?.customization?.item;
-    const mega = (item && megaStones) ? megaStones[item] : null;
-    const isMega = mega && mega.baseId === pokemon.id;
-    
-    const spriteId = isMega ? mega.spriteId : pokemon.id;
-    const displayName = isMega ? megaDisplayName(mega.form) : pokemon.name;
-    const types = (isMega && mega?.types) ? mega.types : (pokemon?.types || []);
-
-    return {
-        id: pokemon.id,
-        name: displayName,
-        types,
-        sprite: getPokemonArtworkSpriteUrl(spriteId),
-        shinySprite: getPokemonArtworkSpriteUrl(spriteId, { shiny: true }),
-        animatedSprite: getPokemonFrontSpriteUrl(spriteId),
-        animatedShinySprite: getPokemonFrontSpriteUrl(spriteId, { shiny: true }),
-        instanceId: pokemon.instanceId,
-        customization: pokemon.customization || {},
-    };
 };
 
 export const useForumStore = create((set, get) => ({
@@ -248,10 +226,12 @@ export const useForumStore = create((set, get) => ({
 
             let serializedAttachedTeam = null;
             if (attachedTeam && attachedTeam.pokemons) {
-                const megaStones = await getMegaStones();
+                // The shared serializer: never writes `undefined` (Firestore
+                // refuses the whole post) and gives every member its own id.
+                const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
                 serializedAttachedTeam = {
                     ...attachedTeam,
-                    pokemons: attachedTeam.pokemons.map(p => serializeTeamPokemon(p, megaStones))
+                    pokemons: serializeTeam(attachedTeam.pokemons, megaStones, baseIdOf),
                 };
             }
 
@@ -339,10 +319,12 @@ export const useForumStore = create((set, get) => ({
 
             let serializedAttachedTeam = null;
             if (attachedTeam && attachedTeam.pokemons) {
-                const megaStones = await getMegaStones();
+                // The shared serializer: never writes `undefined` (Firestore
+                // refuses the whole post) and gives every member its own id.
+                const [megaStones, { baseIdOf }] = await Promise.all([getMegaStones(), ensureSpeciesIndex()]);
                 serializedAttachedTeam = {
                     ...attachedTeam,
-                    pokemons: attachedTeam.pokemons.map(p => serializeTeamPokemon(p, megaStones))
+                    pokemons: serializeTeam(attachedTeam.pokemons, megaStones, baseIdOf),
                 };
             }
 

@@ -73,7 +73,7 @@ function TeamCard({ team, onOpen, navigate, linkState, t, pt }) {
                 <button
                     type="button"
                     className="trn-card__btn trn-card__btn--primary"
-                    onClick={(e) => { stop(e); onOpen({ name: team.title || team.player || 'Tournament Team', pokemons: team.pokemons || [] }); }}
+                    onClick={(e) => { stop(e); onOpen({ name: team.title || team.player || 'Tournament Team', pokemons: team.pokemons || [], evScale: team.evScale }); }}
                 >
                     <ShowdownIcon /> {t('tools.importToBuilder')}
                 </button>

@@ -1,5 +1,17 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { buildCoOccurrence, suggestPartners } from '../utils/tournamentSynergy';
+import { annotateEvScales } from '../utils/teamImport';
+import { hasDuplicateSpecies } from '../utils/teamUniqueness';
+
+/**
+ * What the app accepts from the baked dataset: only teams that hold each species
+ * once (tournament ids are already base-species ids, so no index is needed to
+ * tell), each stamped with the scale its spreads are written in. The build
+ * script filters the same way; this is the net for a dataset baked before it did.
+ */
+export const prepareTournamentTeams = (teams = []) =>
+    annotateEvScales((Array.isArray(teams) ? teams : []).filter((team) =>
+        Array.isArray(team?.pokemons) && team.pokemons.length > 0 && !hasDuplicateSpecies(team.pokemons)));
 
 // Daily cache-buster: a new URL each day so users pick up the cron-refreshed
 // dataset within ~24h, while same-day visits still hit the browser cache.
@@ -30,7 +42,7 @@ export function useTournamentData({ enabled = true } = {}) {
                 const res = await fetch(staticUrl());
                 if (res.ok) {
                     const data = await res.json();
-                    if (!cancelled && Array.isArray(data?.teams)) setTeams(data.teams);
+                    if (!cancelled && Array.isArray(data?.teams)) setTeams(prepareTournamentTeams(data.teams));
                 }
             } catch (_) {
                 /* dataset optional */

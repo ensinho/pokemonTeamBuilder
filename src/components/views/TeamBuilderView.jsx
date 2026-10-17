@@ -313,6 +313,10 @@ export function TeamBuilderView({
         if (selectedRegulation) window.localStorage.setItem('tb-regulation', selectedRegulation);
         else window.localStorage.removeItem('tb-regulation');
     }, [selectedRegulation]);
+    // The Species Clause is a competitive rule: on with a regulation, off in
+    // playthrough mode (the store refuses a repeated species only while on).
+    const setSpeciesClause = useActiveTeamStore((s) => s.setSpeciesClause);
+    React.useEffect(() => { setSpeciesClause(!isPlaythrough); }, [isPlaythrough, setSpeciesClause]);
     // Real competitive usage + win-rate for the chosen regulation — drives the
     // "meta" signal AND the meta-threats panel.
     const {
