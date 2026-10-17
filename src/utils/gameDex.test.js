@@ -44,6 +44,25 @@ describe('buildGameSections', () => {
         expect(section.mons.map((m) => m.id)).toEqual([3, 10033, 906]);
     });
 
+    it('inlines Paldean Tauros breeds and Ogerpon masks in a game that allows them', () => {
+        const svIndex = [
+            { id: 128, name: 'tauros', apiName: 'tauros', generation: 'generation-i', types: ['normal'] },
+            { id: 1017, name: 'ogerpon', apiName: 'ogerpon', generation: 'generation-ix', types: ['grass'] },
+            { id: 10251, name: 'Paldean Tauros Blaze Breed', apiName: 'tauros-paldea-blaze-breed', baseId: 128, isForm: true, generation: 'generation-i', types: ['fighting', 'fire'] },
+            { id: 10273, name: 'Ogerpon Wellspring Mask', apiName: 'ogerpon-wellspring-mask', baseId: 1017, isForm: true, generation: 'generation-ix', types: ['grass', 'water'] },
+        ];
+        const svDexes = [{ key: 'paldea', name: 'Paldea', speciesIds: [128, 1017] }];
+        const ids = (formSuffixes) => buildGameSections({
+            fullIndex: svIndex,
+            gameDexes: svDexes,
+            game: { generation: 'generation-ix', formSuffixes, closedRoster: true },
+        })[0].mons.map((m) => m.id);
+
+        expect(ids(['paldea', 'mask'])).toEqual([128, 10251, 1017, 10273]);
+        // A game without those suffixes keeps only the base species.
+        expect(ids(['mega'])).toEqual([128, 1017]);
+    });
+
     it('returns nothing without a dex or an index', () => {
         expect(buildGameSections({ fullIndex: index, gameDexes: null, game: {} })).toEqual([]);
         expect(buildGameSections({ fullIndex: [], gameDexes: dexes, game: {} })).toEqual([]);

@@ -13,6 +13,11 @@ describe('formDisplayName', () => {
         expect(formDisplayName('growlithe-hisui', 'growlithe')).toBe('Hisuian Growlithe');
     });
 
+    it('labels Paldean Tauros breeds and Ogerpon masks', () => {
+        expect(formDisplayName('tauros-paldea-aqua-breed', 'tauros')).toBe('Paldean Tauros Aqua Breed');
+        expect(formDisplayName('ogerpon-wellspring-mask', 'ogerpon')).toBe('Ogerpon Wellspring Mask');
+    });
+
     it('labels gigantamax and primal', () => {
         expect(formDisplayName('charizard-gmax', 'charizard')).toBe('Gigantamax Charizard');
         expect(formDisplayName('kyogre-primal', 'kyogre')).toBe('Primal Kyogre');

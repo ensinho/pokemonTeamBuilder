@@ -216,8 +216,12 @@ const buildEnrichedIndex = async (rawResults, { concurrency = 10, delayMs = 100 
 // megas, primals, regional variants and gigantamax. We deliberately EXCLUDE purely
 // cosmetic formes (Pikachu caps, Alcremie creams, Vivillon patterns, Rotom appliances,
 // Deoxys/Wormadam formes…) which would just clutter the dex with near-duplicates.
+// Paldean Tauros (`tauros-paldea-combat-breed`) and Ogerpon's masks
+// (`ogerpon-wellspring-mask`) don't END in a regional suffix, so they're listed
+// on their own — each one has its own typing and is a different pick in a team.
 const BATTLE_FORM_SUFFIX = /-(mega(-[xy])?|primal|alola|galar|hisui|paldea|gmax|female)$/;
-const isBattleForm = (name) => BATTLE_FORM_SUFFIX.test(name);
+const BATTLE_FORM_EXTRA = /^(tauros-paldea-(combat|blaze|aqua)-breed|ogerpon-(wellspring|hearthflame|cornerstone)-mask)$/;
+const isBattleForm = (name) => BATTLE_FORM_SUFFIX.test(name) || BATTLE_FORM_EXTRA.test(name);
 
 // Build lightweight index entries for battle forms so they appear in the Pokédex /
 // Team Builder grids. A form carries its OWN id+types but inherits its base species'
