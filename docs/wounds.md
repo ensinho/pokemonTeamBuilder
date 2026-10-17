@@ -12,6 +12,13 @@ and the **files** touched. Severity tags: `bug` · `dispattern` · `perf` · `se
 
 ## Resolved wounds
 
+### 2026-10-16 — Paldean Tauros and Ogerpon's masks were missing from the Pokédex `bug`
+- **Symptom:** two feedback reports — Paldean Tauros and the masked Ogerpon forms could not be found in the Pokédex or Team Builder.
+- **Root cause:** `scripts/build-pokemon-cache.mjs` only took a form whose PokéAPI name *ends* in a regional/mega suffix (`BATTLE_FORM_SUFFIX`). PokéAPI names them `tauros-paldea-combat-breed` and `ogerpon-wellspring-mask`, so the build skipped all six without a word. `src/utils/gameDex.js` had the same end-anchored suffix match.
+- **Fix:** a `BATTLE_FORM_EXTRA` whitelist in the cache build. The six entries (ids 10250–10252 and 10273–10275) were added to `pokemon-index.json` by hand, in the build's own shape. `gameDex` `suffixOf` now drops the `-breed` tail, so the breeds count as `paldea`, and Scarlet/Violet gained a `mask` form suffix.
+- **Correct pattern:** check a form-name regex against PokéAPI's real names (`/pokemon?limit=100000`, grep the species) before trusting it. Not every form ends in its regional token. A form missing from the index is a silent gap, not an error.
+- **Files:** `scripts/build-pokemon-cache.mjs`, `public/data/pokemon-index.json`, `src/utils/gameDex.js`, `scripts/build-games.mjs`, `public/data/games.json`
+
 ### 2026-10-16 — After the trace fix, every challenge turn failed with `{"error":400}` `bug`
 - **Symptom:** in production, `POST /api/challenge` `choose` answered 400 with a 13-byte body, `{"error":400}`, for any choice (`move 1`, `move 3`, `switch 2`) at turn 0 of any run. The body was valid, `GET /api/challenge` was all green, and the same flow passed locally against the fake Firestore.
 - **Root cause:** the training row (`trainingRow`, `api/_lib/ai/observe.js`) stored `m2.options` as an array of arrays, because `foeOptionFeatures` returns a φ array per option. It is written into `secret/state.training` on every turn where Cynthia also chooses, so turn 0 of every run. Firestore refuses an array directly inside an array, and **the SDK does not check this client-side**: the write reaches the server and comes back as `INVALID_ARGUMENT`. Over REST (`preferRest`), that error has `code` and `status` both 400, so the handler's `{error: err.code}` sent the bare number. The morning's `undefined` wound hid this one: client-side validation threw first, as a 500, until `defined()` let the write through. `fakeFirestore.js` accepted nested arrays.
