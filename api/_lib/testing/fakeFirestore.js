@@ -28,9 +28,34 @@ export const undefinedPathIn = (value, path = '') => {
     return null;
 };
 
+/**
+ * The dotted path of the first array held directly by another array, or null.
+ * Firestore refuses those too, but on the server: the SDK sends the write and
+ * gets back INVALID_ARGUMENT — over REST (`preferRest`), an error whose code
+ * and status are both 400, which the endpoint relays as `{"error":400}`. An
+ * array inside a map inside an array is fine.
+ */
+export const nestedArrayPathIn = (value, path = '', inArray = false) => {
+    if (Array.isArray(value)) {
+        if (inArray) return path;
+        for (const [index, child] of value.entries()) {
+            const found = nestedArrayPathIn(child, path ? `${path}.${index}` : String(index), true);
+            if (found) return found;
+        }
+    } else if (value && typeof value === 'object') {
+        for (const [key, child] of Object.entries(value)) {
+            const found = nestedArrayPathIn(child, path ? `${path}.${key}` : key, false);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
 const assertStorable = (data) => {
     const at = undefinedPathIn(data);
     if (at) throw new Error(`Cannot use "undefined" as a Firestore value (found in field "${at}").`);
+    const nested = nestedArrayPathIn(data);
+    if (nested) throw new Error(`Cannot have an array directly inside an array (found in field "${nested}").`);
 };
 
 export const createFakeFirestore = () => {

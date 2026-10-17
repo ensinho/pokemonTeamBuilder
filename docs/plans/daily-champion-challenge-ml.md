@@ -145,7 +145,7 @@ Teste novo: **todo golpe do dex** passa pelo estimador sem lançar erro.
   outcome: 1 | 0,              // 1 = Cynthia venceu
   turns: [{
     m1: [ /* variáveis do M1 com neblina, 3 casas decimais */ ],
-    m2: { options: [[ /* φ de cada opção do jogador */ ]], chosen: 2 },
+    m2: { options: [{ features: [ /* φ de cada opção do jogador */ ] }], chosen: 2 },  // map por opção: o Firestore recusa array dentro de array
   }],
 }
 ```

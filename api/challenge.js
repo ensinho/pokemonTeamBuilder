@@ -174,7 +174,10 @@ export default async function handler(req, res) {
 
         return await handle(req, res);
     } catch (err) {
-        if (err?.status) {
+        // Only our own errors pick the status. A Google API error carries one
+        // too (Firestore over REST: `code` and `status` both 400), and relaying
+        // it sent the bare `{"error":400}` that hid a refused write (wound 2026-10-16).
+        if (err instanceof HttpError) {
             // ChallengeError carries a stable code; HttpError (auth, loading) a message.
             const code = err.code || (err.status === 401 ? 'unauthenticated' : err.message);
             return res.status(err.status).json({ error: code, ...(err.extra || {}) });

@@ -39,9 +39,13 @@ export const trainingRow = ({ snapshot, p2Lines, p1Request, p1Choice }) => {
         m1: winFeatures({ battle: est.battle, est, knowledge }).map(round3),
         m2: {
             // The player's move slots are their real ones; she only scores them
-            // with what she believes about the Pokémon using them.
-            options: options.map((option) => foeOptionFeatures({
-                est, foe, me, moveId: option.moveId, isSwitch: option.kind === 'switch', lastFoeMove: memory.lastFoeMove,
+            // with what she believes about the Pokémon using them. Each φ is
+            // wrapped in a map: Firestore refuses an array directly inside an
+            // array, and this row is written as-is (secret/state, aiTraining).
+            options: options.map((option) => ({
+                features: foeOptionFeatures({
+                    est, foe, me, moveId: option.moveId, isSwitch: option.kind === 'switch', lastFoeMove: memory.lastFoeMove,
+                }),
             })),
             chosen,
         },
