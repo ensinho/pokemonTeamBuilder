@@ -224,6 +224,7 @@ describe('POST /api/challenge', () => {
         expect(training[0].week).toBe('2026-W42');
         expect(training[0].turns.length).toBeGreaterThan(0);
         expect(training[0].turns[0].m1).toHaveLength(6);
+        expect(training[0].turns[0].m2.options[0].features).toHaveLength(6);
     }, 120_000);
 
     it('allows one official run a day and practice only after it', async () => {
@@ -320,6 +321,19 @@ describe('POST /api/challenge', () => {
 });
 
 describe('GET /api/challenge', () => {
+    it('reports a Firestore refusal as internal, with its message, never as its bare status', async () => {
+        const refused = Object.assign(new Error('3 INVALID_ARGUMENT: Cannot convert an array value in an array value.'), { code: 400, status: 400 });
+        const spy = vi.spyOn(fake.db, 'runTransaction').mockRejectedValueOnce(refused);
+        try {
+            const res = await call({ action: 'ensureDay' });
+            expect(res.statusCode).toBe(500);
+            expect(res.body.error).toBe('internal');
+            expect(res.body.detail).toContain('INVALID_ARGUMENT');
+        } finally {
+            spy.mockRestore();
+        }
+    });
+
     it('answers ?ping without loading anything', async () => {
         const res = await call(undefined, { method: 'GET', query: { ping: '1' } });
         expect(res.body).toMatchObject({ ok: true, ping: true });

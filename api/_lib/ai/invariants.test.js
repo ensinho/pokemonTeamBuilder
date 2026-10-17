@@ -9,7 +9,7 @@ import { decide } from './index.js';
 import { legalOptions } from './options.js';
 import { PROFILES } from './profiles.js';
 import { scenario } from './testing/scenario.js';
-import { undefinedPathIn } from '../testing/fakeFirestore.js';
+import { nestedArrayPathIn, undefinedPathIn } from '../testing/fakeFirestore.js';
 
 /**
  * The AI doc's invariants (§1), each as a property. The fuzz runs a reduced
@@ -45,6 +45,8 @@ const fuzzBattle = (day, profileKey, seed) => {
             // The trace is written to Firestore as-is (secret/state.aiTrace).
             const unstorable = undefinedPathIn(decision.trace);
             if (unstorable) problems.push(`trace has undefined at ${unstorable} on turn ${match.battle.turn}`);
+            const nested = nestedArrayPathIn(decision.trace);
+            if (nested) problems.push(`trace has an array inside an array at ${nested} on turn ${match.battle.turn}`);
             slowest = Math.max(slowest, performance.now() - started);
             const target = mine.startsWith('switch') ? match.battle.sides[1].pokemon[Number(mine.split(' ')[1]) - 1] : null;
             const othersStanding = match.battle.sides[1].pokemon.filter((m) => !m.fainted && m.species.name !== ACE && m !== active).length;
